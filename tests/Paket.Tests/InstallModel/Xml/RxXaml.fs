@@ -30,7 +30,7 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1')">
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
@@ -88,7 +88,7 @@ let expected = """
 
 [<Test>]
 let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly references``() = 
-    let model =     
+    let model =
         InstallModel.CreateFromLibs(PackageName "Rx-XAML", SemVer.Parse "2.2.4", [],
             [ @"..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll" 
               @"..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll" 

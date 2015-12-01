@@ -33,7 +33,7 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6')">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1')">
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
@@ -57,7 +57,7 @@ let expected = """
 
 [<Test>]
 let ``should generate Xml for System.Net.Http 2.2.8``() = 
-    let model =     
+    let model =
         InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [],
             [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 

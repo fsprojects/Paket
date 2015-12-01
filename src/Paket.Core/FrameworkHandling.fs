@@ -18,6 +18,7 @@ type FrameworkVersion =
     | V4_5_2
     | V4_5_3
     | V4_6
+    | V4_6_1
     | V5_0
     override this.ToString() =
         match this with
@@ -33,6 +34,7 @@ type FrameworkVersion =
         | V4_5_2 -> "v4.5.2"
         | V4_5_3 -> "v4.5.3"
         | V4_6 -> "v4.6"
+        | V4_6_1-> "v4.6.1"
         | V5_0 -> "v5.0"
 
     member this.ShortString() =
@@ -49,6 +51,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_5_2 -> "452"
         | FrameworkVersion.V4_5_3 -> "453"
         | FrameworkVersion.V4_6 -> "46"
+        | FrameworkVersion.V4_6_1 -> "461"
         | FrameworkVersion.V5_0 -> "50"
 
 module KnownAliases =
@@ -88,8 +91,8 @@ type FrameworkIdentifier =
     override x.ToString() = 
         match x with
         | DotNetFramework v -> "net" + v.ShortString()
-        | DNX v -> "dnx" + v.ShortString()             
-        | DNXCore v -> "dnxcore" + v.ShortString()             
+        | DNX v -> "dnx" + v.ShortString()
+        | DNXCore v -> "dnxcore" + v.ShortString()
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
@@ -121,7 +124,8 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1 ]
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2 ]
         | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
-        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6 ]
+        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6 ]
+        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_1 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
         | Silverlight "v3.0" -> [ ]
@@ -185,6 +189,7 @@ module FrameworkDetection =
                 | "net452" -> Some (DotNetFramework FrameworkVersion.V4_5_2)
                 | "net453" -> Some (DotNetFramework FrameworkVersion.V4_5_3)
                 | "net46" -> Some (DotNetFramework FrameworkVersion.V4_6)
+                | "net461" -> Some (DotNetFramework FrameworkVersion.V4_6_1)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid403" | "monoandroid41" | "monoandroid50"-> Some MonoAndroid
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
@@ -206,7 +211,7 @@ module FrameworkDetection =
             cache.[path] <- result
             result
 
-    let DetectFromPath(path : string) : FrameworkIdentifier option =         
+    let DetectFromPath(path : string) : FrameworkIdentifier option =
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
         
@@ -295,7 +300,8 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_5_1
         FrameworkVersion.V4_5_2
         FrameworkVersion.V4_5_3
-        FrameworkVersion.V4_6]
+        FrameworkVersion.V4_6
+        FrameworkVersion.V4_6_1]
 
     let DotNetFrameworkProfiles =
        DotNetFrameworkVersions
@@ -322,7 +328,7 @@ module KnownTargetProfiles =
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
        [SinglePlatform(MonoAndroid)
-        SinglePlatform(MonoTouch)   
+        SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
         SinglePlatform(WindowsPhoneApp "v8.1")
@@ -363,7 +369,7 @@ module KnownTargetProfiles =
         PortableProfile("Profile154", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v4.0"; Windows "v4.5"; WindowsPhoneSilverlight "v8.0" ])
         PortableProfile("Profile157", [ Windows "v4.5.1"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.1" ])
         PortableProfile("Profile158", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneSilverlight "v8.0" ])
-        PortableProfile("Profile225", [ DotNetFramework  FrameworkVersion.V4; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1" ])                  
+        PortableProfile("Profile225", [ DotNetFramework  FrameworkVersion.V4; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1" ])
         PortableProfile("Profile240", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1" ])
         PortableProfile("Profile255", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1" ])
         PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneSilverlight "v8.0"; WindowsPhoneApp "v8.1" ])

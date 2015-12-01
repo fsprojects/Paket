@@ -1,5 +1,6 @@
-#### 2.30.0-alpha002 - 30.11.2015
+#### 2.30.0 - 01.12.2015
 * Switched to using Chessie Nuget package - https://github.com/fsprojects/Paket/pull/1266
+* Adding .NET 4.6.1 support - https://github.com/fsprojects/Paket/issues/1270
 
 #### 2.29.0 - 27.11.2015
 * Allow specifying Nuget Source and provide option to specify parameters with config file in bootstrapper - https://github.com/fsprojects/Paket/pull/1261
