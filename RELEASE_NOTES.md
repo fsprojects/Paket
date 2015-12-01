@@ -1,3 +1,6 @@
+#### 2.30.3 - 01.12.2015
+* Implement exclude parameter for pack - https://github.com/fsprojects/Paket/pull/1274
+
 #### 2.30.2 - 01.12.2015
 * Handle different platforms in ProjectFile.GetOutputPath - https://github.com/fsprojects/Paket/pull/1269
 

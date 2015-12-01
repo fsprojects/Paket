@@ -295,6 +295,7 @@ type PackArgs =
     | [<CustomCommandLine("buildplatform")>] BuildPlatform of string
     | [<CustomCommandLine("version")>] Version of string
     | [<CustomCommandLine("templatefile")>] TemplateFile of string
+    | [<CustomCommandLine("exclude")>] ExcludedTemplate of string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
     | [<CustomCommandLine("lock-dependencies")>] LockDependencies
 with
@@ -306,6 +307,7 @@ with
             | BuildPlatform(_) -> "Optionally specify build platform that should be packaged (if not provided or empty, checks all known platform targets)."
             | Version(_) -> "Specify version of the package."
             | TemplateFile(_) -> "Allows to specify a single template file."
+            | ExcludedTemplate(_) -> "Exclude template file by id."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
             | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
 

@@ -456,11 +456,11 @@ type Dependencies(dependenciesFileName: string) =
         FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) |> this.Process
 
     // Packs all paket.template files.
-    member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?releaseNotes, ?templateFile, ?workingDir, ?lockDependencies) =
+    member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let workingDir = defaultArg workingDir (dependenciesFile.FileName |> Path.GetDirectoryName)
         let lockDependencies = defaultArg lockDependencies false
-        PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, releaseNotes, templateFile, lockDependencies)
+        PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, releaseNotes, templateFile, excludedTemplates, lockDependencies)
 
     /// Pushes a nupkg file.
     static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
