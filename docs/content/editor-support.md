@@ -5,7 +5,7 @@
 * Project site: http://ionide.io
 * Repository: https://github.com/ionide/ionide-paket
 * Status: Released
-* Installation: Availabe in [Atom's plugin manager](https://atom.io/packages/paket)
+* Installation: Available in [Atom's plugin manager](https://atom.io/packages/paket)
 * Features:
   * Syntax highlighting for `paket.dependencies`
   * Paket commands available in Atom's Command Palette
@@ -25,7 +25,7 @@
 
 * Project site: https://github.com/fsprojects/Paket.VisualStudio
 * Status: In Development
-* Installation: Availabe in [Visual Studio Gallery](https://visualstudiogallery.msdn.microsoft.com/ce104917-e8b3-4365-9490-8432c6e75c36)
+* Installation: Available in [Visual Studio Gallery](https://visualstudiogallery.msdn.microsoft.com/ce104917-e8b3-4365-9490-8432c6e75c36)
 * Features:
   * Solution Explorer Extensions for Paket files
   * Paket commands in Solution Explorer menu  
@@ -52,7 +52,7 @@
 * Project site: http://ionide.io
 * Repository: https://github.com/ionide/ionide-vscode-paket
 * Status: Released
-* Installation: Availabe in [Visual Studio Marketplace](https://marketplace.visualstudio.com/items/Ionide.Ionide-Paket)
+* Installation: Available in [Visual Studio Marketplace](https://marketplace.visualstudio.com/items/Ionide.Ionide-Paket)
 * Features:
   * Paket commands available in Atom's Command Palette
 
