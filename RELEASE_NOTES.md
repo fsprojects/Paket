@@ -1,10 +1,7 @@
-#### 2.30.3 - 01.12.2015
+#### 2.31.0 - 01.12.2015
+* Add options to force Nuget source and use local file paths with bootstrapper - https://github.com/fsprojects/Paket/pull/1268
 * Implement exclude parameter for pack - https://github.com/fsprojects/Paket/pull/1274
-
-#### 2.30.2 - 01.12.2015
 * Handle different platforms in ProjectFile.GetOutputPath - https://github.com/fsprojects/Paket/pull/1269
-
-#### 2.30.1 - 01.12.2015
 * Support local read-only .nupkg-files - https://github.com/fsprojects/Paket/pull/1272
 
 #### 2.30.0 - 01.12.2015
