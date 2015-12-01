@@ -1012,7 +1012,7 @@ type ProjectFile =
                             traceWarnfn "No platform specified; found output path node for the %s platform after failing to find one for the following: %s" x tested
                         s.TrimEnd [|'\\'|] |> normalizePath
 
-        tryNextPlat platforms
+        tryNextPlat platforms []
 
     member this.GetAssemblyName () =
         let assemblyName =
