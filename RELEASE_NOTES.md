@@ -1,3 +1,6 @@
+#### 2.30.1 - 01.12.2015
+* Support local read-only .nupkg-files - https://github.com/fsprojects/Paket/pull/1272
+
 #### 2.30.0 - 01.12.2015
 * Switched to using Chessie Nuget package - https://github.com/fsprojects/Paket/pull/1266
 * Adding .NET 4.6.1 support - https://github.com/fsprojects/Paket/issues/1270
