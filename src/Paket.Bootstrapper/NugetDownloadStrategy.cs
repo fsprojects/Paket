@@ -118,7 +118,7 @@ namespace Paket.Bootstrapper
 
                 var paketDownloadUrl = apiHelper.GetLatestPackage();
                 var paketFile = paketNupkgFile;
-                if (latestVersion != String.Empty)
+                if (!String.IsNullOrWhiteSpace(latestVersion))
                 {
                     paketDownloadUrl = apiHelper.GetSpecificPackageVersion(latestVersion);
                     paketFile = String.Format(paketNupkgFileTemplate, latestVersion);
@@ -130,7 +130,7 @@ namespace Paket.Bootstrapper
 
                 if (Directory.Exists(NugetSource))
                 {
-                    if (latestVersion == String.Empty) latestVersion = this.GetLatestVersion(false);
+                    if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = this.GetLatestVersion(false);
                     var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
                     if (!silent)
@@ -173,7 +173,7 @@ namespace Paket.Bootstrapper
 
             var paketDownloadUrl = getLatestFromNugetUrl;
             var paketFile = paketNupkgFile;
-            if (latestVersion != String.Empty)
+            if (!String.IsNullOrWhiteSpace(latestVersion))
             {
                 paketDownloadUrl = apiHelper.GetSpecificPackageVersion(latestVersion);
                 paketFile = String.Format(paketNupkgFileTemplate, latestVersion);
@@ -185,7 +185,7 @@ namespace Paket.Bootstrapper
 
             if (Directory.Exists(NugetSource))
             {
-                if (latestVersion == String.Empty) latestVersion = this.GetLatestVersion(false);
+                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = this.GetLatestVersion(false);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
                 if (!silent)
