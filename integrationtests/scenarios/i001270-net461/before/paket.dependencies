@@ -1,2 +1,3 @@
 source https://www.nuget.org/api/v2/
 nuget Alphafs
+nuget FSharp.Core redirects:on
