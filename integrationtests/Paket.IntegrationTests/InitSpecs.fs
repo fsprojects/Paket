@@ -33,7 +33,7 @@ let ``#1240 current bootstrapper should work``() =
         printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
         failwith errors
 
-    String.Join(Environment.NewLine,result.Messages).StartsWith("No version specified. Downloading latest stable.")
+    String.Join(Environment.NewLine,result.Messages).Contains("latest stable")
     |> shouldEqual true
 
     File.Exists(scenarioTempPath "i001240-bootstrapper" </> "paket.exe")
