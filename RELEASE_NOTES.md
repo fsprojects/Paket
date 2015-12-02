@@ -1,3 +1,6 @@
+#### 2.32.1 - 02.12.2015
+* Resolver is more tolerant with prereleases - https://github.com/fsprojects/Paket/issues/1280
+
 #### 2.32.0 - 02.12.2015
 * Provided more user-friendly messages for bootstrapper - https://github.com/fsprojects/Paket/pull/1278
 * EXPERIMENTAL: Added ability to create symbol/source packages - https://github.com/fsprojects/Paket/pull/1275

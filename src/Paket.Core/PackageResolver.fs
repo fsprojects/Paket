@@ -375,6 +375,10 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 compatibleVersions := 
                     Seq.filter (fun v -> currentRequirement.VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
 
+                if Seq.isEmpty !compatibleVersions then
+                    compatibleVersions := 
+                        Seq.filter (fun v -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
+
         if Seq.isEmpty !compatibleVersions then
             // boost the conflicting package, in order to solve conflicts faster
             let isNewConflict =

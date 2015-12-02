@@ -119,3 +119,24 @@ let ``should resolve simple config with services``() =
     getVersion resolved.[PackageName "Service.Core"] |> shouldEqual "1.1.31.2"
     getVersion resolved.[PackageName "Service.Contracts"] |> shouldEqual "1.1.31.2"
     getVersion resolved.[PackageName "Service"] |> shouldEqual "1.1.31.2"
+
+
+let configWithServers = """
+source https://nuget.org/api/v2
+
+
+nuget My.Company.PackageA.Server prerelease
+nuget My.Company.PackageB.Server prerelease
+nuget My.Company.PackageC.Server prerelease"""
+
+let graphWithServers = [
+    "My.Company.PackageA.Server","1.0.0-pre18038",["My.Company.PackageC.Server",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
+    "My.Company.PackageB.Server","1.0.0-pre18038",["My.Company.PackageC.Server",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
+    "My.Company.PackageC.Server","1.0.0-pre18038",[]
+]
+
+[<Test>]
+let ``should resolve simple config with servers``() = 
+    let cfg = DependenciesFile.FromCode(configWithServers)
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[PackageName "My.Company.PackageC.Server"] |> shouldEqual "1.0.0-pre18038"
