@@ -93,10 +93,14 @@ type CompleteCoreInfo =
     { Id : string
       Version : SemVerInfo option
       Authors : string list
-      Description : string }
+      Description : string
+      Symbols : bool }
     member this.PackageFileName =
         match this.Version with
-        | Some v -> sprintf "%s.%O.nupkg" this.Id v
+        | Some v ->
+            if this.Symbols
+            then sprintf "%s.%O.symbols.nupkg" this.Id v
+            else sprintf "%s.%O.nupkg" this.Id v
         | None -> failwithf "No version given for %s" this.Id
     member this.NuspecFileName = this.Id + ".nuspec"
 
@@ -104,12 +108,14 @@ type ProjectCoreInfo =
     { Id : string option
       Version : SemVerInfo option
       Authors : string list option
-      Description : string option }
+      Description : string option
+      Symbols : bool }
     static member Empty =
         { Id = None
           Authors = None
           Version = None
-          Description = None }
+          Description = None
+          Symbols = false }
 
 type OptionalPackagingInfo =
     { Title : string option
@@ -376,7 +382,8 @@ module internal TemplateFile =
                                             s.Split(',')
                                             |> Array.map (fun s -> s.Trim())
                                             |> Array.toList)
-                      Description = Map.tryFind "description" map }
+                      Description = Map.tryFind "description" map
+                      Symbols = false }
 
                 let optionalInfo = getOptionalInfo(file,lockFile,map,currentVersion)
                 return ProjectInfo(core, optionalInfo)
@@ -388,7 +395,8 @@ module internal TemplateFile =
                     { Id = id'
                       Version = Map.tryFind "version" map |> Option.map SemVer.Parse
                       Authors = authors
-                      Description = description }
+                      Description = description
+                      Symbols = false }
 
                 let optionalInfo = getOptionalInfo(file,lockFile,map,currentVersion)
                 return CompleteInfo(core, optionalInfo)

@@ -298,6 +298,7 @@ type PackArgs =
     | [<CustomCommandLine("exclude")>] ExcludedTemplate of string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
     | [<CustomCommandLine("lock-dependencies")>] LockDependencies
+    | [<CustomCommandLine("symbols")>] Symbols
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -310,6 +311,7 @@ with
             | ExcludedTemplate(_) -> "Exclude template file by id."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
             | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
+            | Symbols -> "Build symbol/source package."
 
 type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of string

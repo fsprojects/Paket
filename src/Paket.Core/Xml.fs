@@ -59,7 +59,7 @@ let inline getNodes name (node:XmlNode) =
 
 /// [omit]
 let inline getDescendants name (node:XmlNode) = 
-    let xpath = sprintf "//*[local-name() = '%s']" name
+    let xpath = sprintf ".//*[local-name() = '%s']" name
     match node.SelectNodes(xpath) with
     | null -> []
     | nodeList -> 
