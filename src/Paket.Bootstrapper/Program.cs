@@ -87,6 +87,19 @@ namespace Paket.Bootstrapper
             };
             try
             {
+                if (!silent)
+                {
+                    string versionRequested;
+                    if (!dlArgs.IgnorePrerelease)
+                        versionRequested = "prerelease requested";
+                    else if (String.IsNullOrWhiteSpace(dlArgs.LatestVersion))
+                        versionRequested = "downloading latest stable";
+                    else
+                        versionRequested = string.Format("version {0} requested", dlArgs.LatestVersion);
+
+                    Console.WriteLine("Checking Paket version ({0})...", versionRequested);
+                }
+
                 var localVersion = BootstrapperHelper.GetLocalFileVersion(dlArgs.Target);
 
                 var latestVersion = dlArgs.LatestVersion;
@@ -194,32 +207,12 @@ namespace Paket.Bootstrapper
                 {
                     ignorePrerelease = false;
                     latestVersion = String.Empty;
-                    if (!silent)
-                        Console.WriteLine("Prerelease requested. Looking for latest prerelease.");
                 }
                 else
                 {
                     latestVersion = commandArgs[0];
-                    if (!silent)
-                    {
-                        if (!String.IsNullOrWhiteSpace(latestVersion))
-                            Console.WriteLine("Version {0} requested.", latestVersion);
-                        else
-                            Console.WriteLine("No version specified. Downloading latest stable.");
-                    }
                 }
             }
-            else
-            {
-                if (!silent)
-                {
-                    if (!String.IsNullOrWhiteSpace(latestVersion))
-                        Console.WriteLine("Version {0} requested.", latestVersion);
-                    else
-                        Console.WriteLine("No version specified. Downloading latest stable.");
-                }
-            }
-
 
             return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate, nugetSource);
         }
