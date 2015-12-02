@@ -311,7 +311,7 @@ with
             | ExcludedTemplate(_) -> "Exclude template file by id."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
             | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
-            | Symbols -> "Build symbol/source package."
+            | Symbols -> "Build symbol/source packages in addition to library/content packages."
 
 type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of string

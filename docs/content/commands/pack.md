@@ -50,6 +50,15 @@ Depending on which command you issue, Paket creates different version requiremen
 
 As you see here, the first command (without the `lock-dependencies` parameter) creates version requirements as specified in your [`paket.dependencies` file][depfile]. The second command takes the currently resolved versions from your [`paket.lock` file][lockfile] and "locks" them to these specific versions.
 
+### Symbol Packages
+
+Visual Studio can be configured to download symbol/source versions of installed packages from a symbol server, allowing the developer to use the debugger to step into the source (see [SymbolSource](http://www.symbolsource.org/Public/Home/VisualStudio)).
+These symbol/source packages are the same as the regular packages, but contain the source files (under `src`) and PDBs alongside the DLLs.
+Paket can build these symbol/source packages, in addition to the regular packages, using the `symbols` parameter:
+
+    [lang=batch]
+    paket pack output nugets symbols
+
   [lockfile]: lock-file.html
   [depfile]: dependencies-file.html
   [reffile]: references-files.html
