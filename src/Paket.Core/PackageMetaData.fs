@@ -79,6 +79,11 @@ let getAuthors attributes =
             |> Array.map (fun s -> s.Trim())
             |> List.ofArray)
 
+let getTitle attributes = 
+    attributes |> Seq.tryPick (function 
+                      | Title t -> Some t
+                      | _ -> None) 
+
 let getDescription attributes = 
     attributes |> Seq.tryPick (function 
                       | Description d -> Some d
