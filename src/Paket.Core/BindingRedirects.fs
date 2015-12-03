@@ -114,7 +114,7 @@ let private addConfigFileToProject project =
         project.Save())
 
 /// Applies a set of binding redirects to a single configuration file.
-let private applyBindingRedirects cleanBindingRedirects bindingRedirects (configFilePath:string) =
+let private applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedirects (configFilePath:string) =
     let config = 
         try
             XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
@@ -131,7 +131,7 @@ let private applyBindingRedirects cleanBindingRedirects bindingRedirects (config
     config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
     |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))
     |> List.ofSeq
-    |> List.filter (fun e -> cleanBindingRedirects || isMarked e)
+    |> List.filter (fun e -> isFirstGroup && (cleanBindingRedirects || isMarked e))
     |> List.iter (fun e -> e.Remove())
 
     let config = Seq.fold setRedirect config bindingRedirects
@@ -139,7 +139,7 @@ let private applyBindingRedirects cleanBindingRedirects bindingRedirects (config
     config.Save configFilePath
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
-let applyBindingRedirectsToFolder createNewBindingFiles cleanBindingRedirects rootPath bindingRedirects =
+let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects rootPath bindingRedirects =
     let applyBindingRedirects projectFile =
         let bindingRedirects = bindingRedirects projectFile
         let path = Path.GetDirectoryName projectFile.FileName
@@ -152,7 +152,7 @@ let applyBindingRedirectsToFolder createNewBindingFiles cleanBindingRedirects ro
                 addConfigFileToProject projectFile
                 Some config
             | _ -> None
-        |> Option.iter (applyBindingRedirects cleanBindingRedirects bindingRedirects)
+        |> Option.iter (applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedirects)
 
     rootPath
     |> getProjectFilesWithPaketReferences Directory.GetFiles

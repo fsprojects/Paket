@@ -161,7 +161,7 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     extractedPackages
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingFiles cleanBindingRedirects root groupName findDependencies (extractedPackages:seq<_*InstallModel>) =
+let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup createNewBindingFiles cleanBindingRedirects root groupName findDependencies (extractedPackages:seq<_*InstallModel>) =
     let dependencyGraph = ConcurrentDictionary<_,Set<_>>()
     let projects = ConcurrentDictionary<_,ProjectFile option>();
 
@@ -225,7 +225,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) createNewBindingF
               Culture = None })
         |> Seq.sort
 
-    applyBindingRedirectsToFolder createNewBindingFiles cleanBindingRedirects root bindingRedirects
+    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root bindingRedirects
 
 let findAllReferencesFiles root =
     root
@@ -365,6 +365,8 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
         project.Save()
         let loadedLibs = new Dictionary<_,_>()
 
+        let first = ref true
+
         for g in lockFile.Groups do
             let group = g.Value
             model
@@ -377,7 +379,8 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                 let isEnabled = defaultArg packageRedirects (options.Redirects || g.Value.Options.Redirects)
                 isEnabled && (fst kv.Key) = g.Key)
             |> Seq.map (fun kv -> kv.Value)
-            |> applyBindingRedirects loadedLibs options.CreateNewBindingFiles options.Hard (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
+            |> applyBindingRedirects loadedLibs !first options.CreateNewBindingFiles options.Hard (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
+            first := false
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile) =
