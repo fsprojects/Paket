@@ -101,9 +101,9 @@ let internal findAutoCompleteVersionsForPackage(v3Url, auth, packageName:Domain.
     }
 
 /// Uses the NuGet v3 autocomplete service to retrieve all package versions for the given package.
-let FindAutoCompleteVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults) =
+let FindAutoCompleteVersionsForPackage(nugetURL, auth, package, includingPrereleases, maxResults) =
     async {
-        let! raw = findAutoCompleteVersionsForPackage(auth, nugetURL, package, includingPrereleases, maxResults)
+        let! raw = findAutoCompleteVersionsForPackage(nugetURL, auth, package, includingPrereleases, maxResults)
         match raw with 
         | Some versions -> return versions
         | None -> return [||]
