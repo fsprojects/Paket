@@ -13,17 +13,37 @@ let defaultRedirect =
         PublicKeyToken = "PUBLIC_KEY"
         Culture = None }
 
-let sampleDoc() = 
-    """<?xml version="1.0" encoding="utf-8"?>
+let emptySampleDoc() = 
+    let doc = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
 </configuration>"""
-    |> XDocument.Parse
+    XDocument.Parse(doc,LoadOptions.PreserveWhitespace)
 
 let sampleDocWithRuntime() = 
-    """<?xml version="1.0" encoding="utf-8"?>
+    let doc = """<?xml version="1.0" encoding="utf-8"?>
 <configuration><runtime></runtime>
 </configuration>""" 
-    |> XDocument.Parse
+    XDocument.Parse(doc,LoadOptions.PreserveWhitespace)
+
+let sampleDoc() = 
+    let doc = """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <appSettings>
+    <!-- For Goldmine tests -->
+    <add key="GoldmineEntityType" value="Proxy"/>
+    <!-- Google apps API keys -->
+    <add key="GoogleAppMigrationWizProjectApiKey-1" value="key1"/>
+    <add key="GoogleAppMigrationWizProjectApiKey-2" value="key2"/>
+    <add key="GoogleAppMigrationWizProjectApiKey-3" value="key3"/>
+    <add key="SendEmails" value="false"/>
+    <add key="BitTitanDropBoxAppKey" value="BitTitan"/>
+    <add key="BitTitanDropBoxSecretKey" value="BitTitan"/>
+  </appSettings>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5.2"/>
+  </startup>
+</configuration>"""
+    XDocument.Parse(doc,LoadOptions.PreserveWhitespace)
 
 let private bindingNs = "urn:schemas-microsoft-com:asm.v1"
 let private containsDescendents count ns elementName (doc:XDocument) =
@@ -39,7 +59,7 @@ let sampleDocWithNoIndentation() = sprintf """<?xml version="1.0" encoding="utf-
 
 [<Test>]
 let ``add missing elements to configuration file``() = 
-    let doc = sampleDoc()
+    let doc = emptySampleDoc()
 
     // Act
     setRedirect doc defaultRedirect |> ignore
@@ -50,7 +70,7 @@ let ``add missing elements to configuration file``() =
 
 [<Test>]
 let ``add new binding redirect to configuration file``() = 
-    let doc = sampleDoc()
+    let doc = emptySampleDoc()
 
     // Act
     setRedirect doc defaultRedirect |> ignore
@@ -61,7 +81,7 @@ let ``add new binding redirect to configuration file``() =
 
 [<Test>]
 let ``correctly creates a binding redirect``() = 
-    let doc = sampleDoc()
+    let doc = emptySampleDoc()
     setRedirect doc { defaultRedirect with Culture = Some "en-gb"; PublicKeyToken = "123456" } |> ignore
 
     // Act
@@ -74,7 +94,7 @@ let ``correctly creates a binding redirect``() =
 
 [<Test>]
 let ``correctly creates a binding redirect with default culture``() = 
-    let doc = sampleDoc()
+    let doc = emptySampleDoc()
     setRedirect doc defaultRedirect |> ignore
 
     // Act
@@ -87,7 +107,7 @@ let ``correctly creates a binding redirect with default culture``() =
 
 [<Test>]
 let ``does not overwrite existing binding redirects for a different assembly``() = 
-    let doc = sampleDoc()
+    let doc = emptySampleDoc()
     setRedirect doc defaultRedirect |> ignore
 
     // Act
@@ -98,7 +118,7 @@ let ``does not overwrite existing binding redirects for a different assembly``()
 
 [<Test>]
 let ``does not add a new binding redirect if one already exists for the assembly``() = 
-    let doc = sampleDoc()
+    let doc = emptySampleDoc()
     setRedirect doc defaultRedirect |> ignore
 
     // Act
@@ -109,7 +129,7 @@ let ``does not add a new binding redirect if one already exists for the assembly
 
 [<Test>]
 let ``correctly updates an existing binding redirect``() = 
-    let doc = sampleDoc()
+    let doc = emptySampleDoc()
     setRedirect doc defaultRedirect |> ignore
 
     // Act
@@ -122,14 +142,16 @@ let ``correctly updates an existing binding redirect``() =
     |> shouldEqual (createBindingRedirectXml "neutral" "Assembly" "2.0.0" "PUBLIC_KEY" |> normalizeLineEndings)
     
 [<Test>]
-let ``redirects got properly indented for readability``() = 
-    let doc = sampleDoc()
+let ``redirects got properly indented for readability in empty sample docs``() = 
+    let doc = emptySampleDoc()
     setRedirect doc defaultRedirect |> ignore
 
     // Act
     indentAssemblyBindings doc
 
-    let expected = """<configuration><runtime><assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+    let expected = """
+<configuration>
+<runtime><assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
   <dependentAssembly>
     <Paket>True</Paket>
     <assemblyIdentity name="Assembly" publicKeyToken="PUBLIC_KEY" culture="neutral" />
@@ -150,7 +172,46 @@ let ``redirects got properly indented for readability in sample doc with runtime
     // Act
     indentAssemblyBindings doc
 
-    let expected = """<configuration><runtime><assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+    let expected = """
+<configuration><runtime><assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+  <dependentAssembly>
+    <Paket>True</Paket>
+    <assemblyIdentity name="Assembly" publicKeyToken="PUBLIC_KEY" culture="neutral" />
+    <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="1.0.0" />
+  </dependentAssembly>
+</assemblyBinding></runtime>
+</configuration>"""
+
+    // Assert
+    doc.ToString(SaveOptions.DisableFormatting)
+    |> normalizeLineEndings 
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``redirects got properly indented for readability in real world sample docs``() = 
+    let doc = sampleDoc()
+    setRedirect doc defaultRedirect |> ignore
+
+    // Act
+    indentAssemblyBindings doc
+
+    let expected = """
+<configuration>
+  <appSettings>
+    <!-- For Goldmine tests -->
+    <add key="GoldmineEntityType" value="Proxy" />
+    <!-- Google apps API keys -->
+    <add key="GoogleAppMigrationWizProjectApiKey-1" value="key1" />
+    <add key="GoogleAppMigrationWizProjectApiKey-2" value="key2" />
+    <add key="GoogleAppMigrationWizProjectApiKey-3" value="key3" />
+    <add key="SendEmails" value="false" />
+    <add key="BitTitanDropBoxAppKey" value="BitTitan" />
+    <add key="BitTitanDropBoxSecretKey" value="BitTitan" />
+  </appSettings>
+  <startup>
+    <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5.2" />
+  </startup>
+<runtime><assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
   <dependentAssembly>
     <Paket>True</Paket>
     <assemblyIdentity name="Assembly" publicKeyToken="PUBLIC_KEY" culture="neutral" />
@@ -199,7 +260,7 @@ let ``project file not containing paket.references is not marked for binding red
 
 [<Test>]
 let ``adds paket's node if one does not exist``() = 
-    let doc = sampleDoc()
+    let doc = emptySampleDoc()
     setRedirect doc defaultRedirect |> ignore
 
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
@@ -221,7 +282,7 @@ let ``adds paket's node if one does not exist``() =
 
 [<Test>]
 let ``replaces paket's node if one already exists``() = 
-    let doc = sampleDoc()
+    let doc = emptySampleDoc()
     setRedirect doc defaultRedirect |> ignore
 
     let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head

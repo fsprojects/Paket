@@ -5,6 +5,7 @@ open System.IO
 open NUnit.Framework
 open FsUnit
 open System.Text.RegularExpressions
+open Paket
 
 [<Test>]
 let ``install should redirect required assemblies only``() = 
@@ -219,3 +220,19 @@ let ``#1218 install should replace paket's binding redirects with required only`
     config4.Contains ``xunit.extensions`` |> shouldEqual false
     Regex.IsMatch(config4, paketMark + ``Castle.Core``) |> shouldEqual true
     config4.Contains ``Castle.Windsor`` |> shouldEqual false
+
+
+[<Test>]
+let ``#1248 install should replace paket's binding redirects with required only and keep stable``() = 
+    paket "install --redirects --hard --createnewbindingfiles" "i001248-stable-redirect" |> ignore
+
+    let originalConfig2Path = Path.Combine(originalScenarioPath "i001248-stable-redirect", "Project2", "app.config")
+    
+    let config2Path = Path.Combine(scenarioTempPath "i001248-stable-redirect", "Project2", "app.config")
+    
+    let originalConfig2 = File.ReadAllText(originalConfig2Path)
+    let config2 = File.ReadAllText(config2Path)
+
+    config2
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings originalConfig2)
