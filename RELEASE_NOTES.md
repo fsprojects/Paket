@@ -1,4 +1,7 @@
-#### 2.32.2 - 02.12.2015
+#### 2.32.3 - 03.12.2015
+* Using AssemblyTitle if no title is specified in a project template - https://github.com/fsprojects/Paket/pull/1285
+
+#### 2.32.2 - 03.12.2015
 * Binding redirects should work with multiple groups - https://github.com/fsprojects/Paket/issues/1284 
 
 #### 2.32.1 - 02.12.2015
