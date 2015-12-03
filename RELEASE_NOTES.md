@@ -1,3 +1,6 @@
+#### 2.32.2 - 02.12.2015
+* Binding redirects should work with multiple groups - https://github.com/fsprojects/Paket/issues/1284 
+
 #### 2.32.1 - 02.12.2015
 * Resolver is more tolerant with prereleases - https://github.com/fsprojects/Paket/issues/1280
 
