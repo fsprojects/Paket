@@ -67,7 +67,6 @@ let internal indentAssemblyBindings config =
     let xmlWriterSettings = XmlWriterSettings()
     xmlWriterSettings.Indent <- true 
     use writer = XmlWriter.Create(sb, xmlWriterSettings)
-    
     let tempAssemblyBindingNode = XElement.Parse(assemblyBinding.ToString())
     tempAssemblyBindingNode.WriteTo writer
     writer.Close()
@@ -124,6 +123,8 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedi
         with
         | exn -> failwithf "Parsing of %s failed.%s%s" configFilePath Environment.NewLine exn.Message
 
+    let original = config.ToString(SaveOptions.None)
+
     let isMarked e =
         match tryGetElement (Some bindingNs) "Paket" e with
         | Some e -> e.Value.Trim().ToLower() = "true"
@@ -139,7 +140,9 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedi
 
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
-    config.Save configFilePath
+    let newText = config.ToString(SaveOptions.None)
+    if newText <> original then
+        config.Save(configFilePath, SaveOptions.DisableFormatting)
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects rootPath bindingRedirects =

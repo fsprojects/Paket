@@ -1,3 +1,6 @@
+#### 2.32.5 - 03.12.2015
+* Don't touch app.config if we don't logically change it - https://github.com/fsprojects/Paket/issues/1248
+
 #### 2.32.4 - 03.12.2015
 * Normalize versions in lock file for nuget.org - https://github.com/fsprojects/Paket/issues/1282
 
