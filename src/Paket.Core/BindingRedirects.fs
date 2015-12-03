@@ -66,9 +66,12 @@ let internal indentAssemblyBindings config =
     let sb = StringBuilder()
     let xmlWriterSettings = XmlWriterSettings()
     xmlWriterSettings.Indent <- true 
-    using (XmlWriter.Create(sb, xmlWriterSettings)) (fun writer -> 
-                                                        let tempAssemblyBindingNode = XElement.Parse(assemblyBinding.ToString())
-                                                        tempAssemblyBindingNode.WriteTo writer)
+    use writer = XmlWriter.Create(sb, xmlWriterSettings)
+    
+    let tempAssemblyBindingNode = XElement.Parse(assemblyBinding.ToString())
+    tempAssemblyBindingNode.WriteTo writer
+    writer.Close()
+
     let parent = assemblyBinding.Parent
     assemblyBinding.Remove()
     let newAssemblyBindingNode = XElement.Parse(sb.ToString(), LoadOptions.PreserveWhitespace)

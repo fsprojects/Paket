@@ -13,9 +13,17 @@ let defaultRedirect =
         PublicKeyToken = "PUBLIC_KEY"
         Culture = None }
 
-let sampleDoc() = """<?xml version="1.0" encoding="utf-8"?>
+let sampleDoc() = 
+    """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
-</configuration>""" |> XDocument.Parse
+</configuration>"""
+    |> XDocument.Parse
+
+let sampleDocWithRuntime() = 
+    """<?xml version="1.0" encoding="utf-8"?>
+<configuration><runtime></runtime>
+</configuration>""" 
+    |> XDocument.Parse
 
 let private bindingNs = "urn:schemas-microsoft-com:asm.v1"
 let private containsDescendents count ns elementName (doc:XDocument) =
@@ -121,13 +129,39 @@ let ``redirects got properly indented for readability``() =
     // Act
     indentAssemblyBindings doc
 
+    let expected = """<configuration><runtime><assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+  <dependentAssembly>
+    <Paket>True</Paket>
+    <assemblyIdentity name="Assembly" publicKeyToken="PUBLIC_KEY" culture="neutral" />
+    <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="1.0.0" />
+  </dependentAssembly>
+</assemblyBinding></runtime></configuration>"""
+
     // Assert
-    let dependency = doc.Descendants(xNameForNs "dependentAssembly") |> Seq.head
-    dependency.ToString()
+    doc.ToString(SaveOptions.DisableFormatting)
     |> normalizeLineEndings 
-    |> shouldEqual 
-        ("<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n    <Paket>True</Paket>\r\n    <assemblyIdentity name=\"Assembly\" publicKeyToken=\"PUBLIC_KEY\" culture=\"neutral\" />\r\n    <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"1.0.0\" />\r\n  </dependentAssembly>"
-          |> normalizeLineEndings)
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``redirects got properly indented for readability in sample doc with runtime``() = 
+    let doc = sampleDocWithRuntime()
+    setRedirect doc defaultRedirect |> ignore
+
+    // Act
+    indentAssemblyBindings doc
+
+    let expected = """<configuration><runtime><assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+  <dependentAssembly>
+    <Paket>True</Paket>
+    <assemblyIdentity name="Assembly" publicKeyToken="PUBLIC_KEY" culture="neutral" />
+    <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="1.0.0" />
+  </dependentAssembly>
+</assemblyBinding></runtime></configuration>"""
+
+    // Assert
+    doc.ToString(SaveOptions.DisableFormatting)
+    |> normalizeLineEndings 
+    |> shouldEqual (normalizeLineEndings expected)
 
 let toSafePath = System.IO.Path.GetFullPath
 let buildMockGetFiles outcomes =
