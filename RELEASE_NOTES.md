@@ -1,3 +1,6 @@
+#### 2.32.4 - 03.12.2015
+* Normalize versions in lock file for nuget.org - https://github.com/fsprojects/Paket/issues/1282
+
 #### 2.32.3 - 03.12.2015
 * Using AssemblyTitle if no title is specified in a project template - https://github.com/fsprojects/Paket/pull/1285
 

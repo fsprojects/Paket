@@ -15,13 +15,8 @@ let ``#1211 update with V3 API should work exactly like V2 API``() =
     let lockFileV2 = update "i001211-top-level-v2"
     let lockFileV3 = update "i001211-top-level-v3"
 
-    let normalize (s:string) =
-        s.Replace(".0.0",".0")
-        |> normalizeLineEndings
-
     lockFileV3.ToString() 
-    |> normalize
     |> shouldEqual 
-        (lockFileV2.ToString().Replace("remote: https://nuget.org/api/v2", "remote: http://api.nuget.org/v3/index.json") |> normalize)
+        (lockFileV2.ToString().Replace("remote: https://nuget.org/api/v2", "remote: http://api.nuget.org/v3/index.json"))
     lockFileV3.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FsLexYacc.Runtime"].Version
     |> shouldBeGreaterThan (SemVer.Parse "6")

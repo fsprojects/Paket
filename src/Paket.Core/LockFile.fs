@@ -76,7 +76,9 @@ module LockFileSerializer =
                   yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name) do
                       let versionStr = 
-                          let s = package.Version.ToString()
+                          let s'' = package.Version.ToString()
+                          let s' = if source.Contains "nuget.org" then package.Version.Normalize() else s''
+                          let s = if s''.Length > s'.Length then s' else s''
                           if s = "" then s else "(" + s + ")"
 
                       let settings =
