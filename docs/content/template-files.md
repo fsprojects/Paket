@@ -82,7 +82,7 @@ them as below:
 The other general metadata properties are all optional, and map directly to the field of the same
 name in the nupkg.
 
-* title
+* title (Inferred as the value of the `AssemblyTitleAttribute` if omitted in a project template)
 * owners
 * releaseNotes
 * summary

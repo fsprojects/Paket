@@ -18,16 +18,22 @@ let private merge buildConfig buildPlatform version projectFile templateFile =
 
     match withVersion with
     | { Contents = ProjectInfo(md, opt) } -> 
+        let assembly,id,assemblyFileName = loadAssemblyId buildConfig buildPlatform projectFile
+        let attribs = loadAssemblyAttributes assemblyFileName assembly
+
+        let mergedOpt =
+            match opt.Title with
+            | Some _ -> opt
+            | None -> { opt with Title = getTitle attribs }
+
         match md with
-        | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
+        | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }
         | _ ->
-            let assembly,id,assemblyFileName = loadAssemblyId buildConfig buildPlatform projectFile
             let md = { md with Id = md.Id ++ Some id }
 
             match md with
-            | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
+            | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }
             | _ ->
-                let attribs = loadAssemblyAttributes assemblyFileName assembly
 
                 let merged = 
                     { Id = md.Id
@@ -51,7 +57,7 @@ let private merge buildConfig buildPlatform version projectFile templateFile =
                         Environment.NewLine md 
                         Environment.NewLine missing
 
-                | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, opt) }
+                | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }
     | _ -> templateFile
 
 let private convertToSymbols (projectFile : ProjectFile) templateFile =
