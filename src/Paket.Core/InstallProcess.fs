@@ -164,14 +164,16 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
 let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup createNewBindingFiles cleanBindingRedirects redirects root groupName findDependencies extractedPackages =
     let dependencyGraph = ConcurrentDictionary<_,Set<_>>()
     let projects = ConcurrentDictionary<_,ProjectFile option>();
+    let referenceFiles = ConcurrentDictionary<_,ReferencesFile option>();
     let referenceFile (projectFile : ProjectFile) =
-        ProjectFile.FindReferencesFile (FileInfo projectFile.FileName)
-        |> Option.map ReferencesFile.FromFile
+        let referenceFile (projectFile : ProjectFile) =
+            ProjectFile.FindReferencesFile (FileInfo projectFile.FileName)
+            |> Option.map ReferencesFile.FromFile
+        referenceFiles.GetOrAdd(projectFile, referenceFile)
 
     let rec dependencies (projectFile : ProjectFile) =
-        match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
-        | Some fileName -> 
-            let referenceFile = ReferencesFile.FromFile fileName
+        match referenceFile projectFile with
+        | Some referenceFile -> 
             projectFile.GetInterProjectDependencies()
             |> Seq.map (fun r -> projects.GetOrAdd(r.Path, ProjectFile.TryLoad))
             |> Seq.choose id
