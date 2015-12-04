@@ -161,7 +161,7 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     extractedPackages
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup createNewBindingFiles cleanBindingRedirects root groupName findDependencies extractedPackages =
+let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup createNewBindingFiles cleanBindingRedirects redirects root groupName findDependencies extractedPackages =
     let dependencyGraph = ConcurrentDictionary<_,Set<_>>()
     let projects = ConcurrentDictionary<_,ProjectFile option>();
     let referenceFile (projectFile : ProjectFile) =
@@ -225,6 +225,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
 
         assemblies
         |> Seq.choose (fun (assembly,token,refs,redirects) -> token |> Option.map (fun token -> (assembly,token,refs,redirects)))
+        |> Seq.filter (fun (_,_,_,packageRedirects) -> defaultArg (packageRedirects |> Option.map ((<>) Off)) redirects)
         |> Seq.filter (fun (assembly,_,refs,redirects) -> 
             redirects = Some Force
             || assemblies
@@ -391,9 +392,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                     |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
                 (snd kv.Value,packageRedirects))
-            |> Seq.filter (fun (kv,packageRedirects) -> 
-                defaultArg (packageRedirects |> Option.map ((<>) Off)) (options.Redirects || g.Value.Options.Redirects))
-            |> applyBindingRedirects loadedLibs !first options.CreateNewBindingFiles options.Hard (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
+            |> applyBindingRedirects loadedLibs !first options.CreateNewBindingFiles options.Hard (options.Redirects || g.Value.Options.Redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
             first := false
 
 /// Installs all packages from the lock file.
