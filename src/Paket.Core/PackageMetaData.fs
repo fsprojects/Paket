@@ -41,11 +41,22 @@ let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attribute
                 InformationalVersion(SemVer.Parse x)
             with 
             | _ -> Ignore
-    | :? AssemblyCompanyAttribute as company ->
+    | :? System.Reflection.AssemblyCompanyAttribute as company ->
         match company.Company with
         | x when String.IsNullOrWhiteSpace x ->
             Ignore
         | x -> Company x
+    | :? System.Reflection.CustomAttributeData as attr ->
+        try
+            match attr.AttributeType.FullName with
+            | "System.Reflection.AssemblyCompanyAttribute" -> Company(attr.ConstructorArguments.Item(0).Value.ToString())
+            | "System.Reflection.AssemblyDescriptionAttribute" -> Description(attr.ConstructorArguments.Item(0).Value.ToString())
+            | "System.Reflection.AssemblyTitleAttribute" -> Title(attr.ConstructorArguments.Item(0).Value.ToString())
+            | "System.Reflection.AssemblyVersionAttribute" -> Version(attr.ConstructorArguments.Item(0).Value.ToString() |> SemVer.Parse)
+            | "System.Reflection.AssemblyInformationalVersionAttribute" -> InformationalVersion(attr.ConstructorArguments.Item(0).Value.ToString() |> SemVer.Parse)
+            | _ -> Ignore
+        with
+        | _ -> Ignore
     | _ -> Ignore
 
 let getId (assembly : Assembly) (md : ProjectCoreInfo) = { md with Id = Some(assembly.GetName().Name) }
@@ -71,7 +82,8 @@ let getVersion (assembly : Assembly) attributes =
 
 let getAuthors attributes = 
     attributes
-    |> Seq.tryPick (function 
+    |> Seq.tryPick (fun attr ->
+            match attr with 
             | Company a -> Some a
             | _ -> None)
     |> Option.map (fun a -> 
@@ -103,15 +115,15 @@ let loadAssemblyId buildConfig buildPlatform (projectFile : ProjectFile) =
 
 let loadAssemblyAttributes fileName (assembly:Assembly) = 
     try
-        assembly.GetCustomAttributes(true)
+        assembly.GetCustomAttributesData()
     with
     | :? FileNotFoundException -> 
         // retrieving via path
         let assembly = Assembly.LoadFrom fileName
-        assembly.GetCustomAttributes(true)
+        assembly.GetCustomAttributesData()
     | exn ->
         traceWarnfn "Loading custom attributes failed for %s.%sMessage: %s" fileName Environment.NewLine exn.Message
-        assembly.GetCustomAttributes(false)
+        assembly.GetCustomAttributesData()
 
 let (|Valid|Invalid|) md = 
     match md with

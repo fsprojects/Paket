@@ -10,17 +10,17 @@ let assembly = Assembly.GetExecutingAssembly()
 
 [<Test>]
 let ``Loading description from assembly works``() = 
-    let sut = PackageMetaData.getDescription (assembly.GetCustomAttributes(true)) 
+    let sut = PackageMetaData.getDescription (assembly.GetCustomAttributesData()) 
     sut.Value |> shouldEqual "A description"
 
 [<Test>]
 let ``Loading version from assembly works``() = 
-    let sut = PackageMetaData.getVersion assembly (assembly.GetCustomAttributes(true)) 
+    let sut = PackageMetaData.getVersion assembly (assembly.GetCustomAttributesData()) 
     sut.Value |> shouldEqual (SemVer.Parse "1.0.0.0")
 
 [<Test>]
-let ``Loading authors from assembly works``() = 
-    let sut = PackageMetaData.getAuthors (assembly.GetCustomAttributes(true))
+let ``Loading authors from assembly works with GetCustomAttributesData``() = 
+    let sut = PackageMetaData.getAuthors (assembly.GetCustomAttributesData())
     sut.Value |> shouldEqual [ "Two"; "Authors" ]
 
 [<Test>]
@@ -53,5 +53,6 @@ let ``Loading assembly metadata works``() =
     
     let attribs = PackageMetaData.loadAssemblyAttributes fileName assembly
     PackageMetaData.getVersion assembly attribs |> shouldEqual <| Some(SemVer.Parse "1.0.0.0")
-    PackageMetaData.getAuthors attribs |> shouldEqual <| Some([ "Two"; "Authors" ])
+    let authors = PackageMetaData.getAuthors attribs
+    authors.Value |> shouldEqual ["Two"; "Authors" ]
     PackageMetaData.getDescription attribs |> shouldEqual <| Some("A description")

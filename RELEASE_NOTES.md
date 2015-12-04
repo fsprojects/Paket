@@ -1,3 +1,6 @@
+#### 2.32.7 - 04.12.2015
+* Use GetCustomAttributesData instead of GetCustomAttributes - https://github.com/fsprojects/Paket/issues/1289
+
 #### 2.32.6 - 04.12.2015
 * Don't touch app.config if we don't logically change it - https://github.com/fsprojects/Paket/issues/1248
 
