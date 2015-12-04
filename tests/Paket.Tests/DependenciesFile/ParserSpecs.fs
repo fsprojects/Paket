@@ -807,7 +807,7 @@ let ``should read config with reference condition``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ReferenceCondition |> shouldEqual (Some "MAIN-GROUP")
 
     cfg.Groups.[GroupName "Build"].Packages.Head.Settings.ReferenceCondition |> shouldEqual None
-    cfg.Groups.[GroupName "Build"].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some true)
+    cfg.Groups.[GroupName "Build"].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
     cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
     cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual None
 
@@ -981,3 +981,38 @@ let ``should read config with target framework``() =
 
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
     |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))]
+
+[<Test>]
+let ``should read packages with redirects``() = 
+    let config = """
+redirects on
+source http://nuget.org/api/v2
+
+nuget Paket.Core redirects: on
+nuget FSharp.Compiler.Service redirects: off
+nuget FsReveal redirects: force
+nuget FAKE
+
+group Build
+redirects off
+
+    nuget FAKE redirects: on
+    nuget NUnit redirects: force
+    nuget Paket.Core redirects: off
+    nuget FsReveal
+    """
+
+    let cfg = DependenciesFile.FromCode(config)
+
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual true
+
+    cfg.Groups.[Constants.MainDependencyGroup].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
+    cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)
+    cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
+    cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual None
+
+    cfg.Groups.[GroupName "Build"].Options.Redirects |> shouldEqual false
+    cfg.Groups.[GroupName "Build"].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
+    cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
+    cfg.Groups.[GroupName "Build"].Packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)
+    cfg.Groups.[GroupName "Build"].Packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual None

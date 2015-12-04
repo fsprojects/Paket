@@ -236,3 +236,39 @@ let ``#1248 install should replace paket's binding redirects with required only 
     config2
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings originalConfig2)
+
+[<Test>]
+let ``#1270 force redirects``() = 
+    paket "install --createnewbindingfiles" "i001270-force-redirects" |> ignore
+    let path = Path.Combine(scenarioTempPath "i001270-force-redirects")
+    let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary", "app.config")
+
+    let ``FSharp.Core`` = """<assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />"""
+    let AlphaFS = """<assemblyIdentity name="AlphaFS" publicKeyToken="4d31a58f7d7ad5c9" culture="neutral" />"""
+    let ``Newtonsoft.Json`` = """<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
+    let ``Newtonsoft.Json.Schema`` = """<assemblyIdentity name="Newtonsoft.Json.Schema" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
+
+    let config = File.ReadAllText(configPath)
+
+    config |> shouldContainText ``FSharp.Core``
+    config.Contains AlphaFS |> shouldEqual false
+    config.Contains ``Newtonsoft.Json`` |> shouldEqual false
+    config.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
+
+[<Test>]
+let ``#1270 redirects from references``() = 
+    paket "install --createnewbindingfiles" "i001270-force-redirects" |> ignore
+    let path = Path.Combine(scenarioTempPath "i001270-force-redirects")
+    let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary2", "app.config")
+
+    let ``FSharp.Core`` = """<assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />"""
+    let AlphaFS = """<assemblyIdentity name="AlphaFS" publicKeyToken="4d31a58f7d7ad5c9" culture="neutral" />"""
+    let ``Newtonsoft.Json`` = """<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
+    let ``Newtonsoft.Json.Schema`` = """<assemblyIdentity name="Newtonsoft.Json.Schema" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
+
+    let config = File.ReadAllText(configPath)
+
+    config.Contains ``FSharp.Core`` |> shouldEqual false
+    config.Contains AlphaFS |> shouldEqual false
+    config |> shouldContainText ``Newtonsoft.Json.Schema``
+    config.Contains ``Newtonsoft.Json`` |> shouldEqual false

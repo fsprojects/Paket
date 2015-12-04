@@ -196,6 +196,20 @@ You can instruct Paket to create assembly binding redirects for NuGet packages:
 
     nuget FSharp.Core redirects: on
 
+Redirects are created only if they are required. However, you can instruct Paket to create it regardless:
+
+    source https://nuget.org/api/v2
+
+    nuget FSharp.Core redirects: force
+
+In constract, you have the option to force Paket to not create a redirect:
+
+    source https://nuget.org/api/v2
+
+    nuget FSharp.Core redirects: off
+
+You can also override the redirects settings per project, from its [references file](references-files.html#Redirects-settings).
+
 ### import_targets settings
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
