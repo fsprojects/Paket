@@ -373,9 +373,9 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
             |> Seq.map (fun kv ->
                 let packageRedirects =
-                    match group.Resolution |> Map.tryFind (snd kv.Key) with
-                    | None -> None
-                    | Some p -> p.Settings.CreateBindingRedirects
+                    group.Resolution
+                    |> Map.tryFind (snd kv.Key)
+                    |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
                 (snd kv.Value,packageRedirects))
             |> Seq.filter (fun (kv,packageRedirects) -> 
