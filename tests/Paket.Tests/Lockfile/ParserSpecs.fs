@@ -565,7 +565,7 @@ let ``should parse lock file with groups``() =
 
     packages2.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
     packages2.[0].Name |> shouldEqual (PackageName "FAKE")
-    packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some true)
+    packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some On)
 
 
 [<Test>]

@@ -369,9 +369,9 @@ let ``should parse reffiles with redirects``() =
     mainGroup.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     mainGroup.NugetPackages.Head.Settings.CreateBindingRedirects |> shouldEqual None
     mainGroup.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
-    mainGroup.NugetPackages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some true)
+    mainGroup.NugetPackages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
     mainGroup.NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "FSharp.Core")
-    mainGroup.NugetPackages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some false)
+    mainGroup.NugetPackages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)
 
 let refFileWithLinkFalse = """Castle.Windsor
 Newtonsoft.Json redirects: on

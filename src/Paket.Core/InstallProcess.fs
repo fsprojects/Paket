@@ -374,7 +374,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                 let packageRedirects =
                     match group.Resolution |> Map.tryFind (snd kv.Key) with
                     | None -> None
-                    | Some p -> p.Settings.CreateBindingRedirects
+                    | Some p -> p.Settings.CreateBindingRedirects |> Option.map ((=) On)
 
                 let isEnabled = defaultArg packageRedirects (options.Redirects || g.Value.Options.Redirects)
                 isEnabled && (fst kv.Key) = g.Key)

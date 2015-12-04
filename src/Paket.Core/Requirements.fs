@@ -282,13 +282,17 @@ type ContentCopySettings =
 | Overwrite
 | OmitIfExisting
 
+type BindingRedirectsSettings =
+| On
+| Off
+
 type InstallSettings = 
     { ImportTargets : bool option
       FrameworkRestrictions: FrameworkRestrictions
       OmitContent : ContentCopySettings option
       IncludeVersionInPath: bool option
       ReferenceCondition : string option
-      CreateBindingRedirects : bool option
+      CreateBindingRedirects : BindingRedirectsSettings option
       CopyLocal : bool option }
 
     static member Default =
@@ -320,8 +324,8 @@ type InstallSettings =
               | Some x -> yield "condition: " + x.ToUpper()
               | None -> ()
               match this.CreateBindingRedirects with
-              | Some true -> yield "redirects: on"
-              | Some false -> yield "redirects: off"
+              | Some On -> yield "redirects: on"
+              | Some Off -> yield "redirects: off"
               | None -> ()
               match this.FrameworkRestrictions with
               | [] -> ()
@@ -363,8 +367,8 @@ type InstallSettings =
             | _ ->  None
           CreateBindingRedirects =
             match kvPairs.TryGetValue "redirects" with
-            | true, "on" -> Some true 
-            | true, "off" -> Some false 
+            | true, "on" -> Some On 
+            | true, "off" -> Some Off
             | _ ->  None
           IncludeVersionInPath =
             match kvPairs.TryGetValue "version_in_path" with
