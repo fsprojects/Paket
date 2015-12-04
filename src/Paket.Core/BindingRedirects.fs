@@ -73,8 +73,14 @@ let internal indentAssemblyBindings config =
 
     let parent = assemblyBinding.Parent
     assemblyBinding.Remove()
-    let newAssemblyBindingNode = XElement.Parse(sb.ToString(), LoadOptions.PreserveWhitespace)
-    parent.Add(newAssemblyBindingNode)
+    let newText = sb.ToString()
+    let newAssemblyBindingNode = XElement.Parse(newText, LoadOptions.PreserveWhitespace)
+    
+    if newAssemblyBindingNode.HasElements then
+        parent.Add(newAssemblyBindingNode)
+    else
+        if not parent.HasElements then
+            parent.Remove()
 
 let private configFiles = [ "app"; "web" ] |> Set.ofList
 let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj" ] |> Set.ofList
@@ -123,7 +129,7 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedi
         with
         | exn -> failwithf "Parsing of %s failed.%s%s" configFilePath Environment.NewLine exn.Message
 
-    let original = config.ToString(SaveOptions.None)
+    let original = config.ToString(SaveOptions.None).Replace("\r","").Replace("\n","")
 
     let isMarked e =
         match tryGetElement (Some bindingNs) "Paket" e with
@@ -140,7 +146,7 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedi
 
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
-    let newText = config.ToString(SaveOptions.None)
+    let newText = config.ToString(SaveOptions.None).Replace("\r","").Replace("\n","")
     if newText <> original then
         config.Save(configFilePath, SaveOptions.DisableFormatting)
 
@@ -164,7 +170,7 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
     |> getProjectFilesWithPaketReferences Directory.GetFiles
     |> Seq.map ProjectFile.TryLoad
     |> Seq.choose id
-    |> Seq.iter (applyBindingRedirects)
+    |> Seq.iter applyBindingRedirects
 
 /// Calculates the short form of the public key token for use with binding redirects, if it exists.
 let getPublicKeyToken (assembly:Assembly) =

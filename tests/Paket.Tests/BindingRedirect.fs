@@ -7,11 +7,11 @@ open System.Xml.Linq
 open FsUnit
 open System.Xml
 
-let defaultRedirect =
-    {   AssemblyName = "Assembly"
-        Version = "1.0.0"
-        PublicKeyToken = "PUBLIC_KEY"
-        Culture = None }
+let defaultRedirect = 
+    { AssemblyName = "Assembly"
+      Version = "1.0.0"
+      PublicKeyToken = "PUBLIC_KEY"
+      Culture = None }
 
 let emptySampleDoc() = 
     let doc = """<?xml version="1.0" encoding="utf-8"?>
@@ -158,6 +158,22 @@ let ``redirects got properly indented for readability in empty sample docs``() =
     <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="1.0.0" />
   </dependentAssembly>
 </assemblyBinding></runtime></configuration>"""
+
+    // Assert
+    doc.ToString(SaveOptions.DisableFormatting)
+    |> normalizeLineEndings 
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``redirect tags are removed if we have no redirect empty sample docs``() = 
+    let doc = emptySampleDoc()
+
+    // Act
+    indentAssemblyBindings doc
+
+    let expected = """
+<configuration>
+</configuration>"""
 
     // Assert
     doc.ToString(SaveOptions.DisableFormatting)
