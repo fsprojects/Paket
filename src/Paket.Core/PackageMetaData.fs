@@ -13,55 +13,21 @@ let (|CompleteTemplate|IncompleteTemplate|) templateFile =
     | { Contents = (CompleteInfo(core, optional)) } -> CompleteTemplate(core, optional)
     | _ -> IncompleteTemplate
 
-let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attribute : obj) = 
-    match attribute with
-    | :? AssemblyTitleAttribute as title ->
-        match title.Title with
-        | x when String.IsNullOrWhiteSpace x ->
-            Ignore
-        | x ->
-            Title x
-    | :? AssemblyDescriptionAttribute as description ->
-        match description.Description with
-        | x when String.IsNullOrWhiteSpace x ->
-            Ignore
-        | x ->
-            Description x
-    | :? AssemblyVersionAttribute as version ->
-        match version.Version with
-        | x when String.IsNullOrWhiteSpace x ->
-            Ignore
-        | x -> Version(SemVer.Parse x)
-    | :? AssemblyInformationalVersionAttribute as version -> 
-        match version.InformationalVersion with
-        | x when String.IsNullOrWhiteSpace x ->
-            Ignore
-        | x ->
-            try
-                InformationalVersion(SemVer.Parse x)
-            with 
-            | _ -> Ignore
-    | :? System.Reflection.AssemblyCompanyAttribute as company ->
-        match company.Company with
-        | x when String.IsNullOrWhiteSpace x ->
-            Ignore
-        | x -> Company x
-    | :? System.Reflection.CustomAttributeData as attr ->
-        try
-            match attr.AttributeType.FullName with
-            | "System.Reflection.AssemblyCompanyAttribute" -> Company(attr.ConstructorArguments.Item(0).Value.ToString())
-            | "System.Reflection.AssemblyDescriptionAttribute" -> Description(attr.ConstructorArguments.Item(0).Value.ToString())
-            | "System.Reflection.AssemblyTitleAttribute" -> Title(attr.ConstructorArguments.Item(0).Value.ToString())
-            | "System.Reflection.AssemblyVersionAttribute" -> Version(attr.ConstructorArguments.Item(0).Value.ToString() |> SemVer.Parse)
-            | "System.Reflection.AssemblyInformationalVersionAttribute" -> InformationalVersion(attr.ConstructorArguments.Item(0).Value.ToString() |> SemVer.Parse)
-            | _ -> Ignore
-        with
+let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attributeName:string,attributeValue:string) = 
+    try
+        match attributeName with
+        | "AssemblyCompanyAttribute" -> Company(attributeValue)
+        | "AssemblyDescriptionAttribute" -> Description(attributeValue)
+        | "AssemblyTitleAttribute" -> Title(attributeValue)
+        | "AssemblyVersionAttribute" -> Version(attributeValue |> SemVer.Parse)
+        | "AssemblyInformationalVersionAttribute" -> InformationalVersion(attributeValue|> SemVer.Parse)
         | _ -> Ignore
+    with
     | _ -> Ignore
 
 let getId (assembly : Assembly) (md : ProjectCoreInfo) = { md with Id = Some(assembly.GetName().Name) }
 
-let getVersion (assembly : Assembly) attributes = 
+let getVersion versionFromAssembly attributes = 
     let informational = 
         attributes |> Seq.tryPick (function 
                             | InformationalVersion v -> Some v
@@ -70,9 +36,9 @@ let getVersion (assembly : Assembly) attributes =
     | Some v -> informational
     | None -> 
         let fromAssembly = 
-            match assembly.GetName().Version with
-            | null -> None
-            | v -> Some(SemVer.Parse(v.ToString()))
+            match versionFromAssembly with
+            | None -> None
+            | Some v -> Some(SemVer.Parse(v.ToString()))
         match fromAssembly with
         | Some v -> fromAssembly
         | None -> 
@@ -101,29 +67,35 @@ let getDescription attributes =
                       | Description d -> Some d
                       | _ -> None) 
 
-let loadAssemblyId buildConfig buildPlatform (projectFile : ProjectFile) = 
+let readAssembly buildConfig buildPlatform (projectFile : ProjectFile) = 
     let fileName = 
-        Path.Combine
-            (Path.GetDirectoryName projectFile.FileName, projectFile.GetOutputDirectory buildConfig buildPlatform, 
-             projectFile.GetAssemblyName()) |> normalizePath
+        FileInfo(
+            Path.Combine
+                (Path.GetDirectoryName projectFile.FileName, projectFile.GetOutputDirectory buildConfig buildPlatform, 
+                 projectFile.GetAssemblyName()) 
+            |> normalizePath)
 
-    traceVerbose <| sprintf "Loading assembly metadata for %s" fileName
-    let bytes = File.ReadAllBytes fileName
-    let assembly = Assembly.Load bytes
+    traceVerbose <| sprintf "Loading assembly metadata for %s" fileName.FullName
+    let assemblyReader = 
+        ProviderImplementation.AssemblyReader.ILModuleReaderAfterReadingAllBytes(
+            fileName.FullName, 
+            ProviderImplementation.AssemblyReader.mkILGlobals ProviderImplementation.AssemblyReader.ecmaMscorlibScopeRef, 
+            true)
+   
+    let versionFromAssembly = assemblyReader.ILModuleDef.ManifestOfAssembly.Version
+    let id = assemblyReader.ILModuleDef.ManifestOfAssembly.Name
+    assemblyReader,id,versionFromAssembly,fileName.FullName
 
-    assembly,assembly.GetName().Name,fileName
+let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.CacheValue) = 
 
-let loadAssemblyAttributes fileName (assembly:Assembly) = 
-    try
-        assembly.GetCustomAttributesData()
-    with
-    | :? FileNotFoundException -> 
-        // retrieving via path
-        let assembly = Assembly.LoadFrom fileName
-        assembly.GetCustomAttributesData()
-    | exn ->
-        traceWarnfn "Loading custom attributes failed for %s.%sMessage: %s" fileName Environment.NewLine exn.Message
-        assembly.GetCustomAttributesData()
+    let extractAttr (inp: ProviderImplementation.AssemblyReader.ILCustomAttr) = 
+         let args = ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp
+         
+         inp.Method.EnclosingType.BasicQualifiedName, Seq.head [ for (_,arg) in args -> arg.ToString() ]
+
+    [| for a in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do 
+        yield extractAttr a |]
+
 
 let (|Valid|Invalid|) md = 
     match md with

@@ -74,6 +74,10 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
+    <Compile Include="..\..\paket-files\fsharp\FSharp.Data\src\CommonProviderImplementation\AssemblyReader.fs">
+      <Paket>True</Paket>
+      <Link>AssemblyReader.fs</Link>
+    </Compile>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
       <Link>Globbing.fs</Link>

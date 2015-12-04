@@ -2,3 +2,4 @@ Newtonsoft.Json
 FSharp.Core
 Chessie
 File:Globbing.fs .
+File:AssemblyReader.fs .

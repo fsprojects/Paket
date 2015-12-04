@@ -18,8 +18,8 @@ let private merge buildConfig buildPlatform version projectFile templateFile =
 
     match withVersion with
     | { Contents = ProjectInfo(md, opt) } -> 
-        let assembly,id,assemblyFileName = loadAssemblyId buildConfig buildPlatform projectFile
-        let attribs = loadAssemblyAttributes assemblyFileName assembly
+        let assemblyReader,id,versionFromAssembly,assemblyFileName = readAssembly buildConfig buildPlatform projectFile
+        let attribs = loadAssemblyAttributes assemblyReader
 
         let mergedOpt =
             match opt.Title with
@@ -37,7 +37,7 @@ let private merge buildConfig buildPlatform version projectFile templateFile =
 
                 let merged = 
                     { Id = md.Id
-                      Version = md.Version ++ getVersion assembly attribs
+                      Version = md.Version ++ getVersion version attribs
                       Authors = md.Authors ++ getAuthors attribs
                       Description = md.Description ++ getDescription attribs
                       Symbols = md.Symbols }

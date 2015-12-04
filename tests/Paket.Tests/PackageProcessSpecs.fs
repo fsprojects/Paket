@@ -6,28 +6,6 @@ open Paket
 open FsUnit
 open NUnit.Framework
 
-let assembly = Assembly.GetExecutingAssembly()
-
-[<Test>]
-let ``Loading description from assembly works``() = 
-    let sut = PackageMetaData.getDescription (assembly.GetCustomAttributesData()) 
-    sut.Value |> shouldEqual "A description"
-
-[<Test>]
-let ``Loading version from assembly works``() = 
-    let sut = PackageMetaData.getVersion assembly (assembly.GetCustomAttributesData()) 
-    sut.Value |> shouldEqual (SemVer.Parse "1.0.0.0")
-
-[<Test>]
-let ``Loading authors from assembly works with GetCustomAttributesData``() = 
-    let sut = PackageMetaData.getAuthors (assembly.GetCustomAttributesData())
-    sut.Value |> shouldEqual [ "Two"; "Authors" ]
-
-[<Test>]
-let ``Loading id from assembly works``() = 
-    let sut = PackageMetaData.getId assembly ProjectCoreInfo.Empty
-    sut.Id.Value |> shouldEqual "Paket.Tests"
-
 [<Test>]
 let ``Loading assembly metadata works``() = 
     let workingDir = Path.GetFullPath(".")
@@ -48,11 +26,11 @@ let ``Loading assembly metadata works``() =
         if workingDir.Contains "Debug" then "Debug"
         else "Release"
     
-    let assembly,id,fileName = PackageMetaData.loadAssemblyId config "" projFile
+    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssembly config "" projFile
     id |> shouldEqual "Paket.Tests"
     
-    let attribs = PackageMetaData.loadAssemblyAttributes fileName assembly
-    PackageMetaData.getVersion assembly attribs |> shouldEqual <| Some(SemVer.Parse "1.0.0.0")
+    let attribs = PackageMetaData.loadAssemblyAttributes assemblyReader
+    PackageMetaData.getVersion versionFromAssembly attribs |> shouldEqual <| Some(SemVer.Parse "1.0.0.0")
     let authors = PackageMetaData.getAuthors attribs
     authors.Value |> shouldEqual ["Two"; "Authors" ]
     PackageMetaData.getDescription attribs |> shouldEqual <| Some("A description")
