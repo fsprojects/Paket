@@ -164,6 +164,9 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
 let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup createNewBindingFiles cleanBindingRedirects root groupName findDependencies extractedPackages =
     let dependencyGraph = ConcurrentDictionary<_,Set<_>>()
     let projects = ConcurrentDictionary<_,ProjectFile option>();
+    let referenceFile (projectFile : ProjectFile) =
+        ProjectFile.FindReferencesFile (FileInfo projectFile.FileName)
+        |> Option.map ReferencesFile.FromFile
 
     let rec dependencies (projectFile : ProjectFile) =
         match ProjectFile.FindReferencesFile (FileInfo projectFile.FileName) with
@@ -182,10 +185,20 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
         | None -> Set.empty
 
     let bindingRedirects (projectFile : ProjectFile) =
+        let referenceFile = referenceFile projectFile
         let dependencies = dependencyGraph.GetOrAdd(projectFile, dependencies)
+        let redirectsFromReference packageName =
+            referenceFile
+            |> Option.bind (fun r ->
+                r.Groups
+                |> Seq.filter (fun g -> g.Key = groupName)
+                |> Seq.collect (fun g -> g.Value.NugetPackages)
+                |> Seq.tryFind (fun p -> p.Name = packageName)
+                |> Option.bind (fun p -> p.Settings.CreateBindingRedirects))
 
         let assemblies =
             extractedPackages
+            |> Seq.map (fun (model,redirects) -> (model, redirectsFromReference model.PackageName |> Option.fold (fun _ x -> Some x) redirects))
             |> Seq.filter (fun (model,_) -> dependencies |> Set.contains model.PackageName)
             |> Seq.collect (fun (model,redirects) -> model.GetLibReferences(projectFile.GetTargetProfile()) |> Seq.map (fun lib -> lib,redirects))
             |> Seq.groupBy (fun (p,_) -> FileInfo(p).Name)
