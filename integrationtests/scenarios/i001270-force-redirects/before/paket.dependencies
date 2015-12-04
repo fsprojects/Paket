@@ -1,0 +1,5 @@
+source https://www.nuget.org/api/v2/
+nuget Alphafs redirects: on
+nuget FSharp.Core redirects: force
+nuget Newtonsoft.Json 7.0.1 redirects: off
+nuget Newtonsoft.Json.Schema 1.0.11
