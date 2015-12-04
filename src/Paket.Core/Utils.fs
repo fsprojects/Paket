@@ -280,7 +280,7 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
         with _ -> return None
     }
 
-let readKey() = System.Console.ReadKey().KeyChar.ToString()
+let readKey() = System.Console.ReadLine().Trim()
 
 /// If the guard is true then a [Y]es / [N]o question will be ask.
 /// Until the user pressed y or n.
