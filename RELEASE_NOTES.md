@@ -1,19 +1,10 @@
-#### 2.32.7 - 04.12.2015
+#### 2.33.0 - 04.12.2015
+* Option to force a binding redirects - https://github.com/fsprojects/Paket/pull/1290
 * Use GetCustomAttributesData instead of GetCustomAttributes - https://github.com/fsprojects/Paket/issues/1289
-
-#### 2.32.6 - 04.12.2015
 * Don't touch app.config if we don't logically change it - https://github.com/fsprojects/Paket/issues/1248
-
-#### 2.32.4 - 03.12.2015
 * Normalize versions in lock file for nuget.org - https://github.com/fsprojects/Paket/issues/1282
-
-#### 2.32.3 - 03.12.2015
 * Using AssemblyTitle if no title is specified in a project template - https://github.com/fsprojects/Paket/pull/1285
-
-#### 2.32.2 - 03.12.2015
 * Binding redirects should work with multiple groups - https://github.com/fsprojects/Paket/issues/1284 
-
-#### 2.32.1 - 02.12.2015
 * Resolver is more tolerant with prereleases - https://github.com/fsprojects/Paket/issues/1280
 
 #### 2.32.0 - 02.12.2015

@@ -46,7 +46,7 @@
     <StartWorkingDirectory>d:\code\paketbug</StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\paketrepro</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001270-net461\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\Repositories\frameworks\platform-test-service\</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\FsLab\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
