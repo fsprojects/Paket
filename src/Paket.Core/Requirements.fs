@@ -285,6 +285,7 @@ type ContentCopySettings =
 type BindingRedirectsSettings =
 | On
 | Off
+| Force
 
 type InstallSettings = 
     { ImportTargets : bool option
@@ -369,6 +370,7 @@ type InstallSettings =
             match kvPairs.TryGetValue "redirects" with
             | true, "on" -> Some On 
             | true, "off" -> Some Off
+            | true, "force" -> Some Force
             | _ ->  None
           IncludeVersionInPath =
             match kvPairs.TryGetValue "version_in_path" with
