@@ -55,6 +55,22 @@ Sometimes you don't want to generate dependencies for older framework versions. 
     Newtonsoft.Json framework: net35, net40 
     DotNetZip framework: >= net45           
 
+## Redirects settings
+
+You can instruct Paket to create assembly binding redirects for NuGet packages:
+
+    FSharp.Core redirects: on
+
+Redirects are created only if they are required. However, you can instruct Paket to create it regardless:
+
+    FSharp.Core redirects: force
+
+In constract, you have the option to force Paket to not create a redirect:
+
+    FSharp.Core redirects: off
+
+Redirects settings in [references files](references-files.html#Redirects-settings) takes precedence over settings in [dependencies file](nuget-dependencies.html#redirects-settings).
+
 ## File name conventions
 
 If Paket finds `paket.references` in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.
