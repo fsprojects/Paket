@@ -327,6 +327,7 @@ type InstallSettings =
               match this.CreateBindingRedirects with
               | Some On -> yield "redirects: on"
               | Some Off -> yield "redirects: off"
+              | Some Force -> yield "redirects: force"
               | None -> ()
               match this.FrameworkRestrictions with
               | [] -> ()

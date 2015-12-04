@@ -616,3 +616,49 @@ let ``should parse no strategy lock file``() =
     
     packages.Length |> shouldEqual 1
     lockFile.Options.ResolverStrategy |> shouldEqual None
+    
+let packageRedirectsLockFile = """REDIRECTS: ON
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+    DotNetZip (1.9.3) - redirects: on
+    FAKE (3.5.5) - redirects: off
+    FSharp.Compiler.Service (0.0.62) - redirects: force
+
+GROUP Build
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    FAKE (4.0) - redirects: on
+"""
+
+[<Test>]
+let ``should parse and serialize redirects lock file``() = 
+    let lockFile = LockFileParser.Parse(toLines packageRedirectsLockFile)
+    let main = lockFile.Tail.Head
+    let packages = List.rev main.Packages
+    
+    packages.Length |> shouldEqual 4
+    main.Options.Redirects |> shouldEqual true
+
+    packages.Head.Settings.CreateBindingRedirects |> shouldEqual None
+    packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
+    packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)
+    packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
+    
+    let build = lockFile.Head
+    let packages = List.rev build.Packages
+    
+    packages.Length |> shouldEqual 1
+    build.Options.Redirects |> shouldEqual false
+
+    packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
+
+[<Test>]
+let ``should parse and serialise redirects lockfile``() =
+    let lockFile = LockFile.Parse("",toLines packageRedirectsLockFile)
+    let lockFile' = lockFile.ToString()
+
+    normalizeLineEndings lockFile' 
+    |> shouldEqual (normalizeLineEndings packageRedirectsLockFile)
