@@ -280,7 +280,7 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
         with _ -> return None
     }
 
-let readKey() = System.Console.ReadLine().Trim()
+let readAnswer() = System.Console.ReadLine().Trim()
 
 /// If the guard is true then a [Y]es / [N]o question will be ask.
 /// Until the user pressed y or n.
@@ -288,7 +288,7 @@ let askYesNo question =
     let rec getAnswer() = 
         Logging.tracefn "%s" question
         Logging.tracef "    [Y]es/[N]o => "
-        let answer = readKey()
+        let answer = readAnswer()
         Logging.tracefn ""
         match answer.ToLower() with
         | "y" -> true
