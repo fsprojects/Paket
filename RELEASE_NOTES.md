@@ -1,3 +1,6 @@
+#### 2.33.1 - 06.12.2015
+* Making user prompts work with stdin - https://github.com/fsprojects/Paket/pull/1292
+
 #### 2.33.0 - 04.12.2015
 * Option to force a binding redirects - https://github.com/fsprojects/Paket/pull/1290
 * Use GetCustomAttributesData instead of GetCustomAttributes - https://github.com/fsprojects/Paket/issues/1289
