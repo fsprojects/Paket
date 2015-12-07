@@ -207,7 +207,7 @@ namespace Paket.Bootstrapper
             ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
 
             var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.bootstrapper.exe");
-            var renamedPath = Path.GetTempFileName();
+            var renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             try
             {
                 BootstrapperHelper.FileMove(target, renamedPath);

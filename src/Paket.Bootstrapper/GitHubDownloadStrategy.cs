@@ -87,7 +87,7 @@ namespace Paket.Bootstrapper
                 {
                     const int bufferSize = 4096;
                     byte[] buffer = new byte[bufferSize];
-                    var tmpFile = Path.GetTempFileName();
+                    var tmpFile = BootstrapperHelper.GetTempFile("paket");
 
                     using (var fileStream = File.Create(tmpFile))
                     {
@@ -122,8 +122,8 @@ namespace Paket.Bootstrapper
 
             var request = PrepareWebRequest(url);
 
-            string renamedPath = Path.GetTempFileName();
-            string tmpDownloadPath = Path.GetTempFileName();
+            string renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
+            string tmpDownloadPath = BootstrapperHelper.GetTempFile("newBootstrapper");
 
             using (var httpResponse = (HttpWebResponse)request.GetResponse())
             {

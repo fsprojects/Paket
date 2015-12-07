@@ -24,6 +24,15 @@ namespace Paket.Bootstrapper
             catch (Exception) { return ""; }
         }
 
+        internal static string GetTempFile(string name)
+        {
+            var path = Path.GetTempPath();
+            var fileName = Path.Combine(path, name + System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
+            if (File.Exists(fileName))
+                File.Delete(fileName);
+            return fileName;
+        }
+
         internal static void PrepareWebClient(WebClient client, string url)
         {
             client.Headers.Add("user-agent", PaketBootstrapperUserAgent);
