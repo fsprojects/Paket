@@ -1,4 +1,5 @@
-#### 2.33.1 - 06.12.2015
+#### 2.34.0 - 07.12.2015
+* BootStrapper uses named temp files - https://github.com/fsprojects/Paket/pull/1296
 * Making user prompts work with stdin - https://github.com/fsprojects/Paket/pull/1292
 
 #### 2.33.0 - 04.12.2015
