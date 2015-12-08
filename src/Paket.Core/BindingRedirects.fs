@@ -129,7 +129,8 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedi
         with
         | exn -> failwithf "Parsing of %s failed.%s%s" configFilePath Environment.NewLine exn.Message
 
-    let original = config.ToString(SaveOptions.None).Replace("\r","").Replace("\n","")
+    use originalContents = new StringReader(config.ToString())
+    let original = XDocument.Load(originalContents, LoadOptions.None).ToString()
 
     let isMarked e =
         match tryGetElement (Some bindingNs) "Paket" e with
@@ -146,7 +147,8 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedi
 
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
-    let newText = config.ToString(SaveOptions.None).Replace("\r","").Replace("\n","")
+    use newContents = new StringReader(config.ToString())
+    let newText = XDocument.Load(newContents, LoadOptions.None).ToString()
     if newText <> original then
         config.Save(configFilePath, SaveOptions.DisableFormatting)
 
