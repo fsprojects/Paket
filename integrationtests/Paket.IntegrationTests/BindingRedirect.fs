@@ -303,3 +303,17 @@ let ``#1248 redirects off for main only``() =
     config |> shouldContainText AlphaFS
     config.Contains ``Newtonsoft.Json`` |> shouldEqual false
     config.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
+    
+[<Test>]
+let ``#1248 redirects off with --redirects``() = 
+    paket "install --redirects" "i001248-redirects-off" |> ignore
+    let path = Path.Combine(scenarioTempPath "i001248-redirects-off")
+    let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary", "app.config")
+    let originalPath = Path.Combine(originalScenarioPath "i001248-redirects-off")
+    let originalConfigPath = Path.Combine(originalPath, "MyClassLibrary", "MyClassLibrary", "app.config")
+
+    let config = File.ReadAllText(configPath)
+    let originalConfig = File.ReadAllText(originalConfigPath)
+
+    config |> shouldEqual originalConfig
+    

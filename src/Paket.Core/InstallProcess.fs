@@ -227,7 +227,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
 
         assemblies
         |> Seq.choose (fun (assembly,token,refs,redirects) -> token |> Option.map (fun token -> (assembly,token,refs,redirects)))
-        |> Seq.filter (fun (_,_,_,packageRedirects) -> defaultArg (packageRedirects |> Option.map ((<>) Off)) redirects)
+        |> Seq.filter (fun (_,_,_,packageRedirects) -> defaultArg ((packageRedirects |> Option.map ((<>) Off)) ++ redirects) false)
         |> Seq.filter (fun (assembly,_,refs,redirects) -> 
             redirects = Some Force
             || assemblies
@@ -241,7 +241,8 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
               Culture = None })
         |> Seq.sort
 
-    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root bindingRedirects
+    if redirects <> Some false then
+        applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root bindingRedirects
 
 let findAllReferencesFiles root =
     root
@@ -383,6 +384,11 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
 
         let first = ref true
 
+        let redirects =
+            match options.Redirects with
+            | true -> Some true
+            | false -> None
+
         for g in lockFile.Groups do
             let group = g.Value
             model
@@ -394,7 +400,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                     |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
                 (snd kv.Value,packageRedirects))
-            |> applyBindingRedirects loadedLibs !first options.CreateNewBindingFiles options.Hard (defaultArg g.Value.Options.Redirects options.Redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
+            |> applyBindingRedirects loadedLibs !first options.CreateNewBindingFiles options.Hard (g.Value.Options.Redirects ++ redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
             first := false
 
 /// Installs all packages from the lock file.
