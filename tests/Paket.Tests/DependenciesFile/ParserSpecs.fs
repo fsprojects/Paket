@@ -164,7 +164,7 @@ nuget "FAKE" "~> 3.0"
 let ``should read config with no redirects``() = 
     let cfg = DependenciesFile.FromCode(noRedirectsConfig)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
-    cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual (Some false)
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NugetSource "http://nuget.org/api/v2"]
 
@@ -1011,7 +1011,7 @@ redirects off
     cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
     cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual None
 
-    cfg.Groups.[GroupName "Build"].Options.Redirects |> shouldEqual None
+    cfg.Groups.[GroupName "Build"].Options.Redirects |> shouldEqual (Some false)
     cfg.Groups.[GroupName "Build"].Packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
     cfg.Groups.[GroupName "Build"].Packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
     cfg.Groups.[GroupName "Build"].Packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)

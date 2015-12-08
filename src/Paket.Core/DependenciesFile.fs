@@ -197,7 +197,7 @@ module DependenciesFileParser =
     | ImportTargets of bool
     | CopyLocal of bool
     | ReferenceCondition of string
-    | Redirects of bool
+    | Redirects of bool option
     | ResolverStrategy of ResolverStrategy option
 
     let private (|Remote|Package|Empty|ParserOptions|SourceFile|Group|) (line:string) =
@@ -226,7 +226,14 @@ module DependenciesFileParser =
             | [name] -> Package(name,">= 0","")
             | _ -> failwithf "could not retrieve nuget package from %s" trimmed
         | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict"))
-        | String.StartsWith "redirects" trimmed -> ParserOptions(ParserOption.Redirects(trimmed.Replace(":","").Trim() = "on"))
+        | String.StartsWith "redirects" trimmed ->
+            let setting =
+                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
+                | "on" -> Some true
+                | "off" -> Some false
+                | _ -> None
+
+            ParserOptions(ParserOption.Redirects(setting))
         | String.StartsWith "strategy" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -292,7 +299,7 @@ module DependenciesFileParser =
     let private parseOptions current options =
         match options with 
         | ReferencesMode mode -> { current.Options with Strict = mode } 
-        | Redirects mode -> { current.Options with Redirects = if mode then Some true else None }
+        | Redirects mode -> { current.Options with Redirects = mode }
         | ResolverStrategy strategy -> { current.Options with ResolverStrategy = strategy }
         | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
         | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
