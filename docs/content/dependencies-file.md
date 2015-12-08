@@ -103,6 +103,28 @@ This option tells paket to create [Assembly Binding Redirects](https://msdn.micr
 
     nuget UnionArgParser ~> 0.7
 
+On the other hand, you can instruct Paket to create no [Assembly Binding Redirects](https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx), regardless a package instructs otherwise.
+
+    redirects: off
+    source https://nuget.org/api/v2
+
+    nuget UnionArgParser ~> 0.7 redirects: on
+    nuget FSharp.Core redirects: force
+
+If you're using multiple groups, you must set `redirects: off` for each one of them.
+
+    redirects: off
+    source https://nuget.org/api/v2
+
+    nuget UnionArgParser ~> 0.7 redirects: on
+    nuget FSharp.Core redirects: force
+
+    group Build
+        redirects: off
+	    source https://nuget.org/api/v2
+		
+        nuget FAKE redirects: on
+
 ### Strategy option
 
 This option tells Paket what resolver strategy it will use by default. 
