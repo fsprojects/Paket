@@ -13,13 +13,13 @@ open Paket.PackageSources
 /// [omit]
 type InstallOptions = 
     { Strict : bool 
-      Redirects : bool
+      Redirects : bool option
       ResolverStrategy : ResolverStrategy option
       Settings : InstallSettings }
 
     static member Default = { 
         Strict = false
-        Redirects = false
+        Redirects = None
         ResolverStrategy = None
         Settings = InstallSettings.Default }
 
@@ -45,7 +45,7 @@ type DependenciesGroup = {
         member this.CombineWith (other:DependenciesGroup) =
             { Name = this.Name
               Options = 
-                { Redirects = this.Options.Redirects || other.Options.Redirects
+                { Redirects = this.Options.Redirects ++ other.Options.Redirects
                   Settings = this.Options.Settings + other.Options.Settings
                   Strict = this.Options.Strict || other.Options.Strict
                   ResolverStrategy = this.Options.ResolverStrategy ++ other.Options.ResolverStrategy }
@@ -292,7 +292,7 @@ module DependenciesFileParser =
     let private parseOptions current options =
         match options with 
         | ReferencesMode mode -> { current.Options with Strict = mode } 
-        | Redirects mode -> { current.Options with Redirects = mode }
+        | Redirects mode -> { current.Options with Redirects = if mode then Some true else None }
         | ResolverStrategy strategy -> { current.Options with ResolverStrategy = strategy }
         | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
         | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }

@@ -98,7 +98,7 @@ let ``should parse strict lock file``() =
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 6
     lockFile.Options.Strict |> shouldEqual true
-    lockFile.Options.Redirects |> shouldEqual false
+    lockFile.Options.Redirects |> shouldEqual None
     lockFile.Options.Settings.ImportTargets |> shouldEqual (Some false)
     lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
@@ -123,7 +123,7 @@ let ``should parse redirects lock file``() =
     
     packages.Length |> shouldEqual 1
     lockFile.Options.Strict |> shouldEqual false
-    lockFile.Options.Redirects |> shouldEqual true
+    lockFile.Options.Redirects |> shouldEqual (Some true)
     lockFile.Options.Settings.ImportTargets |> shouldEqual (Some true)
     lockFile.Options.Settings.CopyLocal |> shouldEqual (Some true)
 
@@ -143,7 +143,7 @@ let ``should parse lock file with framework restrictions``() =
     let packages = List.rev lockFile.Packages
     packages.Length |> shouldEqual 1
     lockFile.Options.Strict |> shouldEqual false
-    lockFile.Options.Redirects |> shouldEqual false
+    lockFile.Options.Redirects |> shouldEqual None
     lockFile.Options.Settings.ImportTargets |> shouldEqual (Some true)
     lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
@@ -544,7 +544,7 @@ let ``should parse lock file with groups``() =
     
     packages1.Length |> shouldEqual 1
     lockFile1.Options.Strict |> shouldEqual false
-    lockFile1.Options.Redirects |> shouldEqual true
+    lockFile1.Options.Redirects |> shouldEqual (Some true)
     lockFile1.Options.Settings.ImportTargets |> shouldEqual (Some true)
     lockFile1.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile1.Options.Settings.ReferenceCondition |> shouldEqual None
@@ -558,7 +558,7 @@ let ``should parse lock file with groups``() =
     
     packages2.Length |> shouldEqual 1
     lockFile2.Options.Strict |> shouldEqual false
-    lockFile2.Options.Redirects |> shouldEqual true
+    lockFile2.Options.Redirects |> shouldEqual (Some true)
     lockFile2.Options.Settings.ImportTargets |> shouldEqual None
     lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile2.Options.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
@@ -640,7 +640,7 @@ let ``should parse and serialize redirects lock file``() =
     let packages = List.rev main.Packages
     
     packages.Length |> shouldEqual 4
-    main.Options.Redirects |> shouldEqual true
+    main.Options.Redirects |> shouldEqual (Some true)
 
     packages.Head.Settings.CreateBindingRedirects |> shouldEqual None
     packages.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
@@ -651,7 +651,7 @@ let ``should parse and serialize redirects lock file``() =
     let packages = List.rev build.Packages
     
     packages.Length |> shouldEqual 1
-    build.Options.Redirects |> shouldEqual false
+    build.Options.Redirects |> shouldEqual None
 
     packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
 

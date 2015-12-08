@@ -394,7 +394,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                     |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
                 (snd kv.Value,packageRedirects))
-            |> applyBindingRedirects loadedLibs !first options.CreateNewBindingFiles options.Hard (options.Redirects || g.Value.Options.Redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
+            |> applyBindingRedirects loadedLibs !first options.CreateNewBindingFiles options.Hard (defaultArg g.Value.Options.Redirects options.Redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
             first := false
 
 /// Installs all packages from the lock file.

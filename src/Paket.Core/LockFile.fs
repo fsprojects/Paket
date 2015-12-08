@@ -22,7 +22,7 @@ module LockFileSerializer =
     /// [omit]
     let serializeOptionsAsLines options = [
         if options.Strict then yield "REFERENCES: STRICT"
-        if options.Redirects then yield "REDIRECTS: ON"
+        if options.Redirects = Some true then yield "REDIRECTS: ON"
         match options.ResolverStrategy with
         | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
         | Some ResolverStrategy.Max -> yield "STRATEGY: MAX"
@@ -228,7 +228,7 @@ module LockFileParser =
     let private extractOption currentGroup option =
         match option with
         | ReferencesMode mode -> { currentGroup.Options with Strict = mode }
-        | Redirects mode -> { currentGroup.Options with Redirects = mode }
+        | Redirects mode -> { currentGroup.Options with Redirects = if mode then Some true else None }
         | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
         | CopyLocal mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
         | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
