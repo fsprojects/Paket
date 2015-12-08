@@ -22,7 +22,10 @@ module LockFileSerializer =
     /// [omit]
     let serializeOptionsAsLines options = [
         if options.Strict then yield "REFERENCES: STRICT"
-        if options.Redirects = Some true then yield "REDIRECTS: ON"
+        match options.Redirects with
+        | Some true -> yield "REDIRECTS: ON"
+        | Some false -> yield "REDIRECTS: OFF"
+        | None -> ()
         match options.ResolverStrategy with
         | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
         | Some ResolverStrategy.Max -> yield "STRATEGY: MAX"

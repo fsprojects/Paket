@@ -656,12 +656,19 @@ NUGET
   remote: "D:\code\temp with space"
   specs:
     FAKE (4.0) - redirects: on
+
+GROUP Test
+REDIRECTS: OFF
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    xUnit (2.0.0)
 """
 
 [<Test>]
-let ``should parse and serialize redirects lock file``() = 
+let ``should parse redirects lock file and packages``() = 
     let lockFile = LockFileParser.Parse(toLines packageRedirectsLockFile)
-    let main = lockFile.Tail.Head
+    let main = lockFile.Tail.Tail.Head
     let packages = List.rev main.Packages
     
     packages.Length |> shouldEqual 4
@@ -672,13 +679,21 @@ let ``should parse and serialize redirects lock file``() =
     packages.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Off)
     packages.Tail.Tail.Tail.Head.Settings.CreateBindingRedirects |> shouldEqual (Some Force)
     
-    let build = lockFile.Head
+    let build = lockFile.Tail.Head
     let packages = List.rev build.Packages
     
     packages.Length |> shouldEqual 1
     build.Options.Redirects |> shouldEqual None
 
     packages.Head.Settings.CreateBindingRedirects |> shouldEqual (Some On)
+
+    let test = lockFile.Head
+    let packages = List.rev test.Packages
+    
+    packages.Length |> shouldEqual 1
+    test.Options.Redirects |> shouldEqual (Some false)
+
+    packages.Head.Settings.CreateBindingRedirects |> shouldEqual None
 
 [<Test>]
 let ``should parse and serialise redirects lockfile``() =
