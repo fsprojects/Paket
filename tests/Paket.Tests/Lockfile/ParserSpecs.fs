@@ -114,20 +114,45 @@ NUGET
   remote: "D:\code\temp with space"
   specs:
     Castle.Windsor (2.1)
+
+GROUP Test
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    xUnit (2.0.0)
+
+GROUP Build
+REDIRECTS: OFF
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    FAKE (4.0.0)
 """   
 
 [<Test>]
 let ``should parse redirects lock file``() = 
-    let lockFile = LockFileParser.Parse(toLines redirectsLockFile) |> List.head
-    let packages = List.rev lockFile.Packages
-    
-    packages.Length |> shouldEqual 1
-    lockFile.Options.Strict |> shouldEqual false
-    lockFile.Options.Redirects |> shouldEqual (Some true)
-    lockFile.Options.Settings.ImportTargets |> shouldEqual (Some true)
-    lockFile.Options.Settings.CopyLocal |> shouldEqual (Some true)
+    let lockFile = LockFileParser.Parse(toLines redirectsLockFile)
 
-    packages.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
+    let main = lockFile.Tail.Tail.Head
+    main.Packages.Length |> shouldEqual 1
+    main.Options.Strict |> shouldEqual false
+    main.Options.Redirects |> shouldEqual (Some true)
+    main.Options.Settings.ImportTargets |> shouldEqual (Some true)
+    main.Options.Settings.CopyLocal |> shouldEqual (Some true)
+
+    let test = lockFile.Tail.Head
+    test.Packages.Length |> shouldEqual 1
+    test.Options.Strict |> shouldEqual false
+    test.Options.Redirects |> shouldEqual None
+    test.Options.Settings.ImportTargets |> shouldEqual None
+    test.Options.Settings.CopyLocal |> shouldEqual None
+
+    let build = lockFile.Head
+    build.Packages.Length |> shouldEqual 1
+    build.Options.Strict |> shouldEqual false
+    build.Options.Redirects |> shouldEqual (Some false)
+    build.Options.Settings.ImportTargets |> shouldEqual None
+    build.Options.Settings.CopyLocal |> shouldEqual None
 
 let lockFileWithFrameworkRestrictions = """FRAMEWORK: >= NET45
 IMPORT-TARGETS: TRUE

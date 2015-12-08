@@ -177,7 +177,7 @@ module LockFileParser =
     | ImportTargets of bool
     | FrameworkRestrictions of FrameworkRestrictions
     | CopyLocal of bool
-    | Redirects of bool
+    | Redirects of bool option
     | ReferenceCondition of string
     | ResolverStrategy of ResolverStrategy option
 
@@ -191,7 +191,14 @@ module LockFileParser =
         | _, String.StartsWith "remote:" trimmed -> Remote(trimmed.Trim())
         | _, String.StartsWith "GROUP" trimmed -> Group(trimmed.Replace("GROUP","").Trim())
         | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
-        | _, String.StartsWith "REDIRECTS:" trimmed -> InstallOption(Redirects(trimmed.Trim() = "ON"))
+        | _, String.StartsWith "REDIRECTS:" trimmed -> 
+            let setting =
+                match trimmed.Trim().ToLowerInvariant() with
+                | "on" -> Some true
+                | "off" -> Some false
+                | _ -> None
+
+            InstallOption(Redirects(setting))
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(trimmed.Trim() |> Requirements.parseRestrictions))
@@ -228,7 +235,7 @@ module LockFileParser =
     let private extractOption currentGroup option =
         match option with
         | ReferencesMode mode -> { currentGroup.Options with Strict = mode }
-        | Redirects mode -> { currentGroup.Options with Redirects = if mode then Some true else None }
+        | Redirects mode -> { currentGroup.Options with Redirects = mode }
         | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
         | CopyLocal mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
         | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
