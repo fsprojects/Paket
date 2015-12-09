@@ -87,14 +87,10 @@ let readAssembly buildConfig buildPlatform (projectFile : ProjectFile) =
     assemblyReader,id,versionFromAssembly,fileName.FullName
 
 let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.CacheValue) = 
-
-    let extractAttr (inp: ProviderImplementation.AssemblyReader.ILCustomAttr) = 
-         let args = ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp
-         
-         inp.Method.EnclosingType.BasicQualifiedName, Seq.head [ for (_,arg) in args -> arg.ToString() ]
-
-    [| for a in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do 
-        yield extractAttr a |]
+    [for inp in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do 
+         match ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp with
+         | [] -> ()
+         | args -> yield (inp.Method.EnclosingType.BasicQualifiedName, Seq.head [ for (_,arg) in args -> arg.ToString()]) ]
 
 
 let (|Valid|Invalid|) md = 
