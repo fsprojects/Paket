@@ -1,3 +1,6 @@
+#### 2.36.0-alpha001 - 09.12.2015
+* Getting assembly metadata without loading the assembly - https://github.com/fsprojects/Paket/pull/1293
+
 #### 2.35.0 - 09.12.2015
 * "redirects off" skips binding redirects completely  - https://github.com/fsprojects/Paket/pull/1299
 
