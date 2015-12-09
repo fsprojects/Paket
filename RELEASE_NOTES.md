@@ -1,3 +1,6 @@
+#### 2.35.0 - 09.12.2015
+* "redirects off" skips binding redirects completely  - https://github.com/fsprojects/Paket/pull/1299
+
 #### 2.34.0 - 07.12.2015
 * BootStrapper uses named temp files - https://github.com/fsprojects/Paket/pull/1296
 * Making user prompts work with stdin - https://github.com/fsprojects/Paket/pull/1292
