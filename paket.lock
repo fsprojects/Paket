@@ -1,7 +1,7 @@
 NUGET
   remote: https://nuget.org/api/v2
   specs:
-    Argu (1.1.2)
+    Argu (1.1.3)
     Chessie (0.2.2)
       FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
@@ -12,7 +12,7 @@ GITHUB
     src/app/FakeLib/Globbing/Globbing.fs (917a86046700e4eaaa2aa09de7895e048eaaa1b1)
   remote: fsharp/FSharp.Data
   specs:
-    src/CommonProviderImplementation/AssemblyReader.fs (88ef75bb7a3e3638453a6e361eddb0e57cc8c409)
+    src/CommonProviderImplementation/AssemblyReader.fs (2d3d68b59864a4e0db2b264314871522e1bf7fa3)
 GROUP Build
 NUGET
   remote: https://nuget.org/api/v2
@@ -31,7 +31,7 @@ NUGET
     Microsoft.Net.Http (2.2.29)
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
-    Octokit (0.16.0)
+    Octokit (0.17.0)
       Microsoft.Net.Http
 GITHUB
   remote: fsharp/FAKE
