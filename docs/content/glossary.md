@@ -14,7 +14,7 @@ The [`paket.references` files](references-files.html) are used to specify which 
 
 ### paket.template
 
-Thee [`paket.template` files](template-files.html) are used to specify rules to create new NuGet packages by using the [`paket pack` command](paket-pack.html).
+The [`paket.template` files](template-files.html) are used to specify rules to create new NuGet packages by using the [`paket pack` command](paket-pack.html).
 
 ### .paket folder
 
