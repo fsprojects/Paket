@@ -19,7 +19,15 @@ let ``should filter net45 and >= net40``() =
 [<Test>]
 let ``should filter >= net40 and net45``() = 
     let l1 = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
-    let l2 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]    
+    let l2 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    filterRestrictions l1 l2
+    |> shouldEqual l1
+
+
+[<Test>]
+let ``should filter >= net40 and net40``() = 
+    let l1 = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))]
+    let l2 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
     filterRestrictions l1 l2
     |> shouldEqual l1
 
