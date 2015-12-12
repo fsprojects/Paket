@@ -6,6 +6,32 @@ open FsUnit
 open TestHelpers
 open Paket.Domain
 
+
+[<Test>]
+let ``should detect no changes with global framework``() = 
+    let before = """framework: >= net40
+
+source https://nuget.org/api/v2
+
+nuget NLog framework: net40
+nuget NLog.Contrib"""
+
+    let lockFileData = """FRAMEWORK: >= NET40
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    NLog (4.2.1)
+    NLog.Contrib (1.0.0.2)
+      NLog (>= 2.1.0)
+"""
+
+    let after = before
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.IsEmpty |> shouldEqual true
+
 [<Test>]
 let ``should detect remove of single nuget package``() = 
     let before = """source http://nuget.org/api/v2

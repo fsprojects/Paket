@@ -5,9 +5,18 @@ open Paket.Requirements
 open Paket.PackageResolver
 
 let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =
-    let inline hasChanged (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
-        newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not ||
-            newRequirement.Settings <> originalPackage.Settings
+    let allTransitives groupName = lockFile.GetTransitiveDependencies groupName
+    let inline hasChanged groupName (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
+        
+        let isTransitive (packageName) = allTransitives groupName |> Seq.contains packageName
+        let settingsChanged =
+            if newRequirement.Settings <> originalPackage.Settings then
+                if newRequirement.Settings.FrameworkRestrictions <> originalPackage.Settings.FrameworkRestrictions then
+                  isTransitive originalPackage.Name |> not
+                else true
+            else false
+
+        newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not || settingsChanged
 
     let added groupName =
         match dependenciesFile.Groups |> Map.tryFind groupName with
@@ -21,7 +30,7 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
                 | None -> true
                 | Some group ->
                     match group.Resolution.TryFind name with
-                    | Some p -> hasChanged pr p
+                    | Some p -> hasChanged groupName pr p
                     | _ -> true)
             |> Seq.map (fun (p,_) -> groupName,p)
             |> Set.ofSeq
@@ -38,7 +47,7 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
         [for t in lockFile.GetTopLevelDependencies(groupName) do
             let name = t.Key
             match directMap.TryFind name with
-            | Some pr -> if hasChanged pr t.Value then yield groupName, name // Modified
+            | Some pr -> if hasChanged groupName pr t.Value then yield groupName, name // Modified
             | _ -> yield groupName, name // Removed
         ]
         |> List.map lockFile.GetAllNormalizedDependenciesOf

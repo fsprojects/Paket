@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open TestHelpers
 open Paket.Domain
+open Paket.Requirements
 
 let config1 = """
 references strict
@@ -124,3 +125,46 @@ NUGET
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
+
+
+
+[<Test>]
+let ``should resolve config with global framework restrictions``() = 
+
+    let config = """framework: >= net40
+
+source https://nuget.org/api/v2
+
+nuget NLog framework: net40
+nuget NLog.Contrib
+"""
+
+    let graph = [
+        "NLog","1.0.0",[]
+        "NLog","1.0.1",[]
+        "NLog.Contrib","1.0.0",["NLog",DependenciesFileParser.parseVersionRequirement ">= 1.0.1"]
+    ]
+
+    
+    let expected = """FRAMEWORK: >= NET40
+NUGET
+  remote: https://nuget.org/api/v2
+  specs:
+    NLog (1.0.1)
+    NLog.Contrib (1.0.0)
+      NLog (>= 1.0.1)"""
+
+    let cfg = DependenciesFile.FromCode(config)
+    let group = cfg.Groups.[Constants.MainDependencyGroup]
+    group.Packages.Head.Settings.FrameworkRestrictions 
+    |> shouldEqual [FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)) ]
+
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[PackageName "NLog"] |> shouldEqual "1.0.1"
+    resolved.[PackageName "NLog"].Settings.FrameworkRestrictions 
+    |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)) ]
+
+    resolved
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+    |> shouldEqual (normalizeLineEndings expected)
+

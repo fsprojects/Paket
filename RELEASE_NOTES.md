@@ -1,3 +1,6 @@
+#### 2.36.1 - 12.12.2015
+* Paket install did an unnecessary update when framework restriction were present - https://github.com/fsprojects/Paket/issues/1305
+
 #### 2.36.0 - 10.12.2015
 * Getting assembly metadata without loading the assembly - https://github.com/fsprojects/Paket/pull/1293
 
