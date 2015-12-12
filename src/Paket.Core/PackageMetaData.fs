@@ -67,24 +67,26 @@ let getDescription attributes =
                       | Description d -> Some d
                       | _ -> None) 
 
-let readAssembly buildConfig buildPlatform (projectFile : ProjectFile) = 
-    let fileName = 
-        FileInfo(
-            Path.Combine
-                (Path.GetDirectoryName projectFile.FileName, projectFile.GetOutputDirectory buildConfig buildPlatform, 
-                 projectFile.GetAssemblyName()) 
-            |> normalizePath)
-
-    traceVerbose <| sprintf "Loading assembly metadata for %s" fileName.FullName
+let readAssembly fileName =
+    traceVerbose <| sprintf "Loading assembly metadata for %s" fileName
     let assemblyReader = 
         ProviderImplementation.AssemblyReader.ILModuleReaderAfterReadingAllBytes(
-            fileName.FullName, 
+            fileName, 
             ProviderImplementation.AssemblyReader.mkILGlobals ProviderImplementation.AssemblyReader.ecmaMscorlibScopeRef, 
             true)
    
     let versionFromAssembly = assemblyReader.ILModuleDef.ManifestOfAssembly.Version
     let id = assemblyReader.ILModuleDef.ManifestOfAssembly.Name
-    assemblyReader,id,versionFromAssembly,fileName.FullName
+    assemblyReader,id,versionFromAssembly,fileName
+
+
+let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectFile) = 
+    FileInfo(
+        Path.Combine
+            (Path.GetDirectoryName projectFile.FileName, projectFile.GetOutputDirectory buildConfig buildPlatform, 
+                projectFile.GetAssemblyName()) 
+        |> normalizePath).FullName
+    |> readAssembly
 
 let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.CacheValue) = 
     [for inp in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do 

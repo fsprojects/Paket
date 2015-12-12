@@ -18,15 +18,14 @@ let ``Loading assembly metadata works``() =
         failwithf "%s does not exist." fileName
 
     let projFile = 
-        Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
-        |> normalizePath
+        fileName
         |> ProjectFile.LoadFromFile
     
     let config = 
         if workingDir.Contains "Debug" then "Debug"
         else "Release"
     
-    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssembly config "" projFile
+    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile    
     id |> shouldEqual "Paket.Tests"
     
     let attribs = PackageMetaData.loadAssemblyAttributes assemblyReader

@@ -10,15 +10,15 @@ open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
-let private merge buildConfig buildPlatform version projectFile templateFile = 
+let private merge buildConfig buildPlatform versionFromAssembly projectFile templateFile = 
     let withVersion =
-        match version with
+        match versionFromAssembly with
         | None -> templateFile
         | Some v -> templateFile |> TemplateFile.setVersion v
 
     match withVersion with
     | { Contents = ProjectInfo(md, opt) } -> 
-        let assemblyReader,id,versionFromAssembly,assemblyFileName = readAssembly buildConfig buildPlatform projectFile
+        let assemblyReader,id,versionFromAssembly,assemblyFileName = readAssemblyFromProjFile buildConfig buildPlatform projectFile
         let attribs = loadAssemblyAttributes assemblyReader
 
         let mergedOpt =
@@ -37,7 +37,7 @@ let private merge buildConfig buildPlatform version projectFile templateFile =
 
                 let merged = 
                     { Id = md.Id
-                      Version = md.Version ++ getVersion version attribs
+                      Version = md.Version ++ getVersion versionFromAssembly attribs
                       Authors = md.Authors ++ getAuthors attribs
                       Description = md.Description ++ getDescription attribs
                       Symbols = md.Symbols }
