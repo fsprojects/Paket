@@ -1,3 +1,6 @@
+#### 2.36.2 - 13.12.2015
+* BUGFIX: NuGet packages with FrameworkAssembly nodes did not work - https://github.com/fsprojects/Paket/issues/1306
+
 #### 2.36.1 - 12.12.2015
 * Paket install did an unnecessary update when framework restriction were present - https://github.com/fsprojects/Paket/issues/1305
 

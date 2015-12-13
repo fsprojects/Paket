@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>TempPkg</id>
+    <version>0.1</version>
+    <title>TempPkg</title>
+    <authors>MtW</authors>
+    <owners>MtW</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>TempPkg</description>
+    <language />
+    <dependencies>
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Xaml" />
+    </frameworkAssemblies>
+  </metadata>
+</package>
