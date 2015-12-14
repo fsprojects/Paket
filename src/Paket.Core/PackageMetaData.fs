@@ -92,7 +92,7 @@ let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader
     [for inp in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do 
          match ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp with
          | [] -> ()
-         | args -> yield (inp.Method.EnclosingType.BasicQualifiedName, Seq.head [ for (_,arg) in args -> arg.ToString()]) ]
+         | args -> yield (inp.Method.EnclosingType.BasicQualifiedName, Seq.head [ for (_,arg) in args -> if isNull arg then "" else arg.ToString()]) ]
 
 
 let (|Valid|Invalid|) md = 
