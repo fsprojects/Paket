@@ -63,12 +63,7 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
                         get()
                     else
                         async { return cachedObject }
-                | Bad exns -> 
-                    for exn in exns do
-                        traceWarnfn "Error loading from cache for package '%s.%s':\n%s" (packageName.ToString()) 
-                                                                                        (version.ToString()) 
-                                                                                        (exn.ToString())
-                    get()
+                | _ -> get()
         else
             return! get()
     }

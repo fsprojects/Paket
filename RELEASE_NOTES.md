@@ -1,3 +1,6 @@
+#### 2.36.3 - 14.12.2015
+* COSMETICS: No need to show cache warnings
+
 #### 2.36.2 - 13.12.2015
 * BUGFIX: NuGet packages with FrameworkAssembly nodes did not work - https://github.com/fsprojects/Paket/issues/1306
 
