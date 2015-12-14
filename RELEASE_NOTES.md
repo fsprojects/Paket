@@ -1,3 +1,6 @@
+#### 2.36.5 - 14.12.2015
+* BUGFIX: Fix NullReferenceException - https://github.com/fsprojects/Paket/issues/1307
+
 #### 2.36.3 - 14.12.2015
 * COSMETICS: No need to show cache warnings
 
