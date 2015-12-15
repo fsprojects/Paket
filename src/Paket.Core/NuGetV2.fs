@@ -469,7 +469,16 @@ let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName
                 verbosefn "  to %s" targetFileName
                 let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
-                let request = HttpWebRequest.Create(Uri nugetPackage.DownloadUrl) :?> HttpWebRequest
+                let downloadUri = 
+                    if Uri.IsWellFormedUriString(nugetPackage.DownloadUrl, UriKind.Absolute) then
+                        Uri nugetPackage.DownloadUrl
+                    else
+                        let sourceUrl =
+                            if nugetPackage.SourceUrl.EndsWith("/") then nugetPackage.SourceUrl
+                            else nugetPackage.SourceUrl + "/"
+                        Uri(Uri sourceUrl,  nugetPackage.DownloadUrl)
+
+                let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
                 request.UserAgent <- "Paket"
 
