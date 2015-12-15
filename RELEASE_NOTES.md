@@ -1,3 +1,6 @@
+#### 2.36.6 - 15.12.2015
+* Added support for relative src link to package content - https://github.com/fsprojects/Paket/pull/1311
+
 #### 2.36.5 - 14.12.2015
 * BUGFIX: Fix NullReferenceException - https://github.com/fsprojects/Paket/issues/1307
 
