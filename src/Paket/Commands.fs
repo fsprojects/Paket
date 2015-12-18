@@ -296,7 +296,7 @@ type PackArgs =
     | [<CustomCommandLine("version")>] Version of string
     | [<CustomCommandLine("templatefile")>] TemplateFile of string
     | [<CustomCommandLine("exclude")>] ExcludedTemplate of string
-    | [<CustomCommandLine("custom-version")>] CustomVersion of templateId:string * version:string
+    | [<CustomCommandLine("specific-version")>] SpecificVersion of templateId:string * version:string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
     | [<CustomCommandLine("lock-dependencies")>] LockDependencies
     | [<CustomCommandLine("symbols")>] Symbols
@@ -310,7 +310,7 @@ with
             | Version(_) -> "Specify version of the package."
             | TemplateFile(_) -> "Allows to specify a single template file."
             | ExcludedTemplate(_) -> "Exclude template file by id."
-            | CustomVersion(_) -> "Specifies a version number for template with specified id."
+            | SpecificVersion(_) -> "Specifies a version number for template with given id."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
             | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
             | Symbols -> "Build symbol/source packages in addition to library/content packages."

@@ -81,7 +81,7 @@ let private convertToSymbols (projectFile : ProjectFile) templateFile =
         let augmentedFiles = optional.Files |> List.append sourceFiles 
         { templateFile with Contents = ProjectInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, customVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols) =
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols) =
     let buildConfig = defaultArg buildConfig "Release"
     let buildPlatform = defaultArg buildPlatform ""
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
@@ -92,7 +92,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
         LockFile.LoadFrom(lockFileName.FullName)
 
     let version = version |> Option.map SemVer.Parse
-    let customVersions = customVersions |> Seq.map (fun (id : string,v) -> id, SemVer.Parse v) |> Map.ofSeq
+    let specificVersions = specificVersions |> Seq.map (fun (id : string,v) -> id, SemVer.Parse v) |> Map.ofSeq
 
     let allTemplateFiles = 
         let hashSet = new HashSet<_>()
@@ -115,7 +115,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             |> Array.choose (fun projectFile ->
                 match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
                 | None -> None
-                | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,customVersions)))
+                | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions)))
             |> Array.filter (fun (_,templateFile) -> 
                 match templateFile with
                 | CompleteTemplate _ -> false 
@@ -133,7 +133,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             seq { yield templateFile; if symbols then yield templateFile |> convertToSymbols projectFile }
 
         let convertRemainingTemplate fileName =
-            let templateFile = TemplateFile.Load(fileName,lockFile,version,customVersions)
+            let templateFile = TemplateFile.Load(fileName,lockFile,version,specificVersions)
             match templateFile with
             | { Contents = ProjectInfo(_) } -> 
                 let fi = FileInfo(fileName)
@@ -162,7 +162,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             allTemplates |> List.filter (fun t -> match t with CompleteTemplate(c,_) -> not (excluded.Contains c.Id) | _ -> true)
     
     // set version
-    let templatesWithVersion = excludedTemplates |> List.map (TemplateFile.setVersion version customVersions)
+    let templatesWithVersion = excludedTemplates |> List.map (TemplateFile.setVersion version specificVersions)
 
     // set release notes
     let processedTemplates =
