@@ -1,3 +1,6 @@
+#### 2.36.7 - 19.12.2015
+* Implemented support for specifying per-template versions in paket pack - https://github.com/fsprojects/Paket/pull/1314
+ 
 #### 2.36.6 - 15.12.2015
 * Added support for relative src link to package content - https://github.com/fsprojects/Paket/pull/1311
 
