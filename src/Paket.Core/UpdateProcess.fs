@@ -10,8 +10,8 @@ open Chessie.ErrorHandling
 open Paket.Logging
 
 let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
-    let allVersions = Dictionary<PackageName,SemVerInfo list>()
-    let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName =
+    let allVersions = Dictionary<PackageName,(SemVerInfo * (PackageSources.PackageSource list)) list>()
+    let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName : seq<SemVerInfo * PackageSources.PackageSource list> =
         match allVersions.TryGetValue(packageName) with
         | false,_ ->
             let versions = 
@@ -22,11 +22,10 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                 failwithf "Couldn't retrieve versions for %O." packageName
             allVersions.Add(packageName,versions)
             versions
-        | true,versions -> versions 
+        | true,versions -> versions
         |> List.toSeq
         
-
-    let getPreferredVersionsF preferredVersions changedDependencies sources resolverStrategy groupName packageName = 
+    let getPreferredVersionsF (preferredVersions:Map<(GroupName * PackageName),SemVerInfo * (PackageSources.PackageSource list)>) changedDependencies sources resolverStrategy groupName packageName = 
         seq { 
             match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy, changedDependencies |> Set.exists ((=) (groupName, packageName)) with
             | Some v, ResolverStrategy.Min, _
@@ -132,6 +131,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
         let preferredVersions = 
             DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+            |> Map.map (fun k (v,s) -> v,[s])
             |> getPreferredVersionsF
         preferredVersions changes,groups
 

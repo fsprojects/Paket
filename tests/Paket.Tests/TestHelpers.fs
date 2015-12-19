@@ -29,6 +29,7 @@ let VersionsFromGraph (graph : seq<string * string * (string * VersionRequiremen
         |> Seq.filter (fun (p, _, _) -> (PackageName p) = packageName)
         |> Seq.map (fun (_, v, _) -> SemVer.Parse v)
         |> Seq.toList
+        |> List.map (fun v -> v,sources)
 
     match resolverStrategy with
     | ResolverStrategy.Max -> List.sortDescending versions
