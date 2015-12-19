@@ -170,12 +170,25 @@ type TemplateFile =
 module internal TemplateFile =
     open Logging
 
-    let setVersion version templateFile =
-        let contents =
-            match templateFile.Contents with
-            | CompleteInfo(core, optional) -> CompleteInfo({ core with Version = Some version }, optional)
-            | ProjectInfo(core, optional) -> ProjectInfo({ core with Version = Some version }, optional)
-        { templateFile with Contents = contents }
+    let tryGetId (templateFile : TemplateFile) =
+        match templateFile.Contents with
+        | CompleteInfo(core,_) -> Some(core.Id)
+        | ProjectInfo(core,_) -> core.Id
+
+    let setVersion version specificVersions templateFile =
+        let version =
+            match tryGetId templateFile |> Option.bind (fun id -> Map.tryFind id specificVersions) with
+            | Some _ as specificVersion -> specificVersion
+            | None -> version
+
+        match version with
+        | None -> templateFile
+        | Some version ->
+            let contents =
+                match templateFile.Contents with
+                | CompleteInfo(core, optional) -> CompleteInfo({ core with Version = Some version }, optional)
+                | ProjectInfo(core, optional) -> ProjectInfo({ core with Version = Some version }, optional)
+            { templateFile with Contents = contents }
 
     let setReleaseNotes releaseNotes templateFile =
         let contents =
@@ -219,7 +232,7 @@ module internal TemplateFile =
         | Some m -> ok m
         | None -> failP file "No description line in paket.template file."
 
-    let private getDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option) =
+    let private getDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>) =
         Map.tryFind "dependencies" info
         |> Option.map (fun d -> d.Split '\n')
         |> Option.map (Array.map (fun d ->
@@ -229,9 +242,13 @@ module internal TemplateFile =
                                 let versionString =
                                   let s = reg.Groups.["version"].Value.Trim()
                                   if s.Contains("CURRENTVERSION") then
-                                    match currentVersion with
-                                    | Some v -> s.Replace("CURRENTVERSION",v.ToString())
-                                    | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
+                                    match specificVersions.TryFind (string id') with
+                                    | Some v -> s.Replace("CURRENTVERSION", v.ToString())
+                                    | None ->
+                                        match currentVersion with
+                                        | Some v -> s.Replace("CURRENTVERSION",v.ToString())
+                                        | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
+
                                   elif s.Contains("LOCKEDVERSION") then
                                     match lockFile.Groups.[Constants.MainDependencyGroup].Resolution |> Map.tryFind id' with
                                     | Some p -> s.Replace("LOCKEDVERSION",p.Version.ToString())
@@ -296,7 +313,7 @@ module internal TemplateFile =
         |> Option.map List.ofSeq
         |> fun x -> defaultArg x []
 
-    let private getOptionalInfo (fileName,lockFile:LockFile, map : Map<string, string>, currentVersion) =
+    let private getOptionalInfo (fileName,lockFile:LockFile, map : Map<string, string>, currentVersion, specificVersions) =
         let get (n : string) = Map.tryFind (n.ToLowerInvariant()) map
 
         let title = get "title"
@@ -334,7 +351,7 @@ module internal TemplateFile =
             | Some x when x.ToLower() = "true" -> true
             | _ -> false
 
-        let dependencies = getDependencies(fileName,lockFile,map,currentVersion)
+        let dependencies = getDependencies(fileName,lockFile,map,currentVersion,specificVersions)
         let excludedDependencies = getExcludedDependencies(fileName,lockFile,map,currentVersion)
 
         { Title = title
@@ -356,7 +373,7 @@ module internal TemplateFile =
           Files = getFiles map
           FilesExcluded = getFileExcludes map }
 
-    let Parse(file,lockFile,currentVersion,contentStream : Stream) =
+    let Parse(file,lockFile,currentVersion,specificVersions,contentStream : Stream) =
         trial {
             use sr = new StreamReader(contentStream)
             let! map =
@@ -366,16 +383,20 @@ module internal TemplateFile =
             sr.Dispose()
             let! type' = parsePackageConfigType file map
 
-            let currentVersion =
-                match currentVersion with
-                | None -> Map.tryFind "version" map |> Option.map SemVer.Parse
-                | _ -> currentVersion
+            let resolveCurrentVersion id =
+                match id |> Option.bind (fun id -> Map.tryFind id specificVersions) with
+                | Some _ as specificVersion -> specificVersion
+                | None ->
+                    match currentVersion with
+                    | None -> Map.tryFind "version" map |> Option.map SemVer.Parse
+                    | _ -> currentVersion
 
             match type' with
             | ProjectType ->
+                let id = Map.tryFind "id" map
                 let core : ProjectCoreInfo =
-                    { Id = Map.tryFind "id" map
-                      Version = Map.tryFind "version" map |> Option.map SemVer.Parse
+                    { Id = id
+                      Version = resolveCurrentVersion id
                       Authors =
                           Map.tryFind "authors" map
                           |> Option.map (fun s ->
@@ -385,7 +406,7 @@ module internal TemplateFile =
                       Description = Map.tryFind "description" map
                       Symbols = false }
 
-                let optionalInfo = getOptionalInfo(file,lockFile,map,currentVersion)
+                let optionalInfo = getOptionalInfo(file,lockFile,map,currentVersion,specificVersions)
                 return ProjectInfo(core, optionalInfo)
             | FileType ->
                 let! id' = getId file map
@@ -393,19 +414,19 @@ module internal TemplateFile =
                 let! description = getDescription file map
                 let core : CompleteCoreInfo =
                     { Id = id'
-                      Version = Map.tryFind "version" map |> Option.map SemVer.Parse
+                      Version = resolveCurrentVersion (Some id')
                       Authors = authors
                       Description = description
                       Symbols = false }
 
-                let optionalInfo = getOptionalInfo(file,lockFile,map,currentVersion)
+                let optionalInfo = getOptionalInfo(file,lockFile,map,currentVersion,specificVersions)
                 return CompleteInfo(core, optionalInfo)
         }
 
-    let Load(fileName,lockFile,currentVersion) =
+    let Load(fileName,lockFile,currentVersion,specificVersions) =
         let fi = FileInfo fileName
         let root = fi.Directory.FullName
-        let contents = Parse(fi.FullName,lockFile,currentVersion, File.OpenRead fileName) |> returnOrFail
+        let contents = Parse(fi.FullName,lockFile,currentVersion,specificVersions, File.OpenRead fileName) |> returnOrFail
         let getFiles files =
             [ for source, target in files do
                 match Fake.Globbing.search root source with

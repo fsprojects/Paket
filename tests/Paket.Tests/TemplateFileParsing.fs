@@ -75,7 +75,7 @@ let strToStream (str : string) =
 [<TestCase(FileBasedLongDesc4, "description starting with description")>]
 let ``Parsing minimal file based packages works`` (fileContent, desc) =
     let result =
-        TemplateFile.Parse("file1.template",LockFile.Parse("",[||]), None, strToStream fileContent)
+        TemplateFile.Parse("file1.template",LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
         |> returnOrFail
 
     match result with
@@ -105,7 +105,7 @@ description A short description
 [<TestCase(Invalid1)>]
 [<TestCase(Invalid3)>]
 let ``Invalid file input recognised as invalid`` (fileContent : string) =
-    TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
+    TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
     |> failed
     |> shouldEqual true
 
@@ -177,14 +177,14 @@ description
 [<TestCase(RealTest)>]
 [<TestCase(FullTest)>]
 let ``Valid file input recognised as valid`` (fileContent : string) =
-   TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
+   TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
     |> failed
     |> shouldEqual false
 
 [<TestCase(FullTest)>]
 let ``Optional fields are read`` (fileContent : string) =
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -221,7 +221,7 @@ dependencies
 [<TestCase(Dependency1)>]
 let ``Detect dependencies correctly`` fileContent =
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -251,7 +251,7 @@ dependencies
 """
 
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), Some(SemVer.Parse "2.1"), strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), Some(SemVer.Parse "2.1"), Map.empty, strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -262,6 +262,44 @@ dependencies
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "My.OtherThing")
         range2.Range |> shouldEqual (Specific (SemVer.Parse "2.1"))
+    | _ -> Assert.Fail()
+
+[<Test>]
+let ``Should resolve custom versions correctly`` () =
+    let fileContent = """type file
+id Project.C
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+version
+    1.0
+dependencies
+     FSharp.Core 4.3.1
+     Project.A CURRENTVERSION
+     Project.B CURRENTVERSION
+"""
+
+    let globalVersion = SemVer.Parse "1.0"
+    let specificVersion = SemVer.Parse "2.0"
+    let customVersions = Map.ofList [("Project.C", specificVersion); ("Project.B", specificVersion)]
+    let version,sut =
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), Some(globalVersion), customVersions, strToStream fileContent)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (info, opt) -> info.Version, opt
+           | ProjectInfo (info, opt) -> info.Version, opt
+
+    version |> shouldEqual (Some specificVersion)
+
+    match sut.Dependencies with
+    | [name1,range1;name2,range2;name3,range3] ->
+        name1 |> shouldEqual (PackageName "FSharp.Core")
+        range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
+        name2 |> shouldEqual (PackageName "Project.A")
+        range2.Range |> shouldEqual (Specific globalVersion)
+        name3 |> shouldEqual (PackageName "Project.B")
+        range3.Range |> shouldEqual (Specific specificVersion)
     | _ -> Assert.Fail()
 
 [<Test>]
@@ -320,7 +358,7 @@ GITHUB
       Octokit"""
 
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockFile), Some(SemVer.Parse "2.1"), strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",toLines lockFile), Some(SemVer.Parse "2.1"), Map.empty, strToStream fileContent)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -349,7 +387,7 @@ files
     someDir ==> lib
 """
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -375,7 +413,7 @@ version
     1.0
 """
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -403,7 +441,7 @@ version
     1.0
 """
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -430,7 +468,7 @@ files
     anotherDir ==> someLib
 """
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -459,7 +497,7 @@ files
     !dontWantThis.txt
 """
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -485,7 +523,7 @@ files
     !dontWantThat.txt
 """
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -511,7 +549,7 @@ files
     ! excludeDir
 """
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -527,7 +565,7 @@ let ProjectType1 = """type project
 [<TestCase(ProjectType1)>]
 let ``Parsing minimal project based packages works`` (fileContent) =
     let result =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream fileContent)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
         |> returnOrFail
 
     match result with
@@ -571,7 +609,7 @@ files
   ../../build/bin/Angebot.Contracts.pdb ==> lib
 """
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -642,7 +680,7 @@ files
 
 """
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)
@@ -687,7 +725,7 @@ excludeddependencies
   Microsoft.Net.Compilers"""
 
     let sut =
-        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, strToStream text)
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream text)
         |> returnOrFail
         |> function
            | CompleteInfo (_, opt)

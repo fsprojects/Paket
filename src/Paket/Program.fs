@@ -217,6 +217,7 @@ let pack (results : ParseResults<_>) =
                       ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>,
                       ?buildPlatform = results.TryGetResult <@ PackArgs.BuildPlatform @>,
                       ?version = results.TryGetResult <@ PackArgs.Version @>,
+                      specificVersions = results.GetResults <@ PackArgs.SpecificVersion @>,
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
                       ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>,
                       excludedTemplates = results.GetResults <@ PackArgs.ExcludedTemplate @>,
