@@ -1,4 +1,4 @@
-#### 2.37.0-alpha001 - 19.12.2015
+#### 2.37.0-alpha002 - 20.12.2015
 * Paket checks PackageDetails only for sources that responded with versions for a package - https://github.com/fsprojects/Paket/issues/1317
 * Implemented support for specifying per-template versions in paket pack - https://github.com/fsprojects/Paket/pull/1314
 * Added support for relative src link to package content - https://github.com/fsprojects/Paket/pull/1311

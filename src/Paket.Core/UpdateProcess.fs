@@ -25,15 +25,6 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
         | true,versions -> versions
         |> List.toSeq
         
-    let getPreferredVersionsF (preferredVersions:Map<(GroupName * PackageName),SemVerInfo * (PackageSources.PackageSource list)>) changedDependencies sources resolverStrategy groupName packageName = 
-        seq { 
-            match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy, changedDependencies |> Set.exists ((=) (groupName, packageName)) with
-            | Some v, ResolverStrategy.Min, _
-            | Some v, _, false -> yield v
-            | _ -> ()
-            yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
-        }
-
     let dependenciesFile =
         let processFile createRequirementF =
           lockFile.GetGroupedResolution()
@@ -132,8 +123,19 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
         let preferredVersions = 
             DependencyChangeDetection.GetPreferredNuGetVersions lockFile
             |> Map.map (fun k (v,s) -> v,[s])
-            |> getPreferredVersionsF
-        preferredVersions changes,groups
+
+        let getVersionsF sources resolverStrategy groupName packageName = 
+            seq { 
+                match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy with
+                | Some x, ResolverStrategy.Min -> yield x
+                | Some x, _ -> 
+                    if not (changes |> Set.contains (groupName, packageName)) then
+                        yield x
+                | _ -> ()
+                yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
+            } |> Seq.cache
+
+        getVersionsF,groups
 
     let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate, updateMode)
 
