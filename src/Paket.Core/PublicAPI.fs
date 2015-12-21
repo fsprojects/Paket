@@ -21,6 +21,15 @@ type Dependencies(dependenciesFileName: string) =
                 groupName.ToString(),packageName.ToString(),kv.Value.Version.ToString())
         |> Seq.toList
 
+        
+    /// Clears the NuGet cache
+    static member ClearCache() = 
+        Directory.EnumerateFiles(NuGet.CacheFolder,"*.*",SearchOption.AllDirectories)
+        |> Seq.iter (fun file ->
+            try
+                File.Delete(file)
+            with
+            | _ -> ())
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate(): Dependencies = Dependencies.Locate(Environment.CurrentDirectory)

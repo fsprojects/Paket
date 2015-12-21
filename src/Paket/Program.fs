@@ -137,6 +137,9 @@ let init (results : ParseResults<InitArgs>) =
     Dependencies.Init()
     Dependencies.Locate().DownloadLatestBootstrapper()
 
+let clearCache (results : ParseResults<ClearCacheArgs>) =
+    Dependencies.ClearCache()
+
 let install (results : ParseResults<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
     let hard = results.Contains <@ InstallArgs.Hard @>
@@ -333,6 +336,7 @@ let main() =
             let handler =
                 match command with
                 | Add -> processCommand add
+                | ClearCache -> processCommand clearCache
                 | Config -> processWithValidation validateConfig config
                 | ConvertFromNuget -> processCommand convert
                 | FindRefs -> processCommand findRefs

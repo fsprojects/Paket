@@ -6,6 +6,7 @@ open Nessos.Argu
 
 type Command =
     | [<First>][<CustomCommandLine("add")>]                     Add
+    | [<First>][<CustomCommandLine("clear-cache")>]             ClearCache
     | [<First>][<CustomCommandLine("config")>]                  Config
     | [<First>][<CustomCommandLine("convert-from-nuget")>]      ConvertFromNuget
     | [<First>][<CustomCommandLine("find-refs")>]               FindRefs 
@@ -28,6 +29,7 @@ with
         member this.Usage =
             match this with
             | Add -> "Adds a new package to your paket.dependencies file."
+            | ClearCache -> "Clears the NuGet cache folder."
             | Config -> "Allows to store global configuration values like NuGet credentials."
             | ConvertFromNuget -> "Converts from using NuGet to Paket."
             | FindRefs -> "Finds all project files that have the given NuGet packages installed."
@@ -186,6 +188,13 @@ with
             | Interactive -> "Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
+
+
+type ClearCacheArgs =
+    | [<Hidden>] NoArg
+with
+    interface IArgParserTemplate with
+        member __.Usage = ""
 
 type RestoreArgs =
     | [<AltCommandLine("-f")>] Force
@@ -370,6 +379,7 @@ let markdown (command : Command) (additionalText : string) =
     let syntax, options = 
         match command with
         | Add -> syntaxAndOptions (ArgumentParser.Create<AddArgs>())
+        | ClearCache -> syntaxAndOptions (ArgumentParser.Create<ClearCacheArgs>())
         | Config -> syntaxAndOptions (ArgumentParser.Create<ConfigArgs>())
         | ConvertFromNuget -> syntaxAndOptions (ArgumentParser.Create<ConvertFromNugetArgs>())
         | FindRefs -> syntaxAndOptions (ArgumentParser.Create<FindRefsArgs>())

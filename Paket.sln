@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
@@ -63,6 +63,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{44
 	ProjectSection(SolutionItems) = preProject
 		docs\content\commands\add.md = docs\content\commands\add.md
 		docs\content\commands\auto-restore.md = docs\content\commands\auto-restore.md
+		docs\content\commands\clear-cache.md = docs\content\commands\clear-cache.md
 		docs\content\commands\config.md = docs\content\commands\config.md
 		docs\content\commands\convert-from-nuget.md = docs\content\commands\convert-from-nuget.md
 		docs\content\commands\find-package-versions.md = docs\content\commands\find-package-versions.md
