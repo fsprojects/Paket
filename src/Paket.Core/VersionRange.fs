@@ -140,12 +140,12 @@ type VersionRequirement =
             | exn -> failwithf "Error while parsing %s%sMessage: %s" text Environment.NewLine exn.Message
 
         let parseRange (text:string) =
-            let failParse() = failwithf "unable to parse %s" text
 
-            let parseBound  = function
+            let parseBound s = 
+                match s with
                 | '[' | ']' -> VersionRangeBound.Including
                 | '(' | ')' -> VersionRangeBound.Excluding
-                | _         -> failParse()
+                | _         -> failwithf "unable to parse bound %O in %s" s text
 
             let parsed =
                 if not <| text.Contains "," then
@@ -170,14 +170,15 @@ type VersionRequirement =
                             | VersionRangeBound.Excluding, VersionRangeBound.Including -> Maximum(versions.[0])
                             | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> LessThan(versions.[0])
                             | VersionRangeBound.Including, VersionRangeBound.Including -> Maximum(versions.[0])
-                            | _ -> failParse()
+                            | _ -> failwithf "unable to parse %s" text
                         else
                             match fromB, toB with
                             | VersionRangeBound.Excluding, VersionRangeBound.Excluding -> GreaterThan(versions.[0])
                             | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
                             | VersionRangeBound.Including, VersionRangeBound.Excluding -> Minimum(versions.[0])
-                            | _ -> failParse()
-                    | _ -> failParse()
+                            | _ -> failwithf "unable to parse %s" text
+                    | 0 -> Minimum(SemVer.Parse "0")
+                    | _ -> failwithf "unable to parse %s" text
             match parsed with
             | Range(fromB, from, _to, _toB) -> 
                 if (fromB = VersionRangeBound.Including) && (_toB = VersionRangeBound.Including) && (from = _to) then
