@@ -48,22 +48,16 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
     async {
         if not force && cacheFile.Exists then
             let json = File.ReadAllText(cacheFile.FullName)
-            let result =
-                try
-                    let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache> json
-                    ok cachedObject
-                with
-                | exn -> 
-                    fail exn
-            return!
-                match result with
-                | Ok (cachedObject, _) -> 
-                    if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
-                        cacheFile.Delete()
-                        get()
-                    else
-                        async { return cachedObject }
-                | _ -> get()
+            try
+                let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache> json
+                    
+                if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
+                    cacheFile.Delete()
+                    return! get()
+                else
+                    return cachedObject
+            with
+            | exn -> return! get()
         else
             return! get()
     }
