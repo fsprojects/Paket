@@ -4,6 +4,7 @@
 * Implemented support for specifying per-template versions in paket pack - https://github.com/fsprojects/Paket/pull/1314
 * Added support for relative src link to package content - https://github.com/fsprojects/Paket/pull/1311
 * BUGFIX: Fix NullReferenceException - https://github.com/fsprojects/Paket/issues/1307
+* BUGFIX: Check that cached NuGet package belongs to requested package
 * BUGFIX: NuGet packages with FrameworkAssembly nodes did not work - https://github.com/fsprojects/Paket/issues/1306
 * Paket install did an unnecessary update when framework restriction were present - https://github.com/fsprojects/Paket/issues/1305
 * COSMETICS: No need to show cache warnings

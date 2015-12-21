@@ -53,7 +53,9 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
             try
                 let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache> json
                     
-                if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
+                if (cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion) ||
+                  (PackageName cachedObject.PackageName <> packageName)
+                then
                     cacheFile.Delete()
                     return! get()
                 else
