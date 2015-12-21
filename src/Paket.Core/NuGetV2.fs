@@ -85,19 +85,19 @@ let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) =
             with _ -> return None
     }
 
-let tryNuGetV3 (auth, nugetV3Url, package:PackageName) = 
+let tryNuGetV3 (source, auth, nugetV3Url, package:PackageName) = 
     async { 
         try 
             let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
             match data with
-            | Some data -> return Some data
+            | Some data -> return Some (source,data)
             | _ -> return None
         with exn -> return None
     }
 
 
 /// Gets versions of the given package from local Nuget feed.
-let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
+let getAllVersionsFromLocalPath (source, localNugetPath, package:PackageName, root) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
@@ -111,7 +111,7 @@ let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
                             let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                             if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
             |> Seq.toArray
-        return Some versions
+        return Some(source,versions)
     }
 
 
@@ -469,7 +469,16 @@ let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName
                 verbosefn "  to %s" targetFileName
                 let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
-                let request = HttpWebRequest.Create(Uri nugetPackage.DownloadUrl) :?> HttpWebRequest
+                let downloadUri = 
+                    if Uri.IsWellFormedUriString(nugetPackage.DownloadUrl, UriKind.Absolute) then
+                        Uri nugetPackage.DownloadUrl
+                    else
+                        let sourceUrl =
+                            if nugetPackage.SourceUrl.EndsWith("/") then nugetPackage.SourceUrl
+                            else nugetPackage.SourceUrl + "/"
+                        Uri(Uri sourceUrl,  nugetPackage.DownloadUrl)
+
+                let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
                 request.UserAgent <- "Paket"
 
@@ -598,7 +607,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
 
 let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
-let getVersionsCached key f (auth, nugetURL, package) =
+let getVersionsCached key f (source, auth, nugetURL, package) =
     async {
         match protocolCache.TryGetValue((auth, nugetURL)) with
         | true, v when v <> key -> return None
@@ -607,7 +616,7 @@ let getVersionsCached key f (auth, nugetURL, package) =
             match result with
             | Some x ->
                 protocolCache.TryAdd((auth, nugetURL), key) |> ignore
-                return Some x
+                return Some (source, x)
             | _ -> return None
     }
 
@@ -615,19 +624,20 @@ let getVersionsCached key f (auth, nugetURL, package) =
 let GetVersions root (sources, packageName:PackageName) = 
     let getVersions() =
         sources
-        |> Seq.map (function
+        |> Seq.map (fun nugetSource -> 
+                   match nugetSource with
                    | Nuget source -> 
                         let auth = source.Authentication |> Option.map toBasicAuth
                         let v3Feeds = 
                             match NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) with
                             | None -> []
-                            | Some v3Url -> [ tryNuGetV3 (auth, v3Url, packageName) ]
+                            | Some v3Url -> [ tryNuGetV3 (nugetSource, auth, v3Url, packageName) ]
 
                         let v2Feeds =
-                            [ yield getVersionsCached "OData" tryGetPackageVersionsViaOData (auth, source.Url, packageName)
-                              yield getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (auth, source.Url, packageName)
+                            [ yield getVersionsCached "OData" tryGetPackageVersionsViaOData (nugetSource, auth, source.Url, packageName)
+                              yield getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName)
                               if not (source.Url.ToLower().Contains "teamcity" || source.Url.ToLower().Contains "feedservice.svc") then
-                                yield getVersionsCached "Json" tryGetPackageVersionsViaJson (auth, source.Url, packageName)
+                                yield getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName)
                               ]
 
                         v2Feeds @ v3Feeds
@@ -636,18 +646,20 @@ let GetVersions root (sources, packageName:PackageName) =
                             async {
                                 let! autoCompleteUrl = PackageSources.getNugetV3Resource source AllVersionsAPI
                                 return!
-                                    tryNuGetV3 (source.Authentication |> Option.map toBasicAuth, 
+                                    tryNuGetV3 (nugetSource, 
+                                                source.Authentication |> Option.map toBasicAuth, 
                                                 autoCompleteUrl,
                                                 packageName)
                             }
                         
                         [ resp ]
-                   | LocalNuget path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
+                   | LocalNuget path -> [ getAllVersionsFromLocalPath (nugetSource, path, packageName, root) ])
         |> Seq.toArray
         |> Array.map Async.Choice
         |> Async.Parallel
         |> Async.RunSynchronously
         |> Array.choose id
+        |> Array.map (fun (s,versions) -> versions |> Array.map (fun v -> v,s))
         |> Array.concat
 
     let versions = 
@@ -657,4 +669,5 @@ let GetVersions root (sources, packageName:PackageName) =
 
     versions
     |> Seq.toList
-    |> List.map SemVer.Parse
+    |> List.groupBy fst
+    |> List.map (fun (v,s) -> SemVer.Parse v,s |> List.map snd)

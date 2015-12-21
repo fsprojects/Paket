@@ -11,10 +11,11 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
         let isTransitive (packageName) = allTransitives groupName |> Seq.contains packageName
         let settingsChanged =
             if newRequirement.Settings <> originalPackage.Settings then
-                if newRequirement.Settings.FrameworkRestrictions <> originalPackage.Settings.FrameworkRestrictions then                  
+                if newRequirement.Settings.FrameworkRestrictions <> originalPackage.Settings.FrameworkRestrictions then
                   isTransitive originalPackage.Name |> not
-                else false
+                else true
             else false
+
         newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not || settingsChanged
 
     let added groupName =
@@ -161,5 +162,5 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
 
 let GetPreferredNuGetVersions (oldLockFile:LockFile) =
     oldLockFile.GetGroupedResolution()
-    |> Seq.map (fun kv -> kv.Key, kv.Value.Version)
+    |> Seq.map (fun kv -> kv.Key, (kv.Value.Version, kv.Value.Source))
     |> Map.ofSeq

@@ -247,7 +247,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
 let findAllReferencesFiles root =
     root
     |> ProjectFile.FindAllProjects
-    |> Array.map (fun p ->         
+    |> Array.map (fun p ->
         match ProjectFile.FindReferencesFile(FileInfo p.FileName) with
         | Some fileName -> 
                 try

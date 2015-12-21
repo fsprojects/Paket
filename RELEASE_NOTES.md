@@ -1,3 +1,12 @@
+#### 2.37.0-alpha003 - 20.12.2015
+* Paket checks PackageDetails only for sources that responded with versions for a package - https://github.com/fsprojects/Paket/issues/1317
+* Implemented support for specifying per-template versions in paket pack - https://github.com/fsprojects/Paket/pull/1314
+* Added support for relative src link to package content - https://github.com/fsprojects/Paket/pull/1311
+* BUGFIX: Fix NullReferenceException - https://github.com/fsprojects/Paket/issues/1307
+* BUGFIX: NuGet packages with FrameworkAssembly nodes did not work - https://github.com/fsprojects/Paket/issues/1306
+* Paket install did an unnecessary update when framework restriction were present - https://github.com/fsprojects/Paket/issues/1305
+* COSMETICS: No need to show cache warnings
+
 #### 2.36.0 - 10.12.2015
 * Getting assembly metadata without loading the assembly - https://github.com/fsprojects/Paket/pull/1293
 

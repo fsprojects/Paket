@@ -113,6 +113,7 @@ nuget NUnit"""
     
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
+    |> Map.map (fun k (v,_) -> v)
     |> shouldEqual expected
 
 [<Test>]
@@ -159,6 +160,7 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
     
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
+    |> Map.map (fun k (v,_) -> v)
     |> shouldEqual expected
 
 [<Test>]
