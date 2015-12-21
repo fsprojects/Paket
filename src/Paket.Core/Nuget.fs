@@ -10,6 +10,7 @@ open System.IO
 open Chessie.ErrorHandling
 
 open Newtonsoft.Json
+open System
 
 type NugetPackageCache =
     { Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
@@ -24,21 +25,22 @@ type NugetPackageCache =
 
 /// The NuGet cache folder.
 let CacheFolder = 
-    let appData = System.Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData)
+    let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
     let di = DirectoryInfo(Path.Combine(Path.Combine(appData, "NuGet"), "Cache"))
     if not di.Exists then
         di.Create()
     di.FullName
 
 let inline normalizeUrl(url:string) = url.Replace("https","http").Replace("www.","")
-let cacheFile nugetURL (packageName:PackageName) (version:SemVerInfo) =
+
+let getCacheFileName nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let h = nugetURL |> normalizeUrl |> hash |> abs
     let packageUrl = sprintf "%O.%s.s%d.json" packageName (version.Normalize()) h
     FileInfo(Path.Combine(CacheFolder,packageUrl))
 
 
 let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> NugetPackageCache Async) : NugetPackageCache Async = 
-    let cacheFile = cacheFile nugetURL packageName version
+    let cacheFile = getCacheFileName nugetURL packageName version
     let get() = 
         async {
             let! result = get()
