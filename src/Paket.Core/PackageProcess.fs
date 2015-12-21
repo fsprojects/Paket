@@ -10,11 +10,11 @@ open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
 
-let private merge buildConfig buildPlatform versionFromAssembly projectFile templateFile = 
+let private merge buildConfig buildPlatform versionFromAssembly specificVersions projectFile templateFile = 
     let withVersion =
         match versionFromAssembly with
         | None -> templateFile
-        | Some v -> templateFile |> TemplateFile.setVersion (Some v) Map.empty
+        | Some v -> templateFile |> TemplateFile.setVersion (Some v) specificVersions
 
     match withVersion with
     | { Contents = ProjectInfo(md, opt) } -> 
@@ -123,7 +123,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             |> Array.map (fun (projectFile,templateFile) ->
                 allTemplateFiles.Remove(templateFile.FileName) |> ignore
 
-                let merged = merge buildConfig buildPlatform version projectFile templateFile
+                let merged = merge buildConfig buildPlatform version specificVersions projectFile templateFile
                 Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile))
             |> Map.ofArray
 
@@ -141,7 +141,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
 
                 match allProjectFiles with
                 | [ projectFile ] ->
-                    merge buildConfig buildPlatform version projectFile templateFile
+                    merge buildConfig buildPlatform version specificVersions projectFile templateFile
                     |> optWithSymbols projectFile
                 | [] -> failwithf "There was no project file found for template file %s" fileName
                 | _ -> failwithf "There was more than one project file found for template file %s" fileName
