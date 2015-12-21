@@ -226,25 +226,6 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
             return parseODataDetails(nugetURL,packageName,version,raw)
     }
 
-let private loadFromCacheOrODataOrV3 force fileName (auth,nugetURL) package version = 
-    async {
-        if not force && File.Exists fileName then
-            try 
-                let json = File.ReadAllText(fileName)
-                let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache> json
-                if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
-                    let! details = getDetailsFromNuGetViaOData auth nugetURL package version
-                    return true,details
-                else
-                    return false,cachedObject
-            with _ -> 
-                let! details = getDetailsFromNuGetViaOData auth nugetURL package version
-                return true,details
-        else
-            let! details = getDetailsFromNuGetViaOData auth nugetURL package version
-            return true,details
-    }
-
 let deleteErrorFile (packageName:PackageName) =
     let di = DirectoryInfo(CacheFolder)
     for errorFile in di.GetFiles(sprintf "*%O*.failed" packageName) do
