@@ -201,7 +201,7 @@ let getCatalog url auth =
             | Some x -> JsonConvert.DeserializeObject<Catalog>(x)
     }
 
-let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
+let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NuGetPackageCache> =
     async {
         let! registrationData = getRegistration source packageName version
         let! catalogData = getCatalog registrationData.CatalogEntry (source.Authentication |> Option.map toBasicAuth)
@@ -239,7 +239,8 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
               Unlisted = unlisted
               DownloadUrl = registrationData.PackageContent
               LicenseUrl = catalogData.LicenseUrl
-              CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion }
+              Version = version.Normalize()
+              CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion }
     }
 
 let loadFromCacheOrGetDetails (force:bool)
@@ -251,8 +252,8 @@ let loadFromCacheOrGetDetails (force:bool)
         if not force && File.Exists cacheFileName then
             try 
                 let json = File.ReadAllText(cacheFileName)
-                let cachedObject = JsonConvert.DeserializeObject<NuGet.NugetPackageCache> json
-                if cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion then
+                let cachedObject = JsonConvert.DeserializeObject<NuGet.NuGetPackageCache> json
+                if cachedObject.CacheVersion <> NuGetPackageCache.CurrentCacheVersion then
                     let! details = getPackageDetails source packageName version
                     return true,details
                 else
@@ -266,7 +267,7 @@ let loadFromCacheOrGetDetails (force:bool)
     }
     
 /// Uses the NuGet v3 registration endpoint to retrieve package details .
-let GetPackageDetails (force:bool) (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NugetPackageCache> =
+let GetPackageDetails (force:bool) (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NuGetPackageCache> =
     getDetailsFromCacheOr
         force
         source.Url

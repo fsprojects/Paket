@@ -12,16 +12,17 @@ open Chessie.ErrorHandling
 open Newtonsoft.Json
 open System
 
-type NugetPackageCache =
+type NuGetPackageCache =
     { Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
       PackageName : string
       SourceUrl: string
       Unlisted : bool
       DownloadUrl : string
       LicenseUrl : string
+      Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "2.2"
+    static member CurrentCacheVersion = "2.4"
 
 /// The NuGet cache folder.
 let CacheFolder = 
@@ -39,7 +40,7 @@ let getCacheFileName nugetURL (packageName:PackageName) (version:SemVerInfo) =
     FileInfo(Path.Combine(CacheFolder,packageUrl))
 
 
-let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> NugetPackageCache Async) : NugetPackageCache Async = 
+let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> NuGetPackageCache Async) : NuGetPackageCache Async = 
     let cacheFile = getCacheFileName nugetURL packageName version
     let get() = 
         async {
@@ -51,10 +52,11 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
         if not force && cacheFile.Exists then
             let json = File.ReadAllText(cacheFile.FullName)
             try
-                let cachedObject = JsonConvert.DeserializeObject<NugetPackageCache> json
+                let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
                     
-                if (cachedObject.CacheVersion <> NugetPackageCache.CurrentCacheVersion) ||
-                  (PackageName cachedObject.PackageName <> packageName)
+                if (cachedObject.CacheVersion <> NuGetPackageCache.CurrentCacheVersion) ||
+                  (PackageName cachedObject.PackageName <> packageName) ||
+                  (cachedObject.Version <> version.Normalize())
                 then
                     cacheFile.Delete()
                     return! get()

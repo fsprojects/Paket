@@ -1,4 +1,4 @@
-#### 2.37.0-alpha005 - 21.12.2015
+#### 2.37.0 - 21.12.2015
 * New "clear-cache" command allows to clear the NuGet cache - http://fsprojects.github.io/Paket/paket-clear-cache.html
 * Paket checks PackageDetails only for sources that responded with versions for a package - https://github.com/fsprojects/Paket/issues/1317
 * Implemented support for specifying per-template versions in paket pack - https://github.com/fsprojects/Paket/pull/1314

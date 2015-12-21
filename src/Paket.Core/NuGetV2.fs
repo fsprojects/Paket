@@ -115,7 +115,7 @@ let getAllVersionsFromLocalPath (source, localNugetPath, package:PackageName, ro
     }
 
 
-let parseODataDetails(nugetURL,packageName:PackageName,version,raw) = 
+let parseODataDetails(nugetURL,packageName:PackageName,version:SemVerInfo,raw) = 
     let doc = XmlDocument()
     doc.LoadXml raw
                 
@@ -137,6 +137,11 @@ let parseODataDetails(nugetURL,packageName:PackageName,version,raw) =
             | _ -> DateTime.MinValue
         | _ -> DateTime.MinValue
     
+    let v = 
+        match entry |> getNode "properties" |> optGetNode "Version" with
+        | Some node -> node.InnerText
+        | _ -> failwithf "Could not get official version no. for package %O %O" packageName version
+        
     let downloadLink =
         match entry |> getNode "content" |> optGetAttribute "type", 
               entry |> getNode "content" |> optGetAttribute "src"  with
@@ -178,8 +183,9 @@ let parseODataDetails(nugetURL,packageName:PackageName,version,raw) =
       DownloadUrl = downloadLink
       Dependencies = dependencies
       SourceUrl = nugetURL
-      CacheVersion = NugetPackageCache.CurrentCacheVersion
+      CacheVersion = NuGetPackageCache.CurrentCacheVersion
       LicenseUrl = licenseUrl
+      Version = (SemVer.Parse v).Normalize()
       Unlisted = publishDate = Constants.MagicUnlistingDate }
 
 
@@ -303,8 +309,9 @@ let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (versi
               DownloadUrl = packageName.ToString()
               Dependencies = Requirements.optimizeDependencies nuspec.Dependencies
               SourceUrl = di.FullName
-              CacheVersion = NugetPackageCache.CurrentCacheVersion
+              CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
+              Version = version.Normalize()
               Unlisted = false }
     }
 

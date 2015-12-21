@@ -24,7 +24,8 @@ let ``can detect explicit dependencies for Fantomas``() =
           Dependencies = [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), []]
           Unlisted = false
           LicenseUrl = "http://github.com/dungpa/fantomas/blob/master/LICENSE.md"
-          CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion
+          CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
+          Version = "1.6.0"
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -38,7 +39,8 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
                  PackageName "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), []]
           Unlisted = true
           LicenseUrl = "http://go.microsoft.com/fwlink/?LinkID=261272"
-          CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion
+          Version = "2.3.0"
+          CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -51,7 +53,8 @@ let ``can detect explicit dependencies for EasyNetQ``() =
                 [PackageName "RabbitMQ.Client",DependenciesFileParser.parseVersionRequirement(">= 3.4.3"), []]
           Unlisted = false
           LicenseUrl = "https://github.com/mikehadlow/EasyNetQ/blob/master/licence.txt"
-          CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion
+          CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
+          Version = "0.40.3.352"
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -61,8 +64,9 @@ let ``can detect explicit dependencies for Fleece``() =
         { PackageName = "Fleece"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fleece/0.4.0"
           Unlisted = false
-          CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion
+          CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           LicenseUrl = "https://raw.github.com/mausch/Fleece/master/LICENSE"
+          Version = "0.4.0"
           Dependencies = 
             [PackageName "FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"), []
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), []
@@ -77,8 +81,9 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
         { PackageName = "ReadOnlyCollectionExtensions"
           DownloadUrl = "http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0"
           Unlisted = false
-          CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion
+          CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           LicenseUrl = "https://github.com/mausch/ReadOnlyCollections/blob/master/license.txt"
+          Version = "1.2.0"
           Dependencies = 
             [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))]
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), 
@@ -93,8 +98,9 @@ let ``can detect explicit dependencies for Math.Numerics``() =
         { PackageName = "MathNet.Numerics"
           DownloadUrl = "http://www.nuget.org/api/v2/package/MathNet.Numerics/3.3.0"
           Unlisted = false
+          Version = "3.3.0"
           LicenseUrl = "http://numerics.mathdotnet.com/docs/License.html"
-          CacheVersion = NuGet.NugetPackageCache.CurrentCacheVersion
+          CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Dependencies = 
             [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]]
           SourceUrl = fakeUrl }
