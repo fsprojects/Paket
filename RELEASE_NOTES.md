@@ -1,3 +1,6 @@
+#### 2.37.2 - 22.12.2015
+* PERFORMANCE: Keep traffic for GetVersions and GetPackageDetails low
+
 #### 2.37.1 - 21.12.2015
 * Support new NuGet version range for empty restrictions
 

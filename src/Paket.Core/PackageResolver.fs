@@ -126,7 +126,7 @@ type Resolution =
                         match x.Parent with
                         | DependenciesFile _ ->
                             sprintf "   - Dependencies file requested: %s%s" vr pr |> addToError
-                        | Package(parentName,version) ->
+                        | Package(parentName,version,_) ->
                             sprintf "   - %O %O requested: %s%s" parentName version vr pr |> addToError)
 
             match this.GetConflicts() with
@@ -153,7 +153,7 @@ type Resolution =
                 "  Please try to relax some conditions."
             |> failwithf "%s"
 
-let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,(versionToExplore,packageSource),dependency,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
+let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,(versionToExplore,_,_),dependency,closed:Set<PackageRequirement>,stillOpen:Set<PackageRequirement>) =
     let dependenciesByName =
         // there are packages which define multiple dependencies to the same package
         // we just take the latest one - see #567
@@ -170,7 +170,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
             |> filterRestrictions globalFrameworkRestrictions
         { dependency with Name = n
                           VersionRequirement = v
-                          Parent = Package(dependency.Name, versionToExplore)
+                          Parent = Package(dependency.Name, versionToExplore, exploredPackage.Source)
                           Graph = [dependency] @ dependency.Graph
                           Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
     |> Set.filter (fun d ->
@@ -217,7 +217,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
     let conflictHistory = Dictionary<PackageName,int>()
     let knownConflicts = HashSet<_>()
 
-    let getExploredPackage(dependency:PackageRequirement,(version,packageSources)) =
+    let getExploredPackage(dependency:PackageRequirement,(version,preferredSource,packageSources)) =
         let key = dependency.Name,version
         match exploredPackages.TryGetValue key with
         | true,package -> 
@@ -238,7 +238,14 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
 
             let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
             
-            let packageDetails : PackageDetails = getPackageDetailsF packageSources dependency.Name version
+            let packageDetails : PackageDetails = 
+                match preferredSource with
+                | None -> getPackageDetailsF packageSources dependency.Name version
+                | Some preferredSource ->
+                    try
+                        getPackageDetailsF [preferredSource] dependency.Name version
+                    with
+                    | _ -> getPackageDetailsF packageSources dependency.Name version
 
             let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
 
@@ -261,7 +268,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             exploredPackages.Add(key,explored)
             explored
 
-    let rec step (filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
+    let rec step (filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource option * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
         if Set.isEmpty openRequirements then Resolution.Ok(cleanupNames currentResolution) else
         verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
         
@@ -336,15 +343,23 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     | false -> combined
 
             // we didn't select a version yet so all versions are possible
-            let isInRange mapF (ver,ps) =
+            let isInRange mapF (ver,_,_) =
                 currentRequirements
                 |> Seq.forall (fun r -> (mapF r).VersionRequirement.IsInRange ver)
 
-            availableVersions := 
+            let getSingleVersion v =
+                match currentRequirement.Parent with
+                | PackageRequirementSource.Package(_,_,parentSource) -> 
+                    Seq.singleton (v,Some parentSource, sources)
+                | _ -> Seq.singleton (v,None,sources)
+
+            availableVersions :=
                 match currentRequirement.VersionRequirement.Range with
-                | OverrideAll v -> Seq.singleton (v,sources)
-                | Specific v -> Seq.singleton (v,sources)
-                | _ -> getVersionsF sources resolverStrategy groupName currentRequirement.Name
+                | OverrideAll v -> getSingleVersion v
+                | Specific v -> getSingleVersion v
+                | _ -> 
+                    getVersionsF sources resolverStrategy groupName currentRequirement.Name
+                    |> Seq.map (fun (v,s) -> v,None,s)
                 |> Seq.cache
 
             let preRelease v =
@@ -361,7 +376,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             else
                 if Seq.isEmpty !compatibleVersions then
                     let prereleases = Seq.filter (isInRange (fun r -> r.IncludingPrereleases())) (!availableVersions) |> Seq.toList
-                    let allPrereleases = prereleases |> List.filter (fun (v,ps) -> v.PreRelease <> None) = prereleases
+                    let allPrereleases = prereleases |> List.filter (fun (v,_,_) -> v.PreRelease <> None) = prereleases
                     if allPrereleases then
                         availableVersions := Seq.ofList prereleases
                         compatibleVersions := Seq.ofList prereleases
@@ -373,11 +388,11 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 compatibleVersions := List.toSeq versions
             else
                 compatibleVersions := 
-                    Seq.filter (fun (v,ps) -> currentRequirement.VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
+                    Seq.filter (fun (v,_,_) -> currentRequirement.VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
 
                 if Seq.isEmpty !compatibleVersions then
                     compatibleVersions := 
-                        Seq.filter (fun (v,ps) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
+                        Seq.filter (fun (v,_,_) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
 
         if Seq.isEmpty !compatibleVersions then
             // boost the conflicting package, in order to solve conflicts faster

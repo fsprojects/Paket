@@ -479,7 +479,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
         |> List.map (fun source -> async {
             try 
                 match source with
-                | NuGetV2 nugetSource -> 
+                | NuGetV2 nugetSource ->
                     let! result = 
                         getDetailsFromNuGet 
                             force 

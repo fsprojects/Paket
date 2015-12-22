@@ -425,7 +425,7 @@ type RemoteFileInstallSettings =
 
 type PackageRequirementSource =
 | DependenciesFile of string
-| Package of PackageName * SemVerInfo
+| Package of PackageName * SemVerInfo * PackageSource
     member this.IsRootRequirement() =
         match this with
         | DependenciesFile _ -> true
@@ -434,7 +434,7 @@ type PackageRequirementSource =
     override this.ToString() =
         match this with
         | DependenciesFile x -> x
-        | Package(name,version) ->
+        | Package(name,version,_) ->
           sprintf "%O %O" name version
 
 /// Represents an unresolved package.
