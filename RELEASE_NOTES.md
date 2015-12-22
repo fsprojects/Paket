@@ -1,3 +1,6 @@
+#### 2.37.6 - 22.12.2015
+* USABILITY: Don't use /odata for nuget.org or myget.org
+
 #### 2.37.5 - 22.12.2015
 * COSMETICS: Better error messages in GetVersions
 

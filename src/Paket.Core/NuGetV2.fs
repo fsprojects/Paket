@@ -229,7 +229,9 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
             let! raw =
                 match response with
                 | Some(r) -> async { return r }
-                | None ->
+                | _  when nugetURL.ToLower().Contains "myget.org" || nugetURL.ToLower().Contains "nuget.org" ->
+                    failwithf "Could not get package details for %O from %s" packageName nugetURL
+                | _ ->
                     let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
                     getXmlFromUrl(auth,url)
 
