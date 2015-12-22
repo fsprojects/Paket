@@ -1,17 +1,10 @@
-#### 2.37.6 - 22.12.2015
-* USABILITY: Don't use /odata for nuget.org or myget.org
-
-#### 2.37.5 - 22.12.2015
-* COSMETICS: Better error messages in GetVersions
-
-#### 2.37.4 - 22.12.2015
-* BUGFIX: paket pack ignored specific-version parameter - https://github.com/fsprojects/Paket/issues/1321
-
-#### 2.37.3 - 22.12.2015
-* PERFORMANCE: Keep traffic for GetVersions and GetPackageDetails low
-
-#### 2.37.1 - 21.12.2015
+#### 2.38.0 - 22.12.2015
 * Support new NuGet version range for empty restrictions
+* USABILITY: Don't use /odata for nuget.org or myget.org
+* BUGFIX: paket pack ignored specific-version parameter - https://github.com/fsprojects/Paket/issues/1321
+* COSMETICS: Better error messages in GetVersions
+* COSMETICS: Normalize NuGet source feeds in lock files
+* PERFORMANCE: Keep traffic for GetVersions and GetPackageDetails low
 
 #### 2.37.0 - 21.12.2015
 * New "clear-cache" command allows to clear the NuGet cache - http://fsprojects.github.io/Paket/paket-clear-cache.html
