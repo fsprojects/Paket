@@ -1,3 +1,6 @@
+#### 2.37.4 - 22.12.2015
+* BUGFIX: paket pack ignored specific-version parameter - https://github.com/fsprojects/Paket/issues/1321
+
 #### 2.37.3 - 22.12.2015
 * PERFORMANCE: Keep traffic for GetVersions and GetPackageDetails low
 
