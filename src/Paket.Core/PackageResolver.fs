@@ -245,7 +245,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     try
                         getPackageDetailsF [preferredSource] dependency.Name version
                     with
-                    | _ -> getPackageDetailsF packageSources dependency.Name version
+                    | _ -> getPackageDetailsF (List.filter (fun x -> x <> preferredSource) packageSources) dependency.Name version
 
             let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
 
@@ -351,7 +351,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 match currentRequirement.Parent with
                 | PackageRequirementSource.Package(_,_,parentSource) -> 
                     Seq.singleton (v,Some parentSource, sources)
-                | _ -> Seq.singleton (v,None,sources)
+                | _ -> Seq.singleton (v,Seq.tryHead sources,sources)
 
             availableVersions :=
                 match currentRequirement.VersionRequirement.Range with
