@@ -97,7 +97,7 @@ let ``should override graph3 conflict to package C``() =
         |> shouldEqual (PackageName "C")
 
 let configWithServices = """
-source https://nuget.org/api/v2
+source https://www.nuget.org/api/v2
 
 nuget Service 1.1.31.2
 nuget Service.Contracts 1.1.31.2
@@ -122,7 +122,7 @@ let ``should resolve simple config with services``() =
 
 
 let configWithServers = """
-source https://nuget.org/api/v2
+source https://www.nuget.org/api/v2
 
 
 nuget My.Company.PackageA.Server prerelease

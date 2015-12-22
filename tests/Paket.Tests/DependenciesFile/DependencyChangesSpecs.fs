@@ -11,14 +11,14 @@ open Paket.Domain
 let ``should detect no changes with global framework``() = 
     let before = """framework: >= net40
 
-source https://nuget.org/api/v2
+source https://www.nuget.org/api/v2
 
 nuget NLog framework: net40
 nuget NLog.Contrib"""
 
     let lockFileData = """FRAMEWORK: >= NET40
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     NLog (4.2.1)
     NLog.Contrib (1.0.0.2)
@@ -34,12 +34,12 @@ NUGET
 
 [<Test>]
 let ``should detect remove of single nuget package``() = 
-    let before = """source http://nuget.org/api/v2
+    let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net"""
 
     let lockFileData = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Core (3.3.3)
     Castle.Core-log4net (3.3.3)
@@ -56,7 +56,7 @@ nuget Castle.Windsor-log4net"""
     log4net (1.2.10)
 """
 
-    let after = """source http://nuget.org/api/v2"""
+    let after = """source http://www.nuget.org/api/v2"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
@@ -69,12 +69,12 @@ nuget Castle.Windsor-log4net"""
 
 [<Test>]
 let ``should detect addition of single nuget package``() = 
-    let before = """source http://nuget.org/api/v2
+    let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net"""
 
     let lockFileData = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Core (3.3.3)
     Castle.Core-log4net (3.3.3)
@@ -91,7 +91,7 @@ nuget Castle.Windsor-log4net"""
     log4net (1.2.10)
 """
 
-    let after = """source http://nuget.org/api/v2
+    let after = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net
 nuget NUnit"""
@@ -118,12 +118,12 @@ nuget NUnit"""
 
 [<Test>]
 let ``should ignore compatible version requirement change for nuget package``() = 
-    let before = """source http://nuget.org/api/v2
+    let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net >= 3.2.0"""
 
     let lockFileData = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Core (3.3.3)
     Castle.Core-log4net (3.3.3)
@@ -140,7 +140,7 @@ nuget Castle.Windsor-log4net >= 3.2.0"""
     log4net (1.2.10)
 """
 
-    let after = """source http://nuget.org/api/v2
+    let after = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net >= 3.3.0"""
 
@@ -165,12 +165,12 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
 
 [<Test>]
 let ``should detect incompatible version requirement change for nuget package``() = 
-    let before = """source http://nuget.org/api/v2
+    let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net >= 3.2.0"""
 
     let lockFileData = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Core (3.3.3)
     Castle.Core-log4net (3.3.3)
@@ -187,7 +187,7 @@ nuget Castle.Windsor-log4net >= 3.2.0"""
     log4net (1.2.10)
 """
 
-    let after = """source http://nuget.org/api/v2
+    let after = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net >= 3.4.0"""
 
@@ -202,12 +202,12 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
 
 [<Test>]
 let ``should detect addition content:none of single nuget package``() = 
-    let before = """source http://nuget.org/api/v2
+    let before = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net"""
 
     let lockFileData = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Core (3.3.3)
     Castle.Core-log4net (3.3.3)
@@ -224,7 +224,7 @@ nuget Castle.Windsor-log4net"""
     log4net (1.2.10)
 """
 
-    let after = """source http://nuget.org/api/v2
+    let after = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net content:none"""
 
@@ -235,7 +235,7 @@ nuget Castle.Windsor-log4net content:none"""
 
 [<Test>]
 let ``should repase detailed lock file``() = 
-    let before = """source https://nuget.org/api/v2
+    let before = """source https://www.nuget.org/api/v2
 
 nuget AutoMapper ~> 3.2
 nuget Castle.Windsor !~> 3.3
@@ -253,7 +253,7 @@ nuget SharpZipLib 0.86.0
 nuget Topshelf ~> 3.1"""
 
     let lockFileData = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     AutoMapper (3.3.1)
     C5 (1.0.2.0)
@@ -275,7 +275,7 @@ nuget Topshelf ~> 3.1"""
     Topshelf (3.1.4)
 """
 
-    let after = """source https://nuget.org/api/v2
+    let after = """source https://www.nuget.org/api/v2
 
 nuget AutoMapper ~> 3.2
 nuget Castle.Windsor !~> 3.3
@@ -309,7 +309,7 @@ github zurb/bower-foundation css/normalize.css
 github zurb/bower-foundation js/foundation.min.js"""
 
     let lockFileData = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     FAKE (4.4.4)
 GITHUB
@@ -341,7 +341,7 @@ github zurb/bower-foundation css/normalize.css
 github zurb/bower-foundation js/foundation.min.js"""
 
     let lockFileData = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     FAKE (4.4.4)
 GITHUB
@@ -374,7 +374,7 @@ github zurb/bower-foundation css/normalize.css
 github zurb/bower-foundation js/foundation.min.js"""
 
     let lockFileData = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     FAKE (4.4.4)
 GITHUB
@@ -405,7 +405,7 @@ github zurb/bower-foundation css/normalize.css
 github zurb/bower-foundation js/foundation.min.js"""
 
     let lockFileData = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     FAKE (4.4.4)
 GITHUB
@@ -444,7 +444,7 @@ group Build
 github SignalR/bower-signalr jquery.signalR.js"""
 
     let lockFileData = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     FAKE (4.4.4)
 GITHUB

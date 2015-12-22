@@ -114,8 +114,8 @@ let ``can detect explicit dependencies for Math.Numerics.FSharp``() =
 
 [<Test>]
 let ``can calculate v3 path``() = 
-    calculateNuGet3Path "https://nuget.org/api/v2" |> shouldEqual (Some "https://api.nuget.org/v3/index.json")
-    calculateNuGet3Path "http://nuget.org/api/v2" |> shouldEqual (Some "http://api.nuget.org/v3/index.json")
+    calculateNuGet3Path "https://www.nuget.org/api/v2" |> shouldEqual (Some "https://api.nuget.org/v3/index.json")
+    calculateNuGet3Path "http://www.nuget.org/api/v2" |> shouldEqual (Some "http://api.nuget.org/v3/index.json")
 
 [<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() = 

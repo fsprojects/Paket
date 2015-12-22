@@ -7,7 +7,7 @@ open TestHelpers
 open Paket.Domain
 
 let config1 = """
-source "https://nuget.org/api/v2"
+source "https://www.nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
 nuget "Rx-Main" "~> 2.0"
@@ -41,7 +41,7 @@ let ``should resolve simple config1``() =
 
 
 let config2 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget NUnit ~> 2.6
 nuget FsUnit ~> 1.3
@@ -61,7 +61,7 @@ let ``should resolve simple config2``() =
     getVersion resolved.[PackageName "NUnit"] |> shouldEqual "2.6.3"
 
 let config3 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Core" "= 3.2.0"
 nuget "Castle.Windsor-log4net" "= 3.2.0.1"
@@ -87,7 +87,7 @@ let ``should resolve fixed config``() =
 
 
 let config4 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Core" "= 3.2.0"
 nuget "Castle.Windsor-log4net" "~> 3.2"
@@ -102,7 +102,7 @@ let ``should resolve fixed config4``() =
     getVersion resolved.[PackageName "Castle.Core-log4net"] |> shouldEqual "3.2.0"
 
 let config5 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget Microsoft.AspNet.Mvc >= 6.0.0 prerelease
 """

@@ -8,7 +8,7 @@ open Paket.ModuleResolver
 open Paket.Domain
 
 let config1 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
 nuget "Rx-Main" "~> 2.0" """
@@ -31,7 +31,7 @@ let graph = [
 [<Test>]
 let ``should generate lock file for packages``() = 
     let expected = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
@@ -50,7 +50,7 @@ let ``should generate lock file for packages``() =
     |> shouldEqual (normalizeLineEndings expected)
 
 let configWithRestrictions = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
 nuget "Rx-Main" "~> 2.0" framework: >= net40 """
@@ -58,7 +58,7 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 [<Test>]
 let ``should generate lock file with framework restrictions for packages``() = 
     let expected = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1) - framework: net35
     Castle.Windsor-log4net (3.3) - framework: net35
@@ -105,7 +105,7 @@ let ``should generate lock file with no targets import for packages``() =
     |> shouldEqual (normalizeLineEndings expected)
 
 let configWithCopyLocal = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" ~> 3.2 copy_local: false, import_targets: false, framework: net35
 nuget "Rx-Main" "~> 2.0" framework: >= net40 """
@@ -113,7 +113,7 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 [<Test>]
 let ``should generate lock file with no copy local for packages``() = 
     let expected = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1) - copy_local: false, import_targets: false, framework: net35
     Castle.Windsor-log4net (3.3) - copy_local: false, import_targets: false, framework: net35
@@ -132,7 +132,7 @@ let ``should generate lock file with no copy local for packages``() =
 
 
 let configWithDisabledContent = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
 nuget "Rx-Main" "~> 2.0" content: none, framework: >= net40 """
@@ -140,7 +140,7 @@ nuget "Rx-Main" "~> 2.0" content: none, framework: >= net40 """
 [<Test>]
 let ``should generate lock file with disabled content for packages``() = 
     let expected = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1) - framework: net35
     Castle.Windsor-log4net (3.3) - framework: net35
@@ -214,7 +214,7 @@ let ``should generate lock file for RavenDB.Client``() =
     |> shouldEqual (normalizeLineEndings expected2)
 
 let config3 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "OtherVersionRanges.Package" "~> 1.0" """
 
@@ -226,7 +226,7 @@ let graph3 = [
 ]
 
 let expected3 = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     GreaterThan.Package (2.1)
       Maximum.Package (<= 3.0)
@@ -288,7 +288,7 @@ GIST
     
 [<Test>]
 let ``should generate lock file for http and gist source files``() = 
-    let config = """source "http://nuget.org/api/v2
+    let config = """source "http://www.nuget.org/api/v2
 
 http http://www.fssnip.net/raw/32 myFile2.fs
 http http://www.fssnip.net/raw/34 myFile5.fs httpAuth
@@ -357,7 +357,7 @@ let ``should parse and regenerate http Stanford.NLP.NET project``() =
 [<Test>]
 let ``should generate lock file with second group``() = 
     let expected = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3) - framework: net35
@@ -374,7 +374,7 @@ GROUP Build
 COPY-LOCAL: TRUE
 CONDITION: LEGACY
 NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     FAKE (4.0)
 """

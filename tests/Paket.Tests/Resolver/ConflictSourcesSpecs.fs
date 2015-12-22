@@ -10,7 +10,7 @@ open Paket.Requirements
 let noGitHubConfigured _ = failwith "no GitHub configured"
 
 let config1 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 github fsharp/fsharp:master foo.fs
 github fsprojects/FAKE:master test.fs
@@ -40,7 +40,7 @@ let ``should resolve source files with correct sha``() =
         AuthKey = None }
 
 let config2 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 github fsharp/fsharp:master foo.fs
 github fsharp/fsharp:fsharp4 foo.fs

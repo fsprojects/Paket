@@ -13,7 +13,7 @@ let graph = [
 ]
 
 let config1 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 """
@@ -26,7 +26,7 @@ let ``should resolve simple config1``() =
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 let config2 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Windsor" "!>= 0"
 nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
@@ -41,7 +41,7 @@ let ``should resolve simple config2``() =
 
 
 let config3 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Nancy.Bootstrappers.Windsor" "!~> 0.23"
 nuget "Castle.Windsor" "!>= 0"
@@ -73,7 +73,7 @@ let graph2 = [
 ]
 
 let config4 = """
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-NLog
 nuget Nancy.Bootstrappers.Windsor !~> 0.23

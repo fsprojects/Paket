@@ -13,7 +13,7 @@ let graph = [
 ]
 
 let config1 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Nancy.bootstrappers.windsor" "!~> 0.23"
 """
@@ -53,7 +53,7 @@ let ``should resolve wrong casing in retrieved package``() =
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 let config2 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Nancy.Bootstrappers.Windsor" "!~> 0.21"
 nuget "Nancy.bootstrappers.windsor" "!~> 0.23"

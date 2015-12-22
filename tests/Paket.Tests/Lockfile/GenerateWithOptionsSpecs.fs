@@ -11,7 +11,7 @@ let config1 = """
 references strict
 framework: >= net45
 copy_local false
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
 """
@@ -24,7 +24,7 @@ let expected1 = """REFERENCES: STRICT
 COPY-LOCAL: FALSE
 FRAMEWORK: >= NET45
 NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Windsor-log4net (3.2)"""
 
@@ -39,7 +39,7 @@ let ``should generate strict lock file``() =
 let configWithContent = """
 content none
 import_targets false
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Microsoft.SqlServer.Types"
 """
@@ -51,7 +51,7 @@ let graph2 = [
 let expected2 = """IMPORT-TARGETS: FALSE
 CONTENT: NONE
 NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Microsoft.SqlServer.Types (1.0)"""
 
@@ -64,7 +64,7 @@ let ``should generate content none lock file``() =
 
 let configWithRedirects = """
 redirects on
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Microsoft.SqlServer.Types"
 """
@@ -75,7 +75,7 @@ let graph3 = [
 
 let expected3 = """REDIRECTS: ON
 NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Microsoft.SqlServer.Types (1.0)"""
 
@@ -90,14 +90,14 @@ let ``should generate redirects lock file``() =
 let ``should generate strategy min lock file``() = 
     let config = """
     strategy min
-    source "http://nuget.org/api/v2"
+    source "http://www.nuget.org/api/v2"
 
     nuget "Microsoft.SqlServer.Types"
     """
 
     let expected = """STRATEGY: MIN
 NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Microsoft.SqlServer.Types (1.0)"""
 
@@ -110,14 +110,14 @@ NUGET
 let ``should generate strategy max lock file``() = 
     let config = """
     strategy max
-    source "http://nuget.org/api/v2"
+    source "http://www.nuget.org/api/v2"
 
     nuget "Microsoft.SqlServer.Types"
     """
 
     let expected = """STRATEGY: MAX
 NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Microsoft.SqlServer.Types (1.0)"""
 
@@ -133,7 +133,7 @@ let ``should resolve config with global framework restrictions``() =
 
     let config = """framework: >= net40
 
-source https://nuget.org/api/v2
+source https://www.nuget.org/api/v2
 
 nuget NLog framework: net40
 nuget NLog.Contrib
@@ -148,7 +148,7 @@ nuget NLog.Contrib
     
     let expected = """FRAMEWORK: >= NET40
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     NLog (1.0.1)
     NLog.Contrib (1.0.0)

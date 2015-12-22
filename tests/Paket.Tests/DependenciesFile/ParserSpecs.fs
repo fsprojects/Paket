@@ -18,7 +18,7 @@ let ``should read empty config``() =
     cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Length |> shouldEqual 0
 
 let configWithSourceOnly = """
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 """
 
 [<Test>]
@@ -27,10 +27,10 @@ let ``should read config which only contains a source``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Length |> shouldEqual 1
-    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head  |> shouldEqual (NuGetV2({ Url = "http://nuget.org/api/v2"; Authentication = None }))
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head  |> shouldEqual (NuGetV2({ Url = "http://www.nuget.org/api/v2"; Authentication = None }))
 
 let config1 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
 nuget "Rx-Main" "~> 2.0"
@@ -49,7 +49,7 @@ let ``should read simple config``() =
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
 let config2 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 // this rocks
 nuget "FAKE" "~> 3.0"
@@ -65,7 +65,7 @@ let ``should read simple config with additional comment``() =
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "MinPackage"].Range |> shouldEqual (VersionRange.Exactly "1.1.3")
 
 let config3 = """
-source "https://nuget.org/api/v2" // here we are
+source "https://www.nuget.org/api/v2" // here we are
 
 nuget "FAKE" "~> 3.0" // born to rule
 nuget "Rx-Main" "~> 2.2"
@@ -80,7 +80,7 @@ let ``should read simple config with comments``() =
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Between("3.0", "4.0"))
 
 let config4 = """
-source "https://nuget.org/api/v2" // first source
+source "https://www.nuget.org/api/v2" // first source
 source "http://nuget.org/api/v3"  // second
 
 nuget "FAKE" "~> 3.0" 
@@ -125,7 +125,7 @@ let ``should read source file from config``() =
 
 let strictConfig = """
 references strict
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget "FAKE" "~> 3.0"
 """
@@ -136,11 +136,11 @@ let ``should read strict config``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual true
     cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual None
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let redirectsConfig = """
 redirects on
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget "FAKE" "~> 3.0"
 """
@@ -151,11 +151,11 @@ let ``should read config with redirects``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
     cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual (Some true)
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let noRedirectsConfig = """
 redirects off
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget "FAKE" "~> 3.0"
 """
@@ -166,11 +166,11 @@ let ``should read config with no redirects``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
     cfg.Groups.[Constants.MainDependencyGroup].Options.Redirects |> shouldEqual (Some false)
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let noneContentConfig = """
 content none
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget "Microsoft.SqlServer.Types"
 """
@@ -182,11 +182,11 @@ let ``should read content none config``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual None
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let specificFrameworkConfig = """
 framework net40 net35
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget "Microsoft.SqlServer.Types"
 """
@@ -198,12 +198,12 @@ let ``should read config with specific framework``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual None
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let noTargetsImportConfig = """
 import_targets false
 copy_local false
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget "Microsoft.SqlServer.Types"
 """
@@ -215,10 +215,10 @@ let ``should read no targets import config``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual (Some false)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual None
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let configWithoutQuotes = """
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
@@ -258,7 +258,7 @@ let ``should read config local quoted source``() =
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
 let configWithoutQuotesButLotsOfWhiteSpace = """
-source      http://nuget.org/api/v2
+source      http://www.nuget.org/api/v2
 
 nuget   Castle.Windsor-log4net   ~>     3.2
 nuget Rx-Main ~> 2.0
@@ -513,7 +513,7 @@ let ``should read http binary references from config``() =
 
 
 let configWithoutVersions = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget Castle.Windsor-log4net
 nuget Rx-Main
@@ -530,7 +530,7 @@ let ``should read config without versions``() =
 
 
 let configWithPassword = """
-source http://nuget.org/api/v2 username: "tatü tata" password: "you got hacked!"
+source http://www.nuget.org/api/v2 username: "tatü tata" password: "you got hacked!"
 nuget Rx-Main
 """
 
@@ -541,11 +541,11 @@ let ``should read config with encapsulated password source``() =
     cfg.Groups.[Constants.MainDependencyGroup].Sources 
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
-            Url = "http://nuget.org/api/v2"
+            Url = "http://www.nuget.org/api/v2"
             Authentication = Some (PlainTextAuthentication("tatü tata", "you got hacked!")) } ]
 
 let configWithPasswordInSingleQuotes = """
-source http://nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
+source http://www.nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
 nuget Rx-Main
 """
 
@@ -558,7 +558,7 @@ let ``should read config with single-quoted password source``() =
     | exn when exn.Message <> "Expected error" -> ()
 
 let configWithPasswordInEnvVariable = """
-source http://nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%"
+source http://www.nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%"
 nuget Rx-Main
 """
 
@@ -571,13 +571,13 @@ let ``should read config with password in env variable``() =
     cfg.Groups.[Constants.MainDependencyGroup].Sources 
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
-            Url = "http://nuget.org/api/v2"
+            Url = "http://www.nuget.org/api/v2"
             Authentication = Some (EnvVarAuthentication
                                     ({Variable = "%FEED_USERNAME%"; Value = "user XYZ"},
                                      {Variable = "%FEED_PASSWORD%"; Value = "pw Love"}))} ]
 
 let configWithExplicitVersions = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget FSharp.Compiler.Service == 0.0.62 
 nuget FsReveal == 0.0.5-beta
@@ -670,7 +670,7 @@ let ``should read config with content none``() =
 
 [<Test>]
 let ``should read config with  !~> 3.3``() = 
-    let config = """source https://nuget.org/api/v2
+    let config = """source https://www.nuget.org/api/v2
 
 nuget AutoMapper ~> 3.2
 nuget Castle.Windsor !~> 3.3
@@ -717,7 +717,7 @@ let ``should not read hhtml``() =
     | exn -> Assert.IsTrue(exn.Message.Contains"Unrecognized token")
 
 let configWithAdditionalGroup = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget FSharp.Compiler.Service
 nuget FsReveal
@@ -739,7 +739,7 @@ let ``should read config with additional group``() =
     cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "NUnit"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
 
 let configWithNestedGroup = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget FSharp.Compiler.Service
 nuget FsReveal
@@ -764,7 +764,7 @@ let configWithExplicitMainGroup = """
 nuget Paket.Core
 
 group Main
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget FSharp.Compiler.Service
 nuget FsReveal
@@ -787,7 +787,7 @@ let ``should read config with explizit main group``() =
     cfg.GetDependenciesInGroup(GroupName "Build").[PackageName "NUnit"].Range |> shouldEqual (VersionRange.Minimum (SemVer.Parse "0"))
 
 let configWithReferenceCondition = """
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 condition: main-group
 
 nuget Paket.Core
@@ -837,8 +837,8 @@ let ``should read config with NuGet http v3 feed``() =
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Url |> shouldEqual (Constants.DefaultNuGetV3Stream.Replace("https://","http://"))
 
 let configWithDuplicateSource = """
-source https://nuget.org/api/v2
-source https://nuget.org/api/v2
+source https://www.nuget.org/api/v2
+source https://www.nuget.org/api/v2
 
 nuget Paket.Core
 """
@@ -864,7 +864,7 @@ let ``should not read config with invalid settings``() =
 
 let strategyConfig = sprintf """
 strategy %s
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget FAKE ~> 3.0
 
@@ -879,11 +879,11 @@ let ``should read config with min and max strategy``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
     cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
     
 let noStrategyConfig = sprintf """
 strategy %s
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget FAKE ~> 3.0
 
@@ -897,10 +897,10 @@ let ``should read config with min and no strategy``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
     cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual None
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let noStrategyConfig' = sprintf """
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget FAKE ~> 3.0
 
@@ -914,11 +914,11 @@ let ``should read config with no strategy``() =
     cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual None
     cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual None
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let combinedStrategyConfig = sprintf """
 strategy min
-source "http://nuget.org/api/v2" // first source
+source "http://www.nuget.org/api/v2" // first source
 
 nuget FAKE ~> 3.0
 
@@ -948,7 +948,7 @@ let ``should read config with combined strategy``() =
     cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
     cfg.Groups.[GroupName "Build"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
 
-    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://nuget.org/api/v2"]
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
 let configWithVerySimilarFeeds = """
 source http://nexus1:8081/nexus/service/local/nuget/nuget-repo
@@ -968,7 +968,7 @@ let ``should read config with very similar feeds``() =
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Tail.Head.Auth |> shouldNotEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Sources.Tail.Head.Url |> shouldEqual "http://nexus2:8081/nexus/service/local/nuget/nuget-repo"
 
-let configTargetFramework = """source https://nuget.org/api/v2
+let configTargetFramework = """source https://www.nuget.org/api/v2
 
 framework: >=net40
 
@@ -986,7 +986,7 @@ let ``should read config with target framework``() =
 let ``should read packages with redirects``() = 
     let config = """
 redirects on
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Paket.Core redirects: on
 nuget FSharp.Compiler.Service redirects: off

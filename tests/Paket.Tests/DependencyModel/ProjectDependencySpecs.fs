@@ -6,7 +6,7 @@ open FsUnit
 open Paket.Domain
 
 let config1 = """
-source http://nuget.org/api/v2  username: "user" password: "pass"
+source http://www.nuget.org/api/v2  username: "user" password: "pass"
 
 nuget Castle.Windsor-log4net ~> 3.2
 """
@@ -24,7 +24,7 @@ let ``project reference for single dependency should be found``() =
     model.[PackageName "Castle.Windsor-log4net"].Range |> shouldEqual (VersionRange.Between("3.2", "4.0"))
 
 let config2 = """
-source "http://nuget.org/api/v2
+source "http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net == 3.2.1
 nuget Rx-Main ~> 2.0"

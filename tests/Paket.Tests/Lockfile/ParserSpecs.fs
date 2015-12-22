@@ -11,7 +11,7 @@ open Paket.PackageSources
 
 let lockFile = """COPY-LOCAL: FALSE
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
@@ -78,7 +78,7 @@ let ``should parse lock file``() =
 let strictLockFile = """REFERENCES: STRICT
 IMPORT-TARGETS: FALSE
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
@@ -157,7 +157,7 @@ let ``should parse redirects lock file``() =
 let lockFileWithFrameworkRestrictions = """FRAMEWORK: >= NET45
 IMPORT-TARGETS: TRUE
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
 """   
@@ -173,7 +173,7 @@ let ``should parse lock file with framework restrictions``() =
     lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
 let dogfood = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     DotNetZip (1.9.3)
     FAKE (3.5.5)
@@ -223,7 +223,7 @@ let ``should parse own lock file``() =
     lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
 
 let dogfood2 = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     DotNetZip (1.9.3)
     FAKE (3.5.5)
@@ -274,7 +274,7 @@ let ``should parse own lock file2``() =
 
 
 let frameworkRestricted = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     Fleece (0.4.0)
       FSharpPlus (>= 0.0.4)
@@ -327,7 +327,7 @@ let ``should parse framework restricted lock file``() =
                      FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
 let frameworkRestricted' = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     Fleece (0.4.0)
       FSharpPlus (>= 0.0.4)
@@ -427,7 +427,7 @@ let ``should parse lock file for http Stanford.NLP.NET project``() =
     references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
 
 let portableLockFile = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     FSharp.Data (2.0.14)
       Zlib.Portable (>= 1.10.0) - framework: portable-net40+sl50+wp80+win80
@@ -449,7 +449,7 @@ let ``should parse portable lockfile``() =
     packages.[1].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[portable-net40+sl50+wp80+win80]"
 
 let reactiveuiLockFile = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     reactiveui (5.5.1)
       reactiveui-core (5.5.1)
@@ -506,7 +506,7 @@ let multipleFeedLockFile = """NUGET
       Newtonsoft.Json (>= 6.0.0 < 6.1.0)
     log4net (1.2.10)
     Newtonsoft.Json (6.0.6)
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     Microsoft.AspNet.WebApi (5.2.3)
       Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3.0)
@@ -532,7 +532,7 @@ let ``should parse lockfile with multiple feeds``() =
     packages.[3].Name |> shouldEqual (PackageName "Microsoft.AspNet.WebApi")
     packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
     packages.[3].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[]"
-    packages.[3].Source.ToString() |> shouldEqual "https://nuget.org/api/v2"
+    packages.[3].Source.ToString() |> shouldEqual "https://www.nuget.org/api/v2"
 
 [<Test>]
 let ``should parse and serialise multiple feed lockfile``() =

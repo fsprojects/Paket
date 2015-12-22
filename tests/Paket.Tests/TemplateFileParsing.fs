@@ -318,7 +318,7 @@ dependencies
 """
 
     let lockFile = """NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     Argu (1.1.2)
     FSharp.Core (4.0.0.1) - redirects: on
@@ -333,7 +333,7 @@ GITHUB
     src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
 GROUP Build
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     FAKE (4.7.2)
     FSharp.Compiler.Service (1.4.0.6)

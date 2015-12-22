@@ -6,7 +6,7 @@ open FsUnit
 open TestHelpers
 open System
 
-let config1 = """source http://nuget.org/api/v2
+let config1 = """source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor-log4net ~> 3.2
 nuget Rx-Main ~> 2.0
@@ -22,7 +22,7 @@ let ``should serialize simple config``() =
 
 
 let strictConfig = """references: strict
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget FAKE ~> 3.0"""
 
@@ -37,7 +37,7 @@ let ``should serialize strict config``() =
 
 let contentNoneConfig = """redirects: on
 content: none
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget FAKE ~> 3.0"""
 
@@ -64,7 +64,7 @@ let ``should serialize no targets config``() =
     |> shouldEqual (normalizeLineEndings noTargetsConfig)
 
 let noLocalCopyConfig = """copy_local: false
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget FAKE ~> 3.0"""
 
@@ -87,7 +87,7 @@ let ``should serialize simplestConfig``() =
 
 
 
-let ownConfig = """source http://nuget.org/api/v2
+let ownConfig = """source http://www.nuget.org/api/v2
 
 nuget Octokit
 nuget Newtonsoft.Json
@@ -121,7 +121,7 @@ let ``should serialize remote files in config``() =
     |> shouldEqual (normalizeLineEndings configWithRemoteFile)
 
 
-let allVersionsConfig = """source http://nuget.org/api/v2
+let allVersionsConfig = """source http://www.nuget.org/api/v2
 
 nuget Example > 1.2.3
 nuget Example2 <= 1.2.3 alpha beta
@@ -136,7 +136,7 @@ let ``should serialize config with all kinds of versions``() =
     |> shouldEqual (normalizeLineEndings allVersionsConfig)
 
 
-let configWithPassword = """source http://nuget.org/api/v2 username: "user" password: "pass"
+let configWithPassword = """source http://www.nuget.org/api/v2 username: "user" password: "pass"
 
 nuget Example > 1.2.3
 nuget Example2 <= 1.2.3
@@ -153,7 +153,7 @@ let ``should serialize config with password``() =
     |> shouldEqual (normalizeLineEndings configWithPassword)
 
 
-let configWithEnvVarPassword = """source http://nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%"
+let configWithEnvVarPassword = """source http://www.nuget.org/api/v2 username: "%FEED_USERNAME%" password: "%FEED_PASSWORD%"
 
 nuget Example > 1.2.3
 nuget Example2 <= 1.2.3
@@ -293,7 +293,7 @@ let ``should serialize config with framework restriction``() =
 
 
 let configWithAdditionalGroup = """condition: LEGACY
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
 nuget FSharp.Compiler.Service
 nuget FsReveal

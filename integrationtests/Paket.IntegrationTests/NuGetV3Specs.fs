@@ -17,6 +17,6 @@ let ``#1211 update with V3 API should work exactly like V2 API``() =
 
     lockFileV3.ToString() 
     |> shouldEqual 
-        (lockFileV2.ToString().Replace("remote: https://nuget.org/api/v2", "remote: http://api.nuget.org/v3/index.json"))
+        (lockFileV2.ToString().Replace("remote: https://www.nuget.org/api/v2", "remote: http://api.nuget.org/v3/index.json"))
     lockFileV3.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FsLexYacc.Runtime"].Version
     |> shouldBeGreaterThan (SemVer.Parse "6")

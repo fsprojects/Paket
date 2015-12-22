@@ -19,7 +19,7 @@ let graph = [
 
 let config1 = """
 strategy max
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Nancy.Bootstrappers.Windsor ~> 0.23
 """
@@ -34,7 +34,7 @@ let ``should resolve simple config1``() =
 
 let config2 = """
 strategy max
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor
 nuget Nancy.Bootstrappers.Windsor ~> 0.23
@@ -51,7 +51,7 @@ let ``should resolve simple config2``() =
 
 let config3 = """
 strategy max
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Nancy.Bootstrappers.Windsor ~> 0.23
 nuget Castle.Windsor
@@ -85,7 +85,7 @@ let graph2 = [
 
 let config5 = """
 strategy max
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Nancy.Bootstrappers.Windsor !~> 0.23
 """
@@ -100,7 +100,7 @@ let ``should override global strategy``() =
 
 let config6 = """
 strategy max
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Castle.Core-NLog !~> 3.2
 nuget Castle.Windsor-NLog @~> 3.2
@@ -128,7 +128,7 @@ let ``should respect overrides when updating single package``() =
 let ``should favor strategy from parent when it overrides``() = 
     let config = """
     strategy max
-    source http://nuget.org/api/v2
+    source http://www.nuget.org/api/v2
 
     nuget Nancy.Bootstrappers.Windsor !~> 0.23
     nuget Castle.Windsor @> 0
@@ -148,7 +148,7 @@ let ``should favor strategy from parent when it overrides``() =
 let ``should favor strategy from parent that overrides strategy``() = 
     let config = """
     strategy max
-    source http://nuget.org/api/v2
+    source http://www.nuget.org/api/v2
 
     nuget Nancy.Bootstrappers.Windsor !~> 0.23
     nuget Castle.Windsor
@@ -165,7 +165,7 @@ let ``should favor strategy from parent that overrides strategy``() =
 
 let config8 = """
 strategy max
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Nancy.Bootstrappers.Windsor !~> 0.23
 nuget Castle.Windsor-NLog !> 0
@@ -184,7 +184,7 @@ let ``should favor strategy from top-level dependencies``() =
 
 let config9 = """
 strategy max
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor @= 3.2.0
 nuget Castle.Core-NLog != 3.2.0

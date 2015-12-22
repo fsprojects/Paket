@@ -29,7 +29,7 @@ let graph = [
 ]
 
 let config10 = """
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget Castle.Windsor @= 3.2.0
 nuget Castle.Core-NLog != 3.2.0

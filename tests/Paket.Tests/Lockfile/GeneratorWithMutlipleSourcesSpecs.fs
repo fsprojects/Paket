@@ -7,7 +7,7 @@ open TestHelpers
 open Paket.Domain
 
 let config1 = """
-source "http://nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 source "http://nuget.org/api/v3"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
@@ -29,7 +29,7 @@ let graph = [
 ]
 
 let expected = """NUGET
-  remote: http://nuget.org/api/v2
+  remote: http://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)

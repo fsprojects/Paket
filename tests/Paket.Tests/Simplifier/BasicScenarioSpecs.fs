@@ -18,7 +18,7 @@ let dummyProjectFile =
 
 let lockFile1 = """
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     A (1.0)
       B (1.0)
@@ -30,7 +30,7 @@ NUGET
       C (1.0)""" |> (fun x -> LockFile.Parse("", toLines x)) |> Some
 
 let depFile1 = """
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget A 3.3.0
 nuget B 3.3.1
@@ -56,7 +56,7 @@ let ``should remove one level deep transitive dependencies from dep and ref file
 
 let lockFile2 = """
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     A (1.0)
       B (1.0)
@@ -71,7 +71,7 @@ NUGET
     F (1.0)""" |> (fun x -> LockFile.Parse("", toLines x)) |> Some
 
 let depFile2 = """
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget A 1.0
 nuget B 1.0
@@ -97,7 +97,7 @@ let ``should remove all transitive dependencies from dep file recursively``() =
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
         refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]
 
-        let expected = """source http://nuget.org/api/v2
+        let expected = """source http://www.nuget.org/api/v2
 
 nuget A 1.0
 nuget C 1.0"""
@@ -108,7 +108,7 @@ nuget C 1.0"""
 
 let lockFile3 = """
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     A (1.0)
       B (1.0)
@@ -124,7 +124,7 @@ NUGET
 
 GROUP Deps2
 NUGET
-  remote: https://nuget.org/api/v2
+  remote: https://www.nuget.org/api/v2
   specs:
     A (1.0)
       B (1.0)
@@ -139,7 +139,7 @@ NUGET
     F (1.0)""" |> (fun x -> LockFile.Parse("", toLines x)) |> Some
 
 let depFile3 = """
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget A 1.0
 nuget B 1.0
@@ -149,7 +149,7 @@ nuget E 1.0
 nuget F 1.0
 
 group Deps2
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget A 1.0
 nuget B 1.0
@@ -175,13 +175,13 @@ let ``should remove all transitive dependencies from dep file with multiple grou
         refFiles.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("A"); PackageInstallSettings.Default("C")]
         refFiles.Tail.Head.Groups.[Constants.MainDependencyGroup].NugetPackages |>  shouldEqual [PackageInstallSettings.Default("C"); PackageInstallSettings.Default("D")]
 
-        let expected = """source http://nuget.org/api/v2
+        let expected = """source http://www.nuget.org/api/v2
 
 nuget A 1.0
 nuget C 1.0
 
 group Deps2
-source http://nuget.org/api/v2
+source http://www.nuget.org/api/v2
 
 nuget A 1.0
 nuget C 1.0"""
