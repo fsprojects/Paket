@@ -71,56 +71,53 @@ with
         | Registration -> "RegistrationsBaseUrl"
         | AllVersionsAPI -> "PackageBaseAddress/3.0.0"
 
-let mutable private nugetV3Resources : Map<NugetV3Source * NugetV3ResourceType, string> = Map.empty 
+let private nugetV3Resources = ref Map.empty 
         
-let getNugetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceType) =
+let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceType) =
     async {
         let key = (source, resourceType)
-        return!
-            match nugetV3Resources |> Map.tryFind key with
-            | Some x -> async { return x }
-            | None -> 
-                async {
-                    let basicAuth = source.Authentication |> Option.map toBasicAuth
-                    let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
-                    let rawData =
-                        match rawData with
-                        | None -> failwithf "Could not load resources from %s" source.Url
-                        | Some x -> x
-                    let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
-                    let resources = 
-                        json.Resources 
-                        |> Seq.distinctBy(fun x -> x.Type.ToLower())
-                        |> Seq.map(fun x -> x.Type.ToLower(), x.ID) 
+        match !nugetV3Resources |> Map.tryFind key with
+        | Some x -> return x
+        | None -> 
+            let basicAuth = source.Authentication |> Option.map toBasicAuth
+            let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
+            let rawData =
+                match rawData with
+                | None -> failwithf "Could not load resources from %s" source.Url
+                | Some x -> x
 
-                    let newMap = 
-                        lock nugetV3Resources (fun() ->
-                            let newMap =
-                                resources
-                                |> Seq.fold(fun m (res, value) ->
-                                    let resType =
-                                        match res.ToLower() with
-                                        | "searchautocompleteservice" -> Some AutoComplete
-                                        | "registrationsbaseurl" -> Some Registration
-                                        | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
-                                        | _ -> None
-                                    match resType with
-                                    | None -> m
-                                    | Some resType ->
-                                        m |> Map.add (source, resType) value
-                                ) nugetV3Resources
+            let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
+            let resources = 
+                json.Resources 
+                |> Seq.distinctBy(fun x -> x.Type.ToLower())
+                |> Seq.map(fun x -> x.Type.ToLower(), x.ID) 
+
+            let newMap = 
+                lock !nugetV3Resources (fun() ->
+                    let newMap =
+                        resources
+                        |> Seq.fold(fun m (res, value) ->
+                            let resType =
+                                match res.ToLower() with
+                                | "searchautocompleteservice" -> Some AutoComplete
+                                | "registrationsbaseurl" -> Some Registration
+                                | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
+                                | _ -> None
+                            match resType with
+                            | None -> m
+                            | Some resType ->
+                                m |> Map.add (source, resType) value
+                        ) !nugetV3Resources
                             
-                            nugetV3Resources <- newMap
+                    nugetV3Resources := newMap
                         
-                            newMap)
+                    newMap)
 
-                    return
-                        match newMap |> Map.tryFind key with
-                        | Some x -> x
-                        | None ->
-                            failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
-                }
-                
+            return
+                match newMap |> Map.tryFind key with
+                | Some x -> x
+                | None ->
+                    failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
     }
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
@@ -150,14 +147,14 @@ let private parseAuth(text:string, source) =
 
 /// Represents the package source type.
 type PackageSource =
-| Nuget of NugetSource
-| NugetV3 of NugetV3Source
-| LocalNuget of string
+| NuGetV2 of NugetSource
+| NuGetV3 of NugetV3Source
+| LocalNuGet of string
     override this.ToString() =
         match this with
-        | Nuget source -> source.Url
-        | NugetV3 source -> source.Url
-        | LocalNuget path -> path
+        | NuGetV2 source -> source.Url
+        | NuGetV3 source -> source.Url
+        | LocalNuGet path -> path
 
     static member Parse(line : string) =
         let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
@@ -170,8 +167,12 @@ type PackageSource =
 
         let feed = 
             match source.TrimEnd([|'/'|]) with
-            | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNugetV3Stream 
-            | "https://www.nuget.org/api/v2" -> Constants.DefaultNugetStream
+            | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream 
+            | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream.Replace("https","http")
+            | "https://nuget.org/api/v2" -> Constants.DefaultNuGetStream
+            | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+            | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
+            | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
             | _ -> source
 
         PackageSource.Parse(feed, parseAuth(line, feed))
@@ -183,41 +184,41 @@ type PackageSource =
             match System.Uri.TryCreate(source, System.UriKind.Absolute) with
             | true, uri -> 
                 if uri.Scheme = System.Uri.UriSchemeFile then 
-                    LocalNuget(source) 
+                    LocalNuGet source
                 else 
                     if source.ToLower().EndsWith("v3/index.json") then
-                        NugetV3({ Url = source; Authentication = auth })
+                        NuGetV3 { Url = source; Authentication = auth }
                     else
-                        Nuget({ Url = source; Authentication = auth })
+                        NuGetV2 { Url = source; Authentication = auth }
             | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
-                    | true, uri -> LocalNuget(source)
+                    | true, uri -> LocalNuGet source
                     | _ -> failwithf "unable to parse package source: %s" source
 
     member this.Url = 
         match this with
-        | Nuget n -> n.Url
-        | NugetV3 n -> n.Url
-        | LocalNuget n -> n
+        | NuGetV2 n -> n.Url
+        | NuGetV3 n -> n.Url
+        | LocalNuGet n -> n
 
     member this.Auth = 
         match this with
-        | Nuget n -> n.Authentication
-        | NugetV3 n -> n.Authentication
-        | LocalNuget n -> None
+        | NuGetV2 n -> n.Authentication
+        | NuGetV3 n -> n.Authentication
+        | LocalNuGet n -> None
 
-    static member NugetSource url = Nuget { Url = url; Authentication = None }
+    static member NuGetV2Source url = NuGetV2 { Url = url; Authentication = None }
 
     static member WarnIfNoConnection (source,_) = 
         let n url auth =
             use client = Utils.createWebClient(url, auth |> Option.map toBasicAuth)
             try client.DownloadData url |> ignore 
             with _ ->
-                traceWarnfn "Unable to ping remote Nuget feed: %s." url
+                traceWarnfn "Unable to ping remote NuGet feed: %s." url
         match source with
-        | Nuget x -> n x.Url x.Authentication
-        | NugetV3 x -> n x.Url x.Authentication
-        | LocalNuget path -> 
+        | NuGetV2 x -> n x.Url x.Authentication
+        | NuGetV3 x -> n x.Url x.Authentication
+        | LocalNuGet path -> 
             if not <| File.Exists path then 
-                traceWarnfn "Local Nuget feed doesn't exist: %s." path
+                traceWarnfn "Local NuGet feed doesn't exist: %s." path
 
-let DefaultNugetSource = PackageSource.NugetSource Constants.DefaultNugetStream
+let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStream

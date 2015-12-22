@@ -36,15 +36,15 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
         match package.Source with
-        | Nuget _ | NugetV3 _ -> 
+        | NuGetV2 _ | NuGetV3 _ -> 
             let auth = 
                 sources |> List.tryPick (fun s -> 
                                match s with
-                               | Nuget s when s.Url = package.Source.Url -> s.Authentication |> Option.map toBasicAuth
+                               | NuGetV2 s when s.Url = package.Source.Url -> s.Authentication |> Option.map toBasicAuth
                                | _ -> None)
             let! result = extractPackage package root auth package.Source groupName v includeVersionInPath force 
             return result
-        | LocalNuget path ->
+        | LocalNuGet path ->
             let path = Utils.normalizeLocalPath path
             let di = Utils.getDirectoryInfo path root
             let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v

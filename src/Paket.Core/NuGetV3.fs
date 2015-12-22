@@ -48,31 +48,34 @@ let getSearchAPI(auth,nugetUrl) =
     match searchDict.TryGetValue nugetUrl with
     | true,v -> v
     | _ ->
-        let result = 
+        try 
             match calculateNuGet3Path nugetUrl with
             | None -> None
             | Some v3Path -> 
                 let source = { Url = v3Path; Authentication = auth }
-                Some (PackageSources.getNugetV3Resource source AutoComplete |> Async.RunSynchronously)
-                
-        searchDict.[nugetUrl] <- result
-        result
+                Some (PackageSources.getNuGetV3Resource source AutoComplete |> Async.RunSynchronously)
+        with
+        | _ -> None
+        |> fun result -> 
+            searchDict.[nugetUrl] <- result
+            result
 
 /// [omit]
 let getAllVersionsAPI(auth,nugetUrl) = 
     match allVersionsDict.TryGetValue nugetUrl with
     | true,v -> v
     | _ ->
-        let result = 
+        try
             match calculateNuGet3Path nugetUrl with
             | None -> None
-            | Some v3Path -> 
+            | Some v3Path ->
                 let source = { Url = v3Path; Authentication = auth }
-                Some (PackageSources.getNugetV3Resource source AllVersionsAPI |> Async.RunSynchronously)
-                
-
-        allVersionsDict.[nugetUrl] <- result
-        result
+                Some (PackageSources.getNuGetV3Resource source AllVersionsAPI |> Async.RunSynchronously)
+        with
+        | _ -> None
+        |> fun result -> 
+            allVersionsDict.[nugetUrl] <- result
+            result
 
 /// [omit]
 let extractAutoCompleteVersions(response:string) =
@@ -183,7 +186,7 @@ type Catalog =
 
 let getRegistration (source : NugetV3Source) (packageName:PackageName) (version:SemVerInfo) =
     async {
-        let! registrationUrl = PackageSources.getNugetV3Resource source Registration
+        let! registrationUrl = PackageSources.getNuGetV3Resource source Registration
         let url = sprintf "%s%s/%s.json" registrationUrl (packageName.ToString().ToLower()) version.AsString
         let! rawData = safeGetFromUrl (source.Authentication |> Option.map toBasicAuth, url, acceptJson)
         return

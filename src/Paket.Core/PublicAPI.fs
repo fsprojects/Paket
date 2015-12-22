@@ -328,7 +328,7 @@ type Dependencies(dependenciesFileName: string) =
             match NuGetConvert.NugetEnv.readNugetConfig(this.RootDirectory) with
             | Result.Ok(config,_) -> config.PackageSources |> Map.toList |> List.map (snd >> fst)
             | _ -> []
-        Constants.DefaultNugetStream :: configured
+        Constants.DefaultNuGetStream :: configured
         |> Set.ofSeq
         |> Set.toList
 
@@ -449,9 +449,9 @@ type Dependencies(dependenciesFileName: string) =
         let maxResults = defaultArg maxResults 1000
         let sources = this.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat |> List.distinct
         match sources with
-        | [] -> [PackageSources.DefaultNugetSource]
+        | [] -> [PackageSources.DefaultNuGetSource]
         | _ -> sources
-        |> List.choose (fun x -> match x with | Nuget s -> Some s.Url | _ -> None)
+        |> List.choose (fun x -> match x with | NuGetV2 s -> Some s.Url | _ -> None)
         |> Seq.distinct
         |> Seq.map (fun url ->
                     NuGetV3.FindPackages(None, url, searchTerm, maxResults)

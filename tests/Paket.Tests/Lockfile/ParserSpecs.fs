@@ -39,17 +39,17 @@ let ``should parse lock file``() =
     lockFile.Options.Settings.CopyLocal |> shouldEqual (Some false)
     lockFile.Options.Settings.ImportTargets |> shouldEqual None
 
-    packages.[0].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[0].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
     packages.[0].Version |> shouldEqual (SemVer.Parse "2.1")
     packages.[0].Dependencies |> shouldEqual Set.empty
 
-    packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[1].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[1].Name |> shouldEqual (PackageName "Castle.Windsor-log4net")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.3")
     packages.[1].Dependencies |> shouldEqual (Set.ofList [PackageName "Castle.Windsor", VersionRequirement(Minimum(SemVer.Parse "2.0"), PreReleaseStatus.No), []; PackageName "log4net", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), []])
     
-    packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
     packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), []])
@@ -102,7 +102,7 @@ let ``should parse strict lock file``() =
     lockFile.Options.Settings.ImportTargets |> shouldEqual (Some false)
     lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
-    packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
     packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), []])
@@ -215,7 +215,7 @@ let ``should parse own lock file``() =
     packages.Length |> shouldEqual 16
     lockFile.Options.Strict |> shouldEqual false
 
-    packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[1].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[1].Name |> shouldEqual (PackageName "FAKE")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
     packages.[1].Settings.FrameworkRestrictions |> shouldEqual []
@@ -265,7 +265,7 @@ let ``should parse own lock file2``() =
     packages.Length |> shouldEqual 16
     lockFile.Options.Strict |> shouldEqual false
 
-    packages.[1].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[1].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[1].Name |> shouldEqual (PackageName "FAKE")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual []
@@ -302,7 +302,7 @@ let ``should parse framework restricted lock file``() =
     |> List.item 2
     |> shouldEqual ([FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
-    packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[3].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
@@ -318,7 +318,7 @@ let ``should parse framework restricted lock file``() =
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
                      FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
-    packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
     packages.[5].Settings.FrameworkRestrictions 
@@ -355,7 +355,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     |> List.item 2
     |> shouldEqual ([FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
-    packages.[3].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[3].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
     packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
@@ -374,7 +374,7 @@ let ``should parse framework restricted lock file in new syntax``() =
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
                      FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
-    packages.[5].Source |> shouldEqual PackageSources.DefaultNugetSource
+    packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
     packages.[5].Settings.ImportTargets |> shouldEqual (Some false)
@@ -574,7 +574,7 @@ let ``should parse lock file with groups``() =
     lockFile1.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile1.Options.Settings.ReferenceCondition |> shouldEqual None
 
-    packages1.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
+    packages1.Head.Source |> shouldEqual (PackageSource.LocalNuGet("D:\code\\temp with space"))
     packages1.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
 
     let lockFile2 = LockFileParser.Parse(toLines groupsLockFile) |> List.head
@@ -588,7 +588,7 @@ let ``should parse lock file with groups``() =
     lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile2.Options.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
 
-    packages2.Head.Source |> shouldEqual (PackageSource.LocalNuget("D:\code\\temp with space"))
+    packages2.Head.Source |> shouldEqual (PackageSource.LocalNuGet("D:\code\\temp with space"))
     packages2.[0].Name |> shouldEqual (PackageName "FAKE")
     packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some On)
 

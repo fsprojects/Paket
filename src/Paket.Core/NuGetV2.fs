@@ -81,11 +81,19 @@ let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) =
         | None -> return None
         | Some data -> 
             try 
-                return Some(JsonConvert.DeserializeObject<string []> data)
+                let versions = Some(JsonConvert.DeserializeObject<string []> data)
+                return versions
             with _ -> return None
     }
 
-let tryNuGetV3 (source, auth, nugetV3Url, package:PackageName) = 
+let tryNuGetV3 (auth, nugetV3Url, package:PackageName) = 
+    async { 
+        try 
+            return! NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
+        with exn -> return None
+    }
+
+let tryNuGetV3Wrapped (source, auth, nugetV3Url, package:PackageName) = 
     async { 
         try 
             let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
@@ -471,7 +479,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
         |> List.map (fun source -> async {
             try 
                 match source with
-                | Nuget nugetSource -> 
+                | NuGetV2 nugetSource -> 
                     let! result = 
                         getDetailsFromNuGet 
                             force 
@@ -480,10 +488,10 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
                             packageName
                             version
                     return Some(source,result)
-                | NugetV3 nugetSource ->
+                | NuGetV3 nugetSource ->
                     let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
                     return Some(source,result)
-                | LocalNuget path -> 
+                | LocalNuGet path -> 
                     let! result = getDetailsFromLocalFile root path packageName version
                     return Some(source,result)
             with e ->
@@ -521,13 +529,18 @@ let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 let getVersionsCached key f (source, auth, nugetURL, package) =
     async {
-        match protocolCache.TryGetValue((auth, nugetURL)) with
+        match protocolCache.TryGetValue(source) with
         | true, v when v <> key -> return None
+        | true, v when v = key -> 
+            let! result = f (auth, nugetURL, package)
+            match result with
+            | Some x -> return Some (source, x)
+            | _ -> return None
         | _ ->
             let! result = f (auth, nugetURL, package)
             match result with
             | Some x ->
-                protocolCache.TryAdd((auth, nugetURL), key) |> ignore
+                protocolCache.TryAdd(source, key) |> ignore
                 return Some (source, x)
             | _ -> return None
     }
@@ -538,34 +551,32 @@ let GetVersions root (sources, packageName:PackageName) =
         sources
         |> Seq.map (fun nugetSource -> 
                    match nugetSource with
-                   | Nuget source -> 
+                   | NuGetV2 source -> 
                         let auth = source.Authentication |> Option.map toBasicAuth
-                        let v3Feeds = 
-                            match NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) with
-                            | None -> []
-                            | Some v3Url -> [ tryNuGetV3 (nugetSource, auth, v3Url, packageName) ]
-
+                        
                         let v2Feeds =
                             [ yield getVersionsCached "OData" tryGetPackageVersionsViaOData (nugetSource, auth, source.Url, packageName)
                               yield getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName)
                               if not (source.Url.ToLower().Contains "teamcity" || source.Url.ToLower().Contains "feedservice.svc") then
-                                yield getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName)
-                              ]
+                                yield getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
 
-                        v2Feeds @ v3Feeds
-                   | NugetV3 source ->
+                        match NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) with
+                        | None -> v2Feeds
+                        | Some v3Url -> (getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, v3Url, packageName)) :: v2Feeds
+                   | NuGetV3 source ->
                         let resp =
                             async {
-                                let! autoCompleteUrl = PackageSources.getNugetV3Resource source AllVersionsAPI
+                                let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
                                 return!
-                                    tryNuGetV3 (nugetSource, 
-                                                source.Authentication |> Option.map toBasicAuth, 
-                                                autoCompleteUrl,
-                                                packageName)
+                                    tryNuGetV3Wrapped 
+                                        (nugetSource, 
+                                         source.Authentication |> Option.map toBasicAuth, 
+                                         versionsAPI,
+                                         packageName)
                             }
                         
                         [ resp ]
-                   | LocalNuget path -> [ getAllVersionsFromLocalPath (nugetSource, path, packageName, root) ])
+                   | LocalNuGet path -> [ getAllVersionsFromLocalPath (nugetSource, path, packageName, root) ])
         |> Seq.toArray
         |> Array.map Async.Choice
         |> Async.Parallel

@@ -232,14 +232,14 @@ let findPackages (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
     let sources  =
         match results.TryGetResult <@ FindPackagesArgs.Source @> with
-        | Some source -> [PackageSource.NugetSource source]
-        | _ -> PackageSources.DefaultNugetSource :: 
+        | Some source -> [PackageSource.NuGetV2Source source]
+        | _ -> PackageSources.DefaultNuGetSource :: 
                 (Dependencies.Locate().GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)
 
     let searchAndPrint searchText =
         let result =
             sources
-            |> List.choose (fun x -> match x with | PackageSource.Nuget s -> Some s.Url | _ -> None)
+            |> List.choose (fun x -> match x with | PackageSource.NuGetV2 s -> Some s.Url | _ -> None)
             |> Seq.distinct
             |> Seq.map (fun url -> NuGetV3.FindPackages(None, url, searchText, maxResults))
             |> Async.Parallel
@@ -293,7 +293,7 @@ let findPackageVersions (results : ParseResults<_>) =
         match results.TryGetResult <@ FindPackageVersionsArgs.NuGet @> with
         | Some name -> name
         | None -> results.GetResult <@ FindPackageVersionsArgs.Name @>
-    let source = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.Source @>) Constants.DefaultNugetStream
+    let source = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.Source @>) Constants.DefaultNuGetStream
     let result =
         match NuGetV3.getSearchAPI(None,source) with
         | None -> Array.empty

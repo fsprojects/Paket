@@ -573,7 +573,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 if list.Count > 0 then
                     list.Add("")
                 list.Add(sprintf "group %O" groupName)
-                list.Add(DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                list.Add(DependenciesFileSerializer.sourceString Constants.DefaultNuGetStream)
                 list.Add("")
                 true
             | _ -> false
@@ -608,7 +608,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             | [] -> 
                                 list.Insert(firstGroupLine,packageString)
                                 list.Insert(firstGroupLine,"")
-                                list.Insert(firstGroupLine,DependenciesFileSerializer.sourceString Constants.DefaultNugetStream)
+                                list.Insert(firstGroupLine,DependenciesFileSerializer.sourceString Constants.DefaultNuGetStream)
                             | _ -> list.Insert(lastGroupLine, packageString)
                         | p::_ -> 
                             match tryFindPackageLine groupName p.Name with

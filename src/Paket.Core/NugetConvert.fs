@@ -271,7 +271,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     let create() =
         let sources = 
-            if nugetEnv.NugetConfig.PackageSources = Map.empty then [ Constants.DefaultNugetStream, None ]
+            if nugetEnv.NugetConfig.PackageSources = Map.empty then [ Constants.DefaultNuGetStream, None ]
             else 
                 (nugetEnv.NugetConfig.PackageSources
                  |> Map.toList
