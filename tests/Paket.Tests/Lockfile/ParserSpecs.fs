@@ -401,6 +401,20 @@ let ``should parse simple http reference``() =
     references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"  
     references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))
 
+let httpWithFileProtocol =  """
+HTTP
+  remote: file://localhost
+  specs:
+    file1.dll (/absolute/path/to/file1.dll)
+"""
+
+[<Test>]
+let ``should parse simple http reference with file protocol``() = 
+    let lockFile = LockFileParser.Parse(toLines httpWithFileProtocol) |> List.head
+    let references = lockFile.SourceFiles
+
+    references.[0].Name |> shouldEqual "file1.dll"  
+    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("file://localhost"))
 
 let lockFileForStanfordNLPdotNET = """HTTP
   remote: http://www.frijters.net
