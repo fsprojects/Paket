@@ -1,3 +1,6 @@
+#### 2.37.5 - 22.12.2015
+* COSMETICS: Better error messages in GetVersions
+
 #### 2.37.4 - 22.12.2015
 * BUGFIX: paket pack ignored specific-version parameter - https://github.com/fsprojects/Paket/issues/1321
 

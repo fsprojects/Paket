@@ -240,14 +240,6 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
             return parseODataDetails(nugetURL,packageName,version,raw)
     }
 
-let deleteErrorFile (packageName:PackageName) =
-    let di = DirectoryInfo(CacheFolder)
-    for errorFile in di.GetFiles(sprintf "*%O*.failed" packageName) do
-        try
-            File.Delete(errorFile.FullName)
-        with
-        | _ -> ()
-
 let getDetailsFromNuGet force auth nugetURL packageName version = 
     getDetailsFromCacheOr
         force
@@ -504,14 +496,13 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
     let source,nugetObject = 
         match packageDetails with
         | None ->
-            deleteErrorFile packageName
-            match sources with
+            match sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq with
             | [source] ->
                 failwithf "Couldn't get package details for package %O %O on %O." packageName version source
             | [] ->
                 failwithf "Couldn't get package details for package %O %O because no sources where specified." packageName version
             | _ ->
-                failwithf "Couldn't get package details for package %O %O on any of %A." packageName version (sources |> List.map (fun (s:PackageSource) -> s.ToString()))
+                failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
         | Some packageDetails -> packageDetails
 
     let newName = PackageName nugetObject.PackageName
@@ -588,7 +579,14 @@ let GetVersions root (sources, packageName:PackageName) =
     let versions = 
         match getVersions() with
         | versions when Array.isEmpty versions |> not -> versions
-        | _ -> failwithf "Could not find versions for package %O in any of the sources in %A." packageName (sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq)
+        | _ -> 
+            match sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq with
+            | [source] ->
+                failwithf "Could not find versions for package %O on %O." packageName source
+            | [] ->
+                failwithf "Could not find versions for package %O because no sources where specified." packageName 
+            | _ ->
+                failwithf "Could not find versions for package %O on any of %A." packageName sources
 
     versions
     |> Seq.toList
