@@ -93,19 +93,8 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
         with exn -> return None
     }
 
-let tryNuGetV3Wrapped (source, auth, nugetV3Url, package:PackageName) = 
-    async { 
-        try 
-            let! data = NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
-            match data with
-            | Some data -> return Some (source,data)
-            | _ -> return None
-        with exn -> return None
-    }
-
-
 /// Gets versions of the given package from local Nuget feed.
-let getAllVersionsFromLocalPath (source, localNugetPath, package:PackageName, root) =
+let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
@@ -119,7 +108,7 @@ let getAllVersionsFromLocalPath (source, localNugetPath, package:PackageName, ro
                             let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                             if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
             |> Seq.toArray
-        return Some(source,versions)
+        return Some(versions)
     }
 
 
@@ -527,22 +516,31 @@ let getVersionsCached key f (source, auth, nugetURL, package) =
         | true, v when v = key -> 
             let! result = f (auth, nugetURL, package)
             match result with
-            | Some x -> return Some (source, x)
+            | Some x -> return Some x
             | _ -> return None
         | _ ->
             let! result = f (auth, nugetURL, package)
             match result with
             | Some x ->
                 protocolCache.TryAdd(source, key) |> ignore
-                return Some (source, x)
+                return Some x
             | _ -> return None
     }
 
 /// Allows to retrieve all version no. for a package from the given sources.
-let GetVersions root (sources, packageName:PackageName) = 
-    let getVersions() =
+let GetVersions force root (sources, packageName:PackageName) = 
+    let sources = sources |> Array.ofSeq
+    
+    let getVersionsFailedCacheFileName (source:PackageSource) =
+        let h = source.Url |> normalizeUrl |> hash |> abs
+        let packageUrl = sprintf "Versions.%O.s%d.failed" packageName h
+        FileInfo(Path.Combine(CacheFolder,packageUrl))
+
+    let versionResponse =
         sources
         |> Seq.map (fun nugetSource -> 
+                   let errorFile = getVersionsFailedCacheFileName nugetSource
+                   if (not force) && errorFile.Exists then [] else
                    match nugetSource with
                    | NuGetV2 source -> 
                         let auth = source.Authentication |> Option.map toBasicAuth
@@ -561,25 +559,37 @@ let GetVersions root (sources, packageName:PackageName) =
                             async {
                                 let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
                                 return!
-                                    tryNuGetV3Wrapped 
-                                        (nugetSource, 
-                                         source.Authentication |> Option.map toBasicAuth, 
+                                    tryNuGetV3
+                                        (source.Authentication |> Option.map toBasicAuth, 
                                          versionsAPI,
                                          packageName)
                             }
                         
                         [ resp ]
-                   | LocalNuGet path -> [ getAllVersionsFromLocalPath (nugetSource, path, packageName, root) ])
+                   | LocalNuGet path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
         |> Seq.toArray
         |> Array.map Async.Choice
         |> Async.Parallel
         |> Async.RunSynchronously
-        |> Array.choose id
+    
+    let mergedVersions =
+        versionResponse
+        |> Array.zip sources
+        |> Array.choose (fun (s,v) -> 
+            match v with
+            | Some v when Array.isEmpty v |> not -> Some (s,v)
+            | _ -> 
+                try
+                    let errorFile = getVersionsFailedCacheFileName s
+                    if errorFile.Exists |> not then
+                        File.WriteAllText(errorFile.FullName,DateTime.Now.ToString())
+                with _ -> ()
+                None)
         |> Array.map (fun (s,versions) -> versions |> Array.map (fun v -> v,s))
         |> Array.concat
 
     let versions = 
-        match getVersions() with
+        match mergedVersions with
         | versions when Array.isEmpty versions |> not -> versions
         | _ -> 
             match sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq with

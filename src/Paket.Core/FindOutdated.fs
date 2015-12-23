@@ -27,6 +27,7 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
 /// Finds all outdated packages.
 let FindOutdated strict includingPrereleases environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
+    let force = true
 
     let dependenciesFile =
         environment.DependenciesFile
@@ -36,14 +37,14 @@ let FindOutdated strict includingPrereleases environment = trial {
     let root = Path.GetDirectoryName dependenciesFile.FileName
 
     let getVersionsF sources resolverStrategy groupName packageName =
-        let versions = NuGetV2.GetVersions root (sources, packageName)
+        let versions = NuGetV2.GetVersions force root (sources, packageName)
                 
         match resolverStrategy with
         | ResolverStrategy.Max -> List.sortDescending versions
         | ResolverStrategy.Min -> List.sort versions
         |> List.toSeq
 
-    let newResolution = dependenciesFile.Resolve(true, getSha1, getVersionsF, NuGetV2.GetPackageDetails root true, dependenciesFile.Groups, PackageResolver.UpdateMode.UpdateAll)
+    let newResolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, NuGetV2.GetPackageDetails root true, dependenciesFile.Groups, PackageResolver.UpdateMode.UpdateAll)
 
     let changed = 
         [for kv in lockFile.Groups do

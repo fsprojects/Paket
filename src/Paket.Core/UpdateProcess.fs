@@ -168,7 +168,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdat
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let inline getVersionsF sources resolverStrategy groupName packageName = 
-        let versions = NuGetV2.GetVersions root (sources, packageName)
+        let versions = NuGetV2.GetVersions force root (sources, packageName)
         match resolverStrategy with
         | ResolverStrategy.Max -> List.sortDescending versions
         | ResolverStrategy.Min -> List.sort versions

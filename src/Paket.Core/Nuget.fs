@@ -36,9 +36,10 @@ let inline normalizeUrl(url:string) = url.Replace("https","http").Replace("www."
 
 let getCacheFileName nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let h = nugetURL |> normalizeUrl |> hash |> abs
-    let packageUrl = sprintf "%O.%s.s%d.json" packageName (version.Normalize()) h
+    let packageUrl = 
+        sprintf "%O.%s.s%d.json" 
+           packageName (version.Normalize()) h
     FileInfo(Path.Combine(CacheFolder,packageUrl))
-
 
 let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> NuGetPackageCache Async) : NuGetPackageCache Async = 
     let cacheFile = getCacheFileName nugetURL packageName version
