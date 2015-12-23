@@ -529,18 +529,24 @@ let getVersionsCached key f (source, auth, nugetURL, package) =
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions force root (sources, packageName:PackageName) = 
-    let sources = sources |> Array.ofSeq
-    
     let getVersionsFailedCacheFileName (source:PackageSource) =
         let h = source.Url |> normalizeUrl |> hash |> abs
         let packageUrl = sprintf "Versions.%O.s%d.failed" packageName h
         FileInfo(Path.Combine(CacheFolder,packageUrl))
 
+    let sources = 
+        sources 
+        |> Array.ofSeq
+        |> Array.map (fun nugetSource ->
+            let errorFile = getVersionsFailedCacheFileName nugetSource
+            errorFile.Exists,nugetSource)
+
+    let force = force || Array.forall fst sources
+
     let versionResponse =
         sources
-        |> Seq.map (fun nugetSource -> 
-                   let errorFile = getVersionsFailedCacheFileName nugetSource
-                   if (not force) && errorFile.Exists then [] else
+        |> Seq.map (fun (errorFileExists,nugetSource) -> 
+                   if (not force) && errorFileExists then [] else
                    match nugetSource with
                    | NuGetV2 source -> 
                         let auth = source.Authentication |> Option.map toBasicAuth
@@ -575,7 +581,7 @@ let GetVersions force root (sources, packageName:PackageName) =
     let mergedVersions =
         versionResponse
         |> Array.zip sources
-        |> Array.choose (fun (s,v) -> 
+        |> Array.choose (fun ((_,s),v) -> 
             match v with
             | Some v when Array.isEmpty v |> not -> Some (s,v)
             | _ -> 
@@ -592,7 +598,7 @@ let GetVersions force root (sources, packageName:PackageName) =
         match mergedVersions with
         | versions when Array.isEmpty versions |> not -> versions
         | _ -> 
-            match sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq with
+            match sources |> Seq.map (fun (_,s:PackageSource) -> s.ToString()) |> List.ofSeq with
             | [source] ->
                 failwithf "Could not find versions for package %O on %O." packageName source
             | [] ->
