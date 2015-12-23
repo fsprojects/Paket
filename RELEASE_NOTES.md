@@ -1,3 +1,6 @@
+#### 2.39.0 - 23.12.2015
+* PERFORMANCE: Cache which source contains versions in GetVersions - https://github.com/fsprojects/Paket/pull/1327
+
 #### 2.38.0 - 22.12.2015
 * Support new NuGet version range for empty restrictions
 * USABILITY: Don't use /odata for nuget.org or myget.org
