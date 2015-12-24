@@ -583,7 +583,13 @@ let GetVersions force root (sources, packageName:PackageName) =
         |> Array.zip sources
         |> Array.choose (fun ((_,s),v) -> 
             match v with
-            | Some v when Array.isEmpty v |> not -> Some (s,v)
+            | Some v when Array.isEmpty v |> not -> 
+                try
+                    let errorFile = getVersionsFailedCacheFileName s
+                    if errorFile.Exists then
+                        File.Delete(errorFile.FullName)
+                with _ -> ()
+                Some (s,v)
             | _ -> 
                 try
                     let errorFile = getVersionsFailedCacheFileName s
