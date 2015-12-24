@@ -62,7 +62,7 @@ let ``#156 should resolve prerelease of logary``() =
 let ``#173 should resolve primary dependency optimistic``() =
     let lockFile = update "i000173-resolve-primary-dependency-optimistic"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FSharp.Formatting"].Version
-    |> shouldEqual (SemVer.Parse "2.12.0")
+    |> shouldBeGreaterThan (SemVer.Parse "2.12.0")
 
 [<Test>]
 let ``#220 should respect the == operator``() =
