@@ -1,4 +1,4 @@
-﻿/// Contains methods for the restore process.
+﻿/// Contains methods for the restore process. 
 module Paket.RestoreProcess
 
 open Paket
@@ -11,6 +11,25 @@ open System
 open Chessie.ErrorHandling
 open System.Reflection
 
+let private makeHash (stream : Stream) = 
+    // TODO: is sha 256 ok? is this class amenable to individual newing up?  
+    // we can't use a single instance of this without further engineering, because it's not thread safe and we get file handle exceptions as shown by http://stackoverflow.com/questions/26592596/why-does-sha1-computehash-fail-under-high-load-with-many-threads
+    use h = new System.Security.Cryptography.SHA256CryptoServiceProvider()
+    h.ComputeHash stream |> Convert.ToBase64String
+
+/// if ensures that the has of a package exists and checks the hash against the freshly-downloaded copy
+let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) =
+    match package.Hash with
+    | None -> 
+        // just have to write hash here
+        {package with Hash = nupkg.OpenRead() |> makeHash |> Some}
+    | Some hash ->
+        let fileHash = nupkg.OpenRead() |> makeHash
+        if hash <> fileHash then
+            failwithf "Error when extracting nuget package %O, the package hash of %s did not matched the pinned hash of %s" package.Name fileHash hash
+        else 
+            package
+
 // Find packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -21,7 +40,6 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
     |> Map.toList
     |> List.filter (fun ((group,package),resolved) -> NuGetV2.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
     |> List.map fst
-
 
 let CopyToCaches force caches fileName =
     caches
@@ -35,9 +53,11 @@ let CopyToCaches force caches fileName =
 
 let private extractPackage caches package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
-        let! fileName,folder = NuGetV2.DownloadPackage(root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let! fileName, folder = NuGetV2.DownloadPackage(root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let nupkg = NuGetV2.findLocalPackage folder package.Name package.Version
+        let package' = checkHash package nupkg
         CopyToCaches force caches fileName
-        return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+        return package', NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
     async { 
@@ -85,7 +105,7 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
                 let path = Utils.normalizeLocalPath path
                 let di = Utils.getDirectoryInfo path root
                 let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
-
+                let package = checkHash package nupkg
                 CopyToCaches force caches nupkg.FullName
 
                 let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
@@ -115,10 +135,9 @@ let internal restore (root, groupName, sources, caches, force, lockFile : LockFi
 
 let internal computePackageHull groupName (lockFile : LockFile) (referencesFileNames : string seq) =
     referencesFileNames
-    |> Seq.map (fun fileName ->
+    |> Seq.collect (fun fileName ->
         lockFile.GetPackageHull(groupName,ReferencesFile.FromFile fileName)
         |> Seq.map (fun p -> (snd p.Key)))
-    |> Seq.concat
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectFile) =

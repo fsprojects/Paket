@@ -179,7 +179,7 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
              RemoteDownload.DownloadSourceFiles(root, kv.Key, force, files)
 
     lockFile.Groups
-    |> Seq.map (fun kv' -> 
+    |> Seq.collect (fun kv' -> 
         let sources = dependenciesFile.Groups.[kv'.Key].Sources
         let caches = dependenciesFile.Groups.[kv'.Key].Caches
         kv'.Value.Resolution
@@ -188,7 +188,6 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
         |> Seq.toArray
         |> Async.Parallel
         |> Async.RunSynchronously)
-    |> Seq.concat
     |> Seq.toArray
 
 let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionary<'key, 'value>) : 'value =
@@ -303,6 +302,33 @@ let installForDotnetSDK root (project:ProjectFile) =
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
+
+    (* 
+        TODO: make this not terrible.  Here I have to write tons of functions to basically in-place updated the resolution map in the lock file group. 
+        I have to unwrap each layer and return a new object expression all the way down from lockfile to lockfile groups to lockfile group to group resolution to package :(
+    *)
+
+    let updateLockfileHashes (lock : LockFile) (model : Map<(GroupName*PackageName),(ResolvedPackage*InstallModel)> ) =
+        let updateGroup (group : LockFileGroup) packageName hash =
+            match group.Resolution.TryFind packageName with
+            | None -> group
+            | Some pkg -> 
+                let newMap = group.Resolution |> Map.add packageName {pkg with Hash = Some hash} 
+                { group with Resolution = newMap}
+        let updateGroups (groups : Map<GroupName, LockFileGroup>) groupName packageName hash =
+            match groups.TryFind groupName with
+            | None -> groups
+            | Some g -> groups |> Map.add groupName (updateGroup g packageName hash) 
+
+        let updateLockWithHash (lockFile : LockFile) (groupName, packageName, hash) = LockFile(lockFile.FileName, updateGroups lockFile.Groups groupName packageName hash)
+
+        let packagesWithHashes = model |> Map.toSeq |> Seq.choose (fun ((gn, pn), (rp, _)) -> match rp.Hash with None -> None | Some h -> Some (gn, pn, h))
+        let updated = 
+            packagesWithHashes
+            |> Seq.fold updateLockWithHash lock
+        updated.Save() |> ignore // ideally we'd have a checkpoint during restore to do the save instead of willy-nilly during a function.
+        updated
+
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -316,8 +342,12 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Seq.map (fun kv -> kv.Key)
 
     let root = Path.GetDirectoryName lockFile.FileName
+
     let model = CreateModel(root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, updatedGroups) |> Map.ofArray
-    let lookup = lockFile.GetDependencyLookupTable()
+    
+    // use the new model (especially the hashes) to update the lockfile so that we persist the hashes
+    let lockfile = updateLockfileHashes lockFile model
+    let lookup = lockfile.GetDependencyLookupTable()
     let projectCache = Dictionary<string, ProjectFile option>();
 
     for project, referenceFile in projectsAndReferences do
@@ -325,11 +355,11 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         verbosefn "Installing to %s with ToolsVersion %O" project.FileName toolsVersion
         let directDependencies =
             referenceFile.Groups
-            |> Seq.map (fun kv ->
+            |> Seq.collect (fun kv ->
                 lockFile.GetRemoteReferencedPackages(referenceFile,kv.Value) @ kv.Value.NugetPackages
                 |> Seq.map (fun ps ->
                     let group = 
-                        match lockFile.Groups |> Map.tryFind kv.Key with
+                        match lockfile.Groups |> Map.tryFind kv.Key with
                         | Some g -> g
                         | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName kv.Key
 
@@ -342,7 +372,6 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         [package.Settings; group.Options.Settings] 
                         |> List.fold (+) ps.Settings
                     (kv.Key,ps.Name), (package.Version,resolvedSettings)))
-            |> Seq.concat
             |> Map.ofSeq
 
         let usedPackages =
@@ -355,7 +384,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
                 |> Seq.choose (fun (groupName,(_,parentSettings), dep) -> 
                     let group = 
-                        match lockFile.Groups |> Map.tryFind groupName with
+                        match lockfile.Groups |> Map.tryFind groupName with
                         | Some g -> g
                         | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
 
@@ -404,7 +433,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                             tracefn "FileName: %s " file.Name 
 
                         let lockFileReference =
-                            match lockFile.Groups |> Map.tryFind kv.Key with
+                            match lockfile.Groups |> Map.tryFind kv.Key with
                             | None -> None
                             | Some group ->
                                 group.RemoteFiles
@@ -457,7 +486,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Seq.map (fun kv -> (snd kv.Value).GetLibReferencesLazy.Force())
             |> Set.unionMany
 
-        for g in lockFile.Groups do
+        for g in lockfile.Groups do
             let group = g.Value
             model
             |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
