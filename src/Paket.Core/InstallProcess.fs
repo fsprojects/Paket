@@ -313,7 +313,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             match group.Resolution.TryFind packageName with
             | None -> group
             | Some pkg -> 
-                let newMap = group.Resolution |> Map.add packageName {pkg with Hash = Some hash} 
+                let newMap = group.Resolution |> Map.add packageName {pkg with Settings = {pkg.Settings with Hash = Some hash}} 
                 { group with Resolution = newMap}
         let updateGroups (groups : Map<GroupName, LockFileGroup>) groupName packageName hash =
             match groups.TryFind groupName with
@@ -326,7 +326,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             model 
             |> Seq.choose (fun kvp -> 
                 let (gn, pn), (rp, _) = kvp.Key, kvp.Value
-                match rp.Hash with 
+                match rp.Settings.Hash with 
                 | None -> None 
                 | Some h -> Some (gn, pn, h))
         let updated = 

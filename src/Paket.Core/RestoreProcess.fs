@@ -19,10 +19,10 @@ let private makeHash (stream : Stream) =
 
 /// if ensures that the has of a package exists and checks the hash against the freshly-downloaded copy
 let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) =
-    match package.Hash with
+    match package.Settings.Hash with
     | None -> 
         // just have to write hash here
-        {package with Hash = nupkg.OpenRead() |> makeHash |> Some}
+        {package with Settings = {package.Settings with Hash = nupkg.OpenRead() |> makeHash |> Some} }
     | Some hash ->
         let fileHash = nupkg.OpenRead() |> makeHash
         if hash <> fileHash then

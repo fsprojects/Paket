@@ -107,8 +107,7 @@ module LockFileSerializer =
                       let pkgpart = sprintf "    %O" package.Name
                       let versionpart = sprintf " %s" versionStr
                       let settingspart = match settings.ToString() with "" -> "" | s -> sprintf " - %O" s
-                      let hashpart = match package.Hash with None -> "" | Some hash  -> sprintf " (%s)" hash
-                      yield sprintf "%s%s%s%s" pkgpart versionpart settingspart hashpart
+                      yield sprintf "%s%s%s" pkgpart versionpart settingspart
 
                       for name,v,restrictions in package.Dependencies do
                           let versionStr = 
@@ -395,8 +394,7 @@ module LockFileParser =
                                       Dependencies = Set.empty
                                       Unlisted = false
                                       Settings = settings
-                                      Version = SemVer.Parse version 
-                                      Hash = hash} :: currentGroup.Packages }::otherGroups
+                                      Version = SemVer.Parse version } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
                     let version,settings = parsePackage v

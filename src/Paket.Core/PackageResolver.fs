@@ -76,10 +76,8 @@ type ResolvedPackage = {
     Unlisted     : bool
     Settings     : InstallSettings
     Source       : PackageSource
-    /// the hash of a package is the base64 encoded bytes of its SHA256 .nupkg file.  base64 for readability and because sha256 can really muck up the lockfile, where this value is pinned.
-    Hash         : string option
 } with
-    override this.ToString () = sprintf "%O %O%s" this.Name this.Version (match this.Hash with | Some s -> sprintf " (%s)" s | None -> "")
+    override this.ToString () = sprintf "%O %O" this.Name this.Version
 
     member self.HasFrameworkRestrictions =
         not (getRestrictionList self.Settings.FrameworkRestrictions = [])
@@ -96,9 +94,8 @@ type ResolvedPackage = {
                  Dependencies -\n\
                  %s\n\
                  Source - %A\n\
-                 Hash - %A\n\
                  Install Settings\n\
-                 %A"                self.Name deps self.Source self.Hash self.Settings
+                 %A"                self.Name deps self.Source self.Settings
 
 type PackageResolution = Map<PackageName, ResolvedPackage>
 
@@ -386,7 +383,6 @@ let private explorePackageConfig getPackageDetailsF  (pkgConfig:PackageConfig) =
                 Unlisted     = packageDetails.Unlisted
                 Settings     = { settings with FrameworkRestrictions = newRestrictions }
                 Source       = packageDetails.Source
-                Hash         = None
             }
     with
     | exn ->
