@@ -322,12 +322,23 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
         let updateLockWithHash (lockFile : LockFile) (groupName, packageName, hash) = LockFile(lockFile.FileName, updateGroups lockFile.Groups groupName packageName hash)
 
-        let packagesWithHashes = model |> Map.toSeq |> Seq.choose (fun ((gn, pn), (rp, _)) -> match rp.Hash with None -> None | Some h -> Some (gn, pn, h))
+        let packagesWithHashes = 
+            model 
+            |> Seq.choose (fun kvp -> 
+                let (gn, pn), (rp, _) = kvp.Key, kvp.Value
+                match rp.Hash with 
+                | None -> None 
+                | Some h -> Some (gn, pn, h))
         let updated = 
             packagesWithHashes
             |> Seq.fold updateLockWithHash lock
         updated.Save() |> ignore // ideally we'd have a checkpoint during restore to do the save instead of willy-nilly during a function.
         updated
+
+    let tryFindGroupWithMessage groupName fileName groups = 
+        match groups |> Map.tryFind groupName with
+        | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." fileName groupName
+        | Some g -> g
 
     let packagesToInstall =
         if options.OnlyReferenced then
@@ -358,11 +369,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Seq.collect (fun kv ->
                 lockFile.GetRemoteReferencedPackages(referenceFile,kv.Value) @ kv.Value.NugetPackages
                 |> Seq.map (fun ps ->
-                    let group = 
-                        match lockfile.Groups |> Map.tryFind kv.Key with
-                        | Some g -> g
-                        | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName kv.Key
-
+                    let group = tryFindGroupWithMessage kv.Key referenceFile.FileName lockfile.Groups
                     let package = 
                         match model |> Map.tryFind (kv.Key, ps.Name) with
                         | Some (p,_) -> p
@@ -383,11 +390,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 directDependencies 
                 |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
                 |> Seq.choose (fun (groupName,(_,parentSettings), dep) -> 
-                    let group = 
-                        match lockfile.Groups |> Map.tryFind groupName with
-                        | Some g -> g
-                        | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
-
+                    let group = tryFindGroupWithMessage groupName referenceFile.FileName lockfile.Groups
                     match group.Resolution |> Map.tryFind dep with
                     | None -> None
                     | Some p -> 

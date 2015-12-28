@@ -41,7 +41,7 @@ let internal memoize (f: 'a -> 'b) : 'a -> 'b =
 let internal memoizeAsync f =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, System.Threading.Tasks.Task<'b>>()
     fun (x: 'a) -> // task.Result serialization to sync after done.
-        cache.GetOrAdd(x, fun x -> f(x) |> Async.StartAsTask) |> Async.AwaitTask
+        cache.GetOrAdd(x, f >> Async.StartAsTask) |> Async.AwaitTask
 
 type Auth = 
     | Credentials of Username : string * Password : string
@@ -220,7 +220,7 @@ let ProgramFilesX86 =
     | null, "AMD64" 
     | "x86", "AMD64" -> Environment.GetEnvironmentVariable "ProgramFiles(x86)"
     | _ -> Environment.GetEnvironmentVariable "ProgramFiles"
-    |> fun detected -> if detected = null then @"C:\Program Files (x86)\" else detected
+    |> fun detected -> if isNull detected then @"C:\Program Files (x86)\" else detected
 
 /// The system root environment variable. Typically "C:\Windows"
 let SystemRoot = Environment.GetEnvironmentVariable "SystemRoot"
