@@ -1,3 +1,6 @@
+#### 2.39.3 - 28.12.2015
+* BUGFIX: Allow to restore packages from private feeds - https://github.com/fsprojects/Paket/issues/1326
+
 #### 2.39.2 - 24.12.2015
 * PERFORMANCE: Cache which source contains versions in GetVersions - https://github.com/fsprojects/Paket/pull/1327
 

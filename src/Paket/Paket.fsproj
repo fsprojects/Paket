@@ -38,7 +38,7 @@
     <StartArguments>pack output D:\code\paketbug\output</StartArguments>
     <StartArguments>install</StartArguments>
     <StartArguments>restore</StartArguments>
-    <StartArguments>update</StartArguments>
+    <StartArguments>restore -f</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>

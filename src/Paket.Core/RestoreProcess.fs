@@ -10,9 +10,9 @@ open Paket.PackageSources
 open FSharp.Polyfill
 open System
 
-let private extractPackage package root auth source groupName version includeVersionInPath force =
+let private extractPackage package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
-        let! folder = NuGetV2.DownloadPackage(root, auth, source, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let! folder = NuGetV2.DownloadPackage(root, source, groupName, package.Name, version, includeVersionInPath, force, detailed)
         return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
@@ -37,12 +37,18 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
         match package.Source with
         | NuGetV2 _ | NuGetV3 _ -> 
-            let auth = 
-                sources |> List.tryPick (fun s -> 
-                               match s with
-                               | NuGetV2 s when s.Url = package.Source.Url -> s.Authentication |> Option.map toBasicAuth
-                               | _ -> None)
-            let! result = extractPackage package root auth package.Source groupName v includeVersionInPath force 
+            let source = 
+                sources 
+                    |> List.tryPick (fun source -> 
+                            match source with
+                            | NuGetV2 s when s.Url = package.Source.Url -> Some(source)
+                            | NuGetV3 s when s.Url = package.Source.Url -> Some(source)
+                            | _ -> None)
+                |> function
+                   | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file" package.Source.Url package.Name
+                   | Some s -> s 
+
+            let! result = extractPackage package root source groupName v includeVersionInPath force 
             return result
         | LocalNuGet path ->
             let path = Utils.normalizeLocalPath path

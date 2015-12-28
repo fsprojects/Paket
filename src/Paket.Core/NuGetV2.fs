@@ -618,7 +618,7 @@ let GetVersions force root (sources, packageName:PackageName) =
     |> List.map (fun (v,s) -> SemVer.Parse v,s |> List.map snd)
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
+let DownloadPackage(root, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
     async { 
         let targetFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
         let targetFile = FileInfo targetFileName
@@ -648,7 +648,7 @@ let DownloadPackage(root, auth, (source : PackageSource), groupName, packageName
                 request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
                 request.UserAgent <- "Paket"
 
-                match auth with
+                match source.Auth |> Option.map toBasicAuth with
                 | None | Some(Token _) -> request.UseDefaultCredentials <- true
                 | Some(Credentials(username, password)) -> 
                     // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
