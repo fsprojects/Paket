@@ -1,3 +1,6 @@
+#### 2.39.8 - 28.12.2015
+* BUGFIX: Allow to overwrite versions in template files without id - https://github.com/fsprojects/Paket/issues/1321
+
 #### 2.39.7 - 28.12.2015
 * BUGFIX: Accept dotnet54 as moniker
 

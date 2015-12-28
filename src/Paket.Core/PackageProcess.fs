@@ -34,10 +34,14 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
             match md with
             | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }
             | _ ->
+                let versionFromAssembly =
+                    match md.Id |> Option.bind (fun id -> Map.tryFind id specificVersions) with
+                    | Some _ as specificVersion -> specificVersion
+                    | None -> getVersion versionFromAssembly attribs
 
                 let merged = 
                     { Id = md.Id
-                      Version = md.Version ++ getVersion versionFromAssembly attribs
+                      Version = md.Version ++ versionFromAssembly
                       Authors = md.Authors ++ getAuthors attribs
                       Description = md.Description ++ getDescription attribs
                       Symbols = md.Symbols }
