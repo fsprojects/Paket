@@ -48,7 +48,7 @@
     <StartWorkingDirectory>d:\code\paketrepro</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001270-net461\temp</StartWorkingDirectory>
     <StartWorkingDirectory>C:\code\restore</StartWorkingDirectory>
-    <StartWorkingDirectory>C:\code\repro</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\code\paketkopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

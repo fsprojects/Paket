@@ -163,8 +163,13 @@ module DependenciesFileParser =
         let getParts (projectSpec : string) fileSpec projectName authKey = 
             let projectSpec = projectSpec.TrimEnd('/')
             
-            let projectSpec', commit = 
-                match projectSpec.IndexOf('/', 8) with // 8 = "https://".Length
+            let projectSpec', commit =
+                let start = 
+                    match projectSpec.IndexOf("://") with
+                    | -1 -> 8 // 8 = "https://".Length
+                    | pos -> pos + 3
+             
+                match projectSpec.IndexOf('/', start) with 
                 | -1 -> projectSpec, "/"
                 | pos -> projectSpec.Substring(0, pos), projectSpec.Substring(pos)
             

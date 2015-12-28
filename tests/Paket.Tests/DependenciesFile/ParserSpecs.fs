@@ -512,6 +512,20 @@ let ``should read http binary references from config``() =
             AuthKey = None } ]
 
 
+[<Test>]
+let ``should read http file references from config``() =
+    let config = """http file:///c:/code/uen/settings-gitlab.fsx"""
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
+    |> shouldEqual
+        [ { Owner = ""
+            Project = ""
+            Name = "settings-gitlab.fsx"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "file://"
+            Commit = Some "/c:/code/uen/settings-gitlab.fsx"
+            AuthKey = None } ]
+
+
 let configWithoutVersions = """
 source "http://www.nuget.org/api/v2"
 
