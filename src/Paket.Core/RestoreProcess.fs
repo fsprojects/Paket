@@ -38,11 +38,12 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
         match package.Source with
         | NuGetV2 _ | NuGetV3 _ -> 
             let source = 
+                let normalized = package.Source.Url |> normalizeFeedUrl
                 sources 
                     |> List.tryPick (fun source -> 
                             match source with
-                            | NuGetV2 s when s.Url = package.Source.Url -> Some(source)
-                            | NuGetV3 s when s.Url = package.Source.Url -> Some(source)
+                            | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some(source)
+                            | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some(source)
                             | _ -> None)
                 |> function
                    | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file" package.Source.Url package.Name

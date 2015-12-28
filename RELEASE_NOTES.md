@@ -1,3 +1,6 @@
+#### 2.39.5 - 28.12.2015
+* BUGFIX: Compare normalized Urls
+
 #### 2.39.4 - 28.12.2015
 * BUGFIX: Call OnCompleted in Observable.flatten - https://github.com/fsprojects/Paket/pull/1330
 

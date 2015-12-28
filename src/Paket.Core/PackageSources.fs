@@ -145,6 +145,16 @@ let private parseAuth(text:string, source) =
     else
         getAuth()
 
+let normalizeFeedUrl (source:string) =
+    match source.TrimEnd([|'/'|]) with
+    | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream 
+    | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream.Replace("https","http")
+    | "https://nuget.org/api/v2" -> Constants.DefaultNuGetStream
+    | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+    | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
+    | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+    | source -> source
+
 /// Represents the package source type.
 type PackageSource =
 | NuGetV2 of NugetSource
@@ -165,16 +175,7 @@ type PackageSource =
             else
                 parts.[1].Replace("\"","").TrimEnd([| '/' |])
 
-        let feed = 
-            match source.TrimEnd([|'/'|]) with
-            | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream 
-            | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream.Replace("https","http")
-            | "https://nuget.org/api/v2" -> Constants.DefaultNuGetStream
-            | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-            | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
-            | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-            | _ -> source
-
+        let feed = normalizeFeedUrl source
         PackageSource.Parse(feed, parseAuth(line, feed))
 
     static member Parse(source,auth) = 
