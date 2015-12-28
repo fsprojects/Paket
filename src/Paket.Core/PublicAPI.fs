@@ -7,6 +7,7 @@ open Paket.PackageSources
 open System
 open System.IO
 open Chessie.ErrorHandling
+open FSharp.Control.Reactive
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
@@ -456,7 +457,7 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.map (fun url ->
                     NuGetV3.FindPackages(None, url, searchTerm, maxResults)
                     |> Observable.ofAsyncWithToken cancellationToken)
-        |> Seq.reduce Observable.merge
+        |> Observable.mergeSeq
         |> Observable.flatten
         |> Observable.distinct
 

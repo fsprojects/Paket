@@ -7,6 +7,7 @@ open System.IO
 open System.Net
 open System.Xml
 open System.Text
+open FSharp.Control.Reactive
 open Paket
 open Paket.Logging
 open Chessie.ErrorHandling
@@ -517,10 +518,9 @@ module ObservableExtensions =
                             member __.Dispose() = () } }
 
         let flatten (a: IObservable<#seq<'a>>): IObservable<'a> =
-            { new IObservable<'a> with
-                member __.Subscribe obs =
-                    let sub = a |> Observable.subscribe (Seq.iter obs.OnNext)
-                    { new IDisposable with member __.Dispose() = sub.Dispose() }}
+            a
+            |> Observable.map Observable.ofSeq
+            |> Observable.mergeInner
 
         let distinct (a: IObservable<'a>): IObservable<'a> =
             let seen = HashSet()
