@@ -1,3 +1,6 @@
+#### 2.39.7 - 28.12.2015
+* BUGFIX: Accept dotnet54 as moniker
+
 #### 2.39.6 - 28.12.2015
 * BUGFIX: Download file:/// to paket-files/localhost
 

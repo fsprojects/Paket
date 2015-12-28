@@ -206,6 +206,7 @@ module FrameworkDetection =
                 | "wpa00" | "wpa" | "wpa81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp "v8.1")
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
                 | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
+                | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | _ -> None
 
             cache.[path] <- result
