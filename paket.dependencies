@@ -3,7 +3,6 @@ source https://nuget.org/api/v2
 nuget Newtonsoft.Json redirects: force
 nuget Argu
 nuget FSharp.Core redirects: force
-nuget FSharp.Control.Reactive
 nuget Chessie
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs

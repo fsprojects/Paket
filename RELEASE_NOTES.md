@@ -1,3 +1,6 @@
+#### 2.39.4 - 28.12.2015
+* BUGFIX: Call OnCompleted in Observable.flatten - https://github.com/fsprojects/Paket/pull/1330
+
 #### 2.39.3 - 28.12.2015
 * BUGFIX: Allow to restore packages from private feeds - https://github.com/fsprojects/Paket/issues/1326
 

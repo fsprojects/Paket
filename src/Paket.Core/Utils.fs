@@ -7,7 +7,6 @@ open System.IO
 open System.Net
 open System.Xml
 open System.Text
-open FSharp.Control.Reactive
 open Paket
 open Paket.Logging
 open Chessie.ErrorHandling
@@ -517,10 +516,25 @@ module ObservableExtensions =
                       { new IDisposable with
                             member __.Dispose() = () } }
 
-        let flatten (a: IObservable<#seq<'a>>): IObservable<'a> =
-            a
-            |> Observable.map Observable.ofSeq
-            |> Observable.mergeInner
+        let flatten (input: IObservable<#seq<'a>>): IObservable<'a> =
+            { new IObservable<'a> with
+                member __.Subscribe obs =
+                    let cts = new CancellationTokenSource()
+                    let sub = 
+                        input.Subscribe
+                          ({ new IObserver<#seq<'a>> with
+                              member x.OnNext(values) = values |> Seq.iter obs.OnNext
+                              member x.OnCompleted() = 
+                                cts.Cancel()
+                                obs.OnCompleted()
+                              member x.OnError(e) = 
+                                cts.Cancel()
+                                obs.OnError(e) })
+
+                    { new IDisposable with 
+                        member __.Dispose() = 
+                            sub.Dispose()
+                            cts.Cancel() }}
 
         let distinct (a: IObservable<'a>): IObservable<'a> =
             let seen = HashSet()

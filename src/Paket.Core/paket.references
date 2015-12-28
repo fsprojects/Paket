@@ -1,6 +1,5 @@
 Newtonsoft.Json
 FSharp.Core
-FSharp.Control.Reactive
 Chessie
 File:Globbing.fs .
 File:AssemblyReader.fs .
