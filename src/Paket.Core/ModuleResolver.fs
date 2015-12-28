@@ -48,11 +48,12 @@ type ResolvedSourceFile =
     
     member this.ComputeFilePath(root,groupName:GroupName,name : string) = 
         let path = normalizePath (name.TrimStart('/'))
+        let owner = if String.IsNullOrWhiteSpace this.Owner then "localhost" else this.Owner
         let dir = 
             if groupName = Constants.MainDependencyGroup then
-                Path.Combine(root,Constants.PaketFilesFolderName, this.Owner, this.Project, path)
+                Path.Combine(root,Constants.PaketFilesFolderName, owner, this.Project, path)
             else
-                Path.Combine(root,Constants.PaketFilesFolderName, groupName.GetCompareString(), this.Owner, this.Project, path)
+                Path.Combine(root,Constants.PaketFilesFolderName, groupName.GetCompareString(), owner, this.Project, path)
         let di = DirectoryInfo(dir)
         di.FullName
     

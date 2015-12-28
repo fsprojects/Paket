@@ -1,3 +1,6 @@
+#### 2.39.6 - 28.12.2015
+* BUGFIX: Download file:/// to paket-files/localhost
+
 #### 2.39.5 - 28.12.2015
 * BUGFIX: Compare normalized Urls
 
