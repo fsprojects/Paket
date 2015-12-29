@@ -1,29 +1,13 @@
-#### 2.39.10 - 29.12.2015
-* PERFORMANCE: Prefer package-versions protocol for nuget.org and myget.org
-
-#### 2.39.9 - 29.12.2015
+#### 2.40.0 - 29.12.2015
 * BUGFIX: Better packaging of prerelease dependencies - https://github.com/fsprojects/Paket/issues/1316
-
-#### 2.39.8 - 28.12.2015
 * BUGFIX: Allow to overwrite versions in template files without id - https://github.com/fsprojects/Paket/issues/1321
-
-#### 2.39.7 - 28.12.2015
 * BUGFIX: Accept dotnet54 as moniker
-
-#### 2.39.6 - 28.12.2015
 * BUGFIX: Download file:/// to paket-files/localhost
-
-#### 2.39.5 - 28.12.2015
 * BUGFIX: Compare normalized Urls
-
-#### 2.39.4 - 28.12.2015
 * BUGFIX: Call OnCompleted in Observable.flatten - https://github.com/fsprojects/Paket/pull/1330
-
-#### 2.39.3 - 28.12.2015
 * BUGFIX: Allow to restore packages from private feeds - https://github.com/fsprojects/Paket/issues/1326
-
-#### 2.39.2 - 24.12.2015
 * PERFORMANCE: Cache which source contains versions in GetVersions - https://github.com/fsprojects/Paket/pull/1327
+* PERFORMANCE: Prefer package-versions protocol for nuget.org and myget.org
 
 #### 2.38.0 - 22.12.2015
 * Support new NuGet version range for empty restrictions
