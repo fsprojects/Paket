@@ -548,18 +548,20 @@ let GetVersions force root (sources, packageName:PackageName) =
         |> Seq.map (fun (errorFileExists,nugetSource) -> 
                    if (not force) && errorFileExists then [] else
                    match nugetSource with
-                   | NuGetV2 source -> 
+                   | NuGetV2 source ->
                         let auth = source.Authentication |> Option.map toBasicAuth
-                        
-                        let v2Feeds =
-                            [ yield getVersionsCached "OData" tryGetPackageVersionsViaOData (nugetSource, auth, source.Url, packageName)
-                              yield getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName)
-                              if not (source.Url.ToLower().Contains "teamcity" || source.Url.ToLower().Contains "feedservice.svc") then
-                                yield getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
+                        if source.Url.ToLower().Contains "nuget.org" || source.Url.ToLower().Contains "myget.org" then
+                            [getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
+                        else
+                            let v2Feeds =
+                                [ yield getVersionsCached "OData" tryGetPackageVersionsViaOData (nugetSource, auth, source.Url, packageName)
+                                  yield getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName)
+                                  if not (source.Url.ToLower().Contains "teamcity" || source.Url.ToLower().Contains "feedservice.svc") then
+                                    yield getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
 
-                        match NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) with
-                        | None -> v2Feeds
-                        | Some v3Url -> (getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, v3Url, packageName)) :: v2Feeds
+                            match NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) with
+                            | None -> v2Feeds
+                            | Some v3Url -> (getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, v3Url, packageName)) :: v2Feeds
                    | NuGetV3 source ->
                         let resp =
                             async {
@@ -604,7 +606,7 @@ let GetVersions force root (sources, packageName:PackageName) =
         match mergedVersions with
         | versions when Array.isEmpty versions |> not -> versions
         | _ -> 
-            match sources |> Seq.map (fun (_,s:PackageSource) -> s.ToString()) |> List.ofSeq with
+            match sources |> Array.map (fun (_,s:PackageSource) -> s.ToString()) |> List.ofArray with
             | [source] ->
                 failwithf "Could not find versions for package %O on %O." packageName source
             | [] ->

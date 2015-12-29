@@ -1,3 +1,6 @@
+#### 2.39.10 - 29.12.2015
+* PERFORMANCE: Prefer package-versions protocol for nuget.org and myget.org
+
 #### 2.39.9 - 29.12.2015
 * BUGFIX: Better packaging of prerelease dependencies - https://github.com/fsprojects/Paket/issues/1316
 
