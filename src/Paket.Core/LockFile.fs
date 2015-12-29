@@ -579,7 +579,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         |> Seq.concat
         |> Map.ofSeq
 
-    member this.GetPackageHullSafe(referencesFile,groupName) =
+    member internal this.GetPackageHullSafe(referencesFile,groupName) =
         match referencesFile.Groups |> Map.tryFind groupName with
         | None -> Result.Succeed(Set.empty)
         | Some group ->

@@ -244,7 +244,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
     if redirects <> Some false then
         applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root bindingRedirects
 
-let findAllReferencesFiles root =
+let internal findAllReferencesFiles root =
     root
     |> ProjectFile.FindAllProjects
     |> Array.map (fun p ->

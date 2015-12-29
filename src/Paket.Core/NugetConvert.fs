@@ -18,7 +18,7 @@ type CredsMigrationMode =
     | Plaintext
     | Selective
 
-    static member Parse(s : string) = 
+    static member internal Parse(s : string) = 
         match s with 
         | "encrypt" -> ok Encrypt
         | "plaintext" -> ok  Plaintext
@@ -75,7 +75,7 @@ type NugetConfig =
           PackageRestoreEnabled = false 
           PackageRestoreAutomatic = false }
 
-    static member GetConfigNode (file : FileInfo) =
+    static member internal GetConfigNode (file : FileInfo) =
         try 
             let doc = XmlDocument()
             doc.Load(file.FullName)
@@ -154,7 +154,7 @@ module NugetEnv =
           NugetExe = exe
         }
         
-    let readNugetConfig(rootDirectory : DirectoryInfo) =
+    let internal readNugetConfig(rootDirectory : DirectoryInfo) =
         DirectoryInfo(Path.Combine(rootDirectory.FullName, ".nuget"))
         |> List.unfold (fun di -> if di = null 
                                     then None 
@@ -170,7 +170,7 @@ module NugetEnv =
                             |> lift (fun node -> NugetConfig.OverrideConfig config node)))
                         (ok NugetConfig.Empty)
 
-    let readNugetPackages(rootDirectory : DirectoryInfo) =
+    let internal readNugetPackages(rootDirectory : DirectoryInfo) =
         let readSingle(file : FileInfo) = 
             try
                 { File = file
@@ -185,7 +185,7 @@ module NugetEnv =
         |> Array.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
         |> collect
 
-    let read (rootDirectory : DirectoryInfo) = trial {
+    let internal read (rootDirectory : DirectoryInfo) = trial {
         let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
         let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Array.tryHead
         let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Array.tryHead
@@ -219,7 +219,7 @@ let createPackageRequirement (packageName, version, restrictions) dependenciesFi
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName
        Graph = [] }
 
-let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
+let internal createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
 
@@ -315,7 +315,7 @@ let convertProjects nugetEnv =
         project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
         yield project, convertPackagesConfigToReferences project.FileName packagesConfig]
 
-let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
+let internal createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
 
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
     return PaketEnv.create rootDirectory depFile None (convertProjects nugetEnv)
@@ -334,13 +334,13 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
 
     solutions
 
-let createResult(rootDirectory, nugetEnv, credsMirationMode) = trial {
+let internal createResult(rootDirectory, nugetEnv, credsMirationMode) = trial {
 
     let! paketEnv = createPaketEnv rootDirectory nugetEnv credsMirationMode
     return ConvertResultR.create nugetEnv paketEnv (updateSolutions rootDirectory)
 }
 
-let convertR rootDirectory force credsMigrationMode = trial {
+let internal convertR rootDirectory force credsMigrationMode = trial {
 
     let! credsMigrationMode =
         defaultArg 

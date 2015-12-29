@@ -159,7 +159,7 @@ let GetAuthenticationForUrl (source : string) url =
 let GetAuthentication (source : string) =
     GetAuthenticationForUrl source source
 
-let AddCredentials(source, username, password) = 
+let internal AddCredentials(source, username, password) = 
     trial { 
         let! credentialsNode = getConfigNode "credentials"
         let newCredentials = 
@@ -177,7 +177,7 @@ let AddCredentials(source, username, password) =
         | None -> ()
     }
 
-let AddToken(source, token) =
+let internal AddToken(source, token) =
     trial {
         let! credentialsNode = getConfigNode "credentials"
         let newToken = 
@@ -195,7 +195,7 @@ let AddToken(source, token) =
         | None -> () 
     }
 
-let askAndAddAuth (source : string) (username : string) = 
+let internal askAndAddAuth (source : string) (username : string) = 
     let username =
         if(username = "") then
             Console.Write("Username: ")

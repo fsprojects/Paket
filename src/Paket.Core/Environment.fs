@@ -21,7 +21,7 @@ module PaketEnv =
           LockFile = lockFile
           Projects = projects }
 
-    let fromRootDirectory (directory : DirectoryInfo) = trial {
+    let internal fromRootDirectory (directory : DirectoryInfo) = trial {
         if not directory.Exists then 
             return! fail (DirectoryDoesntExist directory)
         else
@@ -61,7 +61,7 @@ module PaketEnv =
             |> Seq.tryFind File.Exists
             |> Option.map (fun f -> DirectoryInfo(Path.GetDirectoryName(f)))
 
-    let ensureNotExists (directory : DirectoryInfo) =
+    let internal ensureNotExists (directory : DirectoryInfo) =
         match fromRootDirectory directory with
         | Result.Ok(_) -> fail (PaketEnvAlreadyExistsInDirectory directory)
         | Result.Bad(msgs) -> 
@@ -73,15 +73,15 @@ module PaketEnv =
             if filtered |> List.isEmpty then ok directory
             else Result.Bad filtered
 
-    let ensureNotInStrictMode environment =
+    let internal ensureNotInStrictMode environment =
         if not environment.DependenciesFile.Groups.[Constants.MainDependencyGroup].Options.Strict then ok environment
         else fail StrictModeDetected
 
-    let ensureLockFileExists environment =
+    let internal ensureLockFileExists environment =
         environment.LockFile
         |> failIfNone (LockFileNotFound environment.RootDirectory)
 
-    let init (directory : DirectoryInfo) =
+    let internal init (directory : DirectoryInfo) =
         match locatePaketRootDirectory directory with
         | Some rootDirectory when rootDirectory.FullName = directory.FullName -> 
             Logging.tracefn "Paket is already initialized in %s" rootDirectory.FullName

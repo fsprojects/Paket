@@ -22,13 +22,13 @@ let private findReferencesFor groupName package (lockFile: LockFile) projects = 
     return referencedIn |> List.choose id
 }
 
-let FindReferencesForPackage groupName package environment = trial {
+let internal FindReferencesForPackage groupName package environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
 
     return! findReferencesFor groupName package lockFile environment.Projects
 }
 
-let ShowReferencesFor packages environment = trial {
+let internal ShowReferencesFor packages environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
     let! projectsPerPackage =
         packages
