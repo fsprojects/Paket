@@ -115,7 +115,7 @@ let addDependency (templateFile : TemplateFile) (dependency : PackageName * Vers
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with Dependencies = newDeps }) }
     | IncompleteTemplate -> 
-        failwith "You should only try and add dependencies to template files with complete metadata."
+        failwith "You should only try to add dependencies to template files with complete metadata."
 
 let toFile config platform (p : ProjectFile) = 
     Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory config platform, p.GetAssemblyName())
@@ -135,6 +135,11 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
         | ProjectOutputType.Library -> sprintf "lib/%O/" (project.GetTargetProfile())
     
     let projectDir = Path.GetDirectoryName project.FileName
+
+    let getPreReleaseStatus (v:SemVerInfo) =
+        match v.PreRelease with
+        | None -> PreReleaseStatus.No
+        | _ -> PreReleaseStatus.All
     
     let deps, files = 
         project.GetInterProjectDependencies() 
@@ -143,7 +148,8 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
             | Some packagedRef -> packagedRef :: deps, files
             | None -> 
                 let p = 
-                    match ProjectFile.TryLoad(Path.Combine(projectDir, p.RelativePath) |> normalizePath) with
+                    let path = Path.Combine(projectDir, p.RelativePath) |> normalizePath
+                    match ProjectFile.TryLoad path with
                     | Some p -> p
                     | _ -> failwithf "Missing project reference in proj file %s" p.RelativePath
                     
@@ -164,6 +170,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                     |> List.exists ((=) (f.Extension.ToLower()))
 
                 isSameFileName && isValidExtension)
+
         additionalFiles
         |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
     
@@ -175,12 +182,9 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
             | CompleteTemplate(core, opt) -> 
                 match core.Version with
                 | Some v ->
-                    let versionConstraint =
-                        if not lockDependencies
-                        then Minimum v
-                        else Specific v
-                    PackageName core.Id, VersionRequirement(versionConstraint, PreReleaseStatus.No)
-                | None ->failwithf "There was no version given for %s." templateFile.FileName
+                    let versionConstraint = if not lockDependencies then Minimum v else Specific v
+                    PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
+                | None -> failwithf "There was no version given for %s." templateFile.FileName
             | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency templateWithOutput
     
@@ -197,8 +201,8 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
     let referenceFile = 
         FileInfo project.FileName
         |> ProjectFile.FindReferencesFile 
-        |> Option.map (ReferencesFile.FromFile)
-
+        |> Option.map ReferencesFile.FromFile
+    
     match referenceFile with
     | Some r -> 
         r.Groups
@@ -228,6 +232,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                 group.Packages 
                                 |> Seq.map (fun p -> p.Name, p.VersionRequirement)
                                 |> Map.ofSeq
+
                             Map.tryFind np.Name deps
                             |> function
                                 | Some direct -> Some direct
@@ -240,14 +245,14 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                         // to current locked version
                                         group.Resolution
                                         |> Map.tryFind np.Name
-                                        |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, PreReleaseStatus.No))
+                                        |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, getPreReleaseStatus transient.Version))
                         else
                             match lockFile.Groups |> Map.tryFind groupName with
                             | None -> None
                             | Some group ->
                                 Map.tryFind np.Name group.Resolution
                                 |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
-                                |> Option.map (fun version -> VersionRequirement(Specific version, PreReleaseStatus.No))
+                                |> Option.map (fun version -> VersionRequirement(Specific version, getPreReleaseStatus version))
                 let dep =
                     match dependencyVersionRequirement with
                     | Some installed -> installed

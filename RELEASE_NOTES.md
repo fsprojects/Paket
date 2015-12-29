@@ -1,3 +1,6 @@
+#### 2.39.9 - 29.12.2015
+* BUGFIX: Better packaging of prerelease dependencies - https://github.com/fsprojects/Paket/issues/1316
+
 #### 2.39.8 - 28.12.2015
 * BUGFIX: Allow to overwrite versions in template files without id - https://github.com/fsprojects/Paket/issues/1321
 
