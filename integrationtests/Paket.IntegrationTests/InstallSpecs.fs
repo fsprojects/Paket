@@ -62,3 +62,8 @@ let ``#1270 install net461``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s1 |> shouldEqual s2
+
+
+[<Test>]
+let ``#1334 without download fail``() = 
+    install "i001334-download-fail" |> ignore
