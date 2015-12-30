@@ -18,11 +18,10 @@ let private makeHash (stream : Stream) =
     h.ComputeHash stream |> Convert.ToBase64String
 
 /// if ensures that the has of a package exists and checks the hash against the freshly-downloaded copy
-let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) =
-    match package.Settings.UseHash with
-    | None -> package
-    | Some setting when not setting -> package
-    | _ ->
+let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) useHash=
+    if not useHash 
+    then package
+    else
         match package.Settings.Hash with
         | None -> 
             // just have to write hash here
@@ -55,13 +54,13 @@ let CopyToCaches force caches fileName =
             if verbose then
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
-let private extractPackage caches package root source groupName version includeVersionInPath force =
+let private extractPackage caches package root source groupName version includeVersionInPath force useHash =
     let downloadAndExtract force detailed = async {
         let! fileName, folder = NuGetV2.DownloadPackage(root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
         let nupkg = NuGetV2.findLocalPackage folder package.Name package.Version
-        let package' = checkHash package nupkg
+        let package = checkHash package nupkg useHash
         CopyToCaches force caches fileName
-        return package', NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+        return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
     async { 
@@ -79,7 +78,7 @@ let private extractPackage caches package root source groupName version includeV
     }
 
 /// Downloads and extracts a package.
-let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
+let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPackage, localOverride, useHash) = 
     async { 
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
@@ -104,12 +103,12 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
                     | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
                     | Some s -> s 
 
-                return! extractPackage caches package root source groupName v includeVersionInPath force
+                return! extractPackage caches package root source groupName v includeVersionInPath force useHash
             | LocalNuGet(path,_) ->
                 let path = Utils.normalizeLocalPath path
                 let di = Utils.getDirectoryInfo path root
                 let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
-                let package = checkHash package nupkg
+                let package = checkHash package nupkg useHash
                 CopyToCaches force caches nupkg.FullName
 
                 let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
@@ -130,9 +129,11 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
 let internal restore (root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
-        let! _ = lockFile.Groups.[groupName].Resolution
+        let group = lockFile.Groups.[groupName]
+        let useHash = defaultArg group.Options.Settings.UseHash false
+        let! _ = group.Resolution
                  |> Map.filter (fun name _ -> packages.Contains name)
-                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
+                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden, useHash))
                  |> Async.Parallel
         return ()
     }

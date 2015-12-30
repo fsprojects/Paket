@@ -667,7 +667,7 @@ let ``should read config without versions``() =
 
 
 let configWithPassword = """
-source http://www.nuget.org/api/v2 username: "tatü tata" password: "you got hacked!"
+source http://www.nuget.org/api/v2 username: "tatï¿½ tata" password: "you got hacked!"
 nuget Rx-Main
 """
 
@@ -679,10 +679,10 @@ let ``should read config with encapsulated password source``() =
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
-            Authentication = Some (PlainTextAuthentication("tatü tata", "you got hacked!")) } ]
+            Authentication = Some (PlainTextAuthentication("tatï¿½ tata", "you got hacked!")) } ]
 
 let configWithPasswordInSingleQuotes = """
-source http://www.nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
+source http://www.nuget.org/api/v2 username: 'tatï¿½ tata' password: 'you got hacked!'
 nuget Rx-Main
 """
 
@@ -1466,3 +1466,16 @@ let ``parsing generate load scripts`` () =
             printfn "case %A expected %A got %A" case expectation result
         failwith "failed"
 
+[<Test>]
+let ``should parse hashing directive``() = 
+    let hashfiletext = "hash on"
+    let hashfile = DependenciesFile.FromCode(hashfiletext)
+    hashfile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash |> shouldEqual (Some true)
+
+    let ``don'thashfiletext``= "hash off"
+    let ``don'thashfile`` = DependenciesFile.FromCode(``don'thashfiletext``)
+    ``don'thashfile``.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash |> shouldEqual (Some false)
+
+    let nohashfiletext = ""
+    let nohashfile = DependenciesFile.FromCode(nohashfiletext)
+    nohashfile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash |> shouldEqual None

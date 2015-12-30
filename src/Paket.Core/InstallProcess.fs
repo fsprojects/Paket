@@ -159,10 +159,10 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
 
     project.UpdateFileItems(gitRemoteItems @ nuGetFileItems)
 
-
-let CreateInstallModel(root, groupName, sources, caches, force, package) =
+let CreateInstallModel(root, groupName, sources, caches, force, package, (groupInstallSettings : InstallSettings)) =
+    let useHash = defaultArg groupInstallSettings.UseHash false
     async {
-        let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, caches, force, package, false)
+        let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, caches, force, package, false, useHash)
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName) |> Array.toList
@@ -184,7 +184,7 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
         let caches = dependenciesFile.Groups.[kv'.Key].Caches
         kv'.Value.Resolution
         |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,caches,force,kv.Value))
+        |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,caches,force,kv.Value,kv'.Value.Options.Settings))
         |> Seq.toArray
         |> Async.Parallel
         |> Async.RunSynchronously)
