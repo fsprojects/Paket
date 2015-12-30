@@ -88,7 +88,7 @@ let ``should calculate hash when enabled``() =
     Paket.Dependencies.Install("""
     hash: on
     source https://nuget.org/api/v2
-    nuget Owin
+    nuget Owin 1.0.0
     """, path = scenarioTempPath "hash-calculation-on")
 
     let lockfile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "hash-calculation-on", "paket.lock"))
