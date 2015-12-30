@@ -3,7 +3,7 @@
 This guide will show you
 
   * [how to manually setup Paket](getting-started.html#Manual-setup) in your .NET / mono solutions
-  * and [how to use the automatic NuGet conversion](getting-started.html#Automatic-NuGet-conversion).
+  * and [how to use the automatic NuGet conversion](convert-from-nuget-tutorial.html).
 
 <blockquote>The following guide is assuming you are using the paket.exe command line tool. For information on installing the commmand line tool follow the instructions for your operating system for <a href="installation.html">installation</a>.
 There are editor plugins for Visual Studio, Atom and other which can make this process easier and provide additional tooling like syntax highlighting.
@@ -106,22 +106,6 @@ If you want to update all packages you can use the [`update` command](paket-upda
 
 This command will analyze your [`paket.dependencies` file](dependencies-file.html) and update the [`paket.lock` file](lock-file.html).
 
-## Automatic NuGet conversion
+### Converting from NuGet
 
-Paket comes with a command that helps to convert existing solution from NuGet's `packages.config` format to Paket's format.
-If you want to use the command then:
-
-  * Please start by making a **back-up of your repository**
-  * Download Paket and it's BootStrapper as [described above](getting-started.html#Downloading-Paket-and-it-s-BootStrapper)
-  * Run the `convert-from-nuget` command:
-
-
-    [lang=batchfile]
-    $ .paket/paket.exe convert-from-nuget
-
-You can read more about the details and specific parameters for `convert-from-nuget` in the [docs](paket-convert-from-nuget.html).
-
-### Partial NuGet conversion
-
-The `convert-from-nuget` will not work if it discovers that the codebase already utilizes Paket (when [`paket.dependencies` file](dependencies-file.html) is found).
-However, if for some reason you happen to have a mixture of projects already migrated to Paket and projects still using NuGet, you can pass the `--force` flag to `convert-from-nuget` for the remaining projects.
+If you are already using NuGet and want to learn how to use the automatic NuGet conversion, then read the next [tutorial](convert-from-nuget-tutorial.html).

@@ -28,6 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 	ProjectSection(SolutionItems) = preProject
 		docs\content\analyzers.md = docs\content\analyzers.md
 		docs\content\bootstrapper.md = docs\content\bootstrapper.md
+		docs\content\convert-from-nuget-tutorial.md = docs\content\convert-from-nuget-tutorial.md
 		docs\content\dependencies-file.md = docs\content\dependencies-file.md
 		docs\content\editor-support.md = docs\content\editor-support.md
 		docs\content\faq.md = docs\content\faq.md
