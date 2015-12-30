@@ -19,16 +19,20 @@ let private makeHash (stream : Stream) =
 
 /// if ensures that the has of a package exists and checks the hash against the freshly-downloaded copy
 let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) =
-    match package.Settings.Hash with
-    | None -> 
-        // just have to write hash here
-        {package with Settings = {package.Settings with Hash = nupkg.OpenRead() |> makeHash |> Some} }
-    | Some hash ->
-        let fileHash = nupkg.OpenRead() |> makeHash
-        if hash <> fileHash then
-            failwithf "Error when extracting nuget package %O, the package hash of %s did not matched the pinned hash of %s" package.Name fileHash hash
-        else 
-            package
+    match package.Settings.UseHash with
+    | None -> package
+    | Some setting when not setting -> package
+    | _ ->
+        match package.Settings.Hash with
+        | None -> 
+            // just have to write hash here
+            {package with Settings = {package.Settings with Hash = nupkg.OpenRead() |> makeHash |> Some} }
+        | Some hash ->
+            let fileHash = nupkg.OpenRead() |> makeHash
+            if hash <> fileHash then
+                failwithf "Error when extracting nuget package %O, the package hash of %s did not matched the pinned hash of %s" package.Name fileHash hash
+            else 
+                package
 
 // Find packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =

@@ -880,3 +880,42 @@ let ``should parse local git lock file with build and no specs``() =
     lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "2942d23fcb13a2574b635194203aed7610b21903"
     lockFile.Head.SourceFiles.Head.Project |> shouldEqual "nupkgtest"
     lockFile.Head.SourceFiles.Head.Command |> shouldEqual (Some "build.cmd Test")
+
+let useHashLockFile = """HASH:on
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+
+let ``don't use hash lockfile`` = """HASH: off
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
+"""
+
+[<Test>]
+let ``should parse hash directive when present``() =
+    let onFile = LockFile.Parse("", toLines useHashLockFile)
+    onFile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash
+    |> shouldEqual (Some true)
+
+    let offFile = LockFile.Parse("", toLines ``don't use hash lockfile``)
+    offFile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash
+    |> shouldEqual (Some false)
+
+[<Test>]
+let ``should not use hash when not present``() =
+    let lockFile = LockFile.Parse("", toLines packageRedirectsLockFile)
+    lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash
+    |> shouldEqual None
+
+[<Test>]
+let ``should save hash directive when set``() = 
+    let original = LockFile.Parse("", toLines useHashLockFile)
+    let mainGroup = original.Groups.[Constants.MainDependencyGroup]
+    let newGroup = { mainGroup with Options = { mainGroup.Options with Settings = { mainGroup.Options.Settings with UseHash = Some false } } }
+    let transformed = LockFile("", original.Groups.Add(Constants.MainDependencyGroup, newGroup))
+    let transformedOutput = transformed.ToString().Replace("\r\n", "\n")
+    transformedOutput |> shouldEqual (``don't use hash lockfile``.Replace("\r\n", "\n"))

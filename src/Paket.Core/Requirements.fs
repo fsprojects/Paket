@@ -551,6 +551,7 @@ type InstallSettings =
       Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
       GenerateLoadScripts : bool option
+      UseHash : bool option
       Hash : string option }
 
     static member Default =
@@ -565,6 +566,7 @@ type InstallSettings =
           CopyContentToOutputDirectory = None
           OmitContent = None 
           GenerateLoadScripts = None
+          UseHash = None
           Hash = None }
 
     member this.ToString(asLines) =
@@ -624,6 +626,7 @@ type InstallSettings =
                 ReferenceCondition = self.ReferenceCondition ++ other.ReferenceCondition
                 Excludes = self.Excludes @ other.Excludes
                 IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
+                UseHash = self.UseHash ++ other.UseHash
                 Hash = self.Hash ++ other.Hash
         }
 
@@ -689,7 +692,8 @@ type InstallSettings =
                 match kvPairs.TryGetValue "hash" with
                 | true, "" -> None 
                 | true, s -> Some s
-                | _ -> None }
+                | _ -> None
+              UseHash = None }
 
         // ignore resolver settings here
         getPair "strategy" |> ignore

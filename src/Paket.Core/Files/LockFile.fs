@@ -60,7 +60,12 @@ module LockFileSerializer =
 
         match options.Settings.FrameworkRestrictions |> getRestrictionList with
         | [] -> ()
-        | list  -> yield "FRAMEWORK: " + (String.Join(", ",list)).ToUpper()]
+        | list  -> yield "FRAMEWORK: " + (String.Join(", ",list)).ToUpper()
+
+        match options.Settings.UseHash with
+        | None -> ()
+        | Some true -> yield "HASH: on"
+        | Some false -> yield "HASH: off" ]
 
     /// [omit]
     let serializePackages options (resolved : PackageResolution) = 
@@ -223,6 +228,7 @@ module LockFileParser =
     | Command of string
     | PackagePath of string
     | OperatingSystemRestriction of string
+    | Hash of bool option
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
@@ -286,6 +292,14 @@ module LockFileParser =
             InstallOption(PackagePath trimmed)
         | _, String.StartsWith "os: " trimmed ->
             InstallOption(OperatingSystemRestriction trimmed)
+        | _, String.StartsWith "HASH:" trimmed -> 
+            let setting = 
+                match trimmed.Trim().ToLowerInvariant() with
+                | "on" -> Some true
+                | "off" -> Some false
+                | _ -> None
+
+            InstallOption(Hash(setting))
         | _, trimmed when line.StartsWith "      " ->
             let frameworkSettings =
                 if trimmed.Contains(" - ") then
@@ -325,6 +339,9 @@ module LockFileParser =
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
         | DirectDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForDirectDependencies = strategy }
         | TransitiveDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
+        | Hash set -> 
+            let settings = { currentGroup.Options.Settings with UseHash = set}
+            {currentGroup.Options with Settings = settings }
         | _ -> failwithf "Unknown option %A" option
 
     let Parse(lockFileLines) =
@@ -381,7 +398,7 @@ module LockFileParser =
                             parts'.[1] |> removeBrackets
                         let hash = 
                             if parts'.Length < 3 || parts'.[2] = "()" then 
-                                printfn "No hash for package %O in group %O. One will be added on next add, update, or install." package currentGroup.GroupName
+                                tracefn "No hash for package %O in group %O. One will be added on next add, update, or install." package currentGroup.GroupName
                                 None
                             else 
                                 parts'.[2].TrimStart('(').TrimEnd(')') |> Some

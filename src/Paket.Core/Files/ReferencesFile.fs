@@ -144,8 +144,9 @@ type ReferencesFile =
                     Aliases = Map.empty
                     OmitContent = if omitContent then Some ContentCopySettings.Omit else None 
                     GenerateLoadScripts = None
-                    Hash = None } } 
-                    
+                    UseHash = None
+                    Hash = None } }
+
         match this.Groups |> Map.tryFind groupName with
         | None -> 
                 tracefn "Adding package %O to %s into new group %O" packageName this.FileName groupName
@@ -163,8 +164,11 @@ type ReferencesFile =
                 this
             else
                 tracefn "Adding package %O to %s into group %O" packageName this.FileName groupName
-
-                let newGroup = { group with NugetPackages = group.NugetPackages @ [ package ] }
+                // if we should use the hash for this package or not is determined by the setting on the other packages, or false if there is no other package
+                let pkg1Hash = group.NugetPackages |> List.tryHead |> Option.bind (fun p -> p.Settings.UseHash)
+                let settings = { package.Settings with UseHash = pkg1Hash}
+                let package' = { package with Settings = settings }
+                let newGroup = { group with NugetPackages = group.NugetPackages @ [ package' ] }
                 let newGroups = this.Groups |> Map.add newGroup.Name newGroup
 
                 { this with Groups = newGroups }

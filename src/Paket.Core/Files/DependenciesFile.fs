@@ -1,6 +1,5 @@
 namespace Paket
-          
-/// [omit]
+
 module DependenciesFileSerializer = 
     open Requirements
     open System
