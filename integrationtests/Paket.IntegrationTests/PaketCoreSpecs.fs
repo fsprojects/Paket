@@ -94,7 +94,7 @@ let ``should calculate hash when enabled``() =
     let lockfile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "hash-calculation-on", "paket.lock"))
     lockfile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash |> shouldEqual (Some true)
     // the hash should be set on the package now
-    lockfile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Owin"].Settings.Hash |> shouldEqual (Some "k+ipb4ehxvkbz41mz3xetaptoea5qrr4+r9g8mdt8fq=")
+    lockfile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Owin"].Settings.Hash |> shouldEqual (Some "d70amblzpfh98gzkyvp1o3aiqedt4ubpnl04ucsloka=")
 
 [<Test>]
 let ``should not calculate hash when disabled``() =

@@ -15,7 +15,9 @@ let private makeHash (stream : Stream) =
     // TODO: is sha 256 ok? is this class amenable to individual newing up?  
     // we can't use a single instance of this without further engineering, because it's not thread safe and we get file handle exceptions as shown by http://stackoverflow.com/questions/26592596/why-does-sha1-computehash-fail-under-high-load-with-many-threads
     use h = new System.Security.Cryptography.SHA256CryptoServiceProvider()
-    h.ComputeHash stream |> Convert.ToBase64String
+    use reader = new StreamReader(stream)
+    let bytes = System.Text.Encoding.UTF8.GetBytes(reader.ReadToEnd())
+    bytes |> h.ComputeHash |> Convert.ToBase64String
 
 /// if ensures that the has of a package exists and checks the hash against the freshly-downloaded copy
 let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) useHash=
