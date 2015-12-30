@@ -150,3 +150,7 @@ For example:
     set HTTP_PROXY=http://user:password@proxy.company.com:port/
     set HTTPS_PROXY=https://user:password@proxy.company.com:port/
     set NO_PROXY=.company.com,localhost
+
+## Can I use paket to verify the contents of the packages I use?
+
+Yes!  Paket provides an opt-in hash check mechanism to verify that packages that are used are the same after each package restore.  To opt into this, simply add the `hash: on` directive to your `paket.dependencies` file.  Then, perform a forced restore to cause your `paket.lock` file to be refreshed with the hash codes of your packages. See [the docs](dependencies-file.html) for more information.
