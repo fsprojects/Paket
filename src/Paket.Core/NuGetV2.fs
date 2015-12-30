@@ -245,6 +245,7 @@ let fixDatesInArchive fileName =
     try
         use zipToOpen = new FileStream(fileName, FileMode.Open)
         use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
+        
         for e in archive.Entries do
             try
                 let d = e.LastWriteTime
@@ -255,7 +256,8 @@ let fixDatesInArchive fileName =
     | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
 
 let fixArchive fileName =
-    if isMonoRuntime then fixDatesInArchive fileName
+    if isMonoRuntime then 
+        fixDatesInArchive fileName
 
 let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) = 
     let v1 = FileInfo(Path.Combine(directory, sprintf "%O.%O.nupkg" packageName version))

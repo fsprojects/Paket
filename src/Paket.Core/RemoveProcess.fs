@@ -1,4 +1,4 @@
-﻿/// Contains methods to remove of installed packages
+﻿/// Contains methods to remove installed packages
 module Paket.RemoveProcess
 
 open Paket
