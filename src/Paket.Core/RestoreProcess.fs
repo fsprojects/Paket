@@ -16,22 +16,22 @@ let private makeHash (stream : Stream) =
     // we can't use a single instance of this without further engineering, because it's not thread safe and we get file handle exceptions as shown by http://stackoverflow.com/questions/26592596/why-does-sha1-computehash-fail-under-high-load-with-many-threads
     use h = new System.Security.Cryptography.SHA256CryptoServiceProvider()
     use reader = new StreamReader(stream)
+    // here we try to combat incompatibilities between mono and .net by forcing the stream bytes through a particular encoding.
     let bytes = System.Text.Encoding.UTF8.GetBytes(reader.ReadToEnd())
     bytes |> h.ComputeHash |> Convert.ToBase64String
 
-/// if ensures that the has of a package exists and checks the hash against the freshly-downloaded copy
-let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) useHash=
+/// ensures that the hash of a package exists and then checks the package hash against the pinned hash
+let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) useHash =
     if not useHash 
     then package
     else
+        let packageHash = nupkg.OpenRead() |> makeHash
         match package.Settings.Hash with
         | None -> 
-            // just have to write hash here
-            {package with Settings = {package.Settings with Hash = nupkg.OpenRead() |> makeHash |> Some} }
-        | Some hash ->
-            let fileHash = nupkg.OpenRead() |> makeHash
-            if hash <> fileHash then
-                failwithf "Error when extracting nuget package %O, the package hash of %s did not matched the pinned hash of %s" package.Name fileHash hash
+            { package with Settings = { package.Settings with Hash = Some packageHash }}
+        | Some storedHash ->
+            if storedHash <> packageHash then
+                failwithf "Error when extracting nuget package %O, the hash of %s did not match the pinned hash of %s" package.Name packageHash storedHash
             else 
                 package
 
