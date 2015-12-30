@@ -1,3 +1,6 @@
+#### 2.40.1 - 30.12.2015
+* USABILITY: Be more robust against flaky NuGet feeds
+
 #### 2.40.0 - 29.12.2015
 * BUGFIX: Better packaging of prerelease dependencies - https://github.com/fsprojects/Paket/issues/1316
 * BUGFIX: Allow to overwrite versions in template files without id - https://github.com/fsprojects/Paket/issues/1321
