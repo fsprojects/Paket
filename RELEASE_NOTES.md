@@ -1,4 +1,4 @@
-#### 2.40.1 - 30.12.2015
+#### 2.40.2 - 31.12.2015
 * USABILITY: Be more robust against flaky NuGet feeds
 
 #### 2.40.0 - 29.12.2015
