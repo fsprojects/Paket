@@ -160,7 +160,9 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdateMode, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
     let oldLockFile,updateMode =
-        if not lockFileName.Exists then
+        if (updateMode = UpdateMode.UpdateAll && semVerUpdateMode = SemVerUpdateMode.NoRestriction) ||
+           not lockFileName.Exists
+        then
             LockFile.Parse(lockFileName.FullName, [||]),UpdateAll // Change updateMode to UpdateAll
         else
             LockFile.LoadFrom lockFileName.FullName,updateMode

@@ -1,3 +1,6 @@
+#### 2.40.3 - 03.01.2016
+* PERFORMANCE: Don't parse lock file in FullUpdate mode
+
 #### 2.40.2 - 31.12.2015
 * USABILITY: Be more robust against flaky NuGet feeds
 
