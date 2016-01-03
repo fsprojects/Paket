@@ -459,7 +459,7 @@ let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer
 
 let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
    
-    let packageDetails =
+    let getPackageDetails force =
         sources
         |> List.map (fun source -> async {
             try 
@@ -487,15 +487,18 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
         |> Array.tryPick id
 
     let source,nugetObject = 
-        match packageDetails with
+        match getPackageDetails force with
         | None ->
-            match sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq with
-            | [source] ->
-                failwithf "Couldn't get package details for package %O %O on %O." packageName version source
-            | [] ->
-                failwithf "Couldn't get package details for package %O %O because no sources where specified." packageName version
-            | _ ->
-                failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
+            match getPackageDetails true with
+            | None -> 
+                match sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq with
+                | [source] ->
+                    failwithf "Couldn't get package details for package %O %O on %O." packageName version source
+                | [] ->
+                    failwithf "Couldn't get package details for package %O %O because no sources where specified." packageName version
+                | _ ->
+                    failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
+            | Some packageDetails -> packageDetails
         | Some packageDetails -> packageDetails
 
     let newName = PackageName nugetObject.PackageName
@@ -553,7 +556,7 @@ let GetVersions force root (sources, packageName:PackageName) =
                        match nugetSource with
                        | NuGetV2 source ->
                             let auth = source.Authentication |> Option.map toBasicAuth
-                            if source.Url.ToLower().Contains "nuget.org" || source.Url.ToLower().Contains "myget.org" then
+                            if not force && (source.Url.ToLower().Contains "nuget.org" || source.Url.ToLower().Contains "myget.org") then
                                 [getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
                             else
                                 let v2Feeds =
