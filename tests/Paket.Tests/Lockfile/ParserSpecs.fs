@@ -696,7 +696,7 @@ let ``should parse redirects lock file and packages``() =
     packages.Head.Settings.CreateBindingRedirects |> shouldEqual None
 
 [<Test>]
-let ``should parse and serialise redirects lockfile``() =
+let ``should parse and serialize redirects lockfile``() =
     let lockFile = LockFile.Parse("",toLines packageRedirectsLockFile)
     let lockFile' = lockFile.ToString()
 
