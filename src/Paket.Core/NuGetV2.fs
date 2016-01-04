@@ -491,7 +491,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
         | None ->
             match getPackageDetails true with
             | None -> 
-                match sources |> Seq.map (fun (s:PackageSource) -> s.ToString()) |> List.ofSeq with
+                match sources |> List.map (fun (s:PackageSource) -> s.ToString()) with
                 | [source] ->
                     failwithf "Couldn't get package details for package %O %O on %O." packageName version source
                 | [] ->
