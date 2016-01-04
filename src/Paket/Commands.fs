@@ -307,7 +307,6 @@ type PackArgs =
     | [<CustomCommandLine("exclude")>] ExcludedTemplate of string
     | [<CustomCommandLine("specific-version")>] SpecificVersion of templateId:string * version:string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
-    | [<CustomCommandLine("lock-dependencies")>] LockDependencies
     | [<CustomCommandLine("symbols")>] Symbols
 with
     interface IArgParserTemplate with
@@ -321,7 +320,6 @@ with
             | ExcludedTemplate(_) -> "Exclude template file by id."
             | SpecificVersion(_) -> "Specifies a version number for template with given id."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
-            | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
             | Symbols -> "Build symbol/source packages in addition to library/content packages."
 
 type PushArgs =
