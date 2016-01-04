@@ -1,3 +1,6 @@
+#### 2.40.4 - 03.01.2016
+* USABILITY: Report group name in download trace - https://github.com/fsprojects/Paket/issues/1337
+
 #### 2.40.3 - 03.01.2016
 * PERFORMANCE: Don't parse lock file in FullUpdate mode
 

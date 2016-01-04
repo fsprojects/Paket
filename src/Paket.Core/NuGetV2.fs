@@ -635,10 +635,10 @@ let DownloadPackage(root, (source : PackageSource), groupName, packageName:Packa
         let licenseFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
         if not force && targetFile.Exists && targetFile.Length > 0L then 
             verbosefn "%O %O already downloaded." packageName version
-        else 
-            tracefn "Downloading %O %O" packageName version
+        else
+            tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
             verbosefn "  to %s" targetFileName
-            
+
             // discover the link on the fly
             let nugetPackage = GetPackageDetails root force [source] packageName version
             try 

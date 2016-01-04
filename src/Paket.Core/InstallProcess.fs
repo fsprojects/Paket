@@ -134,7 +134,8 @@ let CreateInstallModel(root, groupName, sources, force, package) =
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
         let analyzerFiles = analyzerFiles |> Array.map (fun fi -> fi.FullName)
-        return (groupName,package.Name), (package,InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, analyzerFiles, nuspec))
+        let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, analyzerFiles, nuspec)
+        return (groupName,package.Name), (package,model)
     }
 
 /// Restores the given packages from the lock file.
