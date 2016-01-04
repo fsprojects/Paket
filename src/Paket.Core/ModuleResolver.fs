@@ -9,6 +9,7 @@ open Paket.Requirements
 type SingleSourceFileOrigin = 
 | GitHubLink 
 | GistLink
+| GitLink of string
 | HttpLink of string
 
 // Represents details on a dependent source file.
@@ -24,6 +25,7 @@ type UnresolvedSourceFile =
         let name = if this.Name = Constants.FullProjectSourceFileName then "" else " " + this.Name
         match this.Origin with
         | HttpLink url -> sprintf "http %s%s %s" url (defaultArg this.Commit "") this.Name
+        | GitLink url -> url
         | _ ->
             let link = 
                 match this.Origin with
@@ -34,6 +36,11 @@ type UnresolvedSourceFile =
             match this.Commit with
             | Some commit -> sprintf "%s %s/%s:%s%s" link this.Owner this.Project commit name
             | None -> sprintf "%s %s/%s%s" link this.Owner this.Project name
+
+    member this.GetCloneUrl() =
+        match this.Origin with
+        | GitLink url -> url
+        | _ -> failwithf "invalid linktype %A" this.Origin
 
 type ResolvedSourceFile = 
     { Owner : string

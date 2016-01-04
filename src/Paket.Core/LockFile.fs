@@ -119,15 +119,27 @@ module LockFileSerializer =
                     if not (updateHasReported.Contains(GitHubLink)) then
                         yield "GITHUB"
                         updateHasReported.Remove (HttpLink "") |> ignore
+                        updateHasReported.Remove (GitLink "") |> ignore
                         updateHasReported.Remove GistLink |> ignore
                         updateHasReported.Add GitHubLink
                     yield sprintf "  remote: %s/%s" owner project
                     yield "  specs:"
+                | GitLink url ->
+                    if not (updateHasReported.Contains(GitLink(""))) then
+                        yield "GIT"
+                        updateHasReported.Remove GitHubLink |> ignore
+                        updateHasReported.Remove GistLink |> ignore
+                        updateHasReported.Remove (HttpLink "") |> ignore
+                        updateHasReported.Add (GitLink "")
+                    yield sprintf "  remote: " + url
+                    yield "  specs:"
+               
                 | GistLink -> 
                     if not (updateHasReported.Contains(GistLink)) then
                         yield "GIST"
                         updateHasReported.Remove GitHubLink |> ignore
                         updateHasReported.Remove (HttpLink "") |> ignore
+                        updateHasReported.Remove (GitLink "") |> ignore
                         updateHasReported.Add GistLink
                     yield sprintf "  remote: %s/%s" owner project
                     yield "  specs:"
@@ -136,6 +148,7 @@ module LockFileSerializer =
                         yield "HTTP"
                         updateHasReported.Remove GitHubLink |> ignore
                         updateHasReported.Remove GistLink |> ignore
+                        updateHasReported.Remove (GitLink "") |> ignore
                         updateHasReported.Add (HttpLink "")
                     yield sprintf "  remote: " + url
                     yield "  specs:"
@@ -188,6 +201,7 @@ module LockFileParser =
         match (state.RepositoryType, line.Trim()) with
         | _, "HTTP" -> RepositoryType "HTTP"
         | _, "GIST" -> RepositoryType "GIST"
+        | _, "GIT" -> RepositoryType "GIT"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | Some "NUGET", String.StartsWith "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
@@ -231,6 +245,7 @@ module LockFileParser =
         | Some "NUGET", trimmed -> NugetPackage trimmed
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)
+        | Some "GIT", trimmed -> SourceFile(GitLink(String.Empty), trimmed)
         | Some "HTTP", trimmed  -> SourceFile(HttpLink(String.Empty), trimmed)
         | Some _, _ -> failwithf "unknown repository type %s." line
         | _ -> failwithf "unknown lock file format %s" line
@@ -330,7 +345,7 @@ module LockFileParser =
                                                 Name = path 
                                                 AuthKey = authKey } :: currentGroup.SourceFiles }::otherGroups
                         | _ -> failwith "invalid remote details."
-                    | HttpLink x ->
+                    | HttpLink _ ->
                         match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/' |> Array.toList) with
                         | Some [ protocol; _; domain; ] ->
                             let project, name, path, authKey = 
@@ -374,7 +389,21 @@ module LockFileParser =
                                                 Dependencies = Set.empty
                                                 Name = details
                                                 AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
-                        | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl )
+                        | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl
+                    | GitLink _ ->
+                        match currentGroup.RemoteUrl with
+                        | Some cloneUrl ->
+                            let owner,commit,project,cloneUrl = Git.Handling.extractUrlParts cloneUrl
+                            { currentGroup with
+                                LastWasPackage = false
+                                SourceFiles = { Commit = details.Replace("(","").Replace(")","")
+                                                Owner = owner
+                                                Origin = GitLink(cloneUrl)
+                                                Project = project
+                                                Dependencies = Set.empty
+                                                Name = "" 
+                                                AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
+                        | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl)
 
 
 /// Allows to parse and analyze paket.lock files.

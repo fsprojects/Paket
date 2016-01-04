@@ -17,6 +17,8 @@ let acceptJson = "application/atom+json,application/json"
 
 let notNullOrEmpty = not << System.String.IsNullOrEmpty
 
+let internal removeInvalidChars (str : string) = System.Text.RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
+
 type Auth = 
     | Credentials of Username : string * Password : string
     | Token of string
