@@ -9,7 +9,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (7d1a6f8e48d1e2e1e3246ea24a4de05cccc8ce64)
+    src/app/FakeLib/Globbing/Globbing.fs (3834900476aed462f35ce3acc3ea5c4708971e43)
   remote: fsharp/FSharp.Data
   specs:
     src/CommonProviderImplementation/AssemblyReader.fs (9b01f37126d5b2487dac5da7899bb2b1a5cb56ef)
@@ -36,7 +36,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (7d1a6f8e48d1e2e1e3246ea24a4de05cccc8ce64)
+    modules/Octokit/Octokit.fsx (3834900476aed462f35ce3acc3ea5c4708971e43)
       Octokit
 GROUP Test
 NUGET
