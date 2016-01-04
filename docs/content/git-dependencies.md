@@ -3,6 +3,8 @@
 [This feature is only available in Paket 3.0 prereleases]
 
 Paket allows you to automatically manage the linking of files from any git repo.
+<b>This feature assumes that you have [git](https://git-scm.com/) installed.</b>
+If you don't have git installed then Paket still allows you to reference files from [github](github-dependencies.html).
 
 ## Referencing a Git repository
 
