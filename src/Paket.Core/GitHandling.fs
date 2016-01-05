@@ -22,3 +22,10 @@ let extractUrlParts (url:string) =
     let project = url.Substring(url.LastIndexOf('/')+1).Replace(".git","")
 
     owner,commit,project,url
+
+let getCurrentHash repoFolder = 
+    try
+        if System.IO.Directory.Exists repoFolder |> not then None else
+        Some (CommandHelper.runSimpleGitCommand repoFolder ("rev-parse head"))
+    with
+    | _ -> None

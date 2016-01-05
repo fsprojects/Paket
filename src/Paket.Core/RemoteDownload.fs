@@ -251,16 +251,13 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                 let destination = DirectoryInfo(repoFolder).Parent.FullName
 
                 let isInCorrectVersion =
-                    if not force && Directory.Exists repoFolder then
-                        try
-                            let hash = Git.CommandHelper.runSimpleGitCommand repoFolder ("rev-parse head")
-                            hash = gitRepo.Commit
-                        with
-                        | _ ->
-                            // something is wrong with the repo
-                            Utils.deleteDir (DirectoryInfo repoFolder)
-                            false
-                    else false
+                    if force then false else
+                    match Git.Handling.getCurrentHash repoFolder with
+                    | Some hash -> hash = gitRepo.Commit
+                    | None -> 
+                        // something is wrong with the repo
+                        Utils.deleteDir (DirectoryInfo repoFolder)
+                        false
 
                 if isInCorrectVersion then
                     verbosefn "%s is already up-to-date." repoFolder
