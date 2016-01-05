@@ -1,3 +1,6 @@
+#### 2.40.7 - 05.01.2016
+* Allow to reference dlls from HTTP resources - https://github.com/fsprojects/Paket/issues/1341
+
 #### 2.40.6 - 05.01.2016
 * USABILITY: Show warning when paket.references is used in nupkg content - https://github.com/fsprojects/Paket/issues/1344
 

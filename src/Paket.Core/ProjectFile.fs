@@ -13,11 +13,13 @@ open Paket.Requirements
 type BuildAction =
 | Compile
 | Content
+| Reference
 
     override this.ToString() = 
         match this with
         | Compile -> "Compile"
         | Content -> "Content"
+        | Reference -> "Reference"
 
 /// File item inside of project files.
 type FileItem = 
@@ -451,7 +453,7 @@ type ProjectFile =
             if not !hasHintPath then
                 yield node.Attributes.["Include"].InnerText.Split(',').[0] ]
 
-    member this.DeletePaketNodes(name) =    
+    member this.DeletePaketNodes(name) =
         let nodesToDelete = this.FindPaketNodes(name)
         if nodesToDelete |> Seq.isEmpty |> not then
             verbosefn "    - Deleting Paket %s nodes" name
@@ -465,16 +467,32 @@ type ProjectFile =
             match firstItemGroup with
             | None ->
                 [BuildAction.Content, this.CreateNode("ItemGroup")
-                 BuildAction.Compile, this.CreateNode("ItemGroup") ] 
+                 BuildAction.Compile, this.CreateNode("ItemGroup") 
+                 BuildAction.Reference, this.CreateNode("ItemGroup") ] 
             | Some node ->
                 [BuildAction.Content, node :?> XmlElement
-                 BuildAction.Compile, node :?> XmlElement ] 
+                 BuildAction.Compile, node :?> XmlElement 
+                 BuildAction.Reference, node :?> XmlElement ]
             |> dict
 
         for fileItem in fileItems |> List.rev do
             let libReferenceNode = 
+                let name = 
+                    match fileItem.BuildAction with
+                    | BuildAction.Reference -> 
+                        let n = FileInfo(fileItem.Include).Name
+                        n.Replace(Path.GetExtension(n),"")
+                    | _ -> fileItem.Include
+
                 this.CreateNode(fileItem.BuildAction.ToString())
-                |> addAttribute "Include" fileItem.Include
+                |> addAttribute "Include" name
+                |> fun node -> 
+                    match fileItem.BuildAction with
+                    | BuildAction.Reference -> 
+                        node
+                        |> addChild (this.CreateNode("HintPath",fileItem.Include)) 
+                        |> addChild (this.CreateNode("Private","True"))
+                    | _ -> node
                 |> addChild (this.CreateNode("Paket","True"))
                 |> fun n -> match fileItem.Link with
                             | Some link -> addChild (this.CreateNode("Link" ,link.Replace("\\","/"))) n
@@ -993,6 +1011,11 @@ type ProjectFile =
         if Path.GetExtension(this.FileName) = Path.GetExtension(fileName) + "proj" 
         then BuildAction.Compile
         else BuildAction.Content
+
+    member this.DetermineBuildActionForRemoteItems fileName =
+        if Path.GetExtension(fileName) = ".dll"
+        then BuildAction.Reference
+        else this.DetermineBuildAction fileName 
 
     member this.GetOutputDirectory buildConfiguration buildPlatform =
         let platforms =
