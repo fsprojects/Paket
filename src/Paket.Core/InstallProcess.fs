@@ -79,7 +79,9 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                 |> List.append
                     (fromDir.GetFiles()
                         |> Array.toList
-                        |> List.filter (onBlackList >> not)
+                        |> List.filter (fun file ->
+                            if onBlackList file then false else
+                            if file.Name = "paket.references" then traceWarnfn "You can't use paket.references as a content file in the root of a project. Please take a look at %s" file.FullName; false else true)
                         |> List.map (fun file ->
                             let overwrite = settings = ContentCopySettings.Overwrite
                             let target = FileInfo(Path.Combine(toDir.Force().FullName, file.Name))
@@ -119,7 +121,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                 removeEmptyDirHierarchy (DirectoryInfo dirPath)
 
         project.GetPaketFileItems()
-        |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName) && not (contentFiles.Contains(fi.FullName)))
+        |> List.filter (fun fi -> not <| fi.FullName.Contains(Constants.PaketFilesFolderName) && not (contentFiles.Contains(fi.FullName)) && fi.Name <> "paket.references")
         |> removeFilesAndTrimDirs
 
     removeCopiedFiles project
@@ -264,10 +266,10 @@ let findAllReferencesFiles root =
      |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile : LockFile, projects : (ProjectFile * ReferencesFile) list) =
+let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list) =
     let packagesToInstall =
         if options.OnlyReferenced then
-            projects
+            projectsAndReferences
             |> List.map (fun (_, referencesFile)->
                 referencesFile
                 |> lockFile.GetPackageHull
@@ -281,7 +283,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
     let model = CreateModel(root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
 
-    for project : ProjectFile, referenceFile in projects do
+    for project, referenceFile in projectsAndReferences do
         verbosefn "Installing to %s" project.FileName
         
         let usedPackages =

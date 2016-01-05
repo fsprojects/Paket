@@ -1,5 +1,8 @@
-#### 3.0.0-alpha002 - 05.01.2016
+#### 3.0.0-alpha003 - 05.01.2016
 * Allow to reference git repositories
+
+#### 2.40.5 - 05.01.2016
+* USABILITY: Show warning when paket.references is used in nupkg content - https://github.com/fsprojects/Paket/issues/1344
 
 #### 2.40.4 - 03.01.2016
 * USABILITY: Report group name in download trace - https://github.com/fsprojects/Paket/issues/1337
