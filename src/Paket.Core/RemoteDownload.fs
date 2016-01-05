@@ -153,17 +153,17 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     | SingleSourceFileOrigin.GitLink cloneUrl, _ -> 
         let cloneUrl = cloneUrl.TrimEnd('/')
         
-        let repoCacheFolder = Path.Combine(Constants.GitRepoFolder,remoteFile.Project)
+        let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,remoteFile.Project)
 
         // clone/fetch to cache
         if Directory.Exists repoCacheFolder then
             verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder 
             Git.CommandHelper.runSimpleGitCommand repoCacheFolder ("fetch " + cloneUrl) |> ignore
         else
-            if not <| Directory.Exists Constants.GitRepoFolder then
-                Directory.CreateDirectory Constants.GitRepoFolder |> ignore
+            if not <| Directory.Exists Constants.GitRepoCacheFolder then
+                Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
-            Git.CommandHelper.runSimpleGitCommand Constants.GitRepoFolder ("clone " + cloneUrl) |> ignore
+            Git.CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone " + cloneUrl) |> ignore
 
         let repoFolder = Path.Combine(destination,remoteFile.Project)
         let cacheCloneUrl = "file:///" + repoCacheFolder

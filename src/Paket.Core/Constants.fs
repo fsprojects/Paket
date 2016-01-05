@@ -68,7 +68,7 @@ let ProjectDefaultNameSpace = "http://schemas.microsoft.com/developer/msbuild/20
 
 let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
 
-let GitRepoFolder = 
+let GitRepoCacheFolder = 
     Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile),".paket","git","db")
 
 let PaketConfigFolder = Path.Combine(AppDataFolder, "Paket")
