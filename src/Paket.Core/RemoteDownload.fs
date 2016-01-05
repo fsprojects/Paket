@@ -258,6 +258,7 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                         with
                         | _ ->
                             // something is wrong with the repo
+                            Utils.deleteDir (DirectoryInfo repoFolder)
                             false
                     else false
 
