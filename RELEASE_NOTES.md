@@ -1,7 +1,13 @@
-#### 3.0.0-alpha003 - 05.01.2016
+#### 3.0.0-alpha004 - 05.01.2016
 * Allow to reference git repositories
 
-#### 2.40.5 - 05.01.2016
+#### 2.40.9 - 05.01.2016
+* WORKAROUND: ConfigFile password encryption did not work on specific machines - https://github.com/fsprojects/Paket/pull/1347
+
+#### 2.40.7 - 05.01.2016
+* Allow to reference dlls from HTTP resources - https://github.com/fsprojects/Paket/issues/1341
+
+#### 2.40.6 - 05.01.2016
 * USABILITY: Show warning when paket.references is used in nupkg content - https://github.com/fsprojects/Paket/issues/1344
 
 #### 2.40.4 - 03.01.2016

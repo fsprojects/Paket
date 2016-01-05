@@ -40,6 +40,7 @@
     <StartArguments>restore</StartArguments>
     <StartArguments>update -f</StartArguments>
     <StartArguments>install</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -53,6 +54,7 @@
     <StartWorkingDirectory>C:\code\Paket\integrationtests\scenarios\i001334-download-fail\temp</StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\Paket\integrationtests\scenarios\i000284-full-git\temp\</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\ConsoleApplication8</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001341-http-dlls\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

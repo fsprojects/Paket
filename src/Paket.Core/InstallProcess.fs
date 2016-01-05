@@ -363,9 +363,10 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                         | None -> failwithf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName file.Name kv.Key
     
                     let linked = defaultArg file.Settings.Link true
-    
-                    if linked then
-                        { BuildAction = project.DetermineBuildAction file.Name
+  
+                    let buildAction = project.DetermineBuildActionForRemoteItems file.Name
+                    if buildAction <> BuildAction.Reference && linked then
+                        { BuildAction = buildAction
                           Include = createRelativePath project.FileName remoteFilePath
                           Link = Some link }
                     else
@@ -376,8 +377,8 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
     
                         File.Copy(remoteFilePath,targetFile.FullName)
     
-                        { BuildAction = project.DetermineBuildAction file.Name
-                          Include = createRelativePath project.FileName targetFile.FullName
+                        { BuildAction = buildAction
+                          Include = if buildAction = BuildAction.Reference then createRelativePath project.FileName remoteFilePath else createRelativePath project.FileName targetFile.FullName
                           Link = None }))
             |> List.concat
 
