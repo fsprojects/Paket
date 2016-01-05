@@ -14,6 +14,11 @@ type BuildAction =
 | Compile
 | Content
 
+    override this.ToString() = 
+        match this with
+        | Compile -> "Compile"
+        | Content -> "Content"
+
 /// File item inside of project files.
 type FileItem = 
     { BuildAction : BuildAction

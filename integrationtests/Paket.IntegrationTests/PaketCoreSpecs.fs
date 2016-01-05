@@ -46,3 +46,13 @@ let ``#1259 install via script``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001259-install-script","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Suave"].Version
     |> shouldBeGreaterThan (SemVer.Parse "0.33.0")
+
+[<Test>]
+let ``#1341 http dlls``() = 
+    prepare "i001341-http-dlls"
+    let root = scenarioTempPath "i001341-http-dlls"
+    let deps = sprintf """group Files
+
+http file:///%s/library.dll library/library.dll""" (root.Replace("\\","/"))
+
+    File.WriteAllText(Path.Combine(root,"paket.dependencies"),deps)

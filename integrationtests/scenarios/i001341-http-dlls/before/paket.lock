@@ -1,0 +1,8 @@
+
+
+GROUP Files
+
+HTTP
+  remote: file://
+  specs:
+    library/library.dll (/c:/i001341/library.dll)

@@ -1,4 +1,4 @@
-#### 2.40.5 - 05.01.2016
+#### 2.40.6 - 05.01.2016
 * USABILITY: Show warning when paket.references is used in nupkg content - https://github.com/fsprojects/Paket/issues/1344
 
 #### 2.40.4 - 03.01.2016
