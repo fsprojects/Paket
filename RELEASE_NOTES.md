@@ -1,3 +1,6 @@
+#### 2.40.8 - 05.01.2016
+* WORKAROUND: ConfigFile password encryption did not work on specific machines - https://github.com/fsprojects/Paket/pull/1347
+
 #### 2.40.7 - 05.01.2016
 * Allow to reference dlls from HTTP resources - https://github.com/fsprojects/Paket/issues/1341
 
