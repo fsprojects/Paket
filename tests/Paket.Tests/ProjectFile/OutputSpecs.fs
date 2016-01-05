@@ -63,29 +63,29 @@ let ``should maintain order when updating project file items`` () =
     
     let projFile =  ProjectFile.TryLoad("./ProjectFile/TestData/MaintainsOrdering.fsprojtest").Value
     let fileItems = [
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\Pluralizer.fs"; Link = Some("fsharp_data\\Pluralizer.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\NameUtils.fs"; Link = Some("fsharp_data\\NameUtils.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextConversions.fs"; Link = Some("fsharp_data\\TextConversions.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralTypes.fs"; Link = Some("fsharp_data\\StructuralTypes.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralInference.fs"; Link = Some("fsharp_data\\StructuralInference.fs") }
-        { BuildAction = "Compile"; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextRuntime.fs"; Link = Some("fsharp_data\\TextRuntime.fs") }
-        { BuildAction = "Compile"; Include = "DebugProvidedTypes.fs"; Link = None }
-        { BuildAction = "Compile"; Include = "ProvidedTypes.fs"; Link = None }
-        { BuildAction = "Content"; Include = "ProvidedTypes.fsi"; Link = None }
+        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\Pluralizer.fs"; Link = Some("fsharp_data\\Pluralizer.fs") }
+        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\NameUtils.fs"; Link = Some("fsharp_data\\NameUtils.fs") }
+        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextConversions.fs"; Link = Some("fsharp_data\\TextConversions.fs") }
+        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralTypes.fs"; Link = Some("fsharp_data\\StructuralTypes.fs") }
+        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralInference.fs"; Link = Some("fsharp_data\\StructuralInference.fs") }
+        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextRuntime.fs"; Link = Some("fsharp_data\\TextRuntime.fs") }
+        { BuildAction = BuildAction.Compile; Include = "DebugProvidedTypes.fs"; Link = None }
+        { BuildAction = BuildAction.Compile; Include = "ProvidedTypes.fs"; Link = None }
+        { BuildAction = BuildAction.Content; Include = "ProvidedTypes.fsi"; Link = None }
     ]
     projFile.UpdateFileItems(fileItems, false)
 
     let rec nodes node = 
         seq {
             for node in node |> Seq.cast<XmlNode> do
-                if node.Name = "Compile" || node.Name = "Content"
+                if node.Name ="Compile" || node.Name = "Content"
                 then yield Paket.Xml.getAttribute "Include" node
                 yield! nodes node 
         }
     
     let actual = 
-        nodes projFile.Document  
-        |> Seq.choose id  
+        nodes projFile.Document
+        |> Seq.choose id
         |> Seq.toList
     let expected = 
         [
@@ -111,23 +111,23 @@ let ``should remove missing files that exist in the project`` () =
     
     let projFile =  ProjectFile.TryLoad("./ProjectFile/TestData/MaintainsOrdering.fsprojtest").Value
     let fileItems = [
-        { BuildAction = "Compile"; Include = "DebugProvidedTypes.fs"; Link = None }
-        { BuildAction = "Compile"; Include = "ProvidedTypes.fs"; Link = None }
-        { BuildAction = "Content"; Include = "ProvidedTypes.fsi"; Link = None }
+        { BuildAction = BuildAction.Compile; Include = "DebugProvidedTypes.fs"; Link = None }
+        { BuildAction = BuildAction.Compile; Include = "ProvidedTypes.fs"; Link = None }
+        { BuildAction = BuildAction.Content; Include = "ProvidedTypes.fsi"; Link = None }
     ]
     projFile.UpdateFileItems(fileItems, false)
 
     let rec nodes node = 
         seq {
             for node in node |> Seq.cast<XmlNode> do
-                if node.Name = "Compile" || node.Name = "Content"
+                if node.Name ="Compile" || node.Name = "Content"
                 then yield Paket.Xml.getAttribute "Include" node
                 yield! nodes node 
         }
     
     let actual = 
-        nodes projFile.Document  
-        |> Seq.choose id  
+        nodes projFile.Document
+        |> Seq.choose id
         |> Seq.toList
     let expected = 
         [

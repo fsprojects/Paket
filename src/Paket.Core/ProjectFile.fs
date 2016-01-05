@@ -9,9 +9,14 @@ open System.Collections.Generic
 open Paket.Xml
 open Paket.Requirements
 
+[<RequireQualifiedAccess>]
+type BuildAction =
+| Compile
+| Content
+
 /// File item inside of project files.
 type FileItem = 
-    { BuildAction : string
+    { BuildAction : BuildAction
       Include : string
       Link : string option }
 
@@ -454,16 +459,16 @@ type ProjectFile =
             let firstItemGroup = this.ProjectNode |> getNodes "ItemGroup" |> List.tryHead
             match firstItemGroup with
             | None ->
-                ["Content", this.CreateNode("ItemGroup")
-                 "Compile", this.CreateNode("ItemGroup") ] 
+                [BuildAction.Content, this.CreateNode("ItemGroup")
+                 BuildAction.Compile, this.CreateNode("ItemGroup") ] 
             | Some node ->
-                ["Content", node :?> XmlElement
-                 "Compile", node :?> XmlElement ] 
+                [BuildAction.Content, node :?> XmlElement
+                 BuildAction.Compile, node :?> XmlElement ] 
             |> dict
 
         for fileItem in fileItems |> List.rev do
             let libReferenceNode = 
-                this.CreateNode(fileItem.BuildAction)
+                this.CreateNode(fileItem.BuildAction.ToString())
                 |> addAttribute "Include" fileItem.Include
                 |> addChild (this.CreateNode("Paket","True"))
                 |> fun n -> match fileItem.Link with
@@ -472,7 +477,7 @@ type ProjectFile =
 
             let fileItemsInSameDir =
                 this.Document 
-                |> getDescendants fileItem.BuildAction
+                |> getDescendants (fileItem.BuildAction.ToString())
                 |> List.filter (fun node -> 
                     match node |> getAttribute "Include" with
                     | Some path when path.StartsWith(Path.GetDirectoryName(fileItem.Include)) -> true
@@ -538,7 +543,7 @@ type ProjectFile =
         if nodesToDelete <> [] then
             verbosefn "    - Deleting custom projects nodes for %O" model.PackageName
 
-        for node in nodesToDelete do            
+        for node in nodesToDelete do
             node.ParentNode.RemoveChild(node) |> ignore
 
     member private this.GenerateAnalyzersXml(model:InstallModel) =
@@ -726,16 +731,16 @@ type ProjectFile =
         this.DeletePaketNodes("Analyzer")
         this.DeletePaketNodes("Reference")
 
-        let rec PaketNodes (node:XmlNode) =
+        let rec getPaketNodes (node:XmlNode) =
             [for node in node.ChildNodes do
                 if node.Name.Contains("__paket__") || 
                     (node.Name = "Import" && match node |> getAttribute "Project" with Some v -> v.Contains("__paket__") | None -> false) ||
                     (node |> withAttributeValue "Label" "Paket")
                 then
                     yield node
-                yield! PaketNodes node]
+                yield! getPaketNodes node]
         
-        for node in PaketNodes this.Document do
+        for node in getPaketNodes this.Document do
             let parent = node.ParentNode
             try
                 node.ParentNode.RemoveChild(node) |> ignore
@@ -981,8 +986,8 @@ type ProjectFile =
 
     member this.DetermineBuildAction fileName =
         if Path.GetExtension(this.FileName) = Path.GetExtension(fileName) + "proj" 
-        then "Compile"
-        else "Content"
+        then BuildAction.Compile
+        else BuildAction.Content
 
     member this.GetOutputDirectory buildConfiguration buildPlatform =
         let platforms =
