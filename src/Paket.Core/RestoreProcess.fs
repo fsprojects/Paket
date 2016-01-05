@@ -11,21 +11,17 @@ open System
 open Chessie.ErrorHandling
 open System.Reflection
 
-let private makeHash (stream : Stream) = 
-    // TODO: is sha 256 ok? is this class amenable to individual newing up?  
-    // we can't use a single instance of this without further engineering, because it's not thread safe and we get file handle exceptions as shown by http://stackoverflow.com/questions/26592596/why-does-sha1-computehash-fail-under-high-load-with-many-threads
+let private makeHash (fileInfo : FileInfo) = 
     use h = new System.Security.Cryptography.SHA256CryptoServiceProvider()
-    use reader = new StreamReader(stream)
-    // here we try to combat incompatibilities between mono and .net by forcing the stream bytes through a particular encoding.
-    let bytes = System.Text.Encoding.UTF8.GetBytes(reader.ReadToEnd())
-    bytes |> h.ComputeHash |> Convert.ToBase64String
+    use stream = fileInfo.OpenRead()
+    h.ComputeHash(stream) |> Convert.ToBase64String
 
 /// ensures that the hash of a package exists and then checks the package hash against the pinned hash
 let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) useHash =
     if not useHash 
     then package
     else
-        let packageHash = nupkg.OpenRead() |> makeHash
+        let packageHash = makeHash nupkg
         match package.Settings.Hash with
         | None -> 
             { package with Settings = { package.Settings with Hash = Some packageHash }}
