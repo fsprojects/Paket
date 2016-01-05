@@ -29,7 +29,7 @@ with
         member this.Usage =
             match this with
             | Add -> "Adds a new package to your paket.dependencies file."
-            | ClearCache -> "Clears the NuGet cache folder."
+            | ClearCache -> "Clears the NuGet and git cache folders."
             | Config -> "Allows to store global configuration values like NuGet credentials."
             | ConvertFromNuget -> "Converts from using NuGet to Paket."
             | FindRefs -> "Finds all project files that have the given NuGet packages installed."
