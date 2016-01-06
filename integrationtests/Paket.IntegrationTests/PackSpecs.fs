@@ -22,7 +22,8 @@ let ``#1234 empty assembly name``() =
 
 [<Test>]
 let ``#1348 npm type folder names`` () =
-    let outPath = Path.Combine(scenarioTempPath "i001348-packaging-npm-type-folders","out")
+    let rootPath = scenarioTempPath "i001348-packaging-npm-type-folders"
+    let outPath = Path.Combine(rootPath,"out")
     let package = Path.Combine(outPath, "Paket.Integrations.Npm.1.0.0.nupkg")
     
     paket ("pack -v output \"" + outPath + "\"") "i001348-packaging-npm-type-folders" |> ignore 
@@ -37,3 +38,5 @@ let ``#1348 npm type folder names`` () =
         |> Array.head
     
     extractedFolder.Name |> shouldEqual desiredFolderName
+
+    CleanDir rootPath
