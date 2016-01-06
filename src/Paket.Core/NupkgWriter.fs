@@ -226,13 +226,43 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         exclusions |> List.exists (fun f -> f path)
 
     let ensureValidName (target: string) =
-        let escapedTargetParts = target.Replace("\\", "/").Split('/') |> Array.map Uri.EscapeDataString
-        let escapedTarget = String.Join("/",escapedTargetParts)
+        // Some characters that are considered reserved by RFC 2396
+        // and thus escaped by Uri.EscapeDataString, are valid in folder names.
+        // Concrete problem solved here:
+        // Creating deployable packages for javascript applications
+        // that use javascript packages from NPM, where the @ char
+        // is used in folder names to separate versions.
+        //
+        // Ref: https://msdn.microsoft.com/en-us/library/system.uri.escapedatastring(v=vs.110).aspx#Anchor_2
+        //      http://tools.ietf.org/html/rfc2396#section-2
+        let problemChars = ["@","~~at~~"]
 
-        let uri1 = Uri(escapedTarget, UriKind.Relative)
-        let uri2 = Uri(uri1.GetComponents(UriComponents.SerializationInfoString, UriFormat.SafeUnescaped), UriKind.Relative)
-        
-        uri2.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped)
+        let fakeEscapeProblemChars (source:string) =
+            problemChars 
+            |> List.fold (fun (escaped:string) (problem, fakeEscape) -> 
+                escaped.Replace(problem,fakeEscape)) source 
+
+        let unFakeEscapeProblemChars (source:string) = 
+            problemChars 
+            |> List.fold (fun (escaped:string) (problem, fakeEscape) -> 
+                escaped.Replace(fakeEscape, problem)) source 
+
+        let escapeTarget (target:string) = 
+            let escapedTargetParts = 
+                target.Replace("\\", "/").Split('/') 
+                |> Array.map Uri.EscapeDataString
+            String.Join("/" ,escapedTargetParts)
+
+        let toUri (escapedTarget:string) = 
+            let uri1 = Uri(escapedTarget, UriKind.Relative)
+            let uri2 = Uri(uri1.GetComponents(UriComponents.SerializationInfoString, UriFormat.SafeUnescaped), UriKind.Relative)
+            uri2.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped)
+
+        target
+        |> fakeEscapeProblemChars 
+        |> escapeTarget
+        |> unFakeEscapeProblemChars
+        |> toUri 
 
     let addEntry path writerF =
         if entries.Contains(path) then () else

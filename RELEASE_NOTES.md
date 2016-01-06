@@ -1,5 +1,11 @@
-#### 3.0.0-alpha004 - 05.01.2016
+#### 3.0.0-alpha005 - 06.01.2016
 * Allow to reference git repositories
+
+#### 2.40.11 - 06.01.2016
+* BUGFIX: Fixed problem with @ char in paths during pack - https://github.com/fsprojects/Paket/pull/1351
+
+#### 2.40.10 - 06.01.2016
+* BUGFIX: Allow to reference dlls from HTTP resources on mono - https://github.com/fsprojects/Paket/pull/1349
 
 #### 2.40.9 - 05.01.2016
 * WORKAROUND: ConfigFile password encryption did not work on specific machines - https://github.com/fsprojects/Paket/pull/1347

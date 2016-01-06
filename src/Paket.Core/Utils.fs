@@ -89,7 +89,7 @@ let CleanDir path =
             deleteDir di
         with
         | exn -> failwithf "Error during deletion of %s%s  - %s" di.FullName Environment.NewLine exn.Message 
-    createDir path |> returnOrFail
+    di.Create()
     // set writeable
     File.SetAttributes(path, FileAttributes.Normal)
 
