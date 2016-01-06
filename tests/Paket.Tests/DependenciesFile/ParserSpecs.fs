@@ -1035,6 +1035,7 @@ let paketGitConfig = """
 git git@github.com:fsprojects/Paket.git
 git file:///c:/code/Paket.VisualStudio
 git https://github.com/fsprojects/Paket.git
+git http://github.com/fsprojects/Chessie.git master
 """
 
 [<Test>]
@@ -1043,14 +1044,23 @@ let ``should read paket git config``() =
     let gitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Head
     gitSource.GetCloneUrl() |> shouldEqual "git@github.com:fsprojects/Paket.git"
     gitSource.Owner |> shouldEqual "github.com"
+    gitSource.Commit |> shouldEqual None
     gitSource.Project |> shouldEqual "Paket"
 
     let localGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Head
     localGitSource.GetCloneUrl() |> shouldEqual "file:///c:/code/Paket.VisualStudio"
     localGitSource.Project |> shouldEqual "Paket.VisualStudio"
+    localGitSource.Commit |> shouldEqual None
     localGitSource.Owner |> shouldEqual ""
 
     let httpsGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Tail.Head
     httpsGitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
+    httpsGitSource.Commit |> shouldEqual None
     httpsGitSource.Project |> shouldEqual "Paket"
     httpsGitSource.Owner |> shouldEqual "github.com"
+
+    let branchGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Tail.Tail.Head
+    branchGitSource.GetCloneUrl() |> shouldEqual "http://github.com/fsprojects/Chessie.git"
+    branchGitSource.Commit |> shouldEqual (Some "master")
+    branchGitSource.Project |> shouldEqual "Chessie"
+    branchGitSource.Owner |> shouldEqual "github.com"
