@@ -17,7 +17,9 @@ You can also reference a complete git repository by specifying the clone url in 
 
 This will download the latest version of the default branch of given repositories and put it into your `paket-files` folder.
 
-If you want to restrict Paket to a special branch or a concrete commit then this is also possible:
+If you want to restrict Paket to a special branch, tag or a concrete commit then this is also possible:
 
     git https://github.com/fsprojects/Paket.git master
     git http://github.com/forki/AskMe.git 97ee5ae7074bdb414a3e5dd7d2f2d752547d0542
+    git http://github.com/forki/AskMe.git 97ee5ae7074b // short hash
+    git https://github.com/forki/FsUnit.git 1.0        // tag

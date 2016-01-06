@@ -21,3 +21,6 @@ let ``#284 should use git.exe to restore``() =
 
     let askMeDir = Path.Combine(paketFilesRoot,"github.com","AskMe")
     Git.Handling.getCurrentHash askMeDir |> shouldEqual (Some "97ee5ae7074bdb414a3e5dd7d2f2d752547d0542")
+
+    let fsUnitDir = Path.Combine(paketFilesRoot,"github.com","FsUnit")
+    Git.Handling.getCurrentHash fsUnitDir |> shouldEqual (Some "96a9c7bda5a84e225450d83ab8fd58fdeced7f6d")
