@@ -53,16 +53,19 @@ let getSHA1OfBranch origin owner project branch authKey =
                 return ""
         | ModuleResolver.SingleSourceFileOrigin.GitLink url ->
             let result =
-                sprintf "ls-remote %s master" url
+                sprintf "ls-remote %s %s" url branch
                 |> Git.CommandHelper.runSimpleGitCommand ""
 
-            if result.Contains "\t" then
-                return result.Substring(0,result.IndexOf '\t')
+            if String.IsNullOrWhiteSpace result then 
+                return branch
             else
-                if result.Contains " " then
-                    return result.Substring(0,result.IndexOf ' ')
+                if result.Contains "\t" then
+                    return result.Substring(0,result.IndexOf '\t')
                 else
-                    return result
+                    if result.Contains " " then
+                        return result.Substring(0,result.IndexOf ' ')
+                    else
+                        return result
         | ModuleResolver.SingleSourceFileOrigin.HttpLink _ -> return ""
     }
 

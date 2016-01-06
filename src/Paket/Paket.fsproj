@@ -54,7 +54,7 @@
     <StartWorkingDirectory>C:\code\Paket\integrationtests\scenarios\i001334-download-fail\temp</StartWorkingDirectory>
     <StartWorkingDirectory>d:\code\Paket\integrationtests\scenarios\i000284-full-git\temp\</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\ConsoleApplication8</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001341-http-dlls\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i000284-full-git\temp\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
