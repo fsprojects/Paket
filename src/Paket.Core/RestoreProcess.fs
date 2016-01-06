@@ -12,7 +12,7 @@ open Chessie.ErrorHandling
 open System.Reflection
 
 let private makeHash (fileInfo : FileInfo) = 
-    use h = new System.Security.Cryptography.SHA256CryptoServiceProvider()
+    use h = new System.Security.Cryptography.SHA512CryptoServiceProvider()
     use stream = fileInfo.OpenRead()
     h.ComputeHash(stream) |> Convert.ToBase64String
 
