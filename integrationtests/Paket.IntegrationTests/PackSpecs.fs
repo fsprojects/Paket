@@ -7,6 +7,7 @@ open FsUnit
 open System
 open System.IO
 open System.Diagnostics
+open System.IO.Compression
 
 [<Test>]
 let ``#1234 empty assembly name``() = 
@@ -18,3 +19,21 @@ let ``#1234 empty assembly name``() =
     | exn when exn.Message.Contains("PaketBug.dll") -> ()
 
     File.Delete(Path.Combine(scenarioTempPath "i001234-missing-assemblyname","PaketBug","paket.template"))
+
+[<Test>]
+let ``#1348 npm type folder names`` () =
+    let outPath = Path.Combine(scenarioTempPath "i001348-packaging-npm-type-folders","out")
+    let package = Path.Combine(outPath, "Paket.Integrations.Npm.1.0.0.nupkg")
+    
+    paket ("pack -v output \"" + outPath + "\"") "i001348-packaging-npm-type-folders" |> ignore 
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    let desiredFolderName = "font-awesome@4.5.0"
+    
+    let extractedFolder = 
+        Path.Combine(outPath,"jspm_packages", "npm") 
+        |> directoryInfo 
+        |> subDirectories 
+        |> Array.head
+    
+    extractedFolder.Name |> shouldEqual desiredFolderName

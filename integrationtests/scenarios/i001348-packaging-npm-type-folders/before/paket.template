@@ -1,0 +1,16 @@
+type file
+id Paket.Integrations.Npm
+version 1.0.0
+owners
+    Paket
+authors 
+    Paket
+requireLicenseAcceptance
+    false
+summary
+    Paket pack test for npm type paths
+description
+    Paket pack test for npm type paths
+files
+	jspm_packages ==> jspm_packages
+
