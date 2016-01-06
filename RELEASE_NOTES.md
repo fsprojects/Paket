@@ -1,3 +1,6 @@
+#### 2.40.10 - 05.01.2016
+* BUGFIX: Allow to reference dlls from HTTP resources on mono - https://github.com/fsprojects/Paket/pull/1349
+
 #### 2.40.9 - 05.01.2016
 * WORKAROUND: ConfigFile password encryption did not work on specific machines - https://github.com/fsprojects/Paket/pull/1347
 
