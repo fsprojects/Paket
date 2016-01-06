@@ -480,7 +480,7 @@ type ProjectFile =
                 let name = 
                     match fileItem.BuildAction with
                     | BuildAction.Reference -> 
-                        let n = FileInfo(fileItem.Include).Name
+                        let n = FileInfo(fileItem.Include).Name.TrimEnd('\\').Split('\\') |> Array.last
                         n.Replace(Path.GetExtension(n),"")
                     | _ -> fileItem.Include
 
