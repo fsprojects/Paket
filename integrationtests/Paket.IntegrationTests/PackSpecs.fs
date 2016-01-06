@@ -21,11 +21,11 @@ let ``#1234 empty assembly name``() =
     File.Delete(Path.Combine(scenarioTempPath "i001234-missing-assemblyname","PaketBug","paket.template"))
 
 [<Test>]
-let ``#1235 npm type folder names`` () =
-    let outPath = Path.Combine(scenarioTempPath "i001235-packaging-npm-type-folders","out")
+let ``#1348 npm type folder names`` () =
+    let outPath = Path.Combine(scenarioTempPath "i001348-packaging-npm-type-folders","out")
     let package = Path.Combine(outPath, "Paket.Integrations.Npm.1.0.0.nupkg")
     
-    paket ("pack -v output \"" + outPath + "\"") "i001235-packaging-npm-type-folders" |> ignore 
+    paket ("pack -v output \"" + outPath + "\"") "i001348-packaging-npm-type-folders" |> ignore 
     ZipFile.ExtractToDirectory(package, outPath)
 
     let desiredFolderName = "font-awesome@4.5.0"
