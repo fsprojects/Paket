@@ -59,15 +59,19 @@ let ``should parse lock file``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
+            Origin = ModuleResolver.Origin.GitHubLink
             Dependencies = Set.empty
             Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9"
+            Command = None
+            PackagePath = None
             AuthKey = Some "gitHubAuth" }
           { Owner = "fsharp"
             Project = "FAKE"
             Dependencies = Set.empty
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
+            Origin = ModuleResolver.Origin.GitHubLink
+            Command = None
+            PackagePath = None
             Commit = "Globbing"
             AuthKey = None } ]
     
@@ -399,7 +403,7 @@ let ``should parse simple http reference``() =
     let references = lockFile.SourceFiles
 
     references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"  
-    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))
+    references.[0].Origin |> shouldEqual (Origin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))
 
 
 let lockFileForStanfordNLPdotNET = """HTTP
@@ -421,7 +425,7 @@ let ``should parse lock file for http Stanford.NLP.NET project``() =
 
     references.Length |> shouldEqual 6
 
-    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://nlp.stanford.edu"))
+    references.[0].Origin |> shouldEqual (Origin.HttpLink("http://nlp.stanford.edu"))
     references.[0].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
     references.[0].Project |> shouldEqual ""
     references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  

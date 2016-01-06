@@ -36,7 +36,9 @@ let ``should resolve source files with correct sha``() =
         Name = "foo.fs"
         Commit = sha
         Dependencies = [name, VersionRequirement.NoRestriction] |> Set.ofList
-        Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
+        Origin = ModuleResolver.Origin.GitHubLink
+        Command = None
+        PackagePath = None
         AuthKey = None }
 
 let config2 = """

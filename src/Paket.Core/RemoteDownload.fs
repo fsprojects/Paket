@@ -30,7 +30,7 @@ let private auth key url =
 let getSHA1OfBranch origin owner project branch authKey = 
     async { 
         match origin with
-        | ModuleResolver.SingleSourceFileOrigin.GitHubLink -> 
+        | ModuleResolver.Origin.GitHubLink -> 
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
             let! document = lookupDocument(auth authKey url,url)
             match document with
@@ -40,7 +40,7 @@ let getSHA1OfBranch origin owner project branch authKey =
             | None -> 
                 failwithf "Could not find hash for %s" url
                 return ""
-        | ModuleResolver.SingleSourceFileOrigin.GistLink ->
+        | ModuleResolver.Origin.GistLink ->
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
             let! document = lookupDocument(auth authKey url,url)
             match document with
@@ -51,7 +51,7 @@ let getSHA1OfBranch origin owner project branch authKey =
             | None -> 
                 failwithf "Could not find hash for %s" url
                 return ""
-        | ModuleResolver.SingleSourceFileOrigin.GitLink url ->
+        | ModuleResolver.Origin.GitLink url ->
             let result =
                 sprintf "ls-remote %s %s" url branch
                 |> Git.CommandHelper.runSimpleGitCommand ""
@@ -66,7 +66,7 @@ let getSHA1OfBranch origin owner project branch authKey =
                         return result.Substring(0,result.IndexOf ' ')
                     else
                         return result
-        | ModuleResolver.SingleSourceFileOrigin.HttpLink _ -> return ""
+        | ModuleResolver.Origin.HttpLink _ -> return ""
     }
 
 let private rawFileUrl owner project branch fileName =
@@ -153,7 +153,7 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
 /// Retrieves RemoteFiles
 let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     match remoteFile.Origin, remoteFile.Name with
-    | SingleSourceFileOrigin.GitLink cloneUrl, _ -> 
+    | Origin.GitLink cloneUrl, _ -> 
         let cloneUrl = cloneUrl.TrimEnd('/')
         
         let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,remoteFile.Project)
@@ -183,7 +183,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
         tracefn "Setting %s to %s" repoFolder remoteFile.Commit
         Git.CommandHelper.runSimpleGitCommand repoFolder ("reset --hard " + remoteFile.Commit) |> ignore
-    | SingleSourceFileOrigin.GistLink, Constants.FullProjectSourceFileName ->
+    | Origin.GistLink, Constants.FullProjectSourceFileName ->
         tracefn "Downloading %O to %s" remoteFile destination
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
@@ -206,7 +206,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         // GIST currently does not support zip-packages, so now this fetches all files separately.
         // let downloadUrl = sprintf "https://gist.github.com/%s/%s/download" remoteFile.Owner remoteFile.Project //is a tar.gz
 
-    | SingleSourceFileOrigin.GitHubLink, Constants.FullProjectSourceFileName -> 
+    | Origin.GitHubLink, Constants.FullProjectSourceFileName -> 
         tracefn "Downloading %O to %s" remoteFile destination
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
@@ -219,17 +219,17 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
         DirectoryCopy(source,projectPath,true)
-    | SingleSourceFileOrigin.GistLink, _ -> 
+    | Origin.GistLink, _ -> 
         tracefn "Downloading %O to %s" remoteFile destination
         let downloadUrl = rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name
         let authentication = auth remoteFile.AuthKey downloadUrl
         return! downloadFromUrl(authentication, downloadUrl) destination
-    | SingleSourceFileOrigin.GitHubLink, _ ->
+    | Origin.GitHubLink, _ ->
         tracefn "Downloading %O to %s" remoteFile destination
         let url = rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name
         let authentication = auth remoteFile.AuthKey url
         return! downloadFromUrl(authentication, url) destination
-    | SingleSourceFileOrigin.HttpLink(origin), _ ->
+    | Origin.HttpLink(origin), _ ->
         tracefn "Downloading %O to %s" remoteFile destination
         let url = origin + remoteFile.Commit
         let authentication = auth remoteFile.AuthKey url

@@ -32,7 +32,7 @@ type DependenciesGroup = {
     Sources: PackageSource list 
     Options: InstallOptions
     Packages : PackageRequirement list
-    RemoteFiles : UnresolvedSourceFile list
+    RemoteFiles : UnresolvedSource list
 }
     with
         static member New(groupName) =
@@ -263,9 +263,9 @@ module DependenciesFileParser =
         | String.StartsWith "copy_local" trimmed -> ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true"))
         | String.StartsWith "condition" trimmed -> ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper()))
         | String.StartsWith "gist" _ as trimmed ->
-            SourceFile(parseGitSource trimmed SingleSourceFileOrigin.GistLink "gist")
+            SourceFile(parseGitSource trimmed Origin.GistLink "gist")
         | String.StartsWith "github" _ as trimmed  ->
-            SourceFile(parseGitSource trimmed SingleSourceFileOrigin.GitHubLink "github")
+            SourceFile(parseGitSource trimmed Origin.GitHubLink "github")
         | String.StartsWith "git" _ as trimmed  ->
             Git(trimmed.Substring(4))
         | String.StartsWith "file:" _ as trimmed  ->
@@ -332,16 +332,26 @@ module DependenciesFileParser =
 
                     lineNo, { current with Packages = current.Packages @ [package] }::other
                 | SourceFile(origin, (owner,project, commit), path, authKey) ->
-                    let remoteFile : UnresolvedSourceFile = { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin; AuthKey = authKey }
-                    lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
-                | Git(url) ->
-                    let owner,commit,project,url = Git.Handling.extractUrlParts url
-                    let remoteFile : UnresolvedSourceFile = 
+                    let remoteFile : UnresolvedSource = 
                         { Owner = owner
                           Project = project
                           Commit = commit
+                          Name = path
+                          Origin = origin
+                          Command = None
+                          PackagePath = None
+                          AuthKey = authKey }
+                    lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
+                | Git(url) ->
+                    let owner,commit,project,url = Git.Handling.extractUrlParts url
+                    let remoteFile : UnresolvedSource = 
+                        { Owner = owner
+                          Project = project
+                          Commit = commit
+                          Command = None
+                          PackagePath = None
                           Name = ""
-                          Origin = SingleSourceFileOrigin.GitLink url
+                          Origin = Origin.GitLink url
                           AuthKey = None }
                     lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
             with

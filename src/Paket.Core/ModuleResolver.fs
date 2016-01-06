@@ -6,19 +6,21 @@ open System.IO
 open Paket.Domain
 open Paket.Requirements
 
-type SingleSourceFileOrigin = 
+type Origin = 
 | GitHubLink 
 | GistLink
 | GitLink of string
 | HttpLink of string
 
-// Represents details on a dependent source file.
-type UnresolvedSourceFile =
+// Represents details on a dependent source.
+type UnresolvedSource =
     { Owner : string
       Project : string
       Name : string
-      Origin : SingleSourceFileOrigin
+      Origin : Origin
       Commit : string option
+      Command: string option
+      PackagePath: string option
       AuthKey : string option }
 
     override this.ToString() =
@@ -48,7 +50,9 @@ type ResolvedSourceFile =
       Name : string
       Commit : string
       Dependencies : Set<PackageName * VersionRequirement>
-      Origin : SingleSourceFileOrigin
+      Origin : Origin
+      Command: string option
+      PackagePath: string option
       AuthKey : string option }
 
     member this.FilePath(root,groupName) = this.ComputeFilePath(root,groupName,this.Name)
@@ -66,13 +70,13 @@ type ResolvedSourceFile =
     
     override this.ToString() = sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
 
-let private getCommit (file : UnresolvedSourceFile) = defaultArg file.Commit "master"
+let private getCommit (file : UnresolvedSource) = defaultArg file.Commit "master"
 
-let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSourceFile = 
+let resolve getDependencies getSha1 (file : UnresolvedSource) : ResolvedSourceFile = 
     let sha =
         let commit = getCommit file
         match file.Origin with
-        | SingleSourceFileOrigin.HttpLink _  -> commit
+        | Origin.HttpLink _  -> commit
         | _ -> getSha1 file.Origin file.Owner file.Project commit file.AuthKey
     
     let resolved = 
@@ -82,6 +86,8 @@ let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSour
           Project = file.Project
           Dependencies = Set.empty
           Name = file.Name
+          Command = None
+          PackagePath = None
           AuthKey = file.AuthKey  }
     
     let dependencies = 
@@ -91,7 +97,7 @@ let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSour
 
     { resolved with Dependencies = dependencies }
 
-let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
+let private detectConflicts (remoteFiles : UnresolvedSource list) : unit =
     let conflicts =
         remoteFiles
         |> List.groupBy (fun file ->
@@ -111,7 +117,7 @@ let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
             Environment.NewLine conflicts Environment.NewLine Environment.NewLine
 
 // TODO: github has a rate limit - try to convince them to whitelist Paket
-let Resolve(getDependencies, getSha1, remoteFiles : UnresolvedSourceFile list) : ResolvedSourceFile list = 
+let Resolve(getDependencies, getSha1, remoteFiles : UnresolvedSource list) : ResolvedSourceFile list = 
     detectConflicts remoteFiles
 
     remoteFiles |> List.map (resolve getDependencies getSha1)

@@ -181,8 +181,10 @@ github "owner:project2:commit3" "folder/file3.fs" githubAuth """
         match f.Commit with
         | Some commit ->  { Commit = commit
                             Owner = f.Owner
-                            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
+                            Origin = ModuleResolver.Origin.GitHubLink
                             Project = f.Project
+                            Command = None
+                            PackagePath = None
                             Dependencies = Set.empty
                             Name = f.Name
                             AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
@@ -243,7 +245,7 @@ let ``should generate other version ranges for packages``() =
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected3)
 
-let trivialResolve (f:ModuleResolver.UnresolvedSourceFile) =
+let trivialResolve (f:ModuleResolver.UnresolvedSource) =
     { Commit =
         match f.Commit with
         | Some(v) -> v
@@ -252,6 +254,8 @@ let trivialResolve (f:ModuleResolver.UnresolvedSourceFile) =
       Origin = f.Origin
       Project = f.Project
       Dependencies = Set.empty
+      Command = None
+      PackagePath = None
       Name = f.Name
       AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
 
@@ -337,7 +341,7 @@ http http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"""
     
     references.Length |> shouldEqual 6
 
-    references.[5].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://nlp.stanford.edu"))
+    references.[5].Origin |> shouldEqual (Origin.HttpLink("http://nlp.stanford.edu"))
     references.[5].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
     references.[5].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
 
