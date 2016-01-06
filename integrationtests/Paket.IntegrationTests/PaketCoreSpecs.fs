@@ -54,8 +54,12 @@ let ``#1341 http dlls``() =
     let deps = sprintf """group Files
 
 http file:///%s/library.dll library/library.dll""" (root.Replace("\\","/"))
+   
+    let monoDeps = sprintf """group Files
 
-    File.WriteAllText(Path.Combine(root,"paket.dependencies"),deps)
+http file://%s/library.dll library/library.dll""" (root.Replace("\\","/"))
+
+    File.WriteAllText(Path.Combine(root,"paket.dependencies"),if isMono then monoDeps else deps)
 
     directPaket "update -v" "i001341-http-dlls" |> ignore
     
