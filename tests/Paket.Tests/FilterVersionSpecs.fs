@@ -117,3 +117,11 @@ let ``prerelase version of same version is in range``() =
     "1.0.11" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1.0 prerelease") |> shouldEqual true
     "1.0.12-build0025" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1.0 prerelease") |> shouldEqual true
     
+
+[<Test>]
+let ``can check if in range for prerelease range``() =
+    let r = VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.0.0-prerelease", SemVer.Parse "2.0.0", VersionRangeBound.Including)
+    "1.0.0.3108" |> isInRangePreRelease r |> shouldEqual false
+    "2.0.0-unstable2" |> isInRangePreRelease r |> shouldEqual true
+    "2.0-unstable2" |> isInRangePreRelease r |> shouldEqual true
+    "2.0-alpha1" |> isInRangePreRelease r |> shouldEqual true

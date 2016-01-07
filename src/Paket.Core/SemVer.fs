@@ -144,6 +144,8 @@ type SemVerInfo =
                     | None, None -> 0
                     | Some p, None -> -1
                     | None, Some p -> 1
+                    | Some p, _ when p.ToString() = "prerelease" -> -1
+                    | _, Some p when p.ToString() = "prerelease" -> 1
                     | Some left, Some right -> compare left right
 
             | _ -> invalidArg "yobj" "cannot compare values of different types"

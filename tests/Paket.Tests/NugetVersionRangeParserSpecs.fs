@@ -52,6 +52,11 @@ let ``can detect range version``() =
         |> shouldEqual (VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.2", SemVer.Parse "3", VersionRangeBound.Including))
 
 [<Test>]
+let ``can detect range version with prerelease``() = 
+    parseRange "[2.0.0-prerelease,2.0.0]" 
+        |> shouldEqual (VersionRange.Range(VersionRangeBound.Including, SemVer.Parse "2.0.0-prerelease", SemVer.Parse "2.0.0", VersionRangeBound.Including))
+
+[<Test>]
 let ``can detect open range version``() = 
     parseRange "[2.2,)"
         |> shouldEqual (VersionRange.Minimum (SemVer.Parse "2.2"))
