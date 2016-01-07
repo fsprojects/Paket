@@ -1,37 +1,17 @@
-#### 3.0.0-alpha010 - 07.01.2016
+#### 3.0.0-alpha011 - 07.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 
-#### 2.40.15 - 07.01.2016
-* BUGFIX: Fixed prerelease comparision - https://github.com/fsprojects/Paket/issues/1316
-
-#### 2.40.14 - 07.01.2016
-* BUGFIX: Fixed problem with prerelease versions during pack - https://github.com/fsprojects/Paket/issues/1316
-
-#### 2.40.13 - 07.01.2016
-* BUGFIX: Do not copy dlls from paket-files - https://github.com/fsprojects/Paket/issues/1341
-
-#### 2.40.11 - 06.01.2016
-* BUGFIX: Fixed problem with @ char in paths during pack - https://github.com/fsprojects/Paket/pull/1351
-
-#### 2.40.10 - 06.01.2016
-* BUGFIX: Allow to reference dlls from HTTP resources on mono - https://github.com/fsprojects/Paket/pull/1349
-
-#### 2.40.9 - 05.01.2016
-* WORKAROUND: ConfigFile password encryption did not work on specific machines - https://github.com/fsprojects/Paket/pull/1347
-
-#### 2.40.7 - 05.01.2016
+#### 2.41.0 - 07.01.2016
 * Allow to reference dlls from HTTP resources - https://github.com/fsprojects/Paket/issues/1341
-
-#### 2.40.6 - 05.01.2016
-* USABILITY: Show warning when paket.references is used in nupkg content - https://github.com/fsprojects/Paket/issues/1344
-
-#### 2.40.4 - 03.01.2016
-* USABILITY: Report group name in download trace - https://github.com/fsprojects/Paket/issues/1337
-
-#### 2.40.3 - 03.01.2016
+* BUGFIX: Fixed prerelease comparision - https://github.com/fsprojects/Paket/issues/1316
+* BUGFIX: Fixed problem with prerelease versions during pack - https://github.com/fsprojects/Paket/issues/1316
+* BUGFIX: Do not copy dlls from paket-files - https://github.com/fsprojects/Paket/issues/1341
+* BUGFIX: Fixed problem with @ char in paths during pack - https://github.com/fsprojects/Paket/pull/1351
+* BUGFIX: Allow to reference dlls from HTTP resources on mono - https://github.com/fsprojects/Paket/pull/1349
 * PERFORMANCE: Don't parse lock file in FullUpdate mode
-
-#### 2.40.2 - 31.12.2015
+* WORKAROUND: ConfigFile password encryption did not work on specific machines - https://github.com/fsprojects/Paket/pull/1347
+* USABILITY: Show warning when paket.references is used in nupkg content - https://github.com/fsprojects/Paket/issues/1344
+* USABILITY: Report group name in download trace - https://github.com/fsprojects/Paket/issues/1337
 * USABILITY: Be more robust against flaky NuGet feeds
 
 #### 2.40.0 - 29.12.2015
