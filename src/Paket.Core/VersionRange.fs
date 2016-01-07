@@ -217,11 +217,21 @@ type VersionRequirement =
                 | GreaterThan(version) -> sprintf "(%s,)" (normalize version)
                 | Maximum(version) -> sprintf "(,%s]" (normalize version)
                 | LessThan(version) -> sprintf "(,%s)" (normalize version)
-                | Specific(version) ->
-                    let v = normalize version 
-                    if v.EndsWith "-prerelease" then 
-                        sprintf "%s" v // #1316 we should not overspecify
-                    else 
+                | Specific(version) -> 
+                    let v = normalize version
+                    if v.EndsWith "-prerelease" then
+                        let getMinDelimiter (v:VersionRangeBound) =
+                            match v with
+                            | VersionRangeBound.Including -> "["
+                            | VersionRangeBound.Excluding -> "("
+
+                        let getMaxDelimiter (v:VersionRangeBound) =
+                            match v with
+                            | VersionRangeBound.Including -> "]"
+                            | VersionRangeBound.Excluding -> ")"
+
+                        sprintf "[%s,%s]" v (v.Replace("-prerelease",""))
+                    else
                         sprintf "[%s]" v
                 | OverrideAll(version) -> sprintf "[%s]" (normalize version)
                 | Range(fromB, from,_to,_toB) ->

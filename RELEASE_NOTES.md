@@ -1,11 +1,11 @@
-#### 3.0.0-alpha007 - 07.01.2016
+#### 3.0.0-alpha008 - 07.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
+
+#### 2.40.14 - 07.01.2016
+* BUGFIX: Fixed problem with prerelease versions during pack - https://github.com/fsprojects/Paket/issues/1316
 
 #### 2.40.13 - 07.01.2016
 * BUGFIX: Do not copy dlls from paket-files - https://github.com/fsprojects/Paket/issues/1341
-
-#### 2.40.12 - 07.01.2016
-* BUGFIX: Fixed problem with prerelease versions during pack - https://github.com/fsprojects/Paket/issues/1316
 
 #### 2.40.11 - 06.01.2016
 * BUGFIX: Fixed problem with @ char in paths during pack - https://github.com/fsprojects/Paket/pull/1351
