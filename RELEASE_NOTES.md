@@ -1,3 +1,6 @@
+#### 2.40.13 - 07.01.2016
+* BUGFIX: Do not copy dlls from paket-files - https://github.com/fsprojects/Paket/issues/1341
+
 #### 2.40.12 - 07.01.2016
 * BUGFIX: Fixed problem with prerelease versions during pack - https://github.com/fsprojects/Paket/issues/1316
 
