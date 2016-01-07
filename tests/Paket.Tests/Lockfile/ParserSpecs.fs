@@ -28,7 +28,7 @@ GITHUB
   specs:
     src/app/FAKE/Cli.fs (7699e40e335f3cc54ab382a8969253fecc1e08a9) gitHubAuth
     src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs (Globbing)
-"""   
+"""
 
 [<Test>]
 let ``should parse lock file``() = 
@@ -63,6 +63,7 @@ let ``should parse lock file``() =
             Dependencies = Set.empty
             Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9"
             Command = None
+            OperatingSystemRestriction = None
             PackagePath = None
             AuthKey = Some "gitHubAuth" }
           { Owner = "fsharp"
@@ -71,6 +72,7 @@ let ``should parse lock file``() =
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
             Origin = ModuleResolver.Origin.GitHubLink
             Command = None
+            OperatingSystemRestriction = None
             PackagePath = None
             Commit = "Globbing"
             AuthKey = None } ]
@@ -94,7 +96,7 @@ NUGET
     log (1.2)
     log4net (1.1)
       log (>= 1.0)
-"""   
+"""
 
 [<Test>]
 let ``should parse strict lock file``() = 
@@ -131,7 +133,7 @@ NUGET
   remote: "D:\code\temp with space"
   specs:
     FAKE (4.0.0)
-"""   
+"""
 
 [<Test>]
 let ``should parse redirects lock file``() = 
@@ -164,7 +166,7 @@ NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
-"""   
+"""
 
 [<Test>]
 let ``should parse lock file with framework restrictions``() = 
@@ -402,7 +404,7 @@ let ``should parse simple http reference``() =
     let lockFile = LockFileParser.Parse(toLines simpleHTTP) |> List.head
     let references = lockFile.SourceFiles
 
-    references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"  
+    references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"
     references.[0].Origin |> shouldEqual (Origin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))
 
 
@@ -428,7 +430,7 @@ let ``should parse lock file for http Stanford.NLP.NET project``() =
     references.[0].Origin |> shouldEqual (Origin.HttpLink("http://nlp.stanford.edu"))
     references.[0].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
     references.[0].Project |> shouldEqual ""
-    references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
+    references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"
 
 let portableLockFile = """NUGET
   remote: https://www.nuget.org/api/v2

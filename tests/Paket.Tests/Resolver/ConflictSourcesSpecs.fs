@@ -38,6 +38,7 @@ let ``should resolve source files with correct sha``() =
         Dependencies = [name, VersionRequirement.NoRestriction] |> Set.ofList
         Origin = ModuleResolver.Origin.GitHubLink
         Command = None
+        OperatingSystemRestriction = None
         PackagePath = None
         AuthKey = None }
 

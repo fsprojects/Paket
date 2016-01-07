@@ -344,6 +344,7 @@ module LockFileParser =
                                                 Dependencies = Set.empty
                                                 Name = path
                                                 Command = None
+                                                OperatingSystemRestriction = None
                                                 PackagePath = None
                                                 AuthKey = authKey } :: currentGroup.SourceFiles }::otherGroups
                         | _ -> failwith "invalid remote details."
@@ -367,6 +368,7 @@ module LockFileParser =
                                   Dependencies = Set.empty
                                   Name = name
                                   Command = None
+                                  OperatingSystemRestriction = None
                                   PackagePath = None
                                   AuthKey = authKey } 
 
@@ -381,6 +383,7 @@ module LockFileParser =
                                                 Origin = HttpLink(currentGroup.RemoteUrl.Value)
                                                 Project = project
                                                 Command = None
+                                                OperatingSystemRestriction = None
                                                 PackagePath = None
                                                 Dependencies = Set.empty
                                                 Name = details
@@ -394,6 +397,7 @@ module LockFileParser =
                                                 Project = project + "/" + String.Join("/",moredetails)
                                                 Dependencies = Set.empty
                                                 Command = None
+                                                OperatingSystemRestriction = None
                                                 PackagePath = None
                                                 Name = details
                                                 AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
@@ -401,7 +405,7 @@ module LockFileParser =
                     | GitLink _ ->
                         match currentGroup.RemoteUrl with
                         | Some cloneUrl ->
-                            let owner,commit,project,cloneUrl = Git.Handling.extractUrlParts cloneUrl
+                            let owner,commit,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts cloneUrl
                             { currentGroup with
                                 LastWasPackage = false
                                 SourceFiles = { Commit = details.Replace("(","").Replace(")","")
@@ -409,8 +413,9 @@ module LockFileParser =
                                                 Origin = GitLink(cloneUrl)
                                                 Project = project
                                                 Dependencies = Set.empty
-                                                Command = None
-                                                PackagePath = None
+                                                Command = buildCommand
+                                                OperatingSystemRestriction = operatingSystemRestriction
+                                                PackagePath = packagePath
                                                 Name = "" 
                                                 AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
                         | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl)

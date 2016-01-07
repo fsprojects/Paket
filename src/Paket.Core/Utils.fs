@@ -395,7 +395,7 @@ let inline (++) x y =
     | _ -> x
 
 let parseKeyValuePairs(s:string) =
-    let s = s.Trim().ToLower()
+    let s = s.Trim()
     let parts = s.Split([|','|], StringSplitOptions.RemoveEmptyEntries)
     let dict = new System.Collections.Generic.Dictionary<_,_>()
 
@@ -406,7 +406,7 @@ let parseKeyValuePairs(s:string) =
             let innerParts = p.Split(':') |> Array.map (fun x -> x.Trim())
             if innerParts.Length % 2 <> 0 then
                 failwithf "\"%s\" can not be parsed as key/value pairs." p
-            dict.Add(innerParts.[0],innerParts.[1])
+            dict.Add(innerParts.[0].ToLower(),innerParts.[1])
             lastKey := innerParts.[0]
         else
             dict.[!lastKey] <- dict.[!lastKey] + ", " + p

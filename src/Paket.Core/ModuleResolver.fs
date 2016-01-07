@@ -20,6 +20,7 @@ type UnresolvedSource =
       Origin : Origin
       Commit : string option
       Command: string option
+      OperatingSystemRestriction: string option
       PackagePath: string option
       AuthKey : string option }
 
@@ -52,6 +53,7 @@ type ResolvedSourceFile =
       Dependencies : Set<PackageName * VersionRequirement>
       Origin : Origin
       Command: string option
+      OperatingSystemRestriction: string option
       PackagePath: string option
       AuthKey : string option }
 
@@ -87,6 +89,7 @@ let resolve getDependencies getSha1 (file : UnresolvedSource) : ResolvedSourceFi
           Dependencies = Set.empty
           Name = file.Name
           Command = None
+          OperatingSystemRestriction = None
           PackagePath = None
           AuthKey = file.AuthKey  }
     

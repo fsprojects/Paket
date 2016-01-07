@@ -184,6 +184,7 @@ github "owner:project2:commit3" "folder/file3.fs" githubAuth """
                             Origin = ModuleResolver.Origin.GitHubLink
                             Project = f.Project
                             Command = None
+                            OperatingSystemRestriction = None
                             PackagePath = None
                             Dependencies = Set.empty
                             Name = f.Name
@@ -255,6 +256,7 @@ let trivialResolve (f:ModuleResolver.UnresolvedSource) =
       Project = f.Project
       Dependencies = Set.empty
       Command = None
+      OperatingSystemRestriction = None
       PackagePath = None
       Name = f.Name
       AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile

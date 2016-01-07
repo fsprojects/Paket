@@ -350,7 +350,7 @@ type InstallSettings =
         }
 
     static member Parse(text:string) : InstallSettings =
-        let kvPairs = parseKeyValuePairs text
+        let kvPairs = parseKeyValuePairs (text.ToLower())
 
         { ImportTargets =
             match kvPairs.TryGetValue "import_targets" with
