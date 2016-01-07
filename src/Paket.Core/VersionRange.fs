@@ -97,12 +97,12 @@ type VersionRequirement =
         | Minimum v -> v = version || (v <= version && checkPrerelease prerelease version) || sameVersionWithoutPreRelease v
         | GreaterThan v -> v < version && checkPrerelease prerelease version
         | Maximum v -> v = version || (v >= version && checkPrerelease prerelease version)
-        | LessThan v -> v > version && checkPrerelease prerelease version
+        | LessThan v -> v > version && checkPrerelease prerelease version && not (sameVersionWithoutPreRelease v)
         | Range(fromB, from, _to, _toB) ->
             let isInUpperBound =
                 match _toB with
                 | VersionRangeBound.Including -> version <= _to
-                | VersionRangeBound.Excluding -> version < _to
+                | VersionRangeBound.Excluding -> version < _to && not (sameVersionWithoutPreRelease _to)
 
             let isInLowerBound =
                 match fromB with

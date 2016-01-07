@@ -44,6 +44,10 @@ let ``can check if in range for LessThan``() =
     "2.0" |> isInRangeNoPreRelease (VersionRange.LessThan (SemVer.Parse "2.2")) |> shouldEqual true
     "2.2" |> isInRangeNoPreRelease (VersionRange.LessThan (SemVer.Parse "2.2")) |> shouldEqual false
     "3.0" |> isInRangeNoPreRelease (VersionRange.LessThan (SemVer.Parse "2.2")) |> shouldEqual false
+
+[<Test>]
+let ``can check if in range for LessThan with prerelease``() =
+    "3.0.0-alpha1" |> isInRange (DependenciesFileParser.parseVersionRequirement "< 3.0 prerelease") |> shouldEqual false
     
 [<Test>]
 let ``can check if in range for Range``() =
@@ -80,6 +84,14 @@ let ``can check if in range for 4-parts range``() =
 let ``does include prerelease when twiddle wakka``() =
     "1.0.0-alpha002" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 1.0 alpha") |> shouldEqual true
     "1.0" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 1.0 alpha") |> shouldEqual true
+
+[<Test>]
+let ``does not skip version when twiddle wakka``() =
+    "3.0.0-alpha1" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 2.0") |> shouldEqual false
+
+[<Test>]
+let ``does not skip version when twiddle wakka with prerelease``() =
+    "3.0.0-alpha1" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 2.0 prerelease") |> shouldEqual false
 
 [<Test>]
 let ``can support trailing 0``() =
