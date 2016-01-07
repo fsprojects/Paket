@@ -1,5 +1,8 @@
-#### 3.0.0-alpha008 - 07.01.2016
+#### 3.0.0-alpha010 - 07.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
+
+#### 2.40.15 - 07.01.2016
+* BUGFIX: Fixed prerelease comparision - https://github.com/fsprojects/Paket/issues/1316
 
 #### 2.40.14 - 07.01.2016
 * BUGFIX: Fixed problem with prerelease versions during pack - https://github.com/fsprojects/Paket/issues/1316
