@@ -110,6 +110,7 @@
     <Compile Include="InstallSpecs.fs" />
     <Compile Include="FrameworkRestrictionsSpecs.fs" />
     <Compile Include="GroupSpecs.fs" />
+    <Compile Include="HttpSpecs.fs" />
     <Compile Include="PaketCoreSpecs.fs" />
     <Compile Include="BasicResolverSpecs.fs" />
     <Compile Include="ConvertFromNuGetSpecs.fs" />

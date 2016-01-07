@@ -370,15 +370,18 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
                           Include = createRelativePath project.FileName remoteFilePath
                           Link = Some link }
                     else
-                        let toDir = Path.GetDirectoryName(project.FileName)
-                        let targetFile = FileInfo(Path.Combine(toDir,link))
-                        if targetFile.Directory.Exists |> not then
-                            targetFile.Directory.Create()
-    
-                        File.Copy(remoteFilePath,targetFile.FullName)
-    
                         { BuildAction = buildAction
-                          Include = if buildAction = BuildAction.Reference then createRelativePath project.FileName remoteFilePath else createRelativePath project.FileName targetFile.FullName
+                          Include =
+                            if buildAction = BuildAction.Reference then
+                                 createRelativePath project.FileName remoteFilePath
+                            else
+                                let toDir = Path.GetDirectoryName(project.FileName)
+                                let targetFile = FileInfo(Path.Combine(toDir,link))
+                                if targetFile.Directory.Exists |> not then
+                                    targetFile.Directory.Create()
+    
+                                File.Copy(remoteFilePath,targetFile.FullName)
+                                createRelativePath project.FileName targetFile.FullName
                           Link = None }))
             |> List.concat
 
