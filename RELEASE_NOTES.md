@@ -1,3 +1,6 @@
+#### 2.40.12 - 07.01.2016
+* BUGFIX: Fixed problem with prerelease versions during pack - https://github.com/fsprojects/Paket/issues/1316
+
 #### 2.40.11 - 06.01.2016
 * BUGFIX: Fixed problem with @ char in paths during pack - https://github.com/fsprojects/Paket/pull/1351
 
