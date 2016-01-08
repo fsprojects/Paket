@@ -565,7 +565,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
 
     member private this.AddFrameworkRestriction(groupName, frameworkRestrictions:FrameworkRestrictions) =
-        if frameworkRestrictions = [] then this else
+        if List.isEmpty frameworkRestrictions then this else
         let restrictionString = sprintf "framework %s" (String.Join(", ",frameworkRestrictions))
 
         let list = new System.Collections.Generic.List<_>()
