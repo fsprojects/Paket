@@ -24,6 +24,14 @@ If you want to restrict Paket to a special branch, tag or a concrete commit then
     git http://github.com/forki/AskMe.git 97ee5ae7074b // short hash
     git https://github.com/forki/FsUnit.git 1.0        // tag
 
+## Running a build in git repositories
+
+If your referenced git repository contains a build script then Paket can excute this scipt after restore:
+
+    git https://github.com/forki/nupkgtest.git build build:"build.cmd"
+
+This allows you to excute arbitray commands after restore.
+
 ## Using Git repositories as NuGet source
 
 If you have NuGet packages inside a git repository you can easily use the repository as a NuGet source from the [`paket.dependencies` file](dependencies-file.html):
@@ -42,3 +50,9 @@ The generated [`paket.lock` file](lock-file.html) will look like this:
       remote: https://github.com/forki/nupkgtest.git
       specs:
          (05366e390e7552a569f3f328a0f3094249f3b93b)
+
+It's also possible to [run build scripts](git-dependencies.html#Running-a-build-in-git-repositories) to create the NuGet packages:
+
+    git https://github.com/forki/nupkgtest.git build build:"build.cmd", Packages: /source/
+    
+    nuget Argu
