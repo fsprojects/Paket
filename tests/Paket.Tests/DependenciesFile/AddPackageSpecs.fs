@@ -1,4 +1,4 @@
-module paket.dependenciesFile.AddPackageSpecs
+module Paket.DependenciesFile.AddPackageSpecs
 
 open Paket
 open NUnit.Framework

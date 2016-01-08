@@ -1,4 +1,4 @@
-module paket.dependenciesFile.DependencyChangesSpecs
+module Paket.DependenciesFile.DependencyChangesSpecs
 
 open Paket
 open NUnit.Framework

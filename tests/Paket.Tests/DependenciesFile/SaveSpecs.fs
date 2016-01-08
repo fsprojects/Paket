@@ -1,4 +1,4 @@
-module paket.dependenciesFile.SaveSpecs
+module Paket.DependenciesFile.SaveSpecs
 
 open Paket
 open NUnit.Framework

@@ -1,5 +1,8 @@
-#### 3.0.0-alpha011 - 07.01.2016
+#### 3.0.0-alpha012 - 08.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
+
+#### 2.41.1 - 08.01.2016
+* BUGFIX: NuGetV2: avoid revealing password also if more than one source is defined - https://github.com/fsprojects/Paket/pull/1357
 
 #### 2.41.0 - 07.01.2016
 * Allow to reference dlls from HTTP resources - https://github.com/fsprojects/Paket/issues/1341
