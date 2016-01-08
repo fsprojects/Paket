@@ -31,6 +31,11 @@ Or, you could run:
     [lang=batch]
     paket pack output nugets version 1.0.0 lock-dependencies
 
+<blockquote>
+Note that the `lock-dependencies` parameter will be removed in Version 3 of Paket.
+</blockqoute>
+
+
 Depending on which command you issue, Paket creates different version requirements of the packages you depend on in the resulting `.nuspec` file of your package:
 
 <table>
