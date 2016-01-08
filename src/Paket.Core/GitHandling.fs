@@ -3,17 +3,18 @@ open Paket.Utils
 open System
 
 let extractUrlParts (url:string) =
-    let isKeyword (commit:string) k = commit.ToLower() = k || (commit.ToLower().StartsWith(k) && commit.Contains(":"))
-
     let url,commit,options = 
         match url.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> List.ofArray with
-        | urlPart::commit::_ when isKeyword commit "build" || isKeyword commit "os" || isKeyword commit "packages" -> 
-            let options = url.Substring(urlPart.Length)
-            urlPart,None,options
-        | urlPart::commit::options -> 
-            let startPos = url.Substring(urlPart.Length).IndexOf(commit)
-            let options = url.Substring(urlPart.Length + startPos + commit.Length)
-            urlPart,Some commit,options
+        | urlPart::_ ->
+            let rest = url.Substring(urlPart.Length)
+            match rest.Replace(":"," : ").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> List.ofArray with
+            | k::colon::_ when colon = ":" && (k.ToLower() = "build" || k.ToLower() = "os" || k.ToLower() = "packages") -> 
+                urlPart,None,rest
+            | commit::options -> 
+                let startPos = url.Substring(urlPart.Length).IndexOf(commit)
+                let options = url.Substring(urlPart.Length + startPos + commit.Length)
+                urlPart,Some commit,options
+            | _ -> url,None,""
         | _ -> url,None,""
     
     let kvPairs = parseKeyValuePairs options

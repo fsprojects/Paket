@@ -8,6 +8,7 @@ open Paket.Logging
 open Paket.ModuleResolver
 open System.IO.Compression
 open Paket.Domain
+open Paket.Git.CommandHelper
 
 let private githubCache = System.Collections.Concurrent.ConcurrentDictionary<_, _>()
 
@@ -157,24 +158,28 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let cloneUrl = cloneUrl.TrimEnd('/')
         
         let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,remoteFile.Project)
+        let repoFolder = Path.Combine(destination,remoteFile.Project)
+        let cacheCloneUrl = "file:///" + repoCacheFolder
+
+        let branchName = sprintf "b%d" <| (repoFolder |> hash |> abs)
 
         // clone/fetch to cache
         if Directory.Exists repoCacheFolder then
+            Git.CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + cloneUrl) |> ignore
             verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder 
-            Git.CommandHelper.runSimpleGitCommand repoCacheFolder ("fetch " + cloneUrl) |> ignore
+            Git.CommandHelper.runSimpleGitCommand repoCacheFolder "fetch -f" |> ignore
+            Git.CommandHelper.runSimpleGitCommand repoCacheFolder ("branch -f " + branchName + " " + remoteFile.Commit) |> ignore
         else
             if not <| Directory.Exists Constants.GitRepoCacheFolder then
                 Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
             Git.CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone " + cloneUrl) |> ignore
 
-        let repoFolder = Path.Combine(destination,remoteFile.Project)
-        let cacheCloneUrl = "file:///" + repoCacheFolder
-
         // checkout to local folder
         if Directory.Exists repoFolder then
-            verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder 
-            Git.CommandHelper.runSimpleGitCommand repoFolder ("fetch " + cacheCloneUrl) |> ignore
+            Git.CommandHelper.runSimpleGitCommand repoFolder ("remote set-url origin " + cacheCloneUrl) |> ignore
+            tracefn "Fetching %s to %s" cacheCloneUrl repoFolder 
+            Git.CommandHelper.runSimpleGitCommand repoFolder "fetch -f" |> ignore
         else
             if not <| Directory.Exists destination then
                 Directory.CreateDirectory destination |> ignore
@@ -183,6 +188,40 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
         tracefn "Setting %s to %s" repoFolder remoteFile.Commit
         Git.CommandHelper.runSimpleGitCommand repoFolder ("reset --hard " + remoteFile.Commit) |> ignore
+
+        match remoteFile.Command with
+        | None -> ()
+        | Some command ->
+            let command,args =
+                match command.IndexOf ' ' with
+                | -1 -> command,""
+                | p -> command.Substring(0,p),command.Substring(p+1)
+            
+            let command = 
+                if Path.IsPathRooted command then command else
+                let p = Path.Combine(repoFolder,command)
+                if File.Exists p then p else command
+            let tCommand = if String.IsNullOrEmpty args then command else command + " " + args
+
+            try
+                tracefn "Running \"%s\"" tCommand
+                let processResult = 
+                    ExecProcessAndReturnMessages (fun info ->
+                        info.FileName <- command
+                        info.WorkingDirectory <- repoFolder
+                        info.Arguments <- args) gitTimeOut
+
+                let ok,msg,errors = processResult.OK,processResult.Messages,toLines processResult.Errors
+               
+                let errorText = toLines msg + Environment.NewLine + errors
+                if not ok then failwith errorText
+                if ok && msg.Count = 0 then tracefn "Done." else
+                if verbose then
+                    msg |> Seq.iter (tracefn "%s")
+            with 
+            | exn -> failwithf "Could not run \"%s\".\r\nError: %s" tCommand exn.Message
+
+            
     | Origin.GistLink, Constants.FullProjectSourceFileName ->
         tracefn "Downloading %O to %s" remoteFile destination
         let fi = FileInfo(destination)

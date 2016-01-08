@@ -1161,7 +1161,9 @@ group Dev
     git https://github.com/fsprojects/Paket.VisualStudio.git os : Windows, Build:"build.cmd NuGet", Packages: "/tempFolder/Any where"
     git https://github.com/fsprojects/Paket.git Packages: "/temp Folder/Any where", os: OSX
     git https://github.com/forki/nupkgtest.git nugetsource Packages: /source/
+    git https://github.com/forki/nupkgtest.git build build:"build.cmd", Packages: /source/
 
+    nuget Argu
     nuget Paket.Core
 """
 
@@ -1205,4 +1207,17 @@ let ``should read paket git config with build command``() =
     packagesSource.OperatingSystemRestriction |> shouldEqual None
 
     let nupkgtestSource = cfg.Groups.[GroupName "Dev"].Sources.Head
+    nupkgtestSource.Url |> shouldEqual "paket-files/dev/github.com/nupkgtest/source"
+
+    
+    let buildSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Tail.Tail.Tail.Tail.Head
+    buildSource.GetCloneUrl() |> shouldEqual "https://github.com/forki/nupkgtest.git"
+    buildSource.Owner |> shouldEqual "github.com"
+    buildSource.Commit |> shouldEqual (Some "build")
+    buildSource.Project |> shouldEqual "nupkgtest"
+    buildSource.PackagePath |> shouldEqual (Some "/source/")
+    buildSource.Command |> shouldEqual (Some "build.cmd")
+    buildSource.OperatingSystemRestriction |> shouldEqual None
+
+    let nupkgtestSource = cfg.Groups.[GroupName "Dev"].Sources.Tail.Head
     nupkgtestSource.Url |> shouldEqual "paket-files/dev/github.com/nupkgtest/source"

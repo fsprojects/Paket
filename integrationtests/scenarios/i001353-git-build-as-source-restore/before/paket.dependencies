@@ -1,0 +1,3 @@
+git https://github.com/forki/nupkgtest.git build build:"build.cmd", Packages: /source/
+
+nuget Argu

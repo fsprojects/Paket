@@ -95,9 +95,9 @@ let resolve getDependencies getSha1 (file : UnresolvedSource) : ResolvedSourceFi
           Project = file.Project
           Dependencies = Set.empty
           Name = file.Name
-          Command = None
-          OperatingSystemRestriction = None
-          PackagePath = None
+          Command = file.Command
+          OperatingSystemRestriction = file.OperatingSystemRestriction
+          PackagePath = file.PackagePath
           AuthKey = file.AuthKey  }
     
     let dependencies = 

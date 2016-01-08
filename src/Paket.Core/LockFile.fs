@@ -168,6 +168,10 @@ module LockFileSerializer =
                         | Some authKey -> yield sprintf "    %s %s" path authKey
                         | None -> yield sprintf "    %s" path
 
+                    match file.Command with
+                    | None -> ()
+                    | Some command -> yield "      build: " + command
+
                     for (name,v) in file.Dependencies do
                         let versionStr = 
                             let s = v.ToString()

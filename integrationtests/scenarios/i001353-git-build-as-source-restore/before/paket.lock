@@ -1,0 +1,9 @@
+NUGET
+  remote: paket-files/github.com/nupkgtest/source
+  specs:
+    Argu (1.1.3)
+GIT
+  remote: https://github.com/forki/nupkgtest.git
+  specs:
+     (2942d23fcb13a2574b635194203aed7610b21903)
+      build: build.cmd
