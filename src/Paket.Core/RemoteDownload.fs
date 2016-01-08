@@ -178,7 +178,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         // checkout to local folder
         if Directory.Exists repoFolder then
             Git.CommandHelper.runSimpleGitCommand repoFolder ("remote set-url origin " + cacheCloneUrl) |> ignore
-            tracefn "Fetching %s to %s" cacheCloneUrl repoFolder 
+            verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder 
             Git.CommandHelper.runSimpleGitCommand repoFolder "fetch -f" |> ignore
         else
             if not <| Directory.Exists destination then

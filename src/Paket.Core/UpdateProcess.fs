@@ -155,7 +155,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                       RemoteFiles = group.ResolvedSourceFiles }
                 | None -> lockFile.GetGroup groupName) // just copy from lockfile
     
-    LockFile(lockFile.FileName, groups)
+    LockFile(lockFile.FileName, groups),groupsToUpdate
 
 let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdateMode, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
@@ -175,7 +175,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdat
         | ResolverStrategy.Max -> List.sortDescending versions
         | ResolverStrategy.Min -> List.sort versions
 
-    let lockFile = 
+    let lockFile,updatedGroups = 
         selectiveUpdate
             force 
             getSha1
@@ -186,17 +186,17 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdat
             updateMode
             semVerUpdateMode
     lockFile.Save()
-    lockFile
+    lockFile,updatedGroups
 
 /// Smart install command
 let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
-    let lockFile = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
+    let lockFile,updatedGroups = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let projectsAndReferences = InstallProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
-        InstallProcess.InstallIntoProjects(options.Common, dependenciesFile, lockFile, projectsAndReferences)
+        InstallProcess.InstallIntoProjects(options.Common, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =

@@ -25,8 +25,8 @@ let ``#1251 full installer demo``() =
         [GroupName "Main",PackageName "FAKE"
          GroupName "Main",PackageName "FSharp.Formatting"] 
 
-    let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
-    let model = Paket.InstallProcess.CreateModel(Path.GetDirectoryName dependenciesFile.FileName, force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall) |> Map.ofArray
+    let lockFile,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
+    let model = Paket.InstallProcess.CreateModel(Path.GetDirectoryName dependenciesFile.FileName, force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, Map.empty) |> Map.ofArray
 
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FAKE"].Version
     |> shouldBeGreaterThan (SemVer.Parse "4")
