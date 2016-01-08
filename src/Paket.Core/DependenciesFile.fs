@@ -355,7 +355,15 @@ module DependenciesFileParser =
                           Name = ""
                           Origin = Origin.GitLink url
                           AuthKey = None }
-                    lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
+                    let sources = 
+                        match packagePath with
+                        | None -> current.Sources
+                        | Some path -> 
+                            let root = ""
+                            let fullPath = remoteFile.ComputeFilePath(root,current.Name,path)
+                            let relative = (createRelativePath root fullPath).Replace("\\","/")
+                            LocalNuGet(relative) :: current.Sources
+                    lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile]; Sources = sources }::other
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
         | [] -> failwithf "Error in paket.dependencies line %d" lineNo
@@ -532,6 +540,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           Graph = []
                           Settings = group.Options.Settings })
                 |> Seq.toList
+            
+            if String.IsNullOrWhiteSpace fileName |> not then
+                RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
+                |> Async.RunSynchronously
+                |> ignore
 
             let resolution =
                 PackageResolver.Resolve(

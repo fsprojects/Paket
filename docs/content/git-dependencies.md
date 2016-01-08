@@ -23,3 +23,22 @@ If you want to restrict Paket to a special branch, tag or a concrete commit then
     git http://github.com/forki/AskMe.git 97ee5ae7074bdb414a3e5dd7d2f2d752547d0542
     git http://github.com/forki/AskMe.git 97ee5ae7074b // short hash
     git https://github.com/forki/FsUnit.git 1.0        // tag
+
+## Using Git repositories as NuGet source
+
+If you have NuGet packages inside a git repository you can easily use the repository as a NuGet source from the [`paket.dependencies` file](dependencies-file.html):
+
+    git https://github.com/forki/nupkgtest.git master Packages: /source/
+ 
+    nuget Argu
+
+The generated [`paket.lock` file](lock-file.html) will look like this:
+
+    NUGET
+      remote: paket-files/github.com/nupkgtest/source
+      specs:
+        Argu (1.1.3)
+    GIT
+      remote: https://github.com/forki/nupkgtest.git
+      specs:
+         (05366e390e7552a569f3f328a0f3094249f3b93b)

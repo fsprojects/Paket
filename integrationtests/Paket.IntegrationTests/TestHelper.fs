@@ -51,8 +51,10 @@ let update scenario =
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario =
-    paket "install" scenario |> ignore
+    paket "install -v" scenario |> ignore
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
+
+let restore scenario = paket "restore -v" scenario |> ignore
 
 let updateShouldFindPackageConflict packageName scenario =
     try

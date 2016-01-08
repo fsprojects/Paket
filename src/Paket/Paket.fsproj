@@ -41,7 +41,7 @@
     <StartArguments>update -f</StartArguments>
     <StartArguments>install</StartArguments>
     <StartArguments>update</StartArguments>
-    <StartArguments>pack output "D:\code\paket-issue-repro\B\bin"</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -56,7 +56,7 @@
     <StartWorkingDirectory>d:\code\Paket\integrationtests\scenarios\i000284-full-git\temp\</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\ConsoleApplication8</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i000284-full-git\temp\</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\paket-issue-repro\B</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001353-git-as-source\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

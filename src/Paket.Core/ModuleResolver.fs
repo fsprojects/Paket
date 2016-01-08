@@ -12,6 +12,18 @@ type Origin =
 | GitLink of string
 | HttpLink of string
 
+
+let internal computeFilePath(owner,project,root,groupName:GroupName,name : string) = 
+    let path = normalizePath (name.TrimStart('/'))
+    let owner = if String.IsNullOrWhiteSpace owner then "localhost" else owner
+    let dir = 
+        if groupName = Constants.MainDependencyGroup then
+            Path.Combine(root,Constants.PaketFilesFolderName, owner, project, path)
+        else
+            Path.Combine(root,Constants.PaketFilesFolderName, groupName.GetCompareString(), owner, project, path)
+    let di = DirectoryInfo(dir)
+    di.FullName
+
 // Represents details on a dependent source.
 type UnresolvedSource =
     { Owner : string
@@ -45,6 +57,10 @@ type UnresolvedSource =
         | GitLink url -> url
         | _ -> failwithf "invalid linktype %A" this.Origin
 
+    member this.FilePath(root,groupName) = this.ComputeFilePath(root,groupName,this.Name)
+    
+    member this.ComputeFilePath(root,groupName:GroupName,name : string) = computeFilePath(this.Owner,this.Project,root,groupName,name)
+
 type ResolvedSourceFile = 
     { Owner : string
       Project : string
@@ -59,16 +75,7 @@ type ResolvedSourceFile =
 
     member this.FilePath(root,groupName) = this.ComputeFilePath(root,groupName,this.Name)
     
-    member this.ComputeFilePath(root,groupName:GroupName,name : string) = 
-        let path = normalizePath (name.TrimStart('/'))
-        let owner = if String.IsNullOrWhiteSpace this.Owner then "localhost" else this.Owner
-        let dir = 
-            if groupName = Constants.MainDependencyGroup then
-                Path.Combine(root,Constants.PaketFilesFolderName, owner, this.Project, path)
-            else
-                Path.Combine(root,Constants.PaketFilesFolderName, groupName.GetCompareString(), owner, this.Project, path)
-        let di = DirectoryInfo(dir)
-        di.FullName
+    member this.ComputeFilePath(root,groupName:GroupName,name : string) = computeFilePath(this.Owner,this.Project,root,groupName,name)
     
     override this.ToString() = sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
 
