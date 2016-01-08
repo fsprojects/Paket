@@ -200,6 +200,7 @@ module LockFileParser =
     | Redirects of bool option
     | ReferenceCondition of string
     | ResolverStrategy of ResolverStrategy option
+    | Command of string
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
@@ -240,6 +241,8 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption(ResolverStrategy(setting))
+        | _, String.StartsWith "build: " trimmed ->
+            InstallOption(Command trimmed)
         | _, trimmed when line.StartsWith "      " ->
             if trimmed.Contains("(") then
                 let parts = trimmed.Split '(' 
@@ -264,6 +267,7 @@ module LockFileParser =
         | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
         | ResolverStrategy strategy -> { currentGroup.Options with ResolverStrategy = strategy }
+        | _ -> failwithf "Unknown option %A" option
 
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
@@ -287,6 +291,9 @@ module LockFileParser =
                 match (currentGroup, line) with
                 | Remote(url) -> { currentGroup with RemoteUrl = Some url }::otherGroups
                 | Group(groupName) -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
+                | InstallOption(Command(command)) -> 
+                    let sourceFiles = currentGroup.SourceFiles |> List.map (fun s -> { s with Command = Some command })
+                    { currentGroup with SourceFiles = sourceFiles }::otherGroups
                 | InstallOption option -> 
                     { currentGroup with Options = extractOption currentGroup option }::otherGroups
                 | RepositoryType repoType -> { currentGroup with RepositoryType = Some repoType }::otherGroups

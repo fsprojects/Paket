@@ -737,3 +737,25 @@ let ``should parse local git lock file``() =
     lockFile.Head.RemoteUrl |> shouldEqual (Some "file:///c:/code/Paket.VisualStudio")
     lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "528024723f314aa1011499a122258167b53699f7"
     lockFile.Head.SourceFiles.Head.Project |> shouldEqual "Paket.VisualStudio"
+    lockFile.Head.SourceFiles.Head.Command |> shouldEqual None
+
+
+let localGitLockFileWithBuild = """
+NUGET
+  remote: paket-files/github.com/nupkgtest/source
+  specs:
+    Argu (1.1.3)
+GIT
+  remote: https://github.com/forki/nupkgtest.git
+  specs:
+     (2942d23fcb13a2574b635194203aed7610b21903)
+      build: build.cmd Test
+"""
+
+[<Test>]
+let ``should parse local git lock file with build``() = 
+    let lockFile = LockFileParser.Parse(toLines localGitLockFileWithBuild)
+    lockFile.Head.RemoteUrl |> shouldEqual (Some "https://github.com/forki/nupkgtest.git")
+    lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "2942d23fcb13a2574b635194203aed7610b21903"
+    lockFile.Head.SourceFiles.Head.Project |> shouldEqual "nupkgtest"
+    lockFile.Head.SourceFiles.Head.Command |> shouldEqual (Some "build.cmd Test")
