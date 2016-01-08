@@ -1,3 +1,6 @@
+#### 2.41.1 - 07.01.2016
+* BUGFIX: NuGetV2: avoid revealing password also if more than one source is defined - https://github.com/fsprojects/Paket/pull/1357
+
 #### 2.41.0 - 07.01.2016
 * Allow to reference dlls from HTTP resources - https://github.com/fsprojects/Paket/issues/1341
 * BUGFIX: Fixed prerelease comparision - https://github.com/fsprojects/Paket/issues/1316
