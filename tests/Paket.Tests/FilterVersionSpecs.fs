@@ -92,7 +92,7 @@ let ``does not skip version when twiddle wakka``() =
 [<Test>]
 let ``does not skip version when twiddle wakka with prerelease``() =
     "3.0.0-alpha1" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 2.0 prerelease") |> shouldEqual false
-    "2.0-alpha" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 2.0 prerelease") |> shouldEqual false
+    "2.0-alpha" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 2.0 prerelease") |> shouldEqual true
 
 [<Test>]
 let ``can support trailing 0``() =
