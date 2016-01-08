@@ -92,6 +92,7 @@ let ``does not skip version when twiddle wakka``() =
 [<Test>]
 let ``does not skip version when twiddle wakka with prerelease``() =
     "3.0.0-alpha1" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 2.0 prerelease") |> shouldEqual false
+    "2.0-alpha" |> isInRange (DependenciesFileParser.parseVersionRequirement "~> 2.0 prerelease") |> shouldEqual false
 
 [<Test>]
 let ``can support trailing 0``() =
@@ -120,7 +121,6 @@ let ``can support rc version``() =
 let ``can support "build" version``() = 
     "0.9.0-build06428" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 0.9.0-build06428") |> shouldEqual true
 
-
 [<Test>]
 let ``prerelase version of same version is in range``() = 
     "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1.2.3 prerelease") |> shouldEqual true
@@ -128,7 +128,6 @@ let ``prerelase version of same version is in range``() =
     "1.2.3-alpha001" |> isInRange (DependenciesFileParser.parseVersionRequirement "> 1.2.3 prerelease") |> shouldEqual false
     "1.0.11" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1.0 prerelease") |> shouldEqual true
     "1.0.12-build0025" |> isInRange (DependenciesFileParser.parseVersionRequirement ">= 1.0 prerelease") |> shouldEqual true
-    
 
 [<Test>]
 let ``can check if in range for prerelease range``() =
