@@ -1,4 +1,4 @@
-module paket.dependenciesFile.ParserSpecs
+module Paket.DependenciesFile.ParserSpecs
 
 open Paket
 open Paket.PackageSources

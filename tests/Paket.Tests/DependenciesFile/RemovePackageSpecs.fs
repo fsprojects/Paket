@@ -1,4 +1,4 @@
-module paket.dependenciesFile.RemovePackageSpecs
+module Paket.DependenciesFile.RemovePackageSpecs
 
 open Paket
 open NUnit.Framework
