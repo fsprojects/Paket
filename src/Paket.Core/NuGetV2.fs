@@ -496,7 +496,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
                     failwithf "Couldn't get package details for package %O %O on %O." packageName version source
                 | [] ->
                     failwithf "Couldn't get package details for package %O %O because no sources where specified." packageName version
-                | _ ->
+                | sources ->
                     failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
             | Some packageDetails -> packageDetails
         | Some packageDetails -> packageDetails
@@ -619,7 +619,7 @@ let GetVersions force root (sources, packageName:PackageName) =
                     failwithf "Could not find versions for package %O on %O." packageName source
                 | [] ->
                     failwithf "Could not find versions for package %O because no sources where specified." packageName 
-                | _ ->
+                | sources ->
                     failwithf "Could not find versions for package %O on any of %A." packageName sources
 
     versions
