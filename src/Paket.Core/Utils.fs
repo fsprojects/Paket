@@ -126,6 +126,21 @@ let extractPath infix (fileName : string) : string option=
     else 
         Some(path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1))
 
+let isMatchingOperatingSystem operatingSystem (operatingSystemFilter : string option) =
+    let aliasesForOs =
+        match operatingSystem with
+        | PlatformID.Unix -> Some [ "linux"; "unix"; "un*x" ]
+        | PlatformID.MacOSX -> Some [ "osx"; "mac" ]
+        | PlatformID.Win32NT -> Some [ "win"; "w7"; "w8"; "w10" ]
+        | _ -> None
+
+    match operatingSystemFilter with
+    | None -> true
+    | Some filter ->
+        match aliasesForOs with
+        | Some aliases -> aliases |> List.exists (fun alias -> filter.ToLower().Contains(alias))
+        | None -> false
+
 /// [omit]
 let inline normalizeXml(doc:XmlDocument) =
     use stringWriter = new StringWriter()
