@@ -300,14 +300,14 @@ module LockFileParser =
                 | Group(groupName) -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption(Command(command)) -> 
                     let sourceFiles = 
-                        match currentGroup.SourceFiles |> List.rev with
-                        | sourceFile::rest ->{ sourceFile with Command = Some command } :: rest |> List.rev
+                        match currentGroup.SourceFiles with
+                        | sourceFile::rest ->{ sourceFile with Command = Some command } :: rest
                         |  _ -> failwith "missig source file"
                     { currentGroup with SourceFiles = sourceFiles }::otherGroups
                 | InstallOption(OperatingSystemRestriction(filter)) -> 
                     let sourceFiles = 
-                        match currentGroup.SourceFiles |> List.rev with
-                        | sourceFile::rest ->{ sourceFile with OperatingSystemRestriction = Some filter } :: rest |> List.rev
+                        match currentGroup.SourceFiles with
+                        | sourceFile::rest ->{ sourceFile with OperatingSystemRestriction = Some filter } :: rest
                         |  _ -> failwith "missig source file"
                     { currentGroup with SourceFiles = sourceFiles }::otherGroups
                 | InstallOption option -> 

@@ -170,6 +170,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         match remoteFile.Command with
         | None -> ()
         | Some command ->
+            
             let command,args =
                 match command.IndexOf ' ' with
                 | -1 -> command,""
