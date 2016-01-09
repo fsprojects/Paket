@@ -48,32 +48,20 @@ let ``#1353 should use NuGet source from git repo``() =
 
 [<Test>]
 let ``#1353 should restore NuGet source from built git repo``() = 
-    if isMono then
-        ()
-    else
-        let lockFile = restore "i001353-git-build-as-source-restore"
-        let paketFilesRoot = Path.Combine(scenarioTempPath "i001353-git-build-as-source-restore","paket-files")
-        let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
-        Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "2942d23fcb13a2574b635194203aed7610b21903")
+    let lockFile = restore "i001353-git-build-as-source-restore"
+    let paketFilesRoot = Path.Combine(scenarioTempPath "i001353-git-build-as-source-restore","paket-files")
+    let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
+    Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "8a3d0e300103d5fb5eb416120831a973333691a2")
 
-        let arguPackagesDir = Path.Combine(scenarioTempPath "i001353-git-build-as-source-restore","packages","Argu")
-        Directory.Exists arguPackagesDir |> shouldEqual true
+    let arguPackagesDir = Path.Combine(scenarioTempPath "i001353-git-build-as-source-restore","packages","Argu")
+    Directory.Exists arguPackagesDir |> shouldEqual true
 
 [<Test>]
 let ``#1353 should build NuGet source from git repo``() = 
-    if isMono then
-        let lockFile = update "i001353-mono-build-as-source"
-        let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
-        let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
-        Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "8a3d0e300103d5fb5eb416120831a973333691a2")
+    let lockFile = update "i001353-git-build-as-source"
+    let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
+    let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki" ,"nupkgtest")
+    Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "8a3d0e300103d5fb5eb416120831a973333691a2")
 
-        lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
-        |> shouldEqual (SemVer.Parse "1.1.3")
-    else
-        let lockFile = update "i001353-git-build-as-source"
-        let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
-        let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki" ,"nupkgtest")
-        Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "8a3d0e300103d5fb5eb416120831a973333691a2")
-
-        lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
-        |> shouldEqual (SemVer.Parse "1.1.3")
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
+    |> shouldEqual (SemVer.Parse "1.1.3")

@@ -172,6 +172,10 @@ module LockFileSerializer =
                     | None -> ()
                     | Some command -> yield "      build: " + command
 
+                    match file.OperatingSystemRestriction with
+                    | None -> ()
+                    | Some filter -> yield "      os: " + filter
+
                     for (name,v) in file.Dependencies do
                         let versionStr = 
                             let s = v.ToString()
@@ -201,6 +205,7 @@ module LockFileParser =
     | ReferenceCondition of string
     | ResolverStrategy of ResolverStrategy option
     | Command of string
+    | OperatingSystemRestriction of string
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
@@ -243,6 +248,8 @@ module LockFileParser =
             InstallOption(ResolverStrategy(setting))
         | _, String.StartsWith "build: " trimmed ->
             InstallOption(Command trimmed)
+        | _, String.StartsWith "os: " trimmed ->
+            InstallOption(OperatingSystemRestriction trimmed)
         | _, trimmed when line.StartsWith "      " ->
             if trimmed.Contains("(") then
                 let parts = trimmed.Split '(' 
@@ -292,7 +299,16 @@ module LockFileParser =
                 | Remote(url) -> { currentGroup with RemoteUrl = Some url }::otherGroups
                 | Group(groupName) -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption(Command(command)) -> 
-                    let sourceFiles = currentGroup.SourceFiles |> List.map (fun s -> { s with Command = Some command })
+                    let sourceFiles = 
+                        match currentGroup.SourceFiles |> List.rev with
+                        | sourceFile::rest ->{ sourceFile with Command = Some command } :: rest |> List.rev
+                        |  _ -> failwith "missig source file"
+                    { currentGroup with SourceFiles = sourceFiles }::otherGroups
+                | InstallOption(OperatingSystemRestriction(filter)) -> 
+                    let sourceFiles = 
+                        match currentGroup.SourceFiles |> List.rev with
+                        | sourceFile::rest ->{ sourceFile with OperatingSystemRestriction = Some filter } :: rest |> List.rev
+                        |  _ -> failwith "missig source file"
                     { currentGroup with SourceFiles = sourceFiles }::otherGroups
                 | InstallOption option -> 
                     { currentGroup with Options = extractOption currentGroup option }::otherGroups
