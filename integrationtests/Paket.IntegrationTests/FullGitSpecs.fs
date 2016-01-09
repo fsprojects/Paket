@@ -20,17 +20,17 @@ let ``#284 should use git.exe to restore``() =
     Directory.Exists gistDir |> shouldEqual true
     Git.Handling.getCurrentHash gistDir |> shouldEqual (Some "b14d55a8844f092b44b9155c904c8a3f2d9d9f46")
 
-    let askMeDir = Path.Combine(paketFilesRoot,"github.com","AskMe")
+    let askMeDir = Path.Combine(paketFilesRoot,"github.com", "forki","AskMe")
     Git.Handling.getCurrentHash askMeDir |> shouldEqual (Some "97ee5ae7074bdb414a3e5dd7d2f2d752547d0542")
 
-    let fsUnitDir = Path.Combine(paketFilesRoot,"github.com","FsUnit")
+    let fsUnitDir = Path.Combine(paketFilesRoot,"github.com", "forki","FsUnit")
     Git.Handling.getCurrentHash fsUnitDir |> shouldEqual (Some "96a9c7bda5a84e225450d83ab8fd58fdeced7f6d")
 
 [<Test>]
 let ``#1353 should restore NuGet source from git repo``() = 
     let lockFile = restore "i001353-git-as-source-restore"
     let paketFilesRoot = Path.Combine(scenarioTempPath "i001353-git-as-source-restore","paket-files")
-    let repoDir = Path.Combine(paketFilesRoot,"github.com","nupkgtest")
+    let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
     Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "05366e390e7552a569f3f328a0f3094249f3b93b")
 
     let arguPackagesDir = Path.Combine(scenarioTempPath "i001353-git-as-source-restore","packages","Argu")
@@ -40,7 +40,7 @@ let ``#1353 should restore NuGet source from git repo``() =
 let ``#1353 should use NuGet source from git repo``() = 
     let lockFile = update "i001353-git-as-source"
     let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
-    let repoDir = Path.Combine(paketFilesRoot,"github.com","nupkgtest")
+    let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
     Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "05366e390e7552a569f3f328a0f3094249f3b93b")
 
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
@@ -53,7 +53,7 @@ let ``#1353 should restore NuGet source from built git repo``() =
     else
         let lockFile = restore "i001353-git-build-as-source-restore"
         let paketFilesRoot = Path.Combine(scenarioTempPath "i001353-git-build-as-source-restore","paket-files")
-        let repoDir = Path.Combine(paketFilesRoot,"github.com","nupkgtest")
+        let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
         Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "2942d23fcb13a2574b635194203aed7610b21903")
 
         let arguPackagesDir = Path.Combine(scenarioTempPath "i001353-git-build-as-source-restore","packages","Argu")
@@ -64,7 +64,7 @@ let ``#1353 should build NuGet source from git repo``() =
     if isMono then
         let lockFile = update "i001353-mono-build-as-source"
         let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
-        let repoDir = Path.Combine(paketFilesRoot,"github.com","nupkgtest")
+        let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
         Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "8a3d0e300103d5fb5eb416120831a973333691a2")
 
         lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
@@ -72,7 +72,7 @@ let ``#1353 should build NuGet source from git repo``() =
     else
         let lockFile = update "i001353-git-build-as-source"
         let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
-        let repoDir = Path.Combine(paketFilesRoot,"github.com","nupkgtest")
+        let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki" ,"nupkgtest")
         Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "8a3d0e300103d5fb5eb416120831a973333691a2")
 
         lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version

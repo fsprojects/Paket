@@ -44,12 +44,7 @@ let extractUrlParts (url:string) =
         | _ -> url
 
     let server =
-        let start = 
-            match url.IndexOf("://") with
-            | -1 -> 8 // 8 = "https://".Length
-            | pos -> pos + 3
-
-        match url.Replace(":","/").IndexOf('/', start) with 
+        match url.Replace(":","/").LastIndexOf('/') with 
         | -1 -> url
         | pos -> url.Substring(0, pos)
 
@@ -57,8 +52,8 @@ let extractUrlParts (url:string) =
     let server = 
         match server.IndexOf("://") with
         | -1 -> server
-        | pos -> server.Substring(pos + 3) |> removeInvalidChars
-        |> fun s -> s.Replace("git@","")
+        | pos -> server.Substring(pos + 3).Replace(":","") |> removeInvalidChars
+        |> fun s -> s.Replace("git@","").Replace(":","/").TrimStart('/')
 
     let project = url.Substring(url.LastIndexOf('/')+1).Replace(".git","")
 

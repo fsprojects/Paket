@@ -56,7 +56,7 @@
     <StartWorkingDirectory>d:\code\Paket\integrationtests\scenarios\i000284-full-git\temp\</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\ConsoleApplication8</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i000284-full-git\temp\</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001353-git-build-as-source\temp\</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i000284-full-git\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

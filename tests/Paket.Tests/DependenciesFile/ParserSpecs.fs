@@ -1124,7 +1124,7 @@ let ``should read paket git config``() =
     let cfg = DependenciesFile.FromCode(paketGitConfig)
     let gitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Head
     gitSource.GetCloneUrl() |> shouldEqual "git@github.com:fsprojects/Paket.git"
-    gitSource.Owner |> shouldEqual "github.com"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
     gitSource.Commit |> shouldEqual None
     gitSource.Command |> shouldEqual None
     gitSource.OperatingSystemRestriction |> shouldEqual None
@@ -1135,19 +1135,19 @@ let ``should read paket git config``() =
     localGitSource.GetCloneUrl() |> shouldEqual "file:///c:/code/Paket.VisualStudio"
     localGitSource.Project |> shouldEqual "Paket.VisualStudio"
     localGitSource.Commit |> shouldEqual None
-    localGitSource.Owner |> shouldEqual ""
+    localGitSource.Owner |> shouldEqual "c/code"
 
     let httpsGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Tail.Head
     httpsGitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
     httpsGitSource.Commit |> shouldEqual None
     httpsGitSource.Project |> shouldEqual "Paket"
-    httpsGitSource.Owner |> shouldEqual "github.com"
+    httpsGitSource.Owner |> shouldEqual "github.com/fsprojects"
 
     let branchGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Tail.Tail.Head
     branchGitSource.GetCloneUrl() |> shouldEqual "http://github.com/fsprojects/Chessie.git"
     branchGitSource.Commit |> shouldEqual (Some "master")
     branchGitSource.Project |> shouldEqual "Chessie"
-    branchGitSource.Owner |> shouldEqual "github.com"
+    branchGitSource.Owner |> shouldEqual "github.com/fsprojects"
 
 let paketGitConfigWithBuildCommand = """
 source https://nuget.org/api/v2
@@ -1172,7 +1172,7 @@ let ``should read paket git config with build command``() =
     let cfg = DependenciesFile.FromCode(paketGitConfigWithBuildCommand)
     let gitSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Head
     gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
-    gitSource.Owner |> shouldEqual "github.com"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
     gitSource.Commit |> shouldEqual (Some "master")
     gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
     gitSource.OperatingSystemRestriction |> shouldEqual None
@@ -1181,7 +1181,7 @@ let ``should read paket git config with build command``() =
 
     let gitVSSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Tail.Head
     gitVSSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.VisualStudio.git"
-    gitVSSource.Owner |> shouldEqual "github.com"
+    gitVSSource.Owner |> shouldEqual "github.com/fsprojects"
     gitVSSource.Commit |> shouldEqual None
     gitVSSource.Project |> shouldEqual "Paket.VisualStudio"
     gitVSSource.PackagePath |> shouldEqual (Some "/tempFolder/Any where")
@@ -1190,7 +1190,7 @@ let ``should read paket git config with build command``() =
 
     let noBuildSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Tail.Tail.Head
     noBuildSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
-    noBuildSource.Owner |> shouldEqual "github.com"
+    noBuildSource.Owner |> shouldEqual "github.com/fsprojects"
     noBuildSource.Commit |> shouldEqual None
     noBuildSource.Project |> shouldEqual "Paket"
     noBuildSource.PackagePath |> shouldEqual (Some "/temp Folder/Any where")
@@ -1199,7 +1199,7 @@ let ``should read paket git config with build command``() =
 
     let packagesSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Tail.Tail.Tail.Head
     packagesSource.GetCloneUrl() |> shouldEqual "https://github.com/forki/nupkgtest.git"
-    packagesSource.Owner |> shouldEqual "github.com"
+    packagesSource.Owner |> shouldEqual "github.com/forki"
     packagesSource.Commit |> shouldEqual (Some "nugetsource")
     packagesSource.Project |> shouldEqual "nupkgtest"
     packagesSource.PackagePath |> shouldEqual (Some "/source/")
@@ -1207,12 +1207,12 @@ let ``should read paket git config with build command``() =
     packagesSource.OperatingSystemRestriction |> shouldEqual None
 
     let nupkgtestSource = cfg.Groups.[GroupName "Dev"].Sources.Head
-    nupkgtestSource.Url |> shouldEqual "paket-files/dev/github.com/nupkgtest/source"
+    nupkgtestSource.Url |> shouldEqual "paket-files/dev/github.com/forki/nupkgtest/source"
 
     
     let buildSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Tail.Tail.Tail.Tail.Head
     buildSource.GetCloneUrl() |> shouldEqual "https://github.com/forki/nupkgtest.git"
-    buildSource.Owner |> shouldEqual "github.com"
+    buildSource.Owner |> shouldEqual "github.com/forki"
     buildSource.Commit |> shouldEqual (Some "build")
     buildSource.Project |> shouldEqual "nupkgtest"
     buildSource.PackagePath |> shouldEqual (Some "/source/")
@@ -1220,4 +1220,4 @@ let ``should read paket git config with build command``() =
     buildSource.OperatingSystemRestriction |> shouldEqual None
 
     let nupkgtestSource = cfg.Groups.[GroupName "Dev"].Sources.Tail.Head
-    nupkgtestSource.Url |> shouldEqual "paket-files/dev/github.com/nupkgtest/source"
+    nupkgtestSource.Url |> shouldEqual "paket-files/dev/github.com/forki/nupkgtest/source"
