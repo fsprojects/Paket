@@ -53,6 +53,9 @@ The generated [`paket.lock` file](lock-file.html) will look like this:
 
 It's also possible to [run build scripts](git-dependencies.html#Running-a-build-in-git-repositories) to create the NuGet packages:
 
-    git https://github.com/forki/nupkgtest.git build build:"build.cmd", Packages: /source/
+    git https://github.com/forki/nupkgtest.git build build:"build.cmd", Packages: /source/, OS:windows
+	git https://github.com/forki/nupkgtest.git build build:"build.sh", Packages: /source/, OS:mono
     
     nuget Argu
+
+In this sample we have different build scripts for mono and windows.

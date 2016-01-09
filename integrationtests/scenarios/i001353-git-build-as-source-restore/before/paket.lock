@@ -5,5 +5,9 @@ NUGET
 GIT
   remote: https://github.com/forki/nupkgtest.git
   specs:
-     (2942d23fcb13a2574b635194203aed7610b21903)
+     (8a3d0e300103d5fb5eb416120831a973333691a2)
       build: build.cmd
+      os: windows
+     (8a3d0e300103d5fb5eb416120831a973333691a2)
+      build: build.sh
+      os: mono

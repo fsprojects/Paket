@@ -8,47 +8,7 @@ open System.Threading
 open System.Text
 open System.Collections.Generic
 open Paket.Logging
-
-/// The path of the "Program Files" folder - might be x64 on x64 machine
-let ProgramFiles = Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles
-
-/// The path of Program Files (x86)
-/// It seems this covers all cases where PROCESSOR\_ARCHITECTURE may misreport and the case where the other variable 
-/// PROCESSOR\_ARCHITEW6432 can be null
-let ProgramFilesX86 = 
-    let wow64 = Environment.GetEnvironmentVariable "PROCESSOR_ARCHITEW6432"
-    let globalArch = Environment.GetEnvironmentVariable "PROCESSOR_ARCHITECTURE"
-    match wow64, globalArch with
-    | "AMD64", "AMD64" 
-    | null, "AMD64" 
-    | "x86", "AMD64" -> Environment.GetEnvironmentVariable "ProgramFiles(x86)"
-    | _ -> Environment.GetEnvironmentVariable "ProgramFiles"
-    |> fun detected -> if detected = null then @"C:\Program Files (x86)\" else detected
-
-/// The system root environment variable. Typically "C:\Windows"
-let SystemRoot = Environment.GetEnvironmentVariable "SystemRoot"
-
-/// Determines if the current system is an Unix system
-let private isUnix = Environment.OSVersion.Platform = PlatformID.Unix
-
-/// Determines if the current system is a MacOs system
-let isMacOS =
-    (Environment.OSVersion.Platform = PlatformID.MacOSX) ||
-        // osascript is the AppleScript interpreter on OS X
-        File.Exists "/usr/bin/osascript"
-
-/// Determines if the current system is a Linux system
-let isLinux = int System.Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128)
-
-/// Determines if the current system is a mono system
-/// Todo: Detect mono on windows
-let isMono = isLinux || isUnix || isMacOS
-
-let monoPath =
-    if isMacOS && File.Exists "/Library/Frameworks/Mono.framework/Commands/mono" then
-        "/Library/Frameworks/Mono.framework/Commands/mono"
-    else
-        "mono"
+open Paket
 
 /// Arguments on the Mono executable
 let mutable monoArguments = ""
@@ -159,7 +119,7 @@ let findPath settingsName fallbackValue tool =
 
 /// Tries to locate the git.exe via the eviroment variable "GIT".
 let gitPath = 
-    if isUnix then
+    if Utils.isUnix then
         "git"
     else
         let ev = Environment.GetEnvironmentVariable "GIT"

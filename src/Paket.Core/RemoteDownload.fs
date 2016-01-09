@@ -154,7 +154,8 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
 /// Retrieves RemoteFiles
 let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     match remoteFile.Origin, remoteFile.Name with
-    | Origin.GitLink cloneUrl, _ -> 
+    | Origin.GitLink cloneUrl, _ ->
+        if not <| Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction then () else
         let cloneUrl = cloneUrl.TrimEnd('/')
         
         let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,remoteFile.Project)
