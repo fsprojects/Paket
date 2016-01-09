@@ -1,6 +1,9 @@
 ﻿module Paket.Git.Handling
 open Paket.Utils
 open System
+open System.IO
+open Paket.Logging
+open Paket
 
 let extractUrlParts (url:string) =
     let url,commit,options = 
@@ -67,3 +70,38 @@ let getCurrentHash repoFolder =
         Some (CommandHelper.runSimpleGitCommand repoFolder ("rev-parse --verify HEAD"))
     with
     | _ -> None
+
+
+let fetchCache repoCacheFolder tempBranchName cloneUrl commit =
+    try
+        if Directory.Exists repoCacheFolder then
+            CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + cloneUrl) |> ignore
+            verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder 
+            CommandHelper.runSimpleGitCommand repoCacheFolder "fetch -f" |> ignore
+        else
+            if not <| Directory.Exists Constants.GitRepoCacheFolder then
+                Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
+            tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
+            CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone " + cloneUrl) |> ignore
+        CommandHelper.runSimpleGitCommand repoCacheFolder ("branch -f " + tempBranchName + " " + commit) |> ignore
+    with
+    | exn -> failwithf "Updating the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message
+
+let checkoutToPaketFolder repoFolder cacheCloneUrl commit =
+    try
+        // checkout to local folder
+        if Directory.Exists repoFolder then
+            CommandHelper.runSimpleGitCommand repoFolder ("remote set-url origin " + cacheCloneUrl) |> ignore
+            verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder 
+            CommandHelper.runSimpleGitCommand repoFolder "fetch -f" |> ignore
+        else
+            let destination = DirectoryInfo(repoFolder).Parent.FullName
+            if not <| Directory.Exists destination then
+                Directory.CreateDirectory destination |> ignore
+            verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
+            CommandHelper.runSimpleGitCommand destination ("clone " + cacheCloneUrl) |> ignore
+
+        tracefn "Setting %s to %s" repoFolder commit
+        CommandHelper.runSimpleGitCommand repoFolder ("reset --hard " + commit) |> ignore
+    with
+    | exn -> failwithf "Checkout to %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
