@@ -163,38 +163,8 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
         let branchName = sprintf "b%d" <| (repoFolder |> hash |> abs)
 
-        try
-            // clone/fetch to cache
-            if Directory.Exists repoCacheFolder then
-                Git.CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + cloneUrl) |> ignore
-                verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder 
-                Git.CommandHelper.runSimpleGitCommand repoCacheFolder "fetch -f" |> ignore
-            else
-                if not <| Directory.Exists Constants.GitRepoCacheFolder then
-                    Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
-                tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
-                Git.CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone " + cloneUrl) |> ignore
-            Git.CommandHelper.runSimpleGitCommand repoCacheFolder ("branch -f " + branchName + " " + remoteFile.Commit) |> ignore
-        with
-        | exn -> failwithf "Checkout to cache at %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
-
-        try
-            // checkout to local folder
-            if Directory.Exists repoFolder then
-                Git.CommandHelper.runSimpleGitCommand repoFolder ("remote set-url origin " + cacheCloneUrl) |> ignore
-                verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder 
-                Git.CommandHelper.runSimpleGitCommand repoFolder "fetch -f" |> ignore
-            else
-                if not <| Directory.Exists destination then
-                    Directory.CreateDirectory destination |> ignore
-                verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
-                Git.CommandHelper.runSimpleGitCommand destination ("clone " + cacheCloneUrl) |> ignore
-
-            tracefn "Setting %s to %s" repoFolder remoteFile.Commit
-            Git.CommandHelper.runSimpleGitCommand repoFolder ("reset --hard " + remoteFile.Commit) |> ignore
-        with
-        | exn -> failwithf "Checkout to %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
-
+        Paket.Git.Handling.fetchCache repoCacheFolder branchName cloneUrl remoteFile.Commit
+        Paket.Git.Handling.checkoutToPaketFolder repoFolder cacheCloneUrl remoteFile.Commit
 
         match remoteFile.Command with
         | None -> ()

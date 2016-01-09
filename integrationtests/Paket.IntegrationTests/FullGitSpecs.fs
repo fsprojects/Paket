@@ -65,7 +65,7 @@ let ``#1353 should build NuGet source from git repo``() =
         let lockFile = update "i001353-mono-build-as-source"
         let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
         let repoDir = Path.Combine(paketFilesRoot,"github.com","nupkgtest")
-        Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "e28fbcaecdafd50e9503f589cb25435bc2580e24")
+        Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "8a3d0e300103d5fb5eb416120831a973333691a2")
 
         lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
         |> shouldEqual (SemVer.Parse "1.1.3")
@@ -73,7 +73,7 @@ let ``#1353 should build NuGet source from git repo``() =
         let lockFile = update "i001353-git-build-as-source"
         let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
         let repoDir = Path.Combine(paketFilesRoot,"github.com","nupkgtest")
-        Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "e28fbcaecdafd50e9503f589cb25435bc2580e24")
+        Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "8a3d0e300103d5fb5eb416120831a973333691a2")
 
         lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
         |> shouldEqual (SemVer.Parse "1.1.3")
