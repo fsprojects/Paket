@@ -49,8 +49,9 @@ Or if you use ``.`` for the directory, the file will be placed under the root of
 
 You can also reference a complete [github.com](http://www.github.com) repository by specifying the repository id in the [`paket.dependencies` file](dependencies-file.html):
 
-    github hakimel/reveal.js       // master branch
-	github hakimel/reveal.js:2.6.2 // version 2.6.2
+    github hakimel/reveal.js                                          // master branch
+    github hakimel/reveal.js:2.6.2                                    // version 2.6.2
+    github hakimel/reveal.js:822a9c937c902807e376713760e1f07845951d5a // specific commit 822a9c937c902807e376713760e1f07845951d5a
 
 This will download the given repository and put it into your `paket-files` folder. In this case we download the source of [reveal.js](http://lab.hakim.se/reveal-js/#/).
 
