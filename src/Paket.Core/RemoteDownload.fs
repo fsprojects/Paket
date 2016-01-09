@@ -169,12 +169,12 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
                 Git.CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + cloneUrl) |> ignore
                 verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder 
                 Git.CommandHelper.runSimpleGitCommand repoCacheFolder "fetch -f" |> ignore
-                Git.CommandHelper.runSimpleGitCommand repoCacheFolder ("branch -f " + branchName + " " + remoteFile.Commit) |> ignore
             else
                 if not <| Directory.Exists Constants.GitRepoCacheFolder then
                     Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
                 tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
                 Git.CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone " + cloneUrl) |> ignore
+            Git.CommandHelper.runSimpleGitCommand repoCacheFolder ("branch -f " + branchName + " " + remoteFile.Commit) |> ignore
         with
         | exn -> failwithf "Checkout to cache at %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
 
