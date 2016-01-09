@@ -43,7 +43,7 @@ If you have NuGet packages inside a git repository you can easily use the reposi
 The generated [`paket.lock` file](lock-file.html) will look like this:
 
     NUGET
-      remote: paket-files/github.com/nupkgtest/source
+      remote: paket-files/github.com/forki/nupkgtest/source
       specs:
         Argu (1.1.3)
     GIT
