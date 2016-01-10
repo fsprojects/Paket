@@ -392,11 +392,12 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     Seq.filter (fun (v,_,_) -> currentRequirement.VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
 
                 if Seq.isEmpty !compatibleVersions then
+                    let withPrereleases = Seq.filter (fun (v,_,_) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
                     if relax then
-                        compatibleVersions := 
-                            Seq.filter (fun (v,_,_) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
+                        compatibleVersions := withPrereleases
                     else
-                        tryRelaxed := true
+                        if Seq.isEmpty withPrereleases |> not then
+                            tryRelaxed := true
 
         if Seq.isEmpty !compatibleVersions then
             // boost the conflicting package, in order to solve conflicts faster
