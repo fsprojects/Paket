@@ -216,6 +216,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
     let exploredPackages = Dictionary<PackageName*SemVerInfo,ResolvedPackage>()
     let conflictHistory = Dictionary<PackageName,int>()
     let knownConflicts = HashSet<_>()
+    let tryRelaxed = ref false
 
     let getExploredPackage(dependency:PackageRequirement,(version,preferredSource,packageSources)) =
         let key = dependency.Name,version
@@ -268,7 +269,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             exploredPackages.Add(key,explored)
             explored
 
-    let rec step (filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource option * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
+    let rec step (relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource option * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
         if Set.isEmpty openRequirements then Resolution.Ok(cleanupNames currentResolution) else
         verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
         
@@ -391,8 +392,11 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     Seq.filter (fun (v,_,_) -> currentRequirement.VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
 
                 if Seq.isEmpty !compatibleVersions then
-                    compatibleVersions := 
-                        Seq.filter (fun (v,_,_) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
+                    if relax then
+                        compatibleVersions := 
+                            Seq.filter (fun (v,_,_) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
+                    else
+                        tryRelaxed := true
 
         if Seq.isEmpty !compatibleVersions then
             // boost the conflicting package, in order to solve conflicts faster
@@ -454,7 +458,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
                     let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
 
-                    state := step (newFilteredVersions,newResolution,Set.add currentRequirement closedRequirements,newOpen)
+                    state := step (relax,newFilteredVersions,newResolution,Set.add currentRequirement closedRequirements,newOpen)
                     match !state with
                     | Resolution.Conflict (_,_,stillOpen,_,_)
                         when stillOpen |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not ->
@@ -467,6 +471,14 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
 
         match tryToImprove false with
         | true,Resolution.Conflict(_) -> tryToImprove true |> snd
-        | _,x-> x
+        | _,x -> x
 
-    step (Map.empty, Map.empty, Set.empty, rootDependencies)
+    match step (false, Map.empty, Map.empty, Set.empty, rootDependencies) with
+    | Resolution.Conflict(_) as conflict ->
+        if !tryRelaxed then
+            conflictHistory.Clear()
+            knownConflicts.Clear() |> ignore
+            step (true, Map.empty, Map.empty, Set.empty, rootDependencies)
+        else
+            conflict
+    | x -> x
