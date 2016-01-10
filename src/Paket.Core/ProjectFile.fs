@@ -45,7 +45,7 @@ type ProjectOutputType =
 | Exe 
 | Library
 
-type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX
+type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX | Nemerle
 
 module LanguageEvaluation =
     let private extractProjectTypeGuids (projectDocument:XmlDocument) =
@@ -86,15 +86,22 @@ module LanguageEvaluation =
             "{F2A71F9B-5D33-465A-A702-920D77279786}" // F#
         ] |> List.map Guid.Parse |> Set.ofList
 
+    let private nemerleGuids =
+        [
+            "{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}" // Nemerle
+        ] |> List.map Guid.Parse |> Set.ofList
+
     let private getGuidLanguage (guid:Guid) = 
         let isCsharp = csharpGuids.Contains(guid)
         let isVb = vbGuids.Contains(guid)
         let isFsharp = fsharpGuids.Contains(guid)
+        let isNemerle = nemerleGuids.Contains(guid)
 
-        match (isCsharp, isVb, isFsharp) with
-        | (true, false, false) -> Some CSharp
-        | (false, true, false) -> Some VisualBasic
-        | (false, false, true) -> Some FSharp
+        match (isCsharp, isVb, isFsharp, isNemerle) with
+        | (true, false, false, false) -> Some CSharp
+        | (false, true, false, false) -> Some VisualBasic
+        | (false, false, true, false) -> Some FSharp
+        | (false, false, false, true) -> Some Nemerle
         | _ -> None
 
     let private getLanguageFromExtension = function
@@ -102,6 +109,7 @@ module LanguageEvaluation =
         | ".vbproj" -> Some VisualBasic
         | ".fsproj" -> Some FSharp
         | ".wixproj" -> Some WiX
+        | ".nproj"  -> Some Nemerle
         | _ -> None
 
     let private getLanguageFromFileName (fileName : string) =
@@ -381,7 +389,7 @@ type ProjectFile =
             search <| DirectoryInfo folder
 
         FindAllFiles(folder, "*.*proj")
-        |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj")
+        |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj")
         |> Array.choose (fun fi -> ProjectFile.TryLoad fi.FullName)
 
     static member FindCorrespondingFile (projectFile : FileInfo, correspondingFile:string) =

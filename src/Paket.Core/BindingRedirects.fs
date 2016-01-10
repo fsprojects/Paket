@@ -83,7 +83,7 @@ let internal indentAssemblyBindings config =
             parent.Remove()
 
 let private configFiles = [ "app"; "web" ] |> Set.ofList
-let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj" ] |> Set.ofList
+let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj"; ".nproj" ] |> Set.ofList
 let private toLower (s:string) = s.ToLower()
 let private isAppOrWebConfig = configFiles.Contains << (Path.GetFileNameWithoutExtension >> toLower)
 let private isDotNetProject = projectFiles.Contains << (Path.GetExtension >> toLower)

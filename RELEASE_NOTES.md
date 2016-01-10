@@ -1,7 +1,6 @@
-#### 2.41.2 - 10.01.2016
+#### 2.42.0 - 10.01.2016
+* Nemerle projects support
 * BUGFIX: Incorrect package dependencies graph resolution with prereleases - https://github.com/fsprojects/Paket/pull/1359
-
-#### 2.41.1 - 07.01.2016
 * BUGFIX: NuGetV2: avoid revealing password also if more than one source is defined - https://github.com/fsprojects/Paket/pull/1357
 
 #### 2.41.0 - 07.01.2016
