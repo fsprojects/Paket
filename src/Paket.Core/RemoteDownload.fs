@@ -165,7 +165,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let branchName = sprintf "b%d" <| (repoFolder |> hash |> abs)
 
         Paket.Git.Handling.fetchCache repoCacheFolder branchName cloneUrl remoteFile.Commit
-        Paket.Git.Handling.checkoutToPaketFolder repoFolder cacheCloneUrl remoteFile.Commit
+        Paket.Git.Handling.checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl remoteFile.Commit
 
         match remoteFile.Command with
         | None -> ()

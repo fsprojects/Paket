@@ -82,19 +82,20 @@ let fetchCache repoCacheFolder tempBranchName cloneUrl commit =
     with
     | exn -> failwithf "Updating the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message
 
-let checkoutToPaketFolder repoFolder cacheCloneUrl commit =
+let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
     try
         // checkout to local folder
         if Directory.Exists repoFolder then
             CommandHelper.runSimpleGitCommand repoFolder ("remote set-url origin " + cacheCloneUrl) |> ignore
             verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder 
-            CommandHelper.runSimpleGitCommand repoFolder "fetch -f" |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder "fetch origin -f" |> ignore
         else
             let destination = DirectoryInfo(repoFolder).Parent.FullName
             if not <| Directory.Exists destination then
                 Directory.CreateDirectory destination |> ignore
             verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
             CommandHelper.runSimpleGitCommand destination ("clone " + cacheCloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder ("remote add upstream " + cloneUrl) |> ignore
 
         tracefn "Setting %s to %s" repoFolder commit
         CommandHelper.runSimpleGitCommand repoFolder ("reset --hard " + commit) |> ignore
