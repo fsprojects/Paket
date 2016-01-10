@@ -3,6 +3,9 @@
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 
+#### 2.42.1 - 10.01.2016
+* PERFORMANCE: Try relaxed resolver only when there is a chance
+
 #### 2.42.0 - 10.01.2016
 * Nemerle projects support
 * BUGFIX: Incorrect package dependencies graph resolution with prereleases - https://github.com/fsprojects/Paket/pull/1359
