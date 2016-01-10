@@ -23,6 +23,7 @@ If you want to restrict Paket to a special branch, tag or a concrete commit then
     git http://github.com/forki/AskMe.git 97ee5ae7074bdb414a3e5dd7d2f2d752547d0542
     git http://github.com/forki/AskMe.git 97ee5ae7074b // short hash
     git https://github.com/forki/FsUnit.git 1.0        // tag
+    git file:///C:\Users\Steffen\AskMe master          // local git repo
 
 ## Running a build in git repositories
 
