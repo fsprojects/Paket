@@ -1,9 +1,11 @@
-#### 3.0.0-alpha017 - 10.01.2016
+#### 3.0.0-alpha018 - 10.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 
-#### 2.41.1 - 08.01.2016
+#### 2.42.0 - 10.01.2016
+* Nemerle projects support
+* BUGFIX: Incorrect package dependencies graph resolution with prereleases - https://github.com/fsprojects/Paket/pull/1359
 * BUGFIX: NuGetV2: avoid revealing password also if more than one source is defined - https://github.com/fsprojects/Paket/pull/1357
 
 #### 2.41.0 - 07.01.2016

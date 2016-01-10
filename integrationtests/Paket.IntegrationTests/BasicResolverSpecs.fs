@@ -124,3 +124,10 @@ let ``#1254 should install unlisted transitive dependencies``() =
     let lockFile = update "i001254-unlisted"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "WebActivator"].Version
     |> shouldEqual (SemVer.Parse "1.5.3")
+
+[<Test>]
+let ``#1359 should resolve sound prerelease``() =
+    let lockFile = update "i001359-wrong-prerelease"
+    let v = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Aether"].Version
+    v |> shouldBeGreaterThan (SemVer.Parse "7.0.1")
+    v |> shouldBeSmallerThan (SemVer.Parse "8")

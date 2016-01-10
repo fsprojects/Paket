@@ -16,6 +16,7 @@ let ``Language is detected from filename``() =
     evaluate ".csproj" |> shouldEqual ProjectLanguage.CSharp
     evaluate ".fsproj" |> shouldEqual ProjectLanguage.FSharp
     evaluate ".vbproj" |> shouldEqual ProjectLanguage.VisualBasic
+    evaluate ".nproj" |> shouldEqual ProjectLanguage.Nemerle
 
 let createProjectXml (projectTypeGuids : string option) : XmlDocument =
     let ns = XNamespace.Get "http://schemas.microsoft.com/developer/msbuild/2003"
@@ -46,6 +47,7 @@ let pclGuid = "{786C830F-07A1-408B-BD7F-6EE04809D6DB}"
 let cSharpGuid = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}"
 let visualBasicGuid = "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}"
 let fsharpGuid = "{F2A71F9B-5D33-465A-A702-920D77279786}"
+let nemerleGuid = "{EDCC3B85-0BAD-11DB-BC1A-00112FDE8B61}"
 
 [<Test>]
 let ``Language is detected from ProjectTypeGuids``() = 
@@ -59,6 +61,9 @@ let ``Language is detected from ProjectTypeGuids``() =
 
     Some(visualBasicGuid) |> evaluate  |> shouldEqual ProjectLanguage.VisualBasic
     Some(sprintf "%s;%s" pclGuid visualBasicGuid) |> evaluate  |> shouldEqual ProjectLanguage.VisualBasic
+
+    Some(nemerleGuid) |> evaluate  |> shouldEqual ProjectLanguage.Nemerle
+    Some(sprintf "%s;%s" pclGuid nemerleGuid) |> evaluate  |> shouldEqual ProjectLanguage.Nemerle
 
 [<Test>]
 let ``Confusion in ProjectTypeGuids is unknown``() = 
