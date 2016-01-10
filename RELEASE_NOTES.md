@@ -1,3 +1,6 @@
+#### 2.41.2 - unreleased
+* Nemerle projects support
+
 #### 2.41.1 - 07.01.2016
 * BUGFIX: NuGetV2: avoid revealing password also if more than one source is defined - https://github.com/fsprojects/Paket/pull/1357
 
