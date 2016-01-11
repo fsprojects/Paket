@@ -40,3 +40,10 @@ let ``#1348 npm type folder names`` () =
     extractedFolder.Name |> shouldEqual desiredFolderName
 
     CleanDir rootPath
+
+[<Test>]
+let ``#1375 pack specific dependency``() = 
+    let outPath = Path.Combine(scenarioTempPath "i001375-pack-specific","out")
+    paket ("pack -v output \"" + outPath + "\"") "i001375-pack-specific" |> ignore
+
+    File.Delete(Path.Combine(scenarioTempPath "i001375-pack-specific","PaketBug","paket.template"))
