@@ -1,3 +1,6 @@
+#### 2.42.2 - 11.01.2016
+* BUGFIX: Restore groups sequentially - https://github.com/fsprojects/Paket/issues/1371
+
 #### 2.42.1 - 10.01.2016
 * PERFORMANCE: Try relaxed resolver only when there is a chance
 
