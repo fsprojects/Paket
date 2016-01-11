@@ -152,7 +152,10 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
         let sources = dependenciesFile.Groups.[kv'.Key].Sources
         kv'.Value.Resolution
         |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,force,kv.Value) |> Async.RunSynchronously))
+        |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,force,kv.Value))
+        |> Seq.toArray
+        |> Async.Parallel
+        |> Async.RunSynchronously)
     |> Seq.concat
     |> Seq.toArray
 
