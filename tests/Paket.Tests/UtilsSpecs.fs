@@ -238,33 +238,3 @@ let ``should simplify path``() =
     System.IO.Path.IsPathRooted p3 |> shouldEqual false
     System.IO.Path.GetFullPath p1 |> shouldEqual (System.IO.Path.GetFullPath p2)
     System.IO.Path.Combine(normalizePath p0,normalizePath p3) |> Path.GetFullPath |> shouldEqual (System.IO.Path.GetFullPath p2)
-
-[<Test>]
-let ``should decide whether Linux matches OS filter`` () =
-    let shouldMatch = [ " Linux"; "Unix "; "UN*X" ]
-    let shouldNotMatch = [ "mac"; "win"; "osx" ]
-
-    shouldMatch |> List.forall (Some >> (isMatchingOperatingSystem PlatformID.Unix)) |> shouldEqual true
-    shouldNotMatch |> List.forall (Some >> (isMatchingOperatingSystem PlatformID.Unix)) |> shouldEqual false
-
-[<Test>]
-let ``should decide whether Windows matches OS filter`` () =
-    let shouldMatch = [ " Windows"; " win "; "W10"; "wiN7" ]
-    let shouldNotMatch = [ "linux"; "mac"; "unix"; "osx" ]
-
-    shouldMatch |> List.forall (Some >> (isMatchingOperatingSystem PlatformID.Win32NT)) |> shouldEqual true
-    shouldNotMatch |> List.forall (Some >> (isMatchingOperatingSystem PlatformID.Win32NT)) |> shouldEqual false
-
-[<Test>]
-let ``should decide whether Mac matches OS filter`` () =
-    let shouldMatch = [ " Macintosh"; "MacOSX "; "osX " ]
-    let shouldNotMatch = [ "win"; "linux"; "unix" ]
-    
-    shouldMatch |> List.forall (Some >> (isMatchingOperatingSystem PlatformID.MacOSX)) |> shouldEqual true
-    shouldNotMatch |> List.forall (Some >> (isMatchingOperatingSystem PlatformID.MacOSX)) |> shouldEqual false
-
-[<Test>]
-let ``any OS should match missing filter`` () =
-    isMatchingOperatingSystem PlatformID.Unix None |> shouldEqual true
-    isMatchingOperatingSystem PlatformID.Win32NT None |> shouldEqual true
-    isMatchingOperatingSystem PlatformID.MacOSX None |> shouldEqual true

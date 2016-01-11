@@ -146,7 +146,7 @@ let ProgramFilesX86 =
 let SystemRoot = Environment.GetEnvironmentVariable "SystemRoot"
 
 /// Determines if the current system is an Unix system
-let isUnix = Environment.OSVersion.Platform = PlatformID.Unix
+let isUnix = int Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128)
 
 /// Determines if the current system is a MacOs system
 let isMacOS =
@@ -155,11 +155,17 @@ let isMacOS =
         File.Exists "/usr/bin/osascript"
 
 /// Determines if the current system is a Linux system
-let isLinux = int System.Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128)
+let isLinux = isUnix && not isMacOS
+
+/// Determines if the current system is a Windows system
+let isWindows =
+    match Environment.OSVersion.Platform with
+    | PlatformID.Win32NT | PlatformID.Win32S | PlatformID.Win32Windows | PlatformID.WinCE -> true
+    | _ -> false
 
 /// Determines if the current system is a mono system
 /// Todo: Detect mono on windows
-let isMono = isLinux || isUnix || isMacOS
+let isMono = isUnix
 
 let monoPath =
     if isMacOS && File.Exists "/Library/Frameworks/Mono.framework/Commands/mono" then
@@ -167,27 +173,24 @@ let monoPath =
     else
         "mono"
 
-let isMatchingOperatingSystem operatingSystem (operatingSystemFilter : string option) =
+let isMatchingOperatingSystem (operatingSystemFilter : string option) =
     let aliasesForOs =
-        match operatingSystem with
-        | PlatformID.Unix -> Some [ "linux"; "unix"; "un*x" ]
-        | PlatformID.MacOSX -> Some [ "osx"; "mac" ]
-        | PlatformID.Win32NT -> Some [ "win"; "w7"; "w8"; "w10" ]
-        | _ -> None
+        match isMacOS, isUnix, isWindows with
+        | true, true, false -> [ "osx"; "mac" ]
+        | false, true, false -> [ "linux"; "unix"; "un*x" ]
+        | false, false, true -> [ "win"; "w7"; "w8"; "w10" ]
+        | _ -> []
 
     match operatingSystemFilter with
     | None -> true
-    | Some filter ->
-        match aliasesForOs with
-        | Some aliases -> aliases |> List.exists (fun alias -> filter.ToLower().Contains(alias))
-        | None -> false
+    | Some filter -> aliasesForOs |> List.exists (fun alias -> filter.ToLower().Contains(alias))
 
 let isMatchingPlatform (operatingSystemFilter : string option) =
     match operatingSystemFilter with
     | None -> true
     | Some filter when filter = "mono" -> isMono
     | Some filter when filter = "windows" -> not isMono
-    | _ -> isMatchingOperatingSystem Environment.OSVersion.Platform operatingSystemFilter
+    | _ -> isMatchingOperatingSystem operatingSystemFilter
 
 /// [omit]
 let inline normalizeXml(doc:XmlDocument) =
