@@ -1,12 +1,11 @@
 # Git dependencies
 
-[This feature is only available in Paket 3.0 prereleases]
-
 Paket allows you to automatically manage the linking of files from any git repo.
 
+<blockquote>This feature is only available in Paket 3.0 prereleases.</blockquote>
 
-This feature assumes that you have [git](https://git-scm.com/) installed.
-If you don't have git installed then Paket still allows you to [reference files from github](github-dependencies.html).
+<blockquote>This feature assumes that you have <a href="https://git-scm.com/">git</a> installed.
+If you don't have git installed then Paket still allows you to <a href="github-dependencies.html">reference files from github</a>.</blockquote>
 
 ## Referencing a Git repository
 
@@ -15,7 +14,7 @@ You can also reference a complete git repository by specifying the clone url in 
     git https://github.com/fsprojects/Paket.git
     git git@github.com:fsharp/FAKE.git
 
-This will download the latest version of the default branch of given repositories and put it into your `paket-files` folder.
+This will clone the repository, checkout the latest version of the default branch and put it into your `paket-files` folder.
 
 If you want to restrict Paket to a special branch, tag or a concrete commit then this is also possible:
 
