@@ -3,7 +3,7 @@
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 
-#### 2.42.2 - 11.01.2016
+#### 2.42.3 - 11.01.2016
 * BUGFIX: Restore groups sequentially - https://github.com/fsprojects/Paket/issues/1371
 
 #### 2.42.1 - 10.01.2016
