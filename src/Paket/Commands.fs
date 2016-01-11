@@ -309,7 +309,6 @@ type PackArgs =
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
     | [<CustomCommandLine("lock-dependencies")>] LockDependencies
     | [<CustomCommandLine("symbols")>] Symbols
-    | [<CustomCommandLine("include-referenced-projects")>] IncludeReferencedProjects
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -324,7 +323,6 @@ with
             | ReleaseNotes(_) -> "Specify relase notes for the package."
             | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
             | Symbols -> "Build symbol/source packages in addition to library/content packages."
-            | IncludeReferencedProjects -> "Include symbol/source from referenced projects."
 
 type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of string
