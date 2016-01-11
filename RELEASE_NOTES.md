@@ -1,6 +1,7 @@
-#### 2.43.0 - 11.01.2016
-* Paket pack includes symbols and src from referenced projects - https://github.com/fsprojects/Paket/pull/1373
+#### 2.42.3 - 11.01.2016
 * BUGFIX: Restore groups sequentially - https://github.com/fsprojects/Paket/issues/1371
+
+#### 2.42.1 - 10.01.2016
 * PERFORMANCE: Try relaxed resolver only when there is a chance
 
 #### 2.42.0 - 10.01.2016
