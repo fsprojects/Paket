@@ -1078,18 +1078,27 @@ type ProjectFile =
 
         sprintf "%s.%s" assemblyName (this.OutputType |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe")
 
-    member this.GetCompileItems () =
-        let getCompileItem (compileNode : XmlNode) =
+    member this.GetCompileItems (includeReferencedProjects:bool) =
+        let getCompileItem (projfile: ProjectFile, compileNode: XmlNode) =
             let includePath = compileNode |> getAttribute "Include" |> fun a -> a.Value
+            let includePath = Path.Combine(Path.GetFileName(Path.GetDirectoryName(projfile.FileName)), includePath)
             compileNode
             |> getDescendants "Link"
             |> function
                | [] -> { Include = includePath; Link = None }
                | [link] | link::_ -> { Include = includePath; Link = Some link.InnerText }
 
-        this.Document
-        |> getDescendants "Compile"
-        |> Seq.map getCompileItem
+
+        let referencedProjects = if includeReferencedProjects then
+                                    let getProjects = this.GetInterProjectDependencies() |> Seq.map (fun proj -> ProjectFile.TryLoad(proj.Path).Value)
+                                    seq{yield this; yield! getProjects}
+                                 else seq {yield this}
+
+        referencedProjects |> Seq.collect(fun proj -> 
+            proj.Document
+            |> getDescendants "Compile"
+            |> Seq.map (fun i -> getCompileItem(proj, i))
+        )
 
     static member LoadFromStream(fullName:string, stream:Stream) =
         let doc = new XmlDocument()

@@ -94,12 +94,12 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Paket\Paket.fsproj">
+    <ProjectReference Include="..\..\..\..\src\Paket\Paket.fsproj">
       <Name>Paket</Name>
       <Project>{09b32f18-0c20-4489-8c83-5106d5c04c93}</Project>
       <Private>True</Private>
     </ProjectReference>
-    <ProjectReference Include="..\Paket.Core\Paket.Core.fsproj">
+    <ProjectReference Include="..\..\..\..\src\Paket.Core\Paket.Core.fsproj">
       <Name>Paket.Core</Name>
       <Project>{7bab0ae2-089f-4761-b138-a717aa2f86c5}</Project>
       <Private>True</Private>
