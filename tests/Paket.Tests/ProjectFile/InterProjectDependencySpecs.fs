@@ -29,7 +29,7 @@ let ``should detect path for dependencies in Project2 proj file``() =
         |> List.map (fun p -> p.Path)
 
     paths.[0].EndsWith(normalizePath "src/Paket/Paket.fsproj") |> shouldEqual true
-    paths.[1].EndsWith(normalizePath "Paket.Core/Paket.Core.fsproj") |> shouldEqual true
+    paths.[1].EndsWith(normalizePath "src/Paket.Core/Paket.Core.fsproj") |> shouldEqual true
 
 [<Test>]
 let ``should detect relative path for dependencies in Project2 proj file``() =
@@ -37,8 +37,8 @@ let ``should detect relative path for dependencies in Project2 proj file``() =
         ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetInterProjectDependencies()
         |> List.map (fun p -> p.RelativePath)
 
-    paths.[0] |> shouldEqual "..\\..\\src\\Paket\\Paket.fsproj"
-    paths.[1] |> shouldEqual "..\\Paket.Core\\Paket.Core.fsproj"
+    paths.[0] |> shouldEqual "..\\..\\..\\..\\src\\Paket\\Paket.fsproj"
+    paths.[1] |> shouldEqual "..\\..\\..\\..\\src\\Paket.Core\\Paket.Core.fsproj"
 
 [<Test>]
 let ``should detect Guids for dependencies in Project2 proj file``() =
@@ -47,3 +47,19 @@ let ``should detect Guids for dependencies in Project2 proj file``() =
     p.GetInterProjectDependencies()
     |> List.map (fun p -> p.GUID.ToString())
     |> shouldEqual ["09b32f18-0c20-4489-8c83-5106d5c04c93"; "7bab0ae2-089f-4761-b138-a717aa2f86c5"]
+
+[<Test>]
+let ``should not add dependencies in referenced projects for GetCompileItems false``() =
+    let p = ProjectFile.TryLoad("../../ProjectFile/TestData/Project2.fsprojtest").Value
+    p.GetCompileItems(false)
+    |> Seq.filter (fun ci -> ci.Include.Contains("Program.fs"))
+    |> Seq.length
+    |> shouldEqual 0
+
+[<Test>]
+let ``should add dependencies in referenced projects for GetCompileItems true``() =
+    let p = ProjectFile.TryLoad("../../ProjectFile/TestData/Project2.fsprojtest").Value
+    p.GetCompileItems(true)
+    |> Seq.filter (fun ci -> ci.Include.Contains("Program.fs"))
+    |> Seq.length
+    |> shouldBeGreaterThan 0
