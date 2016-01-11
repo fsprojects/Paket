@@ -99,10 +99,9 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
             | None -> failwithf "The group %O was not found in the paket.lock file." groupName
             | Some group -> [groupName,group] |> Map.ofList
 
-    groups
-    |> Seq.map (fun kv -> 
+    for kv in groups do
         let packages = 
-            if referencesFileNames = [] then 
+            if List.isEmpty referencesFileNames then 
                 kv.Value.Resolution
                 |> Seq.map (fun kv -> kv.Key) 
             else
@@ -110,8 +109,6 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
                 |> List.toSeq
                 |> computePackageHull kv.Key lockFile
 
-        restore(root, kv.Key, dependenciesFile.Groups.[kv.Value.Name].Sources, force, lockFile,Set.ofSeq packages))
-    |> Seq.toArray
-    |> Async.Parallel
-    |> Async.RunSynchronously
-    |> ignore
+        restore(root, kv.Key, dependenciesFile.Groups.[kv.Value.Name].Sources, force, lockFile,Set.ofSeq packages)
+        |> Async.RunSynchronously
+        |> ignore

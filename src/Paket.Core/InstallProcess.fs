@@ -142,26 +142,20 @@ let CreateInstallModel(root, groupName, sources, force, package) =
 
 /// Restores the given packages from the lock file.
 let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>) =
-    let sourceFileDownloads = 
-        [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, kv.Key, force, kv.Value.RemoteFiles) |]
-        |> Async.Parallel
+    [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, kv.Key, force, kv.Value.RemoteFiles) |]
+    |> Async.Parallel
+    |> Async.RunSynchronously
+    |> ignore
 
-    let packageDownloads =
-        lockFile.Groups
-        |> Seq.map (fun kv' -> 
-            let sources = dependenciesFile.Groups.[kv'.Key].Sources
-            kv'.Value.Resolution
-            |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-            |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,force,kv.Value)))
-        |> Seq.concat
-        |> Seq.toArray
-        |> Async.Parallel
+    lockFile.Groups
+    |> Seq.map (fun kv' -> 
+        let sources = dependenciesFile.Groups.[kv'.Key].Sources
+        kv'.Value.Resolution
+        |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
+        |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,force,kv.Value) |> Async.RunSynchronously))
+    |> Seq.concat
+    |> Seq.toArray
 
-    let _,extractedPackages =
-        Async.Parallel(sourceFileDownloads,packageDownloads)
-        |> Async.RunSynchronously
-
-    extractedPackages
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
 let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup createNewBindingFiles cleanBindingRedirects redirects root groupName findDependencies extractedPackages =
