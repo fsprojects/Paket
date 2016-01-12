@@ -895,7 +895,7 @@ type ProjectFile =
                     if normalizedPath.Contains("$(SolutionDir)") then 
                         match this.GetProperty("SolutionDir") with
                         | Some slnDir -> normalizedPath.Replace("$(SolutionDir)",slnDir) 
-                        | None -> normalizedPath
+                        | None -> normalizedPath.Replace("$(SolutionDir)", Environment.CurrentDirectory + Path.DirectorySeparatorChar.ToString())
                     else normalizedPath
 
             { Path =
