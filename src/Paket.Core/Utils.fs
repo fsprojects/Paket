@@ -386,6 +386,11 @@ module String =
 
     let quoted(text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
 
+    let inline trim (text:string) = text.Trim()
+    let inline trimChars chs (text:string) = text.Trim chs
+    let inline trimStart pre (text:string) = text.TrimStart pre
+    let inline split sep (text:string) = text.Split sep
+
 // MonadPlus - "or else"
 let inline (++) x y =
     match x with

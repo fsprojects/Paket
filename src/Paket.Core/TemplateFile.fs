@@ -204,8 +204,7 @@ module internal TemplateFile =
         | ProjectType
 
     let private parsePackageConfigType file map =
-        let t' = Map.tryFind "type" map
-        t' |> function
+        match Map.tryFind "type" map with
         | Some s ->
             match s with
             | "file" -> ok FileType
@@ -214,18 +213,16 @@ module internal TemplateFile =
         | None -> failP file (sprintf "First line of paket.template file had no 'type' declaration.")
 
     let private getId file map =
-        Map.tryFind "id" map |> function
-        | Some m -> ok <| m
+        match Map.tryFind "id" map with
         | None -> failP file "No id line in paket.template file."
+        | Some m -> ok m
 
     let private getAuthors file (map : Map<string, string>) =
-        Map.tryFind "authors" map |> function
-        | Some m ->
-            m.Split ','
-            |> Array.map (fun s -> s.Trim())
-            |> List.ofArray
-            |> ok
+        match Map.tryFind "authors" map with
         | None -> failP file "No authors line in paket.template file."
+        | Some m ->
+            m.Split ',' |> Array.map String.trim
+            |> List.ofArray|> ok
 
     let private getDescription file map =
         Map.tryFind "description" map |> function
@@ -233,118 +230,99 @@ module internal TemplateFile =
         | None -> failP file "No description line in paket.template file."
 
     let private getDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>) =
-        Map.tryFind "dependencies" info
-        |> Option.map (fun d -> d.Split '\n')
-        |> Option.map (Array.map (fun d ->
-                           let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
-                           let id' = PackageName reg.Groups.["id"].Value
-                           let versionRequirement =
-                                let versionString =
-                                  let s = reg.Groups.["version"].Value.Trim()
-                                  if s.Contains("CURRENTVERSION") then
-                                    match specificVersions.TryFind (string id') with
-                                    | Some v -> s.Replace("CURRENTVERSION", v.ToString())
-                                    | None ->
-                                        match currentVersion with
-                                        | Some v -> s.Replace("CURRENTVERSION",v.ToString())
-                                        | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
+        match Map.tryFind "dependencies" info with
+        | None -> []
+        | Some d ->  
+            d.Split '\n' |> Array.map (fun d ->
+                let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
+                let id' = PackageName reg.Groups.["id"].Value
+                let versionRequirement =
+                    let versionString =
+                        let s = reg.Groups.["version"].Value.Trim()
+                        if s.Contains "CURRENTVERSION" then
+                            match specificVersions.TryFind (string id') with
+                            | Some v -> s.Replace("CURRENTVERSION", string v)
+                            | None ->
+                                match currentVersion with
+                                | Some v -> s.Replace("CURRENTVERSION", string v)
+                                | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
 
-                                  elif s.Contains("LOCKEDVERSION") then
-                                    match lockFile.Groups.[Constants.MainDependencyGroup].Resolution |> Map.tryFind id' with
-                                    | Some p -> s.Replace("LOCKEDVERSION",p.Version.ToString())
-                                    | None -> failwithf "The template file %s contains the placeholder LOCKEDVERSION, but no version was given for package %O in the lockfile." fileName id'
-                                  else s
-                                DependenciesFileParser.parseVersionRequirement versionString
-                           id', versionRequirement))
-        |> Option.map Array.toList
-        |> fun x -> defaultArg x []
+                        elif s.Contains "LOCKEDVERSION" then
+                            match lockFile.Groups.[Constants.MainDependencyGroup].Resolution |> Map.tryFind id' with
+                            | Some p -> s.Replace("LOCKEDVERSION", string p.Version)
+                            | None -> failwithf "The template file %s contains the placeholder LOCKEDVERSION, but no version was given for package %O in the lockfile." fileName id'
+                        else s
+                    DependenciesFileParser.parseVersionRequirement versionString
+                id', versionRequirement)
+            |> Array.toList
+        
 
     let private getExcludedDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option) =
-        Map.tryFind "excludeddependencies" info
-        |> Option.map (fun d -> d.Split '\n')
-        |> Option.map (Array.map (fun d ->
-                           let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
-                           let id' = PackageName reg.Groups.["id"].Value
-                           id'))
-        |> Option.map Array.toList
-        |> fun x -> defaultArg x []
+        match Map.tryFind "excludeddependencies" info with
+        | None -> []
+        | Some d -> 
+            d.Split '\n'
+            |> Array.map (fun d ->
+                let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
+                PackageName reg.Groups.["id"].Value)
+            |> Array.toList
 
     let private fromReg = Regex("from (?<from>.*)", RegexOptions.Compiled)
     let private toReg = Regex("to (?<to>.*)", RegexOptions.Compiled)
     let private isExclude = Regex("\s*!\S", RegexOptions.Compiled)
     let private isComment = Regex(@"^\s*(#|(\/\/))", RegexOptions.Compiled)
     let private getFiles (map : Map<string, string>) =
-        Map.tryFind "files" map
-        |> Option.map (fun d -> d.Split '\n')
-        |> Option.map (Array.filter (isExclude.IsMatch >> not))
-        |> Option.map (Array.filter (isComment.IsMatch >> not))
-        |> Option.map
-               (Seq.map
-                    (fun (line:string) ->
-
-                        let splitted = line.Split([|"==>"|],StringSplitOptions.None) |> Array.map (fun s -> s.Trim())
-                        let target = if splitted.Length < 2 then "lib" else splitted.[1]
-
-                        splitted.[0],target))
-        |> Option.map List.ofSeq
-        |> fun x -> defaultArg x []
+        match Map.tryFind "files" map with
+        | None -> []
+        | Some d -> 
+            d.Split '\n'
+            |> Array.filter (fun s -> (isExclude.IsMatch>>not) s && (isComment.IsMatch>>not) s)
+            |> Seq.map (fun (line:string) ->
+                let splitted = line.Split([|"==>"|],StringSplitOptions.None) |> Array.map String.trim 
+                let target = if splitted.Length < 2 then "lib" else splitted.[1]
+                splitted.[0],target)
+            |> List.ofSeq
 
     let private getFileExcludes (map : Map<string, string>) =
-        Map.tryFind "files" map
-        |> Option.map (fun d -> d.Split '\n')
-        |> Option.map (Array.filter isExclude.IsMatch)
-        |> Option.map (Array.filter (isComment.IsMatch >> not))
-        |> Option.map
-               (Seq.map
-                    (fun (line:string) -> line.Trim().TrimStart('!')))
-        |> Option.map List.ofSeq
-        |> fun x -> defaultArg x []
+        match Map.tryFind "files" map with
+        | None -> []
+        | Some d -> 
+            d.Split '\n'
+            |> Array.filter isExclude.IsMatch
+            |> Array.filter (isComment.IsMatch >> not)
+            |> Seq.map  (String.trim >> String.trimStart [|'!'|])
+            |> List.ofSeq
 
     let private getReferences (map : Map<string, string>) =
-        Map.tryFind "references" map
-        |> Option.map (fun d -> d.Split '\n')
-        |> Option.map List.ofSeq
-        |> fun x -> defaultArg x []
-
+        match Map.tryFind "references" map with
+        | None -> []
+        | Some d -> d.Split '\n' |> List.ofArray
 
     let private getFrameworkReferences (map : Map<string, string>) =
-        Map.tryFind "frameworkassemblies" map
-        |> Option.map (fun d -> d.Split '\n')
-        |> Option.map List.ofSeq
-        |> fun x -> defaultArg x []
+        match Map.tryFind "frameworkassemblies" map with
+        | None -> []
+        | Some  d -> d.Split '\n' |> List.ofArray
 
     let private getOptionalInfo (fileName,lockFile:LockFile, map : Map<string, string>, currentVersion, specificVersions) =
         let get (n : string) = Map.tryFind (n.ToLowerInvariant()) map
 
-        let title = get "title"
-
         let owners =
-            Map.tryFind "owners" map
-            |> Option.map (fun o ->
-                o.Split(',')
-                |> Array.map (fun o -> o.Trim())
-                |> Array.toList)
-            |> fun x -> defaultArg x []
+            match Map.tryFind "owners" map with
+            | None -> []
+            | Some o ->
+                o.Split ',' |> Array.map String.trim |> Array.toList
 
-        let releaseNotes = get "releaseNotes"
-        let summary = get "summary"
-        let language = get "language"
-        let projectUrl = get "projectUrl"
-        let iconUrl = get "iconUrl"
-        let licenseUrl = get "licenseUrl"
-        let copyright = get "copyright"
         let requireLicenseAcceptance =
             match get "requireLicenseAcceptance" with
             | Some x when x.ToLower() = "true" -> true
             | _ -> false
 
         let tags =
-            get "tags"
-            |> Option.map (fun t ->
-                t.Split ' '
-                |> Array.map (fun t -> t.Trim().Trim(','))
-                |> Array.toList)
-            |> fun x -> defaultArg x []
+            match get "tags" with
+            | None -> []
+            | Some t ->
+                t.Split ' ' |> Array.map (String.trim >>String.trimChars [|','|])
+                |> Array.toList
 
         let developmentDependency =
             match get "developmentDependency" with
@@ -354,15 +332,15 @@ module internal TemplateFile =
         let dependencies = getDependencies(fileName,lockFile,map,currentVersion,specificVersions)
         let excludedDependencies = getExcludedDependencies(fileName,lockFile,map,currentVersion)
 
-        { Title = title
+        { Title = get "title"
           Owners = owners
-          ReleaseNotes = releaseNotes
-          Summary = summary
-          Language = language
-          ProjectUrl = projectUrl
-          IconUrl = iconUrl
-          LicenseUrl = licenseUrl
-          Copyright = copyright
+          ReleaseNotes = get "releaseNotes"
+          Summary = get "summary"
+          Language = get "language"
+          ProjectUrl = get "projectUrl"
+          IconUrl = get "iconUrl"
+          LicenseUrl = get "licenseUrl"
+          Copyright = get "copyright"
           RequireLicenseAcceptance = requireLicenseAcceptance
           Tags = tags
           DevelopmentDependency = developmentDependency
@@ -398,11 +376,12 @@ module internal TemplateFile =
                     { Id = id
                       Version = resolveCurrentVersion id
                       Authors =
-                          Map.tryFind "authors" map
-                          |> Option.map (fun s ->
-                                            s.Split(',')
-                                            |> Array.map (fun s -> s.Trim())
-                                            |> Array.toList)
+                          match Map.tryFind "authors" map with
+                          | None -> None
+                          | Some s ->
+                            String.split [|','|] s
+                            |> Array.map String.trim
+                            |> Array.toList |> Some
                       Description = Map.tryFind "description" map
                       Symbols = false }
 
