@@ -1,3 +1,6 @@
+#### 2.42.6 - 13.01.2016
+* BUGFIX: Fix path issue
+
 #### 2.42.5 - 13.01.2016
 * USABILITY: Fail if credentials are invalid - https://github.com/fsprojects/Paket/issues/1382
 
