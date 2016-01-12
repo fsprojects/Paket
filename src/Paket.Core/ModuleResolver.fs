@@ -25,13 +25,19 @@ let internal computeFilePath(owner,project,root,groupName:GroupName,name : strin
     let di = DirectoryInfo(dir)
     di.FullName
 
+[<RequireQualifiedAccess>]
+type VersionRestriction =
+| NoVersionRestriction
+| Concrete of string
+| VersionRequirement of VersionRequirement
+
 // Represents details on a dependent source.
 type UnresolvedSource =
     { Owner : string
       Project : string
       Name : string
       Origin : Origin
-      Commit : string option
+      Version : VersionRestriction
       Command: string option
       OperatingSystemRestriction: string option
       PackagePath: string option
@@ -40,7 +46,14 @@ type UnresolvedSource =
     override this.ToString() =
         let name = if this.Name = Constants.FullProjectSourceFileName then "" else " " + this.Name
         match this.Origin with
-        | HttpLink url -> sprintf "http %s%s %s" url (defaultArg this.Commit "") this.Name
+        | HttpLink url -> 
+            let v =
+                match this.Version with
+                | VersionRestriction.NoVersionRestriction -> ""
+                | VersionRestriction.Concrete x -> x
+                | VersionRestriction.VersionRequirement vr -> vr.ToString()
+
+            sprintf "http %s%s %s" url v this.Name
         | GitLink url -> url
         | _ ->
             let link = 
@@ -49,9 +62,10 @@ type UnresolvedSource =
                 | GistLink -> "gist"
                 | _ -> failwithf "invalid linktype %A" this.Origin
 
-            match this.Commit with
-            | Some commit -> sprintf "%s %s/%s:%s%s" link this.Owner this.Project commit name
-            | None -> sprintf "%s %s/%s%s" link this.Owner this.Project name
+            match this.Version with
+            | VersionRestriction.Concrete vr -> sprintf "%s %s/%s:%s%s" link this.Owner this.Project vr name
+            | VersionRestriction.VersionRequirement vr -> sprintf "%s %s/%s:%O%s" link this.Owner this.Project vr name
+            | VersionRestriction.NoVersionRestriction -> sprintf "%s %s/%s%s" link this.Owner this.Project name
 
     member this.GetCloneUrl() =
         match this.Origin with
@@ -80,11 +94,15 @@ type ResolvedSourceFile =
     
     override this.ToString() = sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
 
-let private getCommit (file : UnresolvedSource) = defaultArg file.Commit "master"
+let private getVersionRequirement (file : UnresolvedSource) = 
+    match file.Version with
+    | VersionRestriction.NoVersionRestriction -> "master"
+    | VersionRestriction.Concrete x -> x
+    | VersionRestriction.VersionRequirement vr -> vr.ToString()
 
 let resolve getDependencies getSha1 (file : UnresolvedSource) : ResolvedSourceFile = 
     let sha =
-        let commit = getCommit file
+        let commit = getVersionRequirement file
         match file.Origin with
         | Origin.HttpLink _  -> commit
         | _ -> getSha1 file.Origin file.Owner file.Project commit file.AuthKey
@@ -115,7 +133,7 @@ let private detectConflicts (remoteFiles : UnresolvedSource list) : unit =
             let directoryName =
                 normalizePath (file.Name.TrimStart('/'))
             file.Owner, file.Project, directoryName)
-        |> List.map (fun (key, files) -> key, files |> List.map getCommit |> List.distinct)
+        |> List.map (fun (key, files) -> key, files |> List.map getVersionRequirement |> List.distinct)
         |> List.filter (snd >> Seq.length >> (<) 1)
         |> List.map (fun ((owner, project, directoryName), commits) ->
             sprintf "   - %s/%s%s%s     Versions:%s     - %s" owner project directoryName

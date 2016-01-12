@@ -13,6 +13,17 @@ let extractUrlParts (url:string) =
             match rest.Replace(":"," : ").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> List.ofArray with
             | k::colon::_ when colon = ":" && (k.ToLower() = "build" || k.ToLower() = "os" || k.ToLower() = "packages") -> 
                 urlPart,None,rest
+            | operator::commit::prerelease::options when 
+                    VersionRange.BasicOperators |> List.exists ((=) operator) && 
+                      not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages") 
+               -> 
+                let startPos = url.Substring(urlPart.Length).IndexOf(prerelease)
+                let options = url.Substring(urlPart.Length + startPos + prerelease.Length)
+                urlPart,Some(operator + " " + commit +  " " + prerelease),options
+            | operator::commit::options when VersionRange.BasicOperators |> List.exists ((=) operator) -> 
+                let startPos = url.Substring(urlPart.Length).IndexOf(commit)
+                let options = url.Substring(urlPart.Length + startPos + commit.Length)
+                urlPart,Some(operator + " " + commit),options
             | commit::options -> 
                 let startPos = url.Substring(urlPart.Length).IndexOf(commit)
                 let options = url.Substring(urlPart.Length + startPos + commit.Length)
