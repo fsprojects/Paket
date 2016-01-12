@@ -1,3 +1,6 @@
+#### 2.42.4 - 12.01.2016
+* BUGFIX: $(SolutionDir) in ProjectReference include attribute will be parsed - https://github.com/fsprojects/Paket/issues/1377
+
 #### 2.42.3 - 11.01.2016
 * BUGFIX: Restore groups sequentially - https://github.com/fsprojects/Paket/issues/1371
 
