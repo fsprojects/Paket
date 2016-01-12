@@ -889,7 +889,7 @@ type ProjectFile =
 
         [for node in this.Document |> getDescendants "ProjectReference" -> 
             { Path = 
-                let p = node.Attributes.["Include"].Value |> normalizePath
+                let p = node.Attributes.["Include"].Value |> expandVariables |> normalizePath
                 if Path.IsPathRooted p then Path.GetFullPath p else 
                 let di = FileInfo(normalizePath this.FileName).Directory
                 Path.Combine(di.FullName,p) |> Path.GetFullPath

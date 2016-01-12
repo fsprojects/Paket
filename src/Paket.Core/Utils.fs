@@ -311,6 +311,8 @@ let askYesNo question =
 
 let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString()).TrimEnd(Path.DirectorySeparatorChar)
 
+let inline expandVariables(path:string) = path.Replace("$(SolutionDir)", Environment.CurrentDirectory + Path.DirectorySeparatorChar.ToString())
+
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
