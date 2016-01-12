@@ -51,6 +51,20 @@ let ``#1353 should use git tag as NuGet source``() =
     let lockFile = update "i001380-git-tag-as-source"
     let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
 
+    let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
+    Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "dc6212e3764f8ae2996d2013a3fbb28d41b1611a")
+
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
+    |> shouldEqual (SemVer.Parse "2.0.0")
+
+[<Test>]
+let ``#1353 should use git tag with operatore as NuGet source``() = 
+    let lockFile = update "i001380-git-semvertag-as-source"
+    let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
+
+    let repoDir = Path.Combine(paketFilesRoot,"github.com", "forki","nupkgtest")
+    Git.Handling.getCurrentHash repoDir |> shouldEqual (Some "dc6212e3764f8ae2996d2013a3fbb28d41b1611a")
+
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
     |> shouldEqual (SemVer.Parse "2.0.0")
 

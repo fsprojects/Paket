@@ -70,25 +70,35 @@ let extractUrlParts (url:string) =
 
     server,commit,project,url,buildCommand,operatingSystemRestriction,packagePath
 
-let getCurrentHash repoFolder = 
+let getHash repoFolder commitish = 
     try
         if System.IO.Directory.Exists repoFolder |> not then None else
-        Some (CommandHelper.runSimpleGitCommand repoFolder ("rev-parse --verify HEAD"))
+        Some (CommandHelper.runSimpleGitCommand repoFolder ("rev-parse --verify " + commitish))
     with
     | _ -> None
 
+let getCurrentHash repoFolder = 
+    getHash repoFolder "HEAD"
 
-let fetchCache repoCacheFolder tempBranchName cloneUrl commit =
+
+let fetchCache repoCacheFolder cloneUrl =
     try
-        if Directory.Exists repoCacheFolder then
-            CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + cloneUrl) |> ignore
-            verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder 
-            CommandHelper.runSimpleGitCommand repoCacheFolder "fetch -f" |> ignore
-        else
+        if not <| Directory.Exists repoCacheFolder then
             if not <| Directory.Exists Constants.GitRepoCacheFolder then
                 Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
             CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone " + cloneUrl) |> ignore
+        else
+            CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + cloneUrl) |> ignore
+            verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder 
+        
+        CommandHelper.runSimpleGitCommand repoCacheFolder "fetch -f --tags" |> ignore
+    with
+    | exn -> failwithf "Fetching the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message
+
+let updateCache repoCacheFolder tempBranchName cloneUrl commit =
+    fetchCache repoCacheFolder cloneUrl 
+    try
         CommandHelper.runSimpleGitCommand repoCacheFolder ("branch -f " + tempBranchName + " " + commit) |> ignore
     with
     | exn -> failwithf "Updating the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message

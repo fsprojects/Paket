@@ -94,18 +94,18 @@ type ResolvedSourceFile =
     
     override this.ToString() = sprintf "%s/%s:%s %s" this.Owner this.Project this.Commit this.Name
 
-let private getVersionRequirement (file : UnresolvedSource) = 
-    match file.Version with
+let getVersionRequirement version = 
+    match version with
     | VersionRestriction.NoVersionRestriction -> "master"
     | VersionRestriction.Concrete x -> x
     | VersionRestriction.VersionRequirement vr -> vr.ToString()
 
 let resolve getDependencies getSha1 (file : UnresolvedSource) : ResolvedSourceFile = 
     let sha =
-        let commit = getVersionRequirement file
+        let commit = getVersionRequirement file.Version
         match file.Origin with
         | Origin.HttpLink _  -> commit
-        | _ -> getSha1 file.Origin file.Owner file.Project commit file.AuthKey
+        | _ -> getSha1 file.Origin file.Owner file.Project file.Version file.AuthKey
     
     let resolved = 
         { Commit = sha
@@ -133,7 +133,7 @@ let private detectConflicts (remoteFiles : UnresolvedSource list) : unit =
             let directoryName =
                 normalizePath (file.Name.TrimStart('/'))
             file.Owner, file.Project, directoryName)
-        |> List.map (fun (key, files) -> key, files |> List.map getVersionRequirement |> List.distinct)
+        |> List.map (fun (key, files) -> key, files |> List.map (fun x -> getVersionRequirement x.Version) |> List.distinct)
         |> List.filter (snd >> Seq.length >> (<) 1)
         |> List.map (fun ((owner, project, directoryName), commits) ->
             sprintf "   - %s/%s%s%s     Versions:%s     - %s" owner project directoryName
