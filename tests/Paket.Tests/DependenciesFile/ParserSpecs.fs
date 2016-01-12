@@ -1221,3 +1221,25 @@ let ``should read paket git config with build command``() =
 
     let nupkgtestSource = cfg.Groups.[GroupName "Dev"].Sources.Tail.Head
     nupkgtestSource.Url |> shouldEqual "paket-files/dev/github.com/forki/nupkgtest/source"
+
+
+let paketGitTagsConfig = """
+group Git
+
+    git https://github.com/fsprojects/Paket.git 2.0.0 build:"build.cmd NuGet", Packages: /temp/
+
+    nuget Argu
+    nuget Paket.Core
+"""
+
+[<Test>]
+let ``should read paket git config with tags``() = 
+    let cfg = DependenciesFile.FromCode(paketGitTagsConfig)
+    let gitSource = cfg.Groups.[GroupName "git"].RemoteFiles.Head
+    gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
+    gitSource.Commit |> shouldEqual (Some "2.0.0")
+    gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
+    gitSource.OperatingSystemRestriction |> shouldEqual None
+    gitSource.PackagePath |> shouldEqual (Some "/temp/")
+    gitSource.Project |> shouldEqual "Paket"

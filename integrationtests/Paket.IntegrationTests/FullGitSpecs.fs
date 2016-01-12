@@ -47,6 +47,14 @@ let ``#1353 should use NuGet source from git repo``() =
     |> shouldEqual (SemVer.Parse "1.1.3")
 
 [<Test>]
+let ``#1353 should use git tag as NuGet source``() = 
+    let lockFile = update "i001380-git-tag-as-source"
+    let paketFilesRoot = Path.Combine(FileInfo(lockFile.FileName).Directory.FullName,"paket-files")
+
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Argu"].Version
+    |> shouldEqual (SemVer.Parse "2.0.0")
+
+[<Test>]
 let ``#1353 should restore NuGet source from built git repo``() = 
     let lockFile = restore "i001353-git-build-as-source-restore"
     let paketFilesRoot = Path.Combine(scenarioTempPath "i001353-git-build-as-source-restore","paket-files")
