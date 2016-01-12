@@ -359,10 +359,12 @@ type ProjectFile =
                         then data
                         else addData data node
 
-        this.Document
-        |> getDescendants "PropertyGroup"
-        |> Seq.fold handleElement defaultProperties
-        |> Map.tryFind propertyName
+        let map =
+            this.Document
+            |> getDescendants "PropertyGroup"
+            |> Seq.fold handleElement defaultProperties
+        
+        Map.tryFind propertyName map
 
     member this.GetProperty propertyName =
         this.GetPropertyWithDefaults propertyName Map.empty<string, string>
@@ -888,12 +890,19 @@ type ProjectFile =
             | None -> failwithf "unable to parse %s" node.Name
 
         [for node in this.Document |> getDescendants "ProjectReference" -> 
-            { Path = 
-                let p = node.Attributes.["Include"].Value |> normalizePath
-                if Path.IsPathRooted p then Path.GetFullPath p else 
+            let path =
+                    let normalizedPath = node.Attributes.["Include"].Value |> normalizePath 
+                    if normalizedPath.Contains("$(SolutionDir)") then 
+                        match this.GetProperty("SolutionDir") with
+                        | Some slnDir -> normalizedPath.Replace("$(SolutionDir)",slnDir) 
+                        | None -> normalizedPath.Replace("$(SolutionDir)", Environment.CurrentDirectory + Path.DirectorySeparatorChar.ToString())
+                    else normalizedPath
+
+            { Path =
+                if Path.IsPathRooted path then Path.GetFullPath path else 
                 let di = FileInfo(normalizePath this.FileName).Directory
-                Path.Combine(di.FullName,p) |> Path.GetFullPath
-              RelativePath = node.Attributes.["Include"].Value
+                Path.Combine(di.FullName,path) |> Path.GetFullPath
+              RelativePath = path
               Name = forceGetInnerText node "Name"
               GUID =  forceGetInnerText node "Project" |> Guid.Parse }]
 

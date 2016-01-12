@@ -47,3 +47,13 @@ let ``should detect Guids for dependencies in Project2 proj file``() =
     p.GetInterProjectDependencies()
     |> List.map (fun p -> p.GUID.ToString())
     |> shouldEqual ["09b32f18-0c20-4489-8c83-5106d5c04c93"; "7bab0ae2-089f-4761-b138-a717aa2f86c5"]
+
+
+[<Test>]
+let ``should detect solution path for dependencies in Project4 proj file``() =
+    let paths =
+        ProjectFile.TryLoad("./ProjectFile/TestData/Project4.fsprojtest").Value.GetInterProjectDependencies()
+        |> List.map (fun p -> p.RelativePath)
+
+    paths.[0] |> shouldEqual "..\\..\\src\\Paket\\Paket.fsproj"
+    paths.[1] |> shouldEqual "..\\Paket.Core\\Paket.Core.fsproj"
