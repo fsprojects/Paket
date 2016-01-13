@@ -1,7 +1,10 @@
-#### 3.0.0-alpha023 - 13.01.2016
+#### 3.0.0-alpha024 - 13.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+
+#### 2.42.5 - 13.01.2016
+* USABILITY: Fail if credentials are invalid - https://github.com/fsprojects/Paket/issues/1382
 
 #### 2.42.4 - 12.01.2016
 * BUGFIX: $(SolutionDir) in ProjectReference include attribute will be parsed - https://github.com/fsprojects/Paket/issues/1377
