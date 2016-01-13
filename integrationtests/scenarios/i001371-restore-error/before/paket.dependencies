@@ -1,0 +1,18 @@
+source http://nuget.org/api/v2
+
+nuget FAKE
+nuget canopy
+nuget Selenium.WebDriver.ChromeDriver
+
+nuget FsCheck 1.0.4 framework: >= net451
+nuget FsCheck.Xunit 1.0.4 framework: >= net451
+nuget Saxon-HE 9.6.0.5 framework: >= net451
+nuget xunit 1.9.2 framework: >= net451
+nuget xunit.runners 1.9.2
+
+group Deploy
+
+    source http://nuget.org/api/v2
+
+    nuget FAKE
+    nuget Http.fs-prerelease  

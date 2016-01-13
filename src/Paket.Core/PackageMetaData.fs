@@ -163,7 +163,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                 |> Seq.map (fun proj -> proj.GetAssemblyName())
             assemblyNames
             |> Seq.collect (fun assemblyFileName -> 
-                                let assemblyfi = FileInfo assemblyFileName
+                                let assemblyfi = FileInfo(assemblyFileName)
                                 let name = Path.GetFileNameWithoutExtension assemblyfi.Name
 
                                 let projectdir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
@@ -176,7 +176,6 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                                     let isValidExtension = 
                                                         [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"] 
                                                         |> List.exists ((=) (fi.Extension.ToLower()))
-
                                                     isSameFileName && isValidExtension)
                            )
             |> Seq.toArray
