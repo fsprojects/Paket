@@ -67,11 +67,13 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
 let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) templateFile =
     let sourceFiles =
         let getTarget compileItem =
-            match compileItem.Link with
-            | Some link -> link
-            | None -> compileItem.Include
-            |> Path.GetDirectoryName
-            |> (fun d -> Path.Combine("src", d))
+            let item = match compileItem.Link with
+                       | Some link -> link
+                       | None -> compileItem.Include
+
+            let dir = Path.GetDirectoryName(Path.GetFullPath(item))
+            let tld = Path.GetFileName(Path.GetDirectoryName(dir))
+            Path.Combine("src", tld, Path.GetFileName(dir))
 
         projectFile.GetCompileItems(includeReferencedProjects)
         |> Seq.map (fun c -> c.Include, getTarget c)
@@ -79,10 +81,10 @@ let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProje
 
     match templateFile.Contents with
     | CompleteInfo(core, optional) ->
-        let augmentedFiles = optional.Files |> List.append sourceFiles 
+        let augmentedFiles = optional.Files |> List.append sourceFiles
         { templateFile with Contents = CompleteInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
     | ProjectInfo(core, optional) ->
-        let augmentedFiles = optional.Files |> List.append sourceFiles 
+        let augmentedFiles = optional.Files |> List.append sourceFiles
         { templateFile with Contents = ProjectInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
 
 let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols, includeReferencedProjects) =
@@ -180,7 +182,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             async { 
                 match templateFile with
                 | CompleteTemplate(core, optional) -> 
-                    NupkgWriter.Write core optional (Path.GetDirectoryName (Path.GetDirectoryName templateFile.FileName)) packageOutputPath
+                    NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) packageOutputPath
                     |> NuGetV2.fixDatesInArchive 
                     tracefn "Packed: %s" templateFile.FileName
                 | IncompleteTemplate -> 

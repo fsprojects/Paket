@@ -1080,8 +1080,10 @@ type ProjectFile =
 
     member this.GetCompileItems (includeReferencedProjects:bool) =
         let getCompileItem (projfile: ProjectFile, compileNode: XmlNode) =
-            let includePath = compileNode |> getAttribute "Include" |> fun a -> a.Value
-            let includePath = Path.Combine(Path.GetFileName(Path.GetDirectoryName(projfile.FileName)), includePath)
+            let getIncludePath (projfile: ProjectFile) (includePath: string)= 
+                    Path.Combine(Path.GetDirectoryName(Path.GetFullPath(projfile.FileName)), includePath)
+            
+            let includePath = compileNode |> getAttribute "Include" |> fun a -> a.Value |> getIncludePath projfile
             compileNode
             |> getDescendants "Link"
             |> function
