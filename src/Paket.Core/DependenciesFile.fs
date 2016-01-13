@@ -353,7 +353,8 @@ module DependenciesFileParser =
                             | None -> VersionRestriction.NoVersionRestriction
                             | Some x -> 
                                 try 
-                                    VersionRestriction.VersionRequirement(parseVersionRequirement x) 
+                                    let vr = parseVersionRequirement x
+                                    VersionRestriction.VersionRequirement vr
                                 with 
                                 | _ -> VersionRestriction.Concrete x
                           Command = buildCommand

@@ -1230,6 +1230,8 @@ group Git
     git https://github.com/fsprojects/Paket.git >= 2.0.0 build:"build.cmd NuGet", Packages: /temp/
     git https://github.com/fsprojects/Paket.VisualStudio.git 2.0.0 build:"build.cmd NuGet", Packages: /temp/
     git https://github.com/fsprojects/Paket.git ~> 3.2.1 prerelease build:"build.cmd NuGet", Packages: /temp/
+    git https://github.com/fsprojects/Paket.git >= 1.2.3 < 1.5 build:"build.cmd NuGet", Packages: /temp/
+    git https://github.com/fsprojects/Paket.git >= 1.2.3 < 1.5 alpha build:"build.cmd NuGet", Packages: /temp/
 
     nuget Argu
     nuget Paket.Core
@@ -1261,6 +1263,24 @@ let ``should read paket git config with tags``() =
     gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
     gitSource.Owner |> shouldEqual "github.com/fsprojects"
     gitSource.Version |> shouldEqual (VersionRestriction.VersionRequirement (DependenciesFileParser.parseVersionRequirement "~> 3.2.1 prerelease"))
+    gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
+    gitSource.OperatingSystemRestriction |> shouldEqual None
+    gitSource.PackagePath |> shouldEqual (Some "/temp/")
+    gitSource.Project |> shouldEqual "Paket"
+    
+    let gitSource = cfg.Groups.[GroupName "git"].RemoteFiles.Tail.Tail.Tail.Head
+    gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
+    gitSource.Version |> shouldEqual (VersionRestriction.VersionRequirement (DependenciesFileParser.parseVersionRequirement ">= 1.2.3 < 1.5"))
+    gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
+    gitSource.OperatingSystemRestriction |> shouldEqual None
+    gitSource.PackagePath |> shouldEqual (Some "/temp/")
+    gitSource.Project |> shouldEqual "Paket"
+    
+    let gitSource = cfg.Groups.[GroupName "git"].RemoteFiles.Tail.Tail.Tail.Tail.Head
+    gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
+    gitSource.Version |> shouldEqual (VersionRestriction.VersionRequirement (DependenciesFileParser.parseVersionRequirement ">= 1.2.3 < 1.5 alpha"))
     gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
     gitSource.OperatingSystemRestriction |> shouldEqual None
     gitSource.PackagePath |> shouldEqual (Some "/temp/")

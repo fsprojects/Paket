@@ -6,24 +6,36 @@ open Paket.Logging
 open Paket
 
 let extractUrlParts (url:string) =
+    let isOperator operator = VersionRange.BasicOperators |> List.exists ((=) operator)
     let url,commit,options = 
         match url.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> List.ofArray with
         | urlPart::_ ->
             let rest = url.Substring(urlPart.Length)
             match rest.Replace(":"," : ").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> List.ofArray with
-            | k::colon::_ when colon = ":" && (k.ToLower() = "build" || k.ToLower() = "os" || k.ToLower() = "packages") -> 
+            | k::colon::_ when colon = ":" && (k.ToLower() = "build" || k.ToLower() = "os" || k.ToLower() = "packages")  -> 
                 urlPart,None,rest
-            | operator::commit::prerelease::options when 
-                    VersionRange.BasicOperators |> List.exists ((=) operator) && 
-                      not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages") 
+            | operator::version::operator2::version2::prerelease::options when 
+                    isOperator operator && isOperator operator2 && 
+                      not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages" || prerelease = ":") 
                -> 
                 let startPos = url.Substring(urlPart.Length).IndexOf(prerelease)
                 let options = url.Substring(urlPart.Length + startPos + prerelease.Length)
-                urlPart,Some(operator + " " + commit +  " " + prerelease),options
-            | operator::commit::options when VersionRange.BasicOperators |> List.exists ((=) operator) -> 
-                let startPos = url.Substring(urlPart.Length).IndexOf(commit)
-                let options = url.Substring(urlPart.Length + startPos + commit.Length)
-                urlPart,Some(operator + " " + commit),options
+                urlPart,Some(operator + " " + version + " " + operator2 + " " + version2 +  " " + prerelease),options
+            | operator::version::prerelease::options when 
+                    isOperator operator && not (isOperator prerelease) && 
+                      not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages" || prerelease = ":") 
+               -> 
+                let startPos = url.Substring(urlPart.Length).IndexOf(prerelease)
+                let options = url.Substring(urlPart.Length + startPos + prerelease.Length)
+                urlPart,Some(operator + " " + version +  " " + prerelease),options
+            | operator::version::operator2::version2::options when isOperator operator && isOperator operator2 -> 
+                let startPos = url.Substring(urlPart.Length).IndexOf(version2)
+                let options = url.Substring(urlPart.Length + startPos + version2.Length)
+                urlPart,Some(operator + " " + version + " " + operator2 + " " + version2),options
+            | operator::version::options when isOperator operator -> 
+                let startPos = url.Substring(urlPart.Length).IndexOf(version)
+                let options = url.Substring(urlPart.Length + startPos + version.Length)
+                urlPart,Some(operator + " " + version),options
             | commit::options -> 
                 let startPos = url.Substring(urlPart.Length).IndexOf(commit)
                 let options = url.Substring(urlPart.Length + startPos + commit.Length)
@@ -79,6 +91,21 @@ let getHash repoFolder commitish =
 
 let getCurrentHash repoFolder = 
     getHash repoFolder "HEAD"
+
+let getHashFromRemote url branch =
+    let result =
+        let hash = CommandHelper.runSimpleGitCommand "" (sprintf "ls-remote %s %s" url branch)
+        if String.IsNullOrWhiteSpace hash then
+            branch
+        else
+            hash
+    if result.Contains "\t" then
+        result.Substring(0,result.IndexOf '\t')
+    else
+        if result.Contains " " then
+            result.Substring(0,result.IndexOf ' ')
+        else
+            result
 
 
 let fetchCache repoCacheFolder cloneUrl =
