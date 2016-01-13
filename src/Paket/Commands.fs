@@ -113,7 +113,7 @@ with
 
 type FindRefsArgs =
     | [<CustomCommandLine("group")>] Group of string
-    | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string   
+    | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string
 with
     interface IArgParserTemplate with
         member this.Usage =

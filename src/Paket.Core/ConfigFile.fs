@@ -156,7 +156,7 @@ let GetAuthenticationForUrl (source : string) url =
         if checkCredentials (url, Some auth) then 
             Some auth
         else 
-            traceWarnfn "credentials for %s source are invalid" source
+            failwithf "Credentials from authentication store for %s are invalid" source
             None
     | _ -> None
 

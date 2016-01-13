@@ -902,7 +902,8 @@ type ProjectFile =
                 if Path.IsPathRooted path then Path.GetFullPath path else 
                 let di = FileInfo(normalizePath this.FileName).Directory
                 Path.Combine(di.FullName,path) |> Path.GetFullPath
-              RelativePath = path
+
+              RelativePath = path.Replace("/","\\")
               Name = forceGetInnerText node "Name"
               GUID =  forceGetInnerText node "Project" |> Guid.Parse }]
 

@@ -1,3 +1,9 @@
+#### 2.42.6 - 13.01.2016
+* BUGFIX: Fix path issue
+
+#### 2.42.5 - 13.01.2016
+* USABILITY: Fail if credentials are invalid - https://github.com/fsprojects/Paket/issues/1382
+
 #### 2.42.4 - 12.01.2016
 * BUGFIX: $(SolutionDir) in ProjectReference include attribute will be parsed - https://github.com/fsprojects/Paket/issues/1377
 
