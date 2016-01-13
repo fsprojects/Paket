@@ -14,6 +14,7 @@ type PreReleaseStatus =
     | All
     | Concrete of string list
 
+
 /// Represents version information.
 type VersionRange =
     | Minimum of SemVerInfo
@@ -26,6 +27,8 @@ type VersionRange =
 
     static member AtLeast version = Minimum(SemVer.Parse version)
 
+    static member BasicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
+    static member StrategyOperators = ['!';'@']
     static member Exactly version = Specific(SemVer.Parse version)
 
     static member Between(version1,version2) = Range(VersionRangeBound.Including, SemVer.Parse version1, SemVer.Parse version2, VersionRangeBound.Excluding)

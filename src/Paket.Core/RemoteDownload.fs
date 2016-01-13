@@ -28,10 +28,11 @@ let private auth key url =
 
 
 // Gets the sha1 of a branch
-let getSHA1OfBranch origin owner project branch authKey = 
+let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction) authKey = 
     async { 
         match origin with
         | ModuleResolver.Origin.GitHubLink -> 
+            let branch = ModuleResolver.getVersionRequirement versionRestriction
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
             let! document = lookupDocument(auth authKey url,url)
             match document with
@@ -42,6 +43,7 @@ let getSHA1OfBranch origin owner project branch authKey =
                 failwithf "Could not find hash for %s" url
                 return ""
         | ModuleResolver.Origin.GistLink ->
+            let branch = ModuleResolver.getVersionRequirement versionRestriction
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
             let! document = lookupDocument(auth authKey url,url)
             match document with
@@ -53,20 +55,28 @@ let getSHA1OfBranch origin owner project branch authKey =
                 failwithf "Could not find hash for %s" url
                 return ""
         | ModuleResolver.Origin.GitLink url ->
-            let result =
-                sprintf "ls-remote %s %s" url branch
-                |> Git.CommandHelper.runSimpleGitCommand ""
+            return
+                match versionRestriction with
+                | VersionRestriction.NoVersionRestriction -> Git.Handling.getHashFromRemote url ""
+                | VersionRestriction.Concrete branch -> Git.Handling.getHashFromRemote url branch
+                | VersionRestriction.VersionRequirement vr -> 
+                    let repoCacheFolder = Path.Combine(Constants.GitRepoCacheFolder,project)
+                    Paket.Git.Handling.fetchCache repoCacheFolder url
 
-            if String.IsNullOrWhiteSpace result then 
-                return branch
-            else
-                if result.Contains "\t" then
-                    return result.Substring(0,result.IndexOf '\t')
-                else
-                    if result.Contains " " then
-                        return result.Substring(0,result.IndexOf ' ')
-                    else
-                        return result
+                    let tags = Git.CommandHelper.runFullGitCommand repoCacheFolder "tag"
+                    let matchingVersions =
+                        tags
+                        |> Array.choose (fun s -> try Some(SemVer.Parse s) with | _ -> None)
+                        |> Array.filter vr.IsInRange
+
+                    match matchingVersions with
+                    | [||] -> failwithf "No tags in %s match %O. Tags: %A" url vr tags
+                    | _ -> 
+                        let tag = matchingVersions |> Array.max |> string 
+                        match Git.Handling.getHash repoCacheFolder tag with
+                        | None -> failwithf "Could not resolve hash for tag %s in %s." tag url
+                        | Some hash -> hash
+
         | ModuleResolver.Origin.HttpLink _ -> return ""
     }
 
@@ -164,7 +174,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
         let branchName = sprintf "b%d" <| (repoFolder |> hash |> abs)
 
-        Paket.Git.Handling.fetchCache repoCacheFolder branchName cloneUrl remoteFile.Commit
+        Paket.Git.Handling.updateCache repoCacheFolder branchName cloneUrl remoteFile.Commit
         Paket.Git.Handling.checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl remoteFile.Commit
 
         match remoteFile.Command with

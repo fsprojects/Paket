@@ -104,7 +104,12 @@ type RemoteFileChange =
           Project = unresolved.Project
           Name = unresolved.Name
           Origin = unresolved.Origin
-          Commit = unresolved.Commit
+          Commit = 
+            match unresolved.Version with
+            | ModuleResolver.VersionRestriction.NoVersionRestriction -> None
+            | ModuleResolver.VersionRestriction.Concrete x -> Some x
+            | ModuleResolver.VersionRestriction.VersionRequirement vr -> Some(vr.ToString())
+
           AuthKey = unresolved.AuthKey }
 
     static member CreateResolvedVersion (resolved:ModuleResolver.ResolvedSourceFile) : RemoteFileChange =

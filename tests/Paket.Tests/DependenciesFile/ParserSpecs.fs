@@ -8,6 +8,7 @@ open TestHelpers
 open System
 open Paket.Domain
 open Paket.Requirements
+open Paket.ModuleResolver
 
 [<Test>]
 let ``should read empty config``() = 
@@ -111,13 +112,13 @@ let ``should read source file from config``() =
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "master"
+            Version = VersionRestriction.Concrete "master"
             AuthKey = None }
           { Owner = "fsharp"
             Project = "FAKE"
             Origin = ModuleResolver.Origin.GitHubLink
             Name = "src/app/FAKE/FileWithCommit.fs"
-            Commit = Some "bla123zxc" 
+            Version = VersionRestriction.Concrete "bla123zxc" 
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -126,7 +127,7 @@ let ``should read source file from config``() =
             Project = "FAKE"
             Origin = ModuleResolver.Origin.GitHubLink
             Name = "src/app/FAKE/FileAuth.fs"
-            Commit = None
+            Version = VersionRestriction.NoVersionRestriction
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -300,7 +301,7 @@ let ``should read github source file from config without quotes``() =
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
             Origin = ModuleResolver.Origin.GitHubLink
-            Commit = Some "master"
+            Version = VersionRestriction.Concrete "master"
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -309,7 +310,7 @@ let ``should read github source file from config without quotes``() =
             Project = "FAKE"
             Origin = ModuleResolver.Origin.GitHubLink
             Name = "src/app/FAKE/FileWithCommit.fs"
-            Commit = Some "bla123zxc"
+            Version = VersionRestriction.Concrete "bla123zxc"
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -318,7 +319,7 @@ let ``should read github source file from config without quotes``() =
             Project = "FAKE"
             Origin = ModuleResolver.Origin.GitHubLink
             Name = "src/app/FAKE/FileWithCommit.fs"
-            Commit = None
+            Version = VersionRestriction.NoVersionRestriction
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -337,7 +338,7 @@ let ``should read github source file from config with quotes``() =
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
             Origin = ModuleResolver.Origin.GitHubLink
-            Commit = Some "master"
+            Version = VersionRestriction.Concrete "master"
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -346,7 +347,7 @@ let ``should read github source file from config with quotes``() =
             Project = "FAKE"
             Name = "src/app/FAKE/FileWith Space.fs"
             Origin = ModuleResolver.Origin.GitHubLink
-            Commit = Some "bla123zxc"
+            Version = VersionRestriction.Concrete "bla123zxc"
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -358,7 +359,7 @@ let ``should read github source file from config with quotes``() =
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = None
+            Version = VersionRestriction.NoVersionRestriction
             AuthKey = Some "github" }  ]
 
 [<Test>]
@@ -375,13 +376,13 @@ let ``should read github source files withou sha1``() =
             OperatingSystemRestriction = None
             PackagePath = None
             Origin = ModuleResolver.Origin.GitHubLink
-            Commit = None
+            Version = VersionRestriction.NoVersionRestriction
             AuthKey = None }
           { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/FileWithCommit.fs"
             Origin = ModuleResolver.Origin.GitHubLink
-            Commit = Some "bla123zxc"
+            Version = VersionRestriction.Concrete "bla123zxc"
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -398,7 +399,7 @@ let ``should read http source file from config without quotes with file specs``(
             Project = ""
             Name = "test1.fs"
             Origin = ModuleResolver.Origin.HttpLink "http://www.fssnip.net"
-            Commit = Some "/raw/1M"
+            Version = VersionRestriction.Concrete "/raw/1M"
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -407,7 +408,7 @@ let ``should read http source file from config without quotes with file specs``(
             Project = ""
             Name = "src/test2.fs"
             Origin = ModuleResolver.Origin.HttpLink "http://www.fssnip.net"
-            Commit = Some "/raw/1M/1"
+            Version = VersionRestriction.Concrete "/raw/1M/1"
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -424,7 +425,7 @@ let ``should read http source file from config without quotes with file specs an
             Project = ""
             Name = "Rabbit.fs"
             Origin = ModuleResolver.Origin.HttpLink "http://server-stash:7658"
-            Commit = Some "/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw"
+            Version = VersionRestriction.Concrete "/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw"
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -442,7 +443,7 @@ let ``should read http source file from config without quotes with file specs an
             Project = ""
             Name = "test1.fs"
             Origin = ModuleResolver.Origin.HttpLink "http://www.fssnip.net"
-            Commit = Some "/raw/1M"
+            Version = VersionRestriction.Concrete "/raw/1M"
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
@@ -454,7 +455,7 @@ let ``should read http source file from config without quotes with file specs an
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "/raw/1M/1"
+            Version = VersionRestriction.Concrete "/raw/1M/1"
             AuthKey = Some "project" } ]
 
 
@@ -472,7 +473,7 @@ let ``should read gist source file from config without quotes with file specs``(
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = None
+            Version = VersionRestriction.NoVersionRestriction
             AuthKey = None }
           { Owner = "Thorium"
             Project = "6088882"
@@ -481,7 +482,7 @@ let ``should read gist source file from config without quotes with file specs``(
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = None
+            Version = VersionRestriction.NoVersionRestriction
             AuthKey = None } ]
 
 [<Test>]
@@ -501,7 +502,7 @@ gist misterx/5d9c6983004c1c9ec91f"""
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = None
+            Version = VersionRestriction.NoVersionRestriction
             AuthKey = None } ]
 
 [<Test>]
@@ -523,7 +524,7 @@ let ``should read http source file from config without quotes, parsing rules``()
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "/"
+            Version = VersionRestriction.Concrete "/"
             AuthKey = None }
           { Owner = "example"
             Project = ""
@@ -532,7 +533,7 @@ let ``should read http source file from config without quotes, parsing rules``()
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "/item"
+            Version = VersionRestriction.Concrete "/item"
             AuthKey = None }
           { Owner = "example"
             Project = ""
@@ -541,7 +542,7 @@ let ``should read http source file from config without quotes, parsing rules``()
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "/item"
+            Version = VersionRestriction.Concrete "/item"
             AuthKey = None }
           { Owner = "example"
             Project = ""
@@ -550,7 +551,7 @@ let ``should read http source file from config without quotes, parsing rules``()
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "/item/3"
+            Version = VersionRestriction.Concrete "/item/3"
             AuthKey = None }
           { Owner = "example"
             Project = ""
@@ -559,7 +560,7 @@ let ``should read http source file from config without quotes, parsing rules``()
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "/item/3/1"
+            Version = VersionRestriction.Concrete "/item/3/1"
             AuthKey = None } ]
 
 [<Test>]
@@ -577,7 +578,7 @@ let ``should read http binary references from config``() =
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "/ikvmbin-8.0.5449.0.zip"
+            Version = VersionRestriction.Concrete "/ikvmbin-8.0.5449.0.zip"
             AuthKey = None }
           { Owner = "www.frijters.net"
             Project = ""
@@ -586,7 +587,7 @@ let ``should read http binary references from config``() =
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "/ikvmbin-8.0.5449.0.zip"
+            Version = VersionRestriction.Concrete "/ikvmbin-8.0.5449.0.zip"
             AuthKey = None } ]
 
 
@@ -603,7 +604,7 @@ let ``should read http file references from config``() =
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            Commit = Some "/c:/code/uen/settings-gitlab.fsx"
+            Version = VersionRestriction.Concrete "/c:/code/uen/settings-gitlab.fsx"
             AuthKey = None } ]
 
 
@@ -1125,7 +1126,7 @@ let ``should read paket git config``() =
     let gitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Head
     gitSource.GetCloneUrl() |> shouldEqual "git@github.com:fsprojects/Paket.git"
     gitSource.Owner |> shouldEqual "github.com/fsprojects"
-    gitSource.Commit |> shouldEqual None
+    gitSource.Version |> shouldEqual VersionRestriction.NoVersionRestriction
     gitSource.Command |> shouldEqual None
     gitSource.OperatingSystemRestriction |> shouldEqual None
     gitSource.PackagePath |> shouldEqual None
@@ -1134,18 +1135,18 @@ let ``should read paket git config``() =
     let localGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Head
     localGitSource.GetCloneUrl() |> shouldEqual "file:///c:/code/Paket.VisualStudio"
     localGitSource.Project |> shouldEqual "Paket.VisualStudio"
-    localGitSource.Commit |> shouldEqual None
+    localGitSource.Version |> shouldEqual VersionRestriction.NoVersionRestriction
     localGitSource.Owner |> shouldEqual "c/code"
 
     let httpsGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Tail.Head
     httpsGitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
-    httpsGitSource.Commit |> shouldEqual None
+    httpsGitSource.Version |> shouldEqual VersionRestriction.NoVersionRestriction
     httpsGitSource.Project |> shouldEqual "Paket"
     httpsGitSource.Owner |> shouldEqual "github.com/fsprojects"
 
     let branchGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Tail.Tail.Head
     branchGitSource.GetCloneUrl() |> shouldEqual "http://github.com/fsprojects/Chessie.git"
-    branchGitSource.Commit |> shouldEqual (Some "master")
+    branchGitSource.Version |> shouldEqual (VersionRestriction.Concrete "master")
     branchGitSource.Project |> shouldEqual "Chessie"
     branchGitSource.Owner |> shouldEqual "github.com/fsprojects"
 
@@ -1173,7 +1174,7 @@ let ``should read paket git config with build command``() =
     let gitSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Head
     gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
     gitSource.Owner |> shouldEqual "github.com/fsprojects"
-    gitSource.Commit |> shouldEqual (Some "master")
+    gitSource.Version |> shouldEqual (VersionRestriction.Concrete "master")
     gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
     gitSource.OperatingSystemRestriction |> shouldEqual None
     gitSource.PackagePath |> shouldEqual (Some "/temp/")
@@ -1182,7 +1183,7 @@ let ``should read paket git config with build command``() =
     let gitVSSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Tail.Head
     gitVSSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.VisualStudio.git"
     gitVSSource.Owner |> shouldEqual "github.com/fsprojects"
-    gitVSSource.Commit |> shouldEqual None
+    gitVSSource.Version |> shouldEqual VersionRestriction.NoVersionRestriction
     gitVSSource.Project |> shouldEqual "Paket.VisualStudio"
     gitVSSource.PackagePath |> shouldEqual (Some "/tempFolder/Any where")
     gitVSSource.Command |> shouldEqual (Some "build.cmd NuGet")
@@ -1191,7 +1192,7 @@ let ``should read paket git config with build command``() =
     let noBuildSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Tail.Tail.Head
     noBuildSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
     noBuildSource.Owner |> shouldEqual "github.com/fsprojects"
-    noBuildSource.Commit |> shouldEqual None
+    noBuildSource.Version |> shouldEqual VersionRestriction.NoVersionRestriction
     noBuildSource.Project |> shouldEqual "Paket"
     noBuildSource.PackagePath |> shouldEqual (Some "/temp Folder/Any where")
     noBuildSource.Command |> shouldEqual None
@@ -1200,7 +1201,7 @@ let ``should read paket git config with build command``() =
     let packagesSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Tail.Tail.Tail.Head
     packagesSource.GetCloneUrl() |> shouldEqual "https://github.com/forki/nupkgtest.git"
     packagesSource.Owner |> shouldEqual "github.com/forki"
-    packagesSource.Commit |> shouldEqual (Some "nugetsource")
+    packagesSource.Version |> shouldEqual (VersionRestriction.Concrete "nugetsource")
     packagesSource.Project |> shouldEqual "nupkgtest"
     packagesSource.PackagePath |> shouldEqual (Some "/source/")
     packagesSource.Command |> shouldEqual None
@@ -1213,7 +1214,7 @@ let ``should read paket git config with build command``() =
     let buildSource = cfg.Groups.[GroupName "Dev"].RemoteFiles.Tail.Tail.Tail.Tail.Head
     buildSource.GetCloneUrl() |> shouldEqual "https://github.com/forki/nupkgtest.git"
     buildSource.Owner |> shouldEqual "github.com/forki"
-    buildSource.Commit |> shouldEqual (Some "build")
+    buildSource.Version |> shouldEqual (VersionRestriction.Concrete "build")
     buildSource.Project |> shouldEqual "nupkgtest"
     buildSource.PackagePath |> shouldEqual (Some "/source/")
     buildSource.Command |> shouldEqual (Some "build.cmd")
@@ -1221,3 +1222,66 @@ let ``should read paket git config with build command``() =
 
     let nupkgtestSource = cfg.Groups.[GroupName "Dev"].Sources.Tail.Head
     nupkgtestSource.Url |> shouldEqual "paket-files/dev/github.com/forki/nupkgtest/source"
+
+
+let paketGitTagsConfig = """
+group Git
+
+    git https://github.com/fsprojects/Paket.git >= 2.0.0 build:"build.cmd NuGet", Packages: /temp/
+    git https://github.com/fsprojects/Paket.VisualStudio.git 2.0.0 build:"build.cmd NuGet", Packages: /temp/
+    git https://github.com/fsprojects/Paket.git ~> 3.2.1 prerelease build:"build.cmd NuGet", Packages: /temp/
+    git https://github.com/fsprojects/Paket.git >= 1.2.3 < 1.5 build:"build.cmd NuGet", Packages: /temp/
+    git https://github.com/fsprojects/Paket.git >= 1.2.3 < 1.5 alpha build:"build.cmd NuGet", Packages: /temp/
+
+    nuget Argu
+    nuget Paket.Core
+"""
+
+[<Test>]
+let ``should read paket git config with tags``() = 
+    let cfg = DependenciesFile.FromCode(paketGitTagsConfig)
+    
+    let gitSource = cfg.Groups.[GroupName "git"].RemoteFiles.Head
+    gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
+    gitSource.Version |> shouldEqual (VersionRestriction.VersionRequirement (DependenciesFileParser.parseVersionRequirement ">= 2.0.0"))
+    gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
+    gitSource.OperatingSystemRestriction |> shouldEqual None
+    gitSource.PackagePath |> shouldEqual (Some "/temp/")
+    gitSource.Project |> shouldEqual "Paket"
+
+    let gitSource = cfg.Groups.[GroupName "git"].RemoteFiles.Tail.Head
+    gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.VisualStudio.git"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
+    gitSource.Version |> shouldEqual (VersionRestriction.VersionRequirement (DependenciesFileParser.parseVersionRequirement "= 2.0.0"))
+    gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
+    gitSource.OperatingSystemRestriction |> shouldEqual None
+    gitSource.PackagePath |> shouldEqual (Some "/temp/")
+    gitSource.Project |> shouldEqual "Paket.VisualStudio"
+
+    let gitSource = cfg.Groups.[GroupName "git"].RemoteFiles.Tail.Tail.Head
+    gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
+    gitSource.Version |> shouldEqual (VersionRestriction.VersionRequirement (DependenciesFileParser.parseVersionRequirement "~> 3.2.1 prerelease"))
+    gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
+    gitSource.OperatingSystemRestriction |> shouldEqual None
+    gitSource.PackagePath |> shouldEqual (Some "/temp/")
+    gitSource.Project |> shouldEqual "Paket"
+    
+    let gitSource = cfg.Groups.[GroupName "git"].RemoteFiles.Tail.Tail.Tail.Head
+    gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
+    gitSource.Version |> shouldEqual (VersionRestriction.VersionRequirement (DependenciesFileParser.parseVersionRequirement ">= 1.2.3 < 1.5"))
+    gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
+    gitSource.OperatingSystemRestriction |> shouldEqual None
+    gitSource.PackagePath |> shouldEqual (Some "/temp/")
+    gitSource.Project |> shouldEqual "Paket"
+    
+    let gitSource = cfg.Groups.[GroupName "git"].RemoteFiles.Tail.Tail.Tail.Tail.Head
+    gitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
+    gitSource.Owner |> shouldEqual "github.com/fsprojects"
+    gitSource.Version |> shouldEqual (VersionRestriction.VersionRequirement (DependenciesFileParser.parseVersionRequirement ">= 1.2.3 < 1.5 alpha"))
+    gitSource.Command |> shouldEqual (Some "build.cmd NuGet")
+    gitSource.OperatingSystemRestriction |> shouldEqual None
+    gitSource.PackagePath |> shouldEqual (Some "/temp/")
+    gitSource.Project |> shouldEqual "Paket"

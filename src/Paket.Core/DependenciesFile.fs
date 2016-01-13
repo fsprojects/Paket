@@ -54,13 +54,10 @@ type DependenciesGroup = {
               RemoteFiles = this.RemoteFiles @ other.RemoteFiles }
             
 /// [omit]
-module DependenciesFileParser = 
-
-    let private basicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
-    let private strategyOperators = ['!';'@']
+module DependenciesFileParser =
     let private operators =
-        basicOperators
-        @ (basicOperators |> List.map (fun o -> strategyOperators |> List.map (fun s -> string s + o)) |> List.concat)
+        VersionRange.BasicOperators
+        @ (VersionRange.BasicOperators |> List.map (fun o -> VersionRange.StrategyOperators |> List.map (fun s -> string s + o)) |> List.concat)
 
     let (|NuGetStrategy|PaketStrategy|NoStrategy|) (text : string) =
         match text |> Seq.tryHead with
@@ -105,7 +102,7 @@ module DependenciesFileParser =
             |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
             | _ -> 
                 let splitVersion (text:string) =
-                    match basicOperators |> List.tryFind(text.StartsWith) with
+                    match VersionRange.BasicOperators |> List.tryFind(text.StartsWith) with
                     | Some token -> token, text.Replace(token + " ", "").Split(' ') |> Array.toList
                     | None -> "=", text.Split(' ') |> Array.toList
 
@@ -298,7 +295,7 @@ module DependenciesFileParser =
           Parent = parent
           Graph = []
           Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
-          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim(strategyOperators |> Array.ofList)) } 
+          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim(VersionRange.StrategyOperators |> Array.ofList)) } 
 
     let parsePackageLine(sources,parent,line:string) =
         match line with 
@@ -331,11 +328,14 @@ module DependenciesFileParser =
                     let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest)
 
                     lineNo, { current with Packages = current.Packages @ [package] }::other
-                | SourceFile(origin, (owner,project, commit), path, authKey) ->
+                | SourceFile(origin, (owner,project, vr), path, authKey) ->
                     let remoteFile : UnresolvedSource = 
                         { Owner = owner
                           Project = project
-                          Commit = commit
+                          Version = 
+                            match vr with
+                            | None -> VersionRestriction.NoVersionRestriction
+                            | Some x -> VersionRestriction.Concrete x
                           Name = path
                           Origin = origin
                           Command = None
@@ -344,11 +344,19 @@ module DependenciesFileParser =
                           AuthKey = authKey }
                     lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
                 | Git(url) ->
-                    let owner,commit,project,url,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts url
+                    let owner,vr,project,url,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts url
                     let remoteFile : UnresolvedSource = 
                         { Owner = owner
                           Project = project
-                          Commit = commit
+                          Version = 
+                            match vr with
+                            | None -> VersionRestriction.NoVersionRestriction
+                            | Some x -> 
+                                try 
+                                    let vr = parseVersionRequirement x
+                                    VersionRestriction.VersionRequirement vr
+                                with 
+                                | _ -> VersionRestriction.Concrete x
                           Command = buildCommand
                           OperatingSystemRestriction = operatingSystemRestriction
                           PackagePath = packagePath
@@ -382,7 +390,7 @@ module DependenciesFileParser =
         fileName, groups, lines
     
     let parseVersionString (version : string) = 
-        { VersionRequirement = parseVersionRequirement (version.Trim(strategyOperators |> Array.ofList))
+        { VersionRequirement = parseVersionRequirement (version.Trim(VersionRange.StrategyOperators |> Array.ofList))
           ResolverStrategy = parseResolverStrategy version }
 
 module DependenciesFileSerializer = 

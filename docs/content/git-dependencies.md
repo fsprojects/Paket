@@ -24,9 +24,22 @@ If you want to restrict Paket to a special branch, tag or a concrete commit then
     git https://github.com/forki/FsUnit.git 1.0        // tag
     git file:///C:\Users\Steffen\AskMe master          // local git repo
 
+### Referencing Git tags
+
+Paket allows you to specify version ranges for git tags similar to [NuGet version ranges](nuget-dependencies.html#Version-constraints):
+
+    git https://github.com/fsprojects/Paket.git >= 1.0 // at least 1.0
+    git http://github.com/forki/AskMe.git < 3.0        // lower than version 3.0
+    git http://github.com/forki/AskMe.git ~> 2.0       // 2.0 <= x < 3.0
+    git https://github.com/forki/FsUnit.git 1.0        // exactly 1.0
+	git file:///C:\Users\Steffen\AskMe >= 1 alpha      // at least 1.0 including alpha versions
+    git file:///C:\Users\Steffen\AskMe >= 1 prerelease // at least 1.0 including prereleases
+
+You can read more about the version range details in the corresponding [NuGet reference section](nuget-dependencies.html#Version-constraints).
+
 ## Running a build in git repositories
 
-If your referenced git repository contains a build script then Paket can excute this scipt after restore:
+If your referenced git repository contains a build script then Paket can execute this scipt after restore:
 
     git https://github.com/forki/nupkgtest.git build build:"build.cmd"
 

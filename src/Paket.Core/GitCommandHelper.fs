@@ -268,6 +268,22 @@ let gitCommand repositoryDir command =
 /// [omit]
 let gitCommandf repositoryDir fmt = Printf.ksprintf (gitCommand repositoryDir) fmt
 
+/// Runs the git command and returns the results.
+let runFullGitCommand repositoryDir command =
+    try
+        let ok,msg,errors = runGitCommand repositoryDir command
+               
+        let errorText = toLines msg + Environment.NewLine + errors
+        if errorText.Contains "fatal: " then
+            failwith errorText
+
+        if msg.Count = 0 then [||] else
+        if verbose then
+            msg |> Seq.iter (tracefn "%s")
+        msg |> Seq.toArray
+    with 
+    | exn -> failwithf "Could not run \"git %s\".\r\nError: %s" command exn.Message
+
 /// Runs the git command and returns the first line of the result.
 let runSimpleGitCommand repositoryDir command =
     try
