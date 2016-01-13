@@ -165,6 +165,21 @@ Target "RunTests" (fun _ ->
             OutputFile = "TestResults.xml" })
 )
 
+Target "QuickTest" (fun _ ->
+
+    !! "C:\Users\Jared\Github\Forks\Paket\src\Paket.Core\Paket.Core.fsproj"    
+    |> MSBuildRelease "" "Rebuild"
+    |> ignore
+
+    !! testAssemblies
+    |> NUnit (fun p ->
+        { p with
+            DisableShadowCopy = true
+            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
+            TimeOut = TimeSpan.FromMinutes 20.
+            OutputFile = "TestResults.xml" })
+)
+
 
 Target "RunIntegrationTests" (fun _ ->
     !! integrationTestAssemblies
