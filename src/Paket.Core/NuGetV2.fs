@@ -461,7 +461,6 @@ let GetPackageDetails root force (sources:PackageSource list) packageName (versi
    
     let getPackageDetails force =
         sources
-        |> List.sortBy (fun x -> x.Url.ToLower().Contains "nuget.org" |> not)
         |> List.map (fun source -> async {
             try 
                 match source with
