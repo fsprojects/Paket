@@ -1,25 +1,15 @@
-#### 3.0.0-alpha026 - 14.01.2016
+#### 3.0.0-alpha027 - 14.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 
-#### 2.42.7 - 14.01.2016
-* PERFORMANCE: Fix issue with bad performance - https://github.com/fsprojects/Paket/issues/1387
-
-#### 2.42.6 - 13.01.2016
-* BUGFIX: Fix path issue
-
-#### 2.42.5 - 13.01.2016
-* USABILITY: Fail if credentials are invalid - https://github.com/fsprojects/Paket/issues/1382
-
-#### 2.42.4 - 12.01.2016
+#### 2.43.0 - 14.01.2016
+* BUGFIX: Use registration data from normalized NuGet version - https://github.com/fsprojects/Paket/issues/1387
 * BUGFIX: $(SolutionDir) in ProjectReference include attribute will be parsed - https://github.com/fsprojects/Paket/issues/1377
-
-#### 2.42.3 - 11.01.2016
 * BUGFIX: Restore groups sequentially - https://github.com/fsprojects/Paket/issues/1371
-
-#### 2.42.1 - 10.01.2016
-* PERFORMANCE: Try relaxed resolver only when there is a chance
+* PERFORMANCE: Fix issue with bad performance - https://github.com/fsprojects/Paket/issues/1387
+* PERFORMANCE: Try relaxed resolver only when there is a chance to succeed
+* USABILITY: Fail if credentials are invalid - https://github.com/fsprojects/Paket/issues/1382
 
 #### 2.42.0 - 10.01.2016
 * Nemerle projects support

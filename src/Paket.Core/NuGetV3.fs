@@ -187,7 +187,7 @@ type Catalog =
 let getRegistration (source : NugetV3Source) (packageName:PackageName) (version:SemVerInfo) =
     async {
         let! registrationUrl = PackageSources.getNuGetV3Resource source Registration
-        let url = sprintf "%s%s/%s.json" registrationUrl (packageName.ToString().ToLower()) version.AsString
+        let url = sprintf "%s%s/%s.json" registrationUrl (packageName.ToString().ToLower()) (version.Normalize())
         let! rawData = safeGetFromUrl (source.Authentication |> Option.map toBasicAuth, url, acceptJson)
         return
             match rawData with
