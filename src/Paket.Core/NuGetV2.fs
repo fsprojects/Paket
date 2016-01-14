@@ -457,10 +457,11 @@ let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets file
 /// Finds all analyzer files in a nuget package.
 let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer dlls"
 
-let GetPackageDetails root force sources packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
+let GetPackageDetails root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
    
     let getPackageDetails force =
         sources
+        |> List.sortBy (fun x -> x.Url.ToLower().Contains "nuget.org" |> not)
         |> List.map (fun source -> async {
             try 
                 match source with
@@ -482,9 +483,7 @@ let GetPackageDetails root force sources packageName (version:SemVerInfo) : Pack
             with e ->
                 verbosefn "Source '%O' exception: %O" source e
                 return None })
-        |> Async.Parallel
-        |> Async.RunSynchronously
-        |> Array.tryPick id
+        |> List.tryPick Async.RunSynchronously
 
     let source,nugetObject = 
         match getPackageDetails force with

@@ -70,7 +70,7 @@ module InstallFiles =
             ContentFiles = Set.union that.ContentFiles installFiles.ContentFiles }
 
 
-type InstallFiles with    
+type InstallFiles with
     member this.AddReference lib = InstallFiles.addReference  lib this
     member this.AddTargetsFile targetsFile = InstallFiles.addTargetsFile targetsFile this
     member this.AddFrameworkAssemblyReference assemblyName = InstallFiles.addFrameworkAssemblyReference assemblyName this 

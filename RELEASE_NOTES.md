@@ -1,3 +1,6 @@
+#### 2.42.7 - 13.01.2016
+* PERFORMANCE: Fix issue with bad performance - https://github.com/fsprojects/Paket/issues/1387
+
 #### 2.42.6 - 13.01.2016
 * BUGFIX: Fix path issue
 
