@@ -296,16 +296,23 @@ module ProjectFile =
 
 
         let parseCondition (data:System.Text.StringBuilder) (input:string) index =
-            maybe{
-                if input.Length <= index then return! None else 
-                data.Clear () |> ignore
-                let! left, index = parseWord data input index false
-                data.Clear () |> ignore
-                let! comp, index = parseComparison data input index
-                data.Clear () |> ignore
-                let! right, index = parseWord data input index false 
-                return (left, comp, right, index)
-            }
+            if input.Length <= index
+            then None
+            else
+                data.Clear() |> ignore
+                match parseWord data input index false with
+                | None -> None
+                | Some(left, index) ->
+                    data.Clear() |> ignore
+                    let comp = parseComparison data input index
+                    match comp with
+                    | None -> None
+                    | Some(comp, index) ->
+                        data.Clear() |> ignore
+                        match parseWord data input index false with
+                        | None -> None
+                        | Some(right, index) ->
+                            Some(left, comp, right, index)
 
         let rec parseAndOr (data:System.Text.StringBuilder) (input:string) index =
             if input.Length <= index then None else
