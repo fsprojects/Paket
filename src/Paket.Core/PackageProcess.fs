@@ -64,28 +64,30 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                 | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }
     | _ -> templateFile
 
-let private convertToSymbols (projectFile : ProjectFile) templateFile =
+let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) templateFile =
     let sourceFiles =
         let getTarget compileItem =
-            match compileItem.Link with
-            | Some link -> link
-            | None -> compileItem.Include
-            |> Path.GetDirectoryName
-            |> (fun d -> Path.Combine("src", d))
+            let item = match compileItem.Link with
+                       | Some link -> link
+                       | None -> compileItem.Include
 
-        projectFile.GetCompileItems()
+            let dir = Path.GetDirectoryName(Path.GetFullPath(item))
+            let tld = Path.GetFileName(Path.GetDirectoryName(dir))
+            Path.Combine("src", tld, Path.GetFileName(dir))
+
+        projectFile.GetCompileItems(includeReferencedProjects)
         |> Seq.map (fun c -> c.Include, getTarget c)
         |> Seq.toList
 
     match templateFile.Contents with
     | CompleteInfo(core, optional) ->
-        let augmentedFiles = optional.Files |> List.append sourceFiles 
+        let augmentedFiles = optional.Files |> List.append sourceFiles
         { templateFile with Contents = CompleteInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
     | ProjectInfo(core, optional) ->
-        let augmentedFiles = optional.Files |> List.append sourceFiles 
+        let augmentedFiles = optional.Files |> List.append sourceFiles
         { templateFile with Contents = ProjectInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols) =
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols, includeReferencedProjects) =
     let buildConfig = defaultArg buildConfig "Release"
     let buildPlatform = defaultArg buildPlatform ""
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
@@ -134,7 +136,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
     // add dependencies
     let allTemplates =
         let optWithSymbols projectFile templateFile =
-            seq { yield templateFile; if symbols then yield templateFile |> convertToSymbols projectFile }
+            seq { yield templateFile; if symbols then yield templateFile |> convertToSymbols projectFile includeReferencedProjects }
 
         let convertRemainingTemplate fileName =
             let templateFile = TemplateFile.Load(fileName,lockFile,version,specificVersions)
