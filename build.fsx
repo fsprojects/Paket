@@ -167,7 +167,7 @@ Target "RunTests" (fun _ ->
 
 Target "QuickTest" (fun _ ->
 
-    !! "C:\Users\Jared\Github\Forks\Paket\src\Paket.Core\Paket.Core.fsproj"    
+    !! "src\Paket.Core\Paket.Core.fsproj"    
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 
