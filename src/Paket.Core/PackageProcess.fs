@@ -85,7 +85,7 @@ let private convertToSymbols (projectFile : ProjectFile) templateFile =
         let augmentedFiles = optional.Files |> List.append sourceFiles 
         { templateFile with Contents = ProjectInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols) =
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, symbols) =
     let buildConfig = defaultArg buildConfig "Release"
     let buildPlatform = defaultArg buildPlatform ""
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
@@ -152,7 +152,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             | _ -> seq { yield templateFile }
 
         projectTemplates
-        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig buildPlatform t p lockDependencies projectTemplates)
+        |> Map.map (fun _ (t, p) -> p, findDependencies dependencies buildConfig buildPlatform t p projectTemplates)
         |> Map.toList
         |> Seq.collect (fun (_,(p,t)) -> t |> optWithSymbols p)
         |> Seq.append (allTemplateFiles |> Seq.collect convertRemainingTemplate)

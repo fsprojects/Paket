@@ -121,8 +121,8 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) =
-    let targetDir = 
+let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) (map : Map<string, TemplateFile * ProjectFile>) =
+    let targetDir =
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
         | ProjectOutputType.Library -> sprintf "lib/%O/" (project.GetTargetProfile())
@@ -175,7 +175,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
             | CompleteTemplate(core, opt) -> 
                 match core.Version with
                 | Some v ->
-                    let versionConstraint = if not lockDependencies then Minimum v else Specific v
+                    let versionConstraint = Minimum v
                     PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
                 | None -> failwithf "There was no version given for %s." templateFile.FileName
             | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
@@ -217,35 +217,27 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
             | _ -> true)
         |> List.map (fun (groupName,np) ->
                 let dependencyVersionRequirement =
-                    if not lockDependencies then
-                        match dependencies.Groups |> Map.tryFind groupName with
-                        | None -> None
-                        | Some group ->
-                            let deps = 
-                                group.Packages 
-                                |> Seq.map (fun p -> p.Name, p.VersionRequirement)
-                                |> Map.ofSeq
+                    match dependencies.Groups |> Map.tryFind groupName with
+                    | None -> None
+                    | Some group ->
+                        let deps =
+                            group.Packages
+                            |> Seq.map (fun p -> p.Name, p.VersionRequirement)
+                            |> Map.ofSeq
 
-                            Map.tryFind np.Name deps
-                            |> function
-                                | Some direct -> Some direct
-                                | None ->
-                                    match lockFile.Groups |> Map.tryFind groupName with
-                                    | None -> None
-                                    | Some group ->
-                                        // If it's a transient dependency, try to
-                                        // find it in `paket.lock` and set min version
-                                        // to current locked version
-                                        group.Resolution
-                                        |> Map.tryFind np.Name
-                                        |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, getPreReleaseStatus transient.Version))
-                        else
-                            match lockFile.Groups |> Map.tryFind groupName with
-                            | None -> None
-                            | Some group ->
-                                Map.tryFind np.Name group.Resolution
-                                |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
-                                |> Option.map (fun version -> VersionRequirement(Specific version, getPreReleaseStatus version))
+                        Map.tryFind np.Name deps
+                        |> function
+                            | Some direct -> Some direct
+                            | None ->
+                                match lockFile.Groups |> Map.tryFind groupName with
+                                | None -> None
+                                | Some group ->
+                                    // If it's a transient dependency, try to
+                                    // find it in `paket.lock` and set min version
+                                    // to current locked version
+                                    group.Resolution
+                                    |> Map.tryFind np.Name
+                                    |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, getPreReleaseStatus transient.Version))
                 let dep =
                     match dependencyVersionRequirement with
                     | Some installed -> installed
