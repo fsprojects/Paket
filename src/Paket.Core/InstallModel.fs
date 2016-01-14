@@ -13,7 +13,7 @@ type Reference =
     member this.LibName =
         match this with
         | Reference.Library lib -> 
-            let fi = normalizePath lib |> FileInfo
+            let fi = FileInfo(normalizePath lib)
             Some(fi.Name.Replace(fi.Extension, ""))
         | _ -> None
 
@@ -26,10 +26,10 @@ type Reference =
         match this with
         | Reference.FrameworkAssemblyReference name -> name
         | Reference.TargetsFile targetsFile -> 
-            let fi = normalizePath targetsFile |> FileInfo
+            let fi = FileInfo(normalizePath targetsFile)
             fi.Name.Replace(fi.Extension, "")
         | Reference.Library lib -> 
-            let fi = normalizePath lib |> FileInfo
+            let fi = FileInfo(normalizePath lib)
             fi.Name.Replace(fi.Extension, "")
 
     member this.Path =
