@@ -40,19 +40,19 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
     let lowerName = (packageName.ToString() + if includeVersionInPath then "." + version.ToString() else "").ToLower()
     let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
     let targetFolder = getTargetFolder root groupName packageName version includeVersionInPath
-    let direct = DirectoryInfo(targetFolder)
+    let direct = DirectoryInfo targetFolder
     if direct.Exists then direct else
-    match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith(lowerName)) with
+    match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith lowerName) with
     | Some x -> x
     | None -> failwithf "Package directory for package %O was not found." packageName
 
 
 let contentFileBlackList : list<(FileInfo -> bool)> = [
     fun f -> f.Name = "_._"
-    fun f -> f.Name.EndsWith(".transform")
-    fun f -> f.Name.EndsWith(".pp")
-    fun f -> f.Name.EndsWith(".tt")
-    fun f -> f.Name.EndsWith(".ttinclude")
+    fun f -> f.Name.EndsWith ".transform"
+    fun f -> f.Name.EndsWith ".pp"
+    fun f -> f.Name.EndsWith ".tt"
+    fun f -> f.Name.EndsWith ".ttinclude"
 ]
 
 let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems options =
@@ -64,10 +64,10 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
             |> Seq.filter (fun (_,_,setting) -> setting <> ContentCopySettings.Omit)
             |> Seq.map (fun (key,v,s) -> s,findPackageFolder root key v)
             |> Seq.choose (fun (settings,packageDir) ->
-                    packageDir.GetDirectories("Content")
-                    |> Array.append (packageDir.GetDirectories("content"))
-                    |> Array.tryFind (fun _ -> true)
-                    |> Option.map (fun x -> x,settings))
+                packageDir.GetDirectories "Content"
+                |> Array.append (packageDir.GetDirectories "content")
+                |> Array.tryFind (fun _ -> true)
+                |> Option.map (fun x -> x,settings))
             |> Seq.toList
 
         let copyContentFiles (project : ProjectFile, packagesWithContent) =

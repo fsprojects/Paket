@@ -2,7 +2,7 @@ module Paket.Commands
 
 open System
 
-open Nessos.Argu
+open Argu
 
 type Command =
     | [<First>][<CustomCommandLine("add")>]                     Add

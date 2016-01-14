@@ -4,7 +4,7 @@ open System.Management.Automation
 open System.Diagnostics
 open Paket
 open Paket.Commands
-open Nessos.Argu
+open Argu
 open System
 
 // types exposed publicly by sending to output

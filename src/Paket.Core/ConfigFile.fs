@@ -16,7 +16,7 @@ let private rootElement = "configuration"
 
 let private getConfigNode (nodeName : string) =
     let rootNode = 
-        let doc = new XmlDocument()
+        let doc = XmlDocument ()
         if File.Exists Constants.PaketConfigFile then 
             try 
                 doc.Load Constants.PaketConfigFile
@@ -24,7 +24,7 @@ let private getConfigNode (nodeName : string) =
             with _ -> fail ConfigFileParseError
         else
             let element = doc.CreateElement rootElement
-            doc.AppendChild(element) |> ignore
+            doc.AppendChild element |> ignore
             ok element
 
     trial {
@@ -74,22 +74,22 @@ let DecryptNuget (encrypted : string) =
     |> Encoding.UTF8.GetString
 
 let private readPassword (message : string) : string = 
-    Console.Write(message)
+    Console.Write message
     let mutable continueLooping = true
     let mutable password = ""
     while continueLooping do
-        let key = Console.ReadKey(true)
+        let key = Console.ReadKey true
         continueLooping <- key.Key <> ConsoleKey.Enter
         if continueLooping then 
             password <- 
                 if key.Key <> ConsoleKey.Backspace then 
-                    Console.Write("*")
+                    Console.Write "*"
                     password + key.KeyChar.ToString()
                 else if password.Length > 0 then 
-                    Console.Write("\b \b")
+                    Console.Write "\b \b"
                     password.Substring(0, (password.Length - 1))
                 else ""
-        else Console.Write("\r")
+        else Console.Write "\r"
     password
 
 let getAuthFromNode (node : XmlNode) = 
@@ -98,32 +98,32 @@ let getAuthFromNode (node : XmlNode) =
         let username = node.Attributes.["username"].Value
         let password = node.Attributes.["password"].Value
         let salt = node.Attributes.["salt"].Value
-        Credentials(username, Decrypt salt password)
+        Credentials (username, Decrypt salt password)
     | "token" -> Token node.Attributes.["value"].Value
     | _ -> failwith "unknown node"
 
 let private createSourceNode (credentialsNode : XmlNode) source nodeName =
     let node = credentialsNode.OwnerDocument.CreateElement nodeName
-    node.SetAttribute("source", source)
+    node.SetAttribute ("source", source)
     credentialsNode.AppendChild node |> ignore
     node
 
 let private setCredentials (username : string) (password : string) (node : XmlElement) =
     let salt, encrypedPassword = Encrypt password
-    node.SetAttribute("username", username)
-    node.SetAttribute("password", encrypedPassword)
-    node.SetAttribute("salt", salt)
+    node.SetAttribute ("username", username)
+    node.SetAttribute ("password", encrypedPassword)
+    node.SetAttribute ("salt", salt)
     node
 
 let private setToken (token : string) (node : XmlElement) =
-    node.SetAttribute("value", token)
+    node.SetAttribute ("value", token)
     node
 
 /// Check if the provided credentials for a specific source are correct
 let checkCredentials(url, cred) = 
     let client = Utils.createWebClient(url,cred)
     try 
-        client.DownloadData(Uri(url)) |> ignore
+        client.DownloadData (Uri url) |> ignore
         true
     with _ -> false
 
@@ -164,7 +164,7 @@ let GetAuthenticationForUrl (source : string) url =
 let GetAuthentication (source : string) =
     GetAuthenticationForUrl source source
 
-let AddCredentials(source, username, password) = 
+let AddCredentials (source, username, password) = 
     trial { 
         let! credentialsNode = getConfigNode "credentials"
         let newCredentials = 
@@ -172,7 +172,7 @@ let AddCredentials(source, username, password) =
             | None -> createSourceNode credentialsNode source "credential" |> Some
             | Some existingNode -> 
                 match getAuthFromNode existingNode with
-                | Credentials(_, existingPassword) ->
+                | Credentials (_, existingPassword) ->
                     if existingPassword <> password then existingNode |> Some
                     else None
                 | _ -> None
@@ -182,7 +182,7 @@ let AddCredentials(source, username, password) =
         | None -> ()
     }
 
-let AddToken(source, token) =
+let AddToken (source, token) =
     trial {
         let! credentialsNode = getConfigNode "credentials"
         let newToken = 
@@ -202,8 +202,8 @@ let AddToken(source, token) =
 
 let askAndAddAuth (source : string) (username : string) = 
     let username =
-        if(username = "") then
-            Console.Write("Username: ")
+        if username = "" then
+            Console.Write "Username: "
             Console.ReadLine()
         else 
             username

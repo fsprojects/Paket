@@ -102,7 +102,7 @@ type DomainMessage =
 
     | StrictModeDetected
     | DependencyNotFoundInLockFile of PackageName
-    | ReferenceNotFoundInLockFile of string * string * PackageName
+    | ReferenceNotFoundInLockFile of path:string * groupName:string * packageName:PackageName
 
     | DownloadError of string
     | ReleasesJsonParseError
@@ -113,7 +113,7 @@ type DomainMessage =
 
     | ConfigFileParseError
     
-    | PackagingConfigParseError of string * string
+    | PackagingConfigParseError of file:string * error:string
 
     override this.ToString() = 
         match this with
