@@ -155,12 +155,27 @@ Target "BuildPowerShell" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Run the unit tests using test runner
 
+
+
 Target "RunTests" (fun _ ->
     !! testAssemblies
     |> NUnit (fun p ->
         { p with
             DisableShadowCopy = true
-            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
+            TimeOut = TimeSpan.FromMinutes 20.
+            OutputFile = "TestResults.xml" })
+)
+
+Target "QuickTest" (fun _ ->
+
+    !! "src\Paket.Core\Paket.Core.fsproj"    
+    |> MSBuildRelease "" "Rebuild"
+    |> ignore
+
+    !! testAssemblies
+    |> NUnit (fun p ->
+        { p with
+            DisableShadowCopy = true
             TimeOut = TimeSpan.FromMinutes 20.
             OutputFile = "TestResults.xml" })
 )
@@ -171,7 +186,6 @@ Target "RunIntegrationTests" (fun _ ->
     |> NUnit (fun p ->
         { p with
             DisableShadowCopy = true
-            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
             TimeOut = TimeSpan.FromMinutes 20.
             OutputFile = "TestResults.xml" })
 )

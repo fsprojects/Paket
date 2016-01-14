@@ -17,6 +17,10 @@ let acceptJson = "application/atom+json,application/json"
 
 let notNullOrEmpty = not << System.String.IsNullOrEmpty
 
+let inline force (lz: 'a Lazy)  = lz.Force()
+let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
+let inline toLower str = (^a:(member ToLower:unit->string)str) 
+
 type Auth = 
     | Credentials of Username : string * Password : string
     | Token of string
@@ -31,32 +35,32 @@ let TimeSpanToReadableString(span:TimeSpan) =
 
     let formatted = String.Format("{0}{1}{2}{3}", days, hours, minutes, seconds)
 
-    let formatted = if formatted.EndsWith(", ") then formatted.Substring(0, formatted.Length - 2) else formatted
+    let formatted = if formatted.EndsWith ", " then formatted.Substring(0, formatted.Length - 2) else formatted
 
-    if String.IsNullOrEmpty(formatted) then "0 seconds" else formatted
+    if String.IsNullOrEmpty formatted then "0 seconds" else formatted
 
 let GetHomeDirectory() =
-    if (Environment.OSVersion.Platform = PlatformID.Unix || Environment.OSVersion.Platform = PlatformID.MacOSX) then
-        Environment.GetEnvironmentVariable("HOME")
+    if  Environment.OSVersion.Platform = PlatformID.Unix || Environment.OSVersion.Platform = PlatformID.MacOSX then
+        Environment.GetEnvironmentVariable "HOME"
     else
-        Environment.ExpandEnvironmentVariables("%HOMEDRIVE%%HOMEPATH%")
+        Environment.ExpandEnvironmentVariables "%HOMEDRIVE%%HOMEPATH%"
 
 type PathReference =
     | AbsolutePath of string
     | RelativePath of string
 
-let normalizeLocalPath(path:string) =
-    if path.StartsWith("~/") then
-        AbsolutePath (Path.Combine(GetHomeDirectory(), path.Substring(2)))
-    else if Path.IsPathRooted(path) then
+let normalizeLocalPath (path:string) =
+    if path.StartsWith "~/" then
+        AbsolutePath (Path.Combine(GetHomeDirectory(), path.Substring 2))
+    elif Path.IsPathRooted path then
         AbsolutePath path
     else
         RelativePath path
         
 let getDirectoryInfo pathInfo root =
     match pathInfo with
-            | AbsolutePath s -> DirectoryInfo(s)
-            | RelativePath s -> DirectoryInfo(Path.Combine(root, s))
+    | AbsolutePath s -> DirectoryInfo s 
+    | RelativePath s -> DirectoryInfo(Path.Combine(root, s))
         
 /// Creates a directory if it does not exist.
 let createDir path = 
@@ -67,7 +71,7 @@ let createDir path =
     with _ ->
         DirectoryCreateError path |> fail
 
-let rec deleteDir(dirInfo:DirectoryInfo) =
+let rec deleteDir (dirInfo:DirectoryInfo) =
     if dirInfo.Exists then
         for fileInfo in dirInfo.GetFiles() do
             fileInfo.Attributes <- FileAttributes.Normal
@@ -89,13 +93,13 @@ let CleanDir path =
         | exn -> failwithf "Error during deletion of %s%s  - %s" di.FullName Environment.NewLine exn.Message 
     di.Create()
     // set writeable
-    File.SetAttributes(path, FileAttributes.Normal)
+    File.SetAttributes (path, FileAttributes.Normal)
 
 // http://stackoverflow.com/a/19283954/1397724
 let getFileEncoding path =
     let bom = Array.zeroCreate 4
-    use fs = new FileStream(path, FileMode.Open, FileAccess.Read)
-    fs.Read(bom, 0, 4) |> ignore
+    use fs = new FileStream (path, FileMode.Open, FileAccess.Read)
+    fs.Read (bom, 0, 4) |> ignore
     match bom with
     | [| 0x2buy ; 0x2fuy ; 0x76uy ; _      |] -> Encoding.UTF7
     | [| 0xefuy ; 0xbbuy ; 0xbfuy ; _      |] -> Encoding.UTF8
@@ -107,33 +111,32 @@ let getFileEncoding path =
 /// [omit]
 let inline createRelativePath root path = 
     let basePath = 
-        if String.IsNullOrEmpty root then Environment.CurrentDirectory + Path.DirectorySeparatorChar.ToString()
+        if String.IsNullOrEmpty root then Environment.CurrentDirectory + string Path.DirectorySeparatorChar
         else root
     
-    let uri = Uri(basePath)
-    uri.MakeRelativeUri(Uri(path)).ToString().Replace("/", "\\").Replace("%20", " ")
+    let uri = Uri basePath
+    uri.MakeRelativeUri(Uri path).ToString().Replace("/", "\\").Replace("%20", " ")
 
 let extractPath infix (fileName : string) : string option=
     let path = fileName.Replace("\\", "/").ToLower()
-    let fi = new FileInfo(path)
+    let fi = FileInfo path
 
-    let startPos = path.LastIndexOf(sprintf "%s/" infix)
+    let startPos = path.LastIndexOf (sprintf "%s/" infix)
     let endPos = path.IndexOf('/', startPos + infix.Length + 1)
     if startPos < 0 then None 
-    elif endPos < 0 then Some("")
+    elif endPos < 0 then Some ""
     else 
-        Some(path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1))
+        Some (path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1))
 
 /// [omit]
-let inline normalizeXml(doc:XmlDocument) =
+let inline normalizeXml (doc:XmlDocument) =
     use stringWriter = new StringWriter()
-    let settings = XmlWriterSettings()
-    settings.Indent <- true
+    let settings = XmlWriterSettings (Indent=true)
         
-    use xmlTextWriter = XmlWriter.Create(stringWriter, settings)
-    doc.WriteTo(xmlTextWriter)
+    use xmlTextWriter = XmlWriter.Create (stringWriter, settings)
+    doc.WriteTo xmlTextWriter
     xmlTextWriter.Flush()
-    stringWriter.GetStringBuilder().ToString()
+    stringWriter.GetStringBuilder() |> string
 
 let envProxies () =
     let getEnvValue (name:string) =
@@ -142,28 +145,26 @@ let envProxies () =
         if isNull v then Environment.GetEnvironmentVariable(name.ToLowerInvariant()) else v
     let bypassList =
         let noproxy = getEnvValue "NO_PROXY"
-        if String.IsNullOrEmpty(noproxy) then [||] else
+        if String.IsNullOrEmpty noproxy then [||] else
         noproxy.Split([| ',' |], StringSplitOptions.RemoveEmptyEntries)
     let getCredentials (uri:Uri) =
         let userPass = uri.UserInfo.Split([| ':' |], 2)
         if userPass.Length <> 2 || userPass.[0].Length = 0 then None else
-        let credentials = new NetworkCredential(Uri.UnescapeDataString userPass.[0], Uri.UnescapeDataString userPass.[1])
+        let credentials = NetworkCredential(Uri.UnescapeDataString userPass.[0], Uri.UnescapeDataString userPass.[1])
         Some credentials
 
     let getProxy (scheme:string) =
         let envVarName = sprintf "%s_PROXY" (scheme.ToUpperInvariant())
         let envVarValue = getEnvValue envVarName
-        if isNull envVarValue then 
-            None 
-        else
-            match Uri.TryCreate(envVarValue, UriKind.Absolute) with
-            | true, envUri ->
-                let proxy = new WebProxy(new Uri(sprintf "http://%s:%d" envUri.Host envUri.Port))
-                proxy.Credentials <- Option.toObj <| getCredentials envUri
-                proxy.BypassProxyOnLocal <- true
-                proxy.BypassList <- bypassList
-                Some proxy
-            | _ -> None
+        if isNull envVarValue then None else
+        match Uri.TryCreate(envVarValue, UriKind.Absolute) with
+        | true, envUri ->
+            let proxy = WebProxy (Uri (sprintf "http://%s:%d" envUri.Host envUri.Port))
+            proxy.Credentials <- Option.toObj <| getCredentials envUri
+            proxy.BypassProxyOnLocal <- true
+            proxy.BypassList <- bypassList
+            Some proxy
+        | _ -> None
 
     let addProxy (map:Map<string, WebProxy>) scheme =
         match getProxy scheme with
@@ -178,29 +179,29 @@ let calcEnvProxies = lazy (envProxies())
 let private proxies = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 let getDefaultProxyFor url =
-    let uri = new Uri(url)
+    let uri = Uri url
     let key = uri.Host,uri.Port,uri.Scheme
     match proxies.TryGetValue key with
     | true,proxy -> proxy
     | _ ->
         let getDefault () =
             let result = WebRequest.GetSystemWebProxy()
-            let address = result.GetProxy(uri)
+            let address = result.GetProxy uri 
 
             if address = uri then null else
-            let proxy = new WebProxy(address)
+            let proxy = WebProxy address
             proxy.Credentials <- CredentialCache.DefaultCredentials
             proxy.BypassProxyOnLocal <- true
             proxy
 
         let proxy =
             match calcEnvProxies.Force().TryFind uri.Scheme with
-            | Some p -> if p.GetProxy(uri) <> uri then p else getDefault()
+            | Some p -> if p.GetProxy uri <> uri then p else getDefault()
             | None -> getDefault()
         proxies.TryAdd(key,proxy) |> ignore
         proxy
 
-let inline createWebClient(url,auth:Auth option) =
+let inline createWebClient (url,auth:Auth option) =
     let client = new WebClient()
     match auth with
     | None -> client.UseDefaultCredentials <- true
@@ -234,8 +235,8 @@ let innerText (exn:Exception) =
 let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
-            use client = createWebClient(url,auth)
-            let task = client.DownloadFileTaskAsync(Uri(url), filePath) |> Async.AwaitTask
+            use client = createWebClient (url,auth)
+            let task = client.DownloadFileTaskAsync (Uri url, filePath) |> Async.AwaitTask
             do! task
         with
         | exn ->
@@ -248,9 +249,8 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
         try
             use client = createWebClient(url,auth)
             if notNullOrEmpty contentType then
-                client.Headers.Add(HttpRequestHeader.Accept, contentType)
-            let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
-            return! s
+                client.Headers.Add (HttpRequestHeader.Accept, contentType)
+            return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
             failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
@@ -260,16 +260,14 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
 let getXmlFromUrl (auth:Auth option, url : string) =
     async { 
         try
-            use client = createWebClient(url,auth)
-
+            use client = createWebClient (url,auth)
             // mimic the headers sent from nuget client to odata/ endpoints
-            client.Headers.Add(HttpRequestHeader.Accept, "application/atom+xml, application/xml")
-            client.Headers.Add(HttpRequestHeader.AcceptCharset, "UTF-8")
-            client.Headers.Add("DataServiceVersion", "1.0;NetFx")
-            client.Headers.Add("MaxDataServiceVersion", "2.0;NetFx")
+            client.Headers.Add (HttpRequestHeader.Accept, "application/atom+xml, application/xml")
+            client.Headers.Add (HttpRequestHeader.AcceptCharset, "UTF-8")
+            client.Headers.Add ("DataServiceVersion", "1.0;NetFx")
+            client.Headers.Add ("MaxDataServiceVersion", "2.0;NetFx")
             
-            let s = client.DownloadStringTaskAsync(Uri(url)) |> Async.AwaitTask
-            return! s
+            return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
             failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
@@ -280,14 +278,13 @@ let getXmlFromUrl (auth:Auth option, url : string) =
 let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try 
-            let uri = Uri(url)
-            use client = createWebClient(url,auth)
+            let uri = Uri url
+            use client = createWebClient (url,auth)
             
             if notNullOrEmpty contentType then
                 client.Headers.Add(HttpRequestHeader.Accept, contentType)
 
-            let s = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
-            let! raw = s
+            let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             return Some raw
         with _ -> return None
     }
@@ -315,7 +312,7 @@ let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparato
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
 let getTargetFolder root groupName (packageName:PackageName) (version:SemVerInfo) includeVersionInPath = 
-    let packageFolder = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
+    let packageFolder = string packageName + if includeVersionInPath then "." + string version else ""
     if groupName = Constants.MainDependencyGroup then
         Path.Combine(root, Constants.PackagesFolderName, packageFolder)
     else
@@ -335,23 +332,23 @@ let RunInLockedAccessMode(rootFolder,action) =
             let rec waitForUnlocked counter =
                 if File.Exists fileName then
                     let content = File.ReadAllText fileName
-                    if content <> p.Id.ToString() then
+                    if content <> string p.Id then
                         let currentProcess = Process.GetCurrentProcess()
                         let hasRunningPaketProcess = 
-                            Process.GetProcessesByName(p.ProcessName) 
+                            Process.GetProcessesByName p.ProcessName
                             |> Array.filter (fun p -> p.Id <> currentProcess.Id)
-                            |> Array.exists (fun p -> content = p.Id.ToString() && (not p.HasExited))
+                            |> Array.exists (fun p -> content = string p.Id && (not p.HasExited))
 
                         if hasRunningPaketProcess then
                             if startTime + timeOut <= DateTime.Now then
                                 failwith "timeout"
                             if counter % 10 = 0 then
                                 traceWarnfn "packages folder is locked by paket.exe (PID = %s). Waiting..." content
-                            Thread.Sleep(100)
-                            waitForUnlocked(counter + 1)
+                            Thread.Sleep 100
+                            waitForUnlocked (counter + 1)
 
             waitForUnlocked 0
-            File.WriteAllText(fileName,p.Id.ToString())
+            File.WriteAllText(fileName, string p.Id)
         with
         | exn ->
             if trials > 0 && (startTime + timeOut) > DateTime.Now then 
@@ -363,7 +360,7 @@ let RunInLockedAccessMode(rootFolder,action) =
     let releaseLock() =
          if File.Exists fileName then
             let content = File.ReadAllText fileName
-            if content = p.Id.ToString() then
+            if content = string p.Id then
                File.Delete fileName
 
     try
@@ -384,7 +381,12 @@ module String =
             Some (input.Substring(prefix.Length))
         else None
 
-    let quoted(text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
+    let quoted (text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
+
+    let inline trim (text:string) = text.Trim()
+    let inline trimChars chs (text:string) = text.Trim chs
+    let inline trimStart pre (text:string) = text.TrimStart pre
+    let inline split sep (text:string) = text.Split sep
 
 // MonadPlus - "or else"
 let inline (++) x y =
@@ -392,7 +394,7 @@ let inline (++) x y =
     | None -> y
     | _ -> x
 
-let parseKeyValuePairs(s:string) =
+let parseKeyValuePairs (s:string) =
     let s = s.Trim().ToLower()
     let parts = s.Split([|','|], StringSplitOptions.RemoveEmptyEntries)
     let dict = new System.Collections.Generic.Dictionary<_,_>()
@@ -401,7 +403,7 @@ let parseKeyValuePairs(s:string) =
 
     for p in parts do
         if p.Contains ":" then
-            let innerParts = p.Split(':') |> Array.map (fun x -> x.Trim())
+            let innerParts = p.Split ':' |> Array.map String.trim
             if innerParts.Length % 2 <> 0 then
                 failwithf "\"%s\" can not be parsed as key/value pairs." p
             dict.Add(innerParts.[0],innerParts.[1])
@@ -426,7 +428,7 @@ let downloadFileSync (url : string) (fileName : string) (client : System.Net.Web
 let saveFile (fileName : string) (contents : string) =
     tracefn "Saving file %s" fileName
     try 
-        File.WriteAllText(fileName, contents) |> ok
+        File.WriteAllText (fileName, contents) |> ok
     with _ ->
         FileSaveError fileName |> fail
 
@@ -434,7 +436,7 @@ let removeFile (fileName : string) =
     if File.Exists fileName then
         tracefn "Removing file %s" fileName
         try
-            File.Delete(fileName) |> ok
+            File.Delete fileName |> ok
         with _ ->
             FileDeleteError fileName |> fail
     else ok ()
@@ -443,7 +445,7 @@ let normalizeLineEndings (text : string) =
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
 
 let isMonoRuntime =
-    not (Object.ReferenceEquals(Type.GetType("Mono.Runtime"), null))
+    not (Object.ReferenceEquals(Type.GetType "Mono.Runtime", null))
 
 // adapted from MiniRx
 // http://minirx.codeplex.com/
@@ -455,9 +457,9 @@ module ObservableExtensions =
         f (fun g arg ->
             let nctx = System.Threading.SynchronizationContext.Current 
             if ctx <> null && ctx <> nctx then 
-                ctx.Post((fun _ -> g(arg)), null)
+                ctx.Post((fun _ -> g arg), null)
             else 
-                g(arg))
+                g arg)
 
     type Microsoft.FSharp.Control.Async with 
       static member AwaitObservable(ev1:IObservable<'a>) =
@@ -466,7 +468,7 @@ module ObservableExtensions =
             let rec callback = (fun value ->
               remover.Dispose()
               f cont value )
-            and remover : IDisposable  = ev1.Subscribe(callback) 
+            and remover : IDisposable  = ev1.Subscribe callback
             () )))
 
     [<RequireQualifiedAccess>]
@@ -478,8 +480,8 @@ module ObservableExtensions =
         /// operation after 'let!' attaches handler)
         let guard f (e:IObservable<'Args>) =
           { new IObservable<'Args> with
-              member x.Subscribe(observer) =
-                let rm = e.Subscribe(observer) in f(); rm } 
+              member x.Subscribe observer =
+                let rm = e.Subscribe observer in f(); rm } 
 
         let sample milliseconds source =
             let relay (observer:IObserver<'T>) =
@@ -494,7 +496,7 @@ module ObservableExtensions =
             { new IObservable<'T> with
                 member this.Subscribe(observer:IObserver<'T>) =
                     let cts = new System.Threading.CancellationTokenSource()
-                    Async.Start(relay observer, cts.Token)
+                    Async.Start (relay observer, cts.Token)
                     { new IDisposable with 
                         member this.Dispose() = cts.Cancel() 
                     }
@@ -511,20 +513,20 @@ module ObservableExtensions =
 
         let ofAsync a : IObservable<'a> = 
             { new IObservable<'a> with
-                  member __.Subscribe obs = 
-                      let oneAndDone' = oneAndDone obs
-                      let token = new CancellationTokenSource()
-                      Async.StartWithContinuations(a,oneAndDone',obs.OnError,obs.OnError,token.Token)
-                      { new IDisposable with
-                            member __.Dispose() = 
-                                token.Cancel |> ignore
-                                token.Dispose() } }
+                member __.Subscribe obs = 
+                    let oneAndDone' = oneAndDone obs
+                    let token = new CancellationTokenSource()
+                    Async.StartWithContinuations (a,oneAndDone',obs.OnError,obs.OnError,token.Token)
+                    { new IDisposable with
+                        member __.Dispose() = 
+                            token.Cancel |> ignore
+                            token.Dispose() } }
         
         let ofAsyncWithToken (token : CancellationToken) a : IObservable<'a> = 
             { new IObservable<'a> with
                   member __.Subscribe obs = 
                       let oneAndDone' = oneAndDone obs
-                      Async.StartWithContinuations(a,oneAndDone',obs.OnError,obs.OnError,token)
+                      Async.StartWithContinuations (a,oneAndDone',obs.OnError,obs.OnError,token)
                       { new IDisposable with
                             member __.Dispose() = () } }
 
@@ -535,13 +537,13 @@ module ObservableExtensions =
                     let sub = 
                         input.Subscribe
                           ({ new IObserver<#seq<'a>> with
-                              member x.OnNext(values) = values |> Seq.iter obs.OnNext
+                              member x.OnNext values = values |> Seq.iter obs.OnNext
                               member x.OnCompleted() = 
                                 cts.Cancel()
                                 obs.OnCompleted()
-                              member x.OnError(e) = 
+                              member x.OnError e = 
                                 cts.Cancel()
-                                obs.OnError(e) })
+                                obs.OnError e })
 
                     { new IDisposable with 
                         member __.Dispose() = 
@@ -551,4 +553,4 @@ module ObservableExtensions =
         let distinct (a: IObservable<'a>): IObservable<'a> =
             let seen = HashSet()
             Observable.filter seen.Add a
- 
+

@@ -16,9 +16,9 @@ let (|CompleteTemplate|IncompleteTemplate|) templateFile =
 let (|Title|Description|Version|InformationalVersion|Company|Ignore|) (attributeName:string,attributeValue:string) = 
     try
         match attributeName with
-        | "AssemblyCompanyAttribute" -> Company(attributeValue)
-        | "AssemblyDescriptionAttribute" -> Description(attributeValue)
-        | "AssemblyTitleAttribute" -> Title(attributeValue)
+        | "AssemblyCompanyAttribute" -> Company attributeValue
+        | "AssemblyDescriptionAttribute" -> Description attributeValue
+        | "AssemblyTitleAttribute" -> Title attributeValue
         | "AssemblyVersionAttribute" -> Version(attributeValue |> SemVer.Parse)
         | "AssemblyInformationalVersionAttribute" -> InformationalVersion(attributeValue|> SemVer.Parse)
         | _ -> Ignore
@@ -29,9 +29,8 @@ let getId (assembly : Assembly) (md : ProjectCoreInfo) = { md with Id = Some(ass
 
 let getVersion versionFromAssembly attributes = 
     let informational = 
-        attributes |> Seq.tryPick (function 
-                            | InformationalVersion v -> Some v
-                            | _ -> None)
+        attributes 
+        |> Seq.tryPick (function InformationalVersion v -> Some v | _ -> None)
     match informational with
     | Some v -> informational
     | None -> 
@@ -42,30 +41,24 @@ let getVersion versionFromAssembly attributes =
         match fromAssembly with
         | Some v -> fromAssembly
         | None -> 
-            attributes |> Seq.tryPick (function 
-                                | Version v -> Some v
-                                | _ -> None)
+            attributes 
+            |> Seq.tryPick (function Version v -> Some v | _ -> None)
 
 let getAuthors attributes = 
     attributes
-    |> Seq.tryPick (fun attr ->
-            match attr with 
-            | Company a -> Some a
-            | _ -> None)
+    |> Seq.tryPick (function Company a -> Some a | _ -> None)
     |> Option.map (fun a -> 
             a.Split(',')
             |> Array.map (fun s -> s.Trim())
             |> List.ofArray)
 
 let getTitle attributes = 
-    attributes |> Seq.tryPick (function 
-                      | Title t -> Some t
-                      | _ -> None) 
+    attributes 
+    |> Seq.tryPick (function Title t -> Some t | _ -> None) 
 
 let getDescription attributes = 
-    attributes |> Seq.tryPick (function 
-                      | Description d -> Some d
-                      | _ -> None) 
+    attributes 
+    |> Seq.tryPick (function Description d -> Some d | _ -> None) 
 
 let readAssembly fileName =
     traceVerbose <| sprintf "Loading assembly metadata for %s" fileName

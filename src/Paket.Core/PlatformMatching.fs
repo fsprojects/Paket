@@ -78,7 +78,7 @@ let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
     else
         0
 
-let rec findBestMatch (paths : string list) (targetProfile : TargetProfile) = 
+let rec findBestMatch (paths : #seq<string>) (targetProfile : TargetProfile) = 
     let requiredPlatforms = 
         match targetProfile with
         | PortableProfile(_, platforms) -> platforms
@@ -86,37 +86,39 @@ let rec findBestMatch (paths : string list) (targetProfile : TargetProfile) =
 
     match
         paths 
-        |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
-        |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
-        |> List.sortWith comparePaths
-        |> List.map fst
-        |> List.tryFind (fun _ -> true) with
+        |> Seq.map (fun path -> path, (getPenalty requiredPlatforms path))
+        |> Seq.filter (fun (_, penalty) -> penalty < MaxPenalty)
+        |> Seq.sortWith comparePaths
+        |> Seq.map fst
+        |> Seq.tryFind (fun _ -> true) with
     | None ->
         // Fallback Portable Library
         KnownTargetProfiles.AllProfiles
-        |> List.choose (fun p ->
+        |> Seq.choose (fun p ->
             if p.ProfilesCompatibleWithPortableProfile 
-               |> List.map SinglePlatform 
-               |> List.exists ((=)targetProfile)
+               |> Seq.map SinglePlatform 
+               |> Seq.exists ((=)targetProfile)
             then findBestMatch paths p
             else None
         )
-        |> List.sortBy (fun x -> (extractPlatforms x).Length) // prefer portable platform whith less platforms
-        |> List.tryFind (fun _ -> true)
+        |> Seq.sortBy (fun x -> (extractPlatforms x).Length) // prefer portable platform whith less platforms
+        |> Seq.tryFind (fun _ -> true)
     | path -> path
+
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
-let getSupportedTargetProfiles (paths : string list) =
+let getSupportedTargetProfiles (paths :#seq<string>) =
     KnownTargetProfiles.AllProfiles
-    |> List.map (fun target -> findBestMatch paths target, target)
-    |> List.collect (fun (path, target) -> 
+    |> Seq.map (fun target -> findBestMatch paths target, target)
+    |> Seq.collect (fun (path, target) -> 
            match path with
            | Some p -> [ p, target ]
            | _ -> [])
-    |> List.groupBy fst
-    |> List.map (fun (path, group) -> path, List.map snd group)
-    |> Map.ofList
+    |> Seq.groupBy fst
+    |> Seq.map (fun (path, group) -> path, Seq.map snd group)
+    |> Map.ofSeq
+
 
 let getTargetCondition (target:TargetProfile) =
     match target with

@@ -1,7 +1,7 @@
 ﻿[<AutoOpen>]
 module Paket.PowerShell.ArgumentParserExt
 
-open Nessos.Argu
+open Argu
 
 // https://github.com/nessos/UnionArgParser/issues/35
 
