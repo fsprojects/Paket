@@ -10,7 +10,7 @@ open Paket.Logging
 open Paket.Commands
 open Paket.Releases
 
-open Nessos.Argu
+open Argu
 open PackageSources
 
 let private stopWatch = new Stopwatch()
