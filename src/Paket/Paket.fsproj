@@ -45,6 +45,7 @@
     <StartArguments>update</StartArguments>
     <StartArguments>update</StartArguments>
     <StartArguments>restore</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -63,6 +64,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001359-wrong-prerelease\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001380-git-semvertag-as-source\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\paket-repro</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001387-nugetv3\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
