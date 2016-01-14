@@ -1140,19 +1140,39 @@ module ProjectFile =
         tryNextPlat platforms []
 
 
-    let getCompileItems (this:ProjectFile) =
-        let getCompileItem (compileNode : XmlNode) =
-            let includePath = compileNode |> getAttribute "Include" |> fun a -> a.Value
+    let getCompileItems (this : ProjectFile, includeReferencedProjects : bool) = 
+        let getCompileItem (projfile : ProjectFile, compileNode : XmlNode) = 
+            let getIncludePath (projfile : ProjectFile) (includePath : string) = 
+                Path.Combine(Path.GetDirectoryName(Path.GetFullPath(projfile.FileName)), includePath)
+            
+            let includePath = 
+                compileNode
+                |> getAttribute "Include"
+                |> fun a -> a.Value |> getIncludePath projfile
+
             compileNode
             |> getDescendants "Link"
-            |> function
-               | [] -> { Include = includePath; Link = None }
-               | [link] | link::_ -> { Include = includePath; Link = Some link.InnerText }
-
-        this.Document
-        |> getDescendants "Compile"
-        |> Seq.map getCompileItem
-    
+            |> function 
+            | [] -> 
+                { Include = includePath
+                  Link = None }
+            | [ link ] | link :: _ -> 
+                { Include = includePath
+                  Link = Some link.InnerText }
+        
+        let referencedProjects = 
+            if includeReferencedProjects then 
+                let getProjects = getInterProjectDependencies this |> Seq.map (fun proj -> tryLoad(proj.Path).Value)
+                seq { 
+                    yield this
+                    yield! getProjects
+                }
+            else seq { yield this }
+        
+        referencedProjects |> Seq.collect (fun proj -> 
+                                  proj.Document
+                                  |> getDescendants "Compile"
+                                  |> Seq.map (fun i -> getCompileItem (proj, i)))
 
 type ProjectFile with
 
@@ -1237,7 +1257,7 @@ type ProjectFile with
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
 
-    member this.GetCompileItems () =  ProjectFile.getCompileItems this
+    member this.GetCompileItems (includeReferencedProjects:bool) =  ProjectFile.getCompileItems(this,includeReferencedProjects) 
 
     static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream 
 

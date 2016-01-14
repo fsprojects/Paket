@@ -150,19 +150,28 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
     
     // Add the assembly + pdb + dll from this project
     let templateWithOutput =
-        let assemblyFileName = toFile config platform project
-        let fi = FileInfo(assemblyFileName)
-        let name = Path.GetFileNameWithoutExtension fi.Name
+        let additionalFiles = 
+            let referencedProjects = seq{yield project; yield! project.GetInterProjectDependencies() |> Seq.map(fun proj -> ProjectFile.TryLoad(proj.Path).Value)}
+            let assemblyNames = referencedProjects
+                                |> Seq.map (fun proj -> proj.GetAssemblyName())
+            assemblyNames
+            |> Seq.collect (fun assemblyFileName -> 
+                                let assemblyfi = FileInfo(assemblyFileName)
+                                let name = Path.GetFileNameWithoutExtension assemblyfi.Name
 
-        let additionalFiles =
-            fi.Directory.GetFiles(name + ".*")
-            |> Array.filter (fun f -> 
-                let isSameFileName = Path.GetFileNameWithoutExtension f.Name = name
-                let isValidExtension = 
-                    [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"] 
-                    |> List.exists ((=) (f.Extension.ToLower()))
-
-                isSameFileName && isValidExtension)
+                                let projectdir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
+                                let path = Path.Combine(projectDir, project.GetOutputDirectory config platform)
+                                let files = Directory.GetFiles(path, name + ".*")
+                                files 
+                                |> Array.map (fun f -> FileInfo f)
+                                |> Array.filter (fun fi -> 
+                                                    let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
+                                                    let isValidExtension = 
+                                                        [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"] 
+                                                        |> List.exists ((=) (fi.Extension.ToLower()))
+                                                    isSameFileName && isValidExtension)
+                           )
+            |> Seq.toArray
 
         additionalFiles
         |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
