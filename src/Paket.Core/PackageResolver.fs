@@ -360,6 +360,24 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
 
         !availableVersions,!compatibleVersions,!globalOverride
 
+    let getConflicts(filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>,currentRequirement:PackageRequirement) = 
+        let allRequirements = 
+            openRequirements
+            |> Set.filter (fun r -> r.Graph |> List.contains currentRequirement |> not)
+            |> Set.union closedRequirements
+
+        knownConflicts
+        |> Seq.map (fun (conflicts,selectedVersion) ->
+            match selectedVersion with 
+            | None when Set.isSubset conflicts allRequirements -> conflicts
+            | Some(selectedVersion,_) ->
+                let n = (Seq.head conflicts).Name
+                match filteredVersions |> Map.tryFind n with
+                | Some(v,_) when v = selectedVersion && Set.isSubset conflicts allRequirements -> conflicts
+                | _ -> Set.empty
+            | _ -> Set.empty)
+        |> Set.unionMany
+
     let rec step (relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
         if Set.isEmpty openRequirements then Resolution.Ok(cleanupNames currentResolution) else
         verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
@@ -376,31 +394,13 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     currentMin := d
                     currentBoost := boost
             !currentMin
-
-        let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,currentRequirement,getVersionsF sources ResolverStrategy.Max groupName)
-        let getConflicts() = 
-            let allRequirements = 
-                openRequirements
-                |> Set.filter (fun r -> r.Graph |> List.contains currentRequirement |> not)
-                |> Set.union closedRequirements
-
-            knownConflicts
-            |> Seq.map (fun (conflicts,selectedVersion) ->
-                match selectedVersion with 
-                | None when Set.isSubset conflicts allRequirements -> conflicts
-                | Some(selectedVersion,_) ->
-                    let n = (Seq.head conflicts).Name
-                    match filteredVersions |> Map.tryFind n with
-                    | Some(v,_) when v = selectedVersion && Set.isSubset conflicts allRequirements -> conflicts
-                    | _ -> Set.empty
-                | _ -> Set.empty)
-            |> Set.unionMany
-
-        let conflicts = getConflicts()
+  
+        let conflicts = getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement)
         if conflicts |> Set.isEmpty |> not then Resolution.Conflict(currentResolution,closedRequirements,conflicts,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) else
 
         let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(relax,filteredVersions,openRequirements,currentRequirement)
 
+        let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,currentRequirement,getVersionsF sources ResolverStrategy.Max groupName)
         if Seq.isEmpty compatibleVersions then
             // boost the conflicting package, in order to solve conflicts faster
             let isNewConflict =
@@ -445,7 +445,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 if !forceBreak then false else
                 if isOk() || Seq.isEmpty !versionsToExplore then false else
                 if trial < 1 then true else
-                getConflicts() |> Set.isEmpty
+                conflicts |> Set.isEmpty
 
             while shouldTryHarder !trial do
                 trial := !trial + 1
