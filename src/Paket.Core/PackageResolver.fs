@@ -421,65 +421,68 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
   
 
     let rec step (relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
-        if Set.isEmpty openRequirements then Resolution.Ok(cleanupNames currentResolution) else
-        verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
+        if Set.isEmpty openRequirements then 
+            Resolution.Ok(cleanupNames currentResolution) 
+        else
+            verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
         
-        let currentRequirement = getCurrentRequirement openRequirements
-        let conflicts = getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement)
-        if conflicts |> Set.isEmpty |> not then Resolution.Conflict(currentResolution,closedRequirements,conflicts,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) else
+            let currentRequirement = getCurrentRequirement openRequirements
+            let conflicts = getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement)
+            if conflicts |> Set.isEmpty |> not then 
+                Resolution.Conflict(currentResolution,closedRequirements,conflicts,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) 
+            else
+                let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(relax,filteredVersions,openRequirements,currentRequirement)
 
-        let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(relax,filteredVersions,openRequirements,currentRequirement)
+                let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,currentRequirement,getVersionsF sources ResolverStrategy.Max groupName)
+                if Seq.isEmpty compatibleVersions then
+                    boostConflicts (filteredVersions,currentRequirement,conflictStatus) 
 
-        let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,currentRequirement,getVersionsF sources ResolverStrategy.Max groupName)
-        if Seq.isEmpty compatibleVersions then
-            boostConflicts (filteredVersions,currentRequirement,conflictStatus) 
-
-        let tryToImprove useUnlisted =
-            let allUnlisted = ref true
-            let state = ref conflictStatus
-            let trial = ref 0
-            let forceBreak = ref false
+                let tryToImprove useUnlisted =
+                    let allUnlisted = ref true
+                    let state = ref conflictStatus
+                    let trial = ref 0
+                    let forceBreak = ref false
             
-            let isOk() = 
-                match !state with
-                | Resolution.Ok _ -> true
-                | _ -> false
-            let versionsToExplore = ref compatibleVersions
+                    let isOk() = 
+                        match !state with
+                        | Resolution.Ok _ -> true
+                        | _ -> false
+                    let versionsToExplore = ref compatibleVersions
 
-            let shouldTryHarder trial =
-                if !forceBreak then false else
-                if isOk() || Seq.isEmpty !versionsToExplore then false else
-                if trial < 1 then true else
-                conflicts |> Set.isEmpty
+                    let shouldTryHarder trial =
+                        if !forceBreak then false else
+                        if isOk() || Seq.isEmpty !versionsToExplore then false else
+                        if trial < 1 then true else
+                        conflicts |> Set.isEmpty
 
-            while shouldTryHarder !trial do
-                trial := !trial + 1
-                let versionToExplore = Seq.head !versionsToExplore
-                versionsToExplore := Seq.tail !versionsToExplore
-                let exploredPackage = getExploredPackage(currentRequirement,versionToExplore)
+                    while shouldTryHarder !trial do
+                        trial := !trial + 1
+                        let versionToExplore = Seq.head !versionsToExplore
+                        versionsToExplore := Seq.tail !versionsToExplore
+                        let exploredPackage = getExploredPackage(currentRequirement,versionToExplore)
 
-                if exploredPackage.Unlisted && not useUnlisted then 
-                    () 
-                else
-                    let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions
+                        if exploredPackage.Unlisted && not useUnlisted then 
+                            () 
+                        else
+                            let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions
                         
-                    let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
-                    let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
+                            let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
+                            let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
 
-                    state := step (relax,newFilteredVersions,newResolution,Set.add currentRequirement closedRequirements,newOpen)
-                    match !state with
-                    | Resolution.Conflict (_,_,stillOpen,_,_)
-                        when stillOpen |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not ->
-                        forceBreak := true
-                    | _ -> ()
+                            state := step (relax,newFilteredVersions,newResolution,Set.add currentRequirement closedRequirements,newOpen)
+                            match !state with
+                            | Resolution.Conflict (_,_,stillOpen,_,_)
+                                when stillOpen |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not ->
+                                forceBreak := true
+                            | _ -> ()
 
-                    allUnlisted := exploredPackage.Unlisted && !allUnlisted
+                            allUnlisted := exploredPackage.Unlisted && !allUnlisted
 
-            !allUnlisted,!state
+                    !allUnlisted,!state
 
-        match tryToImprove false with
-        | true,Resolution.Conflict(_) -> tryToImprove true |> snd
-        | _,x -> x
+                match tryToImprove false with
+                | true,Resolution.Conflict(_) -> tryToImprove true |> snd
+                | _,x -> x
 
     match step (false, Map.empty, Map.empty, Set.empty, rootDependencies) with
     | Resolution.Conflict(_) as conflict ->
