@@ -1,6 +1,9 @@
+#### 2.44.1 - 15.01.2016
+* BUGFIX: Symbols package fix for projects that contained linked files - https://github.com/fsprojects/Paket/pull/1390
+
 #### 2.44.0 - 14.01.2016
 * Paket pack for symbols packages allows for pulling in referenced projects. - https://github.com/fsprojects/Paket/pull/1383
- 
+
 #### 2.43.0 - 14.01.2016
 * BUGFIX: Use registration data from normalized NuGet version - https://github.com/fsprojects/Paket/issues/1387
 * BUGFIX: $(SolutionDir) in ProjectReference include attribute will be parsed - https://github.com/fsprojects/Paket/issues/1377

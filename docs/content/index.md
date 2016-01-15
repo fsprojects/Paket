@@ -1,6 +1,6 @@
 # What is Paket?
 
-Paket is a dependency manager for .NET and mono projects, which is designed to work well with [NuGet](https://www.nuget.org/) packages and also enables [referencing files directly from GitHub repositories](http-dependencies.html).
+Paket is a dependency manager for .NET and mono projects, which is designed to work well with [NuGet](https://www.nuget.org/) packages and also enables referencing files directly from [Git repositories](git-dependencies.html) or any [HTTP resource](http-dependencies.html).
 It enables precise and predictable control over what packages the projects within your application reference. 
 
 If you want to learn how to use Paket then read the ["Getting started" tutorial](getting-started.html) and take a look at the [FAQs](faq.html).

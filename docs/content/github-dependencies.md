@@ -2,6 +2,9 @@
 
 Paket allows you to automatically manage the linking of files from [github.com](http://www.github.com) or [gist.github.com](https://gist.github.com/) into your projects.
 
+
+If you have git installed then Paket also allows you to [reference files from other git repositories](git-dependencies.html).
+
 ## Referencing a single file
 
 You can reference a single file from [github.com](http://www.github.com) simply by specifying the source repository and the file name in the [`paket.dependencies` file](dependencies-file.html):
