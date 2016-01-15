@@ -390,6 +390,34 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 currentMin := d
                 currentBoost := boost
         !currentMin
+
+    let boostConflicts (filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,currentRequirement:PackageRequirement,conflictStatus:Resolution) = 
+        // boost the conflicting package, in order to solve conflicts faster
+        let isNewConflict =
+            match conflictHistory.TryGetValue currentRequirement.Name with
+            | true,count -> 
+                conflictHistory.[currentRequirement.Name] <- count + 1
+                false
+            | _ -> 
+                conflictHistory.Add(currentRequirement.Name, 1)
+                true
+                
+        let conflicts = conflictStatus.GetConflicts() 
+        match conflicts with
+        | c::_  ->
+            let selectedVersion = Map.tryFind c.Name filteredVersions
+            let key = conflicts |> Set.ofList,selectedVersion
+            knownConflicts.Add key |> ignore
+            let reportThatResolverIsTakingLongerThanExpected = not isNewConflict && DateTime.Now - !lastConflictReported > TimeSpan.FromSeconds 10.
+            if verbose then
+                tracefn "%s" <| conflictStatus.GetErrorText(false)
+                tracefn "    ==> Trying different resolution."
+            if reportThatResolverIsTakingLongerThanExpected then
+                traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
+                traceWarn "The process is taking longer than expected."
+                traceWarn "Paket may still find a valid resolution, but this might take a while."
+                lastConflictReported := DateTime.Now
+        | _ -> ()
   
 
     let rec step (relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
@@ -404,32 +432,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
 
         let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,currentRequirement,getVersionsF sources ResolverStrategy.Max groupName)
         if Seq.isEmpty compatibleVersions then
-            // boost the conflicting package, in order to solve conflicts faster
-            let isNewConflict =
-                match conflictHistory.TryGetValue currentRequirement.Name with
-                | true,count -> 
-                    conflictHistory.[currentRequirement.Name] <- count + 1
-                    false
-                | _ -> 
-                    conflictHistory.Add(currentRequirement.Name, 1)
-                    true
-                
-            let conflicts = conflictStatus.GetConflicts() 
-            match conflicts with
-            | c::_  ->
-                let selectedVersion = Map.tryFind c.Name filteredVersions
-                let key = conflicts |> Set.ofList,selectedVersion
-                knownConflicts.Add key |> ignore
-                let reportThatResolverIsTakingLongerThanExpected = not isNewConflict && DateTime.Now - !lastConflictReported > TimeSpan.FromSeconds 10.
-                if verbose then
-                    tracefn "%s" <| conflictStatus.GetErrorText(false)
-                    tracefn "    ==> Trying different resolution."
-                if reportThatResolverIsTakingLongerThanExpected then
-                    traceWarnfn "%s" <| conflictStatus.GetErrorText(false)
-                    traceWarn "The process is taking longer than expected."
-                    traceWarn "Paket may still find a valid resolution, but this might take a while."
-                    lastConflictReported := DateTime.Now
-            | _ -> ()
+            boostConflicts (filteredVersions,currentRequirement,conflictStatus) 
 
         let tryToImprove useUnlisted =
             let allUnlisted = ref true
