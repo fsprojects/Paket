@@ -1,7 +1,10 @@
-#### 3.0.0-alpha029 - 14.01.2016
+#### 3.0.0-alpha030 - 15.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+
+#### 2.44.1 - 15.01.2016
+* BUGFIX: Symbols package fix for projects that contained linked files - https://github.com/fsprojects/Paket/pull/1390
 
 #### 2.44.0 - 14.01.2016
 * Paket pack for symbols packages allows for pulling in referenced projects. - https://github.com/fsprojects/Paket/pull/1383

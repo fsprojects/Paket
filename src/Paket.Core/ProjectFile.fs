@@ -35,7 +35,8 @@ type ProjectReference =
 /// Compile items inside of project files.
 type CompileItem = 
     { Include : string
-      Link : string option }
+      Link : string option 
+      BaseDir : string}
 
 /// Project output type.
 [<RequireQualifiedAccess>]
@@ -1155,10 +1156,12 @@ module ProjectFile =
             |> function 
             | [] -> 
                 { Include = includePath
-                  Link = None }
+                  Link = None 
+                  BaseDir = Path.GetDirectoryName(Path.GetFullPath(projfile.FileName))}
             | [ link ] | link :: _ -> 
                 { Include = includePath
-                  Link = Some link.InnerText }
+                  Link = Some link.InnerText 
+                  BaseDir = Path.GetDirectoryName(Path.GetFullPath(projfile.FileName))}
         
         let referencedProjects = 
             if includeReferencedProjects then 
