@@ -197,6 +197,13 @@ module internal TemplateFile =
             | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ReleaseNotes = Some releaseNotes })
         { templateFile with Contents = contents }
 
+    let setProjectUrl url templateFile = 
+        let contents =
+            match templateFile.Contents with
+            | CompleteInfo(core, optional) -> CompleteInfo(core, { optional with ProjectUrl = Some url })
+            | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ProjectUrl = Some url })
+        { templateFile with Contents = contents }
+
     let private failP file str = fail <| PackagingConfigParseError(file,str)
 
     type private PackageConfigType =
