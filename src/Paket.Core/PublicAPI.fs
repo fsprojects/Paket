@@ -444,21 +444,44 @@ type Dependencies(dependenciesFileName: string) =
     member this.FindReferencesFor(group:string,package:string): string list =
         FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) |> this.Process |> List.map (fun p -> p.FileName)
 
-    member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
-        let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
+    static member private FindPackagesByNameAsync(sources:PackageSource seq,searchTerm,?maxResults) =
         let maxResults = defaultArg maxResults 1000
-        let sources = this.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat |> List.distinct
+        let sources = sources |> Seq.toList |> List.distinct
         match sources with
         | [] -> [PackageSources.DefaultNuGetSource]
         | _ -> sources
-        |> List.choose (fun x -> match x with | NuGetV2 s -> Some s.Url | _ -> None)
         |> Seq.distinct
-        |> Seq.map (fun url ->
-                    NuGetV3.FindPackages(None, url, searchTerm, maxResults)
-                    |> Observable.ofAsyncWithToken cancellationToken)
+        |> Seq.choose (fun source -> 
+            match source with 
+            | NuGetV2 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+            | NuGetV3 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+            | _ -> None)
+   
+    static member FindPackagesByName(sources:PackageSource seq,searchTerm,?maxResults) =
+        let maxResults = defaultArg maxResults 1000
+        Dependencies.FindPackagesByNameAsync(sources,searchTerm,maxResults)
+        |> Seq.map Async.RunSynchronously
+        |> Seq.concat
+        |> Seq.toList
+        |> List.distinct
+
+    static member SearchPackagesByName(sources:PackageSource seq,searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
+        let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
+        let maxResults = defaultArg maxResults 1000
+        Dependencies.FindPackagesByNameAsync(sources,searchTerm,maxResults)
+        |> Seq.map (Observable.ofAsyncWithToken cancellationToken)
         |> Seq.reduce Observable.merge
         |> Observable.flatten
         |> Observable.distinct
+
+    member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
+        let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
+        let maxResults = defaultArg maxResults 1000
+        Dependencies.SearchPackagesByName(
+            this.GetSources() |> Seq.map (fun kv -> kv.Value) |> Seq.concat,
+            searchTerm,
+            cancellationToken,
+            maxResults)
 
     /// Finds all projects where the given package is referenced.
     member this.FindProjectsFor(group:string,package: string): ProjectFile list =

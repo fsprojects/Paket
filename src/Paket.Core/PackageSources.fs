@@ -208,6 +208,7 @@ type PackageSource =
         | LocalNuGet n -> None
 
     static member NuGetV2Source url = NuGetV2 { Url = url; Authentication = None }
+    static member NuGetV3Source url = NuGetV3 { Url = url; Authentication = None }
 
     static member WarnIfNoConnection (source,_) = 
         let n url auth =

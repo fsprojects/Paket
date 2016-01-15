@@ -115,6 +115,7 @@
     <Compile Include="ConvertFromNuGetSpecs.fs" />
     <Compile Include="SemVerUpdateSpecs.fs" />
     <Compile Include="ResolverSkipsConflictsFastSpecs.fs" />
+    <Compile Include="AutocompleteSpecs.fs" />
     <Compile Include="BindingRedirect.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
