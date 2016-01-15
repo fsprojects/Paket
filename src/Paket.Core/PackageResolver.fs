@@ -262,45 +262,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             exploredPackages.Add(key,explored)
             explored
 
-    let rec step (relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
-        if Set.isEmpty openRequirements then Resolution.Ok(cleanupNames currentResolution) else
-        verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
-        
-        let currentRequirement =
-            let currentMin = ref (Seq.head openRequirements)
-            let currentBoost = ref 0
-            for d in openRequirements do
-                let boost = 
-                    match conflictHistory.TryGetValue d.Name with
-                    | true,c -> -c
-                    | _ -> 0
-                if PackageRequirement.Compare(d,!currentMin,packageFilter,boost,!currentBoost) = -1 then
-                    currentMin := d
-                    currentBoost := boost
-            !currentMin
-
-        let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,currentRequirement,getVersionsF sources ResolverStrategy.Max groupName)
-        let getConflicts() = 
-            let allRequirements = 
-                openRequirements
-                |> Set.filter (fun r -> r.Graph |> List.contains currentRequirement |> not)
-                |> Set.union closedRequirements
-
-            knownConflicts
-            |> Seq.map (fun (conflicts,selectedVersion) ->
-                match selectedVersion with 
-                | None when Set.isSubset conflicts allRequirements -> conflicts
-                | Some(selectedVersion,_) ->
-                    let n = (Seq.head conflicts).Name
-                    match filteredVersions |> Map.tryFind n with
-                    | Some(v,_) when v = selectedVersion && Set.isSubset conflicts allRequirements -> conflicts
-                    | _ -> Set.empty
-                | _ -> Set.empty)
-            |> Set.unionMany
-
-        let conflicts = getConflicts()
-        if conflicts |> Set.isEmpty |> not then Resolution.Conflict(currentResolution,closedRequirements,conflicts,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) else
-
+    let getCompatibleVersions(relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,openRequirements:Set<PackageRequirement>,currentRequirement:PackageRequirement) =
         verbosefn "  Trying to resolve %O" currentRequirement
 
         let availableVersions = ref Seq.empty
@@ -395,7 +357,51 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                         if Seq.isEmpty withPrereleases |> not then
                             tryRelaxed := true
 
-        if Seq.isEmpty !compatibleVersions then
+
+        !availableVersions,!compatibleVersions,!globalOverride
+
+    let rec step (relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
+        if Set.isEmpty openRequirements then Resolution.Ok(cleanupNames currentResolution) else
+        verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
+        
+        let currentRequirement =
+            let currentMin = ref (Seq.head openRequirements)
+            let currentBoost = ref 0
+            for d in openRequirements do
+                let boost = 
+                    match conflictHistory.TryGetValue d.Name with
+                    | true,c -> -c
+                    | _ -> 0
+                if PackageRequirement.Compare(d,!currentMin,packageFilter,boost,!currentBoost) = -1 then
+                    currentMin := d
+                    currentBoost := boost
+            !currentMin
+
+        let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,currentRequirement,getVersionsF sources ResolverStrategy.Max groupName)
+        let getConflicts() = 
+            let allRequirements = 
+                openRequirements
+                |> Set.filter (fun r -> r.Graph |> List.contains currentRequirement |> not)
+                |> Set.union closedRequirements
+
+            knownConflicts
+            |> Seq.map (fun (conflicts,selectedVersion) ->
+                match selectedVersion with 
+                | None when Set.isSubset conflicts allRequirements -> conflicts
+                | Some(selectedVersion,_) ->
+                    let n = (Seq.head conflicts).Name
+                    match filteredVersions |> Map.tryFind n with
+                    | Some(v,_) when v = selectedVersion && Set.isSubset conflicts allRequirements -> conflicts
+                    | _ -> Set.empty
+                | _ -> Set.empty)
+            |> Set.unionMany
+
+        let conflicts = getConflicts()
+        if conflicts |> Set.isEmpty |> not then Resolution.Conflict(currentResolution,closedRequirements,conflicts,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) else
+
+        let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(relax,filteredVersions,openRequirements,currentRequirement)
+
+        if Seq.isEmpty compatibleVersions then
             // boost the conflicting package, in order to solve conflicts faster
             let isNewConflict =
                 match conflictHistory.TryGetValue currentRequirement.Name with
@@ -433,7 +439,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 match !state with
                 | Resolution.Ok _ -> true
                 | _ -> false
-            let versionsToExplore = ref !compatibleVersions
+            let versionsToExplore = ref compatibleVersions
 
             let shouldTryHarder trial =
                 if !forceBreak then false else
@@ -450,7 +456,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 if exploredPackage.Unlisted && not useUnlisted then 
                     () 
                 else
-                    let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],!globalOverride) filteredVersions
+                    let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions
                         
                     let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
                     let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
