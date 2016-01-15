@@ -151,7 +151,18 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
     // Add the assembly + pdb + dll from this project
     let templateWithOutput =
         let additionalFiles = 
-            let referencedProjects = seq{yield project; yield! project.GetInterProjectDependencies() |> Seq.map(fun proj -> ProjectFile.TryLoad(proj.Path).Value)}
+            let referencedProjects = 
+                seq{
+                    yield project
+                    yield! 
+                        project.GetInterProjectDependencies() 
+                        |> Seq.filter (fun proj ->
+                            match ProjectFile.FindTemplatesFile(FileInfo(proj.Path)) with
+                            | None -> true
+                            | Some _ -> false)
+                        |> Seq.map(fun proj -> ProjectFile.TryLoad(proj.Path).Value)
+                         }
+
             let assemblyNames = referencedProjects
                                 |> Seq.map (fun proj -> proj.GetAssemblyName())
             assemblyNames

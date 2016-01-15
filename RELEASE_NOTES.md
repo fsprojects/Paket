@@ -1,3 +1,6 @@
+#### 2.44.3 - 15.01.2016
+* BUGFIX: Fix inter project dependencies
+
 #### 2.44.2 - 15.01.2016
 * BUGFIX: Reduce pressure from call stack - https://github.com/fsprojects/Paket/issues/1392
 
