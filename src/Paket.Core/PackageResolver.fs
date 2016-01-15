@@ -378,23 +378,25 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
             | _ -> Set.empty)
         |> Set.unionMany
 
+    let getCurrentRequirement (openRequirements:Set<PackageRequirement>) =
+        let currentMin = ref (Seq.head openRequirements)
+        let currentBoost = ref 0
+        for d in openRequirements do
+            let boost = 
+                match conflictHistory.TryGetValue d.Name with
+                | true,c -> -c
+                | _ -> 0
+            if PackageRequirement.Compare(d,!currentMin,packageFilter,boost,!currentBoost) = -1 then
+                currentMin := d
+                currentBoost := boost
+        !currentMin
+  
+
     let rec step (relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
         if Set.isEmpty openRequirements then Resolution.Ok(cleanupNames currentResolution) else
         verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
         
-        let currentRequirement =
-            let currentMin = ref (Seq.head openRequirements)
-            let currentBoost = ref 0
-            for d in openRequirements do
-                let boost = 
-                    match conflictHistory.TryGetValue d.Name with
-                    | true,c -> -c
-                    | _ -> 0
-                if PackageRequirement.Compare(d,!currentMin,packageFilter,boost,!currentBoost) = -1 then
-                    currentMin := d
-                    currentBoost := boost
-            !currentMin
-  
+        let currentRequirement = getCurrentRequirement openRequirements
         let conflicts = getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement)
         if conflicts |> Set.isEmpty |> not then Resolution.Conflict(currentResolution,closedRequirements,conflicts,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) else
 
