@@ -437,9 +437,12 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                 if Seq.isEmpty compatibleVersions then
                     boostConflicts (filteredVersions,currentRequirement,conflictStatus) 
 
-                let tryToImprove useUnlisted =
-                    let allUnlisted = ref true
-                    let state = ref conflictStatus
+                let ready = ref false
+                let state = ref conflictStatus
+                let useUnlisted = ref false
+                let allUnlisted = ref true
+
+                while not !ready do
                     let trial = ref 0
                     let forceBreak = ref false
             
@@ -461,7 +464,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                         versionsToExplore := Seq.tail !versionsToExplore
                         let exploredPackage = getExploredPackage(currentRequirement,versionToExplore)
 
-                        if exploredPackage.Unlisted && not useUnlisted then 
+                        if exploredPackage.Unlisted && not !useUnlisted then 
                             () 
                         else
                             let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions
@@ -478,11 +481,12 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
 
                             allUnlisted := exploredPackage.Unlisted && !allUnlisted
 
-                    !allUnlisted,!state
+                    if not !useUnlisted && !allUnlisted && not (isOk()) then
+                        useUnlisted := true
+                    else
+                        ready := true
 
-                match tryToImprove false with
-                | true,Resolution.Conflict(_) -> tryToImprove true |> snd
-                | _,x -> x
+                !state
 
     match step (false, Map.empty, Map.empty, Set.empty, rootDependencies) with
     | Resolution.Conflict(_) as conflict ->

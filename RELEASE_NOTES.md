@@ -1,3 +1,6 @@
+#### 2.44.2 - 15.01.2016
+* BUGFIX: Reduce pressure from call stack - https://github.com/fsprojects/Paket/issues/1392
+
 #### 2.44.1 - 15.01.2016
 * BUGFIX: Symbols package fix for projects that contained linked files - https://github.com/fsprojects/Paket/pull/1390
 
