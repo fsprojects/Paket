@@ -8,8 +8,9 @@
         public bool DoSelfUpdate { get; set; }
         public string LatestVersion { get; private set; }
         public bool IgnorePrerelease { get; private set; }
+        public bool IgnoreCachedExecutable { get; private set; }
 
-        public DownloadArguments(string latestVersion, bool ignorePrerelease, string folder, string target, bool doSelfUpdate, string nugetSource)
+        public DownloadArguments(string latestVersion, bool ignorePrerelease, string folder, string target, bool doSelfUpdate, string nugetSource, bool ignoreCachedExecutable)
         {
             LatestVersion = latestVersion;
             IgnorePrerelease = ignorePrerelease;
@@ -17,6 +18,7 @@
             Target = target;
             DoSelfUpdate = doSelfUpdate;
             NugetSource = nugetSource;
+            IgnoreCachedExecutable = ignoreCachedExecutable;
         }
     }
 }

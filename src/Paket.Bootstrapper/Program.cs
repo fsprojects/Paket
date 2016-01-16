@@ -22,6 +22,7 @@ namespace Paket.Bootstrapper
         const string SelfUpdateCommandArg = "--self";
         const string SilentCommandArg = "-s";
         const string NugetSourceArgPrefix = "--nuget-source=";
+        const string NoCacheCommandArg = "--no-cache";
 
         static void Main(string[] args)
         {
@@ -30,6 +31,8 @@ namespace Paket.Bootstrapper
             var commandArgs = args;
             var preferNuget = false;
             var forceNuget = false;
+            var ignoreCache = false;
+
             if (commandArgs.Contains(PreferNugetCommandArg))
             {
                 preferNuget = true;
@@ -54,9 +57,15 @@ namespace Paket.Bootstrapper
                 silent = true;
                 commandArgs = args.Where(x => x != SilentCommandArg).ToArray();
             }
-            var dlArgs = EvaluateCommandArgs(commandArgs, silent);
+            if (commandArgs.Contains(NoCacheCommandArg))
+            {
+                ignoreCache = true;
+                commandArgs = args.Where(x => x != NoCacheCommandArg).ToArray();
+            }
 
-            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget, forceNuget);
+            var dlArgs = EvaluateCommandArgs(commandArgs);
+
+            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget, forceNuget, ignoreCache);
 
             StartPaketBootstrapping(effectiveStrategy, dlArgs, silent);
         }
@@ -155,7 +164,7 @@ namespace Paket.Bootstrapper
             }
         }
 
-        private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
+        private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget, bool ignoreCache)
         {
             var gitHubDownloadStrategy = new GitHubDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.PrepareWebRequest, BootstrapperHelper.GetDefaultWebProxyFor);
             var nugetDownloadStrategy = new NugetDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.GetDefaultWebProxyFor, dlArgs.Folder, dlArgs.NugetSource);
@@ -176,10 +185,11 @@ namespace Paket.Bootstrapper
                 effectiveStrategy = gitHubDownloadStrategy;
                 gitHubDownloadStrategy.FallbackStrategy = nugetDownloadStrategy;
             }
-            return effectiveStrategy;
+
+            return ignoreCache ? effectiveStrategy : new CacheDownloadStrategy(effectiveStrategy);
         }
 
-        private static DownloadArguments EvaluateCommandArgs(string[] args, bool silent)
+        private static DownloadArguments EvaluateCommandArgs(string[] args)
         {
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var target = Path.Combine(folder, "paket.exe");
@@ -188,6 +198,7 @@ namespace Paket.Bootstrapper
             var latestVersion = ConfigurationManager.AppSettings[PaketVersionAppSettingsKey] ?? Environment.GetEnvironmentVariable(PaketVersionEnv) ?? String.Empty;
             var ignorePrerelease = true;
             bool doSelfUpdate = false;
+            var ignoreCachedExecutable = false;
             var commandArgs = args;
 
             if (commandArgs.Contains(SelfUpdateCommandArg))
@@ -200,6 +211,11 @@ namespace Paket.Bootstrapper
             {
                 commandArgs = commandArgs.Where(x => !x.StartsWith(NugetSourceArgPrefix)).ToArray();
                 nugetSource = nugetSourceArg.Substring(NugetSourceArgPrefix.Length);
+            }
+            if (commandArgs.Contains(NoCacheCommandArg))
+            {
+                commandArgs = commandArgs.Where(x => x != NoCacheCommandArg).ToArray();
+                ignoreCachedExecutable = true;
             }
             if (commandArgs.Length >= 1)
             {
@@ -214,7 +230,7 @@ namespace Paket.Bootstrapper
                 }
             }
 
-            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate, nugetSource);
+            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate, nugetSource, ignoreCachedExecutable);
         }
     }
 }
