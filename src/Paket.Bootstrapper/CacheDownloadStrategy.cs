@@ -1,10 +1,12 @@
 ﻿using System;
+using System.IO;
 
 namespace Paket.Bootstrapper
 {
     internal class CacheDownloadStrategy : IDownloadStrategy
     {
         public string Name { get { return "Cache"; } }
+        private const string CacheDir = "PaketCache";
 
         private IDownloadStrategy _fallbackStrategy;
         public IDownloadStrategy FallbackStrategy
@@ -33,7 +35,24 @@ namespace Paket.Bootstrapper
 
         public void DownloadVersion(string latestVersion, string target, bool silent)
         {
-            throw new NotImplementedException();
+            var cached = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), CacheDir, latestVersion, "paket.exe");
+
+            if (!File.Exists(cached))
+            {
+                if (!silent)
+                    Console.WriteLine("Version {0} not found in cache.", latestVersion);
+
+                FallbackStrategy.DownloadVersion(latestVersion, target, silent);
+                Directory.CreateDirectory(Path.GetDirectoryName(cached));
+                File.Copy(target, cached);
+            }
+            else
+            {
+                if (!silent)
+                    Console.WriteLine("Copying version {0} from cache.", latestVersion);
+
+                File.Copy(cached, target, true);
+            }
         }
 
         public void SelfUpdate(string latestVersion, bool silent)
