@@ -1,3 +1,6 @@
+#### 2.44.4 - 16.01.2016
+* Allow to set project url in paket pack
+
 #### 2.44.3 - 15.01.2016
 * BUGFIX: Fix inter project dependencies
 
