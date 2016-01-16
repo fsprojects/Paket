@@ -22,3 +22,18 @@ let ``#1298 should autocomplete for FAKE on NuGet3``() =
     let result = Dependencies.FindPackagesByName([PackageSource.NuGetV3Source Constants.DefaultNuGetV3Stream],"fake")
     result |> shouldContain "FAKE"
     result |> shouldContain "FAKE.IIS"
+
+[<Test>]
+let ``#1298 should autocomplete for nunit on NuGet3``() = 
+    let result = Dependencies.FindPackagesByName([PackageSource.NuGetV3Source Constants.DefaultNuGetV3Stream],"nunit")
+    result |> shouldContain "NUnit.Runners"
+    result |> shouldContain "Cloak.NUnit"
+    result |> shouldContain "NUnit"
+
+[<Test>]
+[<Ignore>] // it's only wrking on forki's machine
+let ``#1298 should autocomplete for msu on local teamcity``() = 
+    let result = Dependencies.FindPackagesByName([PackageSource.NuGetV2Source "http://teamcity/guestAuth/app/nuget/v1/FeedService.svc/"],"msu")
+    result |> shouldContain "msu.Addins"
+
+    

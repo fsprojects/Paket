@@ -1,4 +1,5 @@
 #### 2.44.4 - 16.01.2016
+* Initial support for autocomplete of private sources - https://github.com/fsprojects/Paket/issues/1298
 * Allow to set project url in paket pack
 
 #### 2.44.3 - 15.01.2016

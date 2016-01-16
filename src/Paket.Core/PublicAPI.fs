@@ -453,7 +453,11 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.distinct
         |> Seq.choose (fun source -> 
             match source with 
-            | NuGetV2 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+            | NuGetV2 s ->
+                if s.Url.Contains "nuget.org" || s.Url.Contains "myget.org" then
+                    Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+                else
+                    Some(NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
             | NuGetV3 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
             | _ -> None)
    

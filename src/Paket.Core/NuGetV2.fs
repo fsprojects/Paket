@@ -530,6 +530,25 @@ let getVersionsCached key f (source, auth, nugetURL, package) =
             | _ -> return None
     }
 
+/// Uses the NuGet v2 API to retrieve all packages with the given prefix.
+let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
+    async {
+        try 
+            let url = sprintf "%s/Packages()?$filter=IsLatestVersion and IsAbsoluteLatestVersion and substringof('%s',Id)" nugetURL packageNamePrefix 
+            let! raw = getFromUrl(auth |> Option.map toBasicAuth,url,acceptXml)
+            let doc = XmlDocument()
+            doc.LoadXml raw
+            return
+                match doc |> getNode "feed" with
+                | Some n ->
+                    [| for entry in n |> getNodes "entry" do
+                        match (entry |> getNode "properties" |> optGetNode "Id") ++ (entry |> getNode "title") with
+                        | Some node -> yield node.InnerText
+                        | _ -> () |]
+                | _ ->  [||]
+        with _ -> return [||]
+    }
+
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions force root (sources, packageName:PackageName) = 
     let trial force =
