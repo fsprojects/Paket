@@ -162,7 +162,7 @@ let parseODataDetails(nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
             PackageName a.[0], 
             VersionRequirement.Parse (if a.Length > 1 then a.[1] else "0"), 
             (if a.Length > 2 && a.[2] <> "" then 
-                 if a.[2].ToLower().StartsWith("portable") then [ FrameworkRestriction.Portable(a.[2]) ]
+                 if String.startsWithIgnoreCase "portable" a.[2] then [ FrameworkRestriction.Portable(a.[2]) ]
                  else 
                      match FrameworkDetection.Extract a.[2] with
                      | Some x -> [ FrameworkRestriction.Exactly x ]
@@ -218,7 +218,7 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
             let! raw =
                 match response with
                 | Some(r) -> async { return r }
-                | _  when nugetURL.ToLower().Contains "myget.org" || nugetURL.ToLower().Contains "nuget.org" ->
+                | _  when  String.containsIgnoreCase "myget.org" nugetURL || String.containsIgnoreCase "nuget.org" nugetURL ->
                     failwithf "Could not get package details for %O from %s" packageName nugetURL
                 | _ ->
                     let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
@@ -269,7 +269,7 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     let v3 =
         Directory.EnumerateFiles(directory,"*.nupkg",SearchOption.AllDirectories)
         |> Seq.map (fun x -> FileInfo(x))
-        |> Seq.filter (fun fi -> fi.Name.ToLower().Contains(packageName.GetCompareString()))
+        |> Seq.filter (fun fi -> String.containsIgnoreCase (packageName.GetCompareString())  fi.Name)
         |> Seq.filter (fun fi -> fi.Name.Contains(normalizedVersion) || fi.Name.Contains(version.ToString()))
         |> Seq.tryHead
 
@@ -434,7 +434,7 @@ let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
         let path = Path.Combine(dir.FullName.ToLower(), subFolderName)
         if dir.Exists then
             dir.GetDirectories()
-            |> Array.filter (fun fi -> fi.FullName.ToLower() = path)
+            |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
             |> Array.collect (fun dir -> dir.GetFiles("*.*", SearchOption.AllDirectories))
         else
             [||]
@@ -573,13 +573,13 @@ let GetVersions force root (sources, packageName:PackageName) =
                        match nugetSource with
                        | NuGetV2 source ->
                             let auth = source.Authentication |> Option.map toBasicAuth
-                            if not force && (source.Url.ToLower().Contains "nuget.org" || source.Url.ToLower().Contains "myget.org") then
+                            if not force && (String.containsIgnoreCase "nuget.org" source.Url || String.containsIgnoreCase "myget.org" source.Url) then
                                 [getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
                             else
                                 let v2Feeds =
                                     [ yield getVersionsCached "OData" tryGetPackageVersionsViaOData (nugetSource, auth, source.Url, packageName)
                                       yield getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName)
-                                      if not (source.Url.ToLower().Contains "teamcity" || source.Url.ToLower().Contains "feedservice.svc") then
+                                      if not (String.containsIgnoreCase "teamcity" source.Url || String.containsIgnoreCase"feedservice.svc" source.Url  ) then
                                         yield getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
 
                                 match NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) with

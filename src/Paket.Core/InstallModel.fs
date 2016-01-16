@@ -275,18 +275,18 @@ module InstallModel =
         references |> Seq.fold (addFrameworkAssemblyReference) (installModel:InstallModel) 
 
     let filterBlackList  (installModel:InstallModel)  = 
-        let inline checkExt str ext = str |>  toLower |> endsWith ext
+
         let includeReferences = function
-            | Reference.Library lib -> not (checkExt lib ".dll" || checkExt lib ".exe")
+            | Reference.Library lib -> not (String.endsWithIgnoreCase ".dll" lib || String.endsWithIgnoreCase ".exe" lib )
             | Reference.TargetsFile targetsFile -> 
-                (not (checkExt targetsFile ".props" || checkExt targetsFile ".targets"))
+                (not (String.endsWithIgnoreCase ".props" targetsFile|| String.endsWithIgnoreCase ".targets" targetsFile))
             | _ -> false
 
         let excludeSatelliteAssemblies = function
             | Reference.Library lib -> lib.EndsWith ".resources.dll"
             | _ -> false
 
-        let blacklisted (blacklist:string list) (file:string) = blacklist |> List.exists (toLower >> (checkExt file ))
+        let blacklisted (blacklist:string list) (file:string) = blacklist |> List.exists (String.endsWithIgnoreCase file )
 
         let blackList = 
             [ includeReferences

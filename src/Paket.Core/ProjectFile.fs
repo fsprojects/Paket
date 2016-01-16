@@ -187,7 +187,8 @@ module ProjectFile =
             try
                 let fi = FileInfo (normalizePath (projectName.Trim().Trim([|'\"'|]))) // check if we can detect the path
                 let rec checkDir (dir:DirectoryInfo) = 
-                    match projects |> Seq.tryFind (fun p -> (FileInfo p.FileName).Directory.ToString().ToLower() = dir.ToString().ToLower()) with
+                    match projects |> Seq.tryFind (fun p -> 
+                        String.equalsIgnoreCase ((FileInfo p.FileName).Directory.ToString()) (dir.ToString())) with
                     | Some p -> Some p
                     | None ->
                         if isNull dir.Parent then None else
@@ -500,7 +501,7 @@ module ProjectFile =
         [for node in project.Document |> getDescendants name do
             let isPaketNode = ref false
             for child in node.ChildNodes do
-                if child.Name = "Paket" && child.InnerText.ToLower() = "true" then 
+                if child.Name = "Paket" && String.equalsIgnoreCase child.InnerText "true" then 
                     isPaketNode := true
 
             if !isPaketNode = paketOnes then yield node]
@@ -777,12 +778,12 @@ module ProjectFile =
             propertyNames
             |> Seq.concat
             |> Seq.distinctBy (fun (x,_,_) -> x)
-            |> Seq.filter (fun (propertyName,path,buildPath) -> propertyName.ToLower().EndsWith "props")
+            |> Seq.filter (fun (propertyName,path,buildPath) -> String.endsWithIgnoreCase "props" propertyName)
             |> Seq.map (fun (propertyName,path,buildPath) -> 
                 let fileName = 
-                    match propertyName.ToLower() with
+                    match propertyName with
                     | _ when propertyChooseNode.ChildNodes.Count = 0 -> path
-                    | name when name.EndsWith "props" -> sprintf "%s$(%s).props" buildPath propertyName 
+                    | name when String.endsWithIgnoreCase name "props" -> sprintf "%s$(%s).props" buildPath propertyName 
                     | _ -> failwithf "Unknown .props filename %s" propertyName
 
                 createNode "Import" project
@@ -795,12 +796,12 @@ module ProjectFile =
             propertyNames
             |> Seq.concat
             |> Seq.distinctBy (fun (x,_,_) -> x)
-            |> Seq.filter (fun (propertyName,path,buildPath) -> propertyName.ToLower().EndsWith "props" |> not)
+            |> Seq.filter (fun (propertyName,path,buildPath) -> String.endsWithIgnoreCase "props" propertyName  |> not)
             |> Seq.map (fun (propertyName,path,buildPath) -> 
                 let fileName = 
-                    match propertyName.ToLower() with
+                    match propertyName with
                     | _ when propertyChooseNode.ChildNodes.Count = 0 -> path
-                    | name when name.EndsWith "targets" ->
+                    | name when String.endsWithIgnoreCase name "targets" ->
                         sprintf "%s$(%s).targets" buildPath propertyName
                     | _ -> failwithf "Unknown .targets filename %s" propertyName
 
@@ -868,9 +869,9 @@ module ProjectFile =
             let i = ref (project.ProjectNode.ChildNodes.Count-1)
             while 
               !i >= 0 && 
-                (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().StartsWith "<import" && 
-                 project.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().Contains "label" &&
-                 project.ProjectNode.ChildNodes.[!i].OuterXml.ToString().ToLower().Contains "paket")  do
+                (String.startsWithIgnoreCase (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) "<import" && 
+                 String.containsIgnoreCase (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) "label" &&
+                 String.containsIgnoreCase (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) "paket")  do
                 decr i
             
             if !i <= 0 then
@@ -882,7 +883,7 @@ module ProjectFile =
                     project.ProjectNode.InsertAfter(chooseNode,node) |> ignore
 
             let j = ref 0
-            while !j < project.ProjectNode.ChildNodes.Count && project.ProjectNode.ChildNodes.[!j].OuterXml.ToString().ToLower().StartsWith("<import") do
+            while !j < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase (project.ProjectNode.ChildNodes.[!j].OuterXml.ToString()) "<import" do
                 incr j
             
             if propertyChooseNode.ChildNodes.Count > 0 then

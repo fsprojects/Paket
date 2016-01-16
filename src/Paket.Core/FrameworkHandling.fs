@@ -216,10 +216,10 @@ module FrameworkDetection =
         let path = path.Replace("\\", "/").ToLower()
         let fi = new FileInfo(path)
         
-        if path.Contains("lib/" + fi.Name.ToLower()) then Some(DotNetFramework(FrameworkVersion.V1))
+        if String.containsIgnoreCase ("lib/" + fi.Name) path then Some(DotNetFramework(FrameworkVersion.V1))
         else 
             let startPos = path.LastIndexOf("lib/")
-            let endPos = path.LastIndexOf(fi.Name.ToLower())
+            let endPos = path.LastIndexOf(fi.Name,StringComparison.OrdinalIgnoreCase)
             if startPos < 0 || endPos < 0 then None
             else 
                 path.Substring(startPos + 4, endPos - startPos - 5) 

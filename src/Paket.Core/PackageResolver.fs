@@ -309,7 +309,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, stra
                     let sources = parentSource :: sources |> List.distinct
                     Seq.singleton (v,sources)
                 | _ -> 
-                    let sources : PackageSource list = sources |> List.sortBy (fun x -> x.Url.ToLower().Contains "nuget.org" |> not) 
+                    let sources : PackageSource list = sources |> List.sortBy (fun x -> String.containsIgnoreCase "nuget.org" x.Url |> not) 
                     Seq.singleton (v,sources)
 
             availableVersions :=

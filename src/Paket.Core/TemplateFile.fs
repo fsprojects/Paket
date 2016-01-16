@@ -321,7 +321,7 @@ module internal TemplateFile =
 
         let requireLicenseAcceptance =
             match get "requireLicenseAcceptance" with
-            | Some x when x.ToLower() = "true" -> true
+            | Some x when String.equalsIgnoreCase x "true" -> true
             | _ -> false
 
         let tags =
@@ -333,7 +333,7 @@ module internal TemplateFile =
 
         let developmentDependency =
             match get "developmentDependency" with
-            | Some x when x.ToLower() = "true" -> true
+            | Some x when String.equalsIgnoreCase x "true" -> true
             | _ -> false
 
         let dependencies = getDependencies(fileName,lockFile,map,currentVersion,specificVersions)
