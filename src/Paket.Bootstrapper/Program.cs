@@ -31,7 +31,6 @@ namespace Paket.Bootstrapper
             var commandArgs = args;
             var preferNuget = false;
             var forceNuget = false;
-            var ignoreCache = false;
 
             if (commandArgs.Contains(PreferNugetCommandArg))
             {
@@ -57,15 +56,10 @@ namespace Paket.Bootstrapper
                 silent = true;
                 commandArgs = args.Where(x => x != SilentCommandArg).ToArray();
             }
-            if (commandArgs.Contains(IgnoreCacheCommandArg))
-            {
-                ignoreCache = true;
-                commandArgs = args.Where(x => x != IgnoreCacheCommandArg).ToArray();
-            }
 
             var dlArgs = EvaluateCommandArgs(commandArgs);
 
-            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget, forceNuget, ignoreCache);
+            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget, forceNuget);
 
             StartPaketBootstrapping(effectiveStrategy, dlArgs, silent);
         }
@@ -164,7 +158,7 @@ namespace Paket.Bootstrapper
             }
         }
 
-        private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget, bool ignoreCache)
+        private static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
         {
             var gitHubDownloadStrategy = new GitHubDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.PrepareWebRequest, BootstrapperHelper.GetDefaultWebProxyFor);
             var nugetDownloadStrategy = new NugetDownloadStrategy(BootstrapperHelper.PrepareWebClient, BootstrapperHelper.GetDefaultWebProxyFor, dlArgs.Folder, dlArgs.NugetSource);
@@ -186,7 +180,7 @@ namespace Paket.Bootstrapper
                 gitHubDownloadStrategy.FallbackStrategy = nugetDownloadStrategy;
             }
 
-            return ignoreCache ? effectiveStrategy : new CacheDownloadStrategy(effectiveStrategy);
+            return dlArgs.IgnoreCache ? effectiveStrategy : new CacheDownloadStrategy(effectiveStrategy);
         }
 
         private static DownloadArguments EvaluateCommandArgs(string[] args)
