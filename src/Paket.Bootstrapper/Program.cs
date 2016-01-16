@@ -22,7 +22,7 @@ namespace Paket.Bootstrapper
         const string SelfUpdateCommandArg = "--self";
         const string SilentCommandArg = "-s";
         const string NugetSourceArgPrefix = "--nuget-source=";
-        const string NoCacheCommandArg = "--no-cache";
+        const string IgnoreCacheCommandArg = "--ignore-cache";
 
         static void Main(string[] args)
         {
@@ -57,10 +57,10 @@ namespace Paket.Bootstrapper
                 silent = true;
                 commandArgs = args.Where(x => x != SilentCommandArg).ToArray();
             }
-            if (commandArgs.Contains(NoCacheCommandArg))
+            if (commandArgs.Contains(IgnoreCacheCommandArg))
             {
                 ignoreCache = true;
-                commandArgs = args.Where(x => x != NoCacheCommandArg).ToArray();
+                commandArgs = args.Where(x => x != IgnoreCacheCommandArg).ToArray();
             }
 
             var dlArgs = EvaluateCommandArgs(commandArgs);
@@ -198,7 +198,7 @@ namespace Paket.Bootstrapper
             var latestVersion = ConfigurationManager.AppSettings[PaketVersionAppSettingsKey] ?? Environment.GetEnvironmentVariable(PaketVersionEnv) ?? String.Empty;
             var ignorePrerelease = true;
             bool doSelfUpdate = false;
-            var ignoreCachedExecutable = false;
+            var ignoreCache = false;
             var commandArgs = args;
 
             if (commandArgs.Contains(SelfUpdateCommandArg))
@@ -212,10 +212,10 @@ namespace Paket.Bootstrapper
                 commandArgs = commandArgs.Where(x => !x.StartsWith(NugetSourceArgPrefix)).ToArray();
                 nugetSource = nugetSourceArg.Substring(NugetSourceArgPrefix.Length);
             }
-            if (commandArgs.Contains(NoCacheCommandArg))
+            if (commandArgs.Contains(IgnoreCacheCommandArg))
             {
-                commandArgs = commandArgs.Where(x => x != NoCacheCommandArg).ToArray();
-                ignoreCachedExecutable = true;
+                commandArgs = commandArgs.Where(x => x != IgnoreCacheCommandArg).ToArray();
+                ignoreCache = true;
             }
             if (commandArgs.Length >= 1)
             {
@@ -230,7 +230,7 @@ namespace Paket.Bootstrapper
                 }
             }
 
-            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate, nugetSource, ignoreCachedExecutable);
+            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate, nugetSource, ignoreCache);
         }
     }
 }
