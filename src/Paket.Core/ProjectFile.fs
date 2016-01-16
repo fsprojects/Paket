@@ -783,7 +783,7 @@ module ProjectFile =
                 let fileName = 
                     match propertyName with
                     | _ when propertyChooseNode.ChildNodes.Count = 0 -> path
-                    | name when String.endsWithIgnoreCase name "props" -> sprintf "%s$(%s).props" buildPath propertyName 
+                    | name when String.endsWithIgnoreCase "props" name  -> sprintf "%s$(%s).props" buildPath propertyName 
                     | _ -> failwithf "Unknown .props filename %s" propertyName
 
                 createNode "Import" project
@@ -801,7 +801,7 @@ module ProjectFile =
                 let fileName = 
                     match propertyName with
                     | _ when propertyChooseNode.ChildNodes.Count = 0 -> path
-                    | name when String.endsWithIgnoreCase name "targets" ->
+                    | name when String.endsWithIgnoreCase  "targets" name ->
                         sprintf "%s$(%s).targets" buildPath propertyName
                     | _ -> failwithf "Unknown .targets filename %s" propertyName
 
@@ -869,9 +869,9 @@ module ProjectFile =
             let i = ref (project.ProjectNode.ChildNodes.Count-1)
             while 
               !i >= 0 && 
-                (String.startsWithIgnoreCase (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) "<import" && 
-                 String.containsIgnoreCase (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) "label" &&
-                 String.containsIgnoreCase (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) "paket")  do
+                (String.startsWithIgnoreCase "<import" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  && 
+                 String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  &&
+                 String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) )  do
                 decr i
             
             if !i <= 0 then
@@ -883,7 +883,7 @@ module ProjectFile =
                     project.ProjectNode.InsertAfter(chooseNode,node) |> ignore
 
             let j = ref 0
-            while !j < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase (project.ProjectNode.ChildNodes.[!j].OuterXml.ToString()) "<import" do
+            while !j < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!j].OuterXml.ToString()) do
                 incr j
             
             if propertyChooseNode.ChildNodes.Count > 0 then
