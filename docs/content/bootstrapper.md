@@ -1,11 +1,13 @@
 # paket.bootstrapper.exe
 
-Downloads the latest stable paket.exe from github.com. If the download from github.com fails it tries to download the version from nuget.org instead. 
+Downloads the latest stable paket.exe. By default, the bootstrapper caches downloaded versions of paket.exe for the current user across all projects. If the requested version is not present in the cache, it is downloaded from github.com. If the download from github.com fails it tries to download the version from nuget.org instead. 
+
+Cached paket.exe versions are removed when the NuGet cache folder is [cleared](paket-clear-cache.html).
 
 `Ctrl+C` interrupts the download process. The return value of the bootstrapper is 0 when a paket.exe already exists, so that any subsequent scripts can continue. 
 
     [lang=batchfile]
-    $ paket.bootstrapper.exe [prerelease|version] [--prefer-nuget] [--self] [-s]
+    $ paket.bootstrapper.exe [prerelease|version] [--prefer-nuget] [--self] [-s] [-f]
 
 Options:
 
@@ -22,6 +24,8 @@ Options:
   `--self`: Self updating the paket.bootstrapper.exe. When this option is used the download of paket.exe will be skipped. (Can be combined with `--prefer-nuget`)
 
   `-s`: If this flag is set the bootstrapper will not perform any output.
+
+  `-f`: Forces the bootstrapper to ignore any cached paket.exe versions and go directly to github.com or nuget.org based on other flags.
 
 Environment Variables:
 
