@@ -1143,6 +1143,22 @@ module ProjectFile =
 
 
     let getCompileItems (this : ProjectFile, includeReferencedProjects : bool) = 
+        let getItems (item: CompileItem) =
+            let getItem file = match item.Link with
+                               | Some link -> {Include = file
+                                               Link = Some(item.Link.Value.Replace("%(FileName)", Path.GetFileName(file)))
+                                               BaseDir = item.BaseDir}
+                               | None -> {Include = file
+                                          Link = item.Link
+                                          BaseDir = item.BaseDir}
+            let dir = Path.GetDirectoryName(item.Include)
+            let filespec = Path.GetFileName(item.Include)
+
+            seq {
+                    for file in (Directory.GetFiles(dir, filespec)) do 
+                        yield (getItem file)
+                }
+        
         let getCompileItem (projfile : ProjectFile, compileNode : XmlNode) = 
             let getIncludePath (projfile : ProjectFile) (includePath : string) = 
                 Path.Combine(Path.GetDirectoryName(Path.GetFullPath(projfile.FileName)), includePath)
@@ -1151,7 +1167,7 @@ module ProjectFile =
                 compileNode
                 |> getAttribute "Include"
                 |> fun a -> a.Value |> getIncludePath projfile
-
+            
             compileNode
             |> getDescendants "Link"
             |> function 
@@ -1173,10 +1189,11 @@ module ProjectFile =
                 }
             else seq { yield this }
         
-        referencedProjects |> Seq.collect (fun proj -> 
-                                  proj.Document
-                                  |> getDescendants "Compile"
-                                  |> Seq.map (fun i -> getCompileItem (proj, i)))
+        referencedProjects 
+        |> Seq.collect (fun proj -> 
+                            proj.Document
+                            |> getDescendants "Compile"
+                            |> Seq.collect (fun i -> (getCompileItem (proj, i) |> getItems)))
 
 type ProjectFile with
 
