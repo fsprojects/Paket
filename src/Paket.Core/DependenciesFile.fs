@@ -91,7 +91,7 @@ module DependenciesFileParser =
             let inline parsePrerelease (texts : string list) = 
                 match texts |> List.filter ((<>) "") with
                 | [] -> PreReleaseStatus.No
-                | [x] when x.ToLower() = "prerelease" -> PreReleaseStatus.All
+                | [x] when String.equalsIgnoreCase x "prerelease" -> PreReleaseStatus.All
                 | _ -> PreReleaseStatus.Concrete texts
 
             if String.IsNullOrWhiteSpace text then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
@@ -627,8 +627,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     | Some found -> 
                         let pos = ref (found + 1)
                         let skipped = ref false
-                        while !pos < textRepresentation.Length - 1 && (String.IsNullOrWhiteSpace textRepresentation.[!pos] || textRepresentation.[!pos].ToLower().StartsWith("source")) do
-                            if textRepresentation.[!pos].ToLower().StartsWith("source") then
+                        while !pos < textRepresentation.Length - 1 && (String.IsNullOrWhiteSpace textRepresentation.[!pos] || String.startsWithIgnoreCase "source" textRepresentation.[!pos]) do
+                            if String.startsWithIgnoreCase "source" textRepresentation.[!pos] then
                                 skipped := true
                             pos := !pos + 1
                             

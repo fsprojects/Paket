@@ -179,7 +179,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                                     let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
                                                     let isValidExtension = 
                                                         [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"] 
-                                                        |> List.exists ((=) (fi.Extension.ToLower()))
+                                                        |> List.exists (String.equalsIgnoreCase fi.Extension)
                                                     isSameFileName && isValidExtension)
                            )
             |> Seq.toArray

@@ -134,7 +134,7 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedi
 
     let isMarked e =
         match tryGetElement (Some bindingNs) "Paket" e with
-        | Some e -> e.Value.Trim().ToLower() = "true"
+        | Some e -> String.equalsIgnoreCase (e.Value.Trim()) "true"
         | None -> false
 
     let nsManager = XmlNamespaceManager(NameTable());
