@@ -42,7 +42,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
     let targetFolder = getTargetFolder root groupName packageName version includeVersionInPath
     let direct = DirectoryInfo targetFolder
     if direct.Exists then direct else
-    match di.GetDirectories() |> Seq.tryFind (fun subDir -> subDir.FullName.ToLower().EndsWith lowerName) with
+    match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
     | Some x -> x
     | None -> failwithf "Package directory for package %O was not found." packageName
 

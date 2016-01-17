@@ -47,3 +47,10 @@ let ``#1375 pack specific dependency``() =
     paket ("pack -v output \"" + outPath + "\"") "i001375-pack-specific" |> ignore
 
     File.Delete(Path.Combine(scenarioTempPath "i001375-pack-specific","PaketBug","paket.template"))
+
+[<Test>]
+let ``#1375 pack with projectUrl commandline``() = 
+    let outPath = Path.Combine(scenarioTempPath "i001375-pack-specific","out")
+    paket ("pack -v output \"" + outPath + "\" project-url \"http://localhost\"") "i001375-pack-specific" |> ignore
+
+    File.Delete(Path.Combine(scenarioTempPath "i001375-pack-specific","PaketBug","paket.template"))

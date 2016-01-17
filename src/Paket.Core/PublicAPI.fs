@@ -439,35 +439,63 @@ type Dependencies(dependenciesFileName: string) =
     member this.FindReferencesFor(group:string,package:string): string list =
         FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) |> this.Process |> List.map (fun p -> p.FileName)
 
-    member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
-        let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
+    static member private FindPackagesByNameAsync(sources:PackageSource seq,searchTerm,?maxResults) =
         let maxResults = defaultArg maxResults 1000
-        let sources = this.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat |> List.distinct
+        let sources = sources |> Seq.toList |> List.distinct
         match sources with
         | [] -> [PackageSources.DefaultNuGetSource]
         | _ -> sources
-        |> List.choose (fun x -> match x with | NuGetV2 s -> Some s.Url | _ -> None)
         |> Seq.distinct
-        |> Seq.map (fun url ->
-                    NuGetV3.FindPackages(None, url, searchTerm, maxResults)
-                    |> Observable.ofAsyncWithToken cancellationToken)
+        |> Seq.choose (fun source -> 
+            match source with 
+            | NuGetV2 s ->
+                if s.Url.Contains "nuget.org" || s.Url.Contains "myget.org" then
+                    Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+                else
+                    Some(NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+            | NuGetV3 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+            | _ -> None)
+   
+    static member FindPackagesByName(sources:PackageSource seq,searchTerm,?maxResults) =
+        let maxResults = defaultArg maxResults 1000
+        Dependencies.FindPackagesByNameAsync(sources,searchTerm,maxResults)
+        |> Seq.map Async.RunSynchronously
+        |> Seq.concat
+        |> Seq.toList
+        |> List.distinct
+
+    static member SearchPackagesByName(sources:PackageSource seq,searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
+        let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
+        let maxResults = defaultArg maxResults 1000
+        Dependencies.FindPackagesByNameAsync(sources,searchTerm,maxResults)
+        |> Seq.map (Observable.ofAsyncWithToken cancellationToken)
         |> Seq.reduce Observable.merge
         |> Observable.flatten
         |> Observable.distinct
+
+    member this.SearchPackagesByName(searchTerm,?cancellationToken,?maxResults) : IObservable<string> =
+        let cancellationToken = defaultArg cancellationToken (System.Threading.CancellationToken())
+        let maxResults = defaultArg maxResults 1000
+        Dependencies.SearchPackagesByName(
+            this.GetSources() |> Seq.map (fun kv -> kv.Value) |> Seq.concat,
+            searchTerm,
+            cancellationToken,
+            maxResults)
 
     /// Finds all projects where the given package is referenced.
     member this.FindProjectsFor(group:string,package: string): ProjectFile list =
         FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) |> this.Process
 
     // Packs all paket.template files.
-    member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?symbols, ?includeReferencedProjects) =
+    member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?symbols, ?includeReferencedProjects, ?projectUrl) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let specificVersions = defaultArg specificVersions Seq.empty
         let workingDir = defaultArg workingDir (dependenciesFile.FileName |> Path.GetDirectoryName)
         let lockDependencies = defaultArg lockDependencies false
         let symbols = defaultArg symbols false
         let includeReferencedProjects = defaultArg includeReferencedProjects false
-        PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols, includeReferencedProjects)
+        let projectUrl = defaultArg (Some(projectUrl)) None
+        PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols, includeReferencedProjects, projectUrl)
 
     /// Pushes a nupkg file.
     static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =

@@ -448,6 +448,19 @@ module String =
             Some (input.Substring(prefix.Length))
         else None
 
+    let inline equalsIgnoreCase str1 str2 =
+        String.Compare(str1,str2,StringComparison.OrdinalIgnoreCase) = 0 
+
+    let inline containsIgnoreCase (target:string) (text:string) = 
+        text.IndexOf(target, StringComparison.OrdinalIgnoreCase) >= 0
+
+    
+    let inline startsWithIgnoreCase (target:string) (text:string) =
+        text.IndexOf(target, StringComparison.OrdinalIgnoreCase) = 0
+
+    let inline endsWithIgnoreCase (target:string) (text:string) =
+        text.IndexOf(target, StringComparison.OrdinalIgnoreCase) >= text.Length - target.Length
+
     let quoted (text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
 
     let inline trim (text:string) = text.Trim()

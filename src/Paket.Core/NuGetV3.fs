@@ -40,7 +40,7 @@ let calculateNuGet3Path(nugetUrl:string) =
     | "http://www.nuget.org/api/v2" -> Some "http://api.nuget.org/v3/index.json"
     | "https://www.nuget.org/api/v2" -> Some "https://api.nuget.org/v3/index.json"
     | url when url.EndsWith("api/v2") && url.Contains("myget.org") -> Some (url.Replace("api/v2","api/v3/index.json"))
-    | url when url.EndsWith("api/v3/index.json") -> Some url
+    | url when url.EndsWith("v3/index.json") -> Some url
     | _ -> None
 
 /// [omit]

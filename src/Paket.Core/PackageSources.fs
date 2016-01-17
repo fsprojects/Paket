@@ -187,7 +187,7 @@ type PackageSource =
                 if uri.Scheme = System.Uri.UriSchemeFile then 
                     LocalNuGet source
                 else 
-                    if source.ToLower().EndsWith("v3/index.json") then
+                    if String.endsWithIgnoreCase "v3/index.json" source then
                         NuGetV3 { Url = source; Authentication = auth }
                     else
                         NuGetV2 { Url = source; Authentication = auth }
@@ -208,6 +208,7 @@ type PackageSource =
         | LocalNuGet n -> None
 
     static member NuGetV2Source url = NuGetV2 { Url = url; Authentication = None }
+    static member NuGetV3Source url = NuGetV3 { Url = url; Authentication = None }
 
     static member WarnIfNoConnection (source,_) = 
         let n url auth =

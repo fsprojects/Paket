@@ -30,8 +30,9 @@ module internal NuSpecParserHelper =
             | None ->         VersionRequirement.Parse "0"
         let restriction =
             let parent = node.ParentNode 
-            match parent.Name.ToLower(), parent |> getAttribute "targetFramework" with
-            | "group", Some framework -> 
+            match parent.Name, parent |> getAttribute "targetFramework" with
+            | name , Some framework 
+                when String.equalsIgnoreCase name "group" -> 
                 match FrameworkDetection.Extract framework with
                 | Some x -> [FrameworkRestriction.Exactly x]
                 | None -> []
@@ -117,7 +118,7 @@ type Nuspec =
                 | None -> ""
               IsDevelopmentDependency =
                 match doc |> getNode "package" |> optGetNode "metadata" |> optGetNode "developmentDependency" with
-                | Some link -> link.InnerText.ToLower() = "true"
+                | Some link -> String.equalsIgnoreCase link.InnerText "true"
                 | None -> false
               FrameworkAssemblyReferences = 
                 let grouped =

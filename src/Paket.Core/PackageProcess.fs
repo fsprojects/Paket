@@ -86,7 +86,7 @@ let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProje
         let augmentedFiles = optional.Files |> List.append sourceFiles
         { templateFile with Contents = ProjectInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols, includeReferencedProjects) =
+let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, symbols, includeReferencedProjects, projectUrl) =
     let buildConfig = defaultArg buildConfig "Release"
     let buildPlatform = defaultArg buildPlatform ""
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
@@ -166,8 +166,14 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
             let excluded = set excluded
             allTemplates |> List.filter (fun t -> match t with CompleteTemplate(c,_) -> not (excluded.Contains c.Id) | _ -> true)
     
+    // set projectUrl
+    let templatesWithProjectUrl = 
+        match projectUrl with
+        | None -> excludedTemplates
+        | Some url -> excludedTemplates |> List.map (TemplateFile.setProjectUrl url)
+
     // set version
-    let templatesWithVersion = excludedTemplates |> List.map (TemplateFile.setVersion version specificVersions)
+    let templatesWithVersion = templatesWithProjectUrl |> List.map (TemplateFile.setVersion version specificVersions)
 
     // set release notes
     let processedTemplates =

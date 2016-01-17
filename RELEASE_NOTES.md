@@ -1,7 +1,17 @@
-#### 3.0.0-alpha030 - 15.01.2016
+#### 3.0.0-alpha031 - 17.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+
+#### 2.44.4 - 16.01.2016
+* Initial support for autocomplete of private sources - https://github.com/fsprojects/Paket/issues/1298
+* Allow to set project url in paket pack
+
+#### 2.44.3 - 15.01.2016
+* BUGFIX: Fix inter project dependencies
+
+#### 2.44.2 - 15.01.2016
+* BUGFIX: Reduce pressure from call stack - https://github.com/fsprojects/Paket/issues/1392
 
 #### 2.44.1 - 15.01.2016
 * BUGFIX: Symbols package fix for projects that contained linked files - https://github.com/fsprojects/Paket/pull/1390
