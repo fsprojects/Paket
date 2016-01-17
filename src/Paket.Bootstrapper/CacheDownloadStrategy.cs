@@ -6,7 +6,9 @@ namespace Paket.Bootstrapper
     internal class CacheDownloadStrategy : IDownloadStrategy
     {
         public string Name { get { return "Cache"; } }
-        private const string CacheDir = "PaketCache";
+
+        private readonly string _paketCacheDir =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NuGet", "Cache", "Paket");
 
         private IDownloadStrategy _fallbackStrategy;
         public IDownloadStrategy FallbackStrategy
@@ -35,7 +37,7 @@ namespace Paket.Bootstrapper
 
         public void DownloadVersion(string latestVersion, string target, bool silent)
         {
-            var cached = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), CacheDir, latestVersion, "paket.exe");
+            var cached = Path.Combine(_paketCacheDir, latestVersion, "paket.exe");
 
             if (!File.Exists(cached))
             {
