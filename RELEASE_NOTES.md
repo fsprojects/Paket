@@ -1,3 +1,6 @@
+#### 2.44.5 - 17.01.2016
+* Initial support for autocomplete of local NuGet feeds - https://github.com/fsprojects/Paket/issues/1298
+
 #### 2.44.4 - 16.01.2016
 * Initial support for autocomplete of private sources - https://github.com/fsprojects/Paket/issues/1298
 * Allow to set project url in paket pack

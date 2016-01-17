@@ -31,9 +31,17 @@ let ``#1298 should autocomplete for nunit on NuGet3``() =
     result |> shouldContain "NUnit"
 
 [<Test>]
-[<Ignore>] // it's only wrking on forki's machine
+[<Ignore>] // it's only working on forki's machine
 let ``#1298 should autocomplete for msu on local teamcity``() = 
     let result = Dependencies.FindPackagesByName([PackageSource.NuGetV2Source "http://teamcity/guestAuth/app/nuget/v1/FeedService.svc/"],"msu")
     result |> shouldContain "msu.Addins"
 
+[<Test>]
+let ``#1298 should autocomplete for dapper on local feed``() = 
+    let result = Dependencies.FindPackagesByName([PackageSource.LocalNuGet(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo"))],"dapp")
+    result |> shouldContain "Dapper"
     
+[<Test>]
+let ``#1298 should autocomplete for fake on local feed``() = 
+    let result = Dependencies.FindPackagesByName([PackageSource.LocalNuGet(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo"))],"fake")
+    result |> shouldContain "fake.core"
