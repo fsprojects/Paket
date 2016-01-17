@@ -22,7 +22,7 @@ namespace Paket.Bootstrapper
         const string SelfUpdateCommandArg = "--self";
         const string SilentCommandArg = "-s";
         const string NugetSourceArgPrefix = "--nuget-source=";
-        const string IgnoreCacheCommandArg = "--ignore-cache";
+        const string IgnoreCacheCommandArg = "-f";
 
         static void Main(string[] args)
         {
