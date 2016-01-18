@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -121,7 +121,7 @@
     </Content>
     <Content Include="Nuspec\FsXaml.Wpf.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>    
+    </Content>
     <Content Include="Nuspec\EmptyLibs.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -232,6 +232,45 @@
     <Compile Include="Lockfile\ParserWithMultipleSourcesSpecs.fs" />
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
+    <None Include="ProjectFile\TestData\GENERATED_CS_Linked\F - Copy %282%29.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS_Linked\F - Copy %283%29.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS_Linked\F - Copy %284%29.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS_Linked\F - Copy.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS_Linked\F.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS\E - Copy %282%29.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS\E - Copy %283%29.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS\E - Copy %284%29.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS\E - Copy %285%29.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS\E - Copy %286%29.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS\E - Copy %287%29.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS\E - Copy.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\GENERATED_CS\E.cs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -284,6 +323,9 @@
     <None Include="ProjectFile\TestData\FSharp.Core.Fluent-3.1.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\WithWildcardCompileItems.csprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
@@ -291,6 +333,7 @@
     <Compile Include="ProjectFile\FrameworkReferencesSpecs.fs" />
     <Compile Include="ProjectFile\OutputSpecs.fs" />
     <Compile Include="ProjectFile\ProjectLanguageSpecs.fs" />
+    <Compile Include="ProjectFile\GetCompileItemSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
