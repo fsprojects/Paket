@@ -22,6 +22,7 @@ group Test
 
   source https://nuget.org/api/v2
 
+  nuget FAKE
   nuget NUnit.Runners.Net4
   nuget NUnit ~> 2
   github forki/FsUnit FsUnit.fs
