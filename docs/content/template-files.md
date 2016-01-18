@@ -185,6 +185,14 @@ If you need to exclude dependencies from the automatic discovery then you can us
 	  FSharp.Core
 	  Other.Dep
 
+#### Pdb files
+
+With the include-pdbs switch you can tell Paket to pack pdbs into the package.
+
+    include-pdbs
+
+This only works for paket.template files of type `project`.
+
 ### Comments
 
 A line starting with a # or // is considered a comment and will be ignored by the parser.

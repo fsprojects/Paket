@@ -135,7 +135,8 @@ type OptionalPackagingInfo =
       References : string list
       FrameworkAssemblyReferences : string list
       Files : (string * string) list
-      FilesExcluded : string list }
+      FilesExcluded : string list 
+      IncludePdbs : bool}
     static member Epmty : OptionalPackagingInfo =
         { Title = None
           Owners = []
@@ -154,7 +155,8 @@ type OptionalPackagingInfo =
           References = []
           FrameworkAssemblyReferences = []
           Files = []
-          FilesExcluded = [] }
+          FilesExcluded = [] 
+          IncludePdbs = false}
 
 type CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
 
@@ -338,6 +340,11 @@ module internal TemplateFile =
 
         let dependencies = getDependencies(fileName,lockFile,map,currentVersion,specificVersions)
         let excludedDependencies = getExcludedDependencies(fileName,lockFile,map,currentVersion)
+        
+        let includePdbs = 
+            match get "include-pdbs" with
+            | Some x when String.equalsIgnoreCase x "true" -> true
+            | _ -> false
 
         { Title = get "title"
           Owners = owners
@@ -356,7 +363,8 @@ module internal TemplateFile =
           References = getReferences map
           FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map
-          FilesExcluded = getFileExcludes map }
+          FilesExcluded = getFileExcludes map 
+          IncludePdbs = includePdbs }
 
     let Parse(file,lockFile,currentVersion,specificVersions,contentStream : Stream) =
         trial {

@@ -95,11 +95,11 @@ let internal findAutoCompleteVersionsForPackage(v3Url, auth, packageName:Domain.
             let versions =
                 let extracted = extractAutoCompleteVersions text
                 if extracted.Length > maxResults then
-                    extracted |> Seq.take maxResults |> Seq.toArray
+                    SemVer.SortVersions extracted |> Array.take maxResults
                 else
-                    extracted
+                    SemVer.SortVersions extracted
 
-            return Some(SemVer.SortVersions versions)
+            return Some versions
         | None -> return None
     }
 

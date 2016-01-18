@@ -93,7 +93,7 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
         with exn -> return None
     }
 
-/// Gets versions of the given package from local Nuget feed.
+/// Gets versions of the given package from local NuGet feed.
 let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
@@ -277,8 +277,20 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     | None -> failwithf "The package %O %O can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." packageName version directory Environment.NewLine
     | Some x -> x
 
+/// Reads package name from a nupkg file
+let getPackageNameFromLocalFile fileName = 
+    fixArchive fileName
+    use zipToCreate = new FileStream(fileName, FileMode.Open, FileAccess.Read)
+    use zip = new ZipArchive(zipToCreate, ZipArchiveMode.Read)
+    let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
+    let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.Name)).FullName
+    zippedNuspec.ExtractToFile(fileName, true)
+    let nuspec = Nuspec.Load fileName
+    File.Delete(fileName)
+    nuspec.OfficialName
+
 /// Reads direct dependencies from a nupkg file
-let getDetailsFromLocalFile root localNugetPath (packageName:PackageName) (version:SemVerInfo) =
+let getDetailsFromLocalNuGetPackage root localNugetPath (packageName:PackageName) (version:SemVerInfo) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
@@ -477,7 +489,7 @@ let GetPackageDetails root force (sources:PackageSource list) packageName (versi
                     let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
                     return Some(source,result)
                 | LocalNuGet path -> 
-                    let! result = getDetailsFromLocalFile root path packageName version
+                    let! result = getDetailsFromLocalNuGetPackage root path packageName version
                     return Some(source,result)
             with e ->
                 verbosefn "Source '%O' exception: %O" source e
