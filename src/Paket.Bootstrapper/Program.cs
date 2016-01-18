@@ -105,10 +105,13 @@ namespace Paket.Bootstrapper
 
                 var localVersion = BootstrapperHelper.GetLocalFileVersion(dlArgs.Target);
 
+                var specificVersionRequested = true;
                 var latestVersion = dlArgs.LatestVersion;
+
                 if (latestVersion == String.Empty)
                 {
                     latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease);
+                    specificVersionRequested = false;
                 }
 
                 if (dlArgs.DoSelfUpdate)
@@ -121,7 +124,9 @@ namespace Paket.Bootstrapper
                 {
                     var currentSemVer = String.IsNullOrEmpty(localVersion) ? new SemVer() : SemVer.Create(localVersion);
                     var latestSemVer = SemVer.Create(latestVersion);
-                    if (currentSemVer.CompareTo(latestSemVer) != 0)
+                    var comparison = currentSemVer.CompareTo(latestSemVer);
+
+                    if ((comparison > 0 && specificVersionRequested) || comparison < 0)
                     {
                         downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target, silent);
                         if (!silent)
