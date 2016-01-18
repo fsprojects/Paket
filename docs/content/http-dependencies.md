@@ -8,7 +8,7 @@ You can reference a single file from a HTTP resource simply by specifying the ur
 
     http http://www.fssnip.net/raw/1M/test1.fs
 
-If you run the [`paket update` command](paket-update.html), it will add a new section to your [`paket.lock` file](lock-file.html):
+If you run the [`paket install` command](paket-install.html), it will add a new section to your [`paket.lock` file](lock-file.html):
 
     HTTP
       remote: http://www.fssnip.net/raw/1M/test1.fs
@@ -22,6 +22,14 @@ If you want to reference the file in one of your project files then add an entry
 
 This will reference the linked file directly into your project.
 By default the linked file will be visible under ``paket-files`` folder in project.
+
+## Build action conventions
+
+The build action is determined depending on the file extension:
+
+* If file extension is equal to project type it is added as compile items. For instance `.cs` for `.csproj` projects and `.fs` for `.fsproj` projects.
+* If file extension is `.dll` then it is added as reference.
+* Otherwise it is added as an ['add as link' content file](https://msdn.microsoft.com/en-us/library/windows/apps/jj714082(v=vs.105).aspx).
 
 ## Options on http dependencies
 
@@ -40,3 +48,21 @@ The pattern expected is
 that maybe assoicated for that key. For example if I had added an authentication source using [``paket config add-authentication MySource``](commands\config.html)
 then each time paket extracts a HTTP dependency with `MySource` as a `SourceName` the credentails will be made part of the HTTP request. If no keys exist in the authentication store
 then the request will be made without any authentication headers.
+
+## Allowed http schemes
+
+All `http`, `https` and `file protocol` `URIs` are allowed. Examples:
+
+* http https://raw.githubusercontent.com/fsprojects/Paket/master/src/Paket.Core/ProjectFile.fs
+
+	will write the file to `paket-files\raw.githubusercontent.com\ProjectFile.fs` 
+
+* http file:///c:/projects/library.dll
+
+	will write the file to `paket-files\localhost\library.dll` 
+
+## Updating http dependencies
+
+If you want to update a file you need to use the [`paket install` command](paket-install.html) or [`paket update` command](paket-update.html)  with `--force [-f]` option.
+
+Using [groups](groups.html) for http dependent files can be helpful in order to reduce the number of files that are re-installed.
