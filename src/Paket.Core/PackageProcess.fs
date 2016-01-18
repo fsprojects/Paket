@@ -64,6 +64,15 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                 | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }
     | _ -> templateFile
 
+let private convertToNormal (symbols : bool) templateFile =
+    match templateFile.Contents with
+    | CompleteInfo(core, optional) ->
+        let includePdbs = optional.IncludePdbs
+        { templateFile with Contents = CompleteInfo(core, { optional with IncludePdbs = (if symbols then false else includePdbs) }) }
+    | ProjectInfo(core, optional) ->
+        let includePdbs = optional.IncludePdbs
+        { templateFile with Contents = ProjectInfo(core, { optional with IncludePdbs = (if symbols then false else includePdbs) }) }
+
 let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) templateFile =
     let sourceFiles =
         let getTarget compileItem =
@@ -135,7 +144,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
     // add dependencies
     let allTemplates =
         let optWithSymbols projectFile templateFile =
-            seq { yield templateFile; if symbols then yield templateFile |> convertToSymbols projectFile includeReferencedProjects }
+            seq { yield (templateFile |> convertToNormal symbols); if symbols then yield templateFile |> convertToSymbols projectFile includeReferencedProjects }
 
         let convertRemainingTemplate fileName =
             let templateFile = TemplateFile.Load(fileName,lockFile,version,specificVersions)
@@ -151,7 +160,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                 | [] -> failwithf "There was no project file found for template file %s" fileName
                 | _ -> failwithf "There was more than one project file found for template file %s" fileName
             | _ -> seq { yield templateFile }
-        
+
         projectTemplates
         |> Map.toList
         |> Seq.collect(fun (_,(t, p)) -> 

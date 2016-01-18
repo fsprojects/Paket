@@ -179,10 +179,10 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                                     let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
                                                     let validExtensions = match template.Contents with
                                                                           | CompleteInfo(core, optional) ->
-                                                                              if core.Symbols then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                                                              if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
                                                                               else [".xml"; ".dll"; ".exe"; ".mdb"]
                                                                           | ProjectInfo(core, optional) ->
-                                                                              if core.Symbols then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                                                              if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
                                                                               else [".xml"; ".dll"; ".exe"; ".mdb"]
                                                     let isValidExtension = 
                                                         validExtensions
