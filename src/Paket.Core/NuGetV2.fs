@@ -93,7 +93,7 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
         with exn -> return None
     }
 
-/// Gets versions of the given package from local Nuget feed.
+/// Gets versions of the given package from local NuGet feed.
 let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath

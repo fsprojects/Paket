@@ -454,10 +454,9 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.choose (fun source -> 
             match source with 
             | NuGetV2 s ->
-                if s.Url.Contains "nuget.org" || s.Url.Contains "myget.org" then
-                    Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
-                else
-                    Some(NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+                match NuGetV3.getSearchAPI(s.Authentication,s.Url) with
+                | Some _ -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+                | None ->  Some(NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
             | NuGetV3 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
             | LocalNuGet s -> 
                 Some(async {
@@ -497,6 +496,27 @@ type Dependencies(dependenciesFileName: string) =
             searchTerm,
             cancellationToken,
             maxResults)
+
+    static member FindPackageVersions(root,sources:PackageSource seq,name:string,?maxResults) =
+        let maxResults = defaultArg maxResults 1000
+        let sources = 
+            match sources |> Seq.toList |> List.distinct with
+            | [] -> [PackageSources.DefaultNuGetSource]
+            | sources -> sources
+            |> List.distinct
+
+        let versions = 
+            NuGetV2.GetVersions true root (sources, PackageName name)
+            |> List.map (fun (v,_) -> v.ToString())
+            |> List.toArray
+            |> SemVer.SortVersions
+
+        if versions.Length > maxResults then Array.take maxResults versions else versions
+        
+
+    member this.FindPackageVersions(sources:PackageSource seq,name:string,?maxResults) =
+        let maxResults = defaultArg maxResults 1000
+        Dependencies.FindPackageVersions(this.RootPath,sources,name,maxResults)
 
     /// Finds all projects where the given package is referenced.
     member this.FindProjectsFor(group:string,package: string): ProjectFile list =

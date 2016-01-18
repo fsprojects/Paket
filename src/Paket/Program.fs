@@ -281,19 +281,17 @@ let showGroups (results : ParseResults<ShowGroupsArgs>) =
 
 let findPackageVersions (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
+    let dependencies = Dependencies.Locate()
     let name = 
         match results.TryGetResult <@ FindPackageVersionsArgs.NuGet @> with
         | Some name -> name
         | None -> results.GetResult <@ FindPackageVersionsArgs.Name @>
-    let source = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.Source @>) Constants.DefaultNuGetStream
-    let result =
-        match NuGetV3.getSearchAPI(None,source) with
-        | None -> Array.empty
-        | Some v3Url ->
-            NuGetV3.FindAutoCompleteVersionsForPackage(v3Url,None,Domain.PackageName name,true,maxResults)
-            |> Async.RunSynchronously
+    let sources  =
+        match results.TryGetResult <@ FindPackageVersionsArgs.Source @> with
+        | Some source -> [PackageSource.NuGetV2Source source]
+        | _ -> dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat
 
-    for p in result do
+    for p in dependencies.FindPackageVersions(sources,name,maxResults) do
         tracefn "%s" p
 
 let push (results : ParseResults<_>) =
