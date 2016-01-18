@@ -110,7 +110,7 @@ namespace Paket.Bootstrapper
 
                 if (latestVersion == String.Empty)
                 {
-                    latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease);
+                    latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease, silent);
                     specificVersionRequested = false;
                 }
 

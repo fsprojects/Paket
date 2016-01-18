@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
+using System.Net;
 
 namespace Paket.Bootstrapper
 {
@@ -30,9 +32,27 @@ namespace Paket.Bootstrapper
             FallbackStrategy = fallbackStrategy;
         }
 
-        public string GetLatestVersion(bool ignorePrerelease)
+        public string GetLatestVersion(bool ignorePrerelease, bool silent)
         {
-            return FallbackStrategy.GetLatestVersion(ignorePrerelease);
+            try
+            {
+                return FallbackStrategy.GetLatestVersion(ignorePrerelease, silent);
+            }
+            catch (WebException)
+            {
+                if (FallbackStrategy.FallbackStrategy != null)
+                {
+                    FallbackStrategy = FallbackStrategy.FallbackStrategy;
+                    return GetLatestVersion(ignorePrerelease, silent);
+                }
+
+                var latestVersion = GetLatestVersionInCache(ignorePrerelease);
+
+                if (!silent)
+                    Console.WriteLine("Unable to look up the latest version online, the cache contains version {0}.", latestVersion);
+
+                return latestVersion;
+            }
         }
 
         public void DownloadVersion(string latestVersion, string target, bool silent)
@@ -60,6 +80,31 @@ namespace Paket.Bootstrapper
         public void SelfUpdate(string latestVersion, bool silent)
         {
             FallbackStrategy.SelfUpdate(latestVersion, silent);
+        }
+
+        private string GetLatestVersionInCache(bool ignorePrerelease)
+        {
+            var zero = new SemVer();
+
+            return Directory.GetDirectories(_paketCacheDir)
+                .Select(Path.GetFileName)
+                .OrderByDescending(x =>
+                {
+                    try
+                    {
+                        var version = SemVer.Create(x);
+
+                        if (ignorePrerelease && version.PreRelease != null)
+                            return zero;
+                        else
+                            return version;
+                    }
+                    catch (Exception)
+                    {
+                        return zero;
+                    }
+                })
+                .FirstOrDefault() ?? "0";
         }
     }
 }
