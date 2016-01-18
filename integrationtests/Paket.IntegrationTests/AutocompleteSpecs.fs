@@ -40,8 +40,11 @@ let ``#1298 should autocomplete for msu on local teamcity``() =
 let ``#1298 should autocomplete for dapper on local feed``() = 
     let result = Dependencies.FindPackagesByName([PackageSource.LocalNuGet(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo"))],"dapp")
     result |> shouldContain "Dapper"
+    result |> shouldNotContain "dapper"
     
 [<Test>]
 let ``#1298 should autocomplete for fake on local feed``() = 
     let result = Dependencies.FindPackagesByName([PackageSource.LocalNuGet(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo"))],"fake")
-    result |> shouldContain "fake.core"
+    result |> shouldContain "FAKE.Core"
+    result |> shouldNotContain "Dapper"
+    result |> shouldNotContain "dapper"

@@ -461,17 +461,15 @@ type Dependencies(dependenciesFileName: string) =
             | NuGetV3 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
             | LocalNuGet s -> 
                 Some(async {
-                    let a = 
+                    return
                         Fake.Globbing.search s (sprintf "**/*%s*" searchTerm)
-                        |> List.map (fun s -> 
+                        |> List.distinctBy (fun s -> 
                             let parts = FileInfo(s).Name.Split('.')
                             let nameParts = parts |> Seq.takeWhile (fun x -> x <> "nupkg" && System.Int32.TryParse x |> fst |> not)
-                            String.Join(".",nameParts))
+                            String.Join(".",nameParts).ToLower())
+                        |> List.map NuGetV2.getPackageNameFromLocalFile
                         |> List.toArray
-
-                    return a
-                })
-            | _ -> None)
+                }))
    
     static member FindPackagesByName(sources:PackageSource seq,searchTerm,?maxResults) =
         let maxResults = defaultArg maxResults 1000
