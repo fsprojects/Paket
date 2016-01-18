@@ -63,6 +63,6 @@ All `http`, `https` and `file protocol` `URIs` are allowed. Examples:
 
 ## Updating http dependencies
 
-The update command has no effect on http dependencies. If you want to update a file you need to use the [`paket install` command](paket-install.html) with `--force [-f]` option.
+If you want to update a file you need to use the [`paket install` command](paket-install.html) or [`paket update` command](paket-update.html)  with `--force [-f]` option.
 
 Using [groups](groups.html) for http dependent files can be helpful in order to reduce the number of files that are re-installed.
