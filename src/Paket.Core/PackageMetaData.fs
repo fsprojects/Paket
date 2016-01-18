@@ -177,8 +177,15 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                 |> Array.map (fun f -> FileInfo f)
                                 |> Array.filter (fun fi -> 
                                                     let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
+                                                    let validExtensions = match template.Contents with
+                                                                          | CompleteInfo(core, optional) ->
+                                                                              if core.Symbols then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                                                              else [".xml"; ".dll"; ".exe"; ".mdb"]
+                                                                          | ProjectInfo(core, optional) ->
+                                                                              if core.Symbols then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                                                              else [".xml"; ".dll"; ".exe"; ".mdb"]
                                                     let isValidExtension = 
-                                                        [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"] 
+                                                        validExtensions
                                                         |> List.exists (String.equalsIgnoreCase fi.Extension)
                                                     isSameFileName && isValidExtension)
                            )

@@ -151,13 +151,18 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                 | [] -> failwithf "There was no project file found for template file %s" fileName
                 | _ -> failwithf "There was more than one project file found for template file %s" fileName
             | _ -> seq { yield templateFile }
-
+        
         projectTemplates
-        |> Map.map (fun _ (t, p) -> p,findDependencies dependencies buildConfig buildPlatform t p lockDependencies projectTemplates)
         |> Map.toList
-        |> Seq.collect (fun (_,(p,t)) -> t |> optWithSymbols p)
-        |> Seq.append (allTemplateFiles |> Seq.collect convertRemainingTemplate)
-        |> Seq.toList
+        |> Seq.collect(fun (_,(t, p)) -> 
+            seq {
+                for template in t |> optWithSymbols p do 
+                    yield template, p
+                }
+            )
+         |> Seq.map (fun (t, p) -> findDependencies dependencies buildConfig buildPlatform t p lockDependencies projectTemplates)
+         |> Seq.append (allTemplateFiles |> Seq.collect convertRemainingTemplate)
+         |> Seq.toList
 
     let excludedTemplates =
         match excludedTemplates with
