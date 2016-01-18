@@ -239,17 +239,7 @@ let findPackages (results : ParseResults<_>) =
                 (Dependencies.Locate().GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)
 
     let searchAndPrint searchText =
-        let result =
-            sources
-            |> List.choose (fun x -> match x with | PackageSource.NuGetV2 s -> Some s.Url | _ -> None)
-            |> Seq.distinct
-            |> Seq.map (fun url -> NuGetV3.FindPackages(None, url, searchText, maxResults))
-            |> Async.Parallel
-            |> Async.RunSynchronously
-            |> Seq.concat
-            |> Seq.distinct
-
-        for p in result do
+        for p in Dependencies.FindPackagesByName(sources,searchText,maxResults) do
             tracefn "%s" p
 
     match results.TryGetResult <@ FindPackagesArgs.SearchText @> with

@@ -474,7 +474,8 @@ type Dependencies(dependenciesFileName: string) =
     static member FindPackagesByName(sources:PackageSource seq,searchTerm,?maxResults) =
         let maxResults = defaultArg maxResults 1000
         Dependencies.FindPackagesByNameAsync(sources,searchTerm,maxResults)
-        |> Seq.map Async.RunSynchronously
+        |> Async.Parallel
+        |> Async.RunSynchronously
         |> Seq.concat
         |> Seq.toList
         |> List.distinct

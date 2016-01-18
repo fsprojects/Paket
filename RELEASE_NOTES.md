@@ -1,5 +1,6 @@
 #### 2.44.6 - 18.01.2016
 * BUGFIX: Fix casing for autocomplete of local NuGet feeds - https://github.com/fsprojects/Paket/issues/1298
+* Initial support for autocomplete of private sources in Atom and VS Code - https://github.com/fsprojects/Paket/issues/1298
 
 #### 2.44.5 - 17.01.2016
 * Initial support for autocomplete of local NuGet feeds - https://github.com/fsprojects/Paket/issues/1298
