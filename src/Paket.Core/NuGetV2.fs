@@ -546,7 +546,7 @@ let getVersionsCached key f (source, auth, nugetURL, package) =
 let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     async {
         try 
-            let url = sprintf "%s/Packages()?$filter=IsLatestVersion and IsAbsoluteLatestVersion and substringof('%s',Id)" nugetURL packageNamePrefix
+            let url = sprintf "%s/Packages()?$filter=IsLatestVersion and IsAbsoluteLatestVersion and substringof('%s',Id)" nugetURL packageNamePrefix 
             let! raw = getFromUrl(auth |> Option.map toBasicAuth,url,acceptXml)
             let doc = XmlDocument()
             doc.LoadXml raw
