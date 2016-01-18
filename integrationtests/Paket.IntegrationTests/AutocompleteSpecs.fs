@@ -66,6 +66,6 @@ let ``#1298 should autocomplete versions for msu on local teamcity``() =
 
 [<Test>]
 let ``#1298 should autocomplete versions for dapper on local feed``() = 
-    let result = Dependencies.FindPackageVersions("",[PackageSource.LocalNuGet(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo"))],"Dapper")
+    let result = Dependencies.FindPackageVersions("",[PackageSource.LocalNuGet(DirectoryInfo(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo")).FullName)],"Dapper")
     result |> shouldEqual [|"1.42.0"; "1.40"|]
     
