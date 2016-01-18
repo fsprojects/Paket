@@ -84,6 +84,7 @@ namespace Paket.Bootstrapper
 
         private string GetLatestVersionInCache(bool ignorePrerelease)
         {
+            Directory.CreateDirectory(_paketCacheDir);
             var zero = new SemVer();
 
             return Directory.GetDirectories(_paketCacheDir)
