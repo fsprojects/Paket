@@ -1,3 +1,6 @@
+#### 2.46.1 - 19.01.2016
+* BUGFIX: Don't use symbol packages when using filesystem source with symbol package - https://github.com/fsprojects/Paket/issues/1413
+
 #### 2.46.0 - 19.01.2016
 * BootStrapper caches paket.exe in NuGet cache - https://github.com/fsprojects/Paket/pull/1400
 * Case insensitive autocomplete for NuGet v2 protocol - https://github.com/fsprojects/Paket/pull/1410

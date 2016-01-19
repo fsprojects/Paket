@@ -103,6 +103,7 @@ let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
 
         let versions = 
             Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
+            |> Seq.filter (fun fi -> fi.EndsWith ".symbols.nupkg" |> not)
             |> Seq.choose (fun fileName ->
                             let fi = FileInfo(fileName)
                             let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
