@@ -1,7 +1,11 @@
-#### 3.0.0-alpha032 - 18.01.2016
+#### 3.0.0-alpha033 - 19.01.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+
+#### 2.46.0 - 19.01.2016
+* BootStrapper caches paket.exe in NuGet cache - https://github.com/fsprojects/Paket/pull/1400
+* Case insensitive autocomplete for NuGet v2 protocol - https://github.com/fsprojects/Paket/pull/1410
 
 #### 2.45.0 - 18.01.2016
 * Initial support for autocomplete of private sources - https://github.com/fsprojects/Paket/issues/1298
