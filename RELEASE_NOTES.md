@@ -1,3 +1,7 @@
+#### 2.46.0 - 19.01.2016
+* BootStrapper caches paket.exe in NuGet cache - https://github.com/fsprojects/Paket/pull/1400
+* Case insensitive autocomplete for NuGet v2 protocol - https://github.com/fsprojects/Paket/pull/1410
+
 #### 2.45.0 - 18.01.2016
 * Initial support for autocomplete of private sources - https://github.com/fsprojects/Paket/issues/1298
 * Allow to set project url in paket pack
