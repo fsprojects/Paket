@@ -70,7 +70,7 @@ namespace Paket.Bootstrapper
 
         public IDownloadStrategy FallbackStrategy { get; set; }
 
-        public string GetLatestVersion(bool ignorePrerelease)
+        public string GetLatestVersion(bool ignorePrerelease, bool silent)
         {
             if (Directory.Exists(NugetSource))
             {
@@ -130,7 +130,7 @@ namespace Paket.Bootstrapper
 
                 if (Directory.Exists(NugetSource))
                 {
-                    if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = this.GetLatestVersion(false);
+                    if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = this.GetLatestVersion(false, silent);
                     var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
                     if (!silent)
@@ -185,7 +185,7 @@ namespace Paket.Bootstrapper
 
             if (Directory.Exists(NugetSource))
             {
-                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = this.GetLatestVersion(false);
+                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = this.GetLatestVersion(false, silent);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
                 if (!silent)
