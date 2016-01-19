@@ -22,7 +22,7 @@ namespace Paket.Bootstrapper
             GetDefaultWebProxyFor = getDefaultWebProxyFor;
         }
 
-        public string GetLatestVersion(bool ignorePrerelease)
+        public string GetLatestVersion(bool ignorePrerelease, bool silent)
         {
             using (var client = new WebClient())
             {

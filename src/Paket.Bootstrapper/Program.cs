@@ -22,6 +22,7 @@ namespace Paket.Bootstrapper
         const string SelfUpdateCommandArg = "--self";
         const string SilentCommandArg = "-s";
         const string NugetSourceArgPrefix = "--nuget-source=";
+        const string IgnoreCacheCommandArg = "-f";
 
         static void Main(string[] args)
         {
@@ -30,6 +31,7 @@ namespace Paket.Bootstrapper
             var commandArgs = args;
             var preferNuget = false;
             var forceNuget = false;
+
             if (commandArgs.Contains(PreferNugetCommandArg))
             {
                 preferNuget = true;
@@ -54,7 +56,8 @@ namespace Paket.Bootstrapper
                 silent = true;
                 commandArgs = args.Where(x => x != SilentCommandArg).ToArray();
             }
-            var dlArgs = EvaluateCommandArgs(commandArgs, silent);
+
+            var dlArgs = EvaluateCommandArgs(commandArgs);
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget, forceNuget);
 
@@ -102,10 +105,13 @@ namespace Paket.Bootstrapper
 
                 var localVersion = BootstrapperHelper.GetLocalFileVersion(dlArgs.Target);
 
+                var specificVersionRequested = true;
                 var latestVersion = dlArgs.LatestVersion;
+
                 if (latestVersion == String.Empty)
                 {
-                    latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease);
+                    latestVersion = downloadStrategy.GetLatestVersion(dlArgs.IgnorePrerelease, silent);
+                    specificVersionRequested = false;
                 }
 
                 if (dlArgs.DoSelfUpdate)
@@ -118,7 +124,9 @@ namespace Paket.Bootstrapper
                 {
                     var currentSemVer = String.IsNullOrEmpty(localVersion) ? new SemVer() : SemVer.Create(localVersion);
                     var latestSemVer = SemVer.Create(latestVersion);
-                    if (currentSemVer.CompareTo(latestSemVer) != 0)
+                    var comparison = currentSemVer.CompareTo(latestSemVer);
+
+                    if ((comparison > 0 && specificVersionRequested) || comparison < 0)
                     {
                         downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target, silent);
                         if (!silent)
@@ -176,10 +184,11 @@ namespace Paket.Bootstrapper
                 effectiveStrategy = gitHubDownloadStrategy;
                 gitHubDownloadStrategy.FallbackStrategy = nugetDownloadStrategy;
             }
-            return effectiveStrategy;
+
+            return dlArgs.IgnoreCache ? effectiveStrategy : new CacheDownloadStrategy(effectiveStrategy);
         }
 
-        private static DownloadArguments EvaluateCommandArgs(string[] args, bool silent)
+        private static DownloadArguments EvaluateCommandArgs(string[] args)
         {
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var target = Path.Combine(folder, "paket.exe");
@@ -188,6 +197,7 @@ namespace Paket.Bootstrapper
             var latestVersion = ConfigurationManager.AppSettings[PaketVersionAppSettingsKey] ?? Environment.GetEnvironmentVariable(PaketVersionEnv) ?? String.Empty;
             var ignorePrerelease = true;
             bool doSelfUpdate = false;
+            var ignoreCache = false;
             var commandArgs = args;
 
             if (commandArgs.Contains(SelfUpdateCommandArg))
@@ -200,6 +210,11 @@ namespace Paket.Bootstrapper
             {
                 commandArgs = commandArgs.Where(x => !x.StartsWith(NugetSourceArgPrefix)).ToArray();
                 nugetSource = nugetSourceArg.Substring(NugetSourceArgPrefix.Length);
+            }
+            if (commandArgs.Contains(IgnoreCacheCommandArg))
+            {
+                commandArgs = commandArgs.Where(x => x != IgnoreCacheCommandArg).ToArray();
+                ignoreCache = true;
             }
             if (commandArgs.Length >= 1)
             {
@@ -214,7 +229,7 @@ namespace Paket.Bootstrapper
                 }
             }
 
-            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate, nugetSource);
+            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate, nugetSource, ignoreCache);
         }
     }
 }

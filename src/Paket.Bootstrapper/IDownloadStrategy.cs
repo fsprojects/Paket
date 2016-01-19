@@ -6,7 +6,7 @@ namespace Paket.Bootstrapper
     {
         string Name { get; }
         IDownloadStrategy FallbackStrategy { get; set; }
-        string GetLatestVersion(bool ignorePrerelease);
+        string GetLatestVersion(bool ignorePrerelease, bool silent);
         void DownloadVersion(string latestVersion, string target, bool silent);
         void SelfUpdate(string latestVersion, bool silent);
     }
