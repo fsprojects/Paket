@@ -46,6 +46,7 @@
     <StartArguments>update</StartArguments>
     <StartArguments>restore</StartArguments>
     <StartArguments>update</StartArguments>
+    <StartArguments>pack -v output "D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp\out" templatefile "D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp\PaketBug\paket.template"</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -65,6 +66,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001380-git-semvertag-as-source\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\paket-repro</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001387-nugetv3\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

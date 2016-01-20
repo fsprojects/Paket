@@ -9,7 +9,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (627d68727518ef0c013d0dfbb0260aba84de98e1)
+    src/app/FakeLib/Globbing/Globbing.fs (474eb69504fd0a904fc66305d962049fab1c857d)
   remote: fsharp/FSharp.Data
   specs:
     src/CommonProviderImplementation/AssemblyReader.fs (9b01f37126d5b2487dac5da7899bb2b1a5cb56ef)
@@ -17,7 +17,7 @@ GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    FAKE (4.16.0)
+    FAKE (4.15.1)
     FSharp.Compiler.Service (1.4.2.3)
     FSharp.Formatting (2.13.4)
       FSharp.Compiler.Service (>= 1.4.2 < 1.5.0)
