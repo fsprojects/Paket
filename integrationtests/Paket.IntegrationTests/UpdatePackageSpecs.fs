@@ -83,3 +83,10 @@ let ``#1178 update with [MN].* and without filter should fail``() =
         failwithf "Paket command expected to fail"
     with
     | exn when exn.Message.Contains "Package [MN].* was not found in paket.dependencies in group Main" -> ()
+
+[<Test>]
+let ``#1413 doesn't take symbols``() =
+    update "i001413-symbols" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001413-symbols","paket.lock"))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Composable.Core"].Version
+    |> shouldEqual (SemVer.Parse "3.4.0")

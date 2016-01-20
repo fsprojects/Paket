@@ -1,0 +1,2 @@
+source NuGetFeed
+nuget Composable.Core
