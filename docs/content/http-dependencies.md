@@ -6,10 +6,12 @@ Paket allows one to automatically manage the linking of files from HTTP resource
 
 You can reference a single file from a HTTP resource simply by specifying the url in the [`paket.dependencies` file](dependencies-file.html):
 
+    [lang=paket]
     http http://www.fssnip.net/raw/1M/test1.fs
 
 If you run the [`paket install` command](paket-install.html), it will add a new section to your [`paket.lock` file](lock-file.html):
 
+    [lang=paket]
     HTTP
       remote: http://www.fssnip.net/raw/1M/test1.fs
       specs:
@@ -17,7 +19,8 @@ If you run the [`paket install` command](paket-install.html), it will add a new 
 
 
 If you want to reference the file in one of your project files then add an entry to the project's [`paket.references` file.](references-files.html):
-    
+
+    [lang=paket]
     File:test1.fs
 
 This will reference the linked file directly into your project.
@@ -33,18 +36,20 @@ The build action is determined depending on the file extension:
 
 ## Options on http dependencies
 
-When referencing a file using a http dependency, there are several options that help you to deal with things like authentication and file name. 
-The pattern expected is 
+When referencing a file using a http dependency, there are several options that help you to deal with things like authentication and file name.
+The pattern expected is
 
-	http url [FileSpec] [SourceName]
+    [lang=paket]
+    http url [FileSpec] [SourceName]
 
 * **FileSpec** - This allows you to define the path to which the file that is downloaded will be written to. For example specfying the following
 
+    [lang=paket]
 		http http://www.fssnip.net/raw/1M/test1.fs src/test1.fs
 
-	will write the file to `paket-files\www.fssnip.net\src\test.fs` 
+	will write the file to `paket-files\www.fssnip.net\src\test.fs`
 
-* **SourceName** - The source name allows you to override the folder which the downloaded file is written to and also acts as a key to lookup any authentication 
+* **SourceName** - The source name allows you to override the folder which the downloaded file is written to and also acts as a key to lookup any authentication
 that maybe assoicated for that key. For example if I had added an authentication source using [``paket config add-authentication MySource``](commands\config.html)
 then each time paket extracts a HTTP dependency with `MySource` as a `SourceName` the credentails will be made part of the HTTP request. If no keys exist in the authentication store
 then the request will be made without any authentication headers.
@@ -55,11 +60,11 @@ All `http`, `https` and `file protocol` `URIs` are allowed. Examples:
 
 * http https://raw.githubusercontent.com/fsprojects/Paket/master/src/Paket.Core/ProjectFile.fs
 
-	will write the file to `paket-files\raw.githubusercontent.com\ProjectFile.fs` 
+	will write the file to `paket-files\raw.githubusercontent.com\ProjectFile.fs`
 
 * http file:///c:/projects/library.dll
 
-	will write the file to `paket-files\localhost\library.dll` 
+	will write the file to `paket-files\localhost\library.dll`
 
 ## Updating http dependencies
 

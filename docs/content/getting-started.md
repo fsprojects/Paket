@@ -27,6 +27,7 @@ Create a [`paket.dependencies` file](dependencies-file.html) in your project's r
 You can use [NuGet packages](nuget-dependencies.html), [GitHub files](github-dependencies.html) and [HTTP dependencies](http-dependencies.html).
 The file might look like this:
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget Castle.Windsor-log4net >= 3.2
@@ -47,6 +48,7 @@ Install all of the required packages from the specified sources:
 
 The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate a [`paket.lock` file](lock-file.html) like:
 
+	[lang=paket]
 	NUGET
 	  remote: https://nuget.org/api/v2
 	  specs:
@@ -79,6 +81,7 @@ In the last paragraph you learned how to install packages into your repository, 
 In order to do so you need a [`paket.references` files](references-files.html) alongside your Visual Studio project files.
 By listing the direct dependencies in a `paket.references` file, Paket will automatically sync references to the corresponding projects whenever an `install` or `update` takes place.
 
+    [lang=paket]
     Castle.Windsor-log4net
     NUnit
 

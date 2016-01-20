@@ -2,6 +2,7 @@
 
 Consider the following [`paket.dependencies` file][depfile] in your project's root:
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget Castle.Windsor ~> 3.2
@@ -9,10 +10,12 @@ Consider the following [`paket.dependencies` file][depfile] in your project's ro
 
 And one of your projects having a [`paket.references` file][reffile] like this:
 
+    [lang=paket]
     Castle.Windsor
 
 Now, when you run `paket install`, your [`paket.lock` file][lockfile] would look like this:
 
+    [lang=paket]
     NUGET
       remote: https://nuget.org/api/v2
       specs:
@@ -45,7 +48,7 @@ Depending on which command you issue, Paket creates different version requiremen
       <td><code>[3.2,4.0)</code></td>
       <td><code>[3.3.0]</code></td>
     </tr>
-  </tbody> 
+  </tbody>
 </table>
 
 As you see here, the first command (without the `lock-dependencies` parameter) creates version requirements as specified in your [`paket.dependencies` file][depfile]. The second command takes the currently resolved versions from your [`paket.lock` file][lockfile] and "locks" them to these specific versions.

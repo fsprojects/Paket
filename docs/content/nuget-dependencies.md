@@ -16,16 +16,19 @@ Paket supports NuGet feeds like those provided by [nuget.org](http://www.nuget.o
 
 Please note that you need to specify all NuGet sources, including the default feed from [nuget.org](http://www.nuget.org). Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.
 
+    [lang=paket]
     source https://nuget.org/api/v2     // nuget.org
     source http://myserver/nuget/api/v2 // custom feed
 
 <div id="plaintext-credentials"></div>
 It's also possible to provide login information for private NuGet feeds:
 
+    [lang=paket]
     source http://myserver/nuget/api/v2 username: "my user" password: "my pw"
 
 If you don't want to check your username and password into source control, you can use environment variables instead:
 
+    [lang=paket]
     source http://myserver/nuget/api/v2 username: "%PRIVATE_FEED_USER%" password: "%PRIVATE_FEED_PASS%"
 
 `%PRIVATE_FEED_USER%` and `%PRIVATE_FEED_PASS%` will be expanded with the contents of your `PRIVATE_FEED_USER` and `PRIVATE_FEED_PASS` environment variables.
@@ -36,11 +39,13 @@ The [`paket.lock` file](lock-file.html) will also reflect these settings.
 
 Paket also supports file paths such as local directories or references to UNC shares:
 
+    [lang=paket]
     source C:\Nugets
     source ~/project/nugets
-    
-As well Paket supports the source directory to be specified relative to the `paket.dependencies` file: 
 
+As well Paket supports the source directory to be specified relative to the `paket.dependencies` file:
+
+    [lang=paket]
     source ext/nugets
 
 ## Dependencies
@@ -64,6 +69,7 @@ You can also [influence the resolution of transitive dependencies](#Paket-s-NuGe
 
 #### Pinned version constraint
 
+    [lang=paket]
     nuget Example = 1.2.3
     nuget Example 1.2.3   // same as above
 
@@ -75,18 +81,21 @@ This is the strictest version constraint. Use the `=` operator to specify an exa
 
 If you omit the version constraint then Paket will assume `>= 0`:
 
+    [lang=paket]
     nuget Example
 
 #### "Use exactly this version" constraint
 
 If your transitive dependencies result in a version conflict you might want to instruct Paket to use a specific version. The `==` operator allows you to manually resolve the conflict:
 
+    [lang=paket]
     nuget Example == 1.2.3 // take exactly this version
 
 <blockquote>Important: If you want to restrict the version to a specific version then use the [= operator](nuget-dependencies.html#Pinned-version-constraint). The == operator should only be used if you need to overwrite a dependency resultion due to a conflict.</blockquote>
 
 #### Further version constraints
 
+    [lang=paket]
     nuget Example >= 1.2.3        // at least 1.2.3
     nuget Example > 1.2.3         // greater than 1.2.3
     nuget Example <= 1.2.3        // less than or equal to 1.2.3
@@ -95,6 +104,7 @@ If your transitive dependencies result in a version conflict you might want to i
 
 #### Pessimistic version constraint
 
+    [lang=paket]
     nuget Example ~> 1.2.3
 
 The `~>` "twiddle-wakka" operator is borrowed from [bundler](http://bundler.io/). It is used to specify a version range.
@@ -138,6 +148,7 @@ Let us illustrate:
 
 If want to allow newer backward-compatible versions but also need a specific fix version within the allowed range, use a compound constraint.
 
+    [lang=paket]
     nuget Example ~> 1.2 >= 1.2.3
 
 The example above translates to `1.2.3 <= x < 2.0`.
@@ -146,6 +157,7 @@ The example above translates to `1.2.3 <= x < 2.0`.
 
 If you want to dependend on prereleases then Paket can assist you. In contrast to NuGet, Paket allows you to depend on different prerelease channels:
 
+    [lang=paket]
     nuget Example >= 1.2.3 alpha      // at least 1.2.3 including alpha versions
     nuget Example >= 2 beta rc        // at least 2.0 including rc and beta versions
     nuget Example >= 3 rc             // at least 3.0 but including rc versions
@@ -155,13 +167,15 @@ If you want to dependend on prereleases then Paket can assist you. In contrast t
 
 Sometimes you don't want to generate dependencies for older framework versions. You can control this in the [`paket.dependencies` file](dependencies-file.html):
 
+    [lang=paket]
     nuget Example >= 2.0 framework: net35, net40  // .NET 3.5 and .NET 4.0
     nuget Example >= 2.0 framework: >= net45      // .NET 4.5 and above
 
 ### Putting the version no. into the path
 
 If you need to be NuGet compatible and want to have the version no. in the package path you can do the following:
-    
+
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget xunit.runners.visualstudio >= 2.0 version_in_path: true
@@ -170,12 +184,13 @@ If you need to be NuGet compatible and want to have the version no. in the packa
 ### No content option
 
 This option disables the installation of any content files:
-    
+
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget jQuery content: none // we don't install jQuery content files
-	nuget Fody   content: once // install content files but don't overwrite
-	nuget ServiceStack.Swagger content: true // install content and always override
+    nuget Fody   content: once // install content files but don't overwrite
+    nuget ServiceStack.Swagger content: true // install content and always override
     nuget UnionArgParser ~> 0.7
 
 The default is `content: true`.
@@ -184,6 +199,7 @@ The default is `content: true`.
 
 It's possible to influence the `Private` property for references in project files:
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget Newtonsoft.Json copy_local: false
@@ -192,18 +208,21 @@ It's possible to influence the `Private` property for references in project file
 
 You can instruct Paket to create assembly binding redirects for NuGet packages:
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget FSharp.Core redirects: on
 
 Redirects are created only if they are required. However, you can instruct Paket to create it regardless:
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget FSharp.Core redirects: force
 
 In constract, you have the option to force Paket to not create a redirect:
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget FSharp.Core redirects: off
@@ -214,6 +233,7 @@ You can also override the redirects settings per project, from its [references f
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget Microsoft.Bcl.Build import_targets: false // we don't import .targets and .props
@@ -227,6 +247,7 @@ To override a [strategy option](dependencies-file.html#Strategy-option) or the d
 
 To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `@` operator in your version constraint.
 
+    [lang=paket]
     strategy: min
     source https://nuget.org/api/v2
 
@@ -238,6 +259,7 @@ This effectively will get you the *lastest matching versions* of `Example`'s dep
 
 To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `!` operator in your version constraint.
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget Example !~> 1.2 // use "min" version resolution strategy
@@ -246,6 +268,7 @@ This effectively will get you the *lowest matching versions* of `Example`'s depe
 
 The `!` and `@` modifiers are applicable to all [version constraints](#Version-constraints):
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget Example-A @> 0 // use "max" version resolution strategy
@@ -255,7 +278,8 @@ The `!` and `@` modifiers are applicable to all [version constraints](#Version-c
 ### Specifying multiple targeting options
 
 It is possible to apply more than one of the options above to a particular package.  To do so, simply separate them by commas, like so:
-    
+
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget ClearScript.Installer import_targets: false, content: none // we don't import .targets and .props, and also don't add any content
