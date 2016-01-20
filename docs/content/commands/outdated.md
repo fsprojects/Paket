@@ -2,13 +2,15 @@
 
 Consider the following paket.dependencies file:
 
+    [lang=paket]
     source https://nuget.org/api/v2
-    
+
     nuget Castle.Core
     nuget Castle.Windsor
 
-and the following paket.lock file: 
+and the following paket.lock file:
 
+    [lang=paket]
     NUGET
       remote: https://nuget.org/api/v2
       specs:

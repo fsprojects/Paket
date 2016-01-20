@@ -3,6 +3,7 @@ The paket.lock file
 
 Consider the following [`paket.dependencies` file](dependencies-file.html):
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     nuget Castle.Windsor-log4net !~> 3.2
@@ -12,6 +13,7 @@ Here we [specify dependencies](dependencies-file.html) on the default NuGet feed
 
 The [`paket.lock` file](lock-file.html) records the concrete dependency resolution of all direct *and transitive* dependencies of your project:
 
+    [lang=paket]
     NUGET
       remote: https://nuget.org/api/v2
       specs:

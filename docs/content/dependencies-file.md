@@ -4,6 +4,7 @@ The `paket.dependencies` file is used to specify rules regarding your applicatio
 
 To give you an overview, consider the following `paket.dependencies` file:
 
+    [lang=paket]
     source https://nuget.org/api/v2
 
     // NuGet packages
@@ -50,6 +51,7 @@ Paket supports the following source types:
 Paket usually references all direct and transitive dependencies that are listed in your [`paket.references` files](references-files.md) to your project file.
 In `strict` mode it will **only** reference *direct* dependencies.
 
+    [lang=paket]
     references: strict
     source https://nuget.org/api/v2
 
@@ -60,6 +62,7 @@ In `strict` mode it will **only** reference *direct* dependencies.
 
 Sometimes you don't want to generate dependencies for older framework versions. You can control this in the [`paket.dependencies` file](dependencies-file.html):
 
+    [lang=paket]
     framework: net35, net40
     source https://nuget.org/api/v2
 
@@ -69,6 +72,7 @@ Sometimes you don't want to generate dependencies for older framework versions. 
 
 This option disables the installation of any content files:
 
+    [lang=paket]
     content: none
     source https://nuget.org/api/v2
 
@@ -79,6 +83,7 @@ This option disables the installation of any content files:
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
 
+    [lang=paket]
     import_targets: false
     source https://nuget.org/api/v2
 
@@ -89,6 +94,7 @@ If you don't want to import `.targets` and `.props` files you can disable it via
 
 It's possible to influence the `Private` property for references via the `copy_local` switch:
 
+    [lang=paket]
     copy_local: false
     source https://nuget.org/api/v2
 
@@ -98,6 +104,7 @@ It's possible to influence the `Private` property for references via the `copy_l
 
 This option tells paket to create [Assembly Binding Redirects](https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx) for all referenced libraries.
 
+    [lang=paket]
     redirects: on
     source https://nuget.org/api/v2
 
@@ -105,6 +112,7 @@ This option tells paket to create [Assembly Binding Redirects](https://msdn.micr
 
 On the other hand, you can instruct Paket to create no [Assembly Binding Redirects](https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx), regardless a package instructs otherwise.
 
+    [lang=paket]
     redirects: off
     source https://nuget.org/api/v2
 
@@ -113,6 +121,7 @@ On the other hand, you can instruct Paket to create no [Assembly Binding Redirec
 
 If you're using multiple groups, you must set `redirects: off` for each one of them.
 
+    [lang=paket]
     redirects: off
     source https://nuget.org/api/v2
 
@@ -122,17 +131,18 @@ If you're using multiple groups, you must set `redirects: off` for each one of t
     group Build
         redirects: off
 	    source https://nuget.org/api/v2
-		
+
         nuget FAKE redirects: on
 
 ### Strategy option
 
-This option tells Paket what resolver strategy it will use by default. 
+This option tells Paket what resolver strategy it will use by default.
 
 NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org. To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).
 
 The strategy can be either `min` or `max`.
 
+    [lang=paket]
     strategy: min
     source https://nuget.org/api/v2
 
@@ -140,7 +150,7 @@ The strategy can be either `min` or `max`.
 
 A `min` strategy means you get the *lowest matching version* of your transitive dependencies (i.e. NuGet-style). In constrast, a `max` strategy will get you the *highest matching version*.
 
-Note, however, that all direct dependencies still get their *lastest matching versions*, no matter the value of the `strategy` option. 
+Note, however, that all direct dependencies still get their *lastest matching versions*, no matter the value of the `strategy` option.
 
 The only exception is when you are updating a single package and one of your direct dependencies is a transitive dependency for that specific package. In this case, only the updating package will get its *latest matching version* and the dependency is treated as transitive.
 

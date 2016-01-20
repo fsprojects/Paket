@@ -15,8 +15,9 @@ When you install `Castle.Windsor` package in NuGet to a project, it will generat
 
 After converting to Paket with [`paket convert-from-nuget command`](paket-convert-from-nuget.html), you should get a following paket.dependencies file:
 
+    [lang=paket]
     source https://nuget.org/api/v2
-    
+
     nuget Castle.Core 3.3.1
     nuget Castle.Windsor 3.3.0
 
@@ -30,8 +31,9 @@ Paket by default (without [strict](dependencies-file.html#Strict-references) mod
 In other words, you still get the same result if you remove `Castle.Core` from your paket.references file.
 And this is exactly what happens after executing `paket simplify` command:
 
+    [lang=paket]
     source https://nuget.org/api/v2
-    
+
     nuget Castle.Windsor 3.3.0
 
 will be the content of your paket.dependencies file, and:
@@ -55,13 +57,15 @@ It is possible through the use of simplify to make unintended changes to your pa
 
 Imagine a paket.dependencies file with the following contents:
 
+    [lang=paket]
     source https://nuget.org/api/v2
-    
+
     nuget Foo 1.0.0
     nuget Bar 1.0.0
 
 Let us imagine that package Bar has a dependency on package Foo for any version from 1.0 through 2.0. The paket.lock file that results for this combination is:
 
+    [lang=paket]
     NUGET
       remote: https://nuget.org/api/v2
       specs:
@@ -71,8 +75,9 @@ Let us imagine that package Bar has a dependency on package Foo for any version 
 
 In this situation, if simplify is run, the Foo dependency will be removed, resulting in a paket.dependencies of:
 
+    [lang=paket]
     source https://nuget.org/api/v2
-    
+
     nuget Bar 1.0.0
 
 like we expect.  But now, if an install is run, the Foo dependency will be free to update to the maximum allowed by the Bar dependency, which could have unforseen consequences if the author of Foo has introduced a breaking change.

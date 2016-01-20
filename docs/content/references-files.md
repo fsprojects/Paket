@@ -16,11 +16,12 @@ Paket looks for `paket.references` files underneath the folder where [`paket.dep
 
 The file whitelists any dependencies from the [`paket.lock` file](lock-file.html) set that are to be referenced within the projects alongside it in a given directory:
 
+    [lang=paket]
     Newtonsoft.Json
     UnionArgParser
     DotNetZip
     RestSharp
-    
+
     group Test
         NUnit
 
@@ -34,39 +35,46 @@ Any [roslyn based analyzer](analyzers.html) present in the packages will also be
 
 It's possible to influence the `Private` property for references in project files:
 
+    [lang=paket]
     Newtonsoft.Json copy_local:false
 
 ## import_targets settings
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
 
+    [lang=paket]
     Microsoft.Bcl.Build import_targets:false
 
 ## No content option
 
 This option disables the installation of any content files for the given package:
-    
+
+    [lang=paket]
     jQuery content: none
 
 ## Framework restrictions
 
 Sometimes you don't want to generate dependencies for older framework versions. You can control this in the [`paket.dependencies` file](nuget-dependencies.html#Framework-restrictions) or via the `framework` switch:
 
-    Newtonsoft.Json framework: net35, net40 
+    [lang=paket]
+    Newtonsoft.Json framework: net35, net40
     DotNetZip framework: >= net45           
 
 ## Redirects settings
 
 You can instruct Paket to create assembly binding redirects for NuGet packages:
 
+    [lang=paket]
     FSharp.Core redirects: on
 
 Redirects are created only if they are required. However, you can instruct Paket to create it regardless:
 
+    [lang=paket]
     FSharp.Core redirects: force
 
 In constract, you have the option to force Paket to not create a redirect:
 
+    [lang=paket]
     FSharp.Core redirects: off
 
 Redirects settings in [references files](references-files.html#Redirects-settings) takes precedence over settings in [dependencies file](nuget-dependencies.html#redirects-settings).

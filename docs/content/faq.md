@@ -22,9 +22,9 @@ If you really need to have the version in the path for certain packages (like xu
 
 ## NuGet allows to use multiple versions of the same package. Can I do that with Paket?
 
-Usually you don't want that to happen. Most solutions that have multiple versions of the same package installed did this by accident. 
+Usually you don't want that to happen. Most solutions that have multiple versions of the same package installed did this by accident.
 Since NuGet has no global lock file and stores version information in packages.config (per project), it's hard to keep all projects consolidated.
-Paket on the other gives you a global/consolidated view of all your dependencies in the [`paket.lock` file](lock-file.html). 
+Paket on the other gives you a global/consolidated view of all your dependencies in the [`paket.lock` file](lock-file.html).
 
 In the very rare cases when you really need to maintain different versions of the same package you can use the [dependency groups feature](http://fsprojects.github.io/Paket/groups.html).
 Every dependency group gets resolved independently so it also deals with the conflict resolution of indirect dependencies, but the most important difference is that using groups is a deliberate action.
@@ -69,9 +69,9 @@ Instead we encourage the .NET community to use a declarative install process and
 
 Committing the [`paket.lock` file](lock-file.html) to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when [`paket install`](paket-install.html) is run.
 
-If your *project is an application* you should always commit the [`paket.lock` file](lock-file.html). 
+If your *project is an application* you should always commit the [`paket.lock` file](lock-file.html).
 
-If your *project is a library* then you probably want to commit it as well. There are rare cases where you always want to test your lib against the latest version of your dependencies, 
+If your *project is a library* then you probably want to commit it as well. There are rare cases where you always want to test your lib against the latest version of your dependencies,
 but we recommend to set up a second CI build instead. This new build should be run regularly (maybe once a day) and execute [`paket update`](paket-update.html) at the beginning.
 This will ensure that you get notified whenever a dependency update breaks your library.
 
@@ -108,6 +108,7 @@ If your proxy uses custom credentials, you need to set the following environment
 
 For example:
 
+    [lang=paket]
     set HTTP_PROXY=http://user:password@proxy.company.com:port/
     set HTTPS_PROXY=https://user:password@proxy.company.com:port/
     set NO_PROXY=.company.com,localhost
