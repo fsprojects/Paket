@@ -1,3 +1,6 @@
+#### 2.46.2 - 20.01.2016
+* BUGFIX: Pack with concrete template file should work for type project - https://github.com/fsprojects/Paket/issues/1414
+
 #### 2.46.1 - 19.01.2016
 * BUGFIX: Don't use symbol packages when using filesystem source with symbol package - https://github.com/fsprojects/Paket/issues/1413
 

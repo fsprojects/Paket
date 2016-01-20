@@ -122,9 +122,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
     
     // load up project files and grab meta data
     let projectTemplates = 
-        match templateFile with
-        | Some template -> Map.empty
-        | None ->
+        let getAllProjectsFiles workingDir =
             ProjectFile.FindAllProjects workingDir
             |> Array.choose (fun projectFile ->
                 match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
@@ -140,6 +138,12 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                 let merged = merge buildConfig buildPlatform version specificVersions projectFile templateFile
                 Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile))
             |> Map.ofArray
+
+        match templateFile with
+        | Some template -> 
+            getAllProjectsFiles (FileInfo(template).Directory.FullName)
+            |> Map.filter (fun p (t,_) -> normalizePath t.FileName = normalizePath template)
+        | None -> getAllProjectsFiles workingDir
 
     // add dependencies
     let allTemplates =
