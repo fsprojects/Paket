@@ -54,3 +54,14 @@ let ``#1375 pack with projectUrl commandline``() =
     paket ("pack -v output \"" + outPath + "\" project-url \"http://localhost\"") "i001375-pack-specific" |> ignore
 
     File.Delete(Path.Combine(scenarioTempPath "i001375-pack-specific","PaketBug","paket.template"))
+
+[<Test>]
+let ``#1376 fail template``() = 
+    let outPath = Path.Combine(scenarioTempPath "i001376-pack-template","out")
+    let templatePath = Path.Combine(scenarioTempPath "i001376-pack-template","PaketBug\paket.template")
+    paket ("pack -v output \"" + outPath + "\" templatefile " + templatePath) "i001376-pack-template" |> ignore
+    let fileInfo = FileInfo(Path.Combine(outPath, "PaketBug.1.0.0.0.nupkg"))
+    let (expectedFileSize: int64) = int64(1542)
+    fileInfo.Length |> shouldBeGreaterThan expectedFileSize
+
+    File.Delete(Path.Combine(scenarioTempPath "i001376-pack-template","PaketBug","paket.template"))
