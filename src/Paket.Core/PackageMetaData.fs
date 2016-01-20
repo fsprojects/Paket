@@ -7,6 +7,7 @@ open System.Reflection
 open Paket.Domain
 open Paket.Logging
 open System.Collections.Generic
+open Paket.Requirements
 
 let (|CompleteTemplate|IncompleteTemplate|) templateFile = 
     match templateFile with
@@ -121,7 +122,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects=
+let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) =
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -233,40 +234,72 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                 
             // now do dependent projects
             if includeReferencedProjects then
-                let projectFile = ProjectFile.loadFromFile project.FileName
-                let getProjects = ProjectFile.getInterProjectDependencies projectFile
-                for proj in getProjects do
-                    match (ProjectFile.FindReferencesFile (FileInfo proj.Path)) with
-                    | Some f ->
-                        let refFile = ReferencesFile.FromFile f
-                        let refs = refFile.Groups
-                                    |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
-                                    |> List.concat
-                        for (group, package) in refs do
-                            yield (group, package)
-                    | None -> 
-                        ignore()
+                let rec getDependendentProjects (projFilename: string) =
+                    let projectFile = ProjectFile.loadFromFile projFilename
+                    let getProjects = ProjectFile.getInterProjectDependencies projectFile
+                    seq {
+                        for proj in getProjects do
+                            let projFileInfo = (FileInfo proj.Path)
+                            let tf = ProjectFile.FindTemplatesFile projFileInfo
+                            match tf with
+                            | Some templateFilename ->
+                                let templateFile = TemplateFile.Load(templateFilename, lockFile, None, Seq.empty |> Map.ofSeq)
+                                match templateFile.Contents with
+                                | CompleteInfo(core, optional) ->
+                                    match (ProjectFile.FindReferencesFile projFileInfo) with
+                                    | Some f ->
+                                        let refFile = ReferencesFile.FromFile f
+                                        let refs = refFile.Groups
+                                                    |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
+                                                    |> List.concat
+                                        for (group, package) in refs do
+                                            yield (group, package)
+                                    | None -> 
+                                        ignore()
+                                    yield! getDependendentProjects proj.Path
+                                | ProjectInfo(core, optional) ->
+                                    let pis : PackageInstallSettings = { Name = PackageName(core.Id.Value); 
+                                                                         Settings = InstallSettings.Default
+                                                                       }
+                                    yield (GroupName("~~referenced-project"), pis)
+                            | None ->
+                                let refsFilename = ProjectFile.FindReferencesFile projFileInfo
+                                match refsFilename with
+                                | Some f ->
+                                    let refFile = ReferencesFile.FromFile f
+                                    let refs = refFile.Groups
+                                                |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
+                                                |> List.concat
+                                    for (group, package) in refs do
+                                        yield (group, package)
+                                | None -> 
+                                    ignore()
+                                yield! getDependendentProjects proj.Path
+                        }
+                yield! getDependendentProjects project.FileName
         }
-
+    
     match (allReferences |> Seq.length) with
     | 0 -> withDepsAndIncluded
     | _ -> 
         allReferences
         |> Seq.toList
         |> List.filter (fun (groupName,np) ->
-            try
-                // TODO: it would be nice if this data would be in the NuGet OData feed,
-                // then we would not need to parse every nuspec here
-                let info =
-                    lockFile.Groups.[groupName].Resolution
-                    |> Map.tryFind np.Name
-                match info with
-                | None -> true
-                | Some rp ->
-                    let nuspec = Nuspec.Load(dependencies.RootPath,groupName,rp.Version,defaultArg rp.Settings.IncludeVersionInPath false,np.Name)
-                    not nuspec.IsDevelopmentDependency
-            with
-            | _ -> true)
+            if groupName = GroupName("~~referenced-project") then true
+            else
+                try
+                    // TODO: it would be nice if this data would be in the NuGet OData feed,
+                    // then we would not need to parse every nuspec here
+                    let info =
+                        lockFile.Groups.[groupName].Resolution
+                        |> Map.tryFind np.Name
+                    match info with
+                    | None -> true
+                    | Some rp ->
+                        let nuspec = Nuspec.Load(dependencies.RootPath,groupName,rp.Version,defaultArg rp.Settings.IncludeVersionInPath false,np.Name)
+                        not nuspec.IsDevelopmentDependency
+                with
+                | _ -> true)
         |> List.map (fun (groupName,np) ->
                 let dependencyVersionRequirement =
                     if not lockDependencies then
@@ -301,6 +334,12 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                 let dep =
                     match dependencyVersionRequirement with
                     | Some installed -> installed
-                    | None -> failwithf "No package with id '%A' installed in group %O." np.Name groupName
+                    | None -> 
+                        if groupName = GroupName("~~referenced-project") then
+                            match version with
+                            | Some v -> VersionRequirement.Parse (v.ToString())
+                            | None -> VersionRequirement.AllReleases
+                        else 
+                            failwithf "No package with id '%A' installed in group %O." np.Name groupName
                 np.Name, dep)
         |> List.fold addDependency withDepsAndIncluded
