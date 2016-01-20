@@ -121,7 +121,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) =
+let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects=
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -217,17 +217,42 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
         dependencies.FindLockfile().FullName
         |> LockFile.LoadFrom
 
-    // Add any paket references
-    let referenceFile = 
-        FileInfo project.FileName
-        |> ProjectFile.FindReferencesFile 
-        |> Option.map ReferencesFile.FromFile
-    
-    match referenceFile with
-    | Some r -> 
-        r.Groups
-        |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
-        |> List.concat
+    let allReferences =
+        seq {
+            let projFileInfo = FileInfo project.FileName
+            match (ProjectFile.FindReferencesFile projFileInfo) with
+            | Some f -> 
+                let refFile = ReferencesFile.FromFile f
+                let refs = refFile.Groups
+                            |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
+                            |> List.concat
+                for (group, package) in refs do
+                    yield (group, package)
+            | None -> 
+                ignore()
+                
+            // now do dependent projects
+            if includeReferencedProjects then
+                let projectFile = ProjectFile.loadFromFile project.FileName
+                let getProjects = ProjectFile.getInterProjectDependencies projectFile
+                for proj in getProjects do
+                    match (ProjectFile.FindReferencesFile (FileInfo proj.Path)) with
+                    | Some f ->
+                        let refFile = ReferencesFile.FromFile f
+                        let refs = refFile.Groups
+                                    |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
+                                    |> List.concat
+                        for (group, package) in refs do
+                            yield (group, package)
+                    | None -> 
+                        ignore()
+        }
+
+    match (allReferences |> Seq.length) with
+    | 0 -> withDepsAndIncluded
+    | _ -> 
+        allReferences
+        |> Seq.toList
         |> List.filter (fun (groupName,np) ->
             try
                 // TODO: it would be nice if this data would be in the NuGet OData feed,
@@ -279,4 +304,3 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                     | None -> failwithf "No package with id '%A' installed in group %O." np.Name groupName
                 np.Name, dep)
         |> List.fold addDependency withDepsAndIncluded
-    | None -> withDepsAndIncluded

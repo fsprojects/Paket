@@ -59,7 +59,11 @@ Paket can build these symbol/source packages, in addition to the regular package
     [lang=batch]
     paket pack output nugets symbols
 
-You can also include the source of referenced projects, by using the switch `include-referenced-projects`
+### Including Reference Projects
+
+The switch `include-referenced-projects` has several effects.
+1. It iterates referenced projects and adds their dependencies to the package
+2. When combined with the `symbols` switch, will also include the source code of the referenced projects.
 
   [lockfile]: lock-file.html
   [depfile]: dependencies-file.html
