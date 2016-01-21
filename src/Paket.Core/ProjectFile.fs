@@ -1,5 +1,6 @@
 namespace Paket
 
+open Paket
 open Paket.Domain
 open Paket.Logging
 open System
@@ -1106,6 +1107,40 @@ module ProjectFile =
         sprintf "%s.%s" assemblyName (outputType project |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe")
 
 
+    let getAllReferencedProjects (this: ProjectFile) = 
+        let rec getProjects project = 
+            seq {
+                let projects = getInterProjectDependencies project |> Seq.map (fun proj -> tryLoad(proj.Path).Value)
+                yield! projects
+                for proj in projects do
+                    yield! (getProjects proj)
+            }
+        seq { 
+            yield this
+            yield! getProjects this
+        }
+    
+    let getProjects includeReferencedProjects this=
+        seq {
+            if includeReferencedProjects then
+                yield! getAllReferencedProjects this
+            else
+                yield this
+        }
+
+    let projectsWithoutTemplates this projects =
+        projects
+        |> Seq.filter(fun proj ->
+            if proj = this then true
+            else
+                let templateFilename = findTemplatesFile (FileInfo proj.FileName)
+                match templateFilename with
+                | Some tfn ->
+                    TemplateFile.IsProjectType tfn |> not
+                | None -> true
+        )
+
+
     let getOutputDirectory buildConfiguration buildPlatform (project:ProjectFile) =
         let platforms =
             if not <| String.IsNullOrWhiteSpace buildPlatform
@@ -1180,16 +1215,8 @@ module ProjectFile =
                   Link = Some link.InnerText 
                   BaseDir = Path.GetDirectoryName(Path.GetFullPath(projfile.FileName))}
         
-        let referencedProjects = 
-            if includeReferencedProjects then 
-                let getProjects = getInterProjectDependencies this |> Seq.map (fun proj -> tryLoad(proj.Path).Value)
-                seq { 
-                    yield this
-                    yield! getProjects
-                }
-            else seq { yield this }
-        
-        referencedProjects 
+        getProjects includeReferencedProjects this
+        |> projectsWithoutTemplates this
         |> Seq.collect (fun proj -> 
                             proj.Document
                             |> getDescendants "Compile"
@@ -1251,6 +1278,11 @@ type ProjectFile with
     member this.GetProjectGuid () = ProjectFile.getProjectGuid this
 
     member this.GetInterProjectDependencies () =  ProjectFile.getInterProjectDependencies this
+
+    member this.GetRecursiveInterProjectDependencies =  ProjectFile.getAllReferencedProjects this
+
+    member this.GetAllInterProjectDependenciesWithoutProjectTemplates =  ProjectFile.getAllReferencedProjects this |> ProjectFile.projectsWithoutTemplates this
+
 
     member this.ReplaceNuGetPackagesFile () = ProjectFile.removeNuGetTargetsEntries this
 

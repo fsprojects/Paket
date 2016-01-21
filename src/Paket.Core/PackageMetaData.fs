@@ -8,6 +8,7 @@ open Paket.Domain
 open Paket.Logging
 open System.Collections.Generic
 open Paket.Requirements
+open Paket.Xml
 
 let (|CompleteTemplate|IncompleteTemplate|) templateFile = 
     match templateFile with
@@ -135,37 +136,34 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
         | None -> PreReleaseStatus.No
         | _ -> PreReleaseStatus.All
     
+    let getProjects =
+        seq {
+            if includeReferencedProjects then
+                yield! project.GetAllInterProjectDependenciesWithoutProjectTemplates
+            else
+                yield project
+        }
+
     let deps, files = 
-        project.GetInterProjectDependencies() 
+        getProjects
+        |> Seq.filter (fun proj -> proj <> project)
         |> Seq.fold (fun (deps, files) p -> 
-            match Map.tryFind p.Path map with
+            match Map.tryFind p.FileName map with
             | Some packagedRef -> packagedRef :: deps, files
             | None -> 
                 let p = 
-                    let path = Path.Combine(projectDir, p.RelativePath) |> normalizePath
-                    match ProjectFile.TryLoad path with
+                    match ProjectFile.TryLoad p.FileName with
                     | Some p -> p
-                    | _ -> failwithf "Missing project reference in proj file %s" p.RelativePath
+                    | _ -> failwithf "Missing project reference in proj file %s" p.FileName
                     
                 deps, p :: files) ([], [])
     
     // Add the assembly + pdb + dll from this project
     let templateWithOutput =
         let additionalFiles = 
-            let referencedProjects = 
-                seq{
-                    yield project
-                    yield! 
-                        project.GetInterProjectDependencies() 
-                        |> Seq.filter (fun proj ->
-                            match ProjectFile.FindTemplatesFile(FileInfo(proj.Path)) with
-                            | None -> true
-                            | Some _ -> false)
-                        |> Seq.map(fun proj -> ProjectFile.TryLoad(proj.Path).Value)
-                         }
-
-            let assemblyNames = referencedProjects
+            let assemblyNames = getProjects
                                 |> Seq.map (fun proj -> proj.GetAssemblyName())
+            
             assemblyNames
             |> Seq.collect (fun assemblyFileName -> 
                                 let assemblyfi = FileInfo(assemblyFileName)
@@ -181,10 +179,10 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                                     let validExtensions = match template.Contents with
                                                                           | CompleteInfo(core, optional) ->
                                                                               if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                                                              else [".xml"; ".dll"; ".exe"; ".mdb"]
+                                                                              else [".xml"; ".dll"; ".exe";]
                                                                           | ProjectInfo(core, optional) ->
                                                                               if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                                                              else [".xml"; ".dll"; ".exe"; ".mdb"]
+                                                                              else [".xml"; ".dll"; ".exe";]
                                                     let isValidExtension = 
                                                         validExtensions
                                                         |> List.exists (String.equalsIgnoreCase fi.Extension)
@@ -199,14 +197,14 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
     let withDeps = 
         deps
         |> List.map (fun (templateFile,_) ->
-            match templateFile with
-            | CompleteTemplate(core, opt) -> 
-                match core.Version with
-                | Some v ->
-                    let versionConstraint = if not lockDependencies then Minimum v else Specific v
-                    PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
-                | None -> failwithf "There was no version given for %s." templateFile.FileName
-            | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
+        match templateFile with
+        | CompleteTemplate(core, opt) -> 
+            match core.Version with
+            | Some v ->
+                let versionConstraint = if not lockDependencies then Minimum v else Specific v
+                PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
+            | None -> failwithf "There was no version given for %s." templateFile.FileName
+        | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency templateWithOutput
     
     // If project refs will not be packaged, add the assembly to the package
@@ -220,126 +218,117 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
 
     let allReferences =
         seq {
-            let projFileInfo = FileInfo project.FileName
-            match (ProjectFile.FindReferencesFile projFileInfo) with
-            | Some f -> 
-                let refFile = ReferencesFile.FromFile f
-                let refs = refFile.Groups
-                            |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
-                            |> List.concat
-                for (group, package) in refs do
-                    yield (group, package)
-            | None -> 
-                ignore()
-                
-            // now do dependent projects
-            if includeReferencedProjects then
-                let rec getDependendentProjects (projFilename: string) =
-                    let projectFile = ProjectFile.loadFromFile projFilename
-                    let getProjects = ProjectFile.getInterProjectDependencies projectFile
-                    seq {
-                        for proj in getProjects do
-                            let projFileInfo = (FileInfo proj.Path)
-                            let tf = ProjectFile.FindTemplatesFile projFileInfo
-                            match tf with
-                            | Some templateFilename ->
-                                let templateFile = TemplateFile.Load(templateFilename, lockFile, None, Seq.empty |> Map.ofSeq)
-                                match templateFile.Contents with
-                                | CompleteInfo(core, optional) ->
-                                    match (ProjectFile.FindReferencesFile projFileInfo) with
-                                    | Some f ->
-                                        let refFile = ReferencesFile.FromFile f
-                                        let refs = refFile.Groups
-                                                    |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
-                                                    |> List.concat
-                                        for (group, package) in refs do
-                                            yield (group, package)
-                                    | None -> 
-                                        ignore()
-                                    yield! getDependendentProjects proj.Path
-                                | ProjectInfo(core, optional) ->
-                                    let pis : PackageInstallSettings = { Name = PackageName(core.Id.Value); 
-                                                                         Settings = InstallSettings.Default
-                                                                       }
-                                    yield (GroupName("~~referenced-project"), pis)
-                            | None ->
-                                let refsFilename = ProjectFile.FindReferencesFile projFileInfo
-                                match refsFilename with
-                                | Some f ->
-                                    let refFile = ReferencesFile.FromFile f
-                                    let refs = refFile.Groups
-                                                |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
-                                                |> List.concat
-                                    for (group, package) in refs do
-                                        yield (group, package)
-                                | None -> 
-                                    ignore()
-                                yield! getDependendentProjects proj.Path
-                        }
-                yield! getDependendentProjects project.FileName
+            let getPackages proj =
+                seq{
+                    let projFileInfo = FileInfo proj.FileName
+                    match (ProjectFile.FindReferencesFile projFileInfo) with
+                    | Some f -> 
+                        let refFile = ReferencesFile.FromFile f
+                        let refs = refFile.Groups
+                                    |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
+                                    |> List.concat
+                        for (group, package) in refs do
+                            yield (group, package, false)
+                    | None -> 
+                        ignore()
+                }
+
+            let getProjects =
+                seq {
+                    if includeReferencedProjects then
+                        yield! project.GetRecursiveInterProjectDependencies
+                    else
+                        yield project
+                }
+
+            for proj in getProjects do
+                if proj <> project then
+                    let projFileInfo = (FileInfo proj.FileName)
+                    let tf = ProjectFile.FindTemplatesFile projFileInfo
+                    match tf with
+                    | Some t ->
+                        if TemplateFile.IsProjectType tf.Value then
+                            let templateFile = TemplateFile.Load(t, lockFile, None, Seq.empty |> Map.ofSeq)
+                            match templateFile.Contents with
+                            | CompleteInfo(core, optional) ->
+                                yield! getPackages proj
+                            | ProjectInfo(core, optional) ->
+                                let pis : PackageInstallSettings = { Name = PackageName(core.Id.Value); 
+                                                                        Settings = InstallSettings.Default
+                                                                   }
+                                Console.WriteLine("Hello")
+                                yield (GroupName("~~referenced-project"), pis, true)
+                        else
+                            yield! getPackages proj
+                    | None ->
+                        yield! getPackages proj
+                else 
+                    yield! getPackages proj
         }
     
-    match (allReferences |> Seq.length) with
+    let refs = allReferences |> Seq.toArray
+    match refs.Length with
     | 0 -> withDepsAndIncluded
     | _ -> 
-        allReferences
-        |> Seq.toList
-        |> List.filter (fun (groupName,np) ->
-            if groupName = GroupName("~~referenced-project") then true
-            else
-                try
-                    // TODO: it would be nice if this data would be in the NuGet OData feed,
-                    // then we would not need to parse every nuspec here
-                    let info =
-                        lockFile.Groups.[groupName].Resolution
-                        |> Map.tryFind np.Name
-                    match info with
-                    | None -> true
-                    | Some rp ->
-                        let nuspec = Nuspec.Load(dependencies.RootPath,groupName,rp.Version,defaultArg rp.Settings.IncludeVersionInPath false,np.Name)
-                        not nuspec.IsDevelopmentDependency
-                with
-                | _ -> true)
-        |> List.map (fun (groupName,np) ->
-                let dependencyVersionRequirement =
-                    if not lockDependencies then
-                        match dependencies.Groups |> Map.tryFind groupName with
-                        | None -> None
-                        | Some group ->
-                            let deps = 
-                                group.Packages 
-                                |> Seq.map (fun p -> p.Name, p.VersionRequirement)
-                                |> Map.ofSeq
-
-                            Map.tryFind np.Name deps
-                            |> function
-                                | Some direct -> Some direct
-                                | None ->
-                                    match lockFile.Groups |> Map.tryFind groupName with
-                                    | None -> None
-                                    | Some group ->
-                                        // If it's a transient dependency, try to
-                                        // find it in `paket.lock` and set min version
-                                        // to current locked version
-                                        group.Resolution
-                                        |> Map.tryFind np.Name
-                                        |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, getPreReleaseStatus transient.Version))
-                        else
-                            match lockFile.Groups |> Map.tryFind groupName with
+        let deps =
+            refs
+            |> Array.toList
+            |> List.filter (fun (groupName, np, isReferencedProject) ->
+                if isReferencedProject then true
+                else
+                    try
+                        // TODO: it would be nice if this data would be in the NuGet OData feed,
+                        // then we would not need to parse every nuspec here
+                        let info =
+                            lockFile.Groups.[groupName].Resolution
+                            |> Map.tryFind np.Name
+                        match info with
+                        | None -> true
+                        | Some rp ->
+                            let nuspec = Nuspec.Load(dependencies.RootPath,groupName,rp.Version,defaultArg rp.Settings.IncludeVersionInPath false,np.Name)
+                            not nuspec.IsDevelopmentDependency
+                    with
+                    | _ -> true)
+            |> List.map (fun (groupName,np, isReferencedProject) ->
+                    let dependencyVersionRequirement =
+                        if not lockDependencies then
+                            match dependencies.Groups |> Map.tryFind groupName with
                             | None -> None
                             | Some group ->
-                                Map.tryFind np.Name group.Resolution
-                                |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
-                                |> Option.map (fun version -> VersionRequirement(Specific version, getPreReleaseStatus version))
-                let dep =
-                    match dependencyVersionRequirement with
-                    | Some installed -> installed
-                    | None -> 
-                        if groupName = GroupName("~~referenced-project") then
-                            match version with
-                            | Some v -> VersionRequirement.Parse (v.ToString())
-                            | None -> VersionRequirement.AllReleases
-                        else 
-                            failwithf "No package with id '%A' installed in group %O." np.Name groupName
-                np.Name, dep)
-        |> List.fold addDependency withDepsAndIncluded
+                                let deps = 
+                                    group.Packages 
+                                    |> Seq.map (fun p -> p.Name, p.VersionRequirement)
+                                    |> Map.ofSeq
+
+                                Map.tryFind np.Name deps
+                                |> function
+                                    | Some direct -> Some direct
+                                    | None ->
+                                        match lockFile.Groups |> Map.tryFind groupName with
+                                        | None -> None
+                                        | Some group ->
+                                            // If it's a transient dependency, try to
+                                            // find it in `paket.lock` and set min version
+                                            // to current locked version
+                                            group.Resolution
+                                            |> Map.tryFind np.Name
+                                            |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, getPreReleaseStatus transient.Version))
+                            else
+                                match lockFile.Groups |> Map.tryFind groupName with
+                                | None -> None
+                                | Some group ->
+                                    Map.tryFind np.Name group.Resolution
+                                    |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
+                                    |> Option.map (fun version -> VersionRequirement(Specific version, getPreReleaseStatus version))
+                    let dep =
+                        match dependencyVersionRequirement with
+                        | Some installed -> installed
+                        | None -> 
+                            if isReferencedProject then
+                                match version with
+                                | Some v -> VersionRequirement.Parse (v.ToString())
+                                | None -> VersionRequirement.AllReleases
+                            else 
+                                failwithf "No package with id '%A' installed in group %O." np.Name groupName
+                    np.Name, dep)
+        deps |> List.fold addDependency withDepsAndIncluded
