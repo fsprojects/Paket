@@ -256,7 +256,6 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                 let pis : PackageInstallSettings = { Name = PackageName(core.Id.Value); 
                                                                         Settings = InstallSettings.Default
                                                                    }
-                                Console.WriteLine("Hello")
                                 yield (GroupName("~~referenced-project"), pis, true)
                         else
                             yield! getPackages proj
