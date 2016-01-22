@@ -12,7 +12,7 @@ group Build
 
   source https://nuget.org/api/v2
   
-  nuget FAKE
+  nuget FAKE prerelease
   nuget FSharp.Formatting
   nuget ILRepack
 
