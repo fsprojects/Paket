@@ -75,7 +75,13 @@ Paket creates a number of files in your solution folders, and most of them shoul
 
 The following files can be committed, but are not essential:
 
-* [`.paket/paket.bootstrapper.exe`](getting-started.html) - this is a small, rarely updated executable that will download the latest version of the main `paket.exe`. If you prefer to place `paket.exe` in the path, or use a [Paket plugin for your editor](editor-support.html), then you don't need to commit this file. However, not committing it also requires that other users of your solution have `paket.exe` available.
+* [`.paket/paket.bootstrapper.exe`](getting-started.html) - this is a small, rarely updated executable that will download the latest version of the main `paket.exe`. It is not necessary, but can be very useful for other developers and build servers, so they can easily retrieve `paket.exe` and restore packages without having Paket already installed in the path. For example, it is common to have a [`build.sh`](https://github.com/fsprojects/Paket/blob/master/build.sh) or [`build.cmd`](https://github.com/fsprojects/Paket/blob/master/build.cmd) file in the root of a repo that will do the equivalent of:
+
+    ```
+    .paket/paket.bootstrapper.exe
+    .paket/paket.exe restore
+    # Invoke build tool/scripts to build solution
+    ```
 
 The following files should *not* be committed to your version control system, and should be added to any ignore files:
 
