@@ -65,6 +65,22 @@ There is no reasonable way to make this work – and even NuGet.exe can't do it 
 
 Instead we encourage the .NET community to use a declarative install process and we will help to fix this in the affected packages.
 
+## What files should I commit?
+
+Paket creates a number of files in your solution folders, and most of them should be committed to source control. To be clear, these are the files that should be committed to source control:
+
+* [`paket.dependencies`](dependencies-file.html) - specifies your application's dependencies, and how they should be fulfilled.
+* All [`paket.references`](references-files.html) files - each project will have a `paket.references` file that specifies which of the dependencies are installed in the project. Each of these files should be committed to source control.
+* [`paket.lock`](lock-file.html) - records the actual versions used during resolution. If it exists, Paket will ensure that the same versions are used when restoring packages. It is not strictly necessary to commit this file, but strongly recommended (see the following question for details why).
+
+The following files can be committed, but are not essential:
+
+* [`.paket/paket.bootstrapper.exe`](getting-started.html) - this is a small, rarely updated executable that will download the latest version of the main `paket.exe`. If you prefer to place `paket.exe` in the path, or use a [Paket plugin for your editor](editor-support.html), then you don't need to commit this file. However, not committing it also requires that other users of your solution have `paket.exe` available.
+
+The following files should *not* be committed to your version control system, and should be added to any ignore files:
+
+* `.paket/paket.exe` - the main Paket executable, downloaded by [`.paket/paket.bootstrapper.exe`](getting-started.html). This should not be committed, as it is a binary file, which can unnecessarily bloat repositories, and because it is likely to be updated on a regular basis.
+
 ## Why should I commit the lock file?
 
 Committing the [`paket.lock` file](lock-file.html) to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when [`paket install`](paket-install.html) is run.
