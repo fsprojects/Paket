@@ -449,5 +449,17 @@ module internal TemplateFile =
                   let files = getFiles optionalInfo.Files
                   ProjectInfo(core, { optionalInfo with Files = files }) }
 
+    let IsProjectType (filename: string) : bool =
+        match TemplateParser.parse (File.ReadAllText filename) with
+        | Choice1Of2 m ->
+            let type' = parsePackageConfigType filename m
+            if type' |> failed then false
+            else 
+                match (returnOrFail type') with
+                | ProjectType -> true
+                | FileType -> false
+        | Choice2Of2 f -> false
+
+
     let FindTemplateFiles root =
         Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.AllDirectories)

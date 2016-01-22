@@ -65,6 +65,31 @@ There is no reasonable way to make this work – and even NuGet.exe can't do it 
 
 Instead we encourage the .NET community to use a declarative install process and we will help to fix this in the affected packages.
 
+## What files should I commit?
+
+Paket creates a number of files in your solution folders, and most of them should be committed to source control. To be clear, these are the files that should be committed to source control:
+
+* [`paket.dependencies`](dependencies-file.html) - specifies your application's dependencies, and how they should be fulfilled.
+* All [`paket.references`](references-files.html) files - each project will have a `paket.references` file that specifies which of the dependencies are installed in the project. Each of these files should be committed to source control.
+* All [`paket.template`](template-files.html) files - if a project is supposed to be deployed as a NuGet project it will have a `paket.template` file that specifies package meta data. Each of these files should be committed to source control.
+* [`paket.lock`](lock-file.html) - records the actual versions used during resolution. If it exists, Paket will ensure that the same versions are used when restoring packages. It is not strictly necessary to commit this file, but strongly recommended (see [this question](faq.html#Why-should-I-commit-the-lock-file) for details why).
+
+The following files can be committed, but are not essential:
+
+* [`.paket/paket.targets`](paket-folder.html) - the paket.targets file allows you to set up automatic package restore in Visual Studio.
+* [`.paket/paket.bootstrapper.exe`](getting-started.html) - this is a small, rarely updated executable that will download the latest version of the main `paket.exe`. It is not necessary, but can be very useful for other developers and build servers, so they can easily retrieve `paket.exe` and restore packages without having Paket already installed in the path. For example, it is common to have a [`build.sh`](https://github.com/fsprojects/Paket/blob/master/build.sh) or [`build.cmd`](https://github.com/fsprojects/Paket/blob/master/build.cmd) file in the root of a repo that will do the equivalent of:
+
+
+    .paket/paket.bootstrapper.exe
+    .paket/paket.exe restore
+
+    // Invoke build tool/scripts to build solution
+
+
+The following files should *not* be committed to your version control system, and should be added to any ignore files:
+
+* `.paket/paket.exe` - the main Paket executable, downloaded by [`.paket/paket.bootstrapper.exe`](getting-started.html). This should not be committed, as it is a binary file, which can unnecessarily bloat repositories, and because it is likely to be updated on a regular basis.
+
 ## Why should I commit the lock file?
 
 Committing the [`paket.lock` file](lock-file.html) to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when [`paket install`](paket-install.html) is run.

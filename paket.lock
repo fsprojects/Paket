@@ -1,7 +1,7 @@
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    Argu (2.0)
+    Argu (2.1)
     Chessie (0.4.0)
       FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
@@ -9,7 +9,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (474eb69504fd0a904fc66305d962049fab1c857d)
+    src/app/FakeLib/Globbing/Globbing.fs (0d830d65c7d5ab999811e3b78af0242757325f58)
   remote: fsharp/FSharp.Data
   specs:
     src/CommonProviderImplementation/AssemblyReader.fs (9b01f37126d5b2487dac5da7899bb2b1a5cb56ef)
@@ -17,7 +17,7 @@ GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    FAKE (4.15.1)
+    FAKE (4.17.0-alpha004)
     FSharp.Compiler.Service (1.4.2.3)
     FSharp.Formatting (2.13.4)
       FSharp.Compiler.Service (>= 1.4.2 < 1.5.0)
@@ -36,7 +36,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (627d68727518ef0c013d0dfbb0260aba84de98e1)
+    modules/Octokit/Octokit.fsx (0d830d65c7d5ab999811e3b78af0242757325f58)
       Octokit
 GROUP Test
 NUGET

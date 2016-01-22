@@ -58,7 +58,7 @@ let ``#1375 pack with projectUrl commandline``() =
 [<Test>]
 let ``#1376 fail template``() = 
     let outPath = Path.Combine(scenarioTempPath "i001376-pack-template","out")
-    let templatePath = Path.Combine(scenarioTempPath "i001376-pack-template","PaketBug\paket.template")
+    let templatePath = Path.Combine(scenarioTempPath "i001376-pack-template","PaketBug", "paket.template")
     paket ("pack -v output \"" + outPath + "\" templatefile " + templatePath) "i001376-pack-template" |> ignore
     let fileInfo = FileInfo(Path.Combine(outPath, "PaketBug.1.0.0.0.nupkg"))
     let (expectedFileSize: int64) = int64(1542)
