@@ -62,7 +62,6 @@ Paket can build these symbol/source packages, in addition to the regular package
     [lang=batch]
     paket pack output nugets symbols
 
-
 ### Including Referenced Projects
 The switch `include-referenced-projects` has several effects. 
 
