@@ -51,6 +51,9 @@ This option disables the installation of any content files for the given package
 
     [lang=paket]
     jQuery content: none
+    Fody   content: once // install content files but don't overwrite
+    ServiceStack.Swagger content: true // install content and always override
+
 
 ## Framework restrictions
 
