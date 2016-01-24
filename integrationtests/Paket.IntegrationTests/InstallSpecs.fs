@@ -63,6 +63,35 @@ let ``#1270 install net461``() =
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s1 |> shouldEqual s2
 
+[<Test>]
+let ``#1427 install content once from dependencies file``() = 
+    let newLockFile = install "i001427-content-once"
+    let newFile = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
+    let newWeavers = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
+    let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
+[<Test>]
+let ``#1427 install content once from references file``() = 
+    let newLockFile = install "i001427-ref-content-once"
+    let newFile = Path.Combine(scenarioTempPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
+    let newWeavers = Path.Combine(scenarioTempPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let oldWeavers = Path.Combine(originalScenarioPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
+    let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
+    s1 |> shouldEqual s2
 
 [<Test>]
 let ``#1334 without download fail``() = 
