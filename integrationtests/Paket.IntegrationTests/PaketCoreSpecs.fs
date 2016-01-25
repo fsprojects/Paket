@@ -32,6 +32,23 @@ let ``#1251 full installer demo``() =
     |> shouldBeGreaterThan (SemVer.Parse "4")
 
 [<Test>]
+let ``#1251 install FSharp.Collections.ParallelSeq``() = 
+    prepare "i001251-installer-demo"
+    let deps = """source https://nuget.org/api/v2
+    nuget FSharp.Collections.ParallelSeq"""
+
+    let dependenciesFile = DependenciesFile.FromCode(scenarioTempPath "i001251-installer-demo",deps)
+    let force = false
+    let packagesToInstall = 
+        // get from references file
+        [GroupName "Main",PackageName "FSharp.Collections.ParallelSeq"] 
+
+    let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
+
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FSharp.Collections.ParallelSeq"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "1.0.1")
+
+[<Test>]
 let ``#1259 install via script``() = 
     prepare "i001259-install-script"
 
