@@ -43,7 +43,7 @@ let ``#1251 install FSharp.Collections.ParallelSeq``() =
         // get from references file
         [GroupName "Main",PackageName "FSharp.Collections.ParallelSeq"] 
 
-    let lockFile = UpdateProcess.SelectiveUpdate(dependenciesFile, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
+    let lockFile,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
 
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FSharp.Collections.ParallelSeq"].Version
     |> shouldBeGreaterThan (SemVer.Parse "1.0.1")
