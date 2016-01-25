@@ -8,6 +8,8 @@ open System
 open System.IO
 open System.Diagnostics
 open System.IO.Compression
+open Paket.Domain
+open Paket
 
 [<Test>]
 let ``#1234 empty assembly name``() = 
@@ -65,3 +67,35 @@ let ``#1376 fail template``() =
     fileInfo.Length |> shouldBeGreaterThan expectedFileSize
 
     File.Delete(Path.Combine(scenarioTempPath "i001376-pack-template","PaketBug","paket.template"))
+
+[<Test>]
+let ``#1429 pack deps from template``() = 
+    let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps","out")
+    let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug", "paket.template")
+    paket ("pack -v output \"" + outPath + "\" templatefile " + templatePath) "i001429-pack-deps" |> ignore
+
+    let details = 
+        NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        |> Async.RunSynchronously
+
+    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug2") // it's not packed in same round
+    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
+
+    File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug","paket.template"))
+
+[<Test>]
+let ``#1429 pack deps``() = 
+    let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps","out")
+    let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug", "paket.template")
+    paket ("pack -v output \"" + outPath + "\"") "i001429-pack-deps" |> ignore
+
+    let details = 
+        NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        |> Async.RunSynchronously
+
+    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "PaketBug2")
+    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
+
+    File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug","paket.template"))

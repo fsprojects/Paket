@@ -9,19 +9,20 @@ open Chessie.ErrorHandling
 
 open Newtonsoft.Json
 
+let private envVarRegex = Regex("^%(\w*)%$", RegexOptions.Compiled)
+
 type EnvironmentVariable = 
     { Variable : string
       Value    : string }
 
     static member Create(variable) = 
-        let envVarRegex = Regex("^%(\w*)%$")
         if envVarRegex.IsMatch(variable) then
             let trimmed = envVarRegex.Match(variable).Groups.[1].Value
-            let expanded = Environment.GetEnvironmentVariable(trimmed)
-            if expanded = null then 
+            match Environment.GetEnvironmentVariable(trimmed) with
+            | null ->
                 traceWarnfn "environment variable '%s' not found" variable
                 Some { Variable = variable; Value = ""}
-            else 
+            | expanded ->
                 Some { Variable = variable; Value = expanded }
         else
             None
@@ -48,23 +49,25 @@ type NugetSource =
     { Url : string
       Authentication : NugetSourceAuthentication option }
 
-type NugetV3SourceResourceJSON =
+type NugetV3SourceResourceJSON = 
     { [<JsonProperty("@type")>]
-      Type : string;
+      Type : string
       [<JsonProperty("@id")>]
-      ID: string }
-type NugetV3SourceRootJSON =
+      ID : string }
+
+type NugetV3SourceRootJSON = 
     { [<JsonProperty("resources")>]
       Resources : NugetV3SourceResourceJSON [] }
+
 type NugetV3Source = 
     { Url : string
       Authentication : NugetSourceAuthentication option }
 
-type NugetV3ResourceType =
-| AutoComplete
-| AllVersionsAPI
-| Registration
-with
+type NugetV3ResourceType = 
+    | AutoComplete
+    | AllVersionsAPI
+    | Registration
+
     member this.AsString = 
         match this with
         | AutoComplete -> "SearchAutoCompleteService"
