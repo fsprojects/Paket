@@ -62,11 +62,13 @@ Paket can build these symbol/source packages, in addition to the regular package
     [lang=batch]
     paket pack output nugets symbols
 
-### Including Referenced Projects
-The switch `include-referenced-projects` has several effects. 
+### Including referenced projects
 
-1. It recursively iterates referenced projects and adds their dependencies to the package 
-2. When combined with the symbols switch, will also include the source code of the referenced projects.  Also recursively.
+Paket automatically replaces inter-project dependencies with NuGet dependencies if the dependency has it's own [`paket.template`][templatefile].
+In addition to this the switch `include-referenced-projects` instructs Paket to add project output to the package for inter-project dependencies that don't have a paket.template file.
+
+1. It recursively iterates referenced projects and adds their project output to the package 
+2. When combined with the [symbols switch](paket-pack.html#Symbol-Packages), it will also include the source code of the referenced projects.  Also recursively.
 3. Any projects that are encountered in this search that have their own project template are ignored.
 
   [lockfile]: lock-file.html
