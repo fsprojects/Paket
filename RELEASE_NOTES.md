@@ -1,3 +1,6 @@
+#### 2.47.2 - 25.01.2016
+* BUGFIX: Fixed pack package dependencies for dependent projects - https://github.com/fsprojects/Paket/issues/1429
+
 #### 2.47.1 - 21.01.2016
 * BUGFIX: Fixed pack package dependencies for dependent projects - https://github.com/fsprojects/Paket/pull/1417
 * BUGFIX: Pack with concrete template file should work for type project - https://github.com/fsprojects/Paket/issues/1414
