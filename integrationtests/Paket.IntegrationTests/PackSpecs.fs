@@ -88,7 +88,7 @@ let ``#1429 pack deps from template``() =
 let ``#1429 pack deps``() = 
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug", "paket.template")
-    paket ("pack -v output \"" + outPath) "i001429-pack-deps" |> ignore
+    paket ("pack -v output \"" + outPath + "\"") "i001429-pack-deps" |> ignore
 
     let details = 
         NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
