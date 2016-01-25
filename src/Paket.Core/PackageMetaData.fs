@@ -136,18 +136,10 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
         | None -> PreReleaseStatus.No
         | _ -> PreReleaseStatus.All
     
-    let getProjects =
-        seq {
-            if includeReferencedProjects then
-                yield! project.GetAllInterProjectDependenciesWithoutProjectTemplates
-            else
-                yield project
-        }
-
     let deps, files = 
-        getProjects
-        |> Seq.filter (fun proj -> proj <> project)
-        |> Seq.fold (fun (deps, files) p -> 
+        project.GetAllInterProjectDependenciesWithProjectTemplates |> Seq.toList
+        |> List.filter (fun proj -> proj <> project)
+        |> List.fold (fun (deps, files) p -> 
             match Map.tryFind p.FileName map with
             | Some packagedRef -> packagedRef :: deps, files
             | None -> 
@@ -161,8 +153,9 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
     // Add the assembly + pdb + dll from this project
     let templateWithOutput =
         let additionalFiles = 
-            let assemblyNames = getProjects
-                                |> Seq.map (fun proj -> proj.GetAssemblyName())
+            let assemblyNames = 
+                if includeReferencedProjects then project.GetAllInterProjectDependenciesWithoutProjectTemplates |> Seq.toList else [ project ]
+                |> List.map (fun proj -> proj.GetAssemblyName())
             
             assemblyNames
             |> Seq.collect (fun assemblyFileName -> 

@@ -79,7 +79,7 @@ let ``#1429 pack deps from template``() =
         |> Async.RunSynchronously
 
     details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "PaketBug2")
+    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug2") // it's not packed in same round
     details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug","paket.template"))

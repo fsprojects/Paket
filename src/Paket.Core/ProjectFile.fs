@@ -1140,6 +1140,17 @@ module ProjectFile =
                 | None -> true
         )
 
+    let projectsWithTemplates this projects =
+        projects
+        |> Seq.filter(fun proj ->
+            if proj = this then true
+            else
+                let templateFilename = findTemplatesFile (FileInfo proj.FileName)
+                match templateFilename with
+                | Some tfn -> TemplateFile.IsProjectType tfn
+                | None -> false
+        )
+
 
     let getOutputDirectory buildConfiguration buildPlatform (project:ProjectFile) =
         let platforms =
@@ -1281,8 +1292,9 @@ type ProjectFile with
 
     member this.GetRecursiveInterProjectDependencies =  ProjectFile.getAllReferencedProjects this
 
-    member this.GetAllInterProjectDependenciesWithoutProjectTemplates =  ProjectFile.getAllReferencedProjects this |> ProjectFile.projectsWithoutTemplates this
+    member this.GetAllInterProjectDependenciesWithoutProjectTemplates = ProjectFile.getAllReferencedProjects this |> ProjectFile.projectsWithoutTemplates this
 
+    member this.GetAllInterProjectDependenciesWithProjectTemplates = ProjectFile.getAllReferencedProjects this |> ProjectFile.projectsWithTemplates this
 
     member this.ReplaceNuGetPackagesFile () = ProjectFile.removeNuGetTargetsEntries this
 
