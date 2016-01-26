@@ -14,13 +14,15 @@ open Paket.PackageSources
 type InstallOptions = 
     { Strict : bool 
       Redirects : bool option
-      ResolverStrategy : ResolverStrategy option
+      ResolverStrategyForDirectDependencies : ResolverStrategy option
+      ResolverStrategyForTransitives : ResolverStrategy option
       Settings : InstallSettings }
 
     static member Default = { 
         Strict = false
         Redirects = None
-        ResolverStrategy = None
+        ResolverStrategyForTransitives = None
+        ResolverStrategyForDirectDependencies = None
         Settings = InstallSettings.Default }
 
 type VersionStrategy = {
@@ -48,7 +50,8 @@ type DependenciesGroup = {
                 { Redirects = this.Options.Redirects ++ other.Options.Redirects
                   Settings = this.Options.Settings + other.Options.Settings
                   Strict = this.Options.Strict || other.Options.Strict
-                  ResolverStrategy = this.Options.ResolverStrategy ++ other.Options.ResolverStrategy }
+                  ResolverStrategyForDirectDependencies = this.Options.ResolverStrategyForDirectDependencies ++ other.Options.ResolverStrategyForDirectDependencies 
+                  ResolverStrategyForTransitives = this.Options.ResolverStrategyForTransitives ++ other.Options.ResolverStrategyForTransitives }
               Sources = this.Sources @ other.Sources |> List.distinct
               Packages = this.Packages @ other.Packages
               RemoteFiles = this.RemoteFiles @ other.RemoteFiles }
@@ -290,7 +293,8 @@ module DependenciesFileParser =
 
         let packageName = PackageName name
         { Name = packageName
-          ResolverStrategy = parseResolverStrategy version
+          ResolverStrategyForTransitives = parseResolverStrategy version
+          ResolverStrategyForDirectDependencies = if optionsText.Contains "lowest-matching" then Some ResolverStrategy.Min else None // TODO: ResolverStrategyForDirectDependencies
           Parent = parent
           Graph = []
           Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
@@ -305,7 +309,7 @@ module DependenciesFileParser =
         match options with 
         | ReferencesMode mode -> { current.Options with Strict = mode } 
         | Redirects mode -> { current.Options with Redirects = mode }
-        | ResolverStrategy strategy -> { current.Options with ResolverStrategy = strategy }
+        | ResolverStrategy strategy -> { current.Options with ResolverStrategyForTransitives = strategy }
         | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
         | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
         | FrameworkRestrictions r -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
@@ -501,7 +505,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 |> Seq.map (fun (n, v) -> 
                         { Name = n
                           VersionRequirement = v
-                          ResolverStrategy = Some ResolverStrategy.Max
+                          ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
+                          ResolverStrategyForTransitives = Some ResolverStrategy.Max
                           Parent = PackageRequirementSource.DependenciesFile fileName
                           Graph = []
                           Settings = group.Options.Settings })
@@ -513,7 +518,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     group.Sources,
                     getVersionF, 
                     getPackageDetailsF, 
-                    group.Options.ResolverStrategy,
+                    group.Options.ResolverStrategyForDirectDependencies,
+                    group.Options.ResolverStrategyForTransitives,
                     group.Options.Settings.FrameworkRestrictions,
                     remoteDependencies @ group.Packages |> Set.ofList,
                     updateMode)
@@ -657,7 +663,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             | Some group ->
                 match group.Packages |> List.tryFind (fun p -> p.Name = packageName) with
                 | Some package -> 
-                    package.ResolverStrategy,
+                    package.ResolverStrategyForTransitives,
                     match package.VersionRequirement.Range with
                     | OverrideAll(_) -> package.VersionRequirement
                     | _ -> vr.VersionRequirement

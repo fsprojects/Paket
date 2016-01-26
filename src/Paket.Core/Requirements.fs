@@ -442,7 +442,8 @@ type PackageRequirementSource =
 type PackageRequirement =
     { Name : PackageName
       VersionRequirement : VersionRequirement
-      ResolverStrategy : ResolverStrategy option
+      ResolverStrategyForDirectDependencies : ResolverStrategy option
+      ResolverStrategyForTransitives : ResolverStrategy option
       Parent: PackageRequirementSource
       Graph: PackageRequirement list
       Settings: InstallSettings }
@@ -452,7 +453,8 @@ type PackageRequirement =
         | :? PackageRequirement as that -> 
             this.Name = that.Name && 
             this.VersionRequirement = that.VersionRequirement && 
-            this.ResolverStrategy = that.ResolverStrategy && 
+            this.ResolverStrategyForTransitives = that.ResolverStrategyForTransitives && 
+            this.ResolverStrategyForDirectDependencies = that.ResolverStrategyForDirectDependencies && 
             this.Settings.FrameworkRestrictions = that.Settings.FrameworkRestrictions
         | _ -> false
 
@@ -476,7 +478,8 @@ type PackageRequirement =
                     | Some filter when filter.Match x.Name -> -1
                     | Some filter when filter.Match y.Name -> 1
                     | _ -> 0
-            yield -compare x.ResolverStrategy y.ResolverStrategy
+            yield -compare x.ResolverStrategyForDirectDependencies y.ResolverStrategyForDirectDependencies
+            yield -compare x.ResolverStrategyForTransitives y.ResolverStrategyForTransitives
             yield compare boostX boostY
             yield -compare x.VersionRequirement y.VersionRequirement
             yield compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions

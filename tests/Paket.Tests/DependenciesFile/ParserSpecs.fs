@@ -890,8 +890,8 @@ group Test
 [<Test>]
 let ``should read config with min and max strategy``() = 
     let cfg = DependenciesFile.FromCode(strategyConfig "min" "max")
-    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
-    cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Min)
+    cfg.Groups.[GroupName "Test"].Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Max)
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
     
@@ -908,8 +908,8 @@ group Test
 [<Test>]
 let ``should read config with min and no strategy``() = 
     let cfg = DependenciesFile.FromCode(noStrategyConfig "min")
-    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
-    cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Min)
+    cfg.Groups.[GroupName "Test"].Options.ResolverStrategyForTransitives |> shouldEqual None
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
@@ -925,8 +925,8 @@ group Test
 [<Test>]
 let ``should read config with no strategy``() = 
     let cfg = DependenciesFile.FromCode(noStrategyConfig')
-    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual None
-    cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategyForTransitives |> shouldEqual None
+    cfg.Groups.[GroupName "Test"].Options.ResolverStrategyForTransitives |> shouldEqual None
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
@@ -958,9 +958,9 @@ group Build
 [<Test>]
 let ``should read config with combined strategy``() = 
     let cfg = DependenciesFile.FromCode(combinedStrategyConfig)
-    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
-    cfg.Groups.[GroupName "Test"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
-    cfg.Groups.[GroupName "Build"].Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Min)
+    cfg.Groups.[GroupName "Test"].Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Min)
+    cfg.Groups.[GroupName "Build"].Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Max)
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 

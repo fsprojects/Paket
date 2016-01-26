@@ -10,13 +10,13 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
     let adjust (packageRequirement:Requirements.PackageRequirement) =
         let versionRequirement,strategy = 
             match strict,includingPrereleases with
-            | true,true -> VersionRequirement.NoRestriction, packageRequirement.ResolverStrategy
-            | true,false -> packageRequirement.VersionRequirement, packageRequirement.ResolverStrategy
+            | true,true -> VersionRequirement.NoRestriction, packageRequirement.ResolverStrategyForTransitives
+            | true,false -> packageRequirement.VersionRequirement, packageRequirement.ResolverStrategyForTransitives
             | false,true -> 
                 match packageRequirement.VersionRequirement with
                 | VersionRequirement(v,_) -> VersionRequirement.VersionRequirement(v,PreReleaseStatus.All), Some ResolverStrategy.Max
             | false,false -> VersionRequirement.AllReleases, Some ResolverStrategy.Max
-        { packageRequirement with VersionRequirement = versionRequirement; ResolverStrategy = strategy}
+        { packageRequirement with VersionRequirement = versionRequirement; ResolverStrategyForTransitives = strategy}
 
     let groups = 
         dependenciesFile.Groups 

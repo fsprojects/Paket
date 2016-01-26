@@ -193,16 +193,18 @@ type Resolved = {
     ResolvedPackages : Resolution
     ResolvedSourceFiles : ModuleResolver.ResolvedSourceFile list }
 
-let getResolverStrategy globalStrategyForTransitives (allRequirementsOfCurrentPackage:Set<PackageRequirement>) (currentRequirement:PackageRequirement) =
+let getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives (allRequirementsOfCurrentPackage:Set<PackageRequirement>) (currentRequirement:PackageRequirement) =
     if currentRequirement.Parent.IsRootRequirement() && Set.count allRequirementsOfCurrentPackage = 1 then
-        ResolverStrategy.Max
+        let combined = currentRequirement.ResolverStrategyForDirectDependencies ++ globalStrategyForDirectDependencies
+
+        defaultArg combined ResolverStrategy.Max
     else
         let combined =
             (allRequirementsOfCurrentPackage
                 |> List.ofSeq
                 |> List.filter (fun x -> x.Depth > 0)
-                |> List.sortBy (fun x -> x.Depth, x.ResolverStrategy <> globalStrategyForTransitives, x.ResolverStrategy <> Some ResolverStrategy.Max)
-                |> List.map (fun x -> x.ResolverStrategy)
+                |> List.sortBy (fun x -> x.Depth, x.ResolverStrategyForTransitives <> globalStrategyForTransitives, x.ResolverStrategyForTransitives <> Some ResolverStrategy.Max)
+                |> List.map (fun x -> x.ResolverStrategyForTransitives)
                 |> List.fold (++) None)
                 ++ globalStrategyForTransitives
                     
@@ -215,7 +217,7 @@ type UpdateMode =
     | UpdateAll
 
 /// Resolves all direct and transitive dependencies
-let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
+let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
     let lastConflictReported = ref DateTime.Now
 
@@ -310,7 +312,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                 | OverrideAll v -> getSingleVersion v
                 | Specific v -> getSingleVersion v
                 | _ -> 
-                    let resolverStrategy = getResolverStrategy globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
+                    let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
                     getVersionsF sources resolverStrategy groupName currentRequirement.Name
                 |> Seq.cache
 

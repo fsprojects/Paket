@@ -214,7 +214,8 @@ let createPackageRequirement (packageName, version, restrictions) dependenciesFi
                 VersionRequirement(VersionRange.Minimum <| SemVer.Parse "0", PreReleaseStatus.No)
             else
                 VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
-       ResolverStrategy = None
+       ResolverStrategyForDirectDependencies = None
+       ResolverStrategyForTransitives = None
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName
        Graph = [] }
@@ -291,7 +292,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 packages 
                 |> List.map (fun (name,v,restr) -> 
                     let vr = createPackageRequirement (name, v, restr) dependenciesFileName
-                    DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategy vr.Settings)
+                    DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray
 
