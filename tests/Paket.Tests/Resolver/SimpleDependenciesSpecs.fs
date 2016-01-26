@@ -118,22 +118,3 @@ let ``should resolve prerelease config``() =
     let cfg = DependenciesFile.FromCode(config5)
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph5, PackageDetailsFromGraph graph5).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "Microsoft.AspNet.Mvc"] |> shouldEqual "6.0.0-beta6"
-
-let config6 = """
-source "http://www.nuget.org/api/v2"
-
-nuget Microsoft.AspNet.Mvc >= 6.0.0 lowest-matching: true
-"""
-
-let graph6 = [
-    "Microsoft.AspNet.Mvc","6.0.0",[]
-    "Microsoft.AspNet.Mvc","6.0.1",[]
-    "Microsoft.AspNet.Mvc","6.0.13",[]
-    "Microsoft.AspNet.Mvc","5.2.3",[]
-]
-
-[<Test>]
-let ``should resolve config with min requirement``() = 
-    let cfg = DependenciesFile.FromCode(config6)
-    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph6, PackageDetailsFromGraph graph6).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    getVersion resolved.[PackageName "Microsoft.AspNet.Mvc"] |> shouldEqual "6.0.0"
