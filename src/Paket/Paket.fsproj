@@ -38,7 +38,7 @@
     <StartArguments>pack output D:\code\paketbug\output</StartArguments>
     <StartArguments>install</StartArguments>
     <StartArguments>restore</StartArguments>
-    <StartArguments>pack -v output D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp\out</StartArguments>
+    <StartArguments>pack output "out/nuget"  version  0.9.3 releaseNotes  "[LanguageExtensions][New] New Ensure methods with exception parameter." include-referenced-projects</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -48,7 +48,7 @@
     <StartWorkingDirectory>d:\code\paketrepro</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001270-net461\temp</StartWorkingDirectory>
     <StartWorkingDirectory>C:\code\restore</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Journalist</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

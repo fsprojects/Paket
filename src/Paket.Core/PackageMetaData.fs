@@ -123,7 +123,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) =
+let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -189,15 +189,16 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
     // If project refs will also be packaged, add dependency
     let withDeps = 
         deps
-        |> List.map (fun (templateFile,_) ->
-        match templateFile with
-        | CompleteTemplate(core, opt) -> 
-            match core.Version with
-            | Some v ->
-                let versionConstraint = if not lockDependencies then Minimum v else Specific v
-                PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
-            | None -> failwithf "There was no version given for %s." templateFile.FileName
-        | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
+        |> List.map (fun (templateFile, _) -> 
+               match templateFile with
+               | CompleteTemplate(core, opt) -> 
+                   match core.Version with
+                   | Some v -> 
+                       let versionConstraint = if not lockDependencies then Minimum v else Specific v
+                       PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
+                   | None -> failwithf "There was no version given for %s." templateFile.FileName
+               | IncompleteTemplate -> 
+                   failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency templateWithOutput
     
     // If project refs will not be packaged, add the assembly to the package
@@ -209,65 +210,52 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
         dependencies.FindLockfile().FullName
         |> LockFile.LoadFrom
 
-    let allReferences =
-        seq {
-            let getPackages proj =
-                seq{
-                    let projFileInfo = FileInfo proj.FileName
-                    match (ProjectFile.FindReferencesFile projFileInfo) with
-                    | Some f -> 
-                        let refFile = ReferencesFile.FromFile f
-                        let refs = refFile.Groups
-                                    |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
-                                    |> List.concat
-                        for (group, package) in refs do
-                            yield (group, package, false)
-                    | None -> 
-                        ignore()
-                }
-
-            let getProjects =
-                seq {
-                    if includeReferencedProjects then
-                        yield! project.GetRecursiveInterProjectDependencies
-                    else
-                        yield project
-                }
-
-            for proj in getProjects do
-                if proj <> project then
-                    let projFileInfo = (FileInfo proj.FileName)
-                    let tf = ProjectFile.FindTemplatesFile projFileInfo
-                    match tf with
-                    | Some t ->
-                        if TemplateFile.IsProjectType tf.Value then
-                            let templateFile = TemplateFile.Load(t, lockFile, None, Seq.empty |> Map.ofSeq)
-                            match templateFile.Contents with
-                            | CompleteInfo(core, optional) ->
-                                yield! getPackages proj
-                            | ProjectInfo(core, optional) ->
-                                let pis : PackageInstallSettings = { Name = PackageName(core.Id.Value); 
-                                                                        Settings = InstallSettings.Default
-                                                                   }
-                                yield (GroupName("~~referenced-project"), pis, true)
-                        else
+    let allReferences = 
+        let getPackages proj = 
+            let projFileInfo = FileInfo proj.FileName
+            match ProjectFile.FindReferencesFile projFileInfo with
+            | Some f -> 
+                let refFile = ReferencesFile.FromFile f
+                refFile.Groups
+                |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> Some kv.Key, p))
+                |> List.concat
+            | None -> []
+          
+        [if includeReferencedProjects then
+            for proj in project.GetRecursiveInterProjectDependencies |> Seq.filter ((<>) project) do
+                let projFileInfo = FileInfo proj.FileName
+                match ProjectFile.FindTemplatesFile projFileInfo with
+                | Some templateFileName ->
+                    if TemplateFile.IsProjectType templateFileName then
+                        let templateFile = TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq)
+                        match templateFile.Contents with
+                        | CompleteInfo(core, optional) ->
                             yield! getPackages proj
-                    | None ->
+                        | ProjectInfo(core, optional) ->
+                            let name = 
+                                match core.Id with
+                                | Some name -> name
+                                | None -> proj.GetAssemblyName().Replace(".dll","").Replace(".exe","")
+                            let settings : PackageInstallSettings = 
+                                { Name = PackageName name
+                                  Settings = InstallSettings.Default }
+                            yield None, settings
+                    else
                         yield! getPackages proj
-                else 
+                | None ->
                     yield! getPackages proj
-        }
+
+         yield! getPackages project]
     
-    let refs = allReferences |> Seq.toArray
-    match refs.Length with
-    | 0 -> withDepsAndIncluded
+    match allReferences with
+    | [] -> withDepsAndIncluded
     | _ -> 
         let deps =
-            refs
-            |> Array.toList
-            |> List.filter (fun (groupName, np, isReferencedProject) ->
-                if isReferencedProject then true
-                else
+            allReferences
+            |> List.filter (fun (group, np) ->
+                match group with
+                | None ->  true
+                | Some groupName ->
                     try
                         // TODO: it would be nice if this data would be in the NuGet OData feed,
                         // then we would not need to parse every nuspec here
@@ -281,7 +269,13 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                             not nuspec.IsDevelopmentDependency
                     with
                     | _ -> true)
-            |> List.map (fun (groupName,np, isReferencedProject) ->
+            |> List.map (fun (group, np) ->
+                match group with
+                | None ->
+                    match version with
+                    | Some v -> np.Name,VersionRequirement.Parse (v.ToString())
+                    | None -> np.Name,VersionRequirement.AllReleases
+                | Some groupName ->
                     let dependencyVersionRequirement =
                         if not lockDependencies then
                             match dependencies.Groups |> Map.tryFind groupName with
@@ -315,12 +309,6 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                     let dep =
                         match dependencyVersionRequirement with
                         | Some installed -> installed
-                        | None -> 
-                            if isReferencedProject then
-                                match version with
-                                | Some v -> VersionRequirement.Parse (v.ToString())
-                                | None -> VersionRequirement.AllReleases
-                            else 
-                                failwithf "No package with id '%A' installed in group %O." np.Name groupName
+                        | None -> failwithf "No package with id '%A' installed in group %O." np.Name groupName
                     np.Name, dep)
         deps |> List.fold addDependency withDepsAndIncluded
