@@ -239,19 +239,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                     let projFileInfo = (FileInfo proj.FileName)
                     let tf = ProjectFile.FindTemplatesFile projFileInfo
                     match tf with
-                    | Some t ->
-                        if TemplateFile.IsProjectType tf.Value then
-                            let templateFile = TemplateFile.Load(t, lockFile, None, Seq.empty |> Map.ofSeq)
-                            match templateFile.Contents with
-                            | CompleteInfo(core, optional) ->
-                                yield! getPackages proj
-                            | ProjectInfo(core, optional) ->
-                                let pis : PackageInstallSettings = { Name = PackageName(core.Id.Value); 
-                                                                        Settings = InstallSettings.Default
-                                                                   }
-                                yield (GroupName("~~referenced-project"), pis, true)
-                        else
-                            yield! getPackages proj
+                    | Some t -> ()
                     | None ->
                         yield! getPackages proj
                 else 

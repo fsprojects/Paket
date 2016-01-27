@@ -1,3 +1,6 @@
+#### 2.47.3-alpha001 - 27.01.2016
+* BUGFIX: paket pack with enabled include-referenced-projects flag doesn't throwh NRE - https://github.com/fsprojects/Paket/issues/1434
+
 #### 2.47.2 - 25.01.2016
 * BUGFIX: Fixed pack package dependencies for dependent projects - https://github.com/fsprojects/Paket/issues/1429
 
