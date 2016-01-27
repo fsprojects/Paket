@@ -302,7 +302,14 @@ module DependenciesFileParser =
 
         let packageName = PackageName name
         { Name = packageName
-          ResolverStrategyForTransitives = parseResolverStrategy version
+          ResolverStrategyForTransitives = 
+            if optionsText.Contains "strategy" then 
+                let kvPairs = parseKeyValuePairs optionsText
+                match kvPairs.TryGetValue "strategy" with
+                | true, "max" -> Some ResolverStrategy.Max 
+                | true, "min" -> Some ResolverStrategy.Min
+                | _ -> parseResolverStrategy version
+            else parseResolverStrategy version 
           ResolverStrategyForDirectDependencies = 
             if optionsText.Contains "lowest-matching" then 
                 let kvPairs = parseKeyValuePairs optionsText
