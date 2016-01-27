@@ -239,7 +239,23 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                     let projFileInfo = (FileInfo proj.FileName)
                     let tf = ProjectFile.FindTemplatesFile projFileInfo
                     match tf with
-                    | Some t -> ()
+                    | Some t ->
+                        if TemplateFile.IsProjectType tf.Value then
+                            let templateFile = TemplateFile.Load(t, lockFile, None, Seq.empty |> Map.ofSeq)
+                            match templateFile.Contents with
+                            | CompleteInfo(core, optional) ->
+                                yield! getPackages proj
+                            | ProjectInfo(core, optional) ->
+                                let name = 
+                                    match core.Id with
+                                    | Some name -> name
+                                    | None -> proj.GetAssemblyName().Replace(".dll","").Replace(".exe","")
+                                let pis : PackageInstallSettings = 
+                                    { Name = PackageName name
+                                      Settings = InstallSettings.Default }
+                                yield (GroupName("~~referenced-project"), pis, true)
+                        else
+                            yield! getPackages proj
                     | None ->
                         yield! getPackages proj
                 else 
