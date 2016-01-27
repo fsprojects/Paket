@@ -189,7 +189,7 @@ If you need to exclude dependencies from the automatic discovery then you can us
 
 With the include-pdbs switch you can tell Paket to pack pdbs into the package.
 
-    include-pdbs
+    include-pdbs true
 
 This only works for paket.template files of type `project`.
 
