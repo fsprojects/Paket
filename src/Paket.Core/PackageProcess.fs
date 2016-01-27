@@ -174,7 +174,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                 }
             )
          |> Seq.map (fun (t, p) -> 
-                let deps = findDependencies dependencies buildConfig buildPlatform t p lockDependencies projectTemplates includeReferencedProjects version
+                let deps = findDependencies dependencies buildConfig buildPlatform t p lockDependencies projectTemplates includeReferencedProjects version specificVersions
                 deps
             )
          |> Seq.append (allTemplateFiles |> Seq.collect convertRemainingTemplate)
