@@ -123,7 +123,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) =
+let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -189,15 +189,16 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
     // If project refs will also be packaged, add dependency
     let withDeps = 
         deps
-        |> List.map (fun (templateFile,_) ->
-        match templateFile with
-        | CompleteTemplate(core, opt) -> 
-            match core.Version with
-            | Some v ->
-                let versionConstraint = if not lockDependencies then Minimum v else Specific v
-                PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
-            | None -> failwithf "There was no version given for %s." templateFile.FileName
-        | IncompleteTemplate -> failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
+        |> List.map (fun (templateFile, _) -> 
+               match templateFile with
+               | CompleteTemplate(core, opt) -> 
+                   match core.Version with
+                   | Some v -> 
+                       let versionConstraint = if not lockDependencies then Minimum v else Specific v
+                       PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
+                   | None -> failwithf "There was no version given for %s." templateFile.FileName
+               | IncompleteTemplate -> 
+                   failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
         |> List.fold addDependency templateWithOutput
     
     // If project refs will not be packaged, add the assembly to the package
@@ -209,33 +210,32 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
         dependencies.FindLockfile().FullName
         |> LockFile.LoadFrom
 
-    let allReferences =
-        seq {
-            let getPackages proj =
-                seq{
+    let allReferences = 
+        seq { 
+            let getPackages proj = 
+                seq { 
                     let projFileInfo = FileInfo proj.FileName
-                    match (ProjectFile.FindReferencesFile projFileInfo) with
+                    match ProjectFile.FindReferencesFile projFileInfo with
                     | Some f -> 
                         let refFile = ReferencesFile.FromFile f
-                        let refs = refFile.Groups
-                                    |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key,p))
-                                    |> List.concat
+                        
+                        let refs = 
+                            refFile.Groups
+                            |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key, p))
+                            |> List.concat
                         for (group, package) in refs do
                             yield (group, package, false)
-                    | None -> 
-                        ignore()
+                    | None -> ignore()
                 }
-
-            let getProjects =
-                seq {
-                    if includeReferencedProjects then
-                        yield! project.GetRecursiveInterProjectDependencies
-                    else
-                        yield project
+            
+            let getProjects = 
+                seq { 
+                    if includeReferencedProjects then yield! project.GetRecursiveInterProjectDependencies
+                    else yield project
                 }
-
+            
             for proj in getProjects do
-                if proj <> project then
+                if proj <> project then 
                     let projFileInfo = (FileInfo proj.FileName)
                     let tf = ProjectFile.FindTemplatesFile projFileInfo
                     match tf with
