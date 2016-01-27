@@ -217,7 +217,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
             | Some f -> 
                 let refFile = ReferencesFile.FromFile f
                 refFile.Groups
-                |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key, p, false))
+                |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> Some kv.Key, p))
                 |> List.concat
             | None -> []
           
@@ -239,7 +239,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                             let settings : PackageInstallSettings = 
                                 { Name = PackageName name
                                   Settings = InstallSettings.Default }
-                            yield GroupName("~~referenced-project"), settings, true
+                            yield None, settings
                     else
                         yield! getPackages proj
                 | None ->
@@ -252,9 +252,10 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
     | _ -> 
         let deps =
             allReferences
-            |> List.filter (fun (groupName, np, isReferencedProject) ->
-                if isReferencedProject then true
-                else
+            |> List.filter (fun (group, np) ->
+                match group with
+                | None ->  true
+                | Some groupName ->
                     try
                         // TODO: it would be nice if this data would be in the NuGet OData feed,
                         // then we would not need to parse every nuspec here
@@ -268,7 +269,13 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                             not nuspec.IsDevelopmentDependency
                     with
                     | _ -> true)
-            |> List.map (fun (groupName,np, isReferencedProject) ->
+            |> List.map (fun (group, np) ->
+                match group with
+                | None ->
+                    match version with
+                    | Some v -> np.Name,VersionRequirement.Parse (v.ToString())
+                    | None -> np.Name,VersionRequirement.AllReleases
+                | Some groupName ->
                     let dependencyVersionRequirement =
                         if not lockDependencies then
                             match dependencies.Groups |> Map.tryFind groupName with
@@ -302,12 +309,6 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                     let dep =
                         match dependencyVersionRequirement with
                         | Some installed -> installed
-                        | None -> 
-                            if isReferencedProject then
-                                match version with
-                                | Some v -> VersionRequirement.Parse (v.ToString())
-                                | None -> VersionRequirement.AllReleases
-                            else 
-                                failwithf "No package with id '%A' installed in group %O." np.Name groupName
+                        | None -> failwithf "No package with id '%A' installed in group %O." np.Name groupName
                     np.Name, dep)
         deps |> List.fold addDependency withDepsAndIncluded
