@@ -136,11 +136,12 @@ If you're using multiple groups, you must set `redirects: off` for each one of t
 
 ### Strategy option
 
-This option tells Paket what resolver strategy it will use by default.
+This option tells Paket what resolver strategy it should use for transitive dependencies.
 
-NuGet's dependency syntax led to a lot of incompatible packages on Nuget.org. To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).
+NuGet's dependency syntax led to a lot of incompatible packages on nuget.org. 
+To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).
 
-The strategy can be either `min` or `max`.
+The strategy can be either `min` or `max` with max being the default.
 
     [lang=paket]
     strategy: min
@@ -150,11 +151,32 @@ The strategy can be either `min` or `max`.
 
 A `min` strategy means you get the *lowest matching version* of your transitive dependencies (i.e. NuGet-style). In constrast, a `max` strategy will get you the *highest matching version*.
 
-Note, however, that all direct dependencies still get their *lastest matching versions*, no matter the value of the `strategy` option.
+Note, however, that all direct dependencies will still get their *latest matching versions*, no matter the value of the `strategy` option.
+If you want to influence the resolution of direct dependencies then read about the [lowest_matching option](dependencies-file.html#Lowest_matching-option).
 
-The only exception is when you are updating a single package and one of your direct dependencies is a transitive dependency for that specific package. In this case, only the updating package will get its *latest matching version* and the dependency is treated as transitive.
+The only exception is when you are updating a single package and one of your direct dependencies is a transitive dependency for that specific package. 
+In this case, only the updating package will get its *latest matching version* and the dependency is treated as transitive.
 
-To override a strategy, you can use the one of the [strategy modifiers](nuget-dependencies.html#Strategy-modifiers).
+To override a strategy for a single NuGet package, you can use the package specific [strategy modifiers](nuget-dependencies.html#Strategy-modifiers).
+
+### Lowest_matching option
+
+This option tells Paket what resolver strategy it should use for direct dependencies.
+
+The `lowest_matching` option can be either `true` or `false` with false being the default.
+
+    [lang=paket]
+    lowest_matching: true
+    source https://nuget.org/api/v2
+
+    nuget UnionArgParser ~> 0.7
+
+A `lowest_matching: true` setting means you get the *lowest matching version* of your direct dependencies. In constrast, a `lowest_matching:false` will get you the *highest matching version*.
+
+Note, however, that all transitive dependencies will still get their *latest matching versions*, no matter the value of the `lowest_matching` option.
+If you want to influence the resolution of transitive dependencies then read about the [strategy option](dependencies-file.html#Strategy-option).
+
+To override a `lowest_matching` option for a single NuGet package, you can use the package specific [lowest_matching option](nuget-dependencies.html#Lowest_matching-option).
 
 ## Comments
 

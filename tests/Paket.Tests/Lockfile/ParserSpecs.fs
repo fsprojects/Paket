@@ -619,7 +619,7 @@ NUGET
     let packages = List.rev lockFile.Packages
     
     packages.Length |> shouldEqual 1
-    lockFile.Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Min)
+    lockFile.Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Min)
     
 [<Test>]
 let ``should parse strategy max lock file``() = 
@@ -633,7 +633,7 @@ NUGET
     let packages = List.rev lockFile.Packages
     
     packages.Length |> shouldEqual 1
-    lockFile.Options.ResolverStrategy |> shouldEqual (Some ResolverStrategy.Max)
+    lockFile.Options.ResolverStrategyForTransitives |> shouldEqual (Some ResolverStrategy.Max)
 
 [<Test>]
 let ``should parse no strategy lock file``() = 
@@ -646,7 +646,7 @@ let ``should parse no strategy lock file``() =
     let packages = List.rev lockFile.Packages
     
     packages.Length |> shouldEqual 1
-    lockFile.Options.ResolverStrategy |> shouldEqual None
+    lockFile.Options.ResolverStrategyForTransitives |> shouldEqual None
     
 let packageRedirectsLockFile = """REDIRECTS: ON
 NUGET

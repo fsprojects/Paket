@@ -54,6 +54,20 @@ let ``should resolve simple config3``() =
     getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.1"
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
+let configWithStrategy = """
+source "http://www.nuget.org/api/v2"
+
+nuget Nancy.Bootstrappers.Windsor ~> 0.23 strategy: min
+nuget Castle.Windsor >= 0 strategy: min
+"""
+
+[<Test>]
+let ``should resolve simple config with strategy``() = 
+    let cfg = DependenciesFile.FromCode(configWithStrategy)
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[PackageName "Castle.Windsor"] |> shouldEqual "3.2.1"
+    getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
+
 
 let graph2 = [
     "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]

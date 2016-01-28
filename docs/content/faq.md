@@ -115,6 +115,13 @@ In case of the command's failure, you can fallback to manual approach:
 
 In this case it's okay to use the `--force` flag for the `convert-from-nuget` command as described in [partial NuGet conversion](getting-started.html#Partial-NuGet-conversion). Paket will then go through your solution and convert all new NuGet projects to Paket.
 
+## Paket stores paket.dependencies and paket.lock files in the root of a repository. How can I change that?
+
+Very old paket.exe versions allowed to specify the location. We disabled that because we have very strong opinions about the location of the [`paket.dependencies` file](dependencies-file.html). 
+We believe dependency management is so important that these files belong in the root of the repository. People should know about the project's dependencies.
+
+That said: if you don't agree with that (but please take some time and think about it) you can use batch file to change the working folder.
+
 ## Can I use Paket to manage npm/bower/whatever dependencies?
 
 [No.](https://github.com/fsprojects/Paket/issues/61) We don't believe in reinventing the wheel.

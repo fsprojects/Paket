@@ -30,7 +30,8 @@ let defaultPackage =
       Graph = []
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Settings = InstallSettings.Default
-      ResolverStrategy = Some ResolverStrategy.Max }
+      ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
+      ResolverStrategyForTransitives = Some ResolverStrategy.Max }
 
 [<Test>]
 let ``should analyze graph and report conflict``() = 

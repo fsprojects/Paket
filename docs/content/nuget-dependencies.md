@@ -91,7 +91,7 @@ If your transitive dependencies result in a version conflict you might want to i
     [lang=paket]
     nuget Example == 1.2.3 // take exactly this version
 
-<blockquote>Important: If you want to restrict the version to a specific version then use the [= operator](nuget-dependencies.html#Pinned-version-constraint). The == operator should only be used if you need to overwrite a dependency resultion due to a conflict.</blockquote>
+<blockquote>Important: If you want to restrict the version to a specific version then use the <a href="nuget-dependencies.html#Pinned-version-constraint">= operator</a>. The == operator should only be used if you need to overwrite a dependency resultion due to a conflict.</blockquote>
 
 #### Further version constraints
 
@@ -241,11 +241,23 @@ If you don't want to import `.targets` and `.props` files you can disable it via
 
 ### Strategy modifiers
 
-To override a [strategy option](dependencies-file.html#Strategy-option) or the default strategy you can use one of the strategy modifiers.
+To override the [strategy option](dependencies-file.html#Strategy-option) you can use one of the strategy modifiers.
+
+Note, however, that all direct dependencies will still get their *latest matching versions*, no matter the value of the `strategy` option.
+If you want to influence the resolution of direct dependencies then read about the [lowest_matching option](dependencies-file.html#Lowest_matching-option).
 
 #### Max modifier
 
-To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `@` operator in your version constraint.
+To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `strategy:max` setting:
+
+    [lang=paket]
+    strategy: min
+    source https://nuget.org/api/v2
+
+    nuget Example ~> 1.2 strategy:max
+
+This effectively will get you the *latest matching versions* of `Example`'s dependencies.
+The following code is doing the same by using the `@` operator in your version constraint:
 
     [lang=paket]
     strategy: min
@@ -253,20 +265,25 @@ To request Paket to override the resolver strategy for the transitive dependenci
 
     nuget Example @~> 1.2 // use "max" version resolution strategy
 
-This effectively will get you the *lastest matching versions* of `Example`'s dependencies.
-
 #### Min modifier
 
-To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `!` operator in your version constraint.
+To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `strategy:min` setting:
+
+    [lang=paket]
+    source https://nuget.org/api/v2
+
+    nuget Example ~> 1.2 strategy: min
+
+This effectively will get you the *lowest matching versions* of `Example`'s dependencies. Still, you will get the *latest matching version* of `Example` itself according to its [version constraint of `1.2 <= x < 2`](#Pessimistic-version-constraint).
+The following code is doing the same by using the `!` operator in your version constraint:
+
 
     [lang=paket]
     source https://nuget.org/api/v2
 
     nuget Example !~> 1.2 // use "min" version resolution strategy
 
-This effectively will get you the *lowest matching versions* of `Example`'s dependencies. Still, you will get the *latest matching version* of `Example` itself according to its [version constraint of `1.2 <= x < 2`](#Pessimistic-version-constraint).
-
-The `!` and `@` modifiers are applicable to all [version constraints](#Version-constraints):
+The stragey setting and the corresponding `!` and `@` modifiers are applicable to all [version constraints](#Version-constraints):
 
     [lang=paket]
     source https://nuget.org/api/v2
@@ -274,6 +291,21 @@ The `!` and `@` modifiers are applicable to all [version constraints](#Version-c
     nuget Example-A @> 0 // use "max" version resolution strategy
     nuget Example-B != 1.2  // use "min" version resolution strategy
     nuget Example-C !>= 1.2 // use "min" version resolution strategy
+	nuget Example-C >= 1.2 strategy min
+
+### Lowest_matching option
+
+To override the [lowest_matching option](dependencies-file.html#Lowest_matching-option) you can use one of the following modifiers.
+
+Note, however, that all transitive dependencies will still get their *latest matching versions*, no matter the value of the `lowest_matching` option.
+If you want to influence the resolution of transitive dependencies then read about the [strategy option](dependencies-file.html#Strategy-option).
+
+To request Paket to override the resolver strategy for a package, use the `lowest_matching:true` setting:
+
+    [lang=paket]
+    source https://nuget.org/api/v2
+
+    nuget Example ~> 1.2 lowest_matching:true
 
 ### Specifying multiple targeting options
 

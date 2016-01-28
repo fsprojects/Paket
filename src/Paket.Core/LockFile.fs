@@ -26,7 +26,7 @@ module LockFileSerializer =
         | Some true -> yield "REDIRECTS: ON"
         | Some false -> yield "REDIRECTS: OFF"
         | None -> ()
-        match options.ResolverStrategy with
+        match options.ResolverStrategyForTransitives with
         | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
         | Some ResolverStrategy.Max -> yield "STRATEGY: MAX"
         | None -> ()
@@ -273,7 +273,7 @@ module LockFileParser =
         | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
         | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
-        | ResolverStrategy strategy -> { currentGroup.Options with ResolverStrategy = strategy }
+        | ResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
         | _ -> failwithf "Unknown option %A" option
 
     let Parse(lockFileLines) =

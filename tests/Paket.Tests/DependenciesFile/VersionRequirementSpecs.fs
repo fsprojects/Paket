@@ -8,10 +8,11 @@ open Paket.Domain
 
 let parse text = DependenciesFileParser.parseVersionRequirement(text)
 
-let require packageName strategy text : PackageRequirement = 
+let require packageName strategyForTransitives text : PackageRequirement = 
     { Name = PackageName packageName
       VersionRequirement = parse text
-      ResolverStrategy = Some strategy
+      ResolverStrategyForDirectDependencies = None
+      ResolverStrategyForTransitives = Some strategyForTransitives
       Parent = PackageRequirementSource.DependenciesFile ""
       Graph = []
       Settings = InstallSettings.Default }

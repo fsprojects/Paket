@@ -48,10 +48,11 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  Parent = PackageRequirementSource.DependenciesFile ""
                  Graph = []
                  Settings = InstallSettings.Default
-                 ResolverStrategy = Some ResolverStrategy.Max })
+                 ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
+                 ResolverStrategyForTransitives = Some ResolverStrategy.Max })
         |> Set.ofList
 
-    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NuGetV2Source "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, None, [], packages, UpdateMode.UpdateAll)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NuGetV2Source "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, None, None, [], packages, UpdateMode.UpdateAll)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
