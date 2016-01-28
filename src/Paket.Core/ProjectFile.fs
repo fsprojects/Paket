@@ -966,7 +966,7 @@ module ProjectFile =
         let noneAndContentNodes = 
             (project.Document |> getDescendants "None") @ 
             (project.Document |> getDescendants "Content")
-
+        
         match noneAndContentNodes |> List.tryFind (withAttributeValue "Include" Constants.PackagesConfigFile) with
         | None -> ()
         | Some nugetNode ->
@@ -1296,7 +1296,7 @@ type ProjectFile with
 
     member this.GetAllInterProjectDependenciesWithProjectTemplates = ProjectFile.getAllReferencedProjects this |> ProjectFile.projectsWithTemplates this
 
-    member this.ReplaceNuGetPackagesFile () = ProjectFile.removeNuGetTargetsEntries this
+    member this.ReplaceNuGetPackagesFile () = ProjectFile.replaceNuGetPackagesFile this
 
     member this.RemoveNuGetTargetsEntries () =  ProjectFile.removeNuGetTargetsEntries this
 
