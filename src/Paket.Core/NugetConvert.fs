@@ -21,7 +21,7 @@ type CredsMigrationMode =
     static member Parse(s : string) = 
         match s with 
         | "encrypt" -> ok Encrypt
-        | "plaintext" -> ok  Plaintext
+        | "plaintext" -> ok Plaintext
         | "selective" -> ok Selective
         | _ ->  InvalidCredentialsMigrationMode s |> fail
 
@@ -41,6 +41,7 @@ type CredsMigrationMode =
             | true -> ConfigAuthentication(username, password)
             | false -> PlainTextAuthentication(username, password)
         | _ -> failwith "invalid auth"
+
 /// Represents type of NuGet packages.config file
 type NugetPackagesConfigType = ProjectLevel | SolutionLevel
 
@@ -86,8 +87,6 @@ type NugetConfig =
             |> fail
 
     static member OverrideConfig nugetConfig (configNode : XmlNode) =
-        let clearSources = configNode.SelectSingleNode("//packageSources/clear") <> null
-
         let getAuth key = 
             let getAuth' authNode =
                 let userName = authNode |> tryGetValue "Username"
@@ -119,13 +118,11 @@ type NugetConfig =
             |> List.map (fun (key,value) -> key, (String.quoted value, getAuth key))
             |> Map.ofList
         
-        { PackageSources = if clearSources then sources
-                           else 
-                              Map.fold 
-                                (fun acc k v -> Map.add k v acc)
-                                nugetConfig.PackageSources
-                                sources
-                           |> Map.filter (fun k _ -> Set.contains k disabledSources |> not)
+        { PackageSources = 
+            match configNode.SelectSingleNode("//packageSources/clear") with
+            | null -> Map.fold (fun acc k v -> Map.add k v acc) nugetConfig.PackageSources sources
+            | _ -> sources
+            |> Map.filter (fun k _ -> Set.contains k disabledSources |> not)
           PackageRestoreEnabled = 
             match configNode |> getNode "packageRestore" |> Option.bind (tryGetValue "enabled") with
             | Some value -> bool.Parse(value)
