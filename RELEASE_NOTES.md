@@ -1,3 +1,6 @@
+#### 2.47.4 - 28.01.2016
+* BUGFIX: Fix convert-from-nuget command - https://github.com/fsprojects/Paket/pull/1437
+
 #### 2.47.3 - 27.01.2016
 * BUGFIX: paket pack with enabled include-referenced-projects flag doesn't throwh NRE - https://github.com/fsprojects/Paket/issues/1434
 
