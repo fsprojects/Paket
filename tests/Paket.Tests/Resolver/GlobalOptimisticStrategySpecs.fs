@@ -107,7 +107,7 @@ nuget Castle.Windsor-NLog @~> 3.2
 """
 
 [<Test>]
-let ``should update to lastest when updating all``() = 
+let ``should update to latest when updating all``() = 
     let resolved =
         DependenciesFile.FromCode(config6)
         |> resolve graph2 UpdateMode.UpdateAll

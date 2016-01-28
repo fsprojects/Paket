@@ -63,7 +63,7 @@ let ``should favor max strategy to resolve strategy override conflicts (with key
 let config2 = """
 source "http://www.nuget.org/api/v2"
 
-nuget Microsoft.AspNet.Mvc >= 6.0.0 lowest-matching: true
+nuget Microsoft.AspNet.Mvc >= 6.0.0 lowest_matching: true
 """
 
 let graph2 = [
@@ -81,7 +81,7 @@ let ``should resolve config with min requirement``() =
 
 let config3 = """
 source http://www.nuget.org/api/v2
-lowest-matching: true
+lowest_matching: true
 
 nuget Microsoft.AspNet.Mvc >= 6.0.0 
 """
@@ -94,9 +94,9 @@ let ``should resolve config with global min requirement``() =
 
 let config4 = """
 source http://www.nuget.org/api/v2
-lowest-matching: true
+lowest_matching: true
 
-nuget Microsoft.AspNet.Mvc >= 6.0.0  lowest-matching:false
+nuget Microsoft.AspNet.Mvc >= 6.0.0  lowest_matching:false
 """
 
 [<Test>]

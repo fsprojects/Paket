@@ -251,7 +251,7 @@ module DependenciesFileParser =
                 | _ -> None
 
             ParserOptions(ParserOption.ResolverStrategyForTransitives(setting))
-        | String.StartsWith "lowest-matching" trimmed -> 
+        | String.StartsWith "lowest_matching" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
                 | "false" -> Some ResolverStrategy.Max
@@ -311,9 +311,9 @@ module DependenciesFileParser =
                 | _ -> parseResolverStrategy version
             else parseResolverStrategy version 
           ResolverStrategyForDirectDependencies = 
-            if optionsText.Contains "lowest-matching" then 
+            if optionsText.Contains "lowest_matching" then 
                 let kvPairs = parseKeyValuePairs optionsText
-                match kvPairs.TryGetValue "lowest-matching" with
+                match kvPairs.TryGetValue "lowest_matching" with
                 | true, "false" -> Some ResolverStrategy.Max 
                 | true, "true" -> Some ResolverStrategy.Min
                 | _ -> None
