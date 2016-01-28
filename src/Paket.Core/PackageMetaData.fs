@@ -212,8 +212,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
 
     let allReferences = 
         let getPackages proj = 
-            let projFileInfo = FileInfo proj.FileName
-            match ProjectFile.FindReferencesFile projFileInfo with
+            match ProjectFile.FindReferencesFile (FileInfo proj.FileName) with
             | Some f -> 
                 let refFile = ReferencesFile.FromFile f
                 refFile.Groups
@@ -225,25 +224,18 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
             for proj in project.GetRecursiveInterProjectDependencies |> Seq.filter ((<>) project) do
                 let projFileInfo = FileInfo proj.FileName
                 match ProjectFile.FindTemplatesFile projFileInfo with
-                | Some templateFileName ->
-                    if TemplateFile.IsProjectType templateFileName then
-                        let templateFile = TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq)
-                        match templateFile.Contents with
-                        | CompleteInfo(core, optional) ->
-                            yield! getPackages proj
-                        | ProjectInfo(core, optional) ->
-                            let name = 
-                                match core.Id with
-                                | Some name -> name
-                                | None -> proj.GetAssemblyName().Replace(".dll","").Replace(".exe","")
-                            let settings : PackageInstallSettings = 
-                                { Name = PackageName name
-                                  Settings = InstallSettings.Default }
-                            yield None, settings
-                    else
+                | Some templateFileName when TemplateFile.IsProjectType templateFileName ->
+                    match TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq).Contents with
+                    | CompleteInfo(core, optional) ->
                         yield! getPackages proj
-                | None ->
-                    yield! getPackages proj
+                    | ProjectInfo(core, optional) ->
+                        let name = 
+                            match core.Id with
+                            | Some name -> name
+                            | None -> proj.GetAssemblyName().Replace(".dll","").Replace(".exe","")
+                            
+                        yield None, { Name = PackageName name; Settings = InstallSettings.Default }
+                | _ -> yield! getPackages proj
 
          yield! getPackages project]
     
