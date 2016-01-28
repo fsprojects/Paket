@@ -91,7 +91,7 @@ If your transitive dependencies result in a version conflict you might want to i
     [lang=paket]
     nuget Example == 1.2.3 // take exactly this version
 
-<blockquote>Important: If you want to restrict the version to a specific version then use the [= operator](nuget-dependencies.html#Pinned-version-constraint). The == operator should only be used if you need to overwrite a dependency resultion due to a conflict.</blockquote>
+<blockquote>Important: If you want to restrict the version to a specific version then use the <a href="nuget-dependencies.html#Pinned-version-constraint">= operator</a>. The == operator should only be used if you need to overwrite a dependency resultion due to a conflict.</blockquote>
 
 #### Further version constraints
 
