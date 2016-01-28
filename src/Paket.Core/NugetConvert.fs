@@ -153,9 +153,10 @@ module NugetEnv =
         
     let readNugetConfig(rootDirectory : DirectoryInfo) =
         DirectoryInfo(Path.Combine(rootDirectory.FullName, ".nuget"))
-        |> List.unfold (fun di -> if di = null 
-                                    then None 
-                                    else Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
+        |> List.unfold (fun di -> 
+                match di with
+                | null -> None 
+                | _ -> Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
         |> List.rev
         |> List.append [FileInfo(Path.Combine(Constants.AppDataFolder, "nuget", "nuget.config"))]
         |> List.filter (fun fi -> fi.Exists)
@@ -164,7 +165,7 @@ module NugetEnv =
                         |> bind (fun config ->
                             file 
                             |> NugetConfig.GetConfigNode 
-                            |> lift (fun node -> NugetConfig.OverrideConfig config node)))
+                            |> lift (NugetConfig.OverrideConfig config)))
                         (ok NugetConfig.Empty)
 
     let readNugetPackages(rootDirectory : DirectoryInfo) =
