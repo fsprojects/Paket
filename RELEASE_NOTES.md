@@ -1,3 +1,6 @@
+#### 2.48.1 - 29.01.2016
+* Show warning if a dependency is installed for wrong target framework - https://github.com/fsprojects/Paket/pull/1445
+
 #### 2.48.0 - 28.01.2016
 * New lowest_matching option that allows to use lowest matching version of direct dependencies - http://fsprojects.github.io/Paket/dependencies-file.html#Lowest-matching-option
 * BUGFIX: Fix convert-from-nuget command - https://github.com/fsprojects/Paket/pull/1437
