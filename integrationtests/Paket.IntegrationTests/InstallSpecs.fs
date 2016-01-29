@@ -125,8 +125,12 @@ let ``#1427 won't install content when content:none``() =
     let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-none","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
-    s1 |> shouldEqual s2 // we don not touch it
+    s1 |> shouldEqual s2 // we do not touch it
 
+[<Test>]
+let ``#1442 warn if install finds no libs``() = 
+    let result = paket "install" "i001442-warn-if-empty"
+    result |> shouldContainText "contains libraries, but not for the selected TargetFramework"
 
 [<Test>]
 let ``#1334 without download fail``() = 

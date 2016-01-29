@@ -226,11 +226,6 @@ module ProjectFile =
         node.InnerText <- text
         node
 
-
-
-//    let createChildNode name text project =
-//        project |> addChild (createNodeSet name text project)
-
     open System.Text
 
     let getPropertyWithDefaults propertyName defaultProperties (projectFile:ProjectFile) =
@@ -845,11 +840,21 @@ module ProjectFile =
         while List.exists (fun x -> deleteIfEmpty x project) ["ItemGroup";"When";"Otherwise";"Choose"] do
             ()
 
+
+    let getTargetFrameworkIdentifier (project:ProjectFile) = getProperty "TargetFrameworkIdentifier" project
+
+    let getTargetFrameworkProfile (project:ProjectFile) = getProperty "TargetFrameworkProfile" project
+
     let updateReferences
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) hard (project:ProjectFile) =
         removePaketNodes project
-        
+
+        let targetFramework = 
+            match getProperty "TargetFrameworkVersion" project with
+            | None -> None
+            | Some v -> FrameworkDetection.Extract(v.Replace("v","net"))
+
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.map (fun kv -> 
@@ -860,6 +865,14 @@ module ProjectFile =
                 (snd kv.Value)
                     .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions)
                     .RemoveIfCompletelyEmpty()
+            
+            match targetFramework with 
+            | Some targetFramework ->
+                if projectModel.GetLibReferences targetFramework |> Seq.isEmpty then
+                    if projectModel.HasLibReferences() then
+                        traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
+                            (snd kv.Key) targetFramework project.FileName
+            | None -> ()
 
             let copyLocal = defaultArg installSettings.CopyLocal true
             let importTargets = defaultArg installSettings.ImportTargets true
@@ -1036,11 +1049,7 @@ module ProjectFile =
                 | _        -> ProjectOutputType.Library }
         |> Seq.head
 
-    let getTargetFrameworkIdentifier (project:ProjectFile) = getProperty "TargetFrameworkIdentifier" project
-
-    let getTargetFrameworkProfile (project:ProjectFile) = getProperty "TargetFrameworkProfile" project
-
-    let getTargetProfile (project:ProjectFile)  =  
+    let getTargetProfile (project:ProjectFile) =
         match getTargetFrameworkProfile project with
         | Some profile when profile = "Client" ->
             SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)

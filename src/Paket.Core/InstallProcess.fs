@@ -282,7 +282,6 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
 
     for project, referenceFile in projectsAndReferences do
         verbosefn "Installing to %s" project.FileName
-        
         let usedPackages =
             referenceFile.Groups
             |> Seq.map (fun kv ->

@@ -156,6 +156,8 @@ module InstallModel =
         getFileFolders target installModel.TargetsFileFolders 
             (function Reference.TargetsFile targetsFile -> Some targetsFile | _ -> None)
 
+    let hasReferences (installModel:InstallModel) = List.isEmpty installModel.ReferenceFileFolders |> not
+
     let getPlatformReferences frameworkIdentifier installModel = 
         getLibReferences (SinglePlatform frameworkIdentifier) installModel
 
@@ -358,7 +360,7 @@ type InstallModel with
 
     member this.MapFolders mapfn = InstallModel.mapFolders mapfn this
 
-    member this.MapFiles mapfn = InstallModel.mapFiles mapfn this  
+    member this.MapFiles mapfn = InstallModel.mapFiles mapfn this
 
     member this.GetLibReferences target = InstallModel.getLibReferences target this 
 
@@ -376,6 +378,8 @@ type InstallModel with
 
     member this.AddLibReferences (libs, references) = InstallModel.addLibReferences libs references this
 
+    member this.HasLibReferences () = InstallModel.hasReferences this
+
     member this.AddReferences libs = InstallModel.addLibReferences libs NuspecReferences.All this
 
     member this.AddAnalyzerFiles analyzerFiles = InstallModel.addAnalyzerFiles analyzerFiles this
@@ -384,7 +388,7 @@ type InstallModel with
 
     member this.AddTargetsFiles targetsFiles = InstallModel.addTargetsFiles targetsFiles this
 
-    member this.AddPackageFile (path, file, references) = InstallModel.addPackageFile path file references this    
+    member this.AddPackageFile (path, file, references) = InstallModel.addPackageFile path file references this
     
     member this.AddFrameworkAssemblyReference reference = InstallModel.addFrameworkAssemblyReference this reference 
 
