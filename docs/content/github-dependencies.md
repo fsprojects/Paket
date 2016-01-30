@@ -57,7 +57,7 @@ You can also reference a complete [github.com](http://www.github.com) repository
 
     [lang=paket]
     github tpetricek/FSharp.Formatting                                         // master branch 
-    github tpetricek/FSharp.Formatting:2.13.5                                  // version 2.6.2  
+    github tpetricek/FSharp.Formatting:2.13.5                                  // version 2.13.5 
     github tpetricek/FSharp.Formatting:30cd5366a4f3f25a443ca4cd62cd592fd16ac69 // specific commit 30cd5366a4f3f25a443ca4cd62cd592fd16ac69  
 
 This will download the given repository and put it into your `paket-files` folder. In this case we download the source of [reveal.js](http://lab.hakim.se/reveal-js/#/).
