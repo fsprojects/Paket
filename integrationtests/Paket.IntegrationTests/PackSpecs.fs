@@ -115,3 +115,19 @@ let ``#1429 pack deps using minimum-from-lock-file``() =
     versionRequirement |> shouldNotEqual (VersionRequirement.AllReleases)
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug","paket.template"))
+
+[<Test>]
+let ``#1429 pack deps without minimum-from-lock-file uses AllReleases``() = 
+    let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","out")
+    let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug", "paket.template")
+    paket ("pack -v output \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> ignore
+
+    let details = 
+        NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        |> Async.RunSynchronously
+
+    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details.Dependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    versionRequirement |> shouldEqual (VersionRequirement.AllReleases)
+
+    File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug","paket.template"))
