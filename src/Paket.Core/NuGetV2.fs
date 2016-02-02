@@ -313,7 +313,11 @@ let getDetailsFromLocalNuGetPackage root localNugetPath (packageName:PackageName
         return 
             { PackageName = nuspec.OfficialName
               DownloadUrl = packageName.ToString()
-              Dependencies = Requirements.optimizeDependencies nuspec.Dependencies
+              Dependencies = 
+                nuspec.Dependencies
+                |> List.map (fun (a,b,c) -> a,b, getRestrictionList c)
+                |> Requirements.optimizeDependencies 
+
               SourceUrl = di.FullName
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl

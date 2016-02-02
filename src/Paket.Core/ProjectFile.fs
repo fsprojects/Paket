@@ -845,15 +845,15 @@ module ProjectFile =
 
     let getTargetFrameworkProfile (project:ProjectFile) = getProperty "TargetFrameworkProfile" project
 
+    let getTargetFramework (project:ProjectFile) = 
+        match getProperty "TargetFrameworkVersion" project with
+        | None -> None
+        | Some v -> FrameworkDetection.Extract(v.Replace("v","net"))
+
     let updateReferences
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) hard (project:ProjectFile) =
         removePaketNodes project
-
-        let targetFramework = 
-            match getProperty "TargetFrameworkVersion" project with
-            | None -> None
-            | Some v -> FrameworkDetection.Extract(v.Replace("v","net"))
 
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
@@ -863,10 +863,10 @@ module ProjectFile =
             let installSettings = snd usedPackages.[kv.Key]
             let projectModel =
                 (snd kv.Value)
-                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions)
+                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions|> getRestrictionList)
                     .RemoveIfCompletelyEmpty()
             
-            match targetFramework with 
+            match getTargetFramework project with 
             | Some targetFramework ->
                 if projectModel.GetLibReferences targetFramework |> Seq.isEmpty then
                     if projectModel.HasLibReferences() then
@@ -1317,6 +1317,8 @@ type ProjectFile with
     member this.OutputType =  ProjectFile.outputType this
 
     member this.GetTargetFrameworkIdentifier () =  ProjectFile.getTargetFrameworkIdentifier this
+
+    member this.GetTargetFramework () =  ProjectFile.getTargetFramework this
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
 

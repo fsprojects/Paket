@@ -1,7 +1,6 @@
-#### 2.48.2 - 03.02.2016
+#### 2.49.0-alpha001 - 03.02.2016
+* Automatic framework detection - http://fsprojects.github.io/Paket/dependencies-file.html#Automatic-framework-detection
 * Work around auth issues with VSTS feed - https://github.com/fsprojects/Paket/issues/1453
-
-#### 2.48.1 - 29.01.2016
 * Show warning if a dependency is installed for wrong target framework - https://github.com/fsprojects/Paket/pull/1445
 
 #### 2.48.0 - 28.01.2016

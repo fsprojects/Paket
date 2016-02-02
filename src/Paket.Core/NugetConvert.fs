@@ -260,7 +260,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     let read() =
         let addPackages dependenciesFile = 
             packages
-            |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = restrictions})
+            |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = FrameworkRestrictionList restrictions})
             |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,version,installSettings) -> dependenciesFile.Add(groupName, packageName,version,installSettings)) dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
@@ -289,7 +289,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             let packageLines = 
                 packages 
                 |> List.map (fun (name,v,restr) -> 
-                    let vr = createPackageRequirement (name, v, restr) dependenciesFileName
+                    let vr = createPackageRequirement (name, v, FrameworkRestrictionList restr) dependenciesFileName
                     DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray

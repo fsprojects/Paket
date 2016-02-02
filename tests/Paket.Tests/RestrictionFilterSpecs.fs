@@ -11,113 +11,113 @@ open Paket.Requirements
 
 [<Test>]
 let ``should filter net45 and >= net40``() = 
-    let l1 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
-    let l2 = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
     filterRestrictions l1 l2
     |> shouldEqual l2
 
 [<Test>]
 let ``should filter >= net40 and net45``() = 
-    let l1 = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
-    let l2 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
     filterRestrictions l1 l2
     |> shouldEqual l1
 
 
 [<Test>]
 let ``should filter >= net40 and net40``() = 
-    let l1 = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))]
-    let l2 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
     filterRestrictions l1 l2
     |> shouldEqual l1
 
 [<Test>]
 let ``should filter >=net40 and >= net45``() = 
-    let l1 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
-    let l2 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))]
     filterRestrictions l1 l2
     |> shouldEqual l2
 
 [<Test>]
-let ``should filter >= net40 and portable``() =     
-    let l1 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
-    let l2 = [FrameworkRestriction.Portable("abc")]
+let ``should filter >= net40 and portable``() =
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Portable("abc")]
 
     filterRestrictions l1 l2
-    |> shouldEqual []
+    |> shouldEqual (FrameworkRestrictionList [])
 
 [<Test>]
 let ``should filter >= net40 and >= net20 < net46``() = 
-    let l1 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
-    let l2 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4_6))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4_6))]
 
     filterRestrictions l1 l2
-    |> shouldEqual [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_6))]
+    |> shouldEqual (FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_6))])
 
 [<Test>]
 let ``should filter >= net40 and >= net45 < net46``() =
-    let l1 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
-    let l2 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_6))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_6))]
 
     filterRestrictions l1 l2
     |> shouldEqual l2
 
 [<Test>]
 let ``should filter >= net40 and >= net20 < net40``() = 
-    let l1 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
-    let l2 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4))]
 
     filterRestrictions l1 l2
-    |> shouldEqual []
+    |> shouldEqual (FrameworkRestrictionList [])
 
 [<Test>]
 let ``should filter net45 and >= net40 < net46``() = 
-    let l1 = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
-    let l2 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_6))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_6))]
     filterRestrictions l1 l2
     |> shouldEqual l1
 
 [<Test>]
 let ``should filter net45 and >= net40 < net45``() = 
-    let l1 = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
-    let l2 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5))]
     filterRestrictions l1 l2
-    |> shouldEqual []
+    |> shouldEqual (FrameworkRestrictionList [])
 
 [<Test>]
 let ``should filter >= net40 < net46 and net45``() = 
-    let l1 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_6))]
-    let l2 = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_6))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
     filterRestrictions l1 l2
     |> shouldEqual l2
 
 [<Test>]
 let ``should filter >= net40 < net45 and net45``() = 
-    let l1 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5))]
-    let l2 = [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_5))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))]
     filterRestrictions l1 l2
-    |> shouldEqual []
+    |> shouldEqual (FrameworkRestrictionList [])
 
 [<Test>]
 let ``should filter >= net20 < net46 and >= net40``() = 
-    let l1 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4_6))]
-    let l2 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4_6))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
 
     filterRestrictions l1 l2
-    |> shouldEqual [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_6))]
+    |> shouldEqual (FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4),DotNetFramework(FrameworkVersion.V4_6))])
 
 [<Test>]
 let ``should filter >= net45 < net46 and >= net40``() =
-    let l1 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_6))]
-    let l2 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4_5),DotNetFramework(FrameworkVersion.V4_6))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
 
     filterRestrictions l1 l2
     |> shouldEqual l1
 
 [<Test>]
 let ``should filter >= net20 < net40 and >= net40``() =
-    let l1 = [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4))]
-    let l2 = [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))]
 
     filterRestrictions l1 l2
-    |> shouldEqual []
+    |> shouldEqual (FrameworkRestrictionList [])
