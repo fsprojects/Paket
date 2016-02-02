@@ -123,7 +123,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
+let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -265,13 +265,33 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                 match group with
                 | None ->
                     match version with
-                    | Some v -> np.Name,VersionRequirement.Parse (v.ToString())
-                    | None -> np.Name,VersionRequirement.AllReleases
+                    | Some v -> 
+                        tracefn "HAA => %s | %s" (np.Name.ToString()) (v.ToString())
+                        np.Name,VersionRequirement.Parse (v.ToString())
+                    | None -> 
+                        trace "It really was null"
+                        let lockedVersion() = 
+                            let findLockedGroup() =
+                                lockFile.GetDependencyLookupTable()
+                                |> Seq.map (fun m -> m.Key)
+                                |> Seq.filter (fun (g, p) -> p = np.Name)
+                                |> Seq.map (fun (g, p) -> g)
+                                |> Seq.head
+                                |> lockFile.GetGroup
+
+                            let group = findLockedGroup()
+                            Map.tryFind np.Name group.Resolution
+                            |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
+                            |> Option.map (fun version -> VersionRequirement(GreaterThan version, getPreReleaseStatus version))
+                            |> Option.get
+                        np.Name,lockedVersion()
+
                 | Some groupName ->
                     let dependencyVersionRequirement =
                         if not lockDependencies then
                             match dependencies.Groups |> Map.tryFind groupName with
-                            | None -> None
+                            | None -> 
+                                None
                             | Some group ->
                                 let deps = 
                                     group.Packages 
@@ -280,7 +300,14 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
 
                                 Map.tryFind np.Name deps
                                 |> function
-                                    | Some direct -> Some direct
+                                    | Some direct -> 
+                                        let versionRequirement = Map.tryFind np.Name (lockFile.GetGroup(group.Name).Resolution)
+                                                                 |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
+                                                                 |> Option.map (fun version -> VersionRequirement(Minimum version, getPreReleaseStatus version))
+                                        match versionRequirement, minimumFromLockFile with
+                                        | None, _ -> Some direct
+                                        | Some x, false -> Some direct
+                                        | Some x, true -> Some x
                                     | None ->
                                         match lockFile.Groups |> Map.tryFind groupName with
                                         | None -> None
