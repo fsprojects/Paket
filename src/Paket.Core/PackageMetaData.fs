@@ -266,32 +266,30 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                 | None ->
                     match version with
                     | Some v -> 
-                        tracefn "HAA => %s | %s" (np.Name.ToString()) (v.ToString())
                         np.Name,VersionRequirement.Parse (v.ToString())
                     | None -> 
-                        trace "It really was null"
-                        let lockedVersion() = 
-                            let findLockedGroup() =
+                        if minimumFromLockFile then
+                            let group =
                                 lockFile.GetDependencyLookupTable()
+                                |> Seq.filter (fun m -> snd m.Key = np.Name)
                                 |> Seq.map (fun m -> m.Key)
-                                |> Seq.filter (fun (g, p) -> p = np.Name)
-                                |> Seq.map (fun (g, p) -> g)
                                 |> Seq.head
+                                |> fst
                                 |> lockFile.GetGroup
 
-                            let group = findLockedGroup()
-                            Map.tryFind np.Name group.Resolution
-                            |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
-                            |> Option.map (fun version -> VersionRequirement(GreaterThan version, getPreReleaseStatus version))
-                            |> Option.get
-                        np.Name,lockedVersion()
+                            let lockedVersion = 
+                                match Map.tryFind np.Name group.Resolution with
+                                | Some resolvedPackage -> VersionRequirement(GreaterThan resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version)
+                                | None -> VersionRequirement.AllReleases
 
+                            np.Name,lockedVersion
+                        else
+                            np.Name,VersionRequirement.AllReleases
                 | Some groupName ->
                     let dependencyVersionRequirement =
                         if not lockDependencies then
                             match dependencies.Groups |> Map.tryFind groupName with
-                            | None -> 
-                                None
+                            | None -> None
                             | Some group ->
                                 let deps = 
                                     group.Packages 
@@ -301,13 +299,15 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                                 Map.tryFind np.Name deps
                                 |> function
                                     | Some direct -> 
-                                        let versionRequirement = Map.tryFind np.Name (lockFile.GetGroup(group.Name).Resolution)
-                                                                 |> Option.map (fun resolvedPackage -> resolvedPackage.Version)
-                                                                 |> Option.map (fun version -> VersionRequirement(Minimum version, getPreReleaseStatus version))
-                                        match versionRequirement, minimumFromLockFile with
-                                        | None, _ -> Some direct
-                                        | Some x, false -> Some direct
-                                        | Some x, true -> Some x
+                                        if minimumFromLockFile then
+                                            match lockFile.Groups |> Map.tryFind groupName with
+                                            | None -> Some direct
+                                            | Some group ->
+                                                match Map.tryFind np.Name group.Resolution with
+                                                | Some resolvedPackage -> Some(VersionRequirement(Minimum resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version))
+                                                | None -> Some direct
+                                        else
+                                            Some direct
                                     | None ->
                                         match lockFile.Groups |> Map.tryFind groupName with
                                         | None -> None
