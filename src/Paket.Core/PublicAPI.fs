@@ -78,7 +78,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 NuGetConvert.convertR rootDirectory force credsMigrationMode
                 |> returnOrFail
-                |> NuGetConvert.replaceNugetWithPaket initAutoRestore installAfter
+                |> NuGetConvert.replaceNuGetWithPaket initAutoRestore installAfter
         )
 
     /// Converts the current package dependency graph to the simplest dependency graph.

@@ -973,7 +973,7 @@ module ProjectFile =
 
               RelativePath = path.Replace("/","\\")
               Name = forceGetInnerText node "Name"
-              GUID =  forceGetInnerText node "Project" |> Guid.Parse }]
+              GUID = forceGetInnerText node "Project" |> Guid.Parse }]
 
     let replaceNuGetPackagesFile project =
         let noneAndContentNodes = 

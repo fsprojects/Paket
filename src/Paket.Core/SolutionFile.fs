@@ -59,7 +59,7 @@ type SolutionFile(fileName: string) =
 
     member __.FileName = fileName
 
-    member __.RemoveNugetEntries() =
+    member __.RemoveNuGetEntries() =
         for file in ["nuget.targets"; Constants.PackagesConfigFile; "nuget.exe"; "nuget.config"] do
             match content |> Seq.tryFindIndex (fun line -> String.containsIgnoreCase (sprintf ".nuget\\%s" file)line) with
             | Some(index) -> content.RemoveAt(index)

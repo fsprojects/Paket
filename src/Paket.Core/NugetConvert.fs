@@ -134,21 +134,21 @@ type NugetConfig =
 
 type NugetEnv = 
     { RootDirectory : DirectoryInfo
-      NugetConfig : NugetConfig
-      NugetConfigFiles : list<FileInfo>
-      NugetProjectFiles : list<ProjectFile * NugetPackagesConfig>
-      NugetTargets : option<FileInfo>
-      NugetExe : option<FileInfo> }
+      NuGetConfig : NugetConfig
+      NuGetConfigFiles : list<FileInfo>
+      NuGetProjectFiles : list<ProjectFile * NugetPackagesConfig>
+      NuGetTargets : option<FileInfo>
+      NuGetExe : option<FileInfo> }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module NugetEnv = 
     let create rootDirectory configFiles targets exe config packagesFiles = 
         { RootDirectory = rootDirectory
-          NugetConfig = config
-          NugetConfigFiles = configFiles
-          NugetProjectFiles = packagesFiles
-          NugetTargets = targets
-          NugetExe = exe
+          NuGetConfig = config
+          NuGetConfigFiles = configFiles
+          NuGetProjectFiles = packagesFiles
+          NuGetTargets = targets
+          NuGetExe = exe
         }
         
     let readNugetConfig(rootDirectory : DirectoryInfo) =
@@ -194,14 +194,14 @@ module NugetEnv =
     }
 
 type ConvertResultR = 
-    { NugetEnv : NugetEnv
+    { NuGetEnv : NugetEnv
       PaketEnv : PaketEnv
       SolutionFiles : SolutionFile [] }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ConvertResultR =
     let create nugetEnv paketEnv solutionFiles = 
-        { NugetEnv = nugetEnv
+        { NuGetEnv = nugetEnv
           PaketEnv = paketEnv
           SolutionFiles = solutionFiles }
 
@@ -223,7 +223,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
 
     let allVersionsGroupped =
-        nugetEnv.NugetProjectFiles
+        nugetEnv.NuGetProjectFiles
         |> List.collect (fun (_,c) -> c.Packages)
         |> List.groupBy (fun p -> p.Id)
 
@@ -253,8 +253,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             name, string latestVersion, restrictions)
 
     let packages = 
-        match nugetEnv.NugetExe with 
-        | Some _ -> ("Nuget.CommandLine","",[]) :: latestVersions
+        match nugetEnv.NuGetExe with 
+        | Some _ -> ("NuGet.CommandLine","",[]) :: latestVersions
         | _ -> latestVersions
 
     let read() =
@@ -270,9 +270,9 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     let create() =
         let sources = 
-            if nugetEnv.NugetConfig.PackageSources = Map.empty then [ Constants.DefaultNuGetStream, None ]
+            if nugetEnv.NuGetConfig.PackageSources = Map.empty then [ Constants.DefaultNuGetStream, None ]
             else 
-                (nugetEnv.NugetConfig.PackageSources
+                (nugetEnv.NuGetConfig.PackageSources
                  |> Map.toList
                  |> List.map snd)
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
@@ -299,7 +299,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     if File.Exists dependenciesFileName then read() else create()
     |> lift (fun d -> d.SimplifyFrameworkRestrictions())
 
-let convertPackagesConfigToReferences projectFileName packagesConfig =
+let convertPackagesConfigToReferencesFile projectFileName packagesConfig =
     let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
 
     packagesConfig.Packages
@@ -308,14 +308,13 @@ let convertPackagesConfigToReferences projectFileName packagesConfig =
                  referencesFile
 
 let convertProjects nugetEnv =
-    [for project,packagesConfig in nugetEnv.NugetProjectFiles do 
+    [for project,packagesConfig in nugetEnv.NuGetProjectFiles do 
         project.ReplaceNuGetPackagesFile()
         project.RemoveNuGetTargetsEntries()
         project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
-        yield project, convertPackagesConfigToReferences project.FileName packagesConfig]
+        yield project, convertPackagesConfigToReferencesFile project.FileName packagesConfig]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
-
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
     return PaketEnv.create rootDirectory depFile None (convertProjects nugetEnv)
 }
@@ -328,19 +327,17 @@ let updateSolutions (rootDirectory : DirectoryInfo) =
 
     for solution in solutions do
         let dependenciesFileRef = createRelativePath solution.FileName dependenciesFileName
-        solution.RemoveNugetEntries()
+        solution.RemoveNuGetEntries()
         solution.AddPaketFolder(dependenciesFileRef, None)
 
     solutions
 
 let createResult(rootDirectory, nugetEnv, credsMirationMode) = trial {
-
     let! paketEnv = createPaketEnv rootDirectory nugetEnv credsMirationMode
     return ConvertResultR.create nugetEnv paketEnv (updateSolutions rootDirectory)
 }
 
 let convertR rootDirectory force credsMigrationMode = trial {
-
     let! credsMigrationMode =
         defaultArg 
             (credsMigrationMode |> Option.map CredsMigrationMode.Parse)
@@ -355,23 +352,22 @@ let convertR rootDirectory force credsMigrationMode = trial {
     return! createResult(rootDirectory, nugetEnv, credsMigrationMode)
 }
 
-let replaceNugetWithPaket initAutoRestore installAfter result = 
-    
+let replaceNuGetWithPaket initAutoRestore installAfter result = 
     let remove (fi : FileInfo) = 
         tracefn "Removing %s" fi.FullName
         fi.Delete()
 
-    result.NugetEnv.NugetConfigFiles |> List.iter remove
-    result.NugetEnv.NugetProjectFiles |> List.map (fun (_,n) -> n.File) |> List.iter remove
-    result.NugetEnv.NugetTargets |> Option.iter remove
-    result.NugetEnv.NugetExe 
+    result.NuGetEnv.NuGetConfigFiles |> List.iter remove
+    result.NuGetEnv.NuGetProjectFiles |> List.map (fun (_,n) -> n.File) |> List.iter remove
+    result.NuGetEnv.NuGetTargets |> Option.iter remove
+    result.NuGetEnv.NuGetExe 
     |> Option.iter 
             (fun nugetExe -> 
             remove nugetExe
             traceWarnfn "Removed %s and added %s as dependency instead. Please check all paths." 
-                nugetExe.FullName "Nuget.CommandLine")
+                nugetExe.FullName "NuGet.CommandLine")
 
-    match result.NugetEnv.NugetTargets ++ result.NugetEnv.NugetExe with
+    match result.NuGetEnv.NuGetTargets ++ result.NuGetEnv.NuGetExe with
     | Some fi when fi.Directory.EnumerateFileSystemInfos() |> Seq.isEmpty ->
         fi.Directory.Delete()
     | _ -> ()
@@ -383,10 +379,10 @@ let replaceNugetWithPaket initAutoRestore installAfter result =
     result.SolutionFiles |> Array.iter (fun s -> s.Save())
 
     let autoVSPackageRestore = 
-        result.NugetEnv.NugetConfig.PackageRestoreAutomatic &&
-        result.NugetEnv.NugetConfig.PackageRestoreEnabled
+        result.NuGetEnv.NuGetConfig.PackageRestoreAutomatic &&
+        result.NuGetEnv.NuGetConfig.PackageRestoreEnabled
     
-    if initAutoRestore && (autoVSPackageRestore || result.NugetEnv.NugetTargets.IsSome) then 
+    if initAutoRestore && (autoVSPackageRestore || result.NuGetEnv.NuGetTargets.IsSome) then 
         VSIntegration.TurnOnAutoRestore result.PaketEnv |> returnOrFail
 
     if installAfter then
