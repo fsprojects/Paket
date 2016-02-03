@@ -1,3 +1,6 @@
+#### 2.48.2 - 03.02.2016
+* Work around auth issues with VSTS feed - https://github.com/fsprojects/Paket/issues/1453
+
 #### 2.48.1 - 29.01.2016
 * Show warning if a dependency is installed for wrong target framework - https://github.com/fsprojects/Paket/pull/1445
 
