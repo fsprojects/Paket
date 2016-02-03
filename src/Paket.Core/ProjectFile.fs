@@ -985,7 +985,10 @@ module ProjectFile =
         | Some nugetNode ->
             match noneAndContentNodes |> List.filter (withAttributeValue "Include" Constants.ReferencesFile) with 
             | [_] -> nugetNode.ParentNode.RemoveChild nugetNode |> ignore
-            | [] -> nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
+            | [] -> 
+                for c in nugetNode.ChildNodes do
+                    nugetNode.RemoveChild c |> ignore
+                nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
             | _::_ -> failwithf "multiple %s nodes in project file %s" Constants.ReferencesFile project.FileName
 
     let removeNuGetTargetsEntries project =
