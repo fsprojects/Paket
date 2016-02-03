@@ -1,4 +1,5 @@
-#### 2.49.0-alpha001 - 03.02.2016
+#### 2.49.0 - 03.02.2016
+* Added paket pack switch minimum-from-lock-file - http://fsprojects.github.io/Paket/paket-pack.html#Version-ranges
 * Automatic framework detection - http://fsprojects.github.io/Paket/dependencies-file.html#Automatic-framework-detection
 * BUGFIX: Work around auth issues with VSTS feed - https://github.com/fsprojects/Paket/issues/1453
 * USABILITY: Show warning if a dependency is installed for wrong target framework - https://github.com/fsprojects/Paket/pull/1445
