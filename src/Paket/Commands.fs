@@ -308,6 +308,7 @@ type PackArgs =
     | [<CustomCommandLine("specific-version")>] SpecificVersion of templateId:string * version:string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
     | [<CustomCommandLine("lock-dependencies")>] LockDependencies
+    | [<CustomCommandLine("minimum-from-lock-file")>] LockDependenciesToMinimum
     | [<CustomCommandLine("symbols")>] Symbols
     | [<CustomCommandLine("include-referenced-projects")>] IncludeReferencedProjects
     | [<CustomCommandLine("project-url")>] ProjectUrl of string
@@ -324,6 +325,7 @@ with
             | SpecificVersion(_) -> "Specifies a version number for template with given id."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
             | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
+            | LockDependenciesToMinimum -> "Get the version requirements from paket.lock instead of paket.dependencies, and add them as a minimum version.  `lock-dependencies` will over-ride this option."
             | Symbols -> "Build symbol/source packages in addition to library/content packages."
             | IncludeReferencedProjects -> "Include symbol/source from referenced projects."
             | ProjectUrl(_) -> "Url to the projects home page."
