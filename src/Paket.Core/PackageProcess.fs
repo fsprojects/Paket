@@ -95,14 +95,14 @@ let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProje
         let augmentedFiles = optional.Files |> List.append sourceFiles
         { templateFile with Contents = ProjectInfo({ core with Symbols = true }, { optional with Files = augmentedFiles }) }
 
-let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, symbols, includeReferencedProjects, projectUrl) =
+let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, symbols, includeReferencedProjects, projectUrl) =
     let buildConfig = defaultArg buildConfig "Release"
     let buildPlatform = defaultArg buildPlatform ""
     let packageOutputPath = if Path.IsPathRooted(packageOutputPath) then packageOutputPath else Path.Combine(workingDir,packageOutputPath)
     Utils.createDir packageOutputPath |> returnOrFail
 
     let lockFile = 
-        let lockFileName = DependenciesFile.FindLockfile dependencies.FileName
+        let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
         LockFile.LoadFrom(lockFileName.FullName)
 
     let version = version |> Option.map SemVer.Parse
@@ -174,7 +174,7 @@ let Pack(workingDir,dependencies : DependenciesFile, packageOutputPath, buildCon
                 }
             )
          |> Seq.map (fun (t, p) -> 
-                let deps = findDependencies dependencies buildConfig buildPlatform t p lockDependencies minimumFromLockFile projectTemplates includeReferencedProjects version specificVersions
+                let deps = findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile projectTemplates includeReferencedProjects version specificVersions
                 deps
             )
          |> Seq.append (allTemplateFiles |> Seq.collect convertRemainingTemplate)
