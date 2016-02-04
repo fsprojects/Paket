@@ -1,3 +1,6 @@
+#### 2.49.3 - 04.02.2016
+* BUGFIX: Do not touch project files in packages folder - https://github.com/fsprojects/Paket/issues/1455
+
 #### 2.49.2 - 04.02.2016
 * BUGFIX: Keep versions locked for dependencies during pack - https://github.com/fsprojects/Paket/issues/1457
 
