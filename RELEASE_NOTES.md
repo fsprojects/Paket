@@ -1,3 +1,6 @@
+#### 2.49.2 - 04.02.2016
+* BUGFIX: Keep versions locked for dependencies during pack - https://github.com/fsprojects/Paket/issues/1457
+
 #### 2.49.1 - 04.02.2016
 * Do not fail on auth check for remote dependencies file - https://github.com/fsprojects/Paket/issues/1456
 

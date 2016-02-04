@@ -298,7 +298,25 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                         | None -> Some requirement.VersionRequirement
                                         | Some group ->
                                             match Map.tryFind np.Name group.Resolution with
-                                            | Some resolvedPackage -> Some(VersionRequirement(Minimum resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version))
+                                            | Some resolvedPackage -> 
+                                                let pre = getPreReleaseStatus resolvedPackage.Version
+                                                match requirement.VersionRequirement.Range with 
+                                                | OverrideAll v -> 
+                                                    if v <> resolvedPackage.Version then
+                                                        failwithf "Versions in %s and %s are not identical for package %O." lockFile.FileName dependenciesFile.FileName np.Name
+                                                    Some(VersionRequirement(Specific resolvedPackage.Version,pre))
+                                                | Specific v -> 
+                                                    if v <> resolvedPackage.Version then
+                                                        failwithf "Versions in %s and %s are not identical for package %O." lockFile.FileName dependenciesFile.FileName np.Name
+                                                    Some(VersionRequirement(Specific resolvedPackage.Version,pre))
+                                                | Maximum v ->
+                                                    if v = resolvedPackage.Version then
+                                                        Some(VersionRequirement(Specific resolvedPackage.Version,pre))
+                                                    else
+                                                        Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v,VersionRangeBound.Including),pre))
+                                                | Range(lb,v,v2,ub) ->
+                                                    Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v2,ub),pre))
+                                                | _ -> Some(VersionRequirement(Minimum resolvedPackage.Version,pre))
                                             | None -> Some requirement.VersionRequirement
                                     else
                                         Some requirement.VersionRequirement
