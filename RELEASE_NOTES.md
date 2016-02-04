@@ -1,3 +1,6 @@
+#### 2.49.1 - 04.02.2016
+* Do not fail on auth check for remote dependencies file - https://github.com/fsprojects/Paket/issues/1456
+
 #### 2.49.0 - 03.02.2016
 * Added paket pack switch minimum-from-lock-file - http://fsprojects.github.io/Paket/paket-pack.html#Version-ranges
 * Automatic framework detection - http://fsprojects.github.io/Paket/dependencies-file.html#Automatic-framework-detection

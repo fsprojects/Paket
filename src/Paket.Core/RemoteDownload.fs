@@ -77,11 +77,11 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
             url.Replace(remoteFile.Name,Constants.DependenciesFileName)
 
     let auth = 
-        remoteFile.AuthKey
-        |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl key url)
-        |> function
-        | Some(Credentials(_,_)) as credentials -> credentials
-        | auth -> auth
+        try
+            remoteFile.AuthKey
+            |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl key url)
+        with
+        | _ -> None
   
     let exists =
         let di = destination.Directory
@@ -91,7 +91,6 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
           destination.Exists &&
           versionFile.Exists && 
           File.ReadAllText(versionFile.FullName).Contains(remoteFile.Commit)
-
     
     if exists then
         return parserF (File.ReadAllText(destination.FullName))
