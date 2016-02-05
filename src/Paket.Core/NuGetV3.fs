@@ -43,6 +43,18 @@ let calculateNuGet3Path(nugetUrl:string) =
     | url when url.EndsWith("v3/index.json") -> Some url
     | _ -> None
 
+/// Calculates the NuGet v3 URL from a NuGet v2 URL.
+let calculateNuGet2Path(nugetUrl:string) = 
+    match nugetUrl.TrimEnd([|'/'|]) with
+    | "http://api.nuget.org/v3/index.json" -> Some "http://nuget.org/api/v2"
+    | "https://api.nuget.org/v3/index.json" -> Some "https://nuget.org/api/v2"
+    | "http://api.nuget.org/v3/index.json" -> Some "http://www.nuget.org/api/v2"
+    | "https://api.nuget.org/v3/index.json" -> Some "https://www.nuget.org/api/v2"
+    | url when url.EndsWith("api/v3/index.json") && url.Contains("myget.org") -> Some (url.Replace("api/v3/index.json","api/v2"))
+    | url when url.EndsWith("v2") -> Some url
+    | _ -> None
+
+
 /// [omit]
 let getSearchAPI(auth,nugetUrl) = 
     match searchDict.TryGetValue nugetUrl with
