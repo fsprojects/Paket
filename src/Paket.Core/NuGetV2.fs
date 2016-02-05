@@ -492,8 +492,23 @@ let GetPackageDetails root force (sources:PackageSource list) packageName (versi
                             version
                     return Some(source,result)
                 | NuGetV3 nugetSource ->
-                    let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
-                    return Some(source,result)
+                    if nugetSource.Url.Contains("myget.org") then
+                        match NuGetV3.calculateNuGet2Path nugetSource.Url with
+                        | Some url -> 
+                            let! result = 
+                                getDetailsFromNuGet 
+                                    force 
+                                    (nugetSource.Authentication |> Option.map toBasicAuth)
+                                    url
+                                    packageName
+                                    version
+                            return Some(source,result)
+                        | _ ->
+                            let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
+                            return Some(source,result)
+                    else
+                        let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
+                        return Some(source,result)
                 | LocalNuGet path -> 
                     let! result = getDetailsFromLocalNuGetPackage root path packageName version
                     return Some(source,result)

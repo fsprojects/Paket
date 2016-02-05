@@ -1,3 +1,6 @@
+#### 2.49.5 - 05.02.2016
+* WORKAROUND: Don't use v3 getPackageDetails on myget
+
 #### 2.49.4 - 05.02.2016
 * BUGFIX: Download of HTTP dependencies should delete folder before we unzip
 

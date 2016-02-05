@@ -39,6 +39,18 @@
     <StartArguments>install</StartArguments>
     <StartArguments>restore</StartArguments>
     <StartArguments>update  -f</StartArguments>
+    <StartArguments>update -f</StartArguments>
+    <StartArguments>install</StartArguments>
+    <StartArguments>update</StartArguments>
+    <StartArguments>restore</StartArguments>
+    <StartArguments>update</StartArguments>
+    <StartArguments>update</StartArguments>
+    <StartArguments>restore</StartArguments>
+    <StartArguments>update</StartArguments>
+    <StartArguments>pack -v output "D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp\out" templatefile "D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp\PaketBug\paket.template"</StartArguments>
+    <StartArguments>pack -v output D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp\out</StartArguments>
+    <StartArguments>pack output "out/nuget"  version  0.9.3 releaseNotes  "[LanguageExtensions][New] New Ensure methods with exception parameter." include-referenced-projects</StartArguments>
+    <StartArguments>restore</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -49,7 +61,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001270-net461\temp</StartWorkingDirectory>
     <StartWorkingDirectory>C:\code\restore</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001450-twiddle-wakka\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\paket-issue\</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\test</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
