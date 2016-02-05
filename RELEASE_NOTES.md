@@ -1,7 +1,10 @@
-#### 3.0.0-alpha039 - 05.02.2016
+#### 3.0.0-alpha040 - 05.02.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+
+#### 2.49.5 - 05.02.2016
+* WORKAROUND: Don't use v3 getPackageDetails on myget
 
 #### 2.49.4 - 05.02.2016
 * BUGFIX: Download of HTTP dependencies should delete folder before we unzip
