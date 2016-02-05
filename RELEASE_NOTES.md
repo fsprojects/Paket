@@ -1,7 +1,22 @@
-#### 3.0.0-alpha038 - 28.01.2016
+#### 3.0.0-alpha039 - 05.02.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+
+#### 2.49.3 - 04.02.2016
+* BUGFIX: Do not touch project files in packages folder - https://github.com/fsprojects/Paket/issues/1455
+
+#### 2.49.2 - 04.02.2016
+* BUGFIX: Keep versions locked for dependencies during pack - https://github.com/fsprojects/Paket/issues/1457
+
+#### 2.49.1 - 04.02.2016
+* Do not fail on auth check for remote dependencies file - https://github.com/fsprojects/Paket/issues/1456
+
+#### 2.49.0 - 03.02.2016
+* Added paket pack switch minimum-from-lock-file - http://fsprojects.github.io/Paket/paket-pack.html#Version-ranges
+* Automatic framework detection - http://fsprojects.github.io/Paket/dependencies-file.html#Automatic-framework-detection
+* BUGFIX: Work around auth issues with VSTS feed - https://github.com/fsprojects/Paket/issues/1453
+* USABILITY: Show warning if a dependency is installed for wrong target framework - https://github.com/fsprojects/Paket/pull/1445
 
 #### 2.48.0 - 28.01.2016
 * New lowest_matching option that allows to use lowest matching version of direct dependencies - http://fsprojects.github.io/Paket/dependencies-file.html#Lowest-matching-option

@@ -81,7 +81,7 @@ with
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
-            | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
+            | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
             | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
@@ -107,7 +107,7 @@ with
         member this.Usage =
             match this with
             | Force -> "Forces the conversion, even if paket.dependencies or paket.references files are present."
-            | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
+            | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
             | No_Auto_Restore -> "Skips paket auto-restore process afterward generation of dependencies / references files."
             | Creds_Migration(_) -> "Specify a mode for migrating NuGet source credentials. Possible values are [`encrypt`|`plaintext`|`selective`]. The default mode is `encrypt`."
 
@@ -141,7 +141,7 @@ type InstallArgs =
     | [<AltCommandLine("-f")>] Force
     | Hard
     | Redirects
-    | CreateNewBindingFiles    
+    | CreateNewBindingFiles
     | Keep_Major
     | Keep_Minor
     | Keep_Patch
@@ -187,7 +187,7 @@ with
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
-            | No_Install -> "Skips paket install --hard process afterward generation of dependencies / references files."
+            | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
 
 
 type ClearCacheArgs =
@@ -242,7 +242,7 @@ with
             | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
-            | No_Install -> "Skips paket install --hard process afterward generation of paket.lock file."
+            | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
             | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
@@ -308,6 +308,7 @@ type PackArgs =
     | [<CustomCommandLine("specific-version")>] SpecificVersion of templateId:string * version:string
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
     | [<CustomCommandLine("lock-dependencies")>] LockDependencies
+    | [<CustomCommandLine("minimum-from-lock-file")>] LockDependenciesToMinimum
     | [<CustomCommandLine("symbols")>] Symbols
     | [<CustomCommandLine("include-referenced-projects")>] IncludeReferencedProjects
     | [<CustomCommandLine("project-url")>] ProjectUrl of string
@@ -324,6 +325,7 @@ with
             | SpecificVersion(_) -> "Specifies a version number for template with given id."
             | ReleaseNotes(_) -> "Specify relase notes for the package."
             | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
+            | LockDependenciesToMinimum -> "Get the version requirements from paket.lock instead of paket.dependencies, and add them as a minimum version.  `lock-dependencies` will over-ride this option."
             | Symbols -> "Build symbol/source packages in addition to library/content packages."
             | IncludeReferencedProjects -> "Include symbol/source from referenced projects."
             | ProjectUrl(_) -> "Url to the projects home page."

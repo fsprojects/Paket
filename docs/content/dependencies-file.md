@@ -68,6 +68,18 @@ Sometimes you don't want to generate dependencies for older framework versions. 
 
     nuget Example >= 2.0 // only .NET 3.5 and .NET 4.0
 
+#### Automatic framework detection
+
+Paket can detect the target frameworks from your project and then limit the installation to these target frameworks. You can control this in the [`paket.dependencies` file](dependencies-file.html):
+
+    [lang=paket]
+    framework: auto-detect
+    source https://nuget.org/api/v2
+
+    nuget Example >= 2.0 // only the target frameworks that are used in projects
+
+If you change the target frameworks in the projects then you need to run `paket install` again.
+
 ### No content option
 
 This option disables the installation of any content files:

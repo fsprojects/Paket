@@ -105,12 +105,13 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
             | ModuleResolver.HttpLink url -> 
                 url.Replace(remoteFile.Name,Constants.DependenciesFileName)
             | ModuleResolver.GitLink _ -> failwithf "Can't compute dependencies file url for %O" remoteFile
+
         let auth = 
-            remoteFile.AuthKey
-            |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl key url)
-            |> function
-            | Some(Credentials(_,_)) as credentials -> credentials
-            | auth -> auth
+            try
+                remoteFile.AuthKey
+                |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl key url)
+            with
+            | _ -> None
   
         let exists =
             let di = destination.Directory

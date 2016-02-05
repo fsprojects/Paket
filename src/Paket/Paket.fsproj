@@ -49,6 +49,7 @@
     <StartArguments>pack -v output "D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp\out" templatefile "D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp\PaketBug\paket.template"</StartArguments>
     <StartArguments>pack -v output D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp\out</StartArguments>
     <StartArguments>pack output "out/nuget"  version  0.9.3 releaseNotes  "[LanguageExtensions][New] New Ensure methods with exception parameter." include-referenced-projects</StartArguments>
+    <StartArguments>update  -f</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -71,6 +72,8 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Journalist</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001450-twiddle-wakka\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001440-auto-detect\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

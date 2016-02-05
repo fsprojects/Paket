@@ -44,13 +44,13 @@ module internal NuSpecParserHelper =
         let targetFrameworks = node |> getAttribute "targetFramework"
         match name,targetFrameworks with
         | Some name, Some targetFrameworks when targetFrameworks = "" ->
-            [{ AssemblyName = name; FrameworkRestrictions = [] }]
+            [{ AssemblyName = name; FrameworkRestrictions = FrameworkRestrictionList [] }]
         | Some name, None ->
-            [{ AssemblyName = name; FrameworkRestrictions = [] }]
+            [{ AssemblyName = name; FrameworkRestrictions = FrameworkRestrictionList [] }]
         | Some name, Some targetFrameworks ->
             targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
             |> Array.choose FrameworkDetection.Extract
-            |> Array.map (fun fw -> { AssemblyName = name; FrameworkRestrictions = [FrameworkRestriction.Exactly fw] })
+            |> Array.map (fun fw -> { AssemblyName = name; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly fw] })
             |> Array.toList
         | _ -> []
 
@@ -89,7 +89,7 @@ type Nuspec =
                     match node |> getAttribute "targetFramework" with
                     | Some framework ->
                         match FrameworkDetection.Extract framework with
-                        | Some x -> [PackageName "",VersionRequirement.NoRestriction,[FrameworkRestriction.Exactly x]]
+                        | Some x -> [PackageName "",VersionRequirement.NoRestriction, [FrameworkRestriction.Exactly x]]
                         | None -> []
                     | _ -> [])
                 |> List.concat
@@ -129,4 +129,4 @@ type Nuspec =
 
                 [for name,restrictions in grouped do
                     yield { AssemblyName = name
-                            FrameworkRestrictions = List.collect (fun x -> x.FrameworkRestrictions) restrictions } ] }
+                            FrameworkRestrictions = FrameworkRestrictionList(List.collect (fun x -> x.FrameworkRestrictions |> getRestrictionList) restrictions) } ] }

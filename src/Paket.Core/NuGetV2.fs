@@ -313,7 +313,11 @@ let getDetailsFromLocalNuGetPackage root localNugetPath (packageName:PackageName
         return 
             { PackageName = nuspec.OfficialName
               DownloadUrl = packageName.ToString()
-              Dependencies = Requirements.optimizeDependencies nuspec.Dependencies
+              Dependencies = 
+                nuspec.Dependencies
+                |> List.map (fun (a,b,c) -> a,b, getRestrictionList c)
+                |> Requirements.optimizeDependencies 
+
               SourceUrl = di.FullName
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
@@ -659,76 +663,89 @@ let GetVersions force root (sources, packageName:PackageName) =
 
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(root, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
-    async { 
-        let targetFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
-        let targetFile = FileInfo targetFileName
-        let licenseFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
-        if not force && targetFile.Exists && targetFile.Length > 0L then 
-            verbosefn "%O %O already downloaded." packageName version
-        else
-            tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
-            verbosefn "  to %s" targetFileName
+    let targetFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
+    let targetFile = FileInfo targetFileName
+    let licenseFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
 
-            // discover the link on the fly
-            let nugetPackage = GetPackageDetails root force [source] packageName version
-            try 
-                    
-                let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
+    let rec download authenticated =
+        async {
+            if not force && targetFile.Exists && targetFile.Length > 0L then 
+                verbosefn "%O %O already downloaded." packageName version
+            else
+                if authenticated then
+                    tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
+                    verbosefn "  to %s" targetFileName
 
-                let downloadUri = 
-                    if Uri.IsWellFormedUriString(nugetPackage.DownloadLink, UriKind.Absolute) then
-                        Uri nugetPackage.DownloadLink
+                // discover the link on the fly
+                let nugetPackage = GetPackageDetails root force [source] packageName version
+                try 
+                    let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
+
+                    let downloadUri = 
+                        if Uri.IsWellFormedUriString(nugetPackage.DownloadLink, UriKind.Absolute) then
+                            Uri nugetPackage.DownloadLink
+                        else
+                            let sourceUrl =
+                                if nugetPackage.Source.Url.EndsWith("/") then nugetPackage.Source.Url
+                                else nugetPackage.Source.Url + "/"
+                            Uri(Uri sourceUrl,  nugetPackage.DownloadLink)
+
+                    let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
+                    request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+                    request.UserAgent <- "Paket"
+
+                    if authenticated then
+                        match source.Auth |> Option.map toBasicAuth with
+                        | None | Some(Token _) -> request.UseDefaultCredentials <- true
+                        | Some(Credentials(username, password)) -> 
+                            // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
+                            //this works ONLY if the server returns 401 first
+                            //client DOES NOT send credentials on first request
+                            //ONLY after a 401
+                            //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
+
+                            //so use THIS instead to send credentials RIGHT AWAY
+                            let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
+                            request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
                     else
-                        let sourceUrl =
-                            if nugetPackage.Source.Url.EndsWith("/") then nugetPackage.Source.Url
-                            else nugetPackage.Source.Url + "/"
-                        Uri(Uri sourceUrl,  nugetPackage.DownloadLink)
+                        request.UseDefaultCredentials <- true
 
-                let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
-                request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
-                request.UserAgent <- "Paket"
-
-                match source.Auth |> Option.map toBasicAuth with
-                | None | Some(Token _) -> request.UseDefaultCredentials <- true
-                | Some(Credentials(username, password)) -> 
-                    // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
-                    //this works ONLY if the server returns 401 first
-                    //client DOES NOT send credentials on first request
-                    //ONLY after a 401
-                    //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
-
-                    //so use THIS instead to send credentials RIGHT AWAY
-                    let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
-                    request.Headers.[HttpRequestHeader.Authorization] <- String.Format("Basic {0}", credentials)
-
-                request.Proxy <- Utils.getDefaultProxyFor source.Url
-                use! httpResponse = request.AsyncGetResponse()
+                    request.Proxy <- Utils.getDefaultProxyFor source.Url
+                    use! httpResponse = request.AsyncGetResponse()
             
-                use httpResponseStream = httpResponse.GetResponseStream()
+                    use httpResponseStream = httpResponse.GetResponseStream()
             
-                let bufferSize = 4096
-                let buffer : byte [] = Array.zeroCreate bufferSize
-                let bytesRead = ref -1
+                    let bufferSize = 4096
+                    let buffer : byte [] = Array.zeroCreate bufferSize
+                    let bytesRead = ref -1
 
-                use fileStream = File.Create(targetFileName)
+                    use fileStream = File.Create(targetFileName)
             
-                while !bytesRead <> 0 do
-                    let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
-                    bytesRead := bytes
-                    do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
+                    while !bytesRead <> 0 do
+                        let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
+                        bytesRead := bytes
+                        do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
-                match (httpResponse :?> HttpWebResponse).StatusCode with
-                | HttpStatusCode.OK -> ()
-                | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
+                    match (httpResponse :?> HttpWebResponse).StatusCode with
+                    | HttpStatusCode.OK -> ()
+                    | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
 
-                try
-                    do! license
+                    try
+                        do! license
+                    with
+                    | exn ->
+                        if verbose then
+                            traceWarnfn "Could not download license for %O %O from %s.%s    %s" packageName version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
                 with
-                | exn ->
-                    if verbose then
-                        traceWarnfn "Could not download license for %O %O from %s.%s    %s" packageName version nugetPackage.LicenseUrl Environment.NewLine exn.Message 
-            with
-            | exn -> failwithf "Could not download %O %O from %s.%s    %s" packageName version nugetPackage.DownloadLink Environment.NewLine exn.Message
-                
+                | :? System.Net.WebException as exn when 
+                    exn.Status = WebExceptionStatus.ProtocolError &&
+                     (match source.Auth |> Option.map toBasicAuth with
+                      | Some(Credentials(_)) -> true
+                      | _ -> false)
+                        -> do! download false
+                | exn -> failwithf "Could not download %O %O from %s.%s    %s" packageName version nugetPackage.DownloadLink Environment.NewLine exn.Message }
+
+    async {
+        do! download true
         return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, includeVersionInPath, force, detailed)
     }

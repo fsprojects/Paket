@@ -260,6 +260,7 @@ Target "SignAssemblies" (fun _ ->
 )
 
 Target "NuGet" (fun _ ->    
+    !! "integrationtests/**/paket.template" |> Seq.iter DeleteFile
     Paket.Pack (fun p -> 
         { p with 
             ToolPath = "bin/merged/paket.exe" 

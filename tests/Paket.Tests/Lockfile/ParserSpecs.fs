@@ -47,12 +47,12 @@ let ``should parse lock file``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[1].Name |> shouldEqual (PackageName "Castle.Windsor-log4net")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.3")
-    packages.[1].Dependencies |> shouldEqual (Set.ofList [PackageName "Castle.Windsor", VersionRequirement(Minimum(SemVer.Parse "2.0"), PreReleaseStatus.No), []; PackageName "log4net", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), []])
+    packages.[1].Dependencies |> shouldEqual (Set.ofList [PackageName "Castle.Windsor", VersionRequirement(Minimum(SemVer.Parse "2.0"), PreReleaseStatus.No), FrameworkRestrictionList []; PackageName "log4net", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), FrameworkRestrictionList []])
     
     packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), []])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), FrameworkRestrictionList []])
 
     let sourceFiles = List.rev lockFile.SourceFiles
     sourceFiles|> shouldEqual
@@ -111,7 +111,7 @@ let ``should parse strict lock file``() =
     packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "log4net")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
-    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), []])
+    packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), FrameworkRestrictionList []])
 
 let redirectsLockFile = """REDIRECTS: ON
 IMPORT-TARGETS: TRUE
@@ -224,7 +224,7 @@ let ``should parse own lock file``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[1].Name |> shouldEqual (PackageName "FAKE")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
-    packages.[1].Settings.FrameworkRestrictions |> shouldEqual []
+    packages.[1].Settings.FrameworkRestrictions |> shouldEqual (FrameworkRestrictionList [])
 
     lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
 
@@ -274,7 +274,7 @@ let ``should parse own lock file2``() =
     packages.[1].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[1].Name |> shouldEqual (PackageName "FAKE")
     packages.[1].Version |> shouldEqual (SemVer.Parse "3.5.5")
-    packages.[3].Settings.FrameworkRestrictions |> shouldEqual []
+    packages.[3].Settings.FrameworkRestrictions |> shouldEqual (FrameworkRestrictionList [])
 
     lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
 
@@ -306,20 +306,25 @@ let ``should parse framework restricted lock file``() =
 
     packages.[0].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
     |> List.item 2
+    |> getRestrictionList
     |> shouldEqual ([FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
     packages.[3].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
-    packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
+    packages.[3].Settings.FrameworkRestrictions 
+    |> getRestrictionList
+    |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
     packages.[3].Settings.ImportTargets |> shouldEqual None
 
     let dependencies4 =
         packages.[4].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
 
     dependencies4.Head
+    |> getRestrictionList
     |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2), FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
     dependencies4.Tail.Head
+    |> getRestrictionList
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
                      FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
@@ -327,7 +332,8 @@ let ``should parse framework restricted lock file``() =
     packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
-    packages.[5].Settings.FrameworkRestrictions 
+    packages.[5].Settings.FrameworkRestrictions
+    |> getRestrictionList
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
                      FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
@@ -359,12 +365,15 @@ let ``should parse framework restricted lock file in new syntax``() =
 
     packages.[0].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
     |> List.item 2
+    |> getRestrictionList
     |> shouldEqual ([FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
     packages.[3].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
     packages.[3].Version |> shouldEqual (SemVer.Parse "1.3.0")
-    packages.[3].Settings.FrameworkRestrictions |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
+    packages.[3].Settings.FrameworkRestrictions
+    |> getRestrictionList 
+    |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
     packages.[3].Settings.CopyLocal |> shouldEqual None
     packages.[3].Settings.ImportTargets |> shouldEqual (Some false)
     packages.[3].Settings.IncludeVersionInPath |> shouldEqual (Some true)
@@ -374,8 +383,10 @@ let ``should parse framework restricted lock file in new syntax``() =
         packages.[4].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
 
     dependencies4.Head
+    |> getRestrictionList
     |> shouldEqual ([FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2), FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))])
     dependencies4.Tail.Head
+    |> getRestrictionList
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
                      FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
@@ -388,6 +399,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[5].Settings.OmitContent |> shouldEqual None
     packages.[5].Settings.IncludeVersionInPath |> shouldEqual None
     packages.[5].Settings.FrameworkRestrictions 
+    |> getRestrictionList
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
                      FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
@@ -452,7 +464,7 @@ let ``should parse portable lockfile``() =
     
     packages.[1].Name |> shouldEqual (PackageName "Zlib.Portable")
     packages.[1].Version |> shouldEqual (SemVer.Parse "1.10.0")
-    packages.[1].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[portable-net40+sl50+wp80+win80]"
+    (packages.[1].Settings.FrameworkRestrictions |> getRestrictionList).ToString() |> shouldEqual "[portable-net40+sl50+wp80+win80]"
 
 let reactiveuiLockFile = """NUGET
   remote: https://www.nuget.org/api/v2
@@ -499,11 +511,11 @@ let ``should parse reactiveui lockfile``() =
     
     packages.[8].Name |> shouldEqual (PackageName "Rx-WindowStoreApps")
     packages.[8].Version |> shouldEqual (SemVer.Parse "2.2.5")
-    packages.[8].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[winv4.5]"
+    (packages.[8].Settings.FrameworkRestrictions |> getRestrictionList).ToString() |> shouldEqual "[winv4.5]"
 
     packages.[10].Name |> shouldEqual (PackageName "Rx-Xaml")
     packages.[10].Version |> shouldEqual (SemVer.Parse "2.2.5")
-    packages.[10].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[winv4.5; wpv8.0; >= net45]"
+    (packages.[10].Settings.FrameworkRestrictions |> getRestrictionList).ToString() |> shouldEqual "[winv4.5; wpv8.0; >= net45]"
 
 let multipleFeedLockFile = """NUGET
   remote: http://internalfeed/NugetWebFeed/nuget
@@ -537,7 +549,6 @@ let ``should parse lockfile with multiple feeds``() =
     
     packages.[3].Name |> shouldEqual (PackageName "Microsoft.AspNet.WebApi")
     packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
-    packages.[3].Settings.FrameworkRestrictions.ToString() |> shouldEqual "[]"
     packages.[3].Source.ToString() |> shouldEqual "https://www.nuget.org/api/v2"
 
 [<Test>]

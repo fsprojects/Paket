@@ -199,6 +199,7 @@ module DependenciesFileParser =
     | ReferencesMode of bool
     | OmitContent of ContentCopySettings
     | FrameworkRestrictions of FrameworkRestrictions
+    | AutodetectFrameworkRestrictions
     | ImportTargets of bool
     | CopyLocal of bool
     | ReferenceCondition of string
@@ -257,9 +258,18 @@ module DependenciesFileParser =
 
             ParserOptions(ParserOption.ResolverStrategyForDirectDependencies(setting))
         | String.StartsWith "framework" trimmed -> 
-            let text = trimmed.Replace(":","").Trim() 
-            let restriction = Requirements.parseRestrictions text
-            ParserOptions(ParserOption.FrameworkRestrictions restriction)
+            let text = trimmed.Replace(":", "").Trim()
+            
+            if text = "auto-detect" then 
+                ParserOptions(ParserOption.AutodetectFrameworkRestrictions)
+            else 
+                let restrictions = Requirements.parseRestrictions text
+                if String.IsNullOrWhiteSpace text |> not && List.isEmpty restrictions then 
+                    failwithf "Could not parse framework restriction \"%s\"" text
+
+                let options = ParserOption.FrameworkRestrictions(FrameworkRestrictionList restrictions)
+                ParserOptions options
+
         | String.StartsWith "content" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -338,6 +348,8 @@ module DependenciesFileParser =
         | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
         | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
         | FrameworkRestrictions r -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
+        | AutodetectFrameworkRestrictions ->
+            { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = AutoDetectFramework } }
         | OmitContent omit -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
         | ReferenceCondition condition -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
 
@@ -515,13 +527,14 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     member this.SimplifyFrameworkRestrictions() = 
         let transform (dependenciesFile:DependenciesFile) (group:DependenciesGroup) =
-            if group.Options.Settings.FrameworkRestrictions <> [] then dependenciesFile else
+            if group.Options.Settings.FrameworkRestrictions |> getRestrictionList <> [] then dependenciesFile else
             match group.Packages with
             | [] -> dependenciesFile
             | package::rest ->
                 let commonRestrictions =
                     package.Settings.FrameworkRestrictions
-                    |> List.filter (fun r -> rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions |> List.contains r))
+                    |> getRestrictionList
+                    |> List.filter (fun r -> rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions |> getRestrictionList |> List.contains r))
 
                 match commonRestrictions with
                 | [] -> dependenciesFile
@@ -529,11 +542,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,commonRestrictions)
                     group.Packages
                      |> List.fold (fun (d:DependenciesFile) package ->
-                            let oldRestrictions = package.Settings.FrameworkRestrictions
+                            let oldRestrictions = package.Settings.FrameworkRestrictions |> getRestrictionList
                             let newRestrictions = oldRestrictions |> List.filter (fun r -> commonRestrictions |> List.contains r |> not)
                             if oldRestrictions = newRestrictions then d else
                             let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
-                            d.Add(group.Name,package.Name,package.VersionRequirement.ToString(),{ package.Settings with FrameworkRestrictions = newRestrictions })) newDependenciesFile
+                            d.Add(group.Name,package.Name,package.VersionRequirement.ToString(),{ package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions })) newDependenciesFile
 
         this.Groups
         |> Seq.map (fun kv -> kv.Value)
@@ -602,7 +615,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         |> Map.map resolveGroup 
 
 
-    member private this.AddFrameworkRestriction(groupName, frameworkRestrictions:FrameworkRestrictions) =
+    member private this.AddFrameworkRestriction(groupName, frameworkRestrictions:FrameworkRestriction list) =
         if List.isEmpty frameworkRestrictions then this else
         let restrictionString = sprintf "framework %s" (String.Join(", ",frameworkRestrictions))
 

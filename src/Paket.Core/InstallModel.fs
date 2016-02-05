@@ -156,6 +156,8 @@ module InstallModel =
         getFileFolders target installModel.TargetsFileFolders 
             (function Reference.TargetsFile targetsFile -> Some targetsFile | _ -> None)
 
+    let hasReferences (installModel:InstallModel) = List.isEmpty installModel.ReferenceFileFolders |> not
+
     let getPlatformReferences frameworkIdentifier installModel = 
         getLibReferences (SinglePlatform frameworkIdentifier) installModel
 
@@ -234,9 +236,9 @@ module InstallModel =
             TargetsFileFolders = addFileToFolder path file installModel.TargetsFileFolders InstallFiles.addTargetsFile
         }
 
-    let addFrameworkAssemblyReference (installModel:InstallModel) (reference:FrameworkAssemblyReference)  : InstallModel =
+    let addFrameworkAssemblyReference (installModel:InstallModel) (reference:FrameworkAssemblyReference) : InstallModel =
         let referenceApplies (folder : LibFolder) =
-            match reference.FrameworkRestrictions with
+            match reference.FrameworkRestrictions |> getRestrictionList with
             | [] -> true
             | restrictions ->
                 restrictions
@@ -298,7 +300,7 @@ module InstallModel =
                 mapFiles (fun files -> { files with References = Set.filter f files.References }) model)
                 installModel
 
-    let applyFrameworkRestrictions (restrictions:FrameworkRestrictions) (installModel:InstallModel) =
+    let applyFrameworkRestrictions (restrictions:FrameworkRestriction list) (installModel:InstallModel) =
         match restrictions with
         | [] -> installModel
         | restrictions ->
@@ -358,7 +360,7 @@ type InstallModel with
 
     member this.MapFolders mapfn = InstallModel.mapFolders mapfn this
 
-    member this.MapFiles mapfn = InstallModel.mapFiles mapfn this  
+    member this.MapFiles mapfn = InstallModel.mapFiles mapfn this
 
     member this.GetLibReferences target = InstallModel.getLibReferences target this 
 
@@ -376,6 +378,8 @@ type InstallModel with
 
     member this.AddLibReferences (libs, references) = InstallModel.addLibReferences libs references this
 
+    member this.HasLibReferences () = InstallModel.hasReferences this
+
     member this.AddReferences libs = InstallModel.addLibReferences libs NuspecReferences.All this
 
     member this.AddAnalyzerFiles analyzerFiles = InstallModel.addAnalyzerFiles analyzerFiles this
@@ -384,7 +388,7 @@ type InstallModel with
 
     member this.AddTargetsFiles targetsFiles = InstallModel.addTargetsFiles targetsFiles this
 
-    member this.AddPackageFile (path, file, references) = InstallModel.addPackageFile path file references this    
+    member this.AddPackageFile (path, file, references) = InstallModel.addPackageFile path file references this
     
     member this.AddFrameworkAssemblyReference reference = InstallModel.addFrameworkAssemblyReference this reference 
 
@@ -398,5 +402,5 @@ type InstallModel with
 
     member this.RemoveIfCompletelyEmpty() = InstallModel.removeIfCompletelyEmpty this
     
-    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestrictions, libs, targetsFiles, analyzerFiles, nuspec : Nuspec) = 
+    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestriction list, libs, targetsFiles, analyzerFiles, nuspec : Nuspec) = 
         InstallModel.createFromLibs packageName packageVersion frameworkRestrictions libs targetsFiles analyzerFiles nuspec 

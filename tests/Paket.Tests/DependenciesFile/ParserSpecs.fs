@@ -698,7 +698,7 @@ let ``should read config with local source``() =
 
     let p = cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun x-> x.Name = PackageName "Nancy.Owin")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "0.22.2"))
-    p.Settings.FrameworkRestrictions |> shouldEqual []
+    p.Settings.FrameworkRestrictions |> getRestrictionList |> shouldEqual []
 
 
 [<Test>]
@@ -719,7 +719,7 @@ let ``should read config with single framework restriction``() =
 
     let p = cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.Settings.FrameworkRestrictions |> getRestrictionList |> shouldEqual [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
     p.Settings.ImportTargets |> shouldEqual None
 
 
@@ -732,7 +732,7 @@ let ``should read config with framework restriction``() =
 
     let p = cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
+    p.Settings.FrameworkRestrictions |> getRestrictionList |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))]
     p.Settings.ImportTargets |> shouldEqual None
     p.Settings.CopyLocal |> shouldEqual None
 
@@ -745,7 +745,7 @@ let ``should read config with no targets import``() =
 
     let p = cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.Settings.FrameworkRestrictions |> shouldEqual []
+    p.Settings.FrameworkRestrictions |> getRestrictionList |> shouldEqual []
     p.Settings.ImportTargets |> shouldEqual (Some false)
     p.Settings.CopyLocal |> shouldEqual (Some false)
     p.Settings.OmitContent |> shouldEqual None
@@ -759,7 +759,7 @@ let ``should read config with content none``() =
 
     let p = cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.Settings.FrameworkRestrictions |> shouldEqual []
+    p.Settings.FrameworkRestrictions  |> getRestrictionList |> shouldEqual []
     p.Settings.ImportTargets |> shouldEqual None
     p.Settings.CopyLocal |> shouldEqual (Some false)
     p.Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
@@ -1076,6 +1076,7 @@ let ``should read config with target framework``() =
     let cfg = DependenciesFile.FromCode(configTargetFramework)
 
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
+    |> getRestrictionList
     |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))]
 
 [<Test>]

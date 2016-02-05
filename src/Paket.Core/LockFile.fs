@@ -48,9 +48,9 @@ module LockFileSerializer =
         | Some condition -> yield "CONDITION: " + condition.ToUpper()
         | None -> ()
 
-        match options.Settings.FrameworkRestrictions with
+        match options.Settings.FrameworkRestrictions |> getRestrictionList with
         | [] -> ()
-        | _  -> yield "FRAMEWORK: " + (String.Join(", ",options.Settings.FrameworkRestrictions)).ToUpper()]
+        | list  -> yield "FRAMEWORK: " + (String.Join(", ",list)).ToUpper()]
 
     /// [omit]
     let serializePackages options (resolved : PackageResolution) = 
@@ -86,7 +86,7 @@ module LockFileSerializer =
 
                       let settings =
                         if package.Settings.FrameworkRestrictions = options.Settings.FrameworkRestrictions then
-                            { package.Settings with FrameworkRestrictions = [] }
+                            { package.Settings with FrameworkRestrictions = FrameworkRestrictionList [] }
                         else
                             package.Settings
                       let s = settings.ToString()
@@ -101,8 +101,8 @@ module LockFileSerializer =
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
 
-                          let restrictions = filterRestrictions options.Settings.FrameworkRestrictions restrictions
-                          if List.isEmpty restrictions || restrictions = options.Settings.FrameworkRestrictions then
+                          let restrictions = filterRestrictions options.Settings.FrameworkRestrictions restrictions |> getRestrictionList
+                          if List.isEmpty restrictions || restrictions = getRestrictionList options.Settings.FrameworkRestrictions then
                             yield sprintf "      %O %s" name versionStr
                           else
                             yield sprintf "      %O %s - framework: %s" name versionStr (String.Join(", ",restrictions))]
@@ -228,7 +228,7 @@ module LockFileParser =
             InstallOption(Redirects(setting))
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
-        | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(trimmed.Trim() |> Requirements.parseRestrictions))
+        | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(FrameworkRestrictionList (trimmed.Trim() |> Requirements.parseRestrictions)))
         | _, String.StartsWith "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
         | _, String.StartsWith "CONTENT:" trimmed -> 
             let setting =

@@ -123,7 +123,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependencies : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -207,13 +207,12 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
         |> List.fold (fun templatefile file -> addFile (toFile config platform file) targetDir templatefile) withDeps
 
     let lockFile = 
-        dependencies.FindLockfile().FullName
+        dependenciesFile.FindLockfile().FullName
         |> LockFile.LoadFrom
 
     let allReferences = 
         let getPackages proj = 
-            let projFileInfo = FileInfo proj.FileName
-            match ProjectFile.FindReferencesFile projFileInfo with
+            match ProjectFile.FindReferencesFile (FileInfo proj.FileName) with
             | Some f -> 
                 let refFile = ReferencesFile.FromFile f
                 refFile.Groups
@@ -225,25 +224,18 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
             for proj in project.GetRecursiveInterProjectDependencies |> Seq.filter ((<>) project) do
                 let projFileInfo = FileInfo proj.FileName
                 match ProjectFile.FindTemplatesFile projFileInfo with
-                | Some templateFileName ->
-                    if TemplateFile.IsProjectType templateFileName then
-                        let templateFile = TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq)
-                        match templateFile.Contents with
-                        | CompleteInfo(core, optional) ->
-                            yield! getPackages proj
-                        | ProjectInfo(core, optional) ->
-                            let name = 
-                                match core.Id with
-                                | Some name -> name
-                                | None -> proj.GetAssemblyName().Replace(".dll","").Replace(".exe","")
-                            let settings : PackageInstallSettings = 
-                                { Name = PackageName name
-                                  Settings = InstallSettings.Default }
-                            yield None, settings
-                    else
+                | Some templateFileName when TemplateFile.IsProjectType templateFileName ->
+                    match TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq).Contents with
+                    | CompleteInfo(core, optional) ->
                         yield! getPackages proj
-                | None ->
-                    yield! getPackages proj
+                    | ProjectInfo(core, optional) ->
+                        let name = 
+                            match core.Id with
+                            | Some name -> name
+                            | None -> proj.GetAssemblyName().Replace(".dll","").Replace(".exe","")
+                            
+                        yield None, { Name = PackageName name; Settings = InstallSettings.Default }
+                | _ -> yield! getPackages proj
 
          yield! getPackages project]
     
@@ -265,7 +257,7 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                         match info with
                         | None -> true
                         | Some rp ->
-                            let nuspec = Nuspec.Load(dependencies.RootPath,groupName,rp.Version,defaultArg rp.Settings.IncludeVersionInPath false,np.Name)
+                            let nuspec = Nuspec.Load(dependenciesFile.RootPath,groupName,rp.Version,defaultArg rp.Settings.IncludeVersionInPath false,np.Name)
                             not nuspec.IsDevelopmentDependency
                     with
                     | _ -> true)
@@ -273,32 +265,71 @@ let findDependencies (dependencies : DependenciesFile) config platform (template
                 match group with
                 | None ->
                     match version with
-                    | Some v -> np.Name,VersionRequirement.Parse (v.ToString())
-                    | None -> np.Name,VersionRequirement.AllReleases
+                    | Some v -> 
+                        np.Name,VersionRequirement.Parse (v.ToString())
+                    | None -> 
+                        if minimumFromLockFile then
+                            let group =
+                                lockFile.GetDependencyLookupTable()
+                                |> Seq.filter (fun m -> snd m.Key = np.Name)
+                                |> Seq.map (fun m -> m.Key)
+                                |> Seq.head
+                                |> fst
+                                |> lockFile.GetGroup
+
+                            let lockedVersion = 
+                                match Map.tryFind np.Name group.Resolution with
+                                | Some resolvedPackage -> VersionRequirement(GreaterThan resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version)
+                                | None -> VersionRequirement.AllReleases
+
+                            np.Name,lockedVersion
+                        else
+                            np.Name,VersionRequirement.AllReleases
                 | Some groupName ->
                     let dependencyVersionRequirement =
                         if not lockDependencies then
-                            match dependencies.Groups |> Map.tryFind groupName with
+                            match dependenciesFile.Groups |> Map.tryFind groupName with
                             | None -> None
                             | Some group ->
-                                let deps = 
-                                    group.Packages 
-                                    |> Seq.map (fun p -> p.Name, p.VersionRequirement)
-                                    |> Map.ofSeq
-
-                                Map.tryFind np.Name deps
-                                |> function
-                                    | Some direct -> Some direct
-                                    | None ->
+                                match List.tryFind (fun r -> r.Name = np.Name) group.Packages with
+                                | Some requirement -> 
+                                    if minimumFromLockFile then
                                         match lockFile.Groups |> Map.tryFind groupName with
-                                        | None -> None
+                                        | None -> Some requirement.VersionRequirement
                                         | Some group ->
-                                            // If it's a transient dependency, try to
-                                            // find it in `paket.lock` and set min version
-                                            // to current locked version
-                                            group.Resolution
-                                            |> Map.tryFind np.Name
-                                            |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, getPreReleaseStatus transient.Version))
+                                            match Map.tryFind np.Name group.Resolution with
+                                            | Some resolvedPackage -> 
+                                                let pre = getPreReleaseStatus resolvedPackage.Version
+                                                match requirement.VersionRequirement.Range with 
+                                                | OverrideAll v -> 
+                                                    if v <> resolvedPackage.Version then
+                                                        failwithf "Versions in %s and %s are not identical for package %O." lockFile.FileName dependenciesFile.FileName np.Name
+                                                    Some(VersionRequirement(Specific resolvedPackage.Version,pre))
+                                                | Specific v -> 
+                                                    if v <> resolvedPackage.Version then
+                                                        failwithf "Versions in %s and %s are not identical for package %O." lockFile.FileName dependenciesFile.FileName np.Name
+                                                    Some(VersionRequirement(Specific resolvedPackage.Version,pre))
+                                                | Maximum v ->
+                                                    if v = resolvedPackage.Version then
+                                                        Some(VersionRequirement(Specific resolvedPackage.Version,pre))
+                                                    else
+                                                        Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v,VersionRangeBound.Including),pre))
+                                                | Range(lb,v,v2,ub) ->
+                                                    Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v2,ub),pre))
+                                                | _ -> Some(VersionRequirement(Minimum resolvedPackage.Version,pre))
+                                            | None -> Some requirement.VersionRequirement
+                                    else
+                                        Some requirement.VersionRequirement
+                                | None ->
+                                    match lockFile.Groups |> Map.tryFind groupName with
+                                    | None -> None
+                                    | Some group ->
+                                        // If it's a transient dependency, try to
+                                        // find it in `paket.lock` and set min version
+                                        // to current locked version
+                                        group.Resolution
+                                        |> Map.tryFind np.Name
+                                        |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, getPreReleaseStatus transient.Version))
                             else
                                 match lockFile.Groups |> Map.tryFind groupName with
                                 | None -> None

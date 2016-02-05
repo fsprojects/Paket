@@ -13,7 +13,7 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
     let name,dependencies = 
         graph
         |> Seq.filter (fun (p, v, _) -> (PackageName p) = package && SemVer.Parse v = version)
-        |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y) -> PackageName x,y,[]))
+        |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y) -> PackageName x,y,FrameworkRestrictionList []))
         |> Seq.head
 
     { Name = name
@@ -52,7 +52,7 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  ResolverStrategyForTransitives = Some ResolverStrategy.Max })
         |> Set.ofList
 
-    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NuGetV2Source "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, None, None, [], packages, UpdateMode.UpdateAll)
+    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NuGetV2Source "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, None, None, FrameworkRestrictionList [], packages, UpdateMode.UpdateAll)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 

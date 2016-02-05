@@ -199,13 +199,25 @@ module ProjectFile =
             | _ -> None
 
     /// Finds all project files
-    let findAllProjects folder = 
+    let findAllProjects folder =
+        let packagesPath = Path.Combine(folder,Constants.PackagesFolderName) |> normalizePath
+        let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
+
         let findAllFiles (folder, pattern) = 
             let rec search (di:DirectoryInfo) = 
                 try
                     let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
                     di.GetDirectories()
-                    |> Array.filter (fun di -> try Path.Combine(di.FullName, Constants.DependenciesFileName) |> File.Exists |> not with | _ -> false)
+                    |> Array.filter (fun di ->
+                        try 
+                            let path = di.FullName |> normalizePath
+                            if path = packagesPath then false else
+                            if path = paketPath then false else
+                            Path.Combine(path, Constants.DependenciesFileName) 
+                            |> File.Exists 
+                            |> not 
+                        with 
+                        | _ -> false)
                     |> Array.collect search
                     |> Array.append files
                 with
@@ -225,11 +237,6 @@ module ProjectFile =
         let node = createNode name project
         node.InnerText <- text
         node
-
-
-
-//    let createChildNode name text project =
-//        project |> addChild (createNodeSet name text project)
 
     open System.Text
 
@@ -845,11 +852,21 @@ module ProjectFile =
         while List.exists (fun x -> deleteIfEmpty x project) ["ItemGroup";"When";"Otherwise";"Choose"] do
             ()
 
+
+    let getTargetFrameworkIdentifier (project:ProjectFile) = getProperty "TargetFrameworkIdentifier" project
+
+    let getTargetFrameworkProfile (project:ProjectFile) = getProperty "TargetFrameworkProfile" project
+
+    let getTargetFramework (project:ProjectFile) = 
+        match getProperty "TargetFrameworkVersion" project with
+        | None -> None
+        | Some v -> FrameworkDetection.Extract(v.Replace("v","net"))
+
     let updateReferences
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) hard (project:ProjectFile) =
         removePaketNodes project
-        
+
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.map (fun kv -> 
@@ -858,8 +875,16 @@ module ProjectFile =
             let installSettings = snd usedPackages.[kv.Key]
             let projectModel =
                 (snd kv.Value)
-                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions)
+                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions|> getRestrictionList)
                     .RemoveIfCompletelyEmpty()
+            
+            match getTargetFramework project with 
+            | Some targetFramework ->
+                if projectModel.GetLibReferences targetFramework |> Seq.isEmpty then
+                    if projectModel.HasLibReferences() then
+                        traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
+                            (snd kv.Key) targetFramework project.FileName
+            | None -> ()
 
             let copyLocal = defaultArg installSettings.CopyLocal true
             let importTargets = defaultArg installSettings.ImportTargets true
@@ -960,7 +985,7 @@ module ProjectFile =
 
               RelativePath = path.Replace("/","\\")
               Name = forceGetInnerText node "Name"
-              GUID =  forceGetInnerText node "Project" |> Guid.Parse }]
+              GUID = forceGetInnerText node "Project" |> Guid.Parse }]
 
     let replaceNuGetPackagesFile project =
         let noneAndContentNodes = 
@@ -972,7 +997,10 @@ module ProjectFile =
         | Some nugetNode ->
             match noneAndContentNodes |> List.filter (withAttributeValue "Include" Constants.ReferencesFile) with 
             | [_] -> nugetNode.ParentNode.RemoveChild nugetNode |> ignore
-            | [] -> nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
+            | [] -> 
+                for c in nugetNode.ChildNodes do
+                    nugetNode.RemoveChild c |> ignore
+                nugetNode.Attributes.["Include"].Value <- Constants.ReferencesFile
             | _::_ -> failwithf "multiple %s nodes in project file %s" Constants.ReferencesFile project.FileName
 
     let removeNuGetTargetsEntries project =
@@ -1036,11 +1064,7 @@ module ProjectFile =
                 | _        -> ProjectOutputType.Library }
         |> Seq.head
 
-    let getTargetFrameworkIdentifier (project:ProjectFile) = getProperty "TargetFrameworkIdentifier" project
-
-    let getTargetFrameworkProfile (project:ProjectFile) = getProperty "TargetFrameworkProfile" project
-
-    let getTargetProfile (project:ProjectFile)  =  
+    let getTargetProfile (project:ProjectFile) =
         match getTargetFrameworkProfile project with
         | Some profile when profile = "Client" ->
             SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)
@@ -1305,6 +1329,8 @@ type ProjectFile with
     member this.OutputType =  ProjectFile.outputType this
 
     member this.GetTargetFrameworkIdentifier () =  ProjectFile.getTargetFrameworkIdentifier this
+
+    member this.GetTargetFramework () =  ProjectFile.getTargetFramework this
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
 

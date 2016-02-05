@@ -71,6 +71,11 @@ In addition to this the switch `include-referenced-projects` instructs Paket to 
 2. When combined with the [symbols switch](paket-pack.html#Symbol-Packages), it will also include the source code of the referenced projects.  Also recursively.
 3. Any projects that are encountered in this search that have their own project template are ignored.
 
+### Version ranges
+
+By default Paket uses the specified version ranges from the [`paket.dependencies` file][depfile] as version ranges for dependencies of the new NuGet package.
+by using the `minimum-from-lock-file` parameter the dependencies of the generated NuGet will use the versions from the [`paket.lock` file][lockfile].
+
   [lockfile]: lock-file.html
   [depfile]: dependencies-file.html
   [reffile]: references-files.html

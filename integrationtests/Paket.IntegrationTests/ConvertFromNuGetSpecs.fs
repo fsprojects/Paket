@@ -44,16 +44,22 @@ let ``#1225 should convert simple C# project with non-matching framework restric
     requirement.Name |> shouldEqual (PackageName "Castle.Core")
     requirement.VersionRequirement.ToString() |> shouldEqual "3.3.3"
     requirement.ResolverStrategyForTransitives |> shouldEqual None
-    requirement.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))]
+    requirement.Settings.FrameworkRestrictions  |> getRestrictionList |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))]
 
     let requirement2 = depsFile.GetGroup(Constants.MainDependencyGroup).Packages.Tail.Head
     requirement2.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     requirement2.VersionRequirement.ToString() |> shouldEqual "7.0.1"
     requirement2.ResolverStrategyForTransitives |> shouldEqual None
-    requirement2.Settings.FrameworkRestrictions |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))]
+    requirement2.Settings.FrameworkRestrictions  |> getRestrictionList |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))]
+
 [<Test>]
 let ``#1217 should replace packages.config files in project``() = 
+    let originalProjectFile = ProjectFile.loadFromFile(Path.Combine(originalScenarioPath "i001217-convert-simple-project", "ClassLibrary1", "ClassLibrary1.csprojtemplate"))
+    originalProjectFile.Document.OuterXml.Contains("packages.config") |> shouldEqual true
+    originalProjectFile.Document.OuterXml.Contains("paket.references") |> shouldEqual false
+
     paket "convert-from-nuget" "i001217-convert-simple-project" |> ignore
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001217-convert-simple-project","paket.lock"))
     let projectFile = ProjectFile.loadFromFile(Path.Combine(scenarioTempPath "i001217-convert-simple-project", "ClassLibrary1", "ClassLibrary1.csproj"))
     projectFile.Document.OuterXml.Contains("packages.config") |> shouldEqual false
+    projectFile.Document.OuterXml.Contains("paket.references") |> shouldEqual true

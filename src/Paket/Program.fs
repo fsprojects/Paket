@@ -226,6 +226,7 @@ let pack (results : ParseResults<_>) =
                       excludedTemplates = results.GetResults <@ PackArgs.ExcludedTemplate @>,
                       workingDir = Environment.CurrentDirectory,
                       lockDependencies = results.Contains <@ PackArgs.LockDependencies @>,
+                      minimumFromLockFile = results.Contains <@ PackArgs.LockDependenciesToMinimum @>,
                       symbols = results.Contains <@ PackArgs.Symbols @>,
                       includeReferencedProjects = results.Contains <@ PackArgs.IncludeReferencedProjects @>,
                       ?projectUrl = results.TryGetResult <@ PackArgs.ProjectUrl @>)

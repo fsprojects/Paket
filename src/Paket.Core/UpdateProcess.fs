@@ -157,13 +157,35 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
     
     LockFile(lockFile.FileName, groups),groupsToUpdate
 
+let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFile) =
+    let root = Path.GetDirectoryName dependenciesFile.FileName
+    let groups =
+        let targetFrameworks = lazy (
+            InstallProcess.findAllReferencesFiles root |> returnOrFail
+            |> List.map (fun (p,_) -> 
+                match p.GetTargetFramework() with
+                | Some fw -> Requirements.FrameworkRestriction.Exactly fw
+                | None -> failwithf "Could not detect target framework for project %s" p.FileName))
+
+        dependenciesFile.Groups
+        |> Map.map (fun groupName group -> 
+            let restrictions =
+                match group.Options.Settings.FrameworkRestrictions with
+                | Requirements.FrameworkRestrictions.AutoDetectFramework ->
+                    Requirements.FrameworkRestrictions.FrameworkRestrictionList (targetFrameworks.Force())
+                | x -> x
+
+            let settings = { group.Options.Settings with FrameworkRestrictions = restrictions }
+            let options = { group.Options with Settings = settings }
+            { group with Options = options })
+
+    DependenciesFile(dependenciesFile.FileName,groups,dependenciesFile.Lines)
+
 let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdateMode, force) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFile.FileName
     let oldLockFile,updateMode =
-        if (updateMode = UpdateMode.UpdateAll && semVerUpdateMode = SemVerUpdateMode.NoRestriction) ||
-           not lockFileName.Exists
-        then
-            LockFile.Parse(lockFileName.FullName, [||]),UpdateAll // Change updateMode to UpdateAll
+        if (updateMode = UpdateMode.UpdateAll && semVerUpdateMode = SemVerUpdateMode.NoRestriction) || not lockFileName.Exists then
+            LockFile.Parse(lockFileName.FullName, [||]),UpdateAll
         else
             LockFile.LoadFrom lockFileName.FullName,updateMode
 
@@ -175,7 +197,9 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdat
         | ResolverStrategy.Max -> List.sortDescending versions
         | ResolverStrategy.Min -> List.sort versions
 
-    let lockFile,updatedGroups = 
+    let dependenciesFile = detectProjectFrameworksForDependenciesFile dependenciesFile
+
+    let lockFile,updatedGroups =
         selectiveUpdate
             force 
             getSha1

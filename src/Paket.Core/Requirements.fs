@@ -32,9 +32,14 @@ type FrameworkRestriction =
         | Some r, Some r' -> Some(r.IsSameCategoryAs r')
         | _ -> None
 
-type FrameworkRestrictions = FrameworkRestriction list
+type FrameworkRestrictions = 
+| FrameworkRestrictionList of FrameworkRestriction list
+| AutoDetectFramework
 
-
+let getRestrictionList (frameworkRestrictions:FrameworkRestrictions) =
+    match frameworkRestrictions with 
+    | FrameworkRestrictionList list -> list 
+    | AutoDetectFramework -> failwith "The framework restriction could not be determined."
 
 let parseRestrictions(text:string) =
     let text =
@@ -150,7 +155,7 @@ let optimizeDependencies packages =
 
     let invertedRestrictions =
         let expanded =
-            [for (n,vr,r:FrameworkRestrictions) in packages do
+            [for (n,vr,r:FrameworkRestriction list) in packages do
                 for r' in r do
                     yield n,vr,r']
             |> List.groupBy (fun (_,_,r) -> r)
@@ -170,7 +175,7 @@ let optimizeDependencies packages =
         |> Option.map fst
 
     let emptyRestrictions =
-        [for (n,vr,r:FrameworkRestrictions) in packages do
+        [for (n,vr,r:FrameworkRestriction list) in packages do
             if r = [] then
                 yield n,vr]
         |> Set.ofList
@@ -206,6 +211,7 @@ let optimizeDependencies packages =
                 let restrictions = optimizeRestrictions restrictions'
 
                 yield name,versionRequirement,others @ restrictions]
+    |> List.map (fun (a,b,c) -> a,b, FrameworkRestrictionList c)
 
 let private combineSameCategoryOrPortableRestrictions x y =
     match x with
@@ -244,18 +250,23 @@ let combineRestrictions (x : FrameworkRestriction) y =
         combineSameCategoryOrPortableRestrictions x y
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
-    match list1,list2 with
-    | [],_ -> list2
-    | _,[] -> list1
-    | _ ->
-        [for x in list1 do
-            for y in list2 do
-                let c = combineRestrictions x y
-                if c <> [] then yield! c]
-    |> optimizeRestrictions
+    let list1 = getRestrictionList list1
+    let list2 = getRestrictionList list2
+
+    let optimized =
+        match list1, list2 with
+        | [],_ -> list2
+        | _,[] -> list1
+        | _ ->
+            [for x in list1 do
+                for y in list2 do
+                    let c = combineRestrictions x y
+                    if c <> [] then yield! c]
+        |> optimizeRestrictions
+    FrameworkRestrictionList optimized
 
 /// Get if a target should be considered with the specified restrictions
-let isTargetMatchingRestrictions (restrictions:FrameworkRestrictions) = function
+let isTargetMatchingRestrictions (restrictions:FrameworkRestriction list) = function
     | SinglePlatform pf ->
         restrictions
         |> List.exists (fun restriction ->
@@ -272,7 +283,7 @@ let isTargetMatchingRestrictions (restrictions:FrameworkRestrictions) = function
                 | _ -> false)
 
 /// Get all targets that should be considered with the specified restrictions
-let applyRestrictionsToTargets (restrictions:FrameworkRestrictions) (targets: TargetProfile list) =
+let applyRestrictionsToTargets (restrictions:FrameworkRestriction list) (targets: TargetProfile list) =
     let result = targets |> List.filter (isTargetMatchingRestrictions restrictions)
     result
 
@@ -299,7 +310,7 @@ type InstallSettings =
     static member Default =
         { CopyLocal = None
           ImportTargets = None
-          FrameworkRestrictions = []
+          FrameworkRestrictions = FrameworkRestrictionList []
           IncludeVersionInPath = None
           ReferenceCondition = None
           CreateBindingRedirects = None
@@ -330,8 +341,9 @@ type InstallSettings =
               | Some Force -> yield "redirects: force"
               | None -> ()
               match this.FrameworkRestrictions with
-              | [] -> ()
-              | _  -> yield "framework: " + (String.Join(", ",this.FrameworkRestrictions))]
+              | FrameworkRestrictionList [] -> ()
+              | AutoDetectFramework -> ()
+              | FrameworkRestrictionList list -> yield "framework: " + (String.Join(", ",list))]
 
         let separator = if asLines then Environment.NewLine else ", "
         String.Join(separator,options)
@@ -359,8 +371,8 @@ type InstallSettings =
             | _ -> None
           FrameworkRestrictions =
             match kvPairs.TryGetValue "framework" with
-            | true, s -> parseRestrictions s
-            | _ -> []
+            | true, s -> FrameworkRestrictionList(parseRestrictions s)
+            | _ -> FrameworkRestrictionList []
           OmitContent =
             match kvPairs.TryGetValue "content" with
             | true, "none" -> Some ContentCopySettings.Omit 

@@ -136,7 +136,7 @@ let CreateInstallModel(root, groupName, sources, force, package) =
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
         let analyzerFiles = analyzerFiles |> Array.map (fun fi -> fi.FullName)
-        let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions, files, targetsFiles, analyzerFiles, nuspec)
+        let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions |> getRestrictionList, files, targetsFiles, analyzerFiles, nuspec)
         return (groupName,package.Name), (package,model)
     }
 
@@ -285,7 +285,6 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
 
     for project, referenceFile in projectsAndReferences do
         verbosefn "Installing to %s" project.FileName
-        
         let usedPackages =
             referenceFile.Groups
             |> Seq.map (fun kv ->

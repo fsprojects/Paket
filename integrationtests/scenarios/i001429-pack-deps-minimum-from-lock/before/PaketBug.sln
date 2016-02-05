@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaketBug", "PaketBug\PaketBug.csproj", "{5B41A984-0C88-41C7-8669-41D298D0E450}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaketBug2", "PaketBug2\PaketBug2.csproj", "{B9D30499-04AC-472E-BE88-38F8FBAC3B65}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B41A984-0C88-41C7-8669-41D298D0E450}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B41A984-0C88-41C7-8669-41D298D0E450}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B41A984-0C88-41C7-8669-41D298D0E450}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B41A984-0C88-41C7-8669-41D298D0E450}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9D30499-04AC-472E-BE88-38F8FBAC3B65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9D30499-04AC-472E-BE88-38F8FBAC3B65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9D30499-04AC-472E-BE88-38F8FBAC3B65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9D30499-04AC-472E-BE88-38F8FBAC3B65}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
