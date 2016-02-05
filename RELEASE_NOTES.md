@@ -1,3 +1,6 @@
+#### 2.49.4 - 05.02.2016
+* BUGFIX: Download of HTTP dependencies should delete folder before we unzip
+
 #### 2.49.3 - 04.02.2016
 * BUGFIX: Do not touch project files in packages folder - https://github.com/fsprojects/Paket/issues/1455
 

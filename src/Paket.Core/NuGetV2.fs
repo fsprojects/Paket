@@ -22,6 +22,7 @@ open FSharp.Polyfill
 let rec private followODataLink auth url = 
     async {
         let! raw = getFromUrl(auth, url, acceptXml)
+        if String.IsNullOrWhiteSpace raw then return [||] else
         let doc = XmlDocument()
         doc.LoadXml raw
         let feed = 
