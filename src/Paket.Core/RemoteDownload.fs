@@ -143,10 +143,6 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
             return depsFile }
 
 
-let ExtractZip(fileName : string, targetFolder) = 
-    Directory.CreateDirectory(targetFolder) |> ignore
-    ZipFile.ExtractToDirectory(fileName,targetFolder)
-
 let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
     let dir = new DirectoryInfo(sourceDirName)
     let dirs = dir.GetDirectories()
@@ -242,9 +238,9 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
         let downloadUrl = sprintf "https://github.com/%s/%s/archive/%s.zip" remoteFile.Owner remoteFile.Project remoteFile.Commit
         let authentication = auth remoteFile.AuthKey downloadUrl
+        CleanDir projectPath
         do! downloadFromUrl(authentication, downloadUrl) zipFile
-
-        ExtractZip(zipFile,projectPath)
+        ZipFile.ExtractToDirectory(zipFile,projectPath)
 
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
         DirectoryCopy(source,projectPath,true)
@@ -262,12 +258,13 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         tracefn "Downloading %O to %s" remoteFile destination
         let url = origin + remoteFile.Commit
         let authentication = auth remoteFile.AuthKey url
-        do! downloadFromUrl(authentication, url) destination
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
             let targetFolder = FileInfo(destination).Directory.FullName
-            ExtractZip(destination, targetFolder)
-        | _ -> ignore()
+            CleanDir targetFolder
+            do! downloadFromUrl(authentication, url) destination
+            ZipFile.ExtractToDirectory(destination, targetFolder)
+        | _ -> do! downloadFromUrl(authentication, url) destination
 }
 
 let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.ResolvedSourceFile list) =
