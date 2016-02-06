@@ -6,6 +6,7 @@ open Newtonsoft.Json.Linq
 open System.Text
 open System
 open System.IO
+open Paket
 
 
 type ProjectJsonProperties = {
@@ -16,7 +17,7 @@ type ProjectJsonProperties = {
       mutable AdditionalData: IDictionary<string, JToken>
     }
 
-type ProjectJsonProject(fileName:string,text:string) =
+type ProjectJsonFile(fileName:string,text:string) =
     
     let findPos (property:string) =
         let needle = sprintf "\"%s\"" property
@@ -38,6 +39,8 @@ type ProjectJsonProject(fileName:string,text:string) =
 
 
             start,!pos
+
+    member __.FileName = fileName
 
     member this.WithDependencies dependencies =
         let dependencies = 
@@ -74,14 +77,44 @@ type ProjectJsonProject(fileName:string,text:string) =
 
         sb.Append(text.Substring(endPos)) |> ignore
 
-        ProjectJsonProject(fileName,sb.ToString())
+        ProjectJsonFile(fileName,sb.ToString())
 
     override __.ToString() = text
+
+    /// Finds all project.json files
+    static member FindAllProjects folder =
+        let packagesPath = Path.Combine(folder,Constants.PackagesFolderName) |> normalizePath
+        let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
+
+        let findAllFiles (folder, pattern) = 
+            let rec search (di:DirectoryInfo) = 
+                try
+                    let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
+                    di.GetDirectories()
+                    |> Array.filter (fun di ->
+                        try 
+                            let path = di.FullName |> normalizePath
+                            if path = packagesPath then false else
+                            if path = paketPath then false else
+                            Path.Combine(path, Constants.DependenciesFileName) 
+                            |> File.Exists 
+                            |> not 
+                        with 
+                        | _ -> false)
+                    |> Array.collect search
+                    |> Array.append files
+                with
+                | _ -> Array.empty
+
+            search <| DirectoryInfo folder
+
+        findAllFiles(folder, "project.json")
+        |> Array.map (fun fi -> ProjectJsonFile.Load fi.FullName)
 
     member __.Save() =
         let old = File.ReadAllText fileName
         if text <> old then
             File.WriteAllText(fileName,text)
 
-    static member Load(fileName) =
-        ProjectJsonProject(fileName,File.ReadAllText fileName)
+    static member Load(fileName) : ProjectJsonFile =
+        ProjectJsonFile(fileName,File.ReadAllText fileName)

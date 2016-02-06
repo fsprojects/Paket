@@ -7,14 +7,16 @@ open NUnit.Framework
 open FsUnit
 open Paket.Domain
 open Paket.TestHelpers
+open Paket.InstallProcess
 
 let dummyDir = System.IO.DirectoryInfo("C:/")
 let dummyProjectFile = 
-    { FileName = ""
-      OriginalText = ""
-      Document = null
-      ProjectNode = null
-      Language = ProjectLanguage.Unknown }
+    ProjectType.Project
+        { FileName = ""
+          OriginalText = ""
+          Document = null
+          ProjectNode = null
+          Language = ProjectLanguage.Unknown }
 
 let lockFile1 = """
 NUGET

@@ -4,12 +4,13 @@ open System
 open System.IO
 open Logging
 open Paket.Domain
+open Paket.InstallProcess
 open Chessie.ErrorHandling
 
 let private findReferencesFor groupName package (lockFile: LockFile) projects = trial {
     let! referencedIn =
         projects
-        |> Seq.map (fun (project : ProjectFile, referencesFile) -> trial {
+        |> Seq.map (fun (project : ProjectType, referencesFile) -> trial {
             let! installedPackages = lockFile.GetPackageHullSafe(referencesFile,groupName)
 
             let referenced =

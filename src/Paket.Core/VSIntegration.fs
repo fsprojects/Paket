@@ -6,21 +6,25 @@ open System
 open Chessie.ErrorHandling
 open Domain
 open Releases
+open InstallProcess
 
 /// Activates the Visual Studio Nuget autorestore feature in all projects
 let TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
 
-    trial {         
+    trial {
         do! downloadLatestBootstrapperAndTargets environment
         let paketTargetsPath = Path.Combine(exeDir, "paket.targets")
 
         environment.Projects
         |> List.map fst
         |> List.iter (fun project ->
-            let relativePath = createRelativePath project.FileName paketTargetsPath
-            project.AddImportForPaketTargets(relativePath)
-            project.Save()
+            match project with
+            | ProjectType.Project project -> 
+                let relativePath = createRelativePath project.FileName paketTargetsPath
+                project.AddImportForPaketTargets(relativePath)
+                project.Save()
+            | _ -> ()
         )
     } 
 
@@ -35,8 +39,11 @@ let TurnOffAutoRestore environment =
         environment.Projects
         |> List.map fst
         |> List.iter (fun project ->
-            let relativePath = createRelativePath project.FileName paketTargetsPath
-            project.RemoveImportForPaketTargets(relativePath)
-            project.Save()
+            match project with
+            | ProjectType.Project project -> 
+                let relativePath = createRelativePath project.FileName paketTargetsPath
+                project.RemoveImportForPaketTargets(relativePath)
+                project.Save()
+            | _ -> ()
         )
     }

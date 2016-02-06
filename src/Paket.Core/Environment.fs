@@ -4,12 +4,13 @@ open System.IO
 
 open Chessie.ErrorHandling
 open Paket.Domain
+open InstallProcess
 
 type PaketEnv = {
     RootDirectory : DirectoryInfo
     DependenciesFile : DependenciesFile
     LockFile : option<LockFile>
-    Projects : list<ProjectFile * ReferencesFile>
+    Projects : list<ProjectType * ReferencesFile>
 }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]

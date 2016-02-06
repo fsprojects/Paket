@@ -12,6 +12,7 @@ open Paket.PackageSources
 open Paket.Requirements
 open Chessie.ErrorHandling
 open Paket.PackagesConfigFile
+open InstallProcess
 
 type CredsMigrationMode =
     | Encrypt
@@ -312,7 +313,7 @@ let convertProjects nugetEnv =
         project.ReplaceNuGetPackagesFile()
         project.RemoveNuGetTargetsEntries()
         project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
-        yield project, convertPackagesConfigToReferencesFile project.FileName packagesConfig]
+        yield ProjectType.Project project, convertPackagesConfigToReferencesFile project.FileName packagesConfig]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode

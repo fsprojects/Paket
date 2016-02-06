@@ -7,6 +7,7 @@ open Paket.PackageSources
 open System
 open System.IO
 open Chessie.ErrorHandling
+open InstallProcess
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
@@ -515,7 +516,12 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Finds all projects where the given package is referenced.
     member this.FindProjectsFor(group:string,package: string): ProjectFile list =
-        FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) |> this.Process
+        FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) 
+        |> this.Process
+        |> List.choose (fun p ->
+            match p with
+            | ProjectType.Project p -> Some p
+            | _ -> None)
 
     // Packs all paket.template files.
     member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?symbols, ?includeReferencedProjects, ?projectUrl) =

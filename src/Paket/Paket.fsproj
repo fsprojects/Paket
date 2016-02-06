@@ -51,6 +51,7 @@
     <StartArguments>pack -v output D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp\out</StartArguments>
     <StartArguments>pack output "out/nuget"  version  0.9.3 releaseNotes  "[LanguageExtensions][New] New Ensure methods with exception parameter." include-referenced-projects</StartArguments>
     <StartArguments>update</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>

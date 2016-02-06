@@ -8,6 +8,7 @@ open Paket.PackageResolver
 open System.Collections.Generic
 open Chessie.ErrorHandling
 open Paket.Logging
+open InstallProcess
 
 let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
     let allVersions = Dictionary<PackageName,(SemVerInfo * (PackageSources.PackageSource list)) list>()
@@ -163,9 +164,11 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
         let targetFrameworks = lazy (
             InstallProcess.findAllReferencesFiles root |> returnOrFail
             |> List.map (fun (p,_) -> 
-                match p.GetTargetFramework() with
-                | Some fw -> Requirements.FrameworkRestriction.Exactly fw
-                | None -> failwithf "Could not detect target framework for project %s" p.FileName))
+                match p with 
+                | ProjectType.Project p ->
+                    match p.GetTargetFramework() with
+                    | Some fw -> Requirements.FrameworkRestriction.Exactly fw
+                    | None -> failwithf "Could not detect target framework for project %s" p.FileName))
 
         dependenciesFile.Groups
         |> Map.map (fun groupName group -> 
