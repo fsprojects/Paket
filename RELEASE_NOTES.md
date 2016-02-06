@@ -1,3 +1,6 @@
+#### 2.49.6 - 06.02.2016
+* BUGFIX: Prevent race condition - https://github.com/fsprojects/Paket/issues/1460
+* 
 #### 2.49.5 - 05.02.2016
 * WORKAROUND: Don't use v3 getPackageDetails on myget
 
