@@ -114,6 +114,7 @@
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="LockFile.fs" />
     <Compile Include="TemplateFile.fs" />
+    <Compile Include="ProjectJsonFile.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="DependencyModel.fs" />
     <Compile Include="DependencyChangeDetection.fs" />
