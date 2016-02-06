@@ -41,7 +41,7 @@ let removed =
 [<Test>]
 let ``can remove dependencies from fresh project.json``() = 
 
-    let doc = ProjectJsonProject freshProject
+    let doc = ProjectJsonProject("",freshProject)
     let doc' = doc.WithDependencies []
     doc'.ToString() |> shouldEqual removed
     
@@ -51,7 +51,7 @@ let ``can add simple dependency to fresh project.json``() =
 
 
 
-    let doc = ProjectJsonProject removed
+    let doc = ProjectJsonProject("",removed)
     let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"]
     doc'.ToString() |> shouldEqual freshProject
     
@@ -66,8 +66,8 @@ let ``can add simple dependencies to fresh project.json``() =
     },
 
     "dependencies": {
-        "NETStandard.Library": "1.0.0-rc2-23727",
-        "a": "1.0.0"
+        "a": "1.0.0",
+        "NETStandard.Library": "1.0.0-rc2-23727"
     },
 
     "frameworks": {
@@ -75,7 +75,7 @@ let ``can add simple dependencies to fresh project.json``() =
     }
 }"""
 
-    let doc = ProjectJsonProject removed
+    let doc = ProjectJsonProject("",removed)
     let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
     doc'.ToString() |> shouldEqual expected
     
@@ -84,11 +84,11 @@ let ``can add simple dependencies to empty project.json``() =
 
     let expected =
         """{ "dependencies": {
-     "NETStandard.Library": "1.0.0-rc2-23727",
-     "a": "1.0.0"
+     "a": "1.0.0",
+     "NETStandard.Library": "1.0.0-rc2-23727"
  }}"""
 
-    let doc = ProjectJsonProject empty
+    let doc = ProjectJsonProject("",empty)
     let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
     doc'.ToString() |> shouldEqual expected
     

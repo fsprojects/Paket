@@ -5,6 +5,7 @@ open System.Collections.Generic
 open Newtonsoft.Json.Linq
 open System.Text
 open System
+open System.IO
 
 
 type ProjectJsonProperties = {
@@ -15,7 +16,7 @@ type ProjectJsonProperties = {
       mutable AdditionalData: IDictionary<string, JToken>
     }
 
-type ProjectJsonProject(text:string) =
+type ProjectJsonProject(fileName:string,text:string) =
     
     let findPos (property:string) =
         let needle = sprintf "\"%s\"" property
@@ -39,7 +40,11 @@ type ProjectJsonProject(text:string) =
             start,!pos
 
     member this.WithDependencies dependencies =
-        let dependencies = Map.ofSeq dependencies
+        let dependencies = 
+            dependencies 
+            |> Seq.toList
+            |> List.sortByDescending fst
+
         let start,endPos = findPos "dependencies"
         let getIndent() =
             let pos = ref start
@@ -53,15 +58,15 @@ type ProjectJsonProject(text:string) =
         sb.Append("\"dependencies\": ") |> ignore
 
         let deps =
-            if Map.isEmpty dependencies then
+            if List.isEmpty dependencies then
                 sb.Append "{ }"
             else
                 sb.AppendLine "{" |> ignore
                 let indent = "".PadLeft (max 2 (getIndent() + 3))
                 let i = ref 1
-                let n = dependencies.Count
-                for d in dependencies do
-                    let line = sprintf "\"%s\": \"%O\"%s" d.Key d.Value (if !i < n then "," else "")
+                let n = dependencies.Length
+                for name,version in dependencies do
+                    let line = sprintf "\"%s\": \"%O\"%s" name version (if !i < n then "," else "")
 
                     sb.AppendLine(indent + line) |> ignore
                     incr i
@@ -69,6 +74,14 @@ type ProjectJsonProject(text:string) =
 
         sb.Append(text.Substring(endPos)) |> ignore
 
-        ProjectJsonProject(sb.ToString())
+        ProjectJsonProject(fileName,sb.ToString())
 
     override __.ToString() = text
+
+    member __.Save() =
+        let old = File.ReadAllText fileName
+        if text <> old then
+            File.WriteAllText(fileName,text)
+
+    static member Load(fileName) =
+        ProjectJsonProject(fileName,File.ReadAllText fileName)
