@@ -133,22 +133,19 @@ let getSourceNodes (credentialsNode : XmlNode) source nodeType =
     |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
     |> Seq.toList
 
-let private sourceNodeCache = System.Collections.Generic.Dictionary<_,_>()
+let private sourceNodeCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 let private getCredentialsNode = lazy(getConfigNode "credentials" |> returnOrFail)
 
 /// Get the authentication from the authentication store for a specific source and validates against the url
 let GetAuthenticationForUrl (source : string) url =
     let sourceNodes =
-        match sourceNodeCache.TryGetValue source with
-        | true,credentials -> credentials
-        | _ ->
-            let sourceNodes =
-                if File.Exists Constants.PaketConfigFile |> not then [] else
-                let credentialsNode = getCredentialsNode.Force()
-                getSourceNodes credentialsNode source "credential" @  getSourceNodes credentialsNode source "token"
+        let add = fun key ->
+            if File.Exists Constants.PaketConfigFile |> not then [] else
+            let credentialsNode = getCredentialsNode.Force()
+            getSourceNodes credentialsNode key "credential" @  getSourceNodes credentialsNode key "token"
+        let update = fun _key (existing : XmlElement list) -> existing
 
-            sourceNodeCache.Add(source,sourceNodes)
-            sourceNodes
+        sourceNodeCache.AddOrUpdate(source, add, update)
 
     match sourceNodes with
     | sourceNode :: _ ->

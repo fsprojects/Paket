@@ -3,6 +3,9 @@
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 
+#### 2.49.6 - 06.02.2016
+* BUGFIX: Prevent race condition - https://github.com/fsprojects/Paket/issues/1460
+
 #### 2.49.5 - 05.02.2016
 * WORKAROUND: Don't use v3 getPackageDetails on myget
 

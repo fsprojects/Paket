@@ -6,19 +6,17 @@ open Paket.PackageResolver
 
 let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =
     let allTransitives groupName = lockFile.GetTransitiveDependencies groupName
-    let inline hasChanged groupName (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
-        
-        let isTransitive (packageName) = allTransitives groupName |> Seq.contains packageName
-        let settingsChanged =
+    let hasChanged groupName transitives (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
+        let settingsChanged() =
             if newRequirement.Settings <> originalPackage.Settings then
                 if newRequirement.Settings.FrameworkRestrictions <> originalPackage.Settings.FrameworkRestrictions then
-                  isTransitive originalPackage.Name |> not
+                    transitives |> Seq.contains originalPackage.Name |> not
                 else true
             else false
 
-        newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not || settingsChanged
+        newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not || settingsChanged()
 
-    let added groupName =
+    let added groupName transitives =
         match dependenciesFile.Groups |> Map.tryFind groupName with
         | None -> Set.empty
         | Some group ->
@@ -30,12 +28,12 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
                 | None -> true
                 | Some group ->
                     match group.Resolution.TryFind name with
-                    | Some p -> hasChanged groupName pr p
+                    | Some p -> hasChanged groupName transitives pr p
                     | _ -> true)
             |> Seq.map (fun (p,_) -> groupName,p)
             |> Set.ofSeq
     
-    let modified groupName = 
+    let modified groupName transitives = 
         let directMap =
             match dependenciesFile.Groups |> Map.tryFind groupName with
             | None -> Map.empty
@@ -47,7 +45,7 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
         [for t in lockFile.GetTopLevelDependencies(groupName) do
             let name = t.Key
             match directMap.TryFind name with
-            | Some pr -> if hasChanged groupName pr t.Value then yield groupName, name // Modified
+            | Some pr -> if hasChanged groupName transitives pr t.Value then yield groupName, name // Modified
             | _ -> yield groupName, name // Removed
         ]
         |> List.map lockFile.GetAllNormalizedDependenciesOf
@@ -61,8 +59,9 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
 
     groupNames
     |> Seq.map (fun groupName -> 
-            let added = added groupName 
-            let modified = modified groupName
+            let transitives = allTransitives groupName
+            let added = added groupName transitives
+            let modified = modified groupName transitives
             Set.union added modified)
     |> Seq.concat
     |> Set.ofSeq
