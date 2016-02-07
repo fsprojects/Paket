@@ -9,8 +9,9 @@ open Paket.Logging
 open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
+open InstallProcess
 
-let private merge buildConfig buildPlatform versionFromAssembly specificVersions projectFile templateFile = 
+let private merge buildConfig buildPlatform versionFromAssembly specificVersions (projectFile:ProjectType) templateFile = 
     let withVersion =
         match versionFromAssembly with
         | None -> templateFile
@@ -73,7 +74,7 @@ let private convertToNormal (symbols : bool) templateFile =
         let includePdbs = optional.IncludePdbs
         { templateFile with Contents = ProjectInfo(core, { optional with IncludePdbs = (if symbols then false else includePdbs) }) }
 
-let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) templateFile =
+let private convertToSymbols (projectFile : ProjectType) (includeReferencedProjects : bool) templateFile =
     let sourceFiles =
         let getTarget compileItem =
             let item = match compileItem.Link with
@@ -83,9 +84,11 @@ let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProje
             let tld = Path.GetFileName(compileItem.BaseDir)
             Path.Combine("src", tld, Path.GetFileName(Path.GetDirectoryName(Path.GetFullPath(item))))
 
-        projectFile.GetCompileItems(includeReferencedProjects)
-        |> Seq.map (fun c -> c.Include, getTarget c)
-        |> Seq.toList
+        match projectFile with
+        | ProjectType.Project projectFile ->
+            projectFile.GetCompileItems(includeReferencedProjects)
+            |> Seq.map (fun c -> c.Include, getTarget c)
+            |> Seq.toList
 
     match templateFile.Contents with
     | CompleteInfo(core, optional) ->
@@ -123,7 +126,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
     // load up project files and grab meta data
     let projectTemplates = 
         let getAllProjectsFiles workingDir =
-            ProjectFile.FindAllProjects workingDir
+            ProjectType.FindAllProjects workingDir
             |> Array.choose (fun projectFile ->
                 match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
                 | None -> None
@@ -147,7 +150,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
 
     // add dependencies
     let allTemplates =
-        let optWithSymbols projectFile templateFile =
+        let optWithSymbols (projectFile:ProjectType) templateFile =
             seq { yield (templateFile |> convertToNormal symbols); if symbols then yield templateFile |> convertToSymbols projectFile includeReferencedProjects }
 
         let convertRemainingTemplate fileName =
@@ -155,7 +158,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
             match templateFile with
             | { Contents = ProjectInfo(_) } -> 
                 let fi = FileInfo(fileName)
-                let allProjectFiles = ProjectFile.FindAllProjects(fi.Directory.FullName) |> Array.toList
+                let allProjectFiles = ProjectType.FindAllProjects(fi.Directory.FullName) |> Array.toList
 
                 match allProjectFiles with
                 | [ projectFile ] ->

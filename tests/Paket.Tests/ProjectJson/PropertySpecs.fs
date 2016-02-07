@@ -4,6 +4,7 @@ open Paket.ProjectJson
 open NUnit.Framework
 open FsUnit
 open System.Collections.Generic
+open Paket
 
 let freshProject =
         """{
@@ -49,7 +50,7 @@ let ``can remove dependencies from fresh project.json``() =
 let ``can add simple dependency to fresh project.json``() = 
     let doc = ProjectJsonFile("",removed)
     let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"]
-    doc'.ToString() |> shouldEqual freshProject
+    doc'.ToString() |> normalizeLineEndings |> shouldEqual (freshProject |> normalizeLineEndings)
     
 [<Test>]
 let ``can add simple dependencies to fresh project.json``() = 
@@ -73,7 +74,7 @@ let ``can add simple dependencies to fresh project.json``() =
 
     let doc = ProjectJsonFile("",removed)
     let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
-    doc'.ToString() |> shouldEqual expected
+    doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
     
 [<Test>]
 let ``can add simple dependencies to empty project.json``() = 
@@ -86,5 +87,5 @@ let ``can add simple dependencies to empty project.json``() =
 
     let doc = ProjectJsonFile("",empty)
     let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
-    doc'.ToString() |> shouldEqual expected
+    doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
     

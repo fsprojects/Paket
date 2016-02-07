@@ -181,54 +181,6 @@ module ProjectFile =
             None
 
 
-    let tryFindProject (projects: ProjectFile seq) projectName =
-        match projects |> Seq.tryFind (fun p -> nameWithoutExtension p = projectName || name p = projectName) with
-        | Some p -> Some p
-        | None ->
-            try
-                let fi = FileInfo (normalizePath (projectName.Trim().Trim([|'\"'|]))) // check if we can detect the path
-                let rec checkDir (dir:DirectoryInfo) = 
-                    match projects |> Seq.tryFind (fun p -> 
-                        String.equalsIgnoreCase ((FileInfo p.FileName).Directory.ToString()) (dir.ToString())) with
-                    | Some p -> Some p
-                    | None ->
-                        if isNull dir.Parent then None else
-                        checkDir dir.Parent
-                checkDir fi.Directory
-            with
-            | _ -> None
-
-    /// Finds all project files
-    let findAllProjects folder =
-        let packagesPath = Path.Combine(folder,Constants.PackagesFolderName) |> normalizePath
-        let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
-
-        let findAllFiles (folder, pattern) = 
-            let rec search (di:DirectoryInfo) = 
-                try
-                    let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
-                    di.GetDirectories()
-                    |> Array.filter (fun di ->
-                        try 
-                            let path = di.FullName |> normalizePath
-                            if path = packagesPath then false else
-                            if path = paketPath then false else
-                            Path.Combine(path, Constants.DependenciesFileName) 
-                            |> File.Exists 
-                            |> not 
-                        with 
-                        | _ -> false)
-                    |> Array.collect search
-                    |> Array.append files
-                with
-                | _ -> Array.empty
-
-            search <| DirectoryInfo folder
-
-        findAllFiles(folder, "*.*proj")
-        |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj")
-        |> Array.choose (fun fi -> tryLoad fi.FullName)
-
 
     let createNode name (project:ProjectFile) = 
         project.Document.CreateElement (name, Constants.ProjectDefaultNameSpace)
@@ -1269,9 +1221,6 @@ type ProjectFile with
 
     member this.GetCustomReferenceAndFrameworkNodes() = ProjectFile.getCustomReferenceAndFrameworkNodes this
 
-    /// Finds all project files
-    static member FindAllProjects folder =  ProjectFile.findAllProjects folder
-
     static member FindCorrespondingFile (projectInfo, correspondingFile) = ProjectFile.findCorrespondingFile projectInfo correspondingFile
 
     static member FindReferencesFile (projectInfo : FileInfo) = ProjectFile.findReferencesFile projectInfo 
@@ -1355,5 +1304,3 @@ type ProjectFile with
     static member LoadFromFile(fileName:string) =  ProjectFile.loadFromFile fileName
 
     static member TryLoad(fileName:string) = ProjectFile.tryLoad fileName
-
-    static member TryFindProject(projects: ProjectFile seq,projectName) = ProjectFile.tryFindProject projects projectName

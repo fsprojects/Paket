@@ -137,7 +137,7 @@ type NugetEnv =
     { RootDirectory : DirectoryInfo
       NuGetConfig : NugetConfig
       NuGetConfigFiles : list<FileInfo>
-      NuGetProjectFiles : list<ProjectFile * NugetPackagesConfig>
+      NuGetProjectFiles : list<ProjectType * NugetPackagesConfig>
       NuGetTargets : option<FileInfo>
       NuGetExe : option<FileInfo> }
 
@@ -178,7 +178,7 @@ module NugetEnv =
                 |> ok 
             with _ -> fail (NugetPackagesConfigParseError file)
 
-        ProjectFile.FindAllProjects rootDirectory.FullName 
+        ProjectType.FindAllProjects rootDirectory.FullName 
         |> Array.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), Constants.PackagesConfigFile))
         |> Array.filter (fun (p,packages) -> File.Exists packages)
         |> Array.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
@@ -310,10 +310,12 @@ let convertPackagesConfigToReferencesFile projectFileName packagesConfig =
 
 let convertProjects nugetEnv =
     [for project,packagesConfig in nugetEnv.NuGetProjectFiles do 
-        project.ReplaceNuGetPackagesFile()
-        project.RemoveNuGetTargetsEntries()
-        project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
-        yield ProjectType.Project project, convertPackagesConfigToReferencesFile project.FileName packagesConfig]
+        match project with
+        | ProjectType.Project project ->
+            project.ReplaceNuGetPackagesFile()
+            project.RemoveNuGetTargetsEntries()
+            project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
+            yield ProjectType.Project project, convertPackagesConfigToReferencesFile project.FileName packagesConfig]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
