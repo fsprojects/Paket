@@ -79,7 +79,7 @@ type ProjectJsonFile(fileName:string,text:string) =
                 let i = ref 1
                 let n = dependencies.Length
                 for name,version in dependencies do
-                    let line = sprintf "\"%O\": \"%O\"%s" name version (if !i < n then "," else "")
+                    let line = sprintf "\"%O\": \"[%O]\"%s" name version (if !i < n then "," else "")
 
                     sb.AppendLine(indent + line) |> ignore
                     incr i

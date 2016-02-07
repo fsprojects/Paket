@@ -14,7 +14,7 @@ let freshProject =
     },
 
     "dependencies": {
-        "NETStandard.Library": "1.0.0-rc2-23727"
+        "NETStandard.Library": "[1.0.0-rc2-23727]"
     },
 
     "frameworks": {
@@ -63,8 +63,8 @@ let ``can add simple dependencies to fresh project.json``() =
     },
 
     "dependencies": {
-        "a": "1.0.0",
-        "NETStandard.Library": "1.0.0-rc2-23727"
+        "a": "[1.0.0]",
+        "NETStandard.Library": "[1.0.0-rc2-23727]"
     },
 
     "frameworks": {
@@ -82,8 +82,8 @@ let ``can add simple dependencies to empty project.json``() =
     let expected =
         """{
     "dependencies": {
-        "a": "1.0.0",
-        "NETStandard.Library": "1.0.0-rc2-23727"
+        "a": "[1.0.0]",
+        "NETStandard.Library": "[1.0.0-rc2-23727]"
     }
 }"""
 
@@ -118,8 +118,8 @@ let ``can add simple dependencies to project.json without deps``() =
     },
 
     "dependencies": {
-        "a": "1.0.0",
-        "NETStandard.Library": "1.0.0-rc2-23727"
+        "a": "[1.0.0]",
+        "NETStandard.Library": "[1.0.0-rc2-23727]"
     }
 }
 """
