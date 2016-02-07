@@ -364,59 +364,69 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
     let lookup = lockFile.GetDependencyLookupTable()
 
     for project, referenceFile in projectsAndReferences do
-        match project with
-        | ProjectType.Project project ->
-            verbosefn "Installing to %s" project.FileName
-            let usedPackages =
-                referenceFile.Groups
-                |> Seq.map (fun kv ->
-                    kv.Value.NugetPackages
-                    |> Seq.map (fun ps ->
-                        let group = 
-                            match lockFile.Groups |> Map.tryFind kv.Key with
-                            | Some g -> g
-                            | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName kv.Key
+        verbosefn "Installing to %s" project.FileName
+        let usedPackages =
+            referenceFile.Groups
+            |> Seq.map (fun kv ->
+                kv.Value.NugetPackages
+                |> Seq.map (fun ps ->
+                    let group = 
+                        match lockFile.Groups |> Map.tryFind kv.Key with
+                        | Some g -> g
+                        | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName kv.Key
 
-                        let package = 
-                            match model |> Map.tryFind (kv.Key, ps.Name) with
-                            | Some (p,_) -> p
-                            | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %O." referenceFile.FileName ps.Name kv.Key
+                    let package = 
+                        match model |> Map.tryFind (kv.Key, ps.Name) with
+                        | Some (p,_) -> p
+                        | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %O." referenceFile.FileName ps.Name kv.Key
 
+                    let resolvedSettings = 
+                        [package.Settings; group.Options.Settings] 
+                        |> List.fold (+) ps.Settings
+                    (kv.Key,ps.Name), (package.Version,resolvedSettings)))
+            |> Seq.concat
+            |> Map.ofSeq
+
+        let usedPackages =
+            let d = ref usedPackages
+
+            /// we want to treat the settings from the references file through the computation so that it can be used as the base that 
+            /// the other settings modify. In this way we ensure that references files can override the dependencies file, which in turn overrides the lockfile.
+            let usedPackageDependencies = 
+                usedPackages 
+                |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
+                |> Seq.choose (fun (groupName,(_,parentSettings), dep) -> 
+                    let group = 
+                        match lockFile.Groups |> Map.tryFind groupName with
+                        | Some g -> g
+                        | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
+
+                    match group.Resolution |> Map.tryFind dep with
+                    | None -> None
+                    | Some p -> 
                         let resolvedSettings = 
-                            [package.Settings; group.Options.Settings] 
-                            |> List.fold (+) ps.Settings
-                        (kv.Key,ps.Name), (package.Version,resolvedSettings)))
-                |> Seq.concat
-                |> Map.ofSeq
+                            [p.Settings; group.Options.Settings] 
+                            |> List.fold (+) parentSettings
+                        Some ((groupName,p.Name), (p.Version,resolvedSettings)) )
 
-            let usedPackages =
-                let d = ref usedPackages
+            for key,settings in usedPackageDependencies do
+                if (!d).ContainsKey key |> not then
+                    d := Map.add key settings !d
 
-                /// we want to treat the settings from the references file through the computation so that it can be used as the base that 
-                /// the other settings modify. In this way we ensure that references files can override the dependencies file, which in turn overrides the lockfile.
-                let usedPackageDependencies = 
-                    usedPackages 
-                    |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
-                    |> Seq.choose (fun (groupName,(_,parentSettings), dep) -> 
-                        let group = 
-                            match lockFile.Groups |> Map.tryFind groupName with
-                            | Some g -> g
-                            | None -> failwithf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
+            !d
 
-                        match group.Resolution |> Map.tryFind dep with
-                        | None -> None
-                        | Some p -> 
-                            let resolvedSettings = 
-                                [p.Settings; group.Options.Settings] 
-                                |> List.fold (+) parentSettings
-                            Some ((groupName,p.Name), (p.Version,resolvedSettings)) )
+        match project with
+        | ProjectType.ProjectJson project ->
+            let deps = 
+                [for kv in usedPackages do
+                    let projectName = snd kv.Key
+                    let version = fst kv.Value
+                    yield projectName,version]
 
-                for key,settings in usedPackageDependencies do
-                    if (!d).ContainsKey key |> not then
-                      d := Map.add key settings !d
+            let project = project.WithDependencies deps
+            project.Save()
 
-                !d
-
+        | ProjectType.Project project ->
             project.UpdateReferences(model, usedPackages, options.Hard)
         
             Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)

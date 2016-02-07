@@ -80,12 +80,52 @@ let ``can add simple dependencies to fresh project.json``() =
 let ``can add simple dependencies to empty project.json``() = 
 
     let expected =
-        """{ "dependencies": {
-     "a": "1.0.0",
-     "NETStandard.Library": "1.0.0-rc2-23727"
- }}"""
+        """{
+    "dependencies": {
+        "a": "1.0.0",
+        "NETStandard.Library": "1.0.0-rc2-23727"
+    }
+}"""
 
     let doc = ProjectJsonFile("",empty)
     let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
     doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
+
+[<Test>]
+let ``can add simple dependencies to project.json without deps``() = 
+
+    let original = """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "frameworks": {
+        "dnxcore50": { }
+    }
+}
+"""
+
+    let expected =
+        """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "frameworks": {
+        "dnxcore50": { }
+    },
+
+    "dependencies": {
+        "a": "1.0.0",
+        "NETStandard.Library": "1.0.0-rc2-23727"
+    }
+}
+"""
+
+    let doc = ProjectJsonFile("",original)
+    let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
+    doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
+    
     

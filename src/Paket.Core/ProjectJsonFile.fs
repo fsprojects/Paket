@@ -7,7 +7,7 @@ open System.Text
 open System
 open System.IO
 open Paket
-
+open System
 
 type ProjectJsonProperties = {
       [<JsonProperty("dependencies")>]
@@ -19,10 +19,20 @@ type ProjectJsonProperties = {
 
 type ProjectJsonFile(fileName:string,text:string) =
     
-    let findPos (property:string) =
+    let rec findPos (property:string) (text:string) =
         let needle = sprintf "\"%s\"" property
         match text.IndexOf needle with
-        | -1 -> text.Length - 1,text.Length - 1
+        | -1 -> 
+            if String.IsNullOrWhiteSpace text then findPos property (sprintf "{%s    \"%s\": { }%s}" Environment.NewLine property Environment.NewLine) else
+            let i = ref (text.Length - 1)
+            let n = ref 0
+            while !i > 0 && !n < 2 do
+                if text.[!i] = '}' then
+                    incr n
+                decr i
+
+            if !i = 0 then findPos property (sprintf "{%s    \"%s\": { }%s}" Environment.NewLine property Environment.NewLine) else
+            findPos property (text.Substring(0,!i+2) + "," + Environment.NewLine + Environment.NewLine + "    \"" + property + "\": { }" + text.Substring(!i+2))
         | start ->
             let pos = ref (start + needle.Length)
             while text.[!pos] <> '{' do
@@ -38,7 +48,7 @@ type ProjectJsonFile(fileName:string,text:string) =
                 incr pos
 
 
-            start,!pos
+            start,!pos,text
 
     member __.FileName = fileName
 
@@ -48,7 +58,7 @@ type ProjectJsonFile(fileName:string,text:string) =
             |> Seq.toList
             |> List.sortByDescending fst
 
-        let start,endPos = findPos "dependencies"
+        let start,endPos,text = findPos "dependencies" text
         let getIndent() =
             let pos = ref start
             let indent = ref 0
@@ -65,11 +75,11 @@ type ProjectJsonFile(fileName:string,text:string) =
                 sb.Append "{ }"
             else
                 sb.AppendLine "{" |> ignore
-                let indent = "".PadLeft (max 2 (getIndent() + 3))
+                let indent = "".PadLeft (max 4 (getIndent() + 3))
                 let i = ref 1
                 let n = dependencies.Length
                 for name,version in dependencies do
-                    let line = sprintf "\"%s\": \"%O\"%s" name version (if !i < n then "," else "")
+                    let line = sprintf "\"%O\": \"%O\"%s" name version (if !i < n then "," else "")
 
                     sb.AppendLine(indent + line) |> ignore
                     incr i
