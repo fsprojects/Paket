@@ -29,6 +29,13 @@ For administrative PowerShell execute command below.
     $url = "https://raw.githubusercontent.com/rflechner/Paket/EasyInstall/bootstrappers/scripts/install.ps1"
     iex ((new-object net.webclient).DownloadString($url))
 
+#### On Mac Os / Linux
+
+Open a shell and use the following command line.
+
+    [lang=batchfile]
+     curl https://raw.githubusercontent.com/rflechner/Paket/EasyInstall/bootstrappers/scripts/install.sh | /bin/sh
+
 ### Manually
 
 Paket is available as:
