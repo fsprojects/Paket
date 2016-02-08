@@ -126,8 +126,8 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectType) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectType>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
-    match project with
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (projectType : ProjectType) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectType>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
+    match projectType with
     | ProjectType.Project project -> 
         let targetDir = 
             match project.OutputType with
@@ -142,8 +142,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | _ -> PreReleaseStatus.All
     
         let deps, files = 
-            project.GetAllInterProjectDependenciesWithProjectTemplates |> Seq.toList
-            |> List.filter (fun proj -> proj <> project)
+            projectType.GetAllInterProjectDependenciesWithProjectTemplates() |> Seq.toList
+            |> List.filter (fun proj -> proj <> projectType)
             |> List.fold (fun (deps, files) p -> 
                 match Map.tryFind p.FileName map with
                 | Some packagedRef -> packagedRef :: deps, files
@@ -159,7 +159,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         let templateWithOutput =
             let additionalFiles = 
                 let assemblyNames = 
-                    if includeReferencedProjects then project.GetAllInterProjectDependenciesWithoutProjectTemplates |> Seq.toList else [ project ]
+                    if includeReferencedProjects then projectType.GetAllInterProjectDependenciesWithoutProjectTemplates() |> Seq.toList else [ projectType ]
                     |> List.map (fun proj -> proj.GetAssemblyName())
             
                 assemblyNames
@@ -216,8 +216,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             |> LockFile.LoadFrom
 
         let allReferences = 
-            let getPackages proj = 
-                match ProjectFile.FindReferencesFile (FileInfo proj.FileName) with
+            let getPackages (proj:ProjectType) = 
+                match proj.FindReferencesFile () with
                 | Some f -> 
                     let refFile = ReferencesFile.FromFile f
                     refFile.Groups
@@ -226,9 +226,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 | None -> []
           
             [if includeReferencedProjects then
-                for proj in project.GetRecursiveInterProjectDependencies |> Seq.filter ((<>) project) do
-                    let projFileInfo = FileInfo proj.FileName
-                    match ProjectFile.FindTemplatesFile projFileInfo with
+                for proj in projectType.GetAllReferencedProjects() |> Seq.filter ((<>) projectType) do
+                    match proj.FindTemplatesFile() with
                     | Some templateFileName when TemplateFile.IsProjectType templateFileName ->
                         match TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq).Contents with
                         | CompleteInfo(core, optional) ->
@@ -242,7 +241,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                             yield None, { Name = PackageName name; Settings = InstallSettings.Default }
                     | _ -> yield! getPackages proj
 
-             yield! getPackages project]
+             yield! getPackages projectType]
     
         match allReferences with
         | [] -> withDepsAndIncluded

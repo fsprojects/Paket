@@ -256,7 +256,7 @@ type Dependencies(dependenciesFileName: string) =
             let referencesFiles =
                 this.RootPath
                 |> ProjectType.FindAllProjects
-                |> Array.choose (fun p -> ProjectFile.FindReferencesFile(FileInfo(p.FileName)))
+                |> Array.choose (fun p -> p.FindReferencesFile())
             if Array.isEmpty referencesFiles then
                 traceWarnfn "No paket.references files found for which packages could be installed."
             else 
@@ -548,7 +548,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.ListTemplateFiles() : TemplateFile list =
         let lockFile = getLockFile()
         ProjectType.FindAllProjects(this.RootPath)
-        |> Array.choose (fun proj -> ProjectFile.FindTemplatesFile(FileInfo(proj.FileName)))
+        |> Array.choose (fun proj -> proj.FindTemplatesFile())
         |> Array.choose (fun path ->
                          try
                            Some(TemplateFile.Load(path, lockFile, None, Map.empty))

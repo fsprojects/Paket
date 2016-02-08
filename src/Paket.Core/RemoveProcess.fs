@@ -8,7 +8,7 @@ open Paket.Logging
 open InstallProcess
 
 let private removePackageFromProject (project : ProjectType) groupName package = 
-    ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
+    project.FindOrCreateReferencesFile()
         .RemoveNuGetReference(groupName,package)
         .Save()
 
@@ -23,7 +23,7 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
         allProjects 
         |> Seq.exists (fun project -> 
             let proj = FileInfo(project.FileName)
-            match ProjectFile.FindReferencesFile proj with
+            match ProjectType.FindReferencesFile proj with
             | None -> false 
             | Some fileName -> 
                 let refFile = ReferencesFile.FromFile fileName

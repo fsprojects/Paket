@@ -23,6 +23,7 @@ let [<Literal>] SolutionFolderProjectGuid = "2150E333-8FDC-42A3-9474-1A3956D46DE
 let [<Literal>] PaketVersionFileName      = "paket.version"
 let [<Literal>] TemplateFile              = "paket.template"
 let [<Literal>] PackagesConfigFile        = "packages.config"
+let [<Literal>] NuGetConfigFile           = "NuGet.Config"
 let [<Literal>] FullProjectSourceFileName = "FULLPROJECT"
 let [<Literal>] ProjectDefaultNameSpace   = "http://schemas.microsoft.com/developer/msbuild/2003"
 

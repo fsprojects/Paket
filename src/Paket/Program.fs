@@ -264,7 +264,7 @@ let getInstalledPackages (results : ParseResults<_>) =
         if showAll then dependenciesFile.GetInstalledPackages()
         else dependenciesFile.GetDirectDependencies()
     | Some project ->
-        match ProjectFile.FindReferencesFile(FileInfo project) with
+        match ProjectType.FindReferencesFile(FileInfo project) with
         | None -> []
         | Some referencesFile ->
             let referencesFile = ReferencesFile.FromFile referencesFile

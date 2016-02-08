@@ -16,84 +16,8 @@ open Paket.Requirements
 open System.Collections.Generic
 open System.Collections.Concurrent
 open Paket.ProjectJson
-
-[<RequireQualifiedAccess>]
-type ProjectType =
-| Project of ProjectFile
-| ProjectJson of ProjectJsonFile
-
-    with 
-        member this.FileName =
-            match this with
-            | Project p -> p.FileName
-            | ProjectJson p -> p.FileName
-
-        member this.Save() =
-            match this with
-            | Project p -> p.Save()
-            | ProjectJson p -> p.Save()
-
-        member this.HasPackageInstalled(groupName,package) =
-            match this with
-            | Project p -> p.HasPackageInstalled(groupName,package)
-
-        /// Finds all project files
-        static member FindAllProjects folder =
-            let packagesPath = Path.Combine(folder,Constants.PackagesFolderName) |> normalizePath
-            let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
-
-            let findAllFiles (folder, pattern) = 
-                let rec search (di:DirectoryInfo) = 
-                    try
-                        let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
-                        di.GetDirectories()
-                        |> Array.filter (fun di ->
-                            try 
-                                let path = di.FullName |> normalizePath
-                                if path = packagesPath then false else
-                                if path = paketPath then false else
-                                Path.Combine(path, Constants.DependenciesFileName) 
-                                |> File.Exists 
-                                |> not 
-                            with 
-                            | _ -> false)
-                        |> Array.collect search
-                        |> Array.append files
-                    with
-                    | _ -> Array.empty
-
-                search <| DirectoryInfo folder
-
-            findAllFiles(folder, "*proj*")
-            |> Array.choose (fun f -> 
-                if f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj" then
-                    ProjectFile.tryLoad f.FullName |> Option.map (fun p -> ProjectType.Project p)
-                else if f.Name = "project.json" then
-                    Some(ProjectType.ProjectJson(ProjectJsonFile.Load f.FullName))
-                else None)
-
-        static member TryFindProject(projects,projectName) =
-            let isMatching p =
-                match p with
-                | ProjectType.Project p -> p.NameWithoutExtension = projectName || p.Name = projectName
-                | _ -> false
-
-            match projects |> Seq.tryFind isMatching with
-            | Some p -> Some p
-            | None ->
-                try
-                    let fi = FileInfo (normalizePath (projectName.Trim().Trim([|'\"'|]))) // check if we can detect the path
-                    let rec checkDir (dir:DirectoryInfo) = 
-                        match projects |> Seq.tryFind (fun p -> 
-                            String.equalsIgnoreCase ((FileInfo p.FileName).Directory.ToString()) (dir.ToString())) with
-                        | Some p -> Some p
-                        | None ->
-                            if isNull dir.Parent then None else
-                            checkDir dir.Parent
-                    checkDir fi.Directory
-                with
-                | _ -> None
-
+open Xml
+open System.Xml
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -249,7 +173,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
     let referenceFiles = ConcurrentDictionary<_,ReferencesFile option>();
     let referenceFile (projectFile : ProjectFile) =
         let referenceFile (projectFile : ProjectFile) =
-            ProjectFile.FindReferencesFile (FileInfo projectFile.FileName)
+            (ProjectType.Project projectFile).FindReferencesFile()
             |> Option.map ReferencesFile.FromFile
         referenceFiles.GetOrAdd(projectFile, referenceFile)
 
@@ -328,7 +252,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectType) =
-        match ProjectFile.FindReferencesFile(FileInfo p.FileName) with
+        match p.FindReferencesFile() with
         | Some fileName -> 
                 try
                     ok <| (p, ReferencesFile.FromFile fileName)
@@ -425,6 +349,15 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
 
             let project = project.WithDependencies deps
             project.Save()
+            let dir = FileInfo(project.FileName).Directory.FullName
+            let sources =
+                let r = lockFile.GetGroupedResolution()
+                [for kv in r do
+                    let package = kv.Value
+                    yield package.Source]
+                |> Seq.distinct
+
+            NuGet.NuGetConfig.writeNuGetConfig dir sources
 
         | ProjectType.Project project ->
             project.UpdateReferences(model, usedPackages, options.Hard)

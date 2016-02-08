@@ -301,7 +301,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     |> lift (fun d -> d.SimplifyFrameworkRestrictions())
 
 let convertPackagesConfigToReferencesFile projectFileName packagesConfig =
-    let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
+    let referencesFile = ProjectType.FindOrCreateReferencesFile(FileInfo projectFileName)
 
     packagesConfig.Packages
     |> List.map ((fun p -> p.Id) >> PackageName)

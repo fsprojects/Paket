@@ -82,13 +82,11 @@ let private convertToSymbols (projectFile : ProjectType) (includeReferencedProje
                        | None -> compileItem.Include
             
             let tld = Path.GetFileName(compileItem.BaseDir)
-            Path.Combine("src", tld, Path.GetFileName(Path.GetDirectoryName(Path.GetFullPath(item))))
+            Path.Combine("src", tld, Path.GetFileName(Path.GetDirectoryName(Path.GetFullPath item)))
 
-        match projectFile with
-        | ProjectType.Project projectFile ->
-            projectFile.GetCompileItems(includeReferencedProjects)
-            |> Seq.map (fun c -> c.Include, getTarget c)
-            |> Seq.toList
+        projectFile.GetCompileItems(includeReferencedProjects)
+        |> Seq.map (fun c -> c.Include, getTarget c)
+        |> Seq.toList
 
     match templateFile.Contents with
     | CompleteInfo(core, optional) ->
@@ -128,7 +126,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
         let getAllProjectsFiles workingDir =
             ProjectType.FindAllProjects workingDir
             |> Array.choose (fun projectFile ->
-                match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
+                match projectFile.FindTemplatesFile() with
                 | None -> None
                 | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions)))
             |> Array.filter (fun (_,templateFile) -> 

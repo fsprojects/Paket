@@ -12,6 +12,35 @@ open Chessie.ErrorHandling
 open Newtonsoft.Json
 open System
 
+module NuGetConfig =
+    open System.Text
+    
+    let writeNuGetConfig directory sources =
+        let start = """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+    <packageSources>
+    <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+    <clear />
+"""
+        let sb = StringBuilder start
+
+        let i = ref 1
+        for source in sources do
+            sb.AppendLine(sprintf "    <add key=\"source%d\" value=\"%O\" />" !i source) |> ignore
+
+        sb.Append("""
+    </packageSources>
+</configuration>""") |> ignore
+        let text = sb.ToString()
+        let fileName = Path.Combine(directory,Constants.NuGetConfigFile)
+        if not <| File.Exists fileName then
+            File.WriteAllText(fileName,text)
+        else
+            if File.ReadAllText(fileName) <> text then
+                File.WriteAllText(fileName,text)
+       
+
+
 type NuGetPackageCache =
     { Dependencies : (PackageName * VersionRequirement * FrameworkRestrictions) list
       PackageName : string

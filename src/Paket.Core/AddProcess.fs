@@ -11,7 +11,7 @@ open InstallProcess
 let private notInstalled (project : ProjectType) groupName package = project.HasPackageInstalled(groupName,package) |> not
 
 let private addToProject (project : ProjectType) groupName package =
-    ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
+    project.FindOrCreateReferencesFile()
         .AddNuGetReference(groupName,package)
         .Save()
 
