@@ -24,7 +24,7 @@ type Dependencies(dependenciesFileName: string) =
         
     /// Clears the NuGet cache
     static member ClearCache() = 
-        Utils.deleteDir (DirectoryInfo NuGet.CacheFolder)
+        Utils.deleteDir (DirectoryInfo Constants.NuGetCacheFolder)
         Utils.deleteDir (DirectoryInfo Constants.GitRepoCacheFolder)
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.

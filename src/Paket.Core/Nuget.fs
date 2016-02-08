@@ -53,14 +53,6 @@ type NuGetPackageCache =
 
     static member CurrentCacheVersion = "2.4"
 
-/// The NuGet cache folder.
-let CacheFolder = 
-    let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
-    let di = DirectoryInfo(Path.Combine(Path.Combine(appData, "NuGet"), "Cache"))
-    if not di.Exists then
-        di.Create()
-    di.FullName
-
 let inline normalizeUrl(url:string) = url.Replace("https","http").Replace("www.","")
 
 let getCacheFileName nugetURL (packageName:PackageName) (version:SemVerInfo) =
@@ -68,7 +60,7 @@ let getCacheFileName nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let packageUrl = 
         sprintf "%O.%s.s%d.json" 
            packageName (version.Normalize()) h
-    FileInfo(Path.Combine(CacheFolder,packageUrl))
+    FileInfo(Path.Combine(Constants.NuGetCacheFolder,packageUrl))
 
 let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> NuGetPackageCache Async) : NuGetPackageCache Async = 
     let cacheFile = getCacheFileName nugetURL packageName version

@@ -38,3 +38,11 @@ let UserNuGetPackagesFolder = Path.Combine(UserProfile,".nuget","packages")
 
 /// The magic unpublished date is 1900-01-01T00:00:00
 let MagicUnlistingDate = DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8.)).DateTime
+
+/// The NuGet cache folder.
+let NuGetCacheFolder = 
+    let appData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData)
+    let di = DirectoryInfo(Path.Combine(Path.Combine(appData, "NuGet"), "Cache"))
+    if not di.Exists then
+        di.Create()
+    di.FullName

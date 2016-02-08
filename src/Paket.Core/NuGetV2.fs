@@ -348,6 +348,7 @@ let rec private cleanup (dir : DirectoryInfo) =
         if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
             File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
 
+
 /// Extracts the given package to the user folder
 let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
@@ -361,12 +362,15 @@ let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version
 
             ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
             
-            use stream = File.OpenRead(fileName)
-            let packageSize = stream.Length
-            use hasher = new System.Security.Cryptography.SHA512CryptoServiceProvider() :> System.Security.Cryptography.HashAlgorithm
-            let packageHash = Convert.ToBase64String(hasher.ComputeHash(stream))
-            File.WriteAllText(targetPackageFileName +  ".sha512",packageHash)
+            let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
+            if not <| File.Exists cachedHashFile then
+                use stream = File.OpenRead(fileName)
+                let packageSize = stream.Length
+                use hasher = new System.Security.Cryptography.SHA512CryptoServiceProvider() :> System.Security.Cryptography.HashAlgorithm
+                let packageHash = Convert.ToBase64String(hasher.ComputeHash(stream))
+                File.WriteAllText(cachedHashFile,packageHash)
 
+            File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
             cleanup targetFolder
         return targetFolder.FullName
     }
@@ -614,7 +618,7 @@ let GetVersions force root (sources, packageName:PackageName) =
         let getVersionsFailedCacheFileName (source:PackageSource) =
             let h = source.Url |> normalizeUrl |> hash |> abs
             let packageUrl = sprintf "Versions.%O.s%d.failed" packageName h
-            FileInfo(Path.Combine(CacheFolder,packageUrl))
+            FileInfo(Path.Combine(Constants.NuGetCacheFolder,packageUrl))
 
         let sources = 
             sources 
@@ -705,9 +709,9 @@ let GetVersions force root (sources, packageName:PackageName) =
 
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(root, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
-    let targetFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
+    let targetFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
     let targetFile = FileInfo targetFileName
-    let licenseFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
+    let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
 
     let rec download authenticated =
         async {
