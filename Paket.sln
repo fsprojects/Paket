@@ -85,6 +85,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "bootstrappers", "bootstrappers", "{A5489832-0C29-4937-9E70-B1CDF04D73BE}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{D219DAA2-9053-4F42-816D-35589117469E}"
+	ProjectSection(SolutionItems) = preProject
+		bootstrappers\scripts\install.ps1 = bootstrappers\scripts\install.ps1
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
