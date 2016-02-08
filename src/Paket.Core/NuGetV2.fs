@@ -355,10 +355,19 @@ let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version
 
         if isExtracted targetFolder fileName |> not then
             Directory.CreateDirectory(targetFolder.FullName) |> ignore
+            let fi = FileInfo fileName
+            let targetPackageFileName = Path.Combine(targetFolder.FullName,fi.Name)
+            File.Copy(fileName,targetPackageFileName)
 
             ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
+            
+            use stream = File.OpenRead(fileName)
+            let packageSize = stream.Length
+            use hasher = new System.Security.Cryptography.SHA512CryptoServiceProvider() :> System.Security.Cryptography.HashAlgorithm
+            let packageHash = Convert.ToBase64String(hasher.ComputeHash(stream))
+            File.WriteAllText(targetPackageFileName +  ".sha512",packageHash)
 
-            cleanup  targetFolder
+            cleanup targetFolder
         return targetFolder.FullName
     }
 
