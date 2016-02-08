@@ -327,17 +327,46 @@ let getDetailsFromLocalNuGetPackage root localNugetPath (packageName:PackageName
     }
 
 
-let inline isExtracted fileName =
+let inline isExtracted (directory:DirectoryInfo) fileName =
     let fi = FileInfo(fileName)
     if not fi.Exists then false else
-    let di = fi.Directory
-    di.EnumerateFileSystemInfos()
+    if not directory.Exists then false else
+    directory.EnumerateFileSystemInfos()
     |> Seq.exists (fun f -> f.FullName <> fi.FullName)
+
+// cleanup folder structure
+let rec private cleanup (dir : DirectoryInfo) = 
+    for sub in dir.GetDirectories() do
+        let newName = Uri.UnescapeDataString(sub.FullName)
+        if sub.FullName <> newName && not (Directory.Exists newName) then 
+            Directory.Move(sub.FullName, newName)
+            cleanup (DirectoryInfo newName)
+        else
+            cleanup sub
+    for file in dir.GetFiles() do
+        let newName = Uri.UnescapeDataString(file.Name)
+        if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
+            File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
+
+/// Extracts the given package to the user folder
+let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, detailed) =
+    async {
+        let targetFolder = DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.ToString()))
+
+        if isExtracted targetFolder fileName |> not then
+            Directory.CreateDirectory(targetFolder.FullName) |> ignore
+
+            ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
+
+            cleanup  targetFolder
+        return targetFolder.FullName
+    }
 
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
-        if isExtracted fileName then
+        let directory = DirectoryInfo(targetFolder)
+        if isExtracted directory fileName then
              verbosefn "%O %O already extracted" packageName version
         else
             Directory.CreateDirectory(targetFolder) |> ignore
@@ -351,22 +380,10 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                 let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
                 failwithf "Error during extraction of %s.%sMessage: %s%s" (Path.GetFullPath fileName) Environment.NewLine exn.Message text
 
-            // cleanup folder structure
-            let rec cleanup (dir : DirectoryInfo) = 
-                for sub in dir.GetDirectories() do
-                    let newName = Uri.UnescapeDataString(sub.FullName)
-                    if sub.FullName <> newName && not (Directory.Exists newName) then 
-                        Directory.Move(sub.FullName, newName)
-                        cleanup (DirectoryInfo newName)
-                    else
-                        cleanup sub
-                for file in dir.GetFiles() do
-                    let newName = Uri.UnescapeDataString(file.Name)
-                    if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
-                        File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
 
-            cleanup (DirectoryInfo targetFolder)
+            cleanup directory
             verbosefn "%O %O unzipped to %s" packageName version targetFolder
+        let! _ = ExtractPackageToUserFolder(fileName, packageName, version, detailed)
         return targetFolder
     }
 
