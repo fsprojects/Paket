@@ -18,12 +18,12 @@ $client.DownloadFile($paketUrl, "$pwd\.paket\paket.exe")
 
 if (Test-Path ".hgignore")
 {
-    [System.IO.File]::AppendAllText("$pwd\.hgignore", ".paket/paket.exe")
+    [System.IO.File]::AppendAllText("$pwd\.hgignore", ".paket/paket.exe`n")
 }
 
 if (Test-Path ".gitignore")
 {
-    [System.IO.File]::AppendAllText("$pwd\.gitignore", ".paket/paket.exe")
+    [System.IO.File]::AppendAllText("$pwd\.gitignore", ".paket/paket.exe`n")
 }
 
 
