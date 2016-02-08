@@ -492,7 +492,7 @@ let GetPackageDetails root force (sources:PackageSource list) packageName (versi
                             version
                     return Some(source,result)
                 | NuGetV3 nugetSource ->
-                    if nugetSource.Url.Contains("myget.org") then
+                    if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org")  then
                         match NuGetV3.calculateNuGet2Path nugetSource.Url with
                         | Some url -> 
                             let! result = 
