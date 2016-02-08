@@ -25,6 +25,8 @@ let prepare scenario =
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "csproj")))
     Directory.GetFiles(scenarioPath, "*.templatetemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "template")))
+    Directory.GetFiles(scenarioPath, "*.jsontemplate", SearchOption.AllDirectories)
+    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "json")))
 
 let directPaket command scenario =
     let originalScenarioPath = originalScenarioPath scenario

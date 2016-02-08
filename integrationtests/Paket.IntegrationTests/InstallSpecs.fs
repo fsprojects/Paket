@@ -157,3 +157,72 @@ let ``#1334 without download fail``() =
 [<Test>]
 let ``#1371 without download fail``() = 
     paket "install -f"  "i001371-restore-error" |> ignore
+
+
+[<Test>]
+let ``#736 install into new project.json``() = 
+    let s1 = """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "frameworks": {
+        "dnxcore50": { }
+    },
+
+    "dependencies": {
+        "System.Threading.Timer": "[4.0.1-rc3-23808]",
+        "System.Threading.Tasks": "[4.0.11-rc3-23808]",
+        "System.Threading": "[4.0.11-rc3-23808]",
+        "System.Text.RegularExpressions": "[4.0.12-rc3-23808]",
+        "System.Text.Encoding.Extensions": "[4.0.11-rc3-23808]",
+        "System.Text.Encoding": "[4.0.11-rc3-23808]",
+        "System.Runtime.Numerics": "[4.0.1-rc3-23808]",
+        "System.Runtime.InteropServices.RuntimeInformation": "[4.0.0-rc3-23808]",
+        "System.Runtime.InteropServices.PInvoke": "[4.0.0-rc3-23808]",
+        "System.Runtime.InteropServices": "[4.1.0-rc3-23808]",
+        "System.Runtime.Handles": "[4.0.1-rc3-23808]",
+        "System.Runtime.Extensions": "[4.1.0-rc3-23808]",
+        "System.Runtime": "[4.1.0-rc3-23808]",
+        "System.Resources.ResourceManager": "[4.0.0]",
+        "System.Reflection.TypeExtensions": "[4.1.0-rc3-23808]",
+        "System.Reflection.Primitives": "[4.0.1-rc3-23808]",
+        "System.Reflection.Extensions": "[4.0.1-rc3-23808]",
+        "System.Reflection": "[4.1.0-rc3-23808]",
+        "System.Net.Sockets": "[4.1.0-rc3-23808]",
+        "System.Net.Primitives": "[4.0.11-rc3-23808]",
+        "System.Linq": "[4.0.2-rc3-23808]",
+        "System.IO.FileSystem.Primitives": "[4.0.1-rc3-23808]",
+        "System.IO.FileSystem": "[4.0.1-rc3-23808]",
+        "System.IO": "[4.1.0-rc3-23808]",
+        "System.Globalization.Calendars": "[4.0.1-rc3-23808]",
+        "System.Globalization": "[4.0.11-rc3-23808]",
+        "System.Diagnostics.Tracing": "[4.1.0-rc3-23808]",
+        "System.Diagnostics.Tools": "[4.0.1-rc3-23808]",
+        "System.Diagnostics.Debug": "[4.0.11-rc3-23808]",
+        "System.Console": "[4.0.0-rc3-23808]",
+        "System.Collections.Concurrent": "[4.0.12-rc3-23808]",
+        "System.Collections": "[4.0.11-rc3-23808]",
+        "System.AppContext": "[4.1.0-rc3-23808]",
+        "NETStandard.Platform": "[1.0.0-rc3-23808]",
+        "NETStandard.Library": "[1.0.0-rc3-23808]",
+        "Microsoft.Win32.Primitives": "[4.0.1-rc3-23808]",
+        "Microsoft.NETCore.Windows.ApiSets": "[1.0.1-rc3-23808]",
+        "Microsoft.NETCore.Targets.UniversalWindowsPlatform": "[5.0.1-rc3-23808]",
+        "Microsoft.NETCore.Targets.NETFramework": "[4.6.1-rc3-23808]",
+        "Microsoft.NETCore.Targets.DNXCore": "[5.0.0-rc3-23808]",
+        "Microsoft.NETCore.Targets": "[1.0.1-rc3-23808]",
+        "Microsoft.NETCore.Runtime.Native": "[1.0.1-rc3-23808]",
+        "Microsoft.NETCore.Runtime.CoreCLR": "[1.0.1-rc3-23808]",
+        "Microsoft.NETCore.Runtime": "[1.0.1-rc3-23808]",
+        "Microsoft.NETCore.Platforms": "[1.0.1-rc3-23808]",
+        "Microsoft.DotNet.CoreHost": "[0.0.1-beta-00001]"
+    }
+}
+"""
+
+    let newLockFile = install "i000736-new-json"
+    let newFile = Path.Combine(scenarioTempPath "i000736-new-json","project.json")
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    normalizeLineEndings s1 |> shouldEqual s2
