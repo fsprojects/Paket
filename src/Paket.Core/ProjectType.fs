@@ -96,13 +96,14 @@ type ProjectType =
         member this.GetInterProjectDependencies() =
             match this with
             | ProjectType.Project project -> project.GetInterProjectDependencies()
+            | ProjectType.ProjectJson project -> []  // TODO: What about project.json?
 
         member this.GetAllReferencedProjects() = 
             let rec getProjects (project:ProjectType) = 
                 seq {
                     let projects = 
                         project.GetInterProjectDependencies() 
-                            |> Seq.map (fun proj -> ProjectType.Project(ProjectFile.tryLoad(proj.Path).Value))  // TODO: What about ProjectJson?
+                            |> Seq.map (fun proj -> ProjectType.Project(ProjectFile.tryLoad(proj.Path).Value))  // TODO: What about project.json?
 
                     yield! projects
                     for proj in projects do
