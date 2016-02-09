@@ -263,8 +263,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     findWarnings (List.map (fun p -> p.Version) >> List.distinct >> List.map string) 
         "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
-    findWarnings (List.map (fun p -> p.TargetFramework) >> List.distinct >> List.choose (fun target -> target) >> List.map string) 
-        "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."    
+    findWarnings (List.map (fun p -> p.TargetFramework) >> List.distinct >> List.choose id >> List.map string) 
+        "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."
 
     let latestVersions = 
         findDistinctPackages (List.map (fun p -> p.Version, p.TargetFramework) >> List.distinct)
@@ -350,7 +350,8 @@ let convertProjects nugetEnv =
             project.ReplaceNuGetPackagesFile()
             project.RemoveNuGetTargetsEntries()
             project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
-            yield ProjectType.Project project, convertPackagesConfigToReferencesFile project.FileName packagesConfig]
+            yield ProjectType.Project project, convertPackagesConfigToReferencesFile project.FileName packagesConfig
+        | ProjectType.ProjectJson p -> failwithf "Project %s cannot be used in classic NuGet conversion." p.FileName]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
