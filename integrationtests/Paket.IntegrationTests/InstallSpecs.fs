@@ -137,6 +137,15 @@ let ``#1440 auto-detect framework``() =
     s1 |> shouldEqual s2
 
 [<Test>]
+let ``#1466 install package with dll in name``() = 
+    let newLockFile = install "i001466-expressive"
+    let newFile = Path.Combine(scenarioTempPath "i001466-expressive","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001466-expressive","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
+[<Test>]
 let ``#1442 warn if install finds no libs``() = 
     let result = paket "install" "i001442-warn-if-empty"
     result |> shouldContainText "contains libraries, but not for the selected TargetFramework"

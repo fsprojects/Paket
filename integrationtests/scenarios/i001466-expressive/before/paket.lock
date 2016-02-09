@@ -1,0 +1,19 @@
+REDIRECTS: OFF
+IMPORT-TARGETS: FALSE
+CONTENT: NONE
+FRAMEWORK: NET45
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    ExpressiveAnnotations (2.4.0)
+      jQuery (>= 1.8.2)
+      jQuery.Validation (>= 1.10.0)
+      Microsoft.jQuery.Unobtrusive.Validation (>= 3.1.1)
+      Newtonsoft.Json (>= 4.5.11)
+    jQuery (2.2.0)
+    jQuery.Validation (1.14.0)
+      jQuery (>= 1.4.4)
+    Microsoft.jQuery.Unobtrusive.Validation (3.2.3)
+      jQuery (>= 1.8)
+      jQuery.Validation (>= 1.8.0.1)
+    Newtonsoft.Json (8.0.2)

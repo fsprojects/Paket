@@ -1,7 +1,10 @@
-#### 3.0.0-alpha041 - 08.02.2016
+#### 3.0.0-alpha042 - 09.02.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+
+#### 2.49.8 - 09.02.2016
+* BUGFIX: Install packages that end in .dll - https://github.com/fsprojects/Paket/issues/1466
 
 #### 2.49.7 - 08.02.2016
 * WORKAROUND: Don't use v3 getPackageDetails on nuget.org

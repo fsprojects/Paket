@@ -456,13 +456,12 @@ module String =
 
     let inline containsIgnoreCase (target:string) (text:string) = 
         text.IndexOf(target, StringComparison.OrdinalIgnoreCase) >= 0
-
     
     let inline startsWithIgnoreCase (target:string) (text:string) =
         text.IndexOf(target, StringComparison.OrdinalIgnoreCase) = 0
 
     let inline endsWithIgnoreCase (target:string) (text:string) =
-        text.IndexOf(target, StringComparison.OrdinalIgnoreCase) >= text.Length - target.Length
+        text.LastIndexOf(target, StringComparison.OrdinalIgnoreCase) >= text.Length - target.Length
 
     let quoted (text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
 
