@@ -1,7 +1,10 @@
-#### 3.0.0-alpha043 - 09.02.2016
+#### 3.0.0-alpha044 - 09.02.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+
+#### 2.50.1 - 09.02.2016
+* Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
 
 #### 2.50.0 - 09.02.2016
 * Experimental Visual C++ support - https://github.com/fsprojects/Paket/issues/1467
