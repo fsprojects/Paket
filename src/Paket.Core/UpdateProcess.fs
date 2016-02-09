@@ -168,7 +168,8 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
                 | ProjectType.Project p ->
                     match p.GetTargetFramework() with
                     | Some fw -> Requirements.FrameworkRestriction.Exactly fw
-                    | None -> failwithf "Could not detect target framework for project %s" p.FileName))
+                    | None -> failwithf "Could not detect target framework for project %s" p.FileName
+                | ProjectType.ProjectJson p -> Requirements.FrameworkRestriction.Exactly (FrameworkIdentifier.DNXCore FrameworkVersion.V5_0)))
 
         dependenciesFile.Groups
         |> Map.map (fun groupName group -> 
