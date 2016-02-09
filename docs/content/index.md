@@ -11,6 +11,33 @@ If you are already using NuGet for package management in your solution then you 
 
 ## How to get Paket
 
+### Automatically
+
+#### On Windows
+
+Open an administrative cmd.exe command prompt.
+Move to your project location with the "cd" command.
+And execute command below.
+
+    SET url="https://raw.githubusercontent.com/rflechner/Paket/EasyInstall/bootstrappers/scripts/install.ps1"
+    @powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+    "iex ((new-object net.webclient).DownloadString('%url%'))"
+
+For administrative PowerShell execute command below.
+
+    cd your/project/location
+    $url = "https://raw.githubusercontent.com/rflechner/Paket/EasyInstall/bootstrappers/scripts/install.ps1"
+    iex ((new-object net.webclient).DownloadString($url))
+
+#### On Mac Os / Linux
+
+Open a shell and use the following command line.
+
+    [lang=batchfile]
+     curl https://raw.githubusercontent.com/rflechner/Paket/EasyInstall/bootstrappers/scripts/install.sh | /bin/sh
+
+### Manually
+
 Paket is available as:
 
   * [download from GitHub.com](https://github.com/fsprojects/Paket/releases/latest)
