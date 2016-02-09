@@ -1,3 +1,6 @@
+#### 2.50.1 - 09.02.2016
+* Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
+
 #### 2.50.0 - 09.02.2016
 * Experimental Visual C++ support - https://github.com/fsprojects/Paket/issues/1467
 * BUGFIX: Install packages that end in .dll - https://github.com/fsprojects/Paket/issues/1466
