@@ -45,7 +45,7 @@ type ProjectOutputType =
 | Exe 
 | Library
 
-type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX | Nemerle
+type ProjectLanguage = Unknown | CSharp | FSharp | VisualBasic | WiX | Nemerle | CPP
 
 module LanguageEvaluation =
     let private extractProjectTypeGuids (projectDocument:XmlDocument) =
@@ -108,6 +108,7 @@ module LanguageEvaluation =
         | ".csproj" -> Some CSharp
         | ".vbproj" -> Some VisualBasic
         | ".fsproj" -> Some FSharp
+        | ".vcxproj" -> Some CPP
         | ".wixproj" -> Some WiX
         | ".nproj"  -> Some Nemerle
         | _ -> None

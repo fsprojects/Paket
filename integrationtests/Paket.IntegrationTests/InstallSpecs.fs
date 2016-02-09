@@ -146,6 +146,15 @@ let ``#1466 install package with dll in name``() =
     s1 |> shouldEqual s2
 
 [<Test>]
+let ``#1467 install package into vcxproj``() = 
+    let newLockFile = install "i001467-cpp"
+    let newFile = Path.Combine(scenarioTempPath "i001467-cpp","MyClassLibrary","ConsoleApplication1","ConsoleApplication1.vcxproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001467-cpp","MyClassLibrary","ConsoleApplication1","ConsoleApplication1.vcxprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
+[<Test>]
 let ``#1442 warn if install finds no libs``() = 
     let result = paket "install" "i001442-warn-if-empty"
     result |> shouldContainText "contains libraries, but not for the selected TargetFramework"

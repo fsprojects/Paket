@@ -23,6 +23,8 @@ let prepare scenario =
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "fsproj")))
     Directory.GetFiles(scenarioPath, "*.csprojtemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "csproj")))
+    Directory.GetFiles(scenarioPath, "*.vcxprojtemplate", SearchOption.AllDirectories)
+    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "vcxproj")))
     Directory.GetFiles(scenarioPath, "*.templatetemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "template")))
     Directory.GetFiles(scenarioPath, "*.jsontemplate", SearchOption.AllDirectories)

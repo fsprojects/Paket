@@ -204,7 +204,7 @@ type ProjectType =
 
             findAllFiles(folder, "*proj*")
             |> Array.choose (fun f -> 
-                if f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj" then
+                if f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj" || f.Extension = ".vcxproj" then
                     ProjectFile.tryLoad f.FullName |> Option.map (fun p -> ProjectType.Project p)
                 else if f.Name = "project.json" then
                     Some(ProjectType.ProjectJson(ProjectJsonFile.Load f.FullName))

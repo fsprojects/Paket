@@ -15,6 +15,7 @@ let ``Language is detected from filename``() =
     let evaluate ext = LanguageEvaluation.getProjectLanguage (new XmlDocument()) (sprintf "foo/bar/baz%s" ext)
     evaluate ".csproj" |> shouldEqual ProjectLanguage.CSharp
     evaluate ".fsproj" |> shouldEqual ProjectLanguage.FSharp
+    evaluate ".vcxproj" |> shouldEqual ProjectLanguage.CPP
     evaluate ".vbproj" |> shouldEqual ProjectLanguage.VisualBasic
     evaluate ".nproj" |> shouldEqual ProjectLanguage.Nemerle
 
