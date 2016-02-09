@@ -166,6 +166,7 @@ type ProjectType =
             this.ProjectsWithoutTemplates(this.GetProjects includeReferencedProjects)
             |> Seq.collect (fun proj -> 
                                 match proj with
+                                | ProjectType.ProjectJson proj -> Seq.empty // TODO: try to detect compile items
                                 | ProjectType.Project proj ->
                                     proj.Document
                                     |> getDescendants "Compile"
