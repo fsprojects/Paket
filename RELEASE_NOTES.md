@@ -1,26 +1,12 @@
-#### 2.49.8 - 09.02.2016
+#### 2.50.0 - 09.02.2016
+* Experimental Visual C++ support - https://github.com/fsprojects/Paket/issues/1467
 * BUGFIX: Install packages that end in .dll - https://github.com/fsprojects/Paket/issues/1466
-
-#### 2.49.7 - 08.02.2016
-* WORKAROUND: Don't use v3 getPackageDetails on nuget.org
-
-#### 2.49.6 - 06.02.2016
 * BUGFIX: Prevent race condition - https://github.com/fsprojects/Paket/issues/1460
- 
-#### 2.49.5 - 05.02.2016
-* WORKAROUND: Don't use v3 getPackageDetails on myget
-
-#### 2.49.4 - 05.02.2016
 * BUGFIX: Download of HTTP dependencies should delete folder before we unzip
-
-#### 2.49.3 - 04.02.2016
 * BUGFIX: Do not touch project files in packages folder - https://github.com/fsprojects/Paket/issues/1455
-
-#### 2.49.2 - 04.02.2016
 * BUGFIX: Keep versions locked for dependencies during pack - https://github.com/fsprojects/Paket/issues/1457
-
-#### 2.49.1 - 04.02.2016
-* Do not fail on auth check for remote dependencies file - https://github.com/fsprojects/Paket/issues/1456
+* BUGFIX: Do not fail on auth check for remote dependencies file - https://github.com/fsprojects/Paket/issues/1456
+* WORKAROUND: Don't use v3 getPackageDetails on nuget.org or myget
 
 #### 2.49.0 - 03.02.2016
 * Added paket pack switch minimum-from-lock-file - http://fsprojects.github.io/Paket/paket-pack.html#Version-ranges
