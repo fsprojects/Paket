@@ -138,17 +138,19 @@ type NugetEnv =
       NuGetConfig : NugetConfig
       NuGetConfigFiles : list<FileInfo>
       NuGetProjectFiles : list<ProjectType * NugetPackagesConfig>
+      ProjectJsonFiles : list<ProjectType>
       NuGetTargets : option<FileInfo>
       NuGetExe : option<FileInfo> }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module NugetEnv = 
-    let create rootDirectory configFiles targets exe config packagesFiles = 
+    let create rootDirectory configFiles targets exe config packagesFiles projectJsonFiles = 
         { RootDirectory = rootDirectory
           NuGetConfig = config
           NuGetConfigFiles = configFiles
           NuGetProjectFiles = packagesFiles
           NuGetTargets = targets
+          ProjectJsonFiles = projectJsonFiles
           NuGetExe = exe
         }
         
@@ -169,7 +171,7 @@ module NugetEnv =
                             |> lift (NugetConfig.OverrideConfig config)))
                         (ok NugetConfig.Empty)
 
-    let readNugetPackages(rootDirectory : DirectoryInfo) =
+    let readNuGetPackages(rootDirectory : DirectoryInfo) =
         let readSingle(file : FileInfo) = 
             try
                 { File = file
@@ -178,20 +180,32 @@ module NugetEnv =
                 |> ok 
             with _ -> fail (NugetPackagesConfigParseError file)
 
-        ProjectType.FindAllProjects rootDirectory.FullName 
-        |> Array.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), Constants.PackagesConfigFile))
-        |> Array.filter (fun (p,packages) -> File.Exists packages)
-        |> Array.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
-        |> collect
+        let projectFiles,projectJsonFiles =
+            ProjectType.FindAllProjects rootDirectory.FullName
+            |> Array.partition (fun p -> 
+                    match p with 
+                    | ProjectType.Project _ -> true
+                    | ProjectType.ProjectJson _ -> false)
+
+        let projects =
+            projectFiles
+            |> Array.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), Constants.PackagesConfigFile))
+            |> Array.filter (fun (p,packages) -> File.Exists packages)
+            |> Array.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
+            |> collect
+
+        match projects with
+        | Result.Ok(r,m) -> Result.Ok((projectJsonFiles |> Array.toList,r),m)
+        | Result.Bad(m) -> Result.Bad(m)
 
     let read (rootDirectory : DirectoryInfo) = trial {
         let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
         let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Array.tryHead
         let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Array.tryHead
         let! config = readNugetConfig rootDirectory
-        let! packages = readNugetPackages rootDirectory
+        let! projectJsonFiles,packages = readNuGetPackages rootDirectory
 
-        return create rootDirectory configs targets exe config packages
+        return create rootDirectory configs targets exe config packages projectJsonFiles
     }
 
 type ConvertResultR = 
@@ -223,6 +237,15 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
 
+    let projectJsonPackages =
+        nugetEnv.ProjectJsonFiles 
+        |> List.map (fun p ->
+                 match p with
+                 | ProjectType.Project p -> failwithf "Project %s cannot be used as project.json" p.FileName
+                 | ProjectType.ProjectJson p -> p.GetDependencies())
+        |> List.concat
+        |> List.distinct
+
     let allVersionsGroupped =
         nugetEnv.NuGetProjectFiles
         |> List.collect (fun (_,c) -> c.Packages)
@@ -241,8 +264,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     findWarnings (List.map (fun p -> p.Version) >> List.distinct >> List.map string) 
         "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
     findWarnings (List.map (fun p -> p.TargetFramework) >> List.distinct >> List.choose (fun target -> target) >> List.map string) 
-        "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."
-    
+        "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."    
+
     let latestVersions = 
         findDistinctPackages (List.map (fun p -> p.Version, p.TargetFramework) >> List.distinct)
         |> List.map (fun (name, versions) ->
@@ -259,10 +282,15 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         | _ -> latestVersions
 
     let read() =
-        let addPackages dependenciesFile = 
-            packages
-            |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = FrameworkRestrictionList restrictions})
-            |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,version,installSettings) -> dependenciesFile.Add(groupName, packageName,version,installSettings)) dependenciesFile
+        let addPackages dependenciesFile =
+            let afterProject =
+                packages
+                |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = FrameworkRestrictionList restrictions})
+                |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,version,installSettings) -> dependenciesFile.Add(groupName, packageName,version,installSettings)) dependenciesFile
+
+            projectJsonPackages
+            |> List.fold (fun (dependenciesFile:DependenciesFile) (packageName,vr) -> 
+                dependenciesFile.AddAdditionalPackage(Constants.MainDependencyGroup, packageName,vr,None,InstallSettings.Default)) afterProject
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
             |> ok
@@ -287,11 +315,18 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         sources
         |> lift (fun sources -> 
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
-            let packageLines = 
-                packages 
-                |> List.map (fun (name,v,restr) -> 
-                    let vr = createPackageRequirement (name, v, FrameworkRestrictionList restr) dependenciesFileName
-                    DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
+            let packageLines =
+                let afterProject =
+                    packages 
+                    |> List.map (fun (name,v,restr) -> 
+                        let vr = createPackageRequirement (name, v, FrameworkRestrictionList restr) dependenciesFileName
+                        DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
+
+
+                projectJsonPackages
+                |> List.map (fun (packageName,vr) -> 
+                    DependenciesFileSerializer.packageString packageName vr None InstallSettings.Default) 
+                |> List.append afterProject
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray
 

@@ -91,6 +91,33 @@ let ``can add simple dependencies to empty project.json``() =
     let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
     doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
 
+    
+[<Test>]
+let ``can extract dependencies from empty``() = 
+
+    let doc = ProjectJsonFile("",empty)
+    let deps = doc.GetDependencies()
+    deps 
+    |> shouldEqual []
+
+[<Test>]
+let ``can extract dependencies``() = 
+
+    let expected =
+        """{
+    "dependencies": {
+        "a": "[1.0.0]",
+        "NETStandard.Library": "[1.0.0-rc2-23727]"
+    }
+}"""
+
+    let doc = ProjectJsonFile("",expected)
+    let deps = doc.GetDependencies()
+    deps 
+    |> List.map (fun (n,v) ->n.ToString(),v.ToString())
+    |> shouldEqual ["a", "1.0.0"; "NETStandard.Library", "1.0.0-rc2-23727"]
+
+
 [<Test>]
 let ``can add simple dependencies to project.json without deps``() = 
 

@@ -10,6 +10,7 @@ open System.Diagnostics
 open Paket
 open Paket.Domain
 open Paket.Requirements
+open Paket.ProjectJson
 
 [<Test>]
 let ``#1217 should convert simple C# project``() = 
@@ -63,3 +64,22 @@ let ``#1217 should replace packages.config files in project``() =
     let projectFile = ProjectFile.loadFromFile(Path.Combine(scenarioTempPath "i001217-convert-simple-project", "ClassLibrary1", "ClassLibrary1.csproj"))
     projectFile.Document.OuterXml.Contains("packages.config") |> shouldEqual false
     projectFile.Document.OuterXml.Contains("paket.references") |> shouldEqual true
+
+
+[<Test>]
+let ``#1217 should convert simple project.json``() = 
+    let originalProjectFile = ProjectJsonFile.Load(Path.Combine(originalScenarioPath "i001217-convert-json-project", "project.jsontemplate"))
+    originalProjectFile.GetDependencies() 
+    |> List.map (fun (n,v) -> n.ToString(),v.ToString())
+    |> shouldEqual ["Newtonsoft.Json", ">= 1.0.0"]
+
+    paket "convert-from-nuget" "i001217-convert-json-project" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001217-convert-json-project","paket.lock"))
+    
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "1.0.0")
+
+    let projectFile = ProjectJsonFile.Load(Path.Combine(scenarioTempPath "i001217-convert-json-project", "project.json"))
+    projectFile.GetDependencies() 
+    |> List.map (fun (n,v) ->n.ToString(),v.ToString())
+    |> shouldEqual []

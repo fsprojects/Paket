@@ -8,13 +8,11 @@ open System
 open System.IO
 open Paket
 open System
+open Paket.Domain
 
 type ProjectJsonProperties = {
       [<JsonProperty("dependencies")>]
       Dependencies : Dictionary<string, string>
-
-      [<JsonExtensionData>]
-      mutable AdditionalData: IDictionary<string, JToken>
     }
 
 type ProjectJsonFile(fileName:string,text:string) =
@@ -51,6 +49,15 @@ type ProjectJsonFile(fileName:string,text:string) =
             start,!pos,text
 
     member __.FileName = fileName
+
+    member __.GetDependencies() = 
+        let parsed = JsonConvert.DeserializeObject<ProjectJsonProperties>(text)
+        match parsed.Dependencies with
+        | null -> []
+        | _ ->
+            parsed.Dependencies
+            |> Seq.map (fun kv -> PackageName kv.Key, VersionRequirement.Parse(kv.Value))
+            |> Seq.toList
 
     member this.WithDependencies dependencies =
         let dependencies = 

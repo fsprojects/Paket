@@ -51,7 +51,7 @@
     <StartArguments>pack -v output D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp\out</StartArguments>
     <StartArguments>pack output "out/nuget"  version  0.9.3 releaseNotes  "[LanguageExtensions][New] New Ensure methods with exception parameter." include-referenced-projects</StartArguments>
     <StartArguments>update</StartArguments>
-    <StartArguments>install</StartArguments>
+    <StartArguments>convert-from-nuget</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -75,7 +75,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Journalist</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001450-twiddle-wakka\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001466-expressive\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\test</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
