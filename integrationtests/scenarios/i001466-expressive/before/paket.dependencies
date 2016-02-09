@@ -1,0 +1,7 @@
+source https://www.nuget.org/api/v2/
+content: none
+import_targets: false
+framework: net45
+redirects: off
+
+nuget ExpressiveAnnotations.dll = 2.3.6

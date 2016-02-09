@@ -1,3 +1,6 @@
+#### 2.49.8 - 09.02.2016
+* BUGFIX: Install packages that end in .dll - https://github.com/fsprojects/Paket/issues/1466
+
 #### 2.49.7 - 08.02.2016
 * WORKAROUND: Don't use v3 getPackageDetails on nuget.org
 
