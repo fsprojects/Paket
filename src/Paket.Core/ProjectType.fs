@@ -56,6 +56,7 @@ type ProjectType =
         member this.GetAssemblyName() =
             match this with
             | Project p -> p.GetAssemblyName()
+            | ProjectJson p -> FileInfo(p.FileName).Directory.Name + ".dll"
 
         member this.Save() =
             match this with
