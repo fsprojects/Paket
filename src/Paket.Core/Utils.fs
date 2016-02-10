@@ -72,7 +72,7 @@ let createDir path =
     with _ ->
         DirectoryCreateError path |> fail
 
-let rec deleteDir (dirInfo:DirectoryInfo) =
+let rec removeDirContents (dirInfo:DirectoryInfo) =
     if dirInfo.Exists then
         for fileInfo in dirInfo.GetFiles() do
             fileInfo.Attributes <- FileAttributes.Normal
@@ -82,6 +82,10 @@ let rec deleteDir (dirInfo:DirectoryInfo) =
             deleteDir childInfo
 
         dirInfo.Attributes <- FileAttributes.Normal
+
+and deleteDir (dirInfo:DirectoryInfo) =
+    if dirInfo.Exists then
+        removeDirContents dirInfo
         dirInfo.Delete()
 
 /// Cleans a directory by deleting it and recreating it.

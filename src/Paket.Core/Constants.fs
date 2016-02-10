@@ -34,7 +34,15 @@ let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 
 let UserProfile = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile)
 let GitRepoCacheFolder = Path.Combine(UserProfile,".paket","git","db")
-let UserNuGetPackagesFolder = Path.Combine(UserProfile,".nuget","packages")
+
+
+let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
+let UserNuGetPackagesFolder = 
+    let path = Environment.GetEnvironmentVariable(GlobalPackagesFolderEnvironmentKey)
+    if String.IsNullOrEmpty path then
+        Path.Combine(UserProfile,".nuget","packages")
+    else
+        path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
 /// The magic unpublished date is 1900-01-01T00:00:00
 let MagicUnlistingDate = DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8.)).DateTime
