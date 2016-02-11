@@ -164,8 +164,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
 
     let rest = 
         stillOpen
-        |> Seq.filter ((<>) dependency)
-        |> Set.ofSeq
+        |> Set.filter ((<>) dependency)
     
     dependenciesByName
     |> Set.map (fun (n, v, restriction) -> 
