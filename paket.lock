@@ -9,21 +9,21 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (58a60c7aae2d0fcb229762d4af2c0e2f9f8646ba)
+    src/app/FakeLib/Globbing/Globbing.fs (43c4800c5f132d2c2d6832a3a59232a64d83d4c0)
   remote: fsharp/FSharp.Data
   specs:
-    src/CommonProviderImplementation/AssemblyReader.fs (9b01f37126d5b2487dac5da7899bb2b1a5cb56ef)
+    src/CommonProviderImplementation/AssemblyReader.fs (944bbc4796f35b8358f342dab2c8a706e20fed5a)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    FAKE (4.19.0)
-    FSharp.Compiler.Service (1.4.2.3)
-    FSharp.Formatting (2.13.5)
-      FSharp.Compiler.Service (>= 1.4.2 < 1.5.0)
-      FSharpVSPowerTools.Core (>= 2.2.0 < 2.3.0)
-    FSharpVSPowerTools.Core (2.2.0)
-      FSharp.Compiler.Service (>= 1.4.2.0)
+    FAKE (4.20.0)
+    FSharp.Compiler.Service (2.0.0.4)
+    FSharp.Formatting (2.14.0)
+      FSharp.Compiler.Service (>= 2.0.0.3 < 2.1.0)
+      FSharpVSPowerTools.Core (>= 2.3.0 < 2.4.0)
+    FSharpVSPowerTools.Core (2.3.0)
+      FSharp.Compiler.Service (>= 2.0.0.3)
     ILRepack (2.0.10)
     Microsoft.Bcl (1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
@@ -36,7 +36,7 @@ NUGET
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (58a60c7aae2d0fcb229762d4af2c0e2f9f8646ba)
+    modules/Octokit/Octokit.fsx (43c4800c5f132d2c2d6832a3a59232a64d83d4c0)
       Octokit
 GROUP Test
 NUGET
