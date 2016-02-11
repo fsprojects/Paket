@@ -1,0 +1,23 @@
+type file
+id Paket.Test.D
+owners Paket
+authors Paket
+projectUrl
+    https://github.com/
+iconUrl
+    http://github.io/logo.png
+licenseUrl
+    https://github.com/LICENSE.txt
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    wdk
+summary
+    Sbs Core Library
+description
+    provides connecting to sbs on the network layer
+dependencies
+    Paket.Test.C >= 0.0.0-prerelease
+    Paket.Test.B >= 0.0.0-prerelease

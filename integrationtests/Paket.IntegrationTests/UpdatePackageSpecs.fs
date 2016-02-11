@@ -55,6 +55,13 @@ let ``#1178 update specific package``() =
     |> shouldEqual (SemVer.Parse "5.0.1")
 
 [<Test>]
+let ``#1469 update package in main group``() =
+    update "i001469-darkseid" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001469-darkseid","paket.lock"))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Darkseid"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "0.2.1")
+
+[<Test>]
 let ``#1178 update with Mircosoft.* filter``() =
     paket "update nuget Microsoft.* --filter" "i001178-update-with-regex" |> ignore
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001178-update-with-regex","paket.lock"))
@@ -90,3 +97,16 @@ let ``#1413 doesn't take symbols``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001413-symbols","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Composable.Core"].Version
     |> shouldEqual (SemVer.Parse "3.4.0")
+
+[<Test>]
+let ``#1432 update doesn't throw Stackoverflow``() =
+    let scenario = "i001432-stackoverflow"
+
+    prepare scenario
+    directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario |> ignore
+    directPaket "pack templatefile paket.A.template version 1.0.0 output bin" scenario |> ignore
+    directPaket "pack templatefile paket.A.template version 1.1.0-prerelease output bin" scenario |> ignore
+    directPaket "pack templatefile paket.B.template version 1.0.0 output bin" scenario |> ignore
+    directPaket "pack templatefile paket.C.template version 1.0.0-prerelease output bin" scenario |> ignore
+    directPaket "pack templatefile paket.D.template version 1.0.0-prerelease output bin" scenario  |> ignore
+    directPaket "update" scenario|> ignore

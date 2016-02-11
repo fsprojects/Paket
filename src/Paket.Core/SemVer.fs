@@ -144,6 +144,7 @@ type SemVerInfo =
                     | None, None -> 0
                     | Some p, None -> -1
                     | None, Some p -> 1
+                    | Some p, Some p2 when p.ToString() = "prerelease" && p2.ToString() = "prerelease" -> 0
                     | Some p, _ when p.ToString() = "prerelease" -> -1
                     | _, Some p when p.ToString() = "prerelease" -> 1
                     | Some left, Some right -> compare left right
