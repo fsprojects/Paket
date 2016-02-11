@@ -1,4 +1,7 @@
-#### 2.50.2 - 10.02.2016
+#### 2.50.3 - 11.02.2016
+* Fix StackOverflow from https://github.com/fsprojects/Paket/issues/1432 
+
+#### 2.50.2 - 11.02.2016
 * Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
 
 #### 2.50.0 - 09.02.2016
