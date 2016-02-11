@@ -115,7 +115,7 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Choose>
-    <When Condition="$(Platform)'=='Debug|Win32'">
+    <When Condition="'$(Platform)'=='Debug|Win32'">
       <PropertyGroup>
         <__paket__cpprestsdk_v120_winapp_msvcstl_dyn_rt-dyn_targets>native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn</__paket__cpprestsdk_v120_winapp_msvcstl_dyn_rt-dyn_targets>
       </PropertyGroup>
