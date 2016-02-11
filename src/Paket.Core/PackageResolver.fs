@@ -466,6 +466,9 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                             let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions
                         
                             let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
+                            if newOpen = openRequirements then 
+                                failwithf "The resolver confused itself. The new open requirements are the same as the old ones. This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A" Environment.NewLine currentRequirement Environment.NewLine newOpen
+
                             let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
 
                             state := step (relax,newFilteredVersions,newResolution,Set.add currentRequirement closedRequirements,newOpen)

@@ -61,7 +61,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001270-net461\temp</StartWorkingDirectory>
     <StartWorkingDirectory>C:\code\restore</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001450-twiddle-wakka\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001467-cpp-native\before</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\paket-issue-repro</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
