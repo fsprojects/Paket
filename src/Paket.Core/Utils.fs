@@ -125,6 +125,13 @@ let inline createRelativePath root path =
     let uri = Uri basePath
     uri.MakeRelativeUri(Uri path).ToString().Replace("/", "\\").Replace("%20", " ")
 
+let getNative (path:string) =
+    if path.Contains "/x86/debug" then "x86/debug" else
+    if path.Contains "/x86/release" then "/x86/release" else
+    if path.Contains "/x64/debug" then "/x64/debug" else
+    if path.Contains "/x64/release" then "/x64/release" else
+    ""
+
 let extractPath infix (fileName : string) : string option=
     let path = fileName.Replace("\\", "/").ToLower()
     let fi = FileInfo path
@@ -133,8 +140,7 @@ let extractPath infix (fileName : string) : string option=
     let endPos = path.IndexOf('/', startPos + infix.Length + 1)
     if startPos < 0 then None 
     elif endPos < 0 then Some ""
-    else 
-        Some (path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1))
+    else Some (path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1) + getNative path)
 
 /// The path of the "Program Files" folder - might be x64 on x64 machine
 let ProgramFiles = Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles

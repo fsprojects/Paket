@@ -136,6 +136,7 @@ let getTargetCondition (target:TargetProfile) =
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
+        | Native(profile,bits) -> (sprintf "$(Platform)'=='%s|%s'" profile bits), ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (referenceCondition:string option) (targets : TargetProfile list) =
