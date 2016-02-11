@@ -1,3 +1,6 @@
+#### 2.50.5 - 11.02.2016
+* Fix Platform matching bug in CPP projects - https://github.com/fsprojects/Paket/issues/1467
+
 #### 2.50.4 - 11.02.2016
 * Fix StackOverflow from https://github.com/fsprojects/Paket/issues/1432 
 
