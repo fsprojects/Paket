@@ -12,7 +12,7 @@ GITHUB
     src/app/FakeLib/Globbing/Globbing.fs (43c4800c5f132d2c2d6832a3a59232a64d83d4c0)
   remote: fsharp/FSharp.Data
   specs:
-    src/CommonProviderImplementation/AssemblyReader.fs (9b01f37126d5b2487dac5da7899bb2b1a5cb56ef)
+    src/CommonProviderImplementation/AssemblyReader.fs (944bbc4796f35b8358f342dab2c8a706e20fed5a)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
