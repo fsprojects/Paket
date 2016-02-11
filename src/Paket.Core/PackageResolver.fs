@@ -164,7 +164,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
 
     let rest = 
         stillOpen
-        |> Set.filter ((<>) dependency)
+        |> Set.remove dependency
     
     dependenciesByName
     |> Set.map (fun (n, v, restriction) -> 

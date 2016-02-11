@@ -1,4 +1,4 @@
-#### 2.50.3 - 11.02.2016
+#### 2.50.4 - 11.02.2016
 * Fix StackOverflow from https://github.com/fsprojects/Paket/issues/1432 
 
 #### 2.50.2 - 11.02.2016
