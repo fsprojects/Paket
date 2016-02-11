@@ -162,8 +162,11 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
         exploredPackage.Dependencies
         |> Set.filter (fun (name,_,_) -> hashSet.Add name)
 
-    let rest = Set.remove dependency stillOpen
-
+    let rest = 
+        stillOpen
+        |> Seq.filter ((<>) dependency)
+        |> Set.ofSeq
+    
     dependenciesByName
     |> Set.map (fun (n, v, restriction) -> 
         let newRestrictions = 
