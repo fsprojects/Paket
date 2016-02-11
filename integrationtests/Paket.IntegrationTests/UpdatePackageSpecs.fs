@@ -55,6 +55,13 @@ let ``#1178 update specific package``() =
     |> shouldEqual (SemVer.Parse "5.0.1")
 
 [<Test>]
+let ``#1469 update package in main group``() =
+    update "i001469-darkseid" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001469-darkseid","paket.lock"))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Darkseid"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "0.2.1")
+
+[<Test>]
 let ``#1178 update with Mircosoft.* filter``() =
     paket "update nuget Microsoft.* --filter" "i001178-update-with-regex" |> ignore
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001178-update-with-regex","paket.lock"))
