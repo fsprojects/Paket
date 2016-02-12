@@ -1,3 +1,6 @@
+#### 2.50.8 - 13.02.2016
+* Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
+
 #### 2.50.7 - 13.02.2016
 * Do not pack absolute paths - https://github.com/fsprojects/Paket/issues/1472
 

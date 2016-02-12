@@ -123,19 +123,22 @@ let inline createRelativePath root path =
 let getNative (path:string) =
     if path.Contains "/x86/debug" then "x86/debug" else
     if path.Contains "/x86/release" then "/x86/release" else
+    if path.Contains "/arm/debug" then "/arm/debug" else
+    if path.Contains "/arm/release" then "/arm/release" else
     if path.Contains "/x64/debug" then "/x64/debug" else
     if path.Contains "/x64/release" then "/x64/release" else
     ""
 
-let extractPath infix (fileName : string) : string option=
+let extractPath infix (fileName : string) : string option =
     let path = fileName.Replace("\\", "/").ToLower()
     let fi = FileInfo path
 
     let startPos = path.LastIndexOf (sprintf "%s/" infix)
     let endPos = path.IndexOf('/', startPos + infix.Length + 1)
     if startPos < 0 then None 
-    elif endPos < 0 then Some ""
-    else Some (path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1) + getNative path)
+    elif endPos < 0 then Some("")
+    else
+        Some (path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1) + getNative path)
 
 /// [omit]
 let inline normalizeXml (doc:XmlDocument) =

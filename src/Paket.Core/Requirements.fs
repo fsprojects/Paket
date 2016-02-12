@@ -271,6 +271,7 @@ let isTargetMatchingRestrictions (restrictions:FrameworkRestriction list) = func
         restrictions
         |> List.exists (fun restriction ->
                 match restriction with
+                | FrameworkRestriction.Exactly (Native("","")) -> match pf with | Native(_) -> true | _ -> false
                 | FrameworkRestriction.Exactly fw -> pf = fw
                 | FrameworkRestriction.Portable _ -> false
                 | FrameworkRestriction.AtLeast fw -> pf >= fw && pf.IsSameCategoryAs(fw)
