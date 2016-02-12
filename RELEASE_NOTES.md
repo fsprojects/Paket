@@ -1,3 +1,6 @@
+#### 2.50.6 - 12.02.2016
+* Keep Auth from dependencies file for fast path - https://github.com/fsprojects/Paket/issues/1469
+
 #### 2.50.5 - 11.02.2016
 * Fix Platform matching bug in CPP projects - https://github.com/fsprojects/Paket/issues/1467
 
