@@ -6,6 +6,11 @@ open System.Xml
 open Xml
 
 [<RequireQualifiedAccess>]
+type ProjectTypeReference =
+| Project of ProjectReference
+| ProjectJson of ProjectJsonReference
+
+[<RequireQualifiedAccess>]
 type ProjectType =
 | Project of ProjectFile
 | ProjectJson of ProjectJsonFile
@@ -96,15 +101,21 @@ type ProjectType =
 
         member this.GetInterProjectDependencies() =
             match this with
-            | ProjectType.Project project -> project.GetInterProjectDependencies()
-            | ProjectType.ProjectJson project -> []  // TODO: What about project.json?
+            | ProjectType.Project project -> project.GetInterProjectDependencies() |> List.map (fun p -> ProjectTypeReference.Project p)
+            | ProjectType.ProjectJson project -> project.GetInterProjectDependencies() |> List.map (fun p -> ProjectTypeReference.ProjectJson p)
 
         member this.GetAllReferencedProjects() = 
             let rec getProjects (project:ProjectType) = 
                 seq {
                     let projects = 
                         project.GetInterProjectDependencies() 
-                            |> Seq.map (fun proj -> ProjectType.Project(ProjectFile.tryLoad(proj.Path).Value))  // TODO: What about project.json?
+                            |> Seq.map (fun proj -> 
+                                match proj with
+                                | ProjectTypeReference.Project proj -> ProjectType.Project(ProjectFile.tryLoad(proj.Path).Value)
+                                | ProjectTypeReference.ProjectJson p-> 
+                                    let directory = FileInfo(this.FileName).Directory.Parent
+                                    let p = Path.Combine(directory.FullName,p.Name.ToString(),"project.json")
+                                    ProjectType.ProjectJson(ProjectJsonFile.Load p))
 
                     yield! projects
                     for proj in projects do

@@ -12,11 +12,49 @@ open Paket.Domain
 
 type ProjectJsonProperties = {
       [<JsonProperty("dependencies")>]
-      Dependencies : Dictionary<string, string>
+      Dependencies : Dictionary<string, JToken>
     }
 
+/// Project references inside of project.json files.
+type ProjectJsonReference = 
+    { Name : PackageName
+      Data : string }
+
+    override this.ToString() = sprintf "\"%O\": %s" this.Name this.Data
+
 type ProjectJsonFile(fileName:string,text:string) =
-    
+    let parsed = lazy(JsonConvert.DeserializeObject<ProjectJsonProperties>(text))
+
+    let dependencies = 
+        lazy(
+            match parsed.Force().Dependencies with
+            | null -> []
+            | dependencies ->
+                dependencies
+                |> Seq.choose (fun kv -> 
+                    let text = kv.Value.ToString()
+                    if text.Contains "{" then
+                        None
+                    else
+                        Some(PackageName kv.Key, VersionRequirement.Parse(kv.Value.ToString())))
+                |> Seq.toList)
+
+    let interProjectDependencies = 
+        lazy(
+            match parsed.Force().Dependencies with
+            | null -> []
+            | dependencies ->
+                dependencies
+                |> Seq.choose (fun kv -> 
+                    let text = kv.Value.ToString(Formatting.None)
+                    if text.Contains "{" then
+                        Some
+                            { Name = PackageName kv.Key
+                              Data = text }
+                    else
+                        None)
+                |> Seq.toList)
+
     let rec findPos (property:string) (text:string) =
         let needle = sprintf "\"%s\"" property
         match text.IndexOf needle with
@@ -50,20 +88,25 @@ type ProjectJsonFile(fileName:string,text:string) =
 
     member __.FileName = fileName
 
-    member __.GetDependencies() = 
-        let parsed = JsonConvert.DeserializeObject<ProjectJsonProperties>(text)
-        match parsed.Dependencies with
-        | null -> []
-        | _ ->
-            parsed.Dependencies
-            |> Seq.map (fun kv -> PackageName kv.Key, VersionRequirement.Parse(kv.Value))
-            |> Seq.toList
+    member __.GetDependencies() = dependencies.Force()
+
+    member __.GetInterProjectDependencies() = interProjectDependencies.Force()
 
     member this.WithDependencies dependencies =
-        let dependencies = 
+        let nuGetDependencies = 
             dependencies 
-            |> Seq.toList
             |> List.sortByDescending fst
+            |> List.map (fun (name,version) -> sprintf "\"%O\": \"[%O]\"" name version)
+
+        let interProjectDependencies = 
+            interProjectDependencies.Force()
+            |> List.map (fun p -> p.ToString())
+
+        let dependencies = 
+            match interProjectDependencies, nuGetDependencies with
+            | [],nuGetDependencies -> nuGetDependencies
+            | interProjectDependencies,[] -> interProjectDependencies
+            | _ -> interProjectDependencies @ [""] @ nuGetDependencies
 
         let start,endPos,text = findPos "dependencies" text
         let getIndent() =
@@ -85,11 +128,15 @@ type ProjectJsonFile(fileName:string,text:string) =
                 let indent = "".PadLeft (max 4 (getIndent() + 3))
                 let i = ref 1
                 let n = dependencies.Length
-                for name,version in dependencies do
-                    let line = sprintf "\"%O\": \"[%O]\"%s" name version (if !i < n then "," else "")
+                for d in dependencies do
+                    if d = "" then
+                        sb.AppendLine("") |> ignore
+                        incr i
+                    else
+                        let line = d + (if !i < n then "," else "")
 
-                    sb.AppendLine(indent + line) |> ignore
-                    incr i
+                        sb.AppendLine(indent + line) |> ignore
+                        incr i
                 sb.Append(indent.Substring(4) +  "}")
 
         sb.Append(text.Substring(endPos)) |> ignore

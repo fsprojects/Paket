@@ -83,3 +83,26 @@ let ``#1217 should convert simple project.json``() =
     projectFile.GetDependencies() 
     |> List.map (fun (n,v) ->n.ToString(),v.ToString())
     |> shouldEqual []
+
+[<Test>]
+let ``#1217 should convert project.json app``() = 
+    let originalProjectFile = ProjectJsonFile.Load(Path.Combine(originalScenarioPath "i001217-convert-json-projects", "TestApp", "project.jsontemplate"))
+    originalProjectFile.GetDependencies() 
+    |> List.map (fun (n,v) -> n.ToString(),v.ToString())
+    |> shouldEqual ["Newtonsoft.Json", ">= 1.0.0"]
+
+    let originalInterprojectDependencies = originalProjectFile.GetInterProjectDependencies()
+
+    paket "convert-from-nuget" "i001217-convert-json-projects" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001217-convert-json-projects","paket.lock"))
+    
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "1.0.0")
+
+    let projectFile = ProjectJsonFile.Load(Path.Combine(scenarioTempPath "i001217-convert-json-projects", "TestApp", "project.json"))
+    projectFile.GetDependencies() 
+    |> List.map (fun (n,v) ->n.ToString(),v.ToString())
+    |> shouldEqual []
+
+    projectFile.GetInterProjectDependencies()
+    |> shouldEqual (originalProjectFile.GetInterProjectDependencies())

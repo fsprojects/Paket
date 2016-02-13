@@ -1,0 +1,15 @@
+{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "nowarn": [ "CS1591" ],
+        "xmlDoc": true,
+        "additionalArguments": [ "-highentropyva+" ]
+    },
+    "dependencies": {
+        "Newtonsoft.Json": "1.0.0"
+    },
+
+    "frameworks": {
+        "dnxcore50": { }
+    }
+}

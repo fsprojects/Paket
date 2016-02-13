@@ -38,6 +38,26 @@ let removed =
     }
 }"""
 
+let TestApp =
+        """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true,
+        "preserveCompilationContext": true
+    },
+
+    "dependencies": {
+        "TestLibrary": { "target":"project", "version":"1.0.0-*" },
+
+        "NETStandard.Library": "1.0.0-rc2-23811"
+    },
+
+    "frameworks": {
+        "dnxcore50": { }
+    }
+}"""
+
+
 
 [<Test>]
 let ``can remove dependencies from fresh project.json``() = 
@@ -103,7 +123,7 @@ let ``can extract dependencies from empty``() =
 [<Test>]
 let ``can extract dependencies``() = 
 
-    let expected =
+    let original =
         """{
     "dependencies": {
         "a": "[1.0.0]",
@@ -111,12 +131,53 @@ let ``can extract dependencies``() =
     }
 }"""
 
-    let doc = ProjectJsonFile("",expected)
+    let doc = ProjectJsonFile("",original)
     let deps = doc.GetDependencies()
     deps 
     |> List.map (fun (n,v) ->n.ToString(),v.ToString())
     |> shouldEqual ["a", "1.0.0"; "NETStandard.Library", "1.0.0-rc2-23727"]
 
+
+[<Test>]
+let ``can extract dependencies from TestApp``() = 
+
+    let doc = ProjectJsonFile("",TestApp)
+    let deps = doc.GetDependencies()
+    deps 
+    |> List.map (fun (n,v) ->n.ToString(),v.ToString())
+    |> shouldEqual ["NETStandard.Library", ">= 1.0.0-rc2-23811"]
+
+    let deps = doc.GetInterProjectDependencies()
+    deps 
+    |> List.map (fun x -> x.ToString())
+    |> shouldEqual [""""TestLibrary": {"target":"project","version":"1.0.0-*"}"""]
+
+[<Test>]
+let ``can add simple dependencies to TestApp``() = 
+
+    let expected =
+        """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true,
+        "preserveCompilationContext": true
+    },
+
+    "dependencies": {
+        "TestLibrary": {"target":"project","version":"1.0.0-*"},
+
+        "a": "[1.0.0]",
+        "NETStandard.Library": "[1.0.0-rc2-23727]"
+    },
+
+    "frameworks": {
+        "dnxcore50": { }
+    }
+}"""
+
+    let doc = ProjectJsonFile("",TestApp)
+    let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
+    doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
 
 [<Test>]
 let ``can add simple dependencies to project.json without deps``() = 
