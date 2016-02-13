@@ -997,10 +997,7 @@ module ProjectFile =
             match framework with
             | None -> defaultResult
             | Some s ->
-                let detectedFramework =
-                    prefix + s.Replace("v","")
-                    |> FrameworkDetection.Extract
-                match detectedFramework with
+                match FrameworkDetection.Extract(prefix + s.Replace("v","")) with
                 | None -> defaultResult
                 | Some x -> SinglePlatform x
     

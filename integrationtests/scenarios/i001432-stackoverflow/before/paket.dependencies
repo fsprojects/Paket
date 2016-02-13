@@ -1,0 +1,4 @@
+source bin
+
+nuget Paket.Test.D prerelease
+
