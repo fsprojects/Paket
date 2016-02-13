@@ -112,7 +112,7 @@ type FrameworkIdentifier =
         | MonoAndroid -> [ ]
         | MonoTouch -> [ ]
         | MonoMac -> [ ]
-        | Native _ -> [ ]
+        | Native(_) -> [ ]
         | XamariniOS -> [ ]
         | XamarinMac -> [ ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
@@ -198,11 +198,13 @@ module FrameworkDetection =
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
-                | "native" -> Some(Native("Debug","Win32"))
                 | "native/x86/debug" -> Some(Native("Debug","Win32"))
                 | "native/x64/debug" -> Some(Native("Debug","x64"))
+                | "native/arm/debug" -> Some(Native("Debug","arm"))
                 | "native/x86/release" -> Some(Native("Release","Win32"))
                 | "native/x64/release" -> Some(Native("Release","x64"))
+                | "native/arm/release" -> Some(Native("Release","arm"))
+                | "native" -> Some(Native("",""))
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
@@ -230,8 +232,7 @@ module FrameworkDetection =
             let endPos = path.LastIndexOf(fi.Name,StringComparison.OrdinalIgnoreCase)
             if startPos < 0 || endPos < 0 then None
             else 
-                path.Substring(startPos + 4, endPos - startPos - 5) 
-                |> Extract
+                Extract(path.Substring(startPos + 4, endPos - startPos - 5))
 
 
 type TargetProfile =
@@ -340,10 +341,13 @@ module KnownTargetProfiles =
         SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
+        SinglePlatform(Native("",""))
         SinglePlatform(Native("Debug","Win32"))
-        SinglePlatform(Native("Release","Win32"))
+        SinglePlatform(Native("Debug","arm"))
         SinglePlatform(Native("Debug","x64"))
+        SinglePlatform(Native("Release","Win32"))
         SinglePlatform(Native("Release","x64"))
+        SinglePlatform(Native("Release","arm"))
         SinglePlatform(WindowsPhoneApp "v8.1")
         PortableProfile("Profile2", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v4.5"; WindowsPhoneSilverlight "v7.0" ])
         PortableProfile("Profile3", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0" ])

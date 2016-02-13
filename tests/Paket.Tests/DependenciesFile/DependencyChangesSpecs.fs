@@ -62,7 +62,7 @@ nuget Castle.Windsor-log4net"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
    
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
-    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions(cfg,lockFile)
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
     |> shouldEqual Map.empty
@@ -100,7 +100,7 @@ nuget NUnit"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     let expected =
         Map.ofList
              [(Constants.MainDependencyGroup,PackageName "Castle.Core"), (SemVer.Parse "3.3.3");
@@ -148,7 +148,7 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     let expected =
         Map.ofList
             ([(Constants.MainDependencyGroup,PackageName "Castle.Core"), (SemVer.Parse "3.3.3");
@@ -195,7 +195,7 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile)
    
-    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+    let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
     |> shouldEqual Map.empty

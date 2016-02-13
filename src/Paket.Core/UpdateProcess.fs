@@ -121,7 +121,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                 nuGetChanges,groups
 
         let preferredVersions = 
-            DependencyChangeDetection.GetPreferredNuGetVersions lockFile
+            DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
             |> Map.map (fun k (v,s) -> v,[s])
 
         let getVersionsF sources resolverStrategy groupName packageName = 

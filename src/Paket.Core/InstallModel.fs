@@ -188,7 +188,7 @@ module InstallModel =
 
     let calcLibFolders libs =
         libs 
-        |> Seq.choose  extractLibFolder
+        |> Seq.choose extractLibFolder 
         |> Seq.distinct 
         |> List.ofSeq
         |> PlatformMatching.getSupportedTargetProfiles 
@@ -216,7 +216,7 @@ module InstallModel =
 
         Seq.fold (fun (model:InstallModel) file ->
             match extractLibFolder file with
-            | Some folderName -> 
+            | Some folderName ->
                 match Seq.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
                 | Some path -> addPackageFile path file references model
                 | _ -> model
@@ -329,7 +329,7 @@ module InstallModel =
 
         Seq.fold (fun model file ->
             match extractBuildFolder file with
-            | Some folderName -> 
+            | Some folderName ->
                 match Seq.tryFind (fun folder -> folder.Name = folderName) model.TargetsFileFolders with
                 | Some path -> addTargetsFile path file model
                 | _ -> model
