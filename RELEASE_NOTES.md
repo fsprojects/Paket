@@ -1,3 +1,6 @@
+#### 2.50.7 - 13.02.2016
+* Do not pack absolute paths - https://github.com/fsprojects/Paket/issues/1472
+
 #### 2.50.6 - 12.02.2016
 * Keep Auth from dependencies file for fast path - https://github.com/fsprojects/Paket/issues/1469
 

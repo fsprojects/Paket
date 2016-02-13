@@ -434,8 +434,10 @@ module internal TemplateFile =
                         if source.Contains("**") then
                             let sourceRoot = FileInfo(Path.Combine(root,source.Substring(0,source.IndexOf("**")))).FullName |> normalizePath
                             let fullFile = FileInfo(file).Directory.FullName |> normalizePath
-                            let newTarget = Path.Combine(target,fullFile.Replace(sourceRoot,"").TrimStart(Path.DirectorySeparatorChar))
-                            yield file, newTarget
+                            let file = fullFile.Replace(sourceRoot,"")
+                            if not <| Path.IsPathRooted file then
+                                let newTarget = Path.Combine(target,file.TrimStart(Path.DirectorySeparatorChar))
+                                yield file, newTarget
                         else
                             yield file, target ]
 
