@@ -343,6 +343,13 @@ let convertPackagesConfigToReferencesFile projectFileName packagesConfig =
     |> List.fold (fun (r : ReferencesFile) packageName -> r.AddNuGetReference(Constants.MainDependencyGroup,packageName)) 
                  referencesFile
 
+let convertDependenciesConfigToReferencesFile projectFileName dependencies =
+    let referencesFile = ProjectType.FindOrCreateReferencesFile(FileInfo projectFileName)
+
+    dependencies
+    |> List.fold (fun (r : ReferencesFile) (packageName,_) -> r.AddNuGetReference(Constants.MainDependencyGroup,packageName)) 
+                 referencesFile
+
 let convertProjects nugetEnv =
     [for project,packagesConfig in nugetEnv.NuGetProjectFiles do 
         match project with
@@ -351,7 +358,13 @@ let convertProjects nugetEnv =
             project.RemoveNuGetTargetsEntries()
             project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
             yield ProjectType.Project project, convertPackagesConfigToReferencesFile project.FileName packagesConfig
-        | ProjectType.ProjectJson p -> failwithf "Project %s cannot be used in classic NuGet conversion." p.FileName]
+        | ProjectType.ProjectJson p -> failwithf "Project %s cannot be used in classic NuGet conversion." p.FileName
+
+     for project in nugetEnv.ProjectJsonFiles do 
+        match project with
+        | ProjectType.Project p -> failwithf "Project %s cannot be used in classic NuGet conversion." p.FileName
+        | ProjectType.ProjectJson project -> 
+            yield ProjectType.ProjectJson project, convertDependenciesConfigToReferencesFile project.FileName (project.GetDependencies())]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode

@@ -82,7 +82,7 @@ let ``#1217 should convert simple project.json``() =
     let projectFile = ProjectJsonFile.Load(Path.Combine(scenarioTempPath "i001217-convert-json-project", "project.json"))
     projectFile.GetDependencies() 
     |> List.map (fun (n,v) ->n.ToString(),v.ToString())
-    |> shouldEqual []
+    |> shouldEqual ["Newtonsoft.Json", lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version.ToString()]
 
 [<Test>]
 let ``#1217 should convert project.json app``() = 
@@ -102,7 +102,13 @@ let ``#1217 should convert project.json app``() =
     let projectFile = ProjectJsonFile.Load(Path.Combine(scenarioTempPath "i001217-convert-json-projects", "TestApp", "project.json"))
     projectFile.GetDependencies() 
     |> List.map (fun (n,v) ->n.ToString(),v.ToString())
-    |> shouldEqual []
+    |> shouldEqual ["Newtonsoft.Json", lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version.ToString()]
 
     projectFile.GetInterProjectDependencies()
     |> shouldEqual (originalProjectFile.GetInterProjectDependencies())
+
+    let appReferences = ReferencesFile.FromFile(Path.Combine(scenarioTempPath "i001217-convert-json-projects", "TestApp", "paket.references"))
+    let libReferences = ReferencesFile.FromFile(Path.Combine(scenarioTempPath "i001217-convert-json-projects", "TestApp", "paket.references"))
+
+    appReferences.Groups.[Constants.MainDependencyGroup].NugetPackages |> List.map (fun n -> n.Name) |> shouldContain (PackageName "Newtonsoft.Json")
+    libReferences.Groups.[Constants.MainDependencyGroup].NugetPackages |> List.map (fun n -> n.Name) |> shouldContain (PackageName "Newtonsoft.Json")
