@@ -188,6 +188,7 @@ let writeNupkg  (core : CompleteCoreInfo) optional =
       relsPath, relsDoc core |> xDocWriter ]
 
 let Write (core : CompleteCoreInfo) optional workingDir outputDir =
+    let outputFolder = DirectoryInfo(outputDir).FullName |> normalizePath
     let outputPath = Path.Combine(outputDir, core.PackageFileName)
     if File.Exists outputPath then
         File.Delete outputPath
@@ -223,7 +224,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
 
     let isExcluded p =
         let path = DirectoryInfo(p).FullName
-        exclusions |> List.exists (fun f -> f path)
+        normalizePath path = outputFolder || (exclusions |> List.exists (fun f -> f path))
 
     let ensureValidName (target: string) =
         // Some characters that are considered reserved by RFC 2396
@@ -275,6 +276,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     let addEntryFromFile path source =
         if entries.Contains(path) then () else
         entries.Add path |> ignore
+        
         zipFile.CreateEntryFromFile(source,path) |> ignore
 
     let ensureValidTargetName (target:string) =

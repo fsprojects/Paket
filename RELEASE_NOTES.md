@@ -1,3 +1,6 @@
+#### 2.50.9 - 14.02.2016
+* BUGFIX: Do not try to pack output folder - https://github.com/fsprojects/Paket/issues/1473
+
 #### 2.50.8 - 13.02.2016
 * Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
 
