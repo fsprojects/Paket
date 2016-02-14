@@ -163,3 +163,11 @@ let ``#1429 pack deps with minimum-from-lock-file uses specifc dependencies file
     versionRequirement |> shouldEqual (VersionRequirement.Parse "[2.3.4]")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug","paket.template"))
+
+[<Test>]
+let ``#1473 works in same folder``() =
+    let scenario = "i001473-blocking"
+
+    prepare scenario
+    directPaket "pack templatefile paket.template output o" scenario |> ignore
+    directPaket "update" scenario|> ignore
