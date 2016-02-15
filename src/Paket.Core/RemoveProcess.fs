@@ -35,18 +35,18 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let dependenciesFile,lockFile =
+    let dependenciesFile,lockFile,hasChanged =
         let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        if stillInstalled then exisitingDependenciesFile,oldLockFile else
+        if stillInstalled then exisitingDependenciesFile,oldLockFile,false else
         let dependenciesFile = exisitingDependenciesFile.Remove(groupName,package)
         dependenciesFile.Save()
         
-        let lockFile,_ = UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.Install,SemVerUpdateMode.NoRestriction,force)
-        dependenciesFile,lockFile
+        let lockFile,hasChanged,_ = UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.Install,SemVerUpdateMode.NoRestriction,force)
+        dependenciesFile,lockFile,hasChanged
     
     if installAfter then
         let updatedGroups = Map.add groupName 0 Map.empty
-        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false, SemVerUpdateMode.NoRestriction), dependenciesFile, lockFile,updatedGroups)
+        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false, SemVerUpdateMode.NoRestriction), hasChanged, dependenciesFile, lockFile, updatedGroups)
 
 /// Removes a package with the option to remove it from a specified project.
 let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, hard, projectName, installAfter) =

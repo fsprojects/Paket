@@ -25,7 +25,7 @@ let ``#1251 full installer demo``() =
         [GroupName "Main",PackageName "FAKE"
          GroupName "Main",PackageName "FSharp.Formatting"] 
 
-    let lockFile,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
+    let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
     let model = Paket.InstallProcess.CreateModel(Path.GetDirectoryName dependenciesFile.FileName, force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, Map.empty) |> Map.ofArray
 
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FAKE"].Version
@@ -43,7 +43,7 @@ let ``#1251 install FSharp.Collections.ParallelSeq``() =
         // get from references file
         [GroupName "Main",PackageName "FSharp.Collections.ParallelSeq"] 
 
-    let lockFile,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
+    let lockFile,_,_ = UpdateProcess.SelectiveUpdate(dependenciesFile, PackageResolver.UpdateMode.Install, SemVerUpdateMode.NoRestriction, force)
 
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "FSharp.Collections.ParallelSeq"].Version
     |> shouldBeGreaterThan (SemVer.Parse "1.0.1")

@@ -63,10 +63,10 @@ type ProjectType =
             | Project p -> p.GetAssemblyName()
             | ProjectJson p -> FileInfo(p.FileName).Directory.Name + ".dll"
 
-        member this.Save() =
+        member this.Save(forceTouch) =
             match this with
-            | Project p -> p.Save()
-            | ProjectJson p -> p.Save()
+            | Project p -> p.Save(forceTouch)
+            | ProjectJson p -> p.Save(forceTouch)
 
         member this.HasPackageInstalled(groupName,package) =
             match this.FindReferencesFile() with

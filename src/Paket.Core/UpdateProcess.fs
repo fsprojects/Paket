@@ -213,18 +213,18 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdat
             dependenciesFile 
             updateMode
             semVerUpdateMode
-    lockFile.Save()
-    lockFile,updatedGroups
+    let hasChanged = lockFile.Save()
+    lockFile,hasChanged,updatedGroups
 
 /// Smart install command
 let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
-    let lockFile,updatedGroups = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
+    let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let projectsAndReferences = InstallProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
-        InstallProcess.InstallIntoProjects(options.Common, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
+        InstallProcess.InstallIntoProjects(options.Common, hasChanged, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =

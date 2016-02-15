@@ -145,9 +145,8 @@ type ProjectJsonFile(fileName:string,text:string) =
 
     override __.ToString() = text
 
-    member __.Save() =
-        let old = File.ReadAllText fileName
-        if text <> old then
+    member __.Save(forceTouch) =
+        if forceTouch || text <> File.ReadAllText fileName then
             File.WriteAllText(fileName,text)
 
     static member Load(fileName) : ProjectJsonFile =
