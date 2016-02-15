@@ -499,6 +499,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             tracefn "Locked version resolution written to %s" fileName
         else
             tracefn "%s is already up-to-date" fileName
+        hasChanged
 
     /// Parses a paket.lock file from file
     static member LoadFrom(lockFileName) : LockFile =

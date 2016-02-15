@@ -374,7 +374,7 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
 
     result.PaketEnv.DependenciesFile.Save()
     result.PaketEnv.Projects |> List.iter (fun (project, referencesFile) -> 
-                                                project.Save()
+                                                project.Save(true)
                                                 referencesFile.Save())
     result.SolutionFiles |> Array.iter (fun s -> s.Save())
 

@@ -1,3 +1,6 @@
+#### 2.50.10 - 15.02.2016
+* USABILITY: Touch project files when paket.lock changed in order to support incremental builds with MsBuild  - https://github.com/fsprojects/Paket/issues/1471
+
 #### 2.50.9 - 14.02.2016
 * BUGFIX: Do not try to pack output folder - https://github.com/fsprojects/Paket/issues/1473
 

@@ -34,25 +34,25 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let dependenciesFile,lockFile =
+    let dependenciesFile,(lockFile,hasChanged) =
         let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
-        if stillInstalled then exisitingDependenciesFile,oldLockFile else        
+        if stillInstalled then exisitingDependenciesFile,(oldLockFile,false) else
         let dependenciesFile = exisitingDependenciesFile.Remove(groupName,package)
         dependenciesFile.Save()
         
         dependenciesFile,UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.Install,SemVerUpdateMode.NoRestriction,force)
     
     if installAfter then
-        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false, SemVerUpdateMode.NoRestriction), dependenciesFile, lockFile)
+        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false, SemVerUpdateMode.NoRestriction), hasChanged, dependenciesFile, lockFile)
 
 /// Removes a package with the option to remove it from a specified project.
-let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, hard, projectName, installAfter) =    
+let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, hard, projectName, installAfter) =
     let groupName = 
         match groupName with
         | None -> Constants.MainDependencyGroup
         | Some name -> GroupName name
 
-    let removeFromSpecifiedProject (projects : ProjectFile seq) =        
+    let removeFromSpecifiedProject (projects : ProjectFile seq) =
         match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
             if p.HasPackageInstalled(groupName,packageName) then
@@ -71,7 +71,7 @@ let Remove(dependenciesFileName, groupName, packageName:PackageName, force, hard
         | Some name -> GroupName name
 
     let removeFromProjects (projects: ProjectFile seq) =
-        for project in projects do        
+        for project in projects do
             if project.HasPackageInstalled(groupName,packageName) then
                 if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s (group %O)?" project.Name groupName) then
                     removePackageFromProject project groupName packageName

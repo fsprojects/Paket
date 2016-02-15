@@ -942,8 +942,10 @@ module ProjectFile =
             )
 
 
-    let save project =
-        if Utils.normalizeXml project.Document <> project.OriginalText then 
+    let save forceTouch project =
+        if forceTouch then 
+            project.Document.Save(project.FileName)
+        elif Utils.normalizeXml project.Document <> project.OriginalText then 
             verbosefn "Project %s changed" project.FileName
             project.Document.Save(project.FileName)
 
@@ -1304,7 +1306,7 @@ type ProjectFile with
 
     member this.UpdateReferences (completeModel, usedPackages, hard) = ProjectFile.updateReferences completeModel usedPackages hard this
          
-    member this.Save () = ProjectFile.save this
+    member this.Save(forceTouch) = ProjectFile.save forceTouch this
 
     member this.GetPaketFileItems () = ProjectFile.getPaketFileItems this
 
