@@ -119,7 +119,7 @@ let private addConfigFileToProject project =
         |> Xml.addAttribute "Include" "app.config"
         |> itemGroup.AppendChild
         |> ignore
-        project.Save())
+        project.Save(false))
 
 /// Applies a set of binding redirects to a single configuration file.
 let private applyBindingRedirects isFirstGroup cleanBindingRedirects bindingRedirects (configFilePath:string) =

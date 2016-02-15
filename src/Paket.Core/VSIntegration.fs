@@ -11,7 +11,7 @@ open Releases
 let TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
 
-    trial {         
+    trial {
         do! downloadLatestBootstrapperAndTargets environment
         let paketTargetsPath = Path.Combine(exeDir, "paket.targets")
 
@@ -20,7 +20,7 @@ let TurnOnAutoRestore environment =
         |> List.iter (fun project ->
             let relativePath = createRelativePath project.FileName paketTargetsPath
             project.AddImportForPaketTargets(relativePath)
-            project.Save()
+            project.Save(true)
         )
     } 
 
@@ -37,6 +37,6 @@ let TurnOffAutoRestore environment =
         |> List.iter (fun project ->
             let relativePath = createRelativePath project.FileName paketTargetsPath
             project.RemoveImportForPaketTargets(relativePath)
-            project.Save()
+            project.Save(true)
         )
     }

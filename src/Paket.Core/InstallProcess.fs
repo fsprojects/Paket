@@ -266,7 +266,7 @@ let findAllReferencesFiles root =
      |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
+let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -385,7 +385,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             |> List.concat
 
         processContentFiles root project usedPackages gitRemoteItems options
-        project.Save()
+        project.Save forceTouch
         let loadedLibs = new Dictionary<_,_>()
 
         let first = ref true
@@ -410,7 +410,7 @@ let InstallIntoProjects(options : InstallerOptions, dependenciesFile, lockFile :
             first := false
 
 /// Installs all packages from the lock file.
-let Install(options : InstallerOptions, dependenciesFile, lockFile : LockFile, updatedGroups) =
+let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
     let projects = findAllReferencesFiles root |> returnOrFail
-    InstallIntoProjects(options, dependenciesFile, lockFile, projects, updatedGroups)
+    InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects, updatedGroups)
