@@ -56,7 +56,7 @@ type PackageFilter =
         | PackageFilter filter -> filter
 
 /// Represents a normalized group name
-[<System.Diagnostics.DebuggerDisplay("{Item}")>]
+[<System.Diagnostics.DebuggerDisplay("{Item2}")>]
 [<CustomEquality;CustomComparison>]
 type GroupName =
 | GroupName of string * string
