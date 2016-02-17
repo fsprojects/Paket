@@ -1101,4 +1101,32 @@ let ``SelectiveUpdate with SemVerUpdateMode.Minor updates package from a specifi
     result
     |> Seq.sortBy gfst
     |> shouldEqual expected
+
+[<Test>]
+let ``adding new group to lockfile should not crash``() =
+    let update deps lock = selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lock deps UpdateMode.Install SemVerUpdateMode.NoRestriction
+    
+    let initialDepsText = 
+        """source http://www.nuget.org/api/v2
+        nuget Castle.Core-log4net ~> 3.2"""
+    let emptyLock = LockFile.Parse("test", [||])
+
+    let addGroupDepsText = 
+        initialDepsText + """
+        group build
+            source http://www.nuget.org/api/v2
+            nuget FAKE"""
+    let deps = DependenciesFile.FromCode(initialDepsText)
+    
+    let installlock = update deps emptyLock
+    installlock.Groups.Count |> shouldEqual 1
+
+    let deps' = DependenciesFile.FromCode(addGroupDepsText)
+    let updatelock = update deps' installlock
+    
+    updatelock.Groups.Count |> shouldEqual 2
+
+    let group = updatelock.Groups.TryFind (GroupName "build")
+    group |> shouldNotEqual None
+    group.Value.Resolution.ContainsKey (PackageName "FAKE") |> shouldEqual true
     
