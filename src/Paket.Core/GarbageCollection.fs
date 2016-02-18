@@ -1,5 +1,5 @@
 ﻿/// Contains methods for the garbage collection of no longer needed files.
-module Paket.GarbageCollectionProcess
+module Paket.GarbageCollection
 
 open Paket
 open Paket.Domain
@@ -34,8 +34,8 @@ let discoverExtractedPackages root : ExtractedPackage list =
         packagesFolder.GetDirectories() |> Array.collect (fun dir -> findGroupPackages (GroupName dir.Name) dir)
     ] |> Array.concat |> List.ofArray
 
-/// Remove all packages from the packages folder which are not part pf the lock file.
-let DeleteUnusedPackages(root, lockFile:LockFile) =
+/// Remove all packages from the packages folder which are not part of the lock file.
+let deleteUnusedPackages root (lockFile:LockFile) =
 
     let resolutionKey package = package.GroupName, package.PackageName
     let delete package =
@@ -49,3 +49,8 @@ let DeleteUnusedPackages(root, lockFile:LockFile) =
     discoverExtractedPackages root
     |> List.filter (fun p -> resolutions |> Map.containsKey (resolutionKey p) |> not)
     |> List.iter delete
+
+/// Remove all packages from the packages folder which are not part of the lock file.
+let CleanUp(root, lockFile) =
+    deleteUnusedPackages root lockFile
+    //deleteUnusedPaketFiles root lockFile

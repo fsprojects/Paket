@@ -32,7 +32,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
 
         if installAfter then
             InstallProcess.Install(options, hasChanged, dependenciesFile, lockFile)
-            GarbageCollectionProcess.DeleteUnusedPackages(Path.GetDirectoryName(dependenciesFileName), lockFile)
+            GarbageCollection.CleanUp(Path.GetDirectoryName dependenciesFileName, lockFile)
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter) =

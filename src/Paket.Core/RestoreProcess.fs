@@ -113,4 +113,4 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
         |> Async.RunSynchronously
         |> ignore
 
-    GarbageCollectionProcess.DeleteUnusedPackages(root, lockFile)
+    GarbageCollection.CleanUp(root, lockFile)
