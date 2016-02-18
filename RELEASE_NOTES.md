@@ -1,7 +1,10 @@
-#### 3.0.0-alpha050 - 15.02.2016
+#### 3.0.0-alpha051 - 18.02.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+
+#### 2.50.11 - 18.02.2016
+* BUGFIX: fixed group transitive dependency checking - https://github.com/fsprojects/Paket/pull/1479
 
 #### 2.50.10 - 15.02.2016
 * USABILITY: Touch project files when paket.lock changed in order to support incremental builds with MsBuild  - https://github.com/fsprojects/Paket/issues/1471

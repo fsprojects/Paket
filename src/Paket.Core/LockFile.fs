@@ -508,20 +508,26 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         | None -> None
         
     member this.GetTransitiveDependencies(groupName) =
-        let group = groups.[groupName]
-        let fromNuGets =
-            group.Resolution 
-            |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
-            |> Seq.concat
-            |> Set.ofSeq
+        let collectDependenciesForGroup group = 
+            let fromNuGets =
+                group.Resolution 
+                |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
+                |> Seq.concat
+                |> Set.ofSeq
 
-        let fromSourceFiles =
-            group.RemoteFiles
-            |> Seq.map (fun d -> d.Dependencies |> Seq.map fst)
-            |> Seq.concat
-            |> Set.ofSeq
+            let fromSourceFiles =
+                group.RemoteFiles
+                |> Seq.map (fun d -> d.Dependencies |> Seq.map fst)
+                |> Seq.concat
+                |> Set.ofSeq
 
-        Set.union fromNuGets fromSourceFiles
+            Set.union fromNuGets fromSourceFiles
+
+        let group = groups.TryFind groupName
+        match group with
+        | None -> Set.empty
+        | Some group -> collectDependenciesForGroup group
+            
 
     member this.GetTopLevelDependencies(groupName) = 
         match groups |> Map.tryFind groupName with
