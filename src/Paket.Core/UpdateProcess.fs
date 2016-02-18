@@ -221,7 +221,7 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
 
     if not options.NoInstall then
         InstallProcess.InstallIntoProjects(options.Common, hasChanged, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
-        GarbageCollectionProcess.DeleteUnusedPackages(root, lockFile)
+        GarbageCollection.CleanUp(root, lockFile)
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
