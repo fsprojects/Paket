@@ -28,6 +28,20 @@ let FindReferencesForPackage groupName package environment = trial {
     return! findReferencesFor groupName package lockFile environment.Projects
 }
 
+let TouchReferencesOfPackages packages environment = trial {
+    let! references =
+        packages
+        |> List.map (fun (group,package) -> FindReferencesForPackage group package environment)
+        |> collect
+
+    references
+    |> List.collect id
+    |> List.distinctBy (fun project-> project.FileName)
+    |> List.iter (fun project ->
+        verbosefn "Touching project %s" project.FileName
+        ProjectFile.save true project)
+}
+
 let ShowReferencesFor packages environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
     let! projectsPerPackage =

@@ -235,22 +235,26 @@ type Dependencies(dependenciesFileName: string) =
                                                       NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
-    member this.Restore(): unit = this.Restore(false,None,[])
+    member this.Restore(): unit = this.Restore(false,None,[],false)
 
     /// Restores the given paket.references files.
-    member this.Restore(group: string option, files: string list): unit = this.Restore(false, group, files)
+    member this.Restore(group: string option, files: string list): unit = this.Restore(false, group, files, false)
 
     /// Restores the given paket.references files.
-    member this.Restore(force: bool, group: string option, files: string list): unit =
+    member this.Restore(force: bool, group: string option, files: string list, touchAffectedRefs: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> RestoreProcess.Restore(dependenciesFileName,force,Option.map GroupName group,files))
+            fun () ->
+                if touchAffectedRefs then
+                    let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
+                    this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
+                RestoreProcess.Restore(dependenciesFileName,force,Option.map GroupName group,files))
 
     /// Restores packages for all available paket.references files
     /// (or all packages if onlyReferenced is false)
-    member this.Restore(force: bool, group: string option, onlyReferenced: bool): unit =
+    member this.Restore(force: bool, group: string option, onlyReferenced: bool, touchAffectedRefs: bool): unit =
         if not onlyReferenced then 
-            this.Restore(force,group,[]) 
+            this.Restore(force,group,[],touchAffectedRefs) 
         else
             let referencesFiles =
                 this.RootPath
@@ -259,7 +263,7 @@ type Dependencies(dependenciesFileName: string) =
             if Array.isEmpty referencesFiles then
                 traceWarnfn "No paket.references files found for which packages could be installed."
             else 
-                this.Restore(force, group, Array.toList referencesFiles)
+                this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs)
 
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =

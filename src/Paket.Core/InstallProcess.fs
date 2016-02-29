@@ -216,8 +216,13 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
                             match loadedLibs.TryGetValue key with
                             | true,v -> v
                             | _ -> 
+                                let tempFile = Path.GetTempFileName()
+                                if File.Exists(tempFile) then
+                                    File.Delete tempFile
+                                File.Copy(library,tempFile)
                                 let v = Assembly.ReflectionOnlyLoadFrom library
                                 loadedLibs.Add(key,v)
+                                File.Delete tempFile
                                 v
 
                         Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.GetReferencedAssemblies(), redirects)
