@@ -1,3 +1,6 @@
+#### 2.50.16 - 29.02.2016
+* USABILITY: Prevent paket holding locks on assemblies during binding redirects
+
 #### 2.50.15 - 29.02.2016
 * USABILITY: Don't fail when we can't turn on auto-restote durin convert
 
