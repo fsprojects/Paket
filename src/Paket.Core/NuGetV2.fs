@@ -334,6 +334,11 @@ let inline isExtracted fileName =
     di.EnumerateFileSystemInfos()
     |> Seq.exists (fun f -> f.FullName <> fi.FullName)
 
+let IsPackageVersionExtracted(root, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath) =
+    let targetFolder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath).FullName
+    let targetFileName = Path.Combine(targetFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
+    isExtracted targetFileName
+
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
