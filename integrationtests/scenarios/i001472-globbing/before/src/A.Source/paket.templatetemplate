@@ -1,0 +1,22 @@
+type file
+id A.Source
+owners Team
+authors Team
+projectUrl
+    https://github.com/
+iconUrl
+    http://github.io/
+licenseUrl
+    https://github.com/
+requireLicenseAcceptance
+    false
+copyright
+    Copyright 2015
+tags
+    tag
+summary
+    summary
+description
+    Project has no description
+files
+   ../A/**/*.cs ==> content/A
