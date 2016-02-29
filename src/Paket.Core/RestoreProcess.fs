@@ -120,3 +120,5 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
         restore(root, kv.Key, dependenciesFile.Groups.[kv.Value.Name].Sources, force, lockFile,Set.ofSeq packages)
         |> Async.RunSynchronously
         |> ignore
+
+    GarbageCollection.CleanUp(root, lockFile)
