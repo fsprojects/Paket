@@ -115,6 +115,7 @@
     <Compile Include="ProjectFile.fs" />
     <Compile Include="DependencyModel.fs" />
     <Compile Include="DependencyChangeDetection.fs" />
+    <Compile Include="GarbageCollection.fs" />
     <Compile Include="RestoreProcess.fs" />
     <Compile Include="BindingRedirects.fs" />
     <Compile Include="NupkgWriter.fs" />
