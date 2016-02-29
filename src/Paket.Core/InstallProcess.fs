@@ -213,7 +213,8 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
                             match loadedLibs.TryGetValue key with
                             | true,v -> v
                             | _ -> 
-                                let v = Assembly.ReflectionOnlyLoadFrom library
+                                let ass = File.ReadAllBytes library
+                                let v = Assembly.ReflectionOnlyLoad ass
                                 loadedLibs.Add(key,v)
                                 v
 
