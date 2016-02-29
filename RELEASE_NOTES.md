@@ -1,4 +1,4 @@
-#### 2.50.12 - 29.02.2016
+#### 2.50.13 - 29.02.2016
 * USABILITY: Don't fail when we can't turn on auto-restote durin convert
 
 #### 2.50.11 - 18.02.2016
