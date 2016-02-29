@@ -178,7 +178,7 @@ let ``#1472 globs correctly``() =
 
     let outPath = Path.Combine(scenarioTempPath "i001472-globbing","out")
     let templatePath = Path.Combine(scenarioTempPath "i001472-globbing","src", "A.Source", "paket.template")
-    paket ("pack version 1.0.0 output \"" + outPath + "\"") "i001472-globbing" |> ignore
+    paket ("pack version 1.0.0 output \"" + outPath + "\" -v") "i001472-globbing" |> ignore
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
  
