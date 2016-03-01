@@ -1,0 +1,7 @@
+FRAMEWORK: NET40, NET45, NET46
+NUGET
+  remote: nuget_repo
+  specs:
+    Dapper (1.40)
+    MultiTarget (1.0.0)
+    NUnit (2.6.4)

@@ -187,3 +187,11 @@ let ``#1472 globs correctly``() =
     let expectedFile = Path.Combine(outPath, "content", "A", "Folder", "source.cs")
 
     File.Exists expectedFile |> shouldEqual true
+
+[<Test>]
+let ``#1483 pack deps with locked version from group``() = 
+    let outPath = Path.Combine(scenarioTempPath "i001483-group-lock","out")
+    let templatePath = Path.Combine(scenarioTempPath "i001483-group-lock","pack", "paket.template")
+    paket ("pack -v  output \"" + outPath + "\"") "i001483-group-lock" |> ignore
+
+    File.Delete(Path.Combine(scenarioTempPath "i001483-group-lock","pack","paket.template"))

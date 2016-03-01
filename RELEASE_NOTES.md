@@ -1,8 +1,19 @@
-#### 3.0.0-alpha053 - 29.02.2016
+#### 3.0.0-alpha054 - 01.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
+
+#### 2.51.3 - 01.03.2016
+* BUGFIX: When adding framework specification to paket.dependencies .props include was moved to the bottom of csproj file - https://github.com/fsprojects/Paket/issues/1487
+
+#### 2.51.2 - 01.03.2016
+* BUGFIX: Allow to use LOCKEDVERSION with packages that are not in main group - https://github.com/fsprojects/Paket/issues/1483
+
+#### 2.51.1 - 01.03.2016
+* Prevent paket holding locks on assemblies during binding redirects - https://github.com/fsprojects/Paket/pull/1492
+* ProjectFile.save with forceTouch to only modify the last write time without content if unchanged - https://github.com/fsprojects/Paket/pull/1493
+* BUGFIX: Don't accept "Unsupported0.0" as full framework - https://github.com/fsprojects/Paket/issues/1494
 
 #### 2.51.0 - 29.02.2016
 * Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
@@ -15,7 +26,7 @@
 * BUGFIX: Fix Platform matching bug in CPP projects - https://github.com/fsprojects/Paket/issues/1467
 * USABILITY: Touch project files when paket.lock changed in order to support incremental builds with MsBuild  - https://github.com/fsprojects/Paket/issues/1471 
 * USABILITY: Prevent paket holding locks on assemblies during binding redirects
-* USABILITY: Don't fail when we can't turn on auto-restote durin convert
+* USABILITY: Don't fail when we can't turn on auto-restote during convert
 
 #### 2.50.0 - 09.02.2016
 * Experimental Visual C++ support - https://github.com/fsprojects/Paket/issues/1467
