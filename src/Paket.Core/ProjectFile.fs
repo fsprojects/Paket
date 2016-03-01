@@ -941,16 +941,17 @@ module ProjectFile =
                 project.ProjectNode.AppendChild analyzersNode |> ignore
             )
 
-    let touch (project:ProjectFile) =
-        if File.Exists(project.FileName) then
-            File.SetLastWriteTimeUtc(project.FileName, DateTime.UtcNow)
-
     let save forceTouch project =
         if forceTouch then 
             project.Document.Save(project.FileName)
         elif Utils.normalizeXml project.Document <> project.OriginalText then 
             verbosefn "Project %s changed" project.FileName
             project.Document.Save(project.FileName)
+
+    let touch (project:ProjectFile) =
+        if File.Exists(project.FileName) then
+            File.SetLastWriteTimeUtc(project.FileName, DateTime.UtcNow)
+        else save true project
 
     let getPaketFileItems project =
         findPaketNodes "Content" project
