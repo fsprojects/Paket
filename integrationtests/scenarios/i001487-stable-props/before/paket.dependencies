@@ -1,0 +1,7 @@
+framework: net40, net45, net46
+
+source nuget_repo
+
+nuget MultiTarget
+nuget Dapper
+nuget NUnit

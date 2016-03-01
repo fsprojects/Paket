@@ -37,6 +37,16 @@ let ``#1219 install props``() =
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s1 |> shouldEqual s2
 
+
+[<Test>]
+let ``#1487 install props stays stable``() = 
+    let newLockFile = install "i001487-stable-props"
+    let newFile = Path.Combine(scenarioTempPath "i001487-stable-props","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001487-stable-props","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
 [<Test>]
 let ``#1233 install props``() = 
     let newLockFile = install "i001233-props-files"

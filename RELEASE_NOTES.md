@@ -1,3 +1,6 @@
+#### 2.51.3 - 01.03.2016
+* BUGFIX: When adding framework specification to paket.dependencies .props include was moved to the bottom of csproj file - https://github.com/fsprojects/Paket/issues/1487
+
 #### 2.51.2 - 01.03.2016
 * BUGFIX: Allow to use LOCKEDVERSION with packages that are not in main group - https://github.com/fsprojects/Paket/issues/1483
 
