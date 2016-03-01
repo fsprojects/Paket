@@ -1,3 +1,6 @@
+#### 2.51.2 - 01.03.2016
+* BUGFIX: Allow to use LOCKEDVERSION with packages that are not in main group - https://github.com/fsprojects/Paket/issues/1483
+
 #### 2.51.1 - 01.03.2016
 * Prevent paket holding locks on assemblies during binding redirects - https://github.com/fsprojects/Paket/pull/1492
 * ProjectFile.save with forceTouch to only modify the last write time without content if unchanged - https://github.com/fsprojects/Paket/pull/1493

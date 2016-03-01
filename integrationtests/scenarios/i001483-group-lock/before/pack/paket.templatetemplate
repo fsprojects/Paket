@@ -1,0 +1,12 @@
+type file
+copyright MyCo 2016
+id packet_name
+version 1.0.2
+authors 
+    My Name
+projectUrl 
+    http://url.to.my.repo
+description
+    my description
+dependencies
+    package_name ~> LOCKEDVERSION

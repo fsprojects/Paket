@@ -1,0 +1,5 @@
+GROUP Platform-All
+NUGET
+  remote: http://url.to.mynexusrepo
+  specs:
+    package_name (1.0.0)

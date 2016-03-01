@@ -1,0 +1,5 @@
+group Platform-All
+    source http://url.to.mynexusrepo
+
+    # Add all platform shared packages.
+    nuget package_name ~> 1.0.0
