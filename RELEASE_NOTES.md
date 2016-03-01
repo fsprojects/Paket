@@ -1,5 +1,6 @@
 #### 2.51.1 - 01.03.2016
 * Prevent paket holding locks on assemblies during binding redirects - https://github.com/fsprojects/Paket/pull/1492
+* ProjectFile.save with forceTouch to only modify the last write time without content if unchanged - https://github.com/fsprojects/Paket/pull/1493
 
 #### 2.51.0 - 29.02.2016
 * Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
