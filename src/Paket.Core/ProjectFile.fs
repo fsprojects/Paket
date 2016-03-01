@@ -941,6 +941,9 @@ module ProjectFile =
                 project.ProjectNode.AppendChild analyzersNode |> ignore
             )
 
+    let touch (project:ProjectFile) =
+        if File.Exists(project.FileName) then
+            File.SetLastWriteTimeUtc(project.FileName, DateTime.UtcNow)
 
     let save forceTouch project =
         if forceTouch then 
@@ -1305,7 +1308,9 @@ type ProjectFile with
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
     member this.UpdateReferences (completeModel, usedPackages, hard) = ProjectFile.updateReferences completeModel usedPackages hard this
-         
+
+    member this.Touch () = ProjectFile.touch this
+
     member this.Save(forceTouch) = ProjectFile.save forceTouch this
 
     member this.GetPaketFileItems () = ProjectFile.getPaketFileItems this
