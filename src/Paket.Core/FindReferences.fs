@@ -39,7 +39,7 @@ let TouchReferencesOfPackages packages environment = trial {
     |> List.distinctBy (fun project-> project.FileName)
     |> List.iter (fun project ->
         verbosefn "Touching project %s" project.FileName
-        ProjectFile.touch project)
+        ProjectFile.save true project)
 }
 
 let ShowReferencesFor packages environment = trial {
