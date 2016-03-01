@@ -941,13 +941,12 @@ module ProjectFile =
                 project.ProjectNode.AppendChild analyzersNode |> ignore
             )
 
-
     let save forceTouch project =
-        if forceTouch then 
-            project.Document.Save(project.FileName)
-        elif Utils.normalizeXml project.Document <> project.OriginalText then 
+        if Utils.normalizeXml project.Document <> project.OriginalText || not (File.Exists(project.FileName)) then
             verbosefn "Project %s changed" project.FileName
             project.Document.Save(project.FileName)
+        elif forceTouch then
+            File.SetLastWriteTimeUtc(project.FileName, DateTime.UtcNow)
 
     let getPaketFileItems project =
         findPaketNodes "Content" project
@@ -1305,7 +1304,7 @@ type ProjectFile with
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
     member this.UpdateReferences (completeModel, usedPackages, hard) = ProjectFile.updateReferences completeModel usedPackages hard this
-         
+
     member this.Save(forceTouch) = ProjectFile.save forceTouch this
 
     member this.GetPaketFileItems () = ProjectFile.getPaketFileItems this
