@@ -1,3 +1,6 @@
+#### 2.51.1 - 01.03.2016
+* Prevent paket holding locks on assemblies during binding redirects - https://github.com/fsprojects/Paket/pull/1492
+
 #### 2.51.0 - 29.02.2016
 * Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
 * Restore: optional --touch-affected-refs to touch refs affected by a restore - https://github.com/fsprojects/Paket/pull/1485
@@ -9,7 +12,7 @@
 * BUGFIX: Fix Platform matching bug in CPP projects - https://github.com/fsprojects/Paket/issues/1467
 * USABILITY: Touch project files when paket.lock changed in order to support incremental builds with MsBuild  - https://github.com/fsprojects/Paket/issues/1471 
 * USABILITY: Prevent paket holding locks on assemblies during binding redirects
-* USABILITY: Don't fail when we can't turn on auto-restote durin convert
+* USABILITY: Don't fail when we can't turn on auto-restote during convert
 
 #### 2.50.0 - 09.02.2016
 * Experimental Visual C++ support - https://github.com/fsprojects/Paket/issues/1467
