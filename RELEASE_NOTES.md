@@ -1,3 +1,6 @@
+#### 2.51.4 - 01.03.2016
+* BUGFIX: Do not install packages with same version from different groups twice - https://github.com/fsprojects/Paket/issues/1458
+
 #### 2.51.3 - 01.03.2016
 * BUGFIX: When adding framework specification to paket.dependencies .props include was moved to the bottom of csproj file - https://github.com/fsprojects/Paket/issues/1487
 

@@ -344,6 +344,18 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             !d
 
+        let usedPackages =
+            let dict = System.Collections.Generic.Dictionary<_,_>()
+            usedPackages
+            |> Map.filter (fun (groupName,packageName) (v,_) -> 
+                match dict.TryGetValue packageName with
+                | true,v' -> 
+                    if v' = v then false else
+                    failwithf "Package %O is referenced in different versions in %s" packageName project.FileName
+                | _ ->
+                    dict.Add(packageName,v)
+                    true)
+
         project.UpdateReferences(model, usedPackages, options.Hard)
         
         Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)

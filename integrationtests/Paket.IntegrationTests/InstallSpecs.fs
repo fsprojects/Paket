@@ -174,6 +174,24 @@ let ``#1467 install native package into vcxproj``() =
     s1 |> shouldEqual s2
 
 [<Test>]
+let ``#1458 should install non conflicting deps from different groups only once``() = 
+    install "i001458-same-version-group" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001458-same-version-group","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001458-same-version-group","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
+[<Test>]
+let ``#1458 should not install conflicting deps from different groups``() =
+    try
+        install "i001458-group-conflict" |> ignore
+        failwith "error expected"
+    with
+    | exn when exn.Message.Contains "Package Nancy is referenced in different versions" -> ()
+
+
+[<Test>]
 let ``#1442 warn if install finds no libs``() = 
     let result = paket "install" "i001442-warn-if-empty"
     result |> shouldContainText "contains libraries, but not for the selected TargetFramework"
