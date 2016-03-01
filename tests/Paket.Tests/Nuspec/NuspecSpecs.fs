@@ -207,8 +207,7 @@ let ``can detect framework assemblies for Microsoft.Framework.Logging``() =
 
     let name,_,restrictions = nuspec.Dependencies.[0]
     name  |> shouldEqual (PackageName "Microsoft.Framework.DependencyInjection.Interfaces")
-    restrictions|> shouldEqual (FrameworkRestrictionList [])
-
+    
     let name,_,restrictions = nuspec.Dependencies.[2]
     name  |> shouldEqual (PackageName "System.Collections.Concurrent")
     restrictions |> shouldEqual (FrameworkRestrictionList [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])

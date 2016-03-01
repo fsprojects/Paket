@@ -1,0 +1,5 @@
+framework: net461
+
+source nuget_repo
+
+nuget simpleinjector
