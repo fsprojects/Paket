@@ -28,16 +28,15 @@ module internal NuSpecParserHelper =
             match node |> getAttribute "version" with
             | Some version -> VersionRequirement.Parse version
             | None ->         VersionRequirement.Parse "0"
-        let restriction =
-            let parent = node.ParentNode 
-            match parent.Name, parent |> getAttribute "targetFramework" with
-            | name , Some framework 
-                when String.equalsIgnoreCase name "group" -> 
-                match FrameworkDetection.Extract framework with
-                | Some x -> [FrameworkRestriction.Exactly x]
-                | None -> []
-            | _ -> []
-        name,version,restriction
+
+        let parent = node.ParentNode 
+        match parent.Name, parent |> getAttribute "targetFramework" with
+        | n , Some framework 
+            when String.equalsIgnoreCase n "group" -> 
+            match FrameworkDetection.Extract framework with
+            | Some x -> Some(name,version,[FrameworkRestriction.Exactly x])
+            | None -> None
+        | _ -> Some(name,version,[])
 
     let getAssemblyRefs node =
         let name = node |> getAttribute "assemblyName"
@@ -94,12 +93,13 @@ type Nuspec =
                     | _ -> [])
                 |> List.concat
 
-            let dependencies = 
+            let referenced =
                 doc 
                 |> getDescendants "dependency"
-                |> List.map (NuSpecParserHelper.getDependency fileName)
+                |> List.choose (NuSpecParserHelper.getDependency fileName)
                 |> List.append frameworks
-                |> Requirements.optimizeDependencies 
+
+            let dependencies = Requirements.optimizeDependencies referenced
             
             let references = 
                 doc

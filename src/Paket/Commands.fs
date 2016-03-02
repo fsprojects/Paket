@@ -199,6 +199,7 @@ with
 type RestoreArgs =
     | [<AltCommandLine("-f")>] Force
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
+    | [<CustomCommandLine("--touch-affected-refs")>] Touch_Affected_Refs
     | [<CustomCommandLine("group")>] Group of string
     | [<Rest>] References_Files of string
 with
@@ -208,6 +209,7 @@ with
             | Force -> "Forces the download of all packages."
             | Group(_) -> "Allows to restore a single group."
             | Install_Only_Referenced -> "Allows to restore packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
+            | Touch_Affected_Refs -> "Touches project files referencing packages which are being restored, to help incremental build tools detecting the change."
             | References_Files(_) -> "Allows to restore all packages from the given paket.references files. This implies --only-referenced."
 
 type SimplifyArgs =

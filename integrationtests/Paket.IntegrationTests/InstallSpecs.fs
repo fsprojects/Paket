@@ -37,6 +37,16 @@ let ``#1219 install props``() =
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s1 |> shouldEqual s2
 
+
+[<Test>]
+let ``#1487 install props stays stable``() = 
+    let newLockFile = install "i001487-stable-props"
+    let newFile = Path.Combine(scenarioTempPath "i001487-stable-props","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001487-stable-props","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
 [<Test>]
 let ``#1233 install props``() = 
     let newLockFile = install "i001233-props-files"
@@ -162,6 +172,24 @@ let ``#1467 install native package into vcxproj``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s1 |> shouldEqual s2
+
+[<Test>]
+let ``#1458 should install non conflicting deps from different groups only once``() = 
+    install "i001458-same-version-group" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001458-same-version-group","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001458-same-version-group","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
+[<Test>]
+let ``#1458 should not install conflicting deps from different groups``() =
+    try
+        install "i001458-group-conflict" |> ignore
+        failwith "error expected"
+    with
+    | exn when exn.Message.Contains "Package Nancy is referenced in different versions" -> ()
+
 
 [<Test>]
 let ``#1442 warn if install finds no libs``() = 

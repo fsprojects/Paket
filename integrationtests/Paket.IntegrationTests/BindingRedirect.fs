@@ -317,3 +317,18 @@ let ``#1248 redirects off with --redirects``() =
 
     config |> shouldEqual originalConfig
     
+[<Test>]
+let ``#1477 assembly redirects lock files``() = 
+    let scenario =  "i001474-restore-no-locks"
+    prepare scenario
+    let p = Paket.Dependencies.Locate (Path.Combine(scenarioTempPath scenario, "paket.dependencies"))
+    p.Install(true,true)
+    p.Restore()
+
+    try
+        Directory.Delete(scenarioTempPath scenario, true)
+    with e ->
+        failwith "could not delete directory, i.e. restore holds on to files"
+
+    
+    

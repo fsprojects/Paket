@@ -10,6 +10,17 @@ open Paket.PackageSources
 open FSharp.Polyfill
 open System
 
+// Find packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
+let FindPackagesNotExtractedYet(dependenciesFileName) =
+    let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+    let lockFile = LockFile.LoadFrom(lockFileName.FullName)
+    let root = lockFileName.Directory.FullName
+
+    lockFile.GetGroupedResolution()
+    |> Map.toList
+    |> List.filter (fun ((group,package),resolved) -> NuGetV2.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
+    |> List.map fst
+
 let private extractPackage package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
         let! folder = NuGetV2.DownloadPackage(root, source, groupName, package.Name, version, includeVersionInPath, force, detailed)
@@ -109,3 +120,5 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
         restore(root, kv.Key, dependenciesFile.Groups.[kv.Value.Name].Sources, force, lockFile,Set.ofSeq packages)
         |> Async.RunSynchronously
         |> ignore
+
+    GarbageCollection.CleanUp(root, lockFile)

@@ -310,15 +310,14 @@ let getDetailsFromLocalNuGetPackage root localNugetPath (packageName:PackageName
         let nuspec = Nuspec.Load fileName
 
         File.Delete(fileName)
+        let dependencies = 
+            nuspec.Dependencies
+            |> List.map (fun (a,b,c) -> a,b, getRestrictionList c)
 
         return 
             { PackageName = nuspec.OfficialName
               DownloadUrl = packageName.ToString()
-              Dependencies = 
-                nuspec.Dependencies
-                |> List.map (fun (a,b,c) -> a,b, getRestrictionList c)
-                |> Requirements.optimizeDependencies 
-
+              Dependencies = Requirements.optimizeDependencies dependencies
               SourceUrl = di.FullName
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
@@ -333,6 +332,11 @@ let inline isExtracted (directory:DirectoryInfo) fileName =
     if not directory.Exists then false else
     directory.EnumerateFileSystemInfos()
     |> Seq.exists (fun f -> f.FullName <> fi.FullName)
+
+let IsPackageVersionExtracted(root, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath) =
+    let targetFolder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath)
+    let targetFileName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
+    isExtracted targetFolder targetFileName
 
 // cleanup folder structure
 let rec private cleanup (dir : DirectoryInfo) = 

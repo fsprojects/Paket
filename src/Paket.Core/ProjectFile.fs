@@ -828,6 +828,14 @@ module ProjectFile =
             let j = ref 0
             while !j < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!j].OuterXml.ToString()) do
                 incr j
+
+            let addProps() =
+                if !j = 0 then
+                    propsNodes
+                    |> Seq.iter (project.ProjectNode.PrependChild >> ignore)
+                else
+                    propsNodes
+                    |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,project.ProjectNode.ChildNodes.[!j-1]) |> ignore)
             
             if propertyChooseNode.ChildNodes.Count > 0 then
                 if !i <= 0 then
@@ -838,17 +846,12 @@ module ProjectFile =
                     |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
                 else
                     let node = project.ProjectNode.ChildNodes.[!i]
-                    propsNodes
-                    |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,node) |> ignore)
+                    addProps()
 
                     if propertyChooseNode.ChildNodes.Count > 0 then
                         project.ProjectNode.InsertAfter(propertyChooseNode,node) |> ignore
-            elif !j = 0 then
-                    propsNodes
-                    |> Seq.iter (project.ProjectNode.PrependChild >> ignore)
             else
-                propsNodes
-                |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,project.ProjectNode.ChildNodes.[!j-1]) |> ignore)
+               addProps()
 
             targetsNodes
             |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
@@ -857,13 +860,12 @@ module ProjectFile =
                 project.ProjectNode.AppendChild analyzersNode |> ignore
             )
 
-
     let save forceTouch project =
-        if forceTouch then 
-            project.Document.Save(project.FileName)
-        elif Utils.normalizeXml project.Document <> project.OriginalText then 
+        if Utils.normalizeXml project.Document <> project.OriginalText || not (File.Exists(project.FileName)) then
             verbosefn "Project %s changed" project.FileName
             project.Document.Save(project.FileName)
+        elif forceTouch then
+            File.SetLastWriteTimeUtc(project.FileName, DateTime.UtcNow)
 
     let getPaketFileItems project =
         findPaketNodes "Content" project
@@ -1119,7 +1121,7 @@ type ProjectFile with
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
     member this.UpdateReferences (completeModel, usedPackages, hard) = ProjectFile.updateReferences completeModel usedPackages hard this
-         
+
     member this.Save(forceTouch) = ProjectFile.save forceTouch this
 
     member this.GetPaketFileItems () = ProjectFile.getPaketFileItems this

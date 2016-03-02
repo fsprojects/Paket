@@ -434,8 +434,12 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
         result.NuGetEnv.NuGetConfig.PackageRestoreAutomatic &&
         result.NuGetEnv.NuGetConfig.PackageRestoreEnabled
     
-    if initAutoRestore && (autoVSPackageRestore || result.NuGetEnv.NuGetTargets.IsSome) then 
-        VSIntegration.TurnOnAutoRestore result.PaketEnv |> returnOrFail
+    if initAutoRestore && (autoVSPackageRestore || result.NuGetEnv.NuGetTargets.IsSome) then
+        try
+            VSIntegration.TurnOnAutoRestore result.PaketEnv |> returnOrFail
+        with
+        | exn -> 
+            traceWarnfn "Could not enable auto restore%sMessage: %s" Environment.NewLine exn.Message
 
     if installAfter then
         UpdateProcess.Update(

@@ -1,32 +1,35 @@
-#### 3.0.0-alpha050 - 15.02.2016
+#### 3.0.0-alpha056 - 02.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+* Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
 
-#### 2.50.10 - 15.02.2016
-* USABILITY: Touch project files when paket.lock changed in order to support incremental builds with MsBuild  - https://github.com/fsprojects/Paket/issues/1471
-* REVERT: 3fcac1dfd944ea2d32e5198923d3601b3cbf203c - https://github.com/fsprojects/Paket/issues/1472
+#### 2.51.4 - 01.03.2016
+* BUGFIX: Do not install packages with same version from different groups twice - https://github.com/fsprojects/Paket/issues/1458
 
-#### 2.50.9 - 14.02.2016
+#### 2.51.3 - 01.03.2016
+* BUGFIX: When adding framework specification to paket.dependencies .props include was moved to the bottom of csproj file - https://github.com/fsprojects/Paket/issues/1487
+
+#### 2.51.2 - 01.03.2016
+* BUGFIX: Allow to use LOCKEDVERSION with packages that are not in main group - https://github.com/fsprojects/Paket/issues/1483
+
+#### 2.51.1 - 01.03.2016
+* Prevent paket holding locks on assemblies during binding redirects - https://github.com/fsprojects/Paket/pull/1492
+* ProjectFile.save with forceTouch to only modify the last write time without content if unchanged - https://github.com/fsprojects/Paket/pull/1493
+* BUGFIX: Don't accept "Unsupported0.0" as full framework - https://github.com/fsprojects/Paket/issues/1494
+
+#### 2.51.0 - 29.02.2016
+* Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
+* Restore: optional --touch-affected-refs to touch refs affected by a restore - https://github.com/fsprojects/Paket/pull/1485
+* BUGFIX: fixed group transitive dependency checking - https://github.com/fsprojects/Paket/pull/1479
 * BUGFIX: Do not try to pack output folder - https://github.com/fsprojects/Paket/issues/1473
-
-#### 2.50.8 - 13.02.2016
-* Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
-
-#### 2.50.7 - 13.02.2016
-* Do not pack absolute paths - https://github.com/fsprojects/Paket/issues/1472
-
-#### 2.50.6 - 12.02.2016
-* Keep Auth from dependencies file for fast path - https://github.com/fsprojects/Paket/issues/1469
-
-#### 2.50.5 - 11.02.2016
-* Fix Platform matching bug in CPP projects - https://github.com/fsprojects/Paket/issues/1467
-
-#### 2.50.4 - 11.02.2016
-* Fix StackOverflow from https://github.com/fsprojects/Paket/issues/1432 
-
-#### 2.50.2 - 11.02.2016
-* Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467
+* BUGFIX: Fix StackOverflow from https://github.com/fsprojects/Paket/issues/1432
+* BUGFIX: Do not pack absolute paths - https://github.com/fsprojects/Paket/issues/1472
+* BUGFIX: Keep Auth from dependencies file for fast path - https://github.com/fsprojects/Paket/issues/1469
+* BUGFIX: Fix Platform matching bug in CPP projects - https://github.com/fsprojects/Paket/issues/1467
+* USABILITY: Touch project files when paket.lock changed in order to support incremental builds with MsBuild  - https://github.com/fsprojects/Paket/issues/1471 
+* USABILITY: Prevent paket holding locks on assemblies during binding redirects
+* USABILITY: Don't fail when we can't turn on auto-restote during convert
 
 #### 2.50.0 - 09.02.2016
 * Experimental Visual C++ support - https://github.com/fsprojects/Paket/issues/1467

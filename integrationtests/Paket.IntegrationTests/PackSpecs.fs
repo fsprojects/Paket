@@ -171,3 +171,27 @@ let ``#1473 works in same folder``() =
     prepare scenario
     directPaket "pack templatefile paket.template output o" scenario |> ignore
     directPaket "update" scenario|> ignore
+
+[<Test>]
+let ``#1472 globs correctly``() =
+    let scenario = "i001472-globbing"
+
+    let outPath = Path.Combine(scenarioTempPath "i001472-globbing","out")
+    let templatePath = Path.Combine(scenarioTempPath "i001472-globbing","src", "A.Source", "paket.template")
+    paket ("pack version 1.0.0 output \"" + outPath + "\" -v") "i001472-globbing" |> ignore
+
+    let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
+ 
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    let expectedFile = Path.Combine(outPath, "content", "A", "Folder", "source.cs")
+
+    File.Exists expectedFile |> shouldEqual true
+
+[<Test>]
+let ``#1483 pack deps with locked version from group``() = 
+    let outPath = Path.Combine(scenarioTempPath "i001483-group-lock","out")
+    let templatePath = Path.Combine(scenarioTempPath "i001483-group-lock","pack", "paket.template")
+    paket ("pack -v  output \"" + outPath + "\"") "i001483-group-lock" |> ignore
+
+    File.Delete(Path.Combine(scenarioTempPath "i001483-group-lock","pack","paket.template"))

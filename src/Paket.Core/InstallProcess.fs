@@ -165,9 +165,27 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     |> Seq.concat
     |> Seq.toArray
 
+/// Since Assembly.ReflectionOnlyLoadFrom holds on to file handles indefintely, we use
+/// ReflectionOnlyLoad(bytes[]) instead. However, in order to prevent
+/// CLR from loading same assemblies multiple times (results in exn), we use a static
+/// dictionary for caching assemblies, based on their filename.
+module private LoadAssembliesSafe =
+
+    let loadedLibs = new Dictionary<_,_>()
+
+    let reflectionOnlyLoadFrom library = 
+        let key = FileInfo(library).FullName.ToLowerInvariant()
+        match loadedLibs.TryGetValue key with
+         | (true,v) -> v 
+         | _ ->
+            let assemblyAsBytes = File.ReadAllBytes library
+            let v = Assembly.ReflectionOnlyLoad assemblyAsBytes
+            loadedLibs.[key] <- v
+            v
+
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup createNewBindingFiles cleanBindingRedirects redirects root groupName findDependencies extractedPackages =
+let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindingRedirects redirects root groupName findDependencies extractedPackages =
     let dependencyGraph = ConcurrentDictionary<_,Set<_>>()
     let projects = ConcurrentDictionary<_,ProjectFile option>();
     let referenceFiles = ConcurrentDictionary<_,ReferencesFile option>();
@@ -215,13 +233,7 @@ let private applyBindingRedirects (loadedLibs:Dictionary<_,_>) isFirstGroup crea
                 |> Seq.choose(fun (library,redirects) ->
                     try
                         let key = FileInfo(library).FullName.ToLowerInvariant()
-                        let assembly = 
-                            match loadedLibs.TryGetValue key with
-                            | true,v -> v
-                            | _ -> 
-                                let v = Assembly.ReflectionOnlyLoadFrom library
-                                loadedLibs.Add(key,v)
-                                v
+                        let assembly = LoadAssembliesSafe.reflectionOnlyLoadFrom library
 
                         Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.GetReferencedAssemblies(), redirects)
                     with exn -> None)
@@ -339,6 +351,18 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             !d
 
+        let usedPackages =
+            let dict = System.Collections.Generic.Dictionary<_,_>()
+            usedPackages
+            |> Map.filter (fun (groupName,packageName) (v,_) -> 
+                match dict.TryGetValue packageName with
+                | true,v' -> 
+                    if v' = v then false else
+                    failwithf "Package %O is referenced in different versions in %s" packageName project.FileName
+                | _ ->
+                    dict.Add(packageName,v)
+                    true)
+
         match project with
         | ProjectType.ProjectJson project ->
             let deps = 
@@ -411,7 +435,6 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             processContentFiles root project usedPackages gitRemoteItems options
             project.Save forceTouch
-            let loadedLibs = new Dictionary<_,_>()
 
             let first = ref true
 
@@ -431,8 +454,9 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
                     (snd kv.Value,packageRedirects))
-                |> applyBindingRedirects loadedLibs !first options.CreateNewBindingFiles options.Hard (g.Value.Options.Redirects ++ redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
+                |> applyBindingRedirects !first options.CreateNewBindingFiles options.Hard (g.Value.Options.Redirects ++ redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
                 first := false
+
 
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =

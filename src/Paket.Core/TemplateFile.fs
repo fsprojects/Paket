@@ -241,15 +241,15 @@ module internal TemplateFile =
     let private getDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>) =
         match Map.tryFind "dependencies" info with
         | None -> []
-        | Some d ->  
+        | Some d ->
             d.Split '\n' |> Array.map (fun d ->
                 let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
-                let id' = PackageName reg.Groups.["id"].Value
+                let name = PackageName reg.Groups.["id"].Value
                 let versionRequirement =
                     let versionString =
                         let s = reg.Groups.["version"].Value.Trim()
                         if s.Contains "CURRENTVERSION" then
-                            match specificVersions.TryFind (string id') with
+                            match specificVersions.TryFind (string name) with
                             | Some v -> s.Replace("CURRENTVERSION", string v)
                             | None ->
                                 match currentVersion with
@@ -257,12 +257,22 @@ module internal TemplateFile =
                                 | None -> failwithf "The template file %s contains the placeholder CURRENTVERSION, but no version was given." fileName
 
                         elif s.Contains "LOCKEDVERSION" then
-                            match lockFile.Groups.[Constants.MainDependencyGroup].Resolution |> Map.tryFind id' with
+                            match lockFile.Groups.[Constants.MainDependencyGroup].Resolution |> Map.tryFind name with
                             | Some p -> s.Replace("LOCKEDVERSION", string p.Version)
-                            | None -> failwithf "The template file %s contains the placeholder LOCKEDVERSION, but no version was given for package %O in the lockfile." fileName id'
+                            | None ->
+                                let packages = 
+                                    lockFile.GetGroupedResolution()
+                                    |> Seq.filter (fun kv -> snd kv.Key = name)
+                                    |> Seq.toList
+
+                                match packages with
+                                | [] -> failwithf "The template file %s contains the placeholder LOCKEDVERSION, but no version was given for package %O in paket.lock." fileName name
+                                | [kv] -> s.Replace("LOCKEDVERSION", string kv.Value.Version)
+                                | _ -> failwithf "The template file %s contains the placeholder LOCKEDVERSION, but more than one group contains package %O in paket.lock." fileName name
+
                         else s
                     DependenciesFileParser.parseVersionRequirement versionString
-                id', versionRequirement)
+                name, versionRequirement)
             |> Array.toList
         
 

@@ -73,3 +73,9 @@ let ``#1232 framework dependencies propagate``() =
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "System.Data.SQLite.Core"].Settings.FrameworkRestrictions
     |> getRestrictionList
     |> shouldContain (FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client)))
+
+[<Test>]
+let ``#1494 detect platform 5.0``() = 
+    let lockFile = update "i001494-download"
+    
+    ()
