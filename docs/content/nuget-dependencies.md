@@ -88,8 +88,8 @@ If you omit the version constraint then Paket will assume `>= 0`:
 
 <blockquote>We consider a situation with 3 packages A, B and C.
 
-A and B are direct (or root level) dependencies, but both have a
-dependency on C. A needs exactly C 1.0 and B wants version 1.1 of C. 
+A and B are direct (or root level) dependencies, but both have a dependency on C. 
+A needs exactly C 1.0 and B wants version 1.1 of C. 
 This is a version conflict and Paket will complain during resolution phase.
 
 If we specify C = 1.1 in the dependencies file then Paket still considers this as a version conflict with the version requirement in A. 
