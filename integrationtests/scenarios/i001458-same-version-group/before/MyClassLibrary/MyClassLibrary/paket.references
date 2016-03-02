@@ -1,0 +1,7 @@
+Nancy.Bootstrappers.Windsor
+
+group test
+  Nancy.Testing
+
+group hosting
+  Nancy.Owin
