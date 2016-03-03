@@ -242,7 +242,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         |> List.map (fun p ->
                  match p with
                  | ProjectType.Project p -> failwithf "Project %s cannot be used as project.json" p.FileName
-                 | ProjectType.ProjectJson p -> p.GetDependencies())
+                 | ProjectType.ProjectJson p -> p.GetGlobalDependencies())
         |> List.concat
         |> List.distinct
 
@@ -364,7 +364,7 @@ let convertProjects nugetEnv =
         match project with
         | ProjectType.Project p -> failwithf "Project %s cannot be used in classic NuGet conversion." p.FileName
         | ProjectType.ProjectJson project -> 
-            yield ProjectType.ProjectJson project, convertDependenciesConfigToReferencesFile project.FileName (project.GetDependencies())]
+            yield ProjectType.ProjectJson project, convertDependenciesConfigToReferencesFile project.FileName (project.GetGlobalDependencies())]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode

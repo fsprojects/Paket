@@ -116,7 +116,7 @@ let ``can add simple dependencies to empty project.json``() =
 let ``can extract dependencies from empty``() = 
 
     let doc = ProjectJsonFile("",empty)
-    let deps = doc.GetDependencies()
+    let deps = doc.GetGlobalDependencies()
     deps 
     |> shouldEqual []
 
@@ -132,7 +132,7 @@ let ``can extract dependencies``() =
 }"""
 
     let doc = ProjectJsonFile("",original)
-    let deps = doc.GetDependencies()
+    let deps = doc.GetGlobalDependencies()
     deps 
     |> List.map (fun (n,v) ->n.ToString(),v.ToString())
     |> shouldEqual ["a", "1.0.0"; "NETStandard.Library", "1.0.0-rc2-23727"]
@@ -142,12 +142,12 @@ let ``can extract dependencies``() =
 let ``can extract dependencies from TestApp``() = 
 
     let doc = ProjectJsonFile("",TestApp)
-    let deps = doc.GetDependencies()
+    let deps = doc.GetGlobalDependencies()
     deps 
     |> List.map (fun (n,v) ->n.ToString(),v.ToString())
     |> shouldEqual ["NETStandard.Library", ">= 1.0.0-rc2-23811"]
 
-    let deps = doc.GetInterProjectDependencies()
+    let deps = doc.GetGlobalInterProjectDependencies()
     deps 
     |> List.map (fun x -> x.ToString())
     |> shouldEqual [""""TestLibrary": {"target":"project","version":"1.0.0-*"}"""]
@@ -215,5 +215,124 @@ let ``can add simple dependencies to project.json without deps``() =
     let doc = ProjectJsonFile("",original)
     let doc' = doc.WithDependencies ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
     doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
+
+[<Test>]
+let ``can extract dependencies from Argu``() = 
+
+    let Argu =
+        """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "compilerName": "fsc",
+    "compileFiles": [
+        "Program.fs"
+    ],
+
+    "frameworks": {
+        "dnxcore50" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+        },
+        "net46" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+            "frameworkAssemblies": {
+                "System": "",
+                "System.Core": "",
+            }
+        }
+    }
+}
+"""
+
+    let doc = ProjectJsonFile("",Argu)
+    let deps = doc.GetDependencies()
+    deps.["dnxcore50"]
+    |> shouldEqual []
+
+    deps.["net46"]
+    |> shouldEqual []
+
+    let deps = doc.GetInterProjectDependencies()
+    deps.["dnxcore50"]
+    |> List.map (fun x -> x.ToString())
+    |> shouldEqual [""""Argu": {"version":"1.0.0","type":"build"}"""]
+
+    deps.["net46"]
+    |> List.map (fun x -> x.ToString())
+    |> shouldEqual [""""Argu": {"version":"1.0.0","type":"build"}"""]
     
     
+[<Test>]
+let ``does not replace frameworks in argu``() = 
+
+    let original = """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "compilerName": "fsc",
+    "compileFiles": [
+        "Program.fs"
+    ],
+
+    "frameworks": {
+        "dnxcore50" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+        },
+        "net46" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+            "frameworkAssemblies": {
+                "System": "",
+                "System.Core": "",
+            }
+        }
+    }
+}
+"""
+
+    let expected = """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "compilerName": "fsc",
+    "compileFiles": [
+        "Program.fs"
+    ],
+
+    "frameworks": {
+        "dnxcore50" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+        },
+        "net46" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+            "frameworkAssemblies": {
+                "System": "",
+                "System.Core": "",
+            }
+        }
+    },
+
+    "dependencies": { }
+}
+"""
+
+    let doc = ProjectJsonFile("",original)
+    let doc' = doc.WithDependencies []
+    doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)

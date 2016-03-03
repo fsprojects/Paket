@@ -102,7 +102,7 @@ type ProjectType =
         member this.GetInterProjectDependencies() =
             match this with
             | ProjectType.Project project -> project.GetInterProjectDependencies() |> List.map (fun p -> ProjectTypeReference.Project p)
-            | ProjectType.ProjectJson project -> project.GetInterProjectDependencies() |> List.map (fun p -> ProjectTypeReference.ProjectJson p)
+            | ProjectType.ProjectJson project -> project.GetGlobalInterProjectDependencies() |> List.map (fun p -> ProjectTypeReference.ProjectJson p)
 
         member this.GetAllReferencedProjects() = 
             let rec getProjects (project:ProjectType) = 
