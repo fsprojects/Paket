@@ -176,15 +176,47 @@ let ``#1473 works in same folder``() =
 let ``#1472 globs correctly``() =
     let scenario = "i001472-globbing"
 
-    let outPath = Path.Combine(scenarioTempPath "i001472-globbing","out")
-    let templatePath = Path.Combine(scenarioTempPath "i001472-globbing","src", "A.Source", "paket.template")
-    paket ("pack version 1.0.0 output \"" + outPath + "\" -v") "i001472-globbing" |> ignore
+    let outPath = Path.Combine(scenarioTempPath scenario,"out")
+    let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
+    paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> ignore
 
     let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
  
     ZipFile.ExtractToDirectory(package, outPath)
 
     let expectedFile = Path.Combine(outPath, "content", "A", "Folder", "source.cs")
+
+    File.Exists expectedFile |> shouldEqual true
+
+[<Test>]
+let ``#1472 allows to put stuff in root of package``() =
+    let scenario = "i001472-pack-in-root"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"out")
+    let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
+    paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> ignore
+
+    let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
+ 
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    let expectedFile = Path.Combine(outPath, "Folder", "source.cs")
+
+    File.Exists expectedFile |> shouldEqual true
+
+[<Test>]
+let ``#1472 allows to put stuff in relative folder``() =
+    let scenario = "i001472-pack-in-relative"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"out")
+    let templatePath = Path.Combine(scenarioTempPath scenario,"src", "A.Source", "paket.template")
+    paket ("pack version 1.0.0 output \"" + outPath + "\" -v") scenario |> ignore
+
+    let package = Path.Combine(outPath, "A.Source.1.0.0.nupkg")
+ 
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    let expectedFile = Path.Combine(outPath, "A", "Folder", "source.cs")
 
     File.Exists expectedFile |> shouldEqual true
 
