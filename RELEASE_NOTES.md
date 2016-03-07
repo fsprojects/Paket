@@ -1,3 +1,6 @@
+#### 2.51.5 - 07.03.2016
+* BUGFIX: Make v3 API more robust
+
 #### 2.51.4 - 01.03.2016
 * BUGFIX: Do not install packages with same version from different groups twice - https://github.com/fsprojects/Paket/issues/1458
 
