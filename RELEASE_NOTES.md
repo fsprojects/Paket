@@ -1,8 +1,11 @@
-#### 3.0.0-alpha058 - 07.03.2016
+#### 3.0.0-alpha059 - 07.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
+
+#### 2.51.6 - 07.03.2016
+* BUGFIX: Merge Chessie into PowerShell package - https://github.com/fsprojects/Paket/issues/1499
 
 #### 2.51.5 - 07.03.2016
 * BUGFIX: Make v3 API more robust

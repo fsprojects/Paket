@@ -167,7 +167,7 @@ Target "RunTests" (fun _ ->
 
 Target "QuickTest" (fun _ ->
 
-    !! "src\Paket.Core\Paket.Core.fsproj"    
+    !! "src\Paket.Core\Paket.Core.fsproj"
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 
@@ -216,7 +216,7 @@ Target "MergePowerShell" (fun _ ->
     CreateDir buildMergedDirPS
 
     let toPack =
-        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Paket.PowerShell.dll"]
+        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Paket.PowerShell.dll"]
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
