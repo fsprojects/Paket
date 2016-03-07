@@ -1,3 +1,6 @@
+#### 2.51.6 - 07.03.2016
+* BUGFIX: Merge Chessie into PowerShell package - https://github.com/fsprojects/Paket/issues/1499
+
 #### 2.51.5 - 07.03.2016
 * BUGFIX: Make v3 API more robust
 
