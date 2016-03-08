@@ -1,0 +1,3 @@
+source https://www.nuget.org/api/v2/
+
+nuget Rx-WinRT
