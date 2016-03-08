@@ -1,3 +1,6 @@
+#### 2.51.7 - 08.03.2016
+* USABILITY: only complain about missing references if there are references at all
+
 #### 2.51.6 - 07.03.2016
 * BUGFIX: Merge Chessie into PowerShell package - https://github.com/fsprojects/Paket/issues/1499
 

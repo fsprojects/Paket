@@ -196,6 +196,12 @@ let ``#1442 warn if install finds no libs``() =
     let result = paket "install" "i001442-warn-if-empty"
     result |> shouldContainText "contains libraries, but not for the selected TargetFramework"
 
+
+[<Test>]
+let ``#1442 should not warn on SonarLint``() = 
+    let result = paket "install" "i001442-dont-warn"
+    result |> shouldNotContainText "contains libraries, but not for the selected TargetFramework"
+
 [<Test>]
 let ``#1334 without download fail``() = 
     install "i001334-download-fail" |> ignore
