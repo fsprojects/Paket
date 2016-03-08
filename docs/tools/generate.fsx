@@ -10,7 +10,7 @@ Paket.Commands.getAllCommands()
     let additionalText = 
         let verboseOption = """
 
-If you add the `-v` flag, then Paket will run in verbos mode and show detailed information.
+If you add the `-v` flag, then Paket will run in verbose mode and show detailed information.
 
 """
 
