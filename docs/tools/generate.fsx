@@ -8,10 +8,16 @@ open System.IO
 Paket.Commands.getAllCommands()
 |> Array.iter (fun command ->
     let additionalText = 
+        let verboseOption = """
+
+If you add the `-v` flag, then Paket will run in verbos mode and show detailed information.
+
+"""
+
         let optFile = sprintf "../content/commands/%s.md" command.Name
         if File.Exists optFile
-        then File.ReadAllText optFile
-        else ""
+        then verboseOption + File.ReadAllText optFile
+        else verboseOption
     // Work around bug tpetricek/FSharp.Formatting#321 (FSharp.Literate does not escape HTML entities in code blocks with unknown language)
     let cleanText (text : string) = text.Replace("[lang=batchfile]", "[lang=msh]").Replace("```batchfile", "```msh")
     File.WriteAllText(sprintf "../content/paket-%s.md" command.Name, Paket.Commands.markdown command additionalText |> cleanText))
