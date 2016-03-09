@@ -1,3 +1,6 @@
+#### 2.51.10 - 09.03.2016
+* BUGFIX: Fixed duplicate frameworks during auto-detection - https://github.com/fsprojects/Paket/issues/1500
+
 #### 2.51.9 - 09.03.2016
 * BUGFIX: Fixed conditional references created for group dependencies - https://github.com/fsprojects/Paket/issues/1505
 

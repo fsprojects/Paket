@@ -165,7 +165,8 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
             |> List.map (fun (p,_) -> 
                 match p.GetTargetFramework() with
                 | Some fw -> Requirements.FrameworkRestriction.Exactly fw
-                | None -> failwithf "Could not detect target framework for project %s" p.FileName))
+                | None -> failwithf "Could not detect target framework for project %s" p.FileName)
+            |> List.distinct)
 
         dependenciesFile.Groups
         |> Map.map (fun groupName group -> 
