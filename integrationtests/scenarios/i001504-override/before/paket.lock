@@ -1,0 +1,12 @@
+NUGET
+  remote: bin
+  specs:
+    Paket.Test.A (1.0.0)
+    Paket.Test.B (1.0.0)
+      Paket.Test.A
+    Paket.Test.C (1.0.0-prerelease)
+      Paket.Test.A (>= 0.0.0-prerelease)
+      Paket.Test.B (>= 0.0.0-prerelease)
+    Paket.Test.D (1.0.0-prerelease)
+      Paket.Test.B (>= 0.0.0-prerelease)
+      Paket.Test.C (>= 0.0.0-prerelease)

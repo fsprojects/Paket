@@ -51,6 +51,12 @@
     <StartArguments>pack -v output D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp\out</StartArguments>
     <StartArguments>pack output "out/nuget"  version  0.9.3 releaseNotes  "[LanguageExtensions][New] New Ensure methods with exception parameter." include-referenced-projects</StartArguments>
     <StartArguments>pack output nupkg</StartArguments>
+    <StartArguments>update</StartArguments>
+    <StartArguments>convert-from-nuget</StartArguments>
+    <StartArguments>pack templatefile paket.template output o</StartArguments>
+    <StartArguments>install</StartArguments>
+    <StartArguments>update -f</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -63,6 +69,17 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001450-twiddle-wakka\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket-issue-1469</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001506-pack-ending\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001217-convert-json-projects\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001473-blocking\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001458-group-conflict\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001211-direct-v3\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001442-dont-warn\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001442-warn-Rx\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\PaketFrameworksProblemRepro\PaketFrameworksProblemRepro</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001505-conditionals\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001500-auto-detect\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001496-vsts\before</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001504-override\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

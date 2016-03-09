@@ -245,3 +245,14 @@ let ``#1506 allows to pack files without ending``() =
     File.Exists(Path.Combine(outPath, "tools", "blah.foo")) |> shouldEqual true
     File.Exists(Path.Combine(outPath, "tools", "blah")) |> shouldEqual true
     File.Delete(templatePath)
+
+
+
+[<Test>]
+let ``#1504 unpacking should override``() =
+    let scenario = "i001504-override"
+
+    prepare scenario
+    directPaket "pack templatefile paket.B.template version 1.0.0 output bin" scenario |> ignore
+    directPaket "pack templatefile paket.A.template version 1.0.0 output bin" scenario |> ignore
+    directPaket "update" scenario|> ignore
