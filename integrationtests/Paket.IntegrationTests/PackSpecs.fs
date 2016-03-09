@@ -203,6 +203,7 @@ let ``#1472 allows to put stuff in root of package``() =
     let expectedFile = Path.Combine(outPath, "Folder", "source.cs")
 
     File.Exists expectedFile |> shouldEqual true
+    File.Delete(templatePath)
 
 [<Test>]
 let ``#1472 allows to put stuff in relative folder``() =
@@ -219,6 +220,7 @@ let ``#1472 allows to put stuff in relative folder``() =
     let expectedFile = Path.Combine(outPath, "A", "Folder", "source.cs")
 
     File.Exists expectedFile |> shouldEqual true
+    File.Delete(templatePath)
 
 [<Test>]
 let ``#1483 pack deps with locked version from group``() = 
@@ -226,4 +228,20 @@ let ``#1483 pack deps with locked version from group``() =
     let templatePath = Path.Combine(scenarioTempPath "i001483-group-lock","pack", "paket.template")
     paket ("pack -v  output \"" + outPath + "\"") "i001483-group-lock" |> ignore
 
-    File.Delete(Path.Combine(scenarioTempPath "i001483-group-lock","pack","paket.template"))
+    File.Delete(templatePath)
+
+[<Test>]
+let ``#1506 allows to pack files without ending``() =
+    let scenario = "i001506-pack-ending"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"out")
+    let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
+    paket ("pack output \"" + outPath + "\" -v") scenario |> ignore
+
+    let package = Path.Combine(outPath, "Foo.1.0.0.nupkg")
+ 
+    ZipFile.ExtractToDirectory(package, outPath)
+    
+    File.Exists(Path.Combine(outPath, "tools", "blah.foo")) |> shouldEqual true
+    File.Exists(Path.Combine(outPath, "tools", "blah")) |> shouldEqual true
+    File.Delete(templatePath)
