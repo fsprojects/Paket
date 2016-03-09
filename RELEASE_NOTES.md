@@ -1,8 +1,11 @@
-#### 3.0.0-alpha063 - 09.03.2016
+#### 3.0.0-alpha064 - 09.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
+
+#### 2.51.11 - 09.03.2016
+* BUGFIX: Fall back to v2 for VSTS - https://github.com/fsprojects/Paket/issues/1496
 
 #### 2.51.10 - 09.03.2016
 * BUGFIX: Fixed duplicate frameworks during auto-detection - https://github.com/fsprojects/Paket/issues/1500

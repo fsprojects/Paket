@@ -511,38 +511,66 @@ let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer
 
 let GetPackageDetails root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
    
+    let tryV2 source (nugetSource:NugetSource)  = async {
+        let! result = 
+            getDetailsFromNuGet 
+                force 
+                (nugetSource.Authentication |> Option.map toBasicAuth)
+                nugetSource.Url 
+                packageName
+                version
+        return Some(source,result)  }
+
+    let tryV3 source nugetSource = async {
+        if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") then
+            match NuGetV3.calculateNuGet2Path nugetSource.Url with
+            | Some url -> 
+                let! result = 
+                    getDetailsFromNuGet 
+                        force 
+                        (nugetSource.Authentication |> Option.map toBasicAuth)
+                        url
+                        packageName
+                        version
+                return Some(source,result)
+            | _ ->
+                let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
+                return Some(source,result)
+        else
+            let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
+            return Some(source,result) }
+
     let getPackageDetails force =
         sources
         |> List.map (fun source -> async {
             try 
                 match source with
                 | NuGetV2 nugetSource ->
-                    let! result = 
-                        getDetailsFromNuGet 
-                            force 
-                            (nugetSource.Authentication |> Option.map toBasicAuth)
-                            nugetSource.Url 
-                            packageName
-                            version
-                    return Some(source,result)
+                    return! tryV2 source nugetSource
+                | NuGetV3 nugetSource when nugetSource.Url.Contains("pkgs.visualstudio.com")  ->
+                    match NuGetV3.calculateNuGet2Path nugetSource.Url with
+                    | Some url ->
+                        let nugetSource : NugetSource = 
+                            { Url = url
+                              Authentication = nugetSource.Authentication }
+                        return! tryV2 source nugetSource
+                    | _ -> 
+                        return! tryV3 source nugetSource
                 | NuGetV3 nugetSource ->
-                    if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org")  then
+                    try
+                        return! tryV3 source nugetSource
+                    with
+                    | exn -> 
                         match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                        | Some url -> 
-                            let! result = 
-                                getDetailsFromNuGet 
-                                    force 
-                                    (nugetSource.Authentication |> Option.map toBasicAuth)
-                                    url
-                                    packageName
-                                    version
-                            return Some(source,result)
-                        | _ ->
-                            let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
-                            return Some(source,result)
-                    else
-                        let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
-                        return Some(source,result)
+                        | Some url ->
+                            let nugetSource : NugetSource = 
+                                { Url = url
+                                  Authentication = nugetSource.Authentication }
+                            return! tryV2 source nugetSource
+                        | _ -> 
+                            raise exn
+                            return! tryV3 source nugetSource
+
                 | LocalNuGet path -> 
                     let! result = getDetailsFromLocalNuGetPackage root path packageName version
                     return Some(source,result)
