@@ -1,8 +1,11 @@
-#### 3.0.0-alpha061 - 09.03.2016
+#### 3.0.0-alpha062 - 09.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
+
+#### 2.51.9 - 09.03.2016
+* BUGFIX: Fixed conditional references created for group dependencies - https://github.com/fsprojects/Paket/issues/1505
 
 #### 2.51.8 - 09.03.2016
 * BUGFIX: Fixed parsing error in lock file parser - https://github.com/fsprojects/Paket/issues/1500

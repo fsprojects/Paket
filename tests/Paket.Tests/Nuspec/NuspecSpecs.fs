@@ -221,3 +221,28 @@ let ``can detect explicit dependencies for FluentAssertions 4``() =
         (PackageName "System.Collections",
           DependenciesFileParser.parseVersionRequirement(">= 4.0.10"),
           FrameworkRestrictionList [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])
+
+
+
+[<Test>]
+let ``can detect explicit dependencies for EasyNetQ``() = 
+    let deps = Nuspec.Load("Nuspec/EasyNetQ.nuspec").Dependencies |> Seq.toArray
+
+    deps.[0]
+    |> shouldEqual 
+        (PackageName "RabbitMQ.Client",
+          DependenciesFileParser.parseVersionRequirement(">= 3.5.7"),
+          FrameworkRestrictionList [])
+
+    deps.[1]
+    |> shouldEqual 
+        (PackageName "Microsoft.Bcl",
+          DependenciesFileParser.parseVersionRequirement(">= 1.1.10"),
+          FrameworkRestrictionList
+            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1))
+             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1_1))
+             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
+             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3))
+             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
+             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))
+             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4)) ])

@@ -183,6 +183,15 @@ let ``#1458 should install non conflicting deps from different groups only once`
     s1 |> shouldEqual s2
 
 [<Test>]
+let ``#1505 should install conditionals``() = 
+    install "i001505-conditionals" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+    
+[<Test>]
 let ``#1458 should not install conflicting deps from different groups``() =
     try
         install "i001458-group-conflict" |> ignore

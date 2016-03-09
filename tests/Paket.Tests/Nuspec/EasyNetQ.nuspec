@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>EasyNetQ</id>
+    <version>0.53.6.419</version>
+    <title>EasyNetQ</title>
+    <authors>Mike Hadlow, Contributors (see GitHub repo)</authors>
+    <owners>Mike Hadlow</owners>
+    <licenseUrl>https://github.com/EasyNetQ/EasyNetQ/blob/master/licence.txt</licenseUrl>
+    <projectUrl>http://easynetq.com/</projectUrl>
+    <iconUrl>https://raw.githubusercontent.com/EasyNetQ/EasyNetQ/gh-pages/design/logo_design.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>EasyNetQ is a simple, opinionated .NET API for RabbitMQ</description>
+    <releaseNotes />
+    <copyright>Copyright Mike Hadlow 2015</copyright>
+    <tags>RabbitMQ Messaging AMQP</tags>
+    <dependencies>
+      <group>
+        <dependency id="RabbitMQ.Client" version="[3.5.7, ]" />
+        <dependency id="Microsoft.Bcl" version="1.1.10" />
+        <dependency id="Microsoft.Bcl.Async" version="1.0.168" />
+        <dependency id="Microsoft.Bcl.Build" version="1.0.21" />
+      </group>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="RabbitMQ.Client" version="[3.5.7, ]" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

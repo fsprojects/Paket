@@ -150,6 +150,7 @@ let rec optimizeRestrictions restrictions =
                                         
         if restrictions = newRestrictions then sorting newRestrictions else optimizeRestrictions newRestrictions
 
+
 let optimizeDependencies packages =
     let grouped = packages |> List.groupBy (fun (n,v,_) -> n,v)
 
@@ -174,28 +175,72 @@ let optimizeDependencies packages =
         |> List.tryLast
         |> Option.map fst
 
+    let globalMin = 
+        invertedRestrictions
+        |> List.tryHead
+        |> Option.map fst
+
     let emptyRestrictions =
         [for (n,vr,r:FrameworkRestriction list) in packages do
             if r = [] then
                 yield n,vr]
         |> Set.ofList
 
+    let allRestrictions =
+        [for (n,vr,r:FrameworkRestriction list) in packages do
+            yield r]
+        |> Set.ofList
+
+    let restrictionsPerPackage =
+        packages
+        |> List.groupBy (fun (n,vr,r) -> n,vr)
+        |> List.map (fun ((n,vr),rs) ->
+            n,vr,
+             (rs 
+              |> List.map (fun (_,_,r) -> r)
+              |> Set.ofList))
+
+    let packagesWithAllRestrictions =
+        restrictionsPerPackage
+        |> List.filter (fun (_,_,rs) -> rs = allRestrictions)
+        |> List.map (fun (n,vr,_) -> n,vr)
+        |> Set.ofList
+
     [for (name,versionRequirement:VersionRequirement),group in grouped do
         if name <> PackageName "" then
-            if not (Set.isEmpty emptyRestrictions) && Set.contains (name,versionRequirement) emptyRestrictions then
+            let hasEmpty = not (Set.isEmpty emptyRestrictions) && Set.contains (name,versionRequirement) emptyRestrictions 
+            let hasAll = not (Set.isEmpty packagesWithAllRestrictions) && Set.contains (name,versionRequirement) packagesWithAllRestrictions 
+            
+            if hasEmpty && hasAll then
                 yield name,versionRequirement,[]
             else
-                let plain = 
+                let plain' = 
                     group 
                     |> List.map (fun (_,_,res) -> res) 
                     |> List.concat
                     |> List.distinct
                     |> List.sort
 
-                let localMaxDotNetRestriction = findMaxDotNetRestriction plain
+                let localMaxDotNetRestriction = findMaxDotNetRestriction plain'
                 let globalMax = defaultArg globalMax localMaxDotNetRestriction
 
-                let dotnetRestrictions,others = List.partition (function | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true | _ -> false) plain
+                let plain =
+                    match plain' with
+                    | [] ->
+                        let globalMin = defaultArg globalMin localMaxDotNetRestriction
+
+                        KnownTargetProfiles.DotNetFrameworkVersions 
+                        |> List.filter (fun fw -> DotNetFramework(fw) < globalMin)
+                        |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetFramework(fw)))
+                    | _ -> plain'
+
+                let dotnetRestrictions,others = 
+                    plain
+                    |> List.partition (fun p ->
+                        match p with
+                        | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true 
+                        | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true 
+                        | _ -> false)
 
                 let restrictions' = 
                     dotnetRestrictions
