@@ -90,6 +90,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001442-warn-Rx\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\PaketFrameworksProblemRepro\PaketFrameworksProblemRepro</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001505-conditionals\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001500-auto-detect\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
