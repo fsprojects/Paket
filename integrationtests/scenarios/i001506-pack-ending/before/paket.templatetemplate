@@ -1,0 +1,13 @@
+type file
+id Foo
+title Foo
+version 1.0.0
+authors Foo
+owners Foo
+description
+  foo
+files
+  * ==> tools/
+  **/* ==> tools/
+  !nupkg/*
+  !.paket/*

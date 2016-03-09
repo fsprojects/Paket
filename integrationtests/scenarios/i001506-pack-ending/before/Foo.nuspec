@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Foo</id>
+    <version>1.0.0</version>
+    <authors>Foo</authors>
+    <description>foo</description>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="**/*.*" target="tools" exclude=".paket/*;nupkg/*" />
+    <file src="*" target="tools" exclude=".paket/*;nupkg/*" />
+  </files>
+</package>

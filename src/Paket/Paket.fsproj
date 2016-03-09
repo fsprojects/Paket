@@ -55,6 +55,7 @@
     <StartArguments>pack templatefile paket.template output o</StartArguments>
     <StartArguments>install</StartArguments>
     <StartArguments>update -f</StartArguments>
+    <StartArguments>pack output nupkg</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -92,6 +93,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001505-conditionals\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001500-auto-detect\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001496-vsts\before</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001506-pack-ending\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
