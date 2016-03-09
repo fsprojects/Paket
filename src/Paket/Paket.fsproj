@@ -53,6 +53,7 @@
     <StartArguments>update</StartArguments>
     <StartArguments>convert-from-nuget</StartArguments>
     <StartArguments>pack templatefile paket.template output o</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
@@ -86,6 +87,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001211-direct-v3\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001442-dont-warn\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001442-warn-Rx\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\PaketFrameworksProblemRepro\PaketFrameworksProblemRepro</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
