@@ -1,3 +1,6 @@
+#### 2.51.9 - 09.03.2016
+* BUGFIX: Fixed conditional references created for group dependencies - https://github.com/fsprojects/Paket/issues/1505
+
 #### 2.51.8 - 09.03.2016
 * BUGFIX: Fixed parsing error in lock file parser - https://github.com/fsprojects/Paket/issues/1500
 
