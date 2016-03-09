@@ -227,7 +227,11 @@ module LockFileParser =
                 let parts = trimmed.Split '(' 
                 NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
             else
-                NugetDependency (trimmed,">= 0")
+                if trimmed.Contains("  -") then
+                    let pos = trimmed.IndexOf("  -")
+                    NugetDependency (trimmed.Substring(0,pos),">= 0")
+                else
+                    NugetDependency (trimmed,">= 0")
         | Some "NUGET", trimmed -> NugetPackage trimmed
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)

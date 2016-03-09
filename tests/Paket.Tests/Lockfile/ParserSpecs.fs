@@ -713,3 +713,43 @@ let ``should parse and serialize redirects lockfile``() =
 
     normalizeLineEndings lockFile' 
     |> shouldEqual (normalizeLineEndings packageRedirectsLockFile)
+
+let autodetectLockFile = """REDIRECTS: ON
+FRAMEWORK: NET452, NET452
+NUGET
+  remote: http://api.nuget.org/v3/index.json
+  specs:
+    Autofac (3.5.2) - framework: net452
+    Autofac.Extras.ServiceStack (2.0.2) - framework: net452
+      Autofac  - framework: net452
+      ServiceStack (>= 4.0.0) - framework: net452
+    ServiceStack (4.0.54) - framework: net452
+      ServiceStack.Client (>= 4.0.54) - framework: net452
+      ServiceStack.Common (>= 4.0.54) - framework: net452
+    ServiceStack.Client (4.0.54) - framework: net452
+      ServiceStack.Interfaces (>= 4.0.54) - framework: net452
+      ServiceStack.Text (>= 4.0.54) - framework: net452
+    ServiceStack.Common (4.0.54) - framework: net452
+      ServiceStack.Interfaces (>= 4.0.54) - framework: net452
+      ServiceStack.Text (>= 4.0.54) - framework: net452
+    ServiceStack.Interfaces (4.0.54) - framework: net452
+    ServiceStack.Text (4.0.54) - framework: net452
+  remote: https://www.myget.org/F/paket-framework-problem-repro
+  specs:
+    DependsOnAutofac (1.2.0)
+      Autofac  - framework: net452
+      Autofac.Extras.ServiceStack  - framework: net452
+"""
+
+[<Test>]
+let ``should parse lock file from auto-detect settings``() = 
+    let lockFile = LockFileParser.Parse(toLines autodetectLockFile)
+    let main = lockFile.Head
+    let packages = List.rev main.Packages
+    
+    packages.Length |> shouldEqual 8
+
+    packages.Head.Name |> shouldEqual (PackageName "Autofac")
+    packages.Tail.Head.Name |> shouldEqual (PackageName "Autofac.Extras.ServiceStack")
+    let deps = packages.Tail.Head.Dependencies |> Seq.toList |> List.map (fun (n,_,_) -> n)
+    deps.Head |> shouldEqual (PackageName "Autofac")

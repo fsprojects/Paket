@@ -1,3 +1,6 @@
+#### 2.51.8 - 09.03.2016
+* BUGFIX: Fixed parsing error in lock file parser - https://github.com/fsprojects/Paket/issues/1500
+
 #### 2.51.7 - 08.03.2016
 * USABILITY: only complain about missing references if there are references at all
 

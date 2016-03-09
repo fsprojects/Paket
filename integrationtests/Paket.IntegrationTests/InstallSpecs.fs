@@ -211,5 +211,9 @@ let ``#1334 without download fail``() =
     install "i001334-download-fail" |> ignore
 
 [<Test>]
+let ``#1500 without install error``() = 
+    install "i001500-auto-detect" |> ignore
+
+[<Test>]
 let ``#1371 without download fail``() = 
     paket "install -f"  "i001371-restore-error" |> ignore
