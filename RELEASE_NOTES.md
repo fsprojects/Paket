@@ -1,3 +1,6 @@
+#### 2.51.11 - 09.03.2016
+* BUGFIX: Fall back to v2 for VSTS - https://github.com/fsprojects/Paket/issues/1496
+
 #### 2.51.10 - 09.03.2016
 * BUGFIX: Fixed duplicate frameworks during auto-detection - https://github.com/fsprojects/Paket/issues/1500
 
