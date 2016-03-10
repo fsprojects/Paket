@@ -1,3 +1,6 @@
+#### 2.52.1 - 10.03.2016
+* Allow to restore recursively from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507
+
 #### 2.52.0 - 10.03.2016
 * Allow to restore dll from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507
 * Prevent paket holding locks on assemblies during binding redirects - https://github.com/fsprojects/Paket/pull/1492
