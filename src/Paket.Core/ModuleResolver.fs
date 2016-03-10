@@ -88,7 +88,7 @@ let rec resolve getDependencies getSha1 (file : UnresolvedSourceFile) : Resolved
         |> List.map (resolve (fun _ -> [],[]) getSha1)
         |> List.concat
 
-    [{ resolved with Dependencies = dependencies }] @ recursiveDeps
+    { resolved with Dependencies = dependencies } :: recursiveDeps
 
 let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
     let conflicts =
