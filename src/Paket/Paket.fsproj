@@ -27,23 +27,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>C:\projects\SourceLink</StartWorkingDirectory>
-    <StartWorkingDirectory>c:\code\Paket09x</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Pakettest</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paketkopie</StartWorkingDirectory>
-    <StartArguments>update group Build</StartArguments>
-    <StartArguments>pack output D:\code\paketbug\output</StartArguments>
-    <StartArguments>install</StartArguments>
-    <StartArguments>restore</StartArguments>
-    <StartArguments>update  -f</StartArguments>
-    <StartArguments>update -f</StartArguments>
-    <StartArguments>install</StartArguments>
-    <StartArguments>update</StartArguments>
-    <StartArguments>restore</StartArguments>
-    <StartArguments>update</StartArguments>
     <StartArguments>update</StartArguments>
     <StartArguments>restore</StartArguments>
     <StartArguments>update</StartArguments>
@@ -94,6 +79,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001500-auto-detect\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001496-vsts\before</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001504-override\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001233-props-fw-files\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

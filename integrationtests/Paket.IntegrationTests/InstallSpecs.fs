@@ -56,6 +56,16 @@ let ``#1233 install props``() =
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s1 |> shouldEqual s2
 
+
+[<Test>]
+let ``#1233 install props with framework restrictions``() = 
+    let newLockFile = install "i001233-props-fw-files"
+    let newFile = Path.Combine(scenarioTempPath "i001233-props-fw-files","xUnitTests","xUnitTests.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001233-props-fw-files","xUnitTests","xUnitTests.expected.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s1 |> shouldEqual s2
+
 [<Test>]
 let ``#1256 should report error in lock file``() =
     try

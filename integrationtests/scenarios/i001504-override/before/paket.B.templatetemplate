@@ -19,4 +19,4 @@ summary
 description
     provides connecting to sbs on the network layer
 files
-    test.txt ==> ../../temp/
+    files ==> ../../outerFolder/
