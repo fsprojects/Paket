@@ -61,34 +61,44 @@ type ResolvedSourceFile =
 
 let private getCommit (file : UnresolvedSourceFile) = defaultArg file.Commit "master"
 
-let rec resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSourceFile list = 
-    let sha =
-        let commit = getCommit file
-        match file.Origin with
-        | SingleSourceFileOrigin.HttpLink _  ->  commit
-        | _ -> getSha1 file.Origin file.Owner file.Project commit file.AuthKey
+let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSourceFile list = 
+    let rec resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSourceFile list = 
+        let sha =
+            let commit = getCommit file
+            match file.Origin with
+            | SingleSourceFileOrigin.HttpLink _  ->  commit
+            | _ -> getSha1 file.Origin file.Owner file.Project commit file.AuthKey
     
-    let resolved = 
-        { Commit = sha
-          Owner = file.Owner
-          Origin = file.Origin
-          Project = file.Project
-          Dependencies = Set.empty
-          Name = file.Name
-          AuthKey = file.AuthKey  }
+        let resolved = 
+            { Commit = sha
+              Owner = file.Owner
+              Origin = file.Origin
+              Project = file.Project
+              Dependencies = Set.empty
+              Name = file.Name
+              AuthKey = file.AuthKey  }
    
-    let nugetDependencies,remoteDependencies = getDependencies resolved 
-    let dependencies = 
-        nugetDependencies
-        |> List.map (fun (package:PackageRequirement) -> package.Name, package.VersionRequirement)
-        |> Set.ofList
+        let nugetDependencies,remoteDependencies = getDependencies resolved 
+        let dependencies = 
+            nugetDependencies
+            |> List.map (fun (package:PackageRequirement) -> package.Name, package.VersionRequirement)
+            |> Set.ofList
 
-    let recursiveDeps =
-        remoteDependencies
-        |> List.map (resolve (fun _ -> [],[]) getSha1)
-        |> List.concat
+        let recursiveDeps =
+            remoteDependencies
+            |> List.map (resolve getDependencies getSha1)
+            |> List.concat
 
-    { resolved with Dependencies = dependencies } :: recursiveDeps
+        { resolved with Dependencies = dependencies } :: recursiveDeps
+
+    let getDependencies resolved =
+        let cache = System.Collections.Generic.HashSet<_>()
+        if cache.Add resolved then
+            getDependencies resolved
+        else
+            [],[]
+        
+    resolve getDependencies getSha1 file
 
 let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
     let conflicts =
