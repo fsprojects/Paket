@@ -516,7 +516,6 @@ module ProjectFile =
             if !isPaketNode = paketOnes then yield node]
 
     let getCustomReferenceAndFrameworkNodes project = findNodes false "Reference" project
-        ///this.FindNodes false "Reference"
 
     let findPaketNodes name (project:ProjectFile) = findNodes true name  project
 
@@ -927,17 +926,17 @@ module ProjectFile =
             
             if propertyChooseNode.ChildNodes.Count > 0 then
                 if !i <= 0 then
-                    if propertyChooseNode.ChildNodes.Count > 0 then
-                        project.ProjectNode.AppendChild propertyChooseNode |> ignore
+                    project.ProjectNode.AppendChild propertyChooseNode |> ignore
 
                     propsNodes
                     |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
                 else
                     let node = project.ProjectNode.ChildNodes.[!i]
-                    addProps()
+                    
+                    propsNodes
+                    |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,node) |> ignore)
 
-                    if propertyChooseNode.ChildNodes.Count > 0 then
-                        project.ProjectNode.InsertAfter(propertyChooseNode,node) |> ignore
+                    project.ProjectNode.InsertAfter(propertyChooseNode,node) |> ignore
             else
                addProps()
 

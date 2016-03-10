@@ -1,3 +1,6 @@
+#### 2.51.12 - 10.03.2016
+* BUGFIX: Revert 1487 - https://github.com/fsprojects/Paket/issues/1487
+
 #### 2.51.11 - 09.03.2016
 * BUGFIX: Fall back to v2 for VSTS - https://github.com/fsprojects/Paket/issues/1496
 
