@@ -236,3 +236,12 @@ let ``#1500 without install error``() =
 [<Test>]
 let ``#1371 without download fail``() = 
     paket "install -f"  "i001371-restore-error" |> ignore
+
+[<Test>]
+let ``#1507 allows to download remote dependencies``() =
+    let scenario = "i001507-privateeye"
+    
+    install scenario |> ignore
+
+    File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "privateeye.fsx")) |> shouldEqual true
+    File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "bin", "PrivateEye.Bridge.dll")) |> shouldEqual true

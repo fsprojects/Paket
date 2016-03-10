@@ -61,7 +61,7 @@ type ResolvedSourceFile =
 
 let private getCommit (file : UnresolvedSourceFile) = defaultArg file.Commit "master"
 
-let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSourceFile = 
+let rec resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSourceFile list = 
     let sha =
         let commit = getCommit file
         match file.Origin with
@@ -76,13 +76,19 @@ let resolve getDependencies getSha1 (file : UnresolvedSourceFile) : ResolvedSour
           Dependencies = Set.empty
           Name = file.Name
           AuthKey = file.AuthKey  }
-    
+   
+    let nugetDependencies,remoteDependencies = getDependencies resolved 
     let dependencies = 
-        getDependencies resolved 
+        nugetDependencies
         |> List.map (fun (package:PackageRequirement) -> package.Name, package.VersionRequirement)
         |> Set.ofList
 
-    { resolved with Dependencies = dependencies }
+    let recursiveDeps =
+        remoteDependencies
+        |> List.map (resolve (fun _ -> [],[]) getSha1)
+        |> List.concat
+
+    [{ resolved with Dependencies = dependencies }] @ recursiveDeps
 
 let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
     let conflicts =
@@ -107,4 +113,6 @@ let private detectConflicts (remoteFiles : UnresolvedSourceFile list) : unit =
 let Resolve(getDependencies, getSha1, remoteFiles : UnresolvedSourceFile list) : ResolvedSourceFile list = 
     detectConflicts remoteFiles
 
-    remoteFiles |> List.map (resolve getDependencies getSha1)
+    remoteFiles 
+    |> List.map (resolve getDependencies getSha1)
+    |> List.concat
