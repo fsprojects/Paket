@@ -249,6 +249,7 @@ let ``#1506 allows to pack files without ending``() =
 
 
 [<Test>]
+[<Ignore>] // ignroe until we hear back
 let ``#1504 unpacking should override``() =
     let scenario = "i001504-override"
 
