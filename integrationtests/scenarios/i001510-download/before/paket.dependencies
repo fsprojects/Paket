@@ -1,0 +1,13 @@
+source https://nuget.org/api/v2
+
+nuget CsQuery
+nuget FSharp.Data
+nuget FSharp.Formatting
+nuget FSharp.RDF
+nuget Fuchu
+nuget FAKE
+nuget SourceLink.Fake
+nuget Suave
+nuget Suave.DotLiquid
+nuget Suave.Testing
+nuget Unquote
