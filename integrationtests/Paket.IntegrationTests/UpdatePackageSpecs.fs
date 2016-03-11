@@ -119,3 +119,8 @@ let ``#1500 don't detect framework twice``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001500-auto-detect","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
     |> shouldEqual (FrameworkRestrictionList [FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5_2))])
+
+
+[<Test>]
+let ``#1501 download succeeds``() =
+    update "i001510-download" |> ignore
