@@ -79,10 +79,27 @@ type ProjectJsonFile(fileName:string,text:string) =
         |> Map.ofSeq
     )
 
-    let rec findPos (property:string) (text:string) =
+    let getIndent (text:string) start =
+        if start >= text.Length then
+            0
+        else
+            let pos = ref start
+            let indent = ref 0
+            while !pos > 0 && text.[!pos] <> '\r' && text.[!pos] <> '\n' do
+                decr pos
+
+            if !pos = 0 then 0 else
+
+            incr pos
+            while !pos < text.Length && text.[!pos] = ' ' do
+                incr pos
+                incr indent
+            !indent
+
+    let rec findPos startPosition (property:string) (text:string) =
         let needle = sprintf "\"%s\"" property
         let getBalance start =
-            let pos = ref 0
+            let pos = ref startPosition
             let balance = ref 0
             while !pos <= start do
                 match text.[!pos] with
@@ -95,16 +112,55 @@ type ProjectJsonFile(fileName:string,text:string) =
         let rec find (startWith:int) =
             match text.IndexOf(needle,startWith) with
             | -1 -> 
-                if String.IsNullOrWhiteSpace text then findPos property (sprintf "{%s    \"%s\": { }%s}" Environment.NewLine property Environment.NewLine) else
-                let i = ref (text.Length - 1)
-                let n = ref 0
-                while !i > 0 && !n < 2 do
-                    if text.[!i] = '}' then
-                        incr n
-                    decr i
+                if String.IsNullOrWhiteSpace text then
+                    let text = sprintf "{%s    \"%s\": { }%s}" Environment.NewLine property Environment.NewLine
+                    findPos startPosition property text
+                else
 
-                if !i = 0 then findPos property (sprintf "{%s    \"%s\": { }%s}" Environment.NewLine property Environment.NewLine) else
-                findPos property (text.Substring(0,!i+2) + "," + Environment.NewLine + Environment.NewLine + "    \"" + property + "\": { }" + text.Substring(!i+2))
+                    let pos = ref startPosition
+                    while !pos < text.Length && text.[!pos] <> '{' do
+                        incr pos
+
+                    let i = 
+                        if !pos < text.Length then
+                            incr pos
+
+                            let balance = ref 1
+                            while !balance <> 0 do
+                                match text.[!pos] with
+                                | '{' -> incr balance
+                                | '}' -> decr balance
+                                |_ -> ()
+                                incr pos
+                            ref !pos
+                        else
+                            ref (text.Length - 1)
+
+                    if !i = 0 then
+                        let text = sprintf "{%s    \"%s\": { }%s}" Environment.NewLine property Environment.NewLine
+                        findPos startPosition property text 
+                    else
+                        let text = 
+                            let firstPart = text.Substring(0,!i-1).TrimEnd()
+                            let lastPart = text.Substring(!i-1)
+                            let comma =
+                                let s = firstPart.TrimEnd()
+                                if s.[s.Length - 1] = '{' then "" else ","
+                            let currentIndent = getIndent text (!i - 1)
+
+                            let indentCounter =  currentIndent + 4
+
+                            let indent = "".PadLeft indentCounter
+                            let indent2 = "".PadLeft (indentCounter - 4)
+
+                            let newLines = 
+                                if comma = "," then
+                                    Environment.NewLine + Environment.NewLine
+                                else
+                                    Environment.NewLine
+
+                            firstPart + comma + newLines + indent + "\"" + property + "\": { }" + Environment.NewLine + indent2 + lastPart
+                        findPos startPosition property text
             | start when getBalance start <> 1 -> find(start + 1)
             | start ->
                 let pos = ref (start + needle.Length)
@@ -122,7 +178,7 @@ type ProjectJsonFile(fileName:string,text:string) =
 
 
                 start,!pos,text
-        find 0
+        find startPosition
 
     member __.FileName = fileName
 
@@ -134,14 +190,19 @@ type ProjectJsonFile(fileName:string,text:string) =
 
     member __.GetInterProjectDependencies() = interProjectDependenciesByFramework.Force()
 
-    member this.WithDependencies dependencies =
+    member this.WithFrameworkDependencies framework dependencies =
         let nuGetDependencies = 
             dependencies 
             |> List.sortByDescending fst
             |> List.map (fun (name,version) -> sprintf "\"%O\": \"[%O]\"" name version)
 
-        let interProjectDependencies = 
-            interProjectDependencies.Force()
+        let interProjectDependencies =
+            if framework = "" then
+                interProjectDependencies.Force()
+            else
+                match interProjectDependenciesByFramework.Force() |> Map.tryFind framework with
+                | Some deps -> deps
+                | _ -> []
             |> List.map (fun p -> p.ToString())
 
         let dependencies = 
@@ -150,14 +211,15 @@ type ProjectJsonFile(fileName:string,text:string) =
             | interProjectDependencies,[] -> interProjectDependencies
             | _ -> interProjectDependencies @ [""] @ nuGetDependencies
 
-        let start,endPos,text = findPos "dependencies" text
-        let getIndent() =
-            let pos = ref start
-            let indent = ref 0
-            while !pos > 0 && text.[!pos] <> '\r' && text.[!pos] <> '\n' do
-                incr indent
-                decr pos
-            !indent
+        let start,endPos,text = 
+            if framework = "" then
+                findPos 0 "dependencies" text
+            else
+                let frameworksPos,_,textWithFrameworks = findPos 0 "frameworks" text
+                let frameworkPos,_,textWithFramework = findPos frameworksPos framework textWithFrameworks
+                findPos frameworkPos "dependencies" textWithFramework
+
+
 
         let sb = StringBuilder(text.Substring(0,start))
         sb.Append("\"dependencies\": ") |> ignore
@@ -167,7 +229,7 @@ type ProjectJsonFile(fileName:string,text:string) =
                 sb.Append "{ }"
             else
                 sb.AppendLine "{" |> ignore
-                let indent = "".PadLeft (max 4 (getIndent() + 3))
+                let indent = "".PadLeft (getIndent text start + 4)
                 let i = ref 1
                 let n = dependencies.Length
                 for d in dependencies do
@@ -184,6 +246,8 @@ type ProjectJsonFile(fileName:string,text:string) =
         sb.Append(text.Substring(endPos)) |> ignore
 
         ProjectJsonFile(fileName,sb.ToString())
+
+    member this.WithDependencies dependencies = this.WithFrameworkDependencies "" dependencies
 
     override __.ToString() = text
 

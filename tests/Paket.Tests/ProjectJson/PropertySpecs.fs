@@ -336,3 +336,137 @@ let ``does not replace frameworks in argu``() =
     let doc = ProjectJsonFile("",original)
     let doc' = doc.WithDependencies []
     doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
+
+[<Test>]
+let ``can replace dnxcore50 frameworks in argu``() = 
+
+    let original = """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "compilerName": "fsc",
+    "compileFiles": [
+        "Program.fs"
+    ],
+
+    "frameworks": {
+        "dnxcore50" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+        },
+        "net46" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+            "frameworkAssemblies": {
+                "System": "",
+                "System.Core": "",
+            }
+        }
+    }
+}
+"""
+
+    let expected = """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "compilerName": "fsc",
+    "compileFiles": [
+        "Program.fs"
+    ],
+
+    "frameworks": {
+        "dnxcore50" : { 
+            "dependencies": {
+                "Argu": {"version":"1.0.0","type":"build"},
+
+                "a": "[1.0.0]",
+                "NETStandard.Library": "[1.0.0-rc2-23727]"
+            },
+        },
+        "net46" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+            "frameworkAssemblies": {
+                "System": "",
+                "System.Core": "",
+            }
+        }
+    }
+}
+"""
+
+    let doc = ProjectJsonFile("",original)
+    let doc' = doc.WithFrameworkDependencies "dnxcore50" ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
+    doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
+
+[<Test>]
+let ``can add new dnxcore50 framework``() = 
+
+    let original = """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "compilerName": "fsc",
+    "compileFiles": [
+        "Program.fs"
+    ],
+
+    "frameworks": {
+        "net46" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+            "frameworkAssemblies": {
+                "System": "",
+                "System.Core": "",
+            }
+        }
+    }
+}
+"""
+
+    let expected = """{
+    "version": "1.0.0-*",
+    "compilationOptions": {
+        "emitEntryPoint": true
+    },
+
+    "compilerName": "fsc",
+    "compileFiles": [
+        "Program.fs"
+    ],
+
+    "frameworks": {
+        "net46" : { 
+            "dependencies": {
+                "Argu":  { "version": "1.0.0", "type": "build" }
+            },
+            "frameworkAssemblies": {
+                "System": "",
+                "System.Core": "",
+            }
+        },
+
+        "dnxcore50": {
+            "dependencies": {
+                "a": "[1.0.0]",
+                "NETStandard.Library": "[1.0.0-rc2-23727]"
+            }
+        }
+    }
+}
+"""
+
+    let doc = ProjectJsonFile("",original)
+    let doc' = doc.WithFrameworkDependencies "dnxcore50" ["NETStandard.Library", "1.0.0-rc2-23727"; "a", "1.0.0"]
+    doc'.ToString() |> normalizeLineEndings |> shouldEqual (expected |> normalizeLineEndings)
