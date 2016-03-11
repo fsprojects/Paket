@@ -29,7 +29,7 @@ let ``should resolve source files with correct sha``() =
         VersionRequirement = VersionRequirement.NoRestriction }
     let sha = "sha1"
     let cfg = DependenciesFile.FromCode(config1)
-    let resolved = ModuleResolver.Resolve((fun _ -> [dep]), (fun _ _ _ _ _ -> sha), cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles)
+    let resolved = ModuleResolver.Resolve((fun _ -> [dep],[]), (fun _ _ _ _ _ -> sha), cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles)
     resolved
     |> shouldContain
       { Owner = "fsharp"

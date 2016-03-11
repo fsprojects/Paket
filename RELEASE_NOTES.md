@@ -1,46 +1,31 @@
-#### 3.0.0-alpha065 - 10.03.2016
+#### 3.0.0-alpha066 - 11.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
 
-#### 2.51.12 - 10.03.2016
-* BUGFIX: Revert 1487 - https://github.com/fsprojects/Paket/issues/1487
+#### 2.52.2 - 11.03.2016
+* USABILITY: Improved stability in lock aquirering process - https://github.com/fsprojects/Paket/issues/858
 
-#### 2.51.11 - 09.03.2016
-* BUGFIX: Fall back to v2 for VSTS - https://github.com/fsprojects/Paket/issues/1496
+#### 2.52.1 - 10.03.2016
+* Allow to restore recursively from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507
 
-#### 2.51.10 - 09.03.2016
-* BUGFIX: Fixed duplicate frameworks during auto-detection - https://github.com/fsprojects/Paket/issues/1500
-
-#### 2.51.9 - 09.03.2016
-* BUGFIX: Fixed conditional references created for group dependencies - https://github.com/fsprojects/Paket/issues/1505
-
-#### 2.51.8 - 09.03.2016
-* BUGFIX: Fixed parsing error in lock file parser - https://github.com/fsprojects/Paket/issues/1500
-
-#### 2.51.7 - 08.03.2016
-* USABILITY: only complain about missing references if there are references at all
-
-#### 2.51.6 - 07.03.2016
-* BUGFIX: Merge Chessie into PowerShell package - https://github.com/fsprojects/Paket/issues/1499
-
-#### 2.51.5 - 07.03.2016
-* BUGFIX: Make v3 API more robust
-
-#### 2.51.4 - 01.03.2016
-* BUGFIX: Do not install packages with same version from different groups twice - https://github.com/fsprojects/Paket/issues/1458
-
-#### 2.51.3 - 01.03.2016
-* BUGFIX: When adding framework specification to paket.dependencies .props include was moved to the bottom of csproj file - https://github.com/fsprojects/Paket/issues/1487
-
-#### 2.51.2 - 01.03.2016
-* BUGFIX: Allow to use LOCKEDVERSION with packages that are not in main group - https://github.com/fsprojects/Paket/issues/1483
-
-#### 2.51.1 - 01.03.2016
+#### 2.52.0 - 10.03.2016
+* Allow to restore dll from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507
 * Prevent paket holding locks on assemblies during binding redirects - https://github.com/fsprojects/Paket/pull/1492
 * ProjectFile.save with forceTouch to only modify the last write time without content if unchanged - https://github.com/fsprojects/Paket/pull/1493
 * BUGFIX: Don't accept "Unsupported0.0" as full framework - https://github.com/fsprojects/Paket/issues/1494
+* BUGFIX: Revert 1487 - https://github.com/fsprojects/Paket/issues/1487
+* BUGFIX: Fall back to v2 for VSTS - https://github.com/fsprojects/Paket/issues/1496
+* BUGFIX: Fixed duplicate frameworks during auto-detection - https://github.com/fsprojects/Paket/issues/1500
+* BUGFIX: Fixed conditional references created for group dependencies - https://github.com/fsprojects/Paket/issues/1505
+* BUGFIX: Fixed parsing error in lock file parser - https://github.com/fsprojects/Paket/issues/1500
+* BUGFIX: Merge Chessie into PowerShell package - https://github.com/fsprojects/Paket/issues/1499
+* BUGFIX: Make v3 API more robust
+* BUGFIX: Do not install packages with same version from different groups twice - https://github.com/fsprojects/Paket/issues/1458
+* BUGFIX: When adding framework specification to paket.dependencies .props include was moved to the bottom of csproj file - https://github.com/fsprojects/Paket/issues/1487
+* BUGFIX: Allow to use LOCKEDVERSION with packages that are not in main group - https://github.com/fsprojects/Paket/issues/1483
+* USABILITY: only complain about missing references if there are references at all
 
 #### 2.51.0 - 29.02.2016
 * Experimental Visual C++ support in binding redirects - https://github.com/fsprojects/Paket/issues/1467

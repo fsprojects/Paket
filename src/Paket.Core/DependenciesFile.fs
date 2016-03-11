@@ -570,10 +570,14 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let resolveGroup groupName _ =
             let group = this.GetGroup groupName
 
-            let resolveSourceFile (file:ResolvedSourceFile) : PackageRequirement list =
-                RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, groupName, DependenciesFile.FromCode, file)
-                |> Async.RunSynchronously
-                |> fun df -> df.Groups.[Constants.MainDependencyGroup].Packages  // We do not support groups in reference files yet
+            let resolveSourceFile (file:ResolvedSourceFile) : (PackageRequirement list * UnresolvedSource list) =
+                let remoteDependenciesFile =
+                    RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, groupName, DependenciesFile.FromCode, file)
+                    |> Async.RunSynchronously
+
+                // We do not support groups in reference files yet
+                let mainGroup = remoteDependenciesFile.Groups.[Constants.MainDependencyGroup]
+                mainGroup.Packages,mainGroup.RemoteFiles
 
             let remoteFiles = ModuleResolver.Resolve(resolveSourceFile,getSha1,group.RemoteFiles)
         

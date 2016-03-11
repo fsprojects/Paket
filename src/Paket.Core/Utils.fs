@@ -425,29 +425,35 @@ let RunInLockedAccessMode(rootFolder,action) =
                         if hasRunningPaketProcess then
                             if startTime + timeOut <= DateTime.Now then
                                 failwith "timeout"
-                            if counter % 10 = 0 then
-                                traceWarnfn "packages folder is locked by paket.exe (PID = %s). Waiting..." content
-                            Thread.Sleep 100
-                            waitForUnlocked (counter + 1)
+                            else
+                                if counter % 50 = 0 then
+                                    traceWarnfn "packages folder is locked by paket.exe (PID = %s). Waiting..." content
+                                Thread.Sleep 100
+                                waitForUnlocked (counter + 1)
 
             waitForUnlocked 0
             File.WriteAllText(fileName, string p.Id)
         with
-        | exn ->
-            if trials > 0 && (startTime + timeOut) > DateTime.Now then 
-                acquireLock startTime timeOut (trials - 1)
+        | exn when exn.Message = "timeout" -> 
+            failwithf "Could not acquire lock to %s.%sThe process timed out." fileName Environment.NewLine
+        | exn -> 
+            if trials > 0 then 
+                let trials = trials - 1
+                traceWarnfn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
+                acquireLock startTime timeOut trials
             else
-                failwithf "Could not acquire %s file in %s.%s%s" 
-                    Constants.AccessLockFileName packagesFolder Environment.NewLine exn.Message
+                failwithf "Could not acquire lock to %s.%s%s" fileName Environment.NewLine exn.Message
     
-    let releaseLock() =
-         if File.Exists fileName then
-            let content = File.ReadAllText fileName
-            if content = string p.Id then
-               File.Delete fileName
-
+    let rec releaseLock() =
+        try
+            if File.Exists fileName then
+                let content = File.ReadAllText fileName
+                if content = string p.Id then
+                    File.Delete fileName
+        with
+        | _ -> releaseLock()
     try
-        acquireLock DateTime.Now (TimeSpan.FromMinutes 5.) 5
+        acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 100
 
         let result = action()
         

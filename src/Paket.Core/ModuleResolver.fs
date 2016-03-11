@@ -100,31 +100,48 @@ let getVersionRequirement version =
     | VersionRestriction.Concrete x -> x
     | VersionRestriction.VersionRequirement vr -> vr.ToString()
 
-let resolve getDependencies getSha1 (file : UnresolvedSource) : ResolvedSourceFile = 
-    let sha =
-        let commit = getVersionRequirement file.Version
-        match file.Origin with
-        | Origin.HttpLink _  -> commit
-        | _ -> getSha1 file.Origin file.Owner file.Project file.Version file.AuthKey
+let resolve getDependencies getSha1 (file : UnresolvedSource) : ResolvedSourceFile list = 
+    let rec resolve getDependencies getSha1 (file : UnresolvedSource) : ResolvedSourceFile list = 
+        let sha =
+            let commit = getVersionRequirement file.Version
+            match file.Origin with
+            | Origin.HttpLink _  -> commit
+            | _ -> getSha1 file.Origin file.Owner file.Project file.Version file.AuthKey
     
-    let resolved = 
-        { Commit = sha
-          Owner = file.Owner
-          Origin = file.Origin
-          Project = file.Project
-          Dependencies = Set.empty
-          Name = file.Name
-          Command = file.Command
-          OperatingSystemRestriction = file.OperatingSystemRestriction
-          PackagePath = file.PackagePath
-          AuthKey = file.AuthKey  }
-    
-    let dependencies = 
-        getDependencies resolved 
-        |> List.map (fun (package:PackageRequirement) -> package.Name, package.VersionRequirement)
-        |> Set.ofList
+        let resolved = 
+            { Commit = sha
+              Owner = file.Owner
+              Origin = file.Origin
+              Project = file.Project
+              Dependencies = Set.empty
+              Name = file.Name
+              Command = file.Command
+              OperatingSystemRestriction = file.OperatingSystemRestriction
+              PackagePath = file.PackagePath
+              AuthKey = file.AuthKey  }
 
-    { resolved with Dependencies = dependencies }
+
+        let nugetDependencies,remoteDependencies = getDependencies resolved 
+        let dependencies = 
+            nugetDependencies
+            |> List.map (fun (package:PackageRequirement) -> package.Name, package.VersionRequirement)
+            |> Set.ofList
+
+        let recursiveDeps =
+            remoteDependencies
+            |> List.map (resolve getDependencies getSha1)
+            |> List.concat
+
+        { resolved with Dependencies = dependencies } :: recursiveDeps
+
+    let getDependencies resolved =
+        let cache = System.Collections.Generic.HashSet<_>()
+        if cache.Add resolved then
+            getDependencies resolved
+        else
+            [],[]
+        
+    resolve getDependencies getSha1 file
 
 let private detectConflicts (remoteFiles : UnresolvedSource list) : unit =
     let conflicts =
@@ -149,4 +166,6 @@ let private detectConflicts (remoteFiles : UnresolvedSource list) : unit =
 let Resolve(getDependencies, getSha1, remoteFiles : UnresolvedSource list) : ResolvedSourceFile list = 
     detectConflicts remoteFiles
 
-    remoteFiles |> List.map (resolve getDependencies getSha1)
+    remoteFiles 
+    |> List.map (resolve getDependencies getSha1)
+    |> List.concat

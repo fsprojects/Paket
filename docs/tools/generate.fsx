@@ -12,6 +12,8 @@ Paket.Commands.getAllCommands()
 
 If you add the `-v` flag, then Paket will run in verbose mode and show detailed information.
 
+With `--log-file [FileName]` you can trace the logged information into a file.
+
 """
 
         let optFile = sprintf "../content/commands/%s.md" command.Name
