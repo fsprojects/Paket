@@ -719,7 +719,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         match tryFindPackageLine groupName packageName with 
         | None -> this
         | Some pos ->
-            let removeElementAt index myArr = // TODO: Replace this in F# 4.0
+            let removeElementAt index myArr =
                 [|  for i = 0 to Array.length myArr - 1 do 
                        if i <> index then yield myArr.[ i ] |]
 
