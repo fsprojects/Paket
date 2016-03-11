@@ -196,3 +196,9 @@ This only works for paket.template files of type `project`.
 ### Comments
 
 A line starting with a # or // is considered a comment and will be ignored by the parser.
+
+### Includes
+
+A line with the format `#load "<filename>"` will be replaced with the content of the given file.
+
+The file must exist relative to the root file. If the file is not found, the line will be deleted.

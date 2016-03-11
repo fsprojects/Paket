@@ -135,7 +135,7 @@ type OptionalPackagingInfo =
       References : string list
       FrameworkAssemblyReferences : string list
       Files : (string * string) list
-      FilesExcluded : string list 
+      FilesExcluded : string list
       IncludePdbs : bool}
     static member Epmty : OptionalPackagingInfo =
         { Title = None
@@ -155,7 +155,7 @@ type OptionalPackagingInfo =
           References = []
           FrameworkAssemblyReferences = []
           Files = []
-          FilesExcluded = [] 
+          FilesExcluded = []
           IncludePdbs = false}
 
 type CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
@@ -199,7 +199,7 @@ module internal TemplateFile =
             | ProjectInfo(core, optional) -> ProjectInfo(core, { optional with ReleaseNotes = Some releaseNotes })
         { templateFile with Contents = contents }
 
-    let setProjectUrl url templateFile = 
+    let setProjectUrl url templateFile =
         let contents =
             match templateFile.Contents with
             | CompleteInfo(core, optional) -> CompleteInfo(core, { optional with ProjectUrl = Some url })
@@ -260,7 +260,7 @@ module internal TemplateFile =
                             match lockFile.Groups.[Constants.MainDependencyGroup].Resolution |> Map.tryFind name with
                             | Some p -> s.Replace("LOCKEDVERSION", string p.Version)
                             | None ->
-                                let packages = 
+                                let packages =
                                     lockFile.GetGroupedResolution()
                                     |> Seq.filter (fun kv -> snd kv.Key = name)
                                     |> Seq.toList
@@ -274,12 +274,12 @@ module internal TemplateFile =
                     DependenciesFileParser.parseVersionRequirement versionString
                 name, versionRequirement)
             |> Array.toList
-        
+
 
     let private getExcludedDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option) =
         match Map.tryFind "excludeddependencies" info with
         | None -> []
-        | Some d -> 
+        | Some d ->
             d.Split '\n'
             |> Array.map (fun d ->
                 let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
@@ -293,11 +293,11 @@ module internal TemplateFile =
     let private getFiles (map : Map<string, string>) =
         match Map.tryFind "files" map with
         | None -> []
-        | Some d -> 
+        | Some d ->
             d.Split '\n'
             |> Array.filter (fun s -> (isExclude.IsMatch>>not) s && (isComment.IsMatch>>not) s)
             |> Seq.map (fun (line:string) ->
-                let splitted = line.Split([|"==>"|],StringSplitOptions.None) |> Array.map String.trim 
+                let splitted = line.Split([|"==>"|],StringSplitOptions.None) |> Array.map String.trim
                 let target = if splitted.Length < 2 then "lib" else splitted.[1]
                 splitted.[0],target)
             |> List.ofSeq
@@ -305,7 +305,7 @@ module internal TemplateFile =
     let private getFileExcludes (map : Map<string, string>) =
         match Map.tryFind "files" map with
         | None -> []
-        | Some d -> 
+        | Some d ->
             d.Split '\n'
             |> Array.filter isExclude.IsMatch
             |> Array.filter (isComment.IsMatch >> not)
@@ -350,8 +350,8 @@ module internal TemplateFile =
 
         let dependencies = getDependencies(fileName,lockFile,map,currentVersion,specificVersions)
         let excludedDependencies = getExcludedDependencies(fileName,lockFile,map,currentVersion)
-        
-        let includePdbs = 
+
+        let includePdbs =
             match get "include-pdbs" with
             | Some x when String.equalsIgnoreCase x "true" -> true
             | _ -> false
@@ -373,7 +373,7 @@ module internal TemplateFile =
           References = getReferences map
           FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map
-          FilesExcluded = getFileExcludes map 
+          FilesExcluded = getFileExcludes map
           IncludePdbs = includePdbs }
 
     let Parse(file,lockFile,currentVersion,specificVersions,contentStream : Stream) =
@@ -427,10 +427,31 @@ module internal TemplateFile =
                 return CompleteInfo(core, optionalInfo)
         }
 
+    let private loadWithIncludes fileName =
+        let includeRegex = new Regex(@"^#load ""(?<filename>.+)\s*""$", RegexOptions.Compiled)
+
+        let stream = new MemoryStream ()
+        let writer = new StreamWriter(stream)
+
+        let rec load file =
+            File.ReadAllLines file
+            |> Array.map (fun line -> line, includeRegex.Match(line))
+            |> Array.iter (fun (l, m) -> match m.Success with
+                                         | false -> writer.WriteLine l
+                                         | true ->
+                                            let includeFile = Path.Combine(Path.GetDirectoryName(fileName), m.Groups.["filename"].Value)
+                                            if File.Exists includeFile then load includeFile |> ignore)
+
+        load fileName |> ignore
+
+        writer.Flush()
+        stream.Seek(0L, SeekOrigin.Begin) |> ignore
+        stream
+
     let Load(fileName,lockFile,currentVersion,specificVersions) =
         let fi = FileInfo fileName
         let root = fi.Directory.FullName
-        let contents = Parse(fi.FullName,lockFile,currentVersion,specificVersions, File.OpenRead fileName) |> returnOrFail
+        let contents = Parse(fi.FullName,lockFile,currentVersion,specificVersions,loadWithIncludes fileName) |> returnOrFail
         let getFiles files =
             [ for source, target in files do
                 match Fake.Globbing.search root source with
@@ -464,7 +485,7 @@ module internal TemplateFile =
         | Choice1Of2 m ->
             let type' = parsePackageConfigType filename m
             if type' |> failed then false
-            else 
+            else
                 match (returnOrFail type') with
                 | ProjectType -> true
                 | FileType -> false
