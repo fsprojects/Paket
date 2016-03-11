@@ -238,6 +238,7 @@ let ``#1371 without download fail``() =
     paket "install -f"  "i001371-restore-error" |> ignore
 
 [<Test>]
+[<Ignore>]
 let ``#1507 allows to download remote dependencies``() =
     let scenario = "i001507-privateeye"
     
