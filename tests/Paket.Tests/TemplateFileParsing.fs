@@ -732,3 +732,71 @@ excludeddependencies
            | ProjectInfo (_, opt) -> opt
 
     sut.ExcludedDependencies.Count |> shouldEqual 3
+
+[<Literal>]
+let MasterFile = """type file
+id My.Thing
+authors Bob McBob
+description A short description
+#load "version.include"
+#load "releaseNotes.partial"
+title My.Thing
+"""
+
+[<Literal>]
+let VersionInclude = """version 1.0"""
+
+[<Literal>]
+let ReleaseNotesPartial = """releaseNotes
+  new thing 1
+  other new thing
+#load "subdir/inception.inc"
+"""
+
+[<Literal>]
+let Inception = """projectUrl
+  http://inception.de/
+"""
+
+open System.IO
+[<Test>]
+let ``Load template file with includes`` () =
+    let tmpDir = Path.Combine(Path.GetTempPath(), Path.GetTempFileName())
+    File.Delete(tmpDir)
+    let inceptionDir = Path.Combine(tmpDir, "subdir")
+
+    Directory.CreateDirectory(tmpDir) |> ignore
+    Directory.CreateDirectory(inceptionDir) |> ignore
+
+    let masterFile = Path.Combine(tmpDir, "paket.template")
+    let versionIncludeFile = Path.Combine(tmpDir, "version.include")
+    let releaseNotesPartialFile = Path.Combine(tmpDir, "releaseNotes.partial")
+    let inceptionFile = Path.Combine(inceptionDir, "inception.inc")
+
+    File.WriteAllText(masterFile, MasterFile)
+    File.WriteAllText(versionIncludeFile, VersionInclude)
+    File.WriteAllText(releaseNotesPartialFile, ReleaseNotesPartial)
+    File.WriteAllText(inceptionFile, Inception)
+
+    let sut =
+        TemplateFile.Load(Path.Combine(tmpDir, "paket.template"), LockFile.Parse("",[||]), None, Map.empty)
+        |> fun tf -> tf.Contents
+        |> function
+           | CompleteInfo (core, opt) -> Some core, Some opt
+           | ProjectInfo (_, opt) -> None, Some opt
+
+    match sut with
+    | Some core, Some opt ->
+        core.Version |> shouldEqual (Some v1)
+        core.Id |> shouldEqual "My.Thing"
+        core.Authors |> shouldEqual ["Bob McBob"]
+        opt.ProjectUrl |> shouldEqual (Some "http://inception.de/")
+        opt.ReleaseNotes |> shouldEqual (Some "new thing 1\nother new thing")
+        core.Description |> normalizeLineEndings |> shouldEqual (normalizeLineEndings "A short description")
+    | _ -> failwith "This should not happen as this is a file type!"
+
+    File.Delete(inceptionFile)
+    Directory.Delete(inceptionDir)
+    File.Delete(releaseNotesPartialFile)
+    File.Delete(versionIncludeFile)
+    File.Delete(masterFile)
