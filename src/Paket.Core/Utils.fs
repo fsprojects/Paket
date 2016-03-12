@@ -356,7 +356,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                                 failwith "timeout"
                             else
                                 if counter % 50 = 0 then
-                                    traceWarnfn "packages folder is locked by paket.exe (PID = %s). Waiting..." content
+                                    tracefn "packages folder is locked by paket.exe (PID = %s). Waiting..." content
                                 Thread.Sleep 100
                                 waitForUnlocked (counter + 1)
 
@@ -368,7 +368,7 @@ let RunInLockedAccessMode(rootFolder,action) =
         | exn -> 
             if trials > 0 then 
                 let trials = trials - 1
-                traceWarnfn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
+                tracefn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
                 acquireLock startTime timeOut trials
             else
                 failwithf "Could not acquire lock to %s.%s%s" fileName Environment.NewLine exn.Message
@@ -381,6 +381,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                     File.Delete fileName
         with
         | _ -> releaseLock()
+
     try
         acquireLock DateTime.Now (TimeSpan.FromMinutes 10.) 100
 

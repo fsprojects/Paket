@@ -1,5 +1,5 @@
-#### 2.52.2 - 11.03.2016
-* USABILITY: Improved stability in lock aquirering process - https://github.com/fsprojects/Paket/issues/858
+#### 2.52.3 - 12.03.2016
+* USABILITY: Improved stability in lock acquiring process - https://github.com/fsprojects/Paket/issues/858
 
 #### 2.52.1 - 10.03.2016
 * Allow to restore recursively from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507
