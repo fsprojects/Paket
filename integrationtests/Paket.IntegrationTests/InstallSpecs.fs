@@ -23,19 +23,19 @@ let ``#1219 install props``() =
     let oldFile = Path.Combine(originalScenarioPath "i001219-props-files","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
     let newFile = Path.Combine(scenarioTempPath "i001219-props-files","MyClassLibrary","MyClassLibrary2","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001219-props-files","MyClassLibrary","MyClassLibrary2","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
     let newFile = Path.Combine(scenarioTempPath "i001219-props-files","MyClassLibrary","MyClassLibrary3","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001219-props-files","MyClassLibrary","MyClassLibrary2","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 
 [<Test>]
@@ -45,7 +45,7 @@ let ``#1487 install props stays stable``() =
     let oldFile = Path.Combine(originalScenarioPath "i001487-stable-props","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1233 install props``() = 
@@ -54,7 +54,7 @@ let ``#1233 install props``() =
     let oldFile = Path.Combine(originalScenarioPath "i001233-props-files","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 
 [<Test>]
@@ -64,7 +64,7 @@ let ``#1233 install props with framework restrictions``() =
     let oldFile = Path.Combine(originalScenarioPath "i001233-props-fw-files","xUnitTests","xUnitTests.expected.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1256 should report error in lock file``() =
@@ -81,23 +81,61 @@ let ``#1270 install net461``() =
     let oldFile = Path.Combine(originalScenarioPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1427 install content once from dependencies file``() = 
     let newLockFile = install "i001427-content-once"
     let newFile = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let oldFile = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
     s1.Contains "FodyWeavers.xml" |> shouldEqual true
 
     let newWeavers = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1427 install content once from dependencies file stays stable``() = 
+    let scenario = "i001427-content-once-stable"
+    let newLockFile = install scenario
+
+    let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+    s1.Contains "FodyWeavers.xml" |> shouldEqual true
+
+    let newWeavers = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
+    let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1427 install content once from dependencies file stays stable 2 installs``() = 
+    let scenario = "i001427-content-once"
+    let newLockFile = install scenario
+
+    directPaket "install" scenario |> ignore
+
+    let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+    s1.Contains "FodyWeavers.xml" |> shouldEqual true
+
+    let newWeavers = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
+    let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1427 install content once from references file``() = 
@@ -106,14 +144,14 @@ let ``#1427 install content once from references file``() =
     let oldFile = Path.Combine(originalScenarioPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
     s1.Contains "FodyWeavers.xml" |> shouldEqual true
 
     let newWeavers = Path.Combine(scenarioTempPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let oldWeavers = Path.Combine(originalScenarioPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1427 install content``() = 
@@ -122,7 +160,7 @@ let ``#1427 install content``() =
     let oldFile = Path.Combine(originalScenarioPath "i001427-content-true","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
     s1.Contains "FodyWeavers.xml" |> shouldEqual true
 
     let newWeavers = Path.Combine(scenarioTempPath "i001427-content-true","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
@@ -138,14 +176,14 @@ let ``#1427 won't install content when content:none``() =
     let oldFile = Path.Combine(originalScenarioPath "i001427-content-none","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
     s1.Contains "FodyWeavers.xml" |> shouldEqual false
 
     let newWeavers = Path.Combine(scenarioTempPath "i001427-content-none","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-none","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
-    s1 |> shouldEqual s2 // we do not touch it
+    s2 |> shouldEqual s1 // we do not touch it
 
 [<Test>]
 let ``#1440 auto-detect framework``() = 
@@ -154,7 +192,7 @@ let ``#1440 auto-detect framework``() =
     let oldFile = Path.Combine(originalScenarioPath "i001440-auto-detect","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1466 install package with dll in name``() = 
@@ -163,7 +201,7 @@ let ``#1466 install package with dll in name``() =
     let oldFile = Path.Combine(originalScenarioPath "i001466-expressive","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1467 install package into vcxproj``() = 
@@ -172,7 +210,7 @@ let ``#1467 install package into vcxproj``() =
     let oldFile = Path.Combine(originalScenarioPath "i001467-cpp","MyClassLibrary","ConsoleApplication1","ConsoleApplication1.vcxprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1467 install native package into vcxproj``() = 
@@ -181,7 +219,7 @@ let ``#1467 install native package into vcxproj``() =
     let oldFile = Path.Combine(originalScenarioPath "i001467-cpp-native","MyClassLibrary","PaketTest.vcxprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1458 should install non conflicting deps from different groups only once``() = 
@@ -190,7 +228,7 @@ let ``#1458 should install non conflicting deps from different groups only once`
     let oldFile = Path.Combine(originalScenarioPath "i001458-same-version-group","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1505 should install conditionals``() = 
@@ -199,7 +237,7 @@ let ``#1505 should install conditionals``() =
     let oldFile = Path.Combine(originalScenarioPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s1 |> shouldEqual s2
+    s2 |> shouldEqual s1
     
 [<Test>]
 let ``#1458 should not install conflicting deps from different groups``() =

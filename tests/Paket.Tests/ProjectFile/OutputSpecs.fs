@@ -63,15 +63,15 @@ let ``should maintain order when updating project file items`` () =
     
     let projFile =  ProjectFile.TryLoad("./ProjectFile/TestData/MaintainsOrdering.fsprojtest").Value
     let fileItems = [
-        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\Pluralizer.fs"; Link = Some("fsharp_data\\Pluralizer.fs") }
-        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\NameUtils.fs"; Link = Some("fsharp_data\\NameUtils.fs") }
-        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextConversions.fs"; Link = Some("fsharp_data\\TextConversions.fs") }
-        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralTypes.fs"; Link = Some("fsharp_data\\StructuralTypes.fs") }
-        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralInference.fs"; Link = Some("fsharp_data\\StructuralInference.fs") }
-        { BuildAction = BuildAction.Compile; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextRuntime.fs"; Link = Some("fsharp_data\\TextRuntime.fs") }
-        { BuildAction = BuildAction.Compile; Include = "DebugProvidedTypes.fs"; Link = None }
-        { BuildAction = BuildAction.Compile; Include = "ProvidedTypes.fs"; Link = None }
-        { BuildAction = BuildAction.Content; Include = "ProvidedTypes.fsi"; Link = None }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\Pluralizer.fs"; Link = Some("fsharp_data\\Pluralizer.fs") }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\NameUtils.fs"; Link = Some("fsharp_data\\NameUtils.fs") }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextConversions.fs"; Link = Some("fsharp_data\\TextConversions.fs") }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralTypes.fs"; Link = Some("fsharp_data\\StructuralTypes.fs") }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\StructuralInference.fs"; Link = Some("fsharp_data\\StructuralInference.fs") }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "..\\..\\paket-files\\fsharp\\FSharp.Data\\src\\CommonRuntime\\TextRuntime.fs"; Link = Some("fsharp_data\\TextRuntime.fs") }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "DebugProvidedTypes.fs"; Link = None }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "ProvidedTypes.fs"; Link = None }
+        { BuildAction = BuildAction.Content; WithPaketSubNode = true; Include = "ProvidedTypes.fsi"; Link = None }
     ]
     projFile.UpdateFileItems(fileItems, false)
 
@@ -111,9 +111,9 @@ let ``should remove missing files that exist in the project`` () =
     
     let projFile =  ProjectFile.TryLoad("./ProjectFile/TestData/MaintainsOrdering.fsprojtest").Value
     let fileItems = [
-        { BuildAction = BuildAction.Compile; Include = "DebugProvidedTypes.fs"; Link = None }
-        { BuildAction = BuildAction.Compile; Include = "ProvidedTypes.fs"; Link = None }
-        { BuildAction = BuildAction.Content; Include = "ProvidedTypes.fsi"; Link = None }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "DebugProvidedTypes.fs"; Link = None }
+        { BuildAction = BuildAction.Compile; WithPaketSubNode = true; Include = "ProvidedTypes.fs"; Link = None }
+        { BuildAction = BuildAction.Content; WithPaketSubNode = true; Include = "ProvidedTypes.fsi"; Link = None }
     ]
     projFile.UpdateFileItems(fileItems, false)
 

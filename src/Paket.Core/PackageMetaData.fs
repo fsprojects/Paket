@@ -344,6 +344,6 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         let dep =
                             match dependencyVersionRequirement with
                             | Some installed -> installed
-                            | None -> failwithf "No package with id '%A' installed in group %O." np.Name groupName
+                            | None -> failwithf "No package with id '%O' installed in group %O." np.Name groupName
                         np.Name, dep)
             deps |> List.fold addDependency withDepsAndIncluded

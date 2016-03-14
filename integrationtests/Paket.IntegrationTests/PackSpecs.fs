@@ -246,6 +246,20 @@ let ``#1506 allows to pack files without ending``() =
     File.Exists(Path.Combine(outPath, "tools", "blah")) |> shouldEqual true
     File.Delete(templatePath)
 
+[<Test>]
+let ``#1514 invliad pack should give proper warning``() =
+    let scenario = "i001514-pack-error"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"out")
+    let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
+
+    try
+        paket ("pack buildconfig \"Debug\" buildplatform \"AnyCPU\" output \"" + outPath + "\" -v") scenario |> ignore
+        failwith ""
+    with
+    | exn when exn.Message.Contains "No package with id 'PaketDemo.MyLibrary'" -> ()
+
+    File.Delete(templatePath)
 
 
 [<Test>]

@@ -1,0 +1,8 @@
+type file
+id PaketDemo.MyLibrary
+version 1.0
+authors Michael Baker
+description
+    Provides some kind of API
+files
+    bin\Debug\MyLibrary.dll ==> lib
