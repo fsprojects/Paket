@@ -111,8 +111,8 @@ let ``#1427 install content once from dependencies file stays stable``() =
     s2 |> shouldEqual s1
     s1.Contains "FodyWeavers.xml" |> shouldEqual true
 
-    let newWeavers = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
-    let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let newWeavers = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let oldWeavers = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -131,8 +131,8 @@ let ``#1427 install content once from dependencies file stays stable 2 installs`
     s2 |> shouldEqual s1
     s1.Contains "FodyWeavers.xml" |> shouldEqual true
 
-    let newWeavers = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
-    let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let newWeavers = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let oldWeavers = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
     s2 |> shouldEqual s1
