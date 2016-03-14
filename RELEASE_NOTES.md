@@ -1,3 +1,6 @@
+#### 2.52.7 - 14.03.2016
+* USABILITY: Emit net40-full moniker
+
 #### 2.52.6 - 14.03.2016
 * USABILITY: Content:once doesn't add paket flags to the csproj file in order to make Orleans tools happy - https://github.com/fsprojects/Paket/issues/1513
 
