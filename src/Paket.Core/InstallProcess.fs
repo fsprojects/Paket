@@ -101,9 +101,10 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
 
         copyContentFiles(project, packageDirectoriesWithContent)
         |> List.map (fun (file,settings) ->
+                            let createSubNodes = settings <> ContentCopySettings.OmitIfExisting
                             { BuildAction = project.DetermineBuildAction file.Name
                               Include = createRelativePath project.FileName file.FullName
-                              WithPaketSubNode = settings <> ContentCopySettings.OmitIfExisting
+                              WithPaketSubNode = createSubNodes
                               Link = None })
 
     let removeCopiedFiles (project: ProjectFile) =

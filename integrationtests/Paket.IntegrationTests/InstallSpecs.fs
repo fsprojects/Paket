@@ -118,6 +118,24 @@ let ``#1427 install content once from dependencies file stays stable``() =
     s2 |> shouldEqual s1
 
 [<Test>]
+let ``#1427 install content once from dependencies file removes paket tag``() = 
+    let scenario = "i001427-content-once-remove"
+    let newLockFile = install scenario
+
+    let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+    s1.Contains "FodyWeavers.xml" |> shouldEqual true
+
+    let newWeavers = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let oldWeavers = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
+    let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
 let ``#1427 install content once from dependencies file stays stable 2 installs``() = 
     let scenario = "i001427-content-once"
     let newLockFile = install scenario

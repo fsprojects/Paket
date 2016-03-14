@@ -45,7 +45,7 @@ type FrameworkVersion =
         | FrameworkVersion.V3 -> "30"
         | FrameworkVersion.V3_5 -> "35"
         | FrameworkVersion.V4_Client -> "40"
-        | FrameworkVersion.V4 -> "40"
+        | FrameworkVersion.V4 -> "40-full"
         | FrameworkVersion.V4_5 -> "45"
         | FrameworkVersion.V4_5_1 -> "451"
         | FrameworkVersion.V4_5_2 -> "452"

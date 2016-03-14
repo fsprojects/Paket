@@ -1,10 +1,13 @@
-#### 3.0.0-alpha069 - 14.03.2016
+#### 3.0.0-alpha070 - 14.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
 
-#### 2.52.5 - 14.03.2016
+#### 2.52.7 - 14.03.2016
+* USABILITY: Emit net40-full moniker
+
+#### 2.52.6 - 14.03.2016
 * USABILITY: Content:once doesn't add paket flags to the csproj file in order to make Orleans tools happy - https://github.com/fsprojects/Paket/issues/1513
 
 #### 2.52.4 - 14.03.2016

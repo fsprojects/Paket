@@ -12,7 +12,7 @@ let ``should detect TargetFramework in Project2 proj file``() =
 [<Test>]
 let ``should detect net40 in empty proj file``() =
     ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GetTargetProfile().ToString()
-    |> shouldEqual "net40"
+    |> shouldEqual "net40-full"
 
 [<Test>]
 let ``should detect silverlight framework in new silverlight project2``() =

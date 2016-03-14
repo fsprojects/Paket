@@ -82,7 +82,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001233-props-fw-files\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001507-privateeye\temp</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001427-content-once\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001427-content-once-remove\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
