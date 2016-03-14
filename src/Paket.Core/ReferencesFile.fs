@@ -52,6 +52,8 @@ type ReferencesFile =
         let isSingleFile (line: string) = line.StartsWith "File:"
         let notEmpty (line: string) = not <| String.IsNullOrWhiteSpace line
         let parsePackageInstallSettings (line: string) : PackageInstallSettings = 
+            let line = if line.StartsWith "nuget " then line.Substring(6) else line
+               
             let parts = line.Split(' ')
             { Name = PackageName parts.[0]
               Settings = InstallSettings.Parse(line.Replace(parts.[0],"")) } 

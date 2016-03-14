@@ -237,6 +237,7 @@ let inline createWebClient (url,auth:Auth option) =
 
 open System.Diagnostics
 open System.Threading
+open System.Collections.Generic
 
 let innerText (exn:Exception) =
     match exn.InnerException with
@@ -426,22 +427,27 @@ let inline (++) x y =
     | _ -> x
 
 let parseKeyValuePairs (s:string) =
-    let s = s.Trim().ToLower()
-    let parts = s.Split([|','|], StringSplitOptions.RemoveEmptyEntries)
-    let dict = new System.Collections.Generic.Dictionary<_,_>()
+    let s = s.Trim()
+    try
+        let s = s.ToLower()
+        let parts = s.Split([|','|], StringSplitOptions.RemoveEmptyEntries)
+        let dict = Dictionary<_,_>()
 
-    let lastKey = ref ""
+        let lastKey = ref ""
 
-    for p in parts do
-        if p.Contains ":" then
-            let innerParts = p.Split ':' |> Array.map String.trim
-            if innerParts.Length % 2 <> 0 then
-                failwithf "\"%s\" can not be parsed as key/value pairs." p
-            dict.Add(innerParts.[0],innerParts.[1])
-            lastKey := innerParts.[0]
-        else
-            dict.[!lastKey] <- dict.[!lastKey] + ", " + p
-    dict
+        for p in parts do
+            if p.Contains ":" then
+                let innerParts = p.Split ':' |> Array.map String.trim
+                if innerParts.Length % 2 <> 0 then
+                    failwithf "\"%s\" can not be parsed as key/value pairs." p
+                dict.Add(innerParts.[0],innerParts.[1])
+                lastKey := innerParts.[0]
+            else
+                dict.[!lastKey] <- dict.[!lastKey] + ", " + p
+        dict
+    with
+    | exn -> 
+        failwithf "Could not parse %s as key/value pairs.%s%s" s Environment.NewLine exn.Message
 
 let downloadStringSync (url : string) (client : System.Net.WebClient) = 
     try 

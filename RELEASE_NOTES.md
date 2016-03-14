@@ -1,3 +1,6 @@
+#### 2.52.4 - 14.03.2016
+* USABILITY: Be more robust in paket.references files - https://github.com/fsprojects/Paket/issues/1514
+
 #### 2.52.3 - 12.03.2016
 * USABILITY: Improved stability in lock acquiring process - https://github.com/fsprojects/Paket/issues/858
 

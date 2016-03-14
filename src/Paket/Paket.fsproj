@@ -29,8 +29,8 @@
     </DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001507-privateeye\temp</StartWorkingDirectory>
+    <StartArguments>pack buildconfig "Debug" buildplatform "AnyCPU" output out</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001514-pack-error\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
