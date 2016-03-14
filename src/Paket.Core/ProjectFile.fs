@@ -24,6 +24,7 @@ type BuildAction =
 type FileItem = 
     { BuildAction : BuildAction
       Include : string
+      WithPaketSubNode: bool
       Link : string option }
 
 /// Project references inside of project files.
@@ -568,7 +569,7 @@ module ProjectFile =
                         |> addChild (createNodeSet "HintPath" fileItem.Include project)
                         |> addChild (createNodeSet "Private" "True" project)
                     | _ -> node
-                |> addChild (createNodeSet "Paket" "True" project)
+                |> fun n -> if fileItem.WithPaketSubNode then addChild (createNodeSet "Paket" "True" project) n else n
                 |> fun n -> match fileItem.Link with
                             | Some link -> addChild (createNodeSet "Link" (link.Replace("\\","/")) project) n
                             | _ -> n

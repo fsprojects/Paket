@@ -29,8 +29,8 @@
     </DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartArguments>pack buildconfig "Debug" buildplatform "AnyCPU" output out</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001514-pack-error\temp</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001427-content-once\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

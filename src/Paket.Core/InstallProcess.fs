@@ -89,15 +89,18 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                             if overwrite || not target.Exists then
                                 file.CopyTo(target.FullName, true)
                             else target))
+                
 
             packagesWithContent
             |> List.collect (fun (packageDir,settings) -> 
-                copyDirContents (packageDir, settings, lazy (DirectoryInfo(Path.GetDirectoryName(project.FileName)))))
+                copyDirContents (packageDir, settings, lazy (DirectoryInfo(Path.GetDirectoryName(project.FileName))))
+                |> List.map (fun x -> x,settings))
 
         copyContentFiles(project, packageDirectoriesWithContent)
-        |> List.map (fun file ->
+        |> List.map (fun (file,settings) ->
                             { BuildAction = project.DetermineBuildAction file.Name
                               Include = createRelativePath project.FileName file.FullName
+                              WithPaketSubNode = settings <> ContentCopySettings.OmitIfExisting
                               Link = None })
 
     let removeCopiedFiles (project: ProjectFile) =
@@ -388,9 +391,11 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     if buildAction <> BuildAction.Reference && linked then
                         { BuildAction = buildAction
                           Include = createRelativePath project.FileName remoteFilePath
+                          WithPaketSubNode = true
                           Link = Some link }
                     else
                         { BuildAction = buildAction
+                          WithPaketSubNode = true
                           Include =
                             if buildAction = BuildAction.Reference then
                                  createRelativePath project.FileName remoteFilePath
