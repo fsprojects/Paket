@@ -592,11 +592,18 @@ module ProjectFile =
 
                 match existingNode with
                 | Some existingNode ->
-                    if hard 
-                    then 
-                        if not <| (existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.exists (fun n -> n.Name = "Paket"))
-                        then existingNode :?> XmlElement |> addChild (createNodeSet "Paket" "True" project) |> ignore
-                    else verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include project.FileName
+                    match existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.tryFind (fun n -> n.Name = "Paket") with
+                    | Some child ->
+                        let parent = existingNode.ParentNode
+                        parent.InsertBefore(libReferenceNode, existingNode) |> ignore
+                        parent.RemoveChild(existingNode) |> ignore
+                    | None ->
+                        if hard && fileItem.WithPaketSubNode then 
+                            existingNode :?> XmlElement 
+                            |> addChild (createNodeSet "Paket" "True" project)
+                            |> ignore
+
+                        else verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include project.FileName
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head 
                     firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore

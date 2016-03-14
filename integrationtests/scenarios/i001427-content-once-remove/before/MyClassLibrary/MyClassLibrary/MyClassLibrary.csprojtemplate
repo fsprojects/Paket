@@ -30,7 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="FodyWeavers.xml.install.xdt" />
+    <Content Include="FodyWeavers.xml.install.xdt" >
+      <Paket>True</Paket>
+    </Content>
     <Content Include="FodyWeavers.xml.uninstall.xdt" />
     <Content Include="FodyWeavers.xml" />
     <Reference Include="System" />
