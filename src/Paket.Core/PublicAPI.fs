@@ -45,7 +45,7 @@ type Dependencies(dependenciesFileName: string) =
                 match parent with
                 | null ->
                     if withError then
-                        failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.\nIf you have already run 'packet.init' then ensure that '%s' is located in the source directory.\nLike this:\nMySourceDir\n  .paket\n  paket.dependencies" Constants.DependenciesFileName Constants.DependenciesFileName
+                        failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.\nIf you have already run 'paket.init' then ensure that '%s' is located in the source directory.\nLike this:\nMySourceDir\n  .paket\n  paket.dependencies" Constants.DependenciesFileName Constants.DependenciesFileName
                     else
                         Constants.DependenciesFileName
                 | _ -> findInPath(parent, withError)
