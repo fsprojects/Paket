@@ -1,3 +1,6 @@
+#### 2.52.8 - 15.03.2016
+* USABILITY: Better error message when paket.lock an paket.dependencies are out of sync.
+
 #### 2.52.7 - 14.03.2016
 * USABILITY: Emit net40-full moniker
 

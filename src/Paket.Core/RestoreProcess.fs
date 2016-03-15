@@ -120,6 +120,10 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
                 |> List.toSeq
                 |> computePackageHull kv.Key lockFile
 
-        restore(root, kv.Key, dependenciesFile.Groups.[kv.Value.Name].Sources, force, lockFile,Set.ofSeq packages)
-        |> Async.RunSynchronously
-        |> ignore
+        match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
+        | None ->
+            failwithf "The group %O was not found in the paket.lock file but not in the paket.dependencies file. Please run \"paket install\" again." kv.Value.Name
+        | Some depFileGroup ->        
+            restore(root, kv.Key, depFileGroup.Sources, force, lockFile,Set.ofSeq packages)
+            |> Async.RunSynchronously
+            |> ignore
