@@ -1,3 +1,6 @@
+#### 2.52.9 - 16.03.2016
+* USABILITY: Improved error message when paket.dependencies can't be found - https://github.com/fsprojects/Paket/pull/1519
+
 #### 2.52.8 - 15.03.2016
 * USABILITY: Better error message when paket.lock an paket.dependencies are out of sync.
 

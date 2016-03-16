@@ -45,7 +45,8 @@ type Dependencies(dependenciesFileName: string) =
                 match parent with
                 | null ->
                     if withError then
-                        failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.\nIf you have already run 'paket.init' then ensure that '%s' is located in the source directory.\nLike this:\nMySourceDir\n  .paket\n  paket.dependencies" Constants.DependenciesFileName Constants.DependenciesFileName
+                        failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.%sIf you have already run 'paket.init' then ensure that '%s' is located in the top level directory of your repository.%sLike this:%sMySourceDir%s  .paket%s  paket.dependencies" 
+                          Constants.DependenciesFileName Environment.NewLine Constants.DependenciesFileName Environment.NewLine Environment.NewLine Environment.NewLine Environment.NewLine
                     else
                         Constants.DependenciesFileName
                 | _ -> findInPath(parent, withError)
