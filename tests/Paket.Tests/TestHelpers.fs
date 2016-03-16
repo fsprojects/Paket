@@ -40,6 +40,7 @@ let VersionsFromGraphAsSeq (graph : seq<string * string * (string * VersionRequi
    |> Seq.ofList
 
 let safeResolve graph (dependencies : (string * VersionRange) list)  = 
+    let sources = [ PackageSource.NuGetV2Source "" ]
     let packages = 
         dependencies
         |> List.map (fun (n, v) -> 
@@ -47,12 +48,13 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                  VersionRequirement = VersionRequirement(v, PreReleaseStatus.No)
                  Parent = PackageRequirementSource.DependenciesFile ""
                  Graph = []
+                 Sources = sources
                  Settings = InstallSettings.Default
                  ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
                  ResolverStrategyForTransitives = Some ResolverStrategy.Max })
         |> Set.ofList
 
-    PackageResolver.Resolve(Constants.MainDependencyGroup,[ PackageSource.NuGetV2Source "" ], VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, None, None, FrameworkRestrictionList [], packages, UpdateMode.UpdateAll)
+    PackageResolver.Resolve(VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, Constants.MainDependencyGroup, None, None, FrameworkRestrictionList [], packages, UpdateMode.UpdateAll)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 

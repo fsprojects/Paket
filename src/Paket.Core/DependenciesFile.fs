@@ -331,6 +331,7 @@ module DependenciesFileParser =
             else None 
           Parent = parent
           Graph = []
+          Sources = sources
           Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
           VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim(VersionRange.StrategyOperators |> Array.ofList)) } 
 
@@ -592,6 +593,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           ResolverStrategyForTransitives = Some ResolverStrategy.Max
                           Parent = PackageRequirementSource.DependenciesFile fileName
                           Graph = []
+                          Sources = group.Sources
                           Settings = group.Options.Settings })
                 |> Seq.toList
             
@@ -602,10 +604,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
             let resolution =
                 PackageResolver.Resolve(
-                    groupName,
-                    group.Sources,
                     getVersionF, 
                     getPackageDetailsF, 
+                    groupName,
                     group.Options.ResolverStrategyForDirectDependencies,
                     group.Options.ResolverStrategyForTransitives,
                     group.Options.Settings.FrameworkRestrictions,

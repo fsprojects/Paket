@@ -24,6 +24,7 @@ let ``should resolve source files with correct sha``() =
         ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
         ResolverStrategyForTransitives = Some ResolverStrategy.Max
         Graph = []
+        Sources = []
         Parent = Requirements.PackageRequirementSource.DependenciesFile ""
         Settings = InstallSettings.Default
         VersionRequirement = VersionRequirement.NoRestriction }

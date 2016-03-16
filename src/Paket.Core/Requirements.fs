@@ -504,6 +504,7 @@ type PackageRequirement =
       ResolverStrategyForTransitives : ResolverStrategy option
       Parent: PackageRequirementSource
       Graph: PackageRequirement list
+      Sources: PackageSource list
       Settings: InstallSettings }
 
     override this.Equals(that) = 
