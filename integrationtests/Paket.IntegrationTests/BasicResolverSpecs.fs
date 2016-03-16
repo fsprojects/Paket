@@ -126,14 +126,6 @@ let ``#1254 should install unlisted transitive dependencies``() =
     |> shouldEqual (SemVer.Parse "1.5.3")
 
 [<Test>]
-let ``#1359 should resolve sound prerelease``() =
-    let lockFile = update "i001359-wrong-prerelease"
-    let v = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Aether"].Version
-    v |> shouldBeGreaterThan (SemVer.Parse "7.0.1")
-    v |> shouldBeSmallerThan (SemVer.Parse "8")
-
-
-[<Test>]
 let ``#1450 should resolve with twiddle wakka``() =
     let lockFile = update "i001450-twiddle-wakka"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "EnterpriseLibrary.SemanticLogging"].Version
