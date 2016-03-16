@@ -427,7 +427,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             let currentRequirement = getCurrentRequirement openRequirements
             let conflicts = getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement)
             if conflicts |> Set.isEmpty |> not then 
-                Resolution.Conflict(currentResolution,closedRequirements,conflicts,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) 
+                Resolution.Conflict(currentResolution,closedRequirements,openRequirements,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) 
             else
                 let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(relax,filteredVersions,openRequirements,currentRequirement)
 
@@ -473,9 +473,12 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
 
                             let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
 
-                            state := step (relax,newFilteredVersions,newResolution,Set.add currentRequirement closedRequirements,newOpen)
+                            let newClosed = Set.add currentRequirement closedRequirements
+
+                            state := step (relax,newFilteredVersions,newResolution,newClosed,newOpen)
+
                             match !state with
-                            | Resolution.Conflict (_,_,stillOpen,_,_)
+                            | Resolution.Conflict(resolved,closed,stillOpen,lastPackageRequirement,getVersionF) 
                                 when stillOpen |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not ->
                                 forceBreak := true
                             | _ -> ()
@@ -490,7 +493,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                 !state
 
     match step (false, Map.empty, Map.empty, Set.empty, rootDependencies) with
-    | Resolution.Conflict(_) as conflict ->
+    | Resolution.Conflict(resolved,closed,stillOpen,_,_) as conflict ->
         if !tryRelaxed then
             conflictHistory.Clear()
             knownConflicts.Clear() |> ignore

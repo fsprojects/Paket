@@ -1,0 +1,2 @@
+source https://nuget.org/api/v2
+nuget Microsoft.ApplicationInsights.WindowsServer = 1.2.3

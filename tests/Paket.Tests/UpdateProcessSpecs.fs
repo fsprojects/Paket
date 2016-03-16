@@ -397,26 +397,14 @@ let ``SelectiveUpdate does not update when package conflicts with a transitive d
 
     let packageFilter = PackageName "log4net" |> PackageFilter.ofName
 
-    let lockFile = 
+    try
         selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
             (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
+        |> ignore
+        failwithf "expected an exception"
+    with
+    | exn when exn.Message.Contains "Could not resolve package log4net" -> ()
     
-    let result = 
-        lockFile.GetGroupedResolution()
-        |> Map.toSeq
-        |> Seq.map (fun (_,r) -> (string r.Name, string r.Version))
-
-    let expected = 
-        [("Castle.Core-log4net","3.2.0");
-        ("Castle.Core","3.2.0");
-        ("FAKE","4.0.0");
-        ("log4net", "1.2.10")]
-        |> Seq.sortBy fst
-
-    result
-    |> Seq.sortBy fst
-    |> shouldEqual expected
-
 
 let graph2 = 
     [ "Ninject", "2.2.1.4", []
