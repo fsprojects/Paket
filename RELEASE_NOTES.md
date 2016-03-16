@@ -1,8 +1,15 @@
-#### 3.0.0-alpha070 - 14.03.2016
+#### 3.0.0-alpha071 - 16.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
+
+#### 2.52.9 - 16.03.2016
+* USABILITY: Improved error message when paket.dependencies can't be found - https://github.com/fsprojects/Paket/pull/1519
+* BUGFIX: Force resolver to look into deeper levels - https://github.com/fsprojects/Paket/issues/1520
+
+#### 2.52.8 - 15.03.2016
+* USABILITY: Better error message when paket.lock an paket.dependencies are out of sync.
 
 #### 2.52.7 - 14.03.2016
 * USABILITY: Emit net40-full moniker

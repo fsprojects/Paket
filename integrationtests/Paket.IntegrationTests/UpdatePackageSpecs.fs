@@ -112,7 +112,6 @@ let ``#1432 update doesn't throw Stackoverflow``() =
     directPaket "pack templatefile paket.D.template version 1.0.0-prerelease output bin" scenario  |> ignore
     directPaket "update" scenario|> ignore
 
-
 [<Test>]
 let ``#1500 don't detect framework twice``() =
     update "i001500-auto-detect" |> ignore
@@ -124,3 +123,7 @@ let ``#1500 don't detect framework twice``() =
 [<Test>]
 let ``#1501 download succeeds``() =
     update "i001510-download" |> ignore
+
+[<Test>]
+let ``#1520 update with pinned dependency succeeds``() =
+    update "i001520-pinned-error" |> ignore
