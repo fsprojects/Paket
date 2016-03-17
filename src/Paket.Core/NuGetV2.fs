@@ -479,7 +479,7 @@ let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets file
 /// Finds all analyzer files in a nuget package.
 let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer dlls"
 
-let GetPackageDetails root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
+let rec private getPackageDetails root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
    
     let tryV2 source (nugetSource:NugetSource)  = async {
         let! result = 
@@ -574,6 +574,12 @@ let GetPackageDetails root force (sources:PackageSource list) packageName (versi
       Unlisted = nugetObject.Unlisted
       LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = nugetObject.Dependencies |> Set.ofList }
+
+let rec GetPackageDetails root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
+    try
+        getPackageDetails root force sources packageName version
+    with
+    | _ -> getPackageDetails root true sources packageName version
 
 let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
