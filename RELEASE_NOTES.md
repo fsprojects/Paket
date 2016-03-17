@@ -1,3 +1,6 @@
+#### 2.52.16 - 17.03.2016
+* BUGFIX: Do not generate useless true conditions for Native - https://github.com/fsprojects/Paket/issues/1523
+
 #### 2.52.15 - 17.03.2016
 * USABILITY: Automatically retry with force flag if we can't get package details for a given version - https://github.com/fsprojects/Paket/issues/1526
 

@@ -161,8 +161,12 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
         |> CheckIfFullyInGroup "WindowsPhoneApp" (fun x -> match x with | SinglePlatform(WindowsPhoneApp(_)) -> true | _ -> false)
         |> CheckIfFullyInGroup "WindowsPhone" (fun x -> match x with | SinglePlatform(WindowsPhoneSilverlight(_)) -> true | _ -> false)
 
-    let conditions = 
-        targets
+    let conditions =        
+        if targets = [SinglePlatform(Native("",""))] then 
+            targets 
+        else 
+            targets
+            |> List.filter (fun x -> match x with | SinglePlatform(Native("","")) -> false | _ -> true  ) 
         |> List.map getTargetCondition
         |> List.filter (fun (_,v) -> v <> "false")
         |> List.append grouped
