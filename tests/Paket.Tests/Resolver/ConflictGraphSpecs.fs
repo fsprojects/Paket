@@ -37,7 +37,7 @@ let defaultPackage =
 let ``should analyze graph and report conflict``() = 
     match safeResolve graph [ "A", VersionRange.AtLeast "1.0" ] with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(_,_,stillOpen,_,_) ->
+    | Resolution.Conflict(_,_,stillOpen,_,_,_) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual (PackageName "D")
         conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.6")
@@ -55,7 +55,7 @@ let graph2 =
 let ``should analyze graph2 and report conflict``() = 
     match safeResolve graph2 [ "A", VersionRange.AtLeast "1.0" ] with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(_,_,stillOpen,_,_) ->
+    | Resolution.Conflict(_,_,stillOpen,_,_,_) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name |> shouldEqual (PackageName "D")
         conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.6", "1.7"))
@@ -92,7 +92,7 @@ let ``should override graph3 conflict to package C``() =
 
     match resolved with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(_,_,stillOpen,_,_) ->
+    | Resolution.Conflict(_,_,stillOpen,_,_,_) ->
         let conflicting = stillOpen |> Seq.head 
         conflicting.Name 
         |> shouldEqual (PackageName "C")

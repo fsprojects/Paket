@@ -1,3 +1,6 @@
+#### 2.52.11 - 17.03.2016
+* REVERT: Revert #1520
+
 #### 2.52.10 - 17.03.2016
 * BUGFIX: Native settings are filered correctly - https://github.com/fsprojects/Paket/issues/1523
 

@@ -29,8 +29,8 @@
     </DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartArguments>update --hard</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001523-mixed-native\temp</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001520-pinned-error\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
