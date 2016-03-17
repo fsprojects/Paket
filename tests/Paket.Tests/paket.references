@@ -4,4 +4,5 @@ Chessie
 group Test
   NUnit
   NUnit.Runners.Net4
+  FsCheck
   File:FsUnit.fs .
