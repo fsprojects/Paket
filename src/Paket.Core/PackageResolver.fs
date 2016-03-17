@@ -365,11 +365,12 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             |> Set.union closedRequirements
 
         knownConflicts
-        |> Seq.map (fun (conflicts,name,selectedVersion) ->
+        |> Seq.map (fun (conflicts,selectedVersion) ->
             match selectedVersion with 
             | None when Set.isSubset conflicts allRequirements -> conflicts
             | Some(selectedVersion,_) ->
-                match filteredVersions |> Map.tryFind name with
+                let n = (Seq.head conflicts).Name
+                match filteredVersions |> Map.tryFind n with
                 | Some(v,_) when v = selectedVersion && Set.isSubset conflicts allRequirements -> conflicts
                 | _ -> Set.empty
             | _ -> Set.empty)
@@ -403,7 +404,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
         match conflicts with
         | c::_  ->
             let selectedVersion = Map.tryFind c.Name filteredVersions
-            let key = conflicts |> Set.ofList,c.Name,selectedVersion
+            let key = conflicts |> Set.ofList,selectedVersion
             knownConflicts.Add key |> ignore
             let reportThatResolverIsTakingLongerThanExpected = not isNewConflict && DateTime.Now - !lastConflictReported > TimeSpan.FromSeconds 10.
             if verbose then
@@ -426,7 +427,6 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             let currentRequirement = getCurrentRequirement openRequirements
             let conflicts = getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement)
             if conflicts |> Set.isEmpty |> not then 
-                let c = getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement)
                 Resolution.Conflict(currentResolution,closedRequirements,openRequirements,conflicts,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) 
             else
                 let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(relax,filteredVersions,openRequirements,currentRequirement)
@@ -482,7 +482,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                                 
                                 when
                                     (Set.isEmpty conflicts |> not) &&
-                                      (conflicts |> Set.exists (fun r -> r.Name = currentRequirement.Name || r.Graph |> List.exists (fun x -> x.Name = currentRequirement.Name)) |> not) ->
+                                      (conflicts |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not) ->
                                 forceBreak := true
                             | _ -> ()
 

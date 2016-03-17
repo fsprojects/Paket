@@ -1,4 +1,4 @@
-#### 2.52.13 - 17.03.2016
+#### 2.52.14 - 17.03.2016
 * BUGFIX: Restore resolver performance - https://github.com/fsprojects/Paket/issues/1524
 
 #### 2.52.10 - 17.03.2016
