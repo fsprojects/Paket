@@ -384,27 +384,7 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
 """
 
     result
-    |> shouldEqual (normalizeLineEndings expected)
-     
-[<Test>]
-let ``SelectiveUpdate does not update when package conflicts with a transitive dependency``() = 
-
-    let dependenciesFile = DependenciesFile.FromCode("""source http://www.nuget.org/api/v2
-
-    nuget Castle.Core-log4net
-    nuget FAKE
-    nuget log4net""")
-
-    let packageFilter = PackageName "log4net" |> PackageFilter.ofName
-
-    try
-        selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) lockFile dependenciesFile
-            (PackageResolver.UpdateMode.UpdateFiltered(Constants.MainDependencyGroup, packageFilter)) SemVerUpdateMode.NoRestriction
-        |> ignore
-        failwithf "expected an exception"
-    with
-    | exn when exn.Message.Contains "Could not resolve package log4net" -> ()
-    
+    |> shouldEqual (normalizeLineEndings expected)    
 
 let graph2 = 
     [ "Ninject", "2.2.1.4", []

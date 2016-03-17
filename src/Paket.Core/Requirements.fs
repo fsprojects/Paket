@@ -514,7 +514,8 @@ type PackageRequirement =
             this.VersionRequirement = that.VersionRequirement && 
             this.ResolverStrategyForTransitives = that.ResolverStrategyForTransitives && 
             this.ResolverStrategyForDirectDependencies = that.ResolverStrategyForDirectDependencies && 
-            this.Settings.FrameworkRestrictions = that.Settings.FrameworkRestrictions
+            this.Settings.FrameworkRestrictions = that.Settings.FrameworkRestrictions &&
+            this.Parent = that.Parent
         | _ -> false
 
     override this.ToString() =
@@ -542,6 +543,7 @@ type PackageRequirement =
             yield compare boostX boostY
             yield -compare x.VersionRequirement y.VersionRequirement
             yield compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions
+            yield compare x.Parent y.Parent
             yield compare x.Name y.Name
         }
         |> Seq.tryFind (fun x -> x <> 0)
