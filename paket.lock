@@ -42,6 +42,9 @@ GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
+    FsCheck (2.2.4)
+      FSharp.Core (>= 3.1.2.5)
+    FSharp.Core (4.0.0.1)
     NUnit (2.6.4)
     NUnit.Runners.Net4 (2.6.4)
 GITHUB
