@@ -121,3 +121,13 @@ let ``should filter >= net20 < net40 and >= net40``() =
 
     filterRestrictions l1 l2
     |> shouldEqual (FrameworkRestrictionList [])
+
+[<Test>]
+let ``should not filter native, net452``() =
+    FrameworkRestriction.Exactly(Native("","")).IsSameCategoryAs(FrameworkRestriction.Exactly(Native("",""))) |> shouldEqual (Some true)
+
+    let l1 = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5_2)); FrameworkRestriction.Exactly(Native("",""))]
+    let l2 = FrameworkRestrictionList [FrameworkRestriction.Exactly(Native("",""))]
+
+    filterRestrictions l1 l2
+    |> shouldEqual (FrameworkRestrictionList [FrameworkRestriction.Exactly(Native("",""))])

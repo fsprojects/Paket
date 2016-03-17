@@ -1,3 +1,6 @@
+#### 2.52.10 - 17.03.2016
+* BUGFIX: Native settings are filered correctly - https://github.com/fsprojects/Paket/issues/1523
+
 #### 2.52.9 - 16.03.2016
 * USABILITY: Improved error message when paket.dependencies can't be found - https://github.com/fsprojects/Paket/pull/1519
 * BUGFIX: Force resolver to look into deeper levels - https://github.com/fsprojects/Paket/issues/1520
