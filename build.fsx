@@ -187,7 +187,7 @@ Target "RunIntegrationTests" (fun _ ->
         { p with
             DisableShadowCopy = true
             ToolPath = "packages/test/NUnit.Runners.Net4/tools"
-            TimeOut = TimeSpan.FromMinutes 20.
+            TimeOut = TimeSpan.FromMinutes 40.
             OutputFile = "TestResults.xml" })
 )
 
