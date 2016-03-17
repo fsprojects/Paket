@@ -163,6 +163,7 @@ type FrameworkIdentifier =
         | WindowsPhoneSilverlight _, WindowsPhoneSilverlight _ -> true
         | XamarinMac _, XamarinMac _ -> true
         | XamariniOS _, XamariniOS _ -> true
+        | Native _, Native _ -> true
         | _ -> false
 
 

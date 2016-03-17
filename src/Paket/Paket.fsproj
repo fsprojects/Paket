@@ -84,6 +84,8 @@
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001427-content-once-remove\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001359-wrong-prerelease\temp</StartWorkingDirectory>
+    <StartArguments>update --hard</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001523-mixed-native\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
