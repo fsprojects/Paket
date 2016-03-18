@@ -126,9 +126,9 @@ type Resolution =
 
                         match x.Parent with
                         | DependenciesFile _ ->
-                            sprintf "   - Dependencies file requested: %s%s" vr pr |> addToError
+                            sprintf "   - Dependencies file requested package %O: %s%s" r.Name vr pr |> addToError
                         | Package(parentName,version,_) ->
-                            sprintf "   - %O %O requested: %s%s" parentName version vr pr |> addToError)
+                            sprintf "   - %O %O requested package %O: %s%s" parentName version r.Name vr pr |> addToError)
 
             match this.GetConflicts() with
             | [] -> addToError <| sprintf "  Could not resolve package %O. Unknown resolution error." (Seq.head stillOpen)
