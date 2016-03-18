@@ -43,18 +43,22 @@ type PackageTypes =
 
     static member FullGraph() : Arbitrary<PackageGraph> =
         let nestedGenerator =
-             Arb.generate<PackageList>
-             |> Gen.map (fun packages ->
-                        let depsGenerator = 
-                            Gen.listOf (chooseFromList packages)
-                            |> Gen.map (List.map (fun (p,v) -> p,VersionRequirement(VersionRange.Specific(v),PreReleaseStatus.All)))
-                    
+             let pGen = Arb.generate<PackageList>
+             let dGen = 
+                gen {
+                    let! packages = pGen
+                    return!
+                        Gen.listOf (chooseFromList packages)
+                        |> Gen.map (List.map (fun (p,v) -> p,VersionRequirement(VersionRange.Specific(v),PreReleaseStatus.All)))
+                }
 
+             (pGen, dGen)
+             ||> Gen.map2 (fun (packages, deps) ->
+                    
                         packages 
                         |> List.map (fun (p,vs) -> 
                             let deps =
-                                depsGenerator
-                                |> Gen.eval 10 (Random.newSeed())     // create deps
+                                deps
                                 |> List.filter (fun (d,vr) -> d <> p) // not to same package
                                 |> List.distinctBy fst
                                 |> List.sort
