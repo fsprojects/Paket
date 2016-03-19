@@ -127,18 +127,28 @@ let getNative (path:string) =
     if path.Contains "/arm/release" then "/arm/release" else
     if path.Contains "/x64/debug" then "/x64/debug" else
     if path.Contains "/x64/release" then "/x64/release" else
+    if path.Contains "/address-model-32" then "/address-model-32" else
+    if path.Contains "/address-model-64" then "/address-model-64" else
     ""
 
 let extractPath infix (fileName : string) : string option =
     let path = fileName.Replace("\\", "/").ToLower()
     let fi = FileInfo path
 
-    let startPos = path.LastIndexOf (sprintf "%s/" infix)
+    let packagesPos = path.LastIndexOf "packages/"
+    let startPos =
+        if packagesPos >= 0 then
+            path.IndexOf(sprintf "%s/" infix,packagesPos)
+        else
+            path.LastIndexOf(sprintf "%s/" infix)
+
     let endPos = path.IndexOf('/', startPos + infix.Length + 1)
     if startPos < 0 then None 
     elif endPos < 0 then Some("")
     else
-        Some (path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1) + getNative path)
+        let nativePart = getNative path
+        let libPart = path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1)
+        Some (libPart + nativePart)
 
 /// [omit]
 let inline normalizeXml (doc:XmlDocument) =

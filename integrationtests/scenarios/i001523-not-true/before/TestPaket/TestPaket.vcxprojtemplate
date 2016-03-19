@@ -165,7 +165,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="('$(Configuration)|$(Platform)'=='Debug|Win32') Or ('$(Configuration)|$(Platform)'=='Debug|arm') Or ('$(Configuration)|$(Platform)'=='Debug|x64') Or ('$(Configuration)|$(Platform)'=='Release|Win32') Or ('$(Configuration)|$(Platform)'=='Release|x64') Or ('$(Configuration)|$(Platform)'=='Release|arm')">
+    <When Condition="'$(Platform)'=='Win32'">
       <ItemGroup>
         <Reference Include="boost_filesystem-vc140-mt-1_60">
           <HintPath>..\packages\boost_filesystem-vc140\lib\native\address-model-32\lib\boost_filesystem-vc140-mt-1_60.dll</HintPath>
@@ -177,6 +177,10 @@
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition="'$(Platform)'=='x64'">
+      <ItemGroup>
         <Reference Include="boost_filesystem-vc140-mt-1_60">
           <HintPath>..\packages\boost_filesystem-vc140\lib\native\address-model-64\lib\boost_filesystem-vc140-mt-1_60.dll</HintPath>
           <Private>True</Private>
@@ -198,7 +202,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="('$(Configuration)|$(Platform)'=='Debug|Win32') Or ('$(Configuration)|$(Platform)'=='Debug|arm') Or ('$(Configuration)|$(Platform)'=='Debug|x64') Or ('$(Configuration)|$(Platform)'=='Release|Win32') Or ('$(Configuration)|$(Platform)'=='Release|x64') Or ('$(Configuration)|$(Platform)'=='Release|arm')">
+    <When Condition="'$(Platform)'=='Win32'">
       <ItemGroup>
         <Reference Include="boost_system-vc140-mt-1_60">
           <HintPath>..\packages\boost_system-vc140\lib\native\address-model-32\lib\boost_system-vc140-mt-1_60.dll</HintPath>
@@ -210,6 +214,10 @@
           <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
+      </ItemGroup>
+    </When>
+    <When Condition="'$(Platform)'=='x64'">
+      <ItemGroup>
         <Reference Include="boost_system-vc140-mt-1_60">
           <HintPath>..\packages\boost_system-vc140\lib\native\address-model-64\lib\boost_system-vc140-mt-1_60.dll</HintPath>
           <Private>True</Private>

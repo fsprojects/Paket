@@ -69,7 +69,7 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="($(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2') Or ('$(Configuration)|$(Platform)'=='Debug|Win32') Or ('$(Configuration)|$(Platform)'=='Debug|arm') Or ('$(Configuration)|$(Platform)'=='Debug|x64') Or ('$(Configuration)|$(Platform)'=='Release|Win32') Or ('$(Configuration)|$(Platform)'=='Release|x64') Or ('$(Configuration)|$(Platform)'=='Release|arm')">
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5.2'">
       <ItemGroup>
         <Reference Include="nunit.framework">
           <HintPath>..\packages\NUnit\lib\nunit.framework.dll</HintPath>

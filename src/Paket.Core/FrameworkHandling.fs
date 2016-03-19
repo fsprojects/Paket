@@ -205,6 +205,8 @@ module FrameworkDetection =
                 | "native/x86/release" -> Some(Native("Release","Win32"))
                 | "native/x64/release" -> Some(Native("Release","x64"))
                 | "native/arm/release" -> Some(Native("Release","arm"))
+                | "native/address-model-32" -> Some(Native("","Win32"))
+                | "native/address-model-64" -> Some(Native("","x64"))
                 | "native" -> Some(Native("",""))
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
@@ -333,7 +335,7 @@ module KnownTargetProfiles =
         SinglePlatform(WindowsPhoneSilverlight "v8.0")
         SinglePlatform(WindowsPhoneSilverlight "v8.1")]
 
-    let AllProfiles =
+    let AllDotNetProfiles =
        DotNetFrameworkProfiles @ 
        WindowsProfiles @ 
        SilverlightProfiles @
@@ -342,13 +344,6 @@ module KnownTargetProfiles =
         SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
-        SinglePlatform(Native("",""))
-        SinglePlatform(Native("Debug","Win32"))
-        SinglePlatform(Native("Debug","arm"))
-        SinglePlatform(Native("Debug","x64"))
-        SinglePlatform(Native("Release","Win32"))
-        SinglePlatform(Native("Release","x64"))
-        SinglePlatform(Native("Release","arm"))
         SinglePlatform(WindowsPhoneApp "v8.1")
         PortableProfile("Profile2", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v4.5"; WindowsPhoneSilverlight "v7.0" ])
         PortableProfile("Profile3", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0" ])
@@ -394,6 +389,19 @@ module KnownTargetProfiles =
         PortableProfile("Profile328", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; WindowsPhoneSilverlight "v8.0"; Windows "v4.5"; WindowsPhoneApp "v8.1" ])
         PortableProfile("Profile336", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])
         PortableProfile("Profile344", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])]
+
+    let AllNativeProfiles =
+        [ Native("","")
+          Native("","Win32")
+          Native("","x64")
+          Native("Debug","Win32")
+          Native("Debug","arm")
+          Native("Debug","x64")
+          Native("Release","Win32")
+          Native("Release","x64")
+          Native("Release","arm")]
+
+    let AllProfiles = (AllNativeProfiles |> List.map (fun p -> SinglePlatform p)) @ AllDotNetProfiles
 
     let FindPortableProfile name =
         AllProfiles

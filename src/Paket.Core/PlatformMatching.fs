@@ -34,8 +34,9 @@ let private pathPenalties = System.Collections.Concurrent.ConcurrentDictionary<_
 
 let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
     if String.IsNullOrWhiteSpace path then
-        // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
-        10
+        match platform with
+        | Native(_) -> MaxPenalty // an empty path is inconsidered compatible with native targets            
+        | _ -> 10 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
     else
         let key = path,platform
         match pathPenalties.TryGetValue key with
@@ -137,13 +138,14 @@ let getTargetCondition (target:TargetProfile) =
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
         | Native("","") -> "true", ""
+        | Native("",bits) -> (sprintf "'$(Platform)'=='%s'" bits), ""
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile bits), ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (referenceCondition:string option) (targets : TargetProfile list) =
     let inline CheckIfFullyInGroup typeName matchF (processed,targets) =
         let fullyContained = 
-            KnownTargetProfiles.AllProfiles 
+            KnownTargetProfiles.AllDotNetProfiles 
             |> List.filter matchF
             |> List.forall (fun p -> targets |> Seq.exists ((=) p))
 
@@ -172,31 +174,33 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
         |> List.append grouped
         |> List.groupBy fst
 
-    conditions
-    |> List.map (fun (group,conditions) ->
-        match List.ofSeq conditions with
-        | [ _,"" ] -> group
-        | [ _,detail ] -> sprintf "%s And %s" group detail
-        | [] -> "false"
-        | conditions ->
-            let detail =
-                conditions
-                |> List.map snd
-                |> Set.ofSeq
-                |> fun cs -> String.Join(" Or ",cs)
-            sprintf "%s And (%s)" group detail)
-    |> fun l -> 
-            match l with
-            | [] -> ""
-            | [x] -> x
-            | xs -> String.Join(" Or ", List.map (fun cs -> sprintf "(%s)" cs) xs)
-    |> fun s -> 
-        match referenceCondition with 
-        | None -> s
-        | Some condition ->
-            // msbuild triggers a warning MSB4130 when we leave out the quotes around the condition
-            // and add the condition at the end
-            if s = "$(TargetFrameworkIdentifier) == 'true'" then
-                sprintf "'$(%s)' == 'True'" condition
-            else
-                sprintf "'$(%s)' == 'True' And (%s)" condition s
+    let conditionString =
+        let andString = 
+            conditions
+            |> List.map (fun (group,conditions) ->
+                match List.ofSeq conditions with
+                | [ _,"" ] -> group
+                | [ _,detail ] -> sprintf "%s And %s" group detail
+                | [] -> "false"
+                | conditions ->
+                    let detail =
+                        conditions
+                        |> List.map snd
+                        |> Set.ofSeq
+                        |> fun cs -> String.Join(" Or ",cs)
+                    sprintf "%s And (%s)" group detail)
+        
+        match andString with
+        | [] -> ""
+        | [x] -> x
+        | xs -> String.Join(" Or ", List.map (fun cs -> sprintf "(%s)" cs) xs)
+    
+    match referenceCondition with 
+    | None -> conditionString
+    | Some condition ->
+        // msbuild triggers a warning MSB4130 when we leave out the quotes around the condition
+        // and add the condition at the end
+        if conditionString = "$(TargetFrameworkIdentifier) == 'true'" then
+            sprintf "'$(%s)' == 'True'" condition
+        else
+            sprintf "'$(%s)' == 'True' And (%s)" condition conditionString

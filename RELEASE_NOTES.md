@@ -1,36 +1,16 @@
-#### 2.52.16 - 17.03.2016
-* BUGFIX: Do not generate useless true conditions for Native - https://github.com/fsprojects/Paket/issues/1523
-
-#### 2.52.15 - 17.03.2016
-* USABILITY: Automatically retry with force flag if we can't get package details for a given version - https://github.com/fsprojects/Paket/issues/1526
-
-#### 2.52.14 - 17.03.2016
-* BUGFIX: Restore resolver performance - https://github.com/fsprojects/Paket/issues/1524
-
-#### 2.52.10 - 17.03.2016
-* BUGFIX: Native settings are filered correctly - https://github.com/fsprojects/Paket/issues/1523
-
-#### 2.52.9 - 16.03.2016
-* USABILITY: Improved error message when paket.dependencies can't be found - https://github.com/fsprojects/Paket/pull/1519
-* BUGFIX: Force resolver to look into deeper levels - https://github.com/fsprojects/Paket/issues/1520
-
-#### 2.52.8 - 15.03.2016
-* USABILITY: Better error message when paket.lock an paket.dependencies are out of sync.
-
-#### 2.52.7 - 14.03.2016
-* USABILITY: Emit net40-full moniker
-
-#### 2.52.6 - 14.03.2016
-* USABILITY: Content:once doesn't add paket flags to the csproj file in order to make Orleans tools happy - https://github.com/fsprojects/Paket/issues/1513
-
-#### 2.52.4 - 14.03.2016
-* USABILITY: Be more robust in paket.references files - https://github.com/fsprojects/Paket/issues/1514
-
-#### 2.52.3 - 12.03.2016
-* USABILITY: Improved stability in lock acquiring process - https://github.com/fsprojects/Paket/issues/858
-
-#### 2.52.1 - 10.03.2016
+#### 2.53.0 - 19.03.2016
 * Allow to restore recursively from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507
+* BUGFIX: Fix mixed mode solutions with Native - https://github.com/fsprojects/Paket/issues/1523
+* BUGFIX: Do not generate useless true conditions for Native - https://github.com/fsprojects/Paket/issues/1523
+* BUGFIX: Native settings are filtered correctly - https://github.com/fsprojects/Paket/issues/1523
+* BUGFIX: Force resolver to look into deeper levels - https://github.com/fsprojects/Paket/issues/1520
+* BUGFIX: Emit net40-full moniker instead of net-40
+* USABILITY: Improved error message when paket.dependencies can't be found - https://github.com/fsprojects/Paket/pull/1519
+* USABILITY: Automatically retry with force flag if we can't get package details for a given version - https://github.com/fsprojects/Paket/issues/1526
+* USABILITY: Better error message when paket.lock an paket.dependencies are out of sync.
+* USABILITY: Content:once doesn't add paket flags to the csproj file in order to make Orleans tools happy - https://github.com/fsprojects/Paket/issues/1513
+* USABILITY: Be more robust in paket.references files - https://github.com/fsprojects/Paket/issues/1514
+* USABILITY: Improved stability in lock acquiring process - https://github.com/fsprojects/Paket/issues/858
 
 #### 2.52.0 - 10.03.2016
 * Allow to restore dll from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507
