@@ -1,3 +1,6 @@
+#### 2.53.1 - 19.03.2016
+* Improve warning text on conflict - https://github.com/fsprojects/Paket/pull/1530
+
 #### 2.53.0 - 19.03.2016
 * Allow to restore recursively from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507
 * BUGFIX: Fix mixed mode solutions with Native - https://github.com/fsprojects/Paket/issues/1523
