@@ -748,6 +748,7 @@ module ProjectFile =
         let chooseNode =
             match conditions with
             |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup] -> itemGroup
+            |  ["true",itemGroup] -> itemGroup
             |  _ ->
                 let chooseNode = createNode "Choose" project
 
@@ -770,6 +771,8 @@ module ProjectFile =
         let propertyNames,propertyChooseNode =
             match targetsFileConditions with
             |  ["$(TargetFrameworkIdentifier) == 'true'",(propertyNames,propertyGroup)] ->
+                [propertyNames], createNode "Choose" project
+            |  ["true",(propertyNames,propertyGroup)] ->
                 [propertyNames], createNode "Choose" project
             |  _ ->
                 let propertyChooseNode = createNode "Choose" project
@@ -859,7 +862,6 @@ module ProjectFile =
 
         while List.exists (fun x -> deleteIfEmpty x project) ["ItemGroup";"When";"Otherwise";"Choose"] do
             ()
-
 
     let getTargetFrameworkIdentifier (project:ProjectFile) = getProperty "TargetFrameworkIdentifier" project
 

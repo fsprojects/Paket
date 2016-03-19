@@ -149,20 +149,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__boost_targets>native\boost</__paket__boost_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__boost_filesystem-vc140_targets>native\boost_filesystem-vc140</__paket__boost_filesystem-vc140_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Choose>
     <When Condition="'$(Platform)'=='Win32'">
       <ItemGroup>
         <Reference Include="boost_filesystem-vc140-mt-1_60">
@@ -190,13 +176,6 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__boost_system-vc140_targets>native\boost_system-vc140</__paket__boost_system-vc140_targets>
-      </PropertyGroup>
     </When>
   </Choose>
   <Choose>
@@ -229,7 +208,7 @@
       </ItemGroup>
     </When>
   </Choose>
-  <Import Project="..\packages\boost\build\$(__paket__boost_targets).targets" Condition="Exists('..\packages\boost\build\$(__paket__boost_targets).targets')" Label="Paket" />
-  <Import Project="..\packages\boost_filesystem-vc140\build\$(__paket__boost_filesystem-vc140_targets).targets" Condition="Exists('..\packages\boost_filesystem-vc140\build\$(__paket__boost_filesystem-vc140_targets).targets')" Label="Paket" />
-  <Import Project="..\packages\boost_system-vc140\build\$(__paket__boost_system-vc140_targets).targets" Condition="Exists('..\packages\boost_system-vc140\build\$(__paket__boost_system-vc140_targets).targets')" Label="Paket" />
+  <Import Project="..\packages\boost\build\native\boost.targets" Condition="Exists('..\packages\boost\build\native\boost.targets')" Label="Paket" />
+  <Import Project="..\packages\boost_filesystem-vc140\build\native\boost_filesystem-vc140.targets" Condition="Exists('..\packages\boost_filesystem-vc140\build\native\boost_filesystem-vc140.targets')" Label="Paket" />
+  <Import Project="..\packages\boost_system-vc140\build\native\boost_system-vc140.targets" Condition="Exists('..\packages\boost_system-vc140\build\native\boost_system-vc140.targets')" Label="Paket" />
 </Project>

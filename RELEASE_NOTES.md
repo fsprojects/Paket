@@ -4,7 +4,8 @@
 * BUGFIX: Do not generate useless true conditions for Native - https://github.com/fsprojects/Paket/issues/1523
 * BUGFIX: Native settings are filtered correctly - https://github.com/fsprojects/Paket/issues/1523
 * BUGFIX: Force resolver to look into deeper levels - https://github.com/fsprojects/Paket/issues/1520
-* BUGFIX: Emit net40-full moniker instead of net-40
+* COSMETICS: Emit net40-full moniker instead of net-40
+* COSMETICS: Simplify single when conditions with single true statement
 * USABILITY: Improved error message when paket.dependencies can't be found - https://github.com/fsprojects/Paket/pull/1519
 * USABILITY: Automatically retry with force flag if we can't get package details for a given version - https://github.com/fsprojects/Paket/issues/1526
 * USABILITY: Better error message when paket.lock an paket.dependencies are out of sync.

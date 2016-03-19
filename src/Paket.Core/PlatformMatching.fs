@@ -106,19 +106,27 @@ let rec findBestMatch (paths : #seq<string>) (targetProfile : TargetProfile) =
         |> Seq.tryFind (fun _ -> true)
     | path -> path
 
+let private matchedCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
-let getSupportedTargetProfiles (paths :#seq<string>) =
-    KnownTargetProfiles.AllProfiles
-    |> Seq.map (fun target -> findBestMatch paths target, target)
-    |> Seq.collect (fun (path, target) -> 
-           match path with
-           | Some p -> [ p, target ]
-           | _ -> [])
-    |> Seq.groupBy fst
-    |> Seq.map (fun (path, group) -> path, Seq.map snd group)
-    |> Map.ofSeq
+let getSupportedTargetProfiles (paths : string list) =    
+    let key = paths
+    match matchedCache.TryGetValue key with
+    | true, supportedFrameworks -> supportedFrameworks
+    | _ ->
+        let supportedFrameworks =
+            KnownTargetProfiles.AllProfiles
+            |> Seq.map (fun target -> findBestMatch paths target, target)
+            |> Seq.collect (fun (path, target) -> 
+                    match path with
+                    | Some p -> [ p, target ]
+                    | _ -> [])
+            |> Seq.groupBy fst
+            |> Seq.map (fun (path, group) -> path, Seq.map snd group)
+            |> Map.ofSeq
+        matchedCache.[key] <- supportedFrameworks
+        supportedFrameworks
 
 
 let getTargetCondition (target:TargetProfile) =

@@ -115,13 +115,6 @@
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__cpprestsdk_v120_winapp_msvcstl_dyn_rt-dyn_targets>native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn</__paket__cpprestsdk_v120_winapp_msvcstl_dyn_rt-dyn_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Choose>
     <When Condition="'$(Configuration)|$(Platform)'=='Debug|arm'">
       <ItemGroup>
         <Reference Include="cpprest120d_app_2_7">
@@ -169,13 +162,6 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__cpprestsdk_v120_windesktop_msvcstl_dyn_rt-dyn_targets>native\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn</__paket__cpprestsdk_v120_windesktop_msvcstl_dyn_rt-dyn_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Choose>
     <When Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       <ItemGroup>
         <Reference Include="cpprest120d_2_7">
@@ -202,13 +188,6 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__cpprestsdk_v120_winphone_msvcstl_dyn_rt-dyn_targets>native\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn</__paket__cpprestsdk_v120_winphone_msvcstl_dyn_rt-dyn_targets>
-      </PropertyGroup>
     </When>
   </Choose>
   <Choose>
@@ -241,13 +220,6 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__cpprestsdk_v120_winphonesl_msvcstl_dyn_rt-dyn_targets>native\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn</__paket__cpprestsdk_v120_winphonesl_msvcstl_dyn_rt-dyn_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Choose>
     <When Condition="'$(Configuration)|$(Platform)'=='Debug|arm'">
       <ItemGroup>
         <Reference Include="cpprest120d_wps81_2_7">
@@ -277,13 +249,6 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__cpprestsdk_v120_winxp_msvcstl_dyn_rt-dyn_targets>native\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn</__paket__cpprestsdk_v120_winxp_msvcstl_dyn_rt-dyn_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Choose>
     <When Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       <ItemGroup>
         <Reference Include="cpprest120d_xp_2_7">
@@ -310,13 +275,6 @@
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
-    </When>
-  </Choose>
-  <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__cpprestsdk_v140_winapp_msvcstl_dyn_rt-dyn_targets>native\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn</__paket__cpprestsdk_v140_winapp_msvcstl_dyn_rt-dyn_targets>
-      </PropertyGroup>
     </When>
   </Choose>
   <Choose>
@@ -367,13 +325,6 @@
     </When>
   </Choose>
   <Choose>
-    <When Condition="true">
-      <PropertyGroup>
-        <__paket__cpprestsdk_v140_windesktop_msvcstl_dyn_rt-dyn_targets>native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn</__paket__cpprestsdk_v140_windesktop_msvcstl_dyn_rt-dyn_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Choose>
     <When Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
       <ItemGroup>
         <Reference Include="cpprest140d_2_7">
@@ -402,11 +353,11 @@
       </ItemGroup>
     </When>
   </Choose>
-  <Import Project="..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_winapp_msvcstl_dyn_rt-dyn_targets).targets" Condition="Exists('..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_winapp_msvcstl_dyn_rt-dyn_targets).targets')" Label="Paket" />
-  <Import Project="..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_windesktop_msvcstl_dyn_rt-dyn_targets).targets" Condition="Exists('..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_windesktop_msvcstl_dyn_rt-dyn_targets).targets')" Label="Paket" />
-  <Import Project="..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_winphone_msvcstl_dyn_rt-dyn_targets).targets" Condition="Exists('..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_winphone_msvcstl_dyn_rt-dyn_targets).targets')" Label="Paket" />
-  <Import Project="..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_winphonesl_msvcstl_dyn_rt-dyn_targets).targets" Condition="Exists('..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_winphonesl_msvcstl_dyn_rt-dyn_targets).targets')" Label="Paket" />
-  <Import Project="..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_winxp_msvcstl_dyn_rt-dyn_targets).targets" Condition="Exists('..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v120_winxp_msvcstl_dyn_rt-dyn_targets).targets')" Label="Paket" />
-  <Import Project="..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v140_winapp_msvcstl_dyn_rt-dyn_targets).targets" Condition="Exists('..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v140_winapp_msvcstl_dyn_rt-dyn_targets).targets')" Label="Paket" />
-  <Import Project="..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v140_windesktop_msvcstl_dyn_rt-dyn_targets).targets" Condition="Exists('..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn\build\$(__paket__cpprestsdk_v140_windesktop_msvcstl_dyn_rt-dyn_targets).targets')" Label="Paket" />
+  <Import Project="..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn.targets')" Label="Paket" />
+  <Import Project="..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn.targets')" Label="Paket" />
+  <Import Project="..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn.targets')" Label="Paket" />
+  <Import Project="..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn.targets')" Label="Paket" />
+  <Import Project="..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn.targets')" Label="Paket" />
+  <Import Project="..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn.targets')" Label="Paket" />
+  <Import Project="..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets" Condition="Exists('..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn\build\native\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn.targets')" Label="Paket" />
 </Project>
