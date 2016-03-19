@@ -316,11 +316,11 @@ module InstallModel =
                     |> List.map applRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])                     }
 
-    let rec addTargetsFiles (targetsFiles:string seq) (this:InstallModel) : InstallModel =
+    let rec addTargetsFiles (targetsFiles:string list) (this:InstallModel) : InstallModel =
         let targetsFileFolders = 
             targetsFiles 
-            |> Seq.choose extractBuildFolder
-            |> Seq.distinct 
+            |> List.choose extractBuildFolder
+            |> List.distinct 
             |> PlatformMatching.getSupportedTargetProfiles 
             |> Seq.map (fun entry -> { Name = entry.Key; Targets = List.ofSeq entry.Value; Files = InstallFiles.empty })
             |> Seq.toList

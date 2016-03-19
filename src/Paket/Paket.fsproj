@@ -87,6 +87,7 @@
     <StartArguments>update --hard</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001523-mixed-native\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001520-pinned-error\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001523-not-true\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

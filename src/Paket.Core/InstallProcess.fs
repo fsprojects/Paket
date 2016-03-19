@@ -141,7 +141,7 @@ let CreateInstallModel(root, groupName, sources, force, package) =
         let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, force, package)
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
-        let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName)
+        let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName) |> Array.toList
         let analyzerFiles = analyzerFiles |> Array.map (fun fi -> fi.FullName)
         let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions |> getRestrictionList, files, targetsFiles, analyzerFiles, nuspec)
         return (groupName,package.Name), (package,model)

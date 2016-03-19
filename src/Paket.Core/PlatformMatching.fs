@@ -34,8 +34,9 @@ let private pathPenalties = System.Collections.Concurrent.ConcurrentDictionary<_
 
 let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
     if String.IsNullOrWhiteSpace path then
-        // an empty path is considered compatible with every target, but with a high penalty so explicit paths are preferred
-        10
+        match platform with
+        | Native(_) -> MaxPenalty // an empty path is inconsidered compatible with native targets            
+        | _ -> 10 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
     else
         let key = path,platform
         match pathPenalties.TryGetValue key with
@@ -105,19 +106,27 @@ let rec findBestMatch (paths : #seq<string>) (targetProfile : TargetProfile) =
         |> Seq.tryFind (fun _ -> true)
     | path -> path
 
+let private matchedCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
-let getSupportedTargetProfiles (paths :#seq<string>) =
-    KnownTargetProfiles.AllProfiles
-    |> Seq.map (fun target -> findBestMatch paths target, target)
-    |> Seq.collect (fun (path, target) -> 
-           match path with
-           | Some p -> [ p, target ]
-           | _ -> [])
-    |> Seq.groupBy fst
-    |> Seq.map (fun (path, group) -> path, Seq.map snd group)
-    |> Map.ofSeq
+let getSupportedTargetProfiles (paths : string list) =    
+    let key = paths
+    match matchedCache.TryGetValue key with
+    | true, supportedFrameworks -> supportedFrameworks
+    | _ ->
+        let supportedFrameworks =
+            KnownTargetProfiles.AllProfiles
+            |> Seq.map (fun target -> findBestMatch paths target, target)
+            |> Seq.collect (fun (path, target) -> 
+                    match path with
+                    | Some p -> [ p, target ]
+                    | _ -> [])
+            |> Seq.groupBy fst
+            |> Seq.map (fun (path, group) -> path, Seq.map snd group)
+            |> Map.ofSeq
+        matchedCache.[key] <- supportedFrameworks
+        supportedFrameworks
 
 
 let getTargetCondition (target:TargetProfile) =
@@ -137,13 +146,14 @@ let getTargetCondition (target:TargetProfile) =
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
         | Native("","") -> "true", ""
+        | Native("",bits) -> (sprintf "'$(Platform)'=='%s'" bits), ""
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile bits), ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (referenceCondition:string option) (targets : TargetProfile list) =
     let inline CheckIfFullyInGroup typeName matchF (processed,targets) =
         let fullyContained = 
-            KnownTargetProfiles.AllProfiles 
+            KnownTargetProfiles.AllDotNetProfiles 
             |> List.filter matchF
             |> List.forall (fun p -> targets |> Seq.exists ((=) p))
 
@@ -161,38 +171,44 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
         |> CheckIfFullyInGroup "WindowsPhoneApp" (fun x -> match x with | SinglePlatform(WindowsPhoneApp(_)) -> true | _ -> false)
         |> CheckIfFullyInGroup "WindowsPhone" (fun x -> match x with | SinglePlatform(WindowsPhoneSilverlight(_)) -> true | _ -> false)
 
-    let conditions = 
-        targets
+    let conditions =        
+        if targets = [SinglePlatform(Native("",""))] then 
+            targets 
+        else 
+            targets
+            |> List.filter (fun x -> match x with | SinglePlatform(Native("","")) -> false | _ -> true  ) 
         |> List.map getTargetCondition
         |> List.filter (fun (_,v) -> v <> "false")
         |> List.append grouped
         |> List.groupBy fst
 
-    conditions
-    |> List.map (fun (group,conditions) ->
-        match List.ofSeq conditions with
-        | [ _,"" ] -> group
-        | [ _,detail ] -> sprintf "%s And %s" group detail
-        | [] -> "false"
-        | conditions ->
-            let detail =
-                conditions
-                |> List.map snd
-                |> Set.ofSeq
-                |> fun cs -> String.Join(" Or ",cs)
-            sprintf "%s And (%s)" group detail)
-    |> fun l -> 
-            match l with
-            | [] -> ""
-            | [x] -> x
-            | xs -> String.Join(" Or ", List.map (fun cs -> sprintf "(%s)" cs) xs)
-    |> fun s -> 
-        match referenceCondition with 
-        | None -> s
-        | Some condition ->
-            // msbuild triggers a warning MSB4130 when we leave out the quotes around the condition
-            // and add the condition at the end
-            if s = "$(TargetFrameworkIdentifier) == 'true'" then
-                sprintf "'$(%s)' == 'True'" condition
-            else
-                sprintf "'$(%s)' == 'True' And (%s)" condition s
+    let conditionString =
+        let andString = 
+            conditions
+            |> List.map (fun (group,conditions) ->
+                match List.ofSeq conditions with
+                | [ _,"" ] -> group
+                | [ _,detail ] -> sprintf "%s And %s" group detail
+                | [] -> "false"
+                | conditions ->
+                    let detail =
+                        conditions
+                        |> List.map snd
+                        |> Set.ofSeq
+                        |> fun cs -> String.Join(" Or ",cs)
+                    sprintf "%s And (%s)" group detail)
+        
+        match andString with
+        | [] -> ""
+        | [x] -> x
+        | xs -> String.Join(" Or ", List.map (fun cs -> sprintf "(%s)" cs) xs)
+    
+    match referenceCondition with 
+    | None -> conditionString
+    | Some condition ->
+        // msbuild triggers a warning MSB4130 when we leave out the quotes around the condition
+        // and add the condition at the end
+        if conditionString = "$(TargetFrameworkIdentifier) == 'true'" then
+            sprintf "'$(%s)' == 'True'" condition
+        else
+            sprintf "'$(%s)' == 'True' And (%s)" condition conditionString
