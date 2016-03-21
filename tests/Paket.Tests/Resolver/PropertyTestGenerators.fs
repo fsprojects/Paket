@@ -15,23 +15,28 @@ let chooseFromList xs =
     return (List.item i xs) }
 
 type PackageList = (PackageName*SemVerInfo) list
-type Dependencies = (PackageName * VersionRequirement) list
-type PackageGraph = (PackageName*SemVerInfo*Dependencies) list
+type Dependency = PackageName * VersionRequirement
+type PackageGraph = (PackageName*SemVerInfo*(Dependency list)) list
 
-type ResolverPuzzle = PackageGraph * Dependencies
+type ResolverPuzzle = PackageGraph * (Dependency list)
 
 type PackageTypes =
     static member PackageName() = 
         Arb.from<NonNegativeInt>
-        |> Arb.convert (fun x -> PackageName("P" + (int x).ToString())) (fun x -> x.ToString().Replace("P","") |> int |> NonNegativeInt)
-
-    static member GroupName() = 
-        Arb.from<NonNegativeInt>
-        |> Arb.convert (fun x -> PackageName("G" + (int x).ToString())) (fun x -> x.ToString().Replace("G","") |> int |> NonNegativeInt)
+        |> Arb.convert 
+            (fun x -> PackageName("P" + (int x).ToString())) 
+            (fun x -> x.ToString().Replace("P","") |> int |> NonNegativeInt)
 
     static member Versions() = 
-         Arb.generate<NonNegativeInt*NonNegativeInt*NonNegativeInt>
-         |> Gen.map (fun (major,minor,patch) -> SemVer.Parse(sprintf "%d.%d.%d" (int major) (int minor) (int patch)))
+         let minor =
+             Arb.generate<NonNegativeInt*NonNegativeInt*NonNegativeInt>
+             |> Gen.map (fun (major,minor,patch) -> SemVer.Parse(sprintf "%d.%d.%d" (int major) (int minor) (int patch)))
+
+         let build =
+             Arb.generate<NonNegativeInt*NonNegativeInt*NonNegativeInt*PositiveInt>
+             |> Gen.map (fun (major,minor,patch,build) -> SemVer.Parse(sprintf "%d.%d.%d.%d" (int major) (int minor) (int patch) (int build)))
+
+         Gen.oneof [ minor; build ]
          |> Arb.fromGen
 
     static member DistinctPackages() =
@@ -52,7 +57,17 @@ type PackageTypes =
         |> Gen.map (fun dependencies ->
             dependencies
             |> List.map (fun (p,v) -> 
-                [ p,VersionRequirement(VersionRange.Specific(v),PreReleaseStatus.All)
+                let between =
+                    Arb.generate<SemVerInfo*SemVerInfo>
+                    |> Gen.eval 10 (Random.newSeed()) 
+                    |> fun (x,y) -> 
+                        if x < y then 
+                            VersionRequirement(VersionRange.Between(x.ToString(),y.ToString()),PreReleaseStatus.All)
+                        else
+                            VersionRequirement(VersionRange.Between(y.ToString(),y.ToString()),PreReleaseStatus.All)
+
+                [ p,between
+                  p,VersionRequirement(VersionRange.Specific(v),PreReleaseStatus.All)
                   p,VersionRequirement(VersionRange.Minimum(v),PreReleaseStatus.All)
                   p,VersionRequirement(VersionRange.Maximum(v),PreReleaseStatus.All)
                   p,VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.All)])
@@ -76,18 +91,7 @@ type PackageTypes =
 
             // remove one package
             for (p,v,deps) in g do
-                let g' =  g |> List.filter (fun (p',v',deps') -> p <> p' || v <> v')
-                let g'' =
-                    g'
-                    |> List.map (fun (p',v',deps') -> 
-                        let hasPackage p vr = g' |> List.exists (fun (p',_,_) -> p' = p)
-
-                        let newDeps =
-                            deps 
-                            |> List.filter (fun (n,vr) -> hasPackage n vr)
-                        p',v',newDeps)
-
-                yield g''
+                yield g |> List.filter (fun (p',v',deps') -> p <> p' || v <> v')
         }
 
     static member FullGraph() : Arbitrary<PackageGraph> =
@@ -107,12 +111,7 @@ type PackageTypes =
 
             // shrink graph
             for g' in PackageTypes.ShrinkGraph g do
-                let hasPackage g p vr = g |> List.exists (fun (p',_,_) -> p' = p)
-
-                let newDeps =
-                    deps 
-                    |> List.filter (fun (n,vr) -> hasPackage g' n vr)
-                yield g',newDeps
+                yield g',deps
         }
 
     static member Puzzle() : Arbitrary<ResolverPuzzle> =

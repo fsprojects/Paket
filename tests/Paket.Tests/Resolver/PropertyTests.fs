@@ -16,45 +16,64 @@ let hasDuplicates (resolution:PackageResolution) =
     resolution
     |> Map.exists (fun p _ -> hashSet.Add p |> not)
 
-let hasError ((g,deps):ResolverPuzzle) (resolution:PackageResolution) =
+let createsError ((g,deps):ResolverPuzzle) (package:ResolvedPackage) =
     deps
-    |> List.exists (fun (d,vr:VersionRequirement) -> 
-        match resolution |> Map.tryFind d with
-        | Some r -> vr.IsInRange(r.Version) |> not
-        | None -> false)
+    |> List.exists (fun (d,vr:VersionRequirement) -> d = package.Name && vr.IsInRange(package.Version) |> not)
+
+type Status =
+| Open of Dependency list
+| Valid
+| Error
 
 let isValid ((g,deps):ResolverPuzzle) resolution =
     deps
-    |> List.forall (fun (d,vr:VersionRequirement) -> 
-        match resolution |> Map.tryFind d with
-        | Some r -> vr.IsInRange(r.Version) 
-        | None -> false)
+    |> List.fold (fun s (d,vr:VersionRequirement) ->
+        match s with
+        | Open deps ->
+            match resolution |> Map.tryFind d with
+            | Some r -> if not <| vr.IsInRange(r.Version) then Error else s
+            | None -> Open ((d,vr)::deps)
+        | _ -> s) (Open [])
+    |> fun s -> 
+        match s with
+        | Open [] -> Valid
+        | Error -> Error
+        | Open stillOpen ->
+            let satisfiable =
+                stillOpen
+                |> List.forall (fun (d,vr:VersionRequirement) ->
+                    g
+                    |> List.exists (fun (p,v,_) -> p = d && vr.IsInRange v))
+            if satisfiable then s else Error
+
 
 let bruteForce ((g,deps):ResolverPuzzle) =
     let rec check ((g,deps):ResolverPuzzle) resolution =
-        match g with
-        | (p,v,packageDeps) :: g' ->
-            let select() =
-                let resolved =
-                    { Name = p
-                      Version = v
-                      Dependencies = Set.empty
-                      Unlisted = false
-                      Settings = InstallSettings.Default
-                      Source = PackageSources.DefaultNuGetSource }
-                match Map.tryFind p resolution with
-                | Some(_) -> None
-                | _ ->
-                    let resolution' = Map.add p resolved resolution
-                    let deps' = packageDeps @ deps
-                    if hasError (g',deps') resolution' then None else
-                    check (g',deps') resolution'
-
-            match check (g',deps) resolution with
-            | None -> select()
-            | r -> r
-
-        | _ -> if isValid (g,deps) resolution then Some resolution else None
+        match isValid (g,deps) resolution with
+        | Error -> None
+        | Valid -> Some resolution
+        | Open _ ->
+            match g with
+            | (p,v,packageDeps) :: g' ->
+                match check (g',deps) resolution with
+                | None -> 
+                    match Map.tryFind p resolution with
+                    | Some(_) -> None
+                    | _ ->
+                        let resolved =
+                            { Name = p
+                              Version = v
+                              Dependencies = Set.empty
+                              Unlisted = false
+                              Settings = InstallSettings.Default
+                              Source = PackageSources.DefaultNuGetSource }
+                                        
+                        let deps' = packageDeps @ deps
+                        if createsError (g,deps') resolved then None else
+                        let resolution' = Map.add p resolved resolution
+                        check (g',deps') resolution'                
+                | r -> r
+            | _ -> None
 
     check (g,deps) Map.empty
 
@@ -73,6 +92,9 @@ let ``if it resolves then, it should satisfy all deps. if not we have a real con
         | Resolution.Ok resolution ->
             if hasDuplicates resolution then
                 failwithf "duplicates found in resolution: %A" resolution
+
+            if (resolution |> Seq.length) > 7 then
+                failwithf "Found big %A" resolution
 
             deps
             |> List.forall (fun (d,vr) -> 
