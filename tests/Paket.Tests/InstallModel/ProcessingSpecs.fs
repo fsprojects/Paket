@@ -35,6 +35,12 @@ let ``should understand lib in lib.dll``() =
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\FunScript.TypeScript\lib\net40\FunScript.TypeScript.Binding.lib.dll"
 
 [<Test>]
+let ``should understand mylib in mylib.dll``() = 
+    let model = emptymodel.AddReferences [ @"c:/users/username/workspace/myproject/packages/mylib.mylib/lib/net45/mylib.mylib.dll"; ] 
+
+    model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldContain @"c:/users/username/workspace/myproject/packages/mylib.mylib/lib/net45/mylib.mylib.dll"
+
+[<Test>]
 let ``should add net35 if we have net20 and net40``() = 
     let model = 
         emptymodel.AddReferences([ @"..\Rx-Main\lib\net20\Rx.dll"; @"..\Rx-Main\lib\net40\Rx.dll" ])

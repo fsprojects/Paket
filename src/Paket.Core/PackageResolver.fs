@@ -478,8 +478,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                             state := step (relax,newFilteredVersions,newResolution,newClosed,newOpen)
 
                             match !state with
-                            | Resolution.Conflict(resolved,closed,stillOpen,conflicts,lastPackageRequirement,getVersionF) 
-                                
+                            | Resolution.Conflict(resolved,closed,stillOpen,conflicts,lastPackageRequirement,getVersionF)
                                 when
                                     (Set.isEmpty conflicts |> not) &&
                                       (conflicts |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not) ->

@@ -1,11 +1,14 @@
-#### 3.0.0-alpha076 - 19.03.2016
+#### 3.0.0-alpha077 - 21.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
 
+#### 2.53.2 - 21.03.2016
+* BUGFIX: Fix regression where paket skipped packages with name ending in lib - https://github.com/fsprojects/Paket/issues/1531
+
 #### 2.53.1 - 19.03.2016
-* Improve warning text on conflict - https://github.com/fsprojects/Paket/pull/1530
+* USABILITY: Improve warning text on conflict - https://github.com/fsprojects/Paket/pull/1530
 
 #### 2.53.0 - 19.03.2016
 * Allow to restore recursively from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507

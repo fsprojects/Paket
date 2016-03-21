@@ -138,14 +138,15 @@ let getNative (path:string) =
 
 let extractPath infix (fileName : string) : string option =
     let path = fileName.Replace("\\", "/").ToLower()
+    let path = if path.StartsWith "lib/" then "/" + path else path
     let fi = FileInfo path
 
     let packagesPos = path.LastIndexOf "packages/"
     let startPos =
         if packagesPos >= 0 then
-            path.IndexOf(sprintf "%s/" infix,packagesPos)
+            path.IndexOf(sprintf "/%s/" infix,packagesPos) + 1
         else
-            path.LastIndexOf(sprintf "%s/" infix)
+            path.LastIndexOf(sprintf "/%s/" infix) + 1
 
     let endPos = path.IndexOf('/', startPos + infix.Length + 1)
     if startPos < 0 then None 
