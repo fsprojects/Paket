@@ -78,12 +78,6 @@ type PackageTypes =
         |> List.distinctBy fst
         |> List.sort
 
-    static member DependenciesForPackage package =
-        Arb.generate<SemVerInfo list>
-        |> Gen.eval 10 (Random.newSeed())
-        |> List.map (fun v -> PackageTypes.GenerateDependenciesForPackage(package,v))
-        |> List.concat
-
     static member ShrinkGraph (g:PackageGraph) : PackageGraph seq = 
         seq {
             // remove one dependency
@@ -102,11 +96,17 @@ type PackageTypes =
             Arb.generate<PackageList>
             |> Gen.map (fun packages ->
                     packages 
-                    |> List.map (fun (p,vs) -> p,vs, PackageTypes.DependenciesForPackage p))
+                    |> List.map (fun (p,vs) ->
+                        let deps = 
+                            Arb.generate<SemVerInfo list>
+                            |> Gen.eval 10 (Random.newSeed())
+                            |> List.map (fun v -> PackageTypes.GenerateDependenciesForPackage(p,v))
+                            |> List.concat
+                        p,vs,deps))
                     
         Arb.fromGenShrink (generator,PackageTypes.ShrinkGraph)
 
-    static member ShrinkPuzzle ((g,deps):ResolverPuzzle) : ResolverPuzzle seq = 
+    static member ShrinkPuzzle ((g,deps):ResolverPuzzle) : ResolverPuzzle seq =
         seq {
             // remove one dependency
             for d in deps do
