@@ -217,6 +217,21 @@ let ``should read no targets import config``() =
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
 
+let copyContent = """
+copy_content_to_output_dir always
+source "http://www.nuget.org/api/v2" // first source
+
+nuget "Microsoft.SqlServer.Types"
+"""
+
+[<Test>]
+let ``should read no copy_content_to_output_dir config``() = 
+    let cfg = DependenciesFile.FromCode(copyContent)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyContentToOutputDirectory |> shouldEqual (Some CopyToOutputDirectorySettings.Always)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual None
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
+
 let configWithoutQuotes = """
 source http://www.nuget.org/api/v2
 

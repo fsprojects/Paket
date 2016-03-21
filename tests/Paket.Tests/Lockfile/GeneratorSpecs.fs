@@ -359,12 +359,12 @@ let ``should generate lock file with second group``() =
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
   specs:
-    Castle.Windsor (2.1)
+    Castle.Windsor (2.1) - copy_content_to_output_dir: preserve_newest
     Castle.Windsor-log4net (3.3) - framework: net35
       Castle.Windsor (>= 2.0)
       log4net (>= 1.0)
     log (1.2)
-    log4net (1.1)
+    log4net (1.1) - copy_content_to_output_dir: never
       log (>= 1.0)
     Rx-Core (2.1) - content: none
     Rx-Main (2.0) - content: none, framework: >= net40
@@ -372,6 +372,7 @@ let ``should generate lock file with second group``() =
 
 GROUP Build
 COPY-LOCAL: TRUE
+COPY-CONTENT-TO-OUTPUT-DIR: ALWAYS
 CONDITION: LEGACY
 NUGET
   remote: http://www.nuget.org/api/v2

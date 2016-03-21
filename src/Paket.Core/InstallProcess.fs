@@ -60,22 +60,25 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
     let nuGetFileItems =
         let packageDirectoriesWithContent =
             usedPackages
-            |> Seq.map (fun kv -> kv.Key,kv.Value,defaultArg (snd kv.Value).OmitContent ContentCopySettings.Overwrite)
-            |> Seq.filter (fun (_,_,setting) -> setting <> ContentCopySettings.Omit)
-            |> Seq.map (fun (key,v,s) -> s,findPackageFolder root key v)
-            |> Seq.choose (fun (settings,packageDir) ->
+            |> Seq.map (fun kv -> 
+                let contentCopySettings = defaultArg (snd kv.Value).OmitContent ContentCopySettings.Overwrite
+                let contentCopyToOutputSettings = (snd kv.Value).CopyContentToOutputDirectory
+                kv.Key,kv.Value,contentCopySettings,contentCopyToOutputSettings)
+            |> Seq.filter (fun (_,_,contentCopySettings,_) -> contentCopySettings <> ContentCopySettings.Omit)
+            |> Seq.map (fun (key,v,s,s') -> s,s',findPackageFolder root key v)
+            |> Seq.choose (fun (contentCopySettings,contentCopyToOutputSettings,packageDir) ->
                 packageDir.GetDirectories "Content"
                 |> Array.append (packageDir.GetDirectories "content")
                 |> Array.tryFind (fun _ -> true)
-                |> Option.map (fun x -> x,settings))
+                |> Option.map (fun x -> x,contentCopySettings,contentCopyToOutputSettings))
             |> Seq.toList
 
         let copyContentFiles (project : ProjectFile, packagesWithContent) =
             let onBlackList (fi : FileInfo) = contentFileBlackList |> List.exists (fun rule -> rule(fi))
 
-            let rec copyDirContents (fromDir : DirectoryInfo, settings, toDir : Lazy<DirectoryInfo>) =
+            let rec copyDirContents (fromDir : DirectoryInfo, contentCopySettings, toDir : Lazy<DirectoryInfo>) =
                 fromDir.GetDirectories() |> Array.toList
-                |> List.collect (fun subDir -> copyDirContents(subDir, settings, lazy toDir.Force().CreateSubdirectory(subDir.Name)))
+                |> List.collect (fun subDir -> copyDirContents(subDir, contentCopySettings, lazy toDir.Force().CreateSubdirectory(subDir.Name)))
                 |> List.append
                     (fromDir.GetFiles()
                         |> Array.toList
@@ -83,7 +86,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                             if onBlackList file then false else
                             if file.Name = "paket.references" then traceWarnfn "You can't use paket.references as a content file in the root of a project. Please take a look at %s" file.FullName; false else true)
                         |> List.map (fun file ->
-                            let overwrite = settings = ContentCopySettings.Overwrite
+                            let overwrite = contentCopySettings = ContentCopySettings.Overwrite
                             let target = FileInfo(Path.Combine(toDir.Force().FullName, file.Name))
                             contentFiles.Add(target.FullName) |> ignore
                             if overwrite || not target.Exists then
@@ -92,16 +95,17 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                 
 
             packagesWithContent
-            |> List.collect (fun (packageDir,settings) -> 
-                copyDirContents (packageDir, settings, lazy (DirectoryInfo(Path.GetDirectoryName(project.FileName))))
-                |> List.map (fun x -> x,settings))
+            |> List.collect (fun (packageDir,contentCopySettings,contentCopyToOutputSettings) -> 
+                copyDirContents (packageDir, contentCopySettings, lazy (DirectoryInfo(Path.GetDirectoryName(project.FileName))))
+                |> List.map (fun x -> x,contentCopySettings,contentCopyToOutputSettings))
 
         copyContentFiles(project, packageDirectoriesWithContent)
-        |> List.map (fun (file,settings) ->
-                            let createSubNodes = settings <> ContentCopySettings.OmitIfExisting
+        |> List.map (fun (file,contentCopySettings,contentCopyToOutputSettings) ->
+                            let createSubNodes = contentCopySettings <> ContentCopySettings.OmitIfExisting
                             { BuildAction = project.DetermineBuildAction file.Name
                               Include = createRelativePath project.FileName file.FullName
                               WithPaketSubNode = createSubNodes
+                              CopyToOutputDirectory = contentCopyToOutputSettings
                               Link = None })
 
     let removeCopiedFiles (project: ProjectFile) =
@@ -393,10 +397,12 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         { BuildAction = buildAction
                           Include = createRelativePath project.FileName remoteFilePath
                           WithPaketSubNode = true
+                          CopyToOutputDirectory = None
                           Link = Some link }
                     else
                         { BuildAction = buildAction
                           WithPaketSubNode = true
+                          CopyToOutputDirectory = None
                           Include =
                             if buildAction = BuildAction.Reference then
                                  createRelativePath project.FileName remoteFilePath

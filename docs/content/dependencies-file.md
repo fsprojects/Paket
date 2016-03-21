@@ -91,6 +91,18 @@ This option disables the installation of any content files:
     nuget jQuery >= 0 // we don't install jQuery content files
     nuget UnionArgParser ~> 0.7
 
+### CopyToOutputDirectory settings
+
+It's possible to influence the `CopyToOutputDirectory` property for all content references in a group:
+
+    [lang=paket]
+    source https://nuget.org/api/v2
+	CopyToOutputDirectory: always
+
+    nuget jQuery 
+	nuget Fody
+	nuget ServiceStack.Swagger
+
 ### import_targets settings
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:

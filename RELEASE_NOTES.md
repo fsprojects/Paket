@@ -1,10 +1,7 @@
-#### 2.53.3 - 21.03.2016
-* USABILITY: Unknown package settings are now reported
-
-#### 2.53.2 - 21.03.2016
+#### 2.54.0 - 21.03.2016
+* It's possible to influence the CopyToOutputDirectory property for content references in project files - http://fsprojects.github.io/Paket/nuget-dependencies.html#CopyToOutputDirectory-settings
 * BUGFIX: Fix regression where paket skipped packages with name ending in lib - https://github.com/fsprojects/Paket/issues/1531
-
-#### 2.53.1 - 19.03.2016
+* USABILITY: Unknown package settings are now reported
 * USABILITY: Improve warning text on conflict - https://github.com/fsprojects/Paket/pull/1530
 
 #### 2.53.0 - 19.03.2016

@@ -339,6 +339,11 @@ type ContentCopySettings =
 | Overwrite
 | OmitIfExisting
 
+type CopyToOutputDirectorySettings =
+| Never
+| Always
+| PreserveNewest
+
 type BindingRedirectsSettings =
 | On
 | Off
@@ -351,7 +356,8 @@ type InstallSettings =
       IncludeVersionInPath: bool option
       ReferenceCondition : string option
       CreateBindingRedirects : BindingRedirectsSettings option
-      CopyLocal : bool option }
+      CopyLocal : bool option 
+      CopyContentToOutputDirectory : CopyToOutputDirectorySettings option }
 
     static member Default =
         { CopyLocal = None
@@ -360,12 +366,18 @@ type InstallSettings =
           IncludeVersionInPath = None
           ReferenceCondition = None
           CreateBindingRedirects = None
+          CopyContentToOutputDirectory = None
           OmitContent = None }
 
     member this.ToString(asLines) =
         let options =
             [ match this.CopyLocal with
               | Some x -> yield "copy_local: " + x.ToString().ToLower()
+              | None -> ()
+              match this.CopyContentToOutputDirectory with
+              | Some CopyToOutputDirectorySettings.Never -> yield "copy_content_to_output_dir: never"
+              | Some CopyToOutputDirectorySettings.Always -> yield "copy_content_to_output_dir: always"
+              | Some CopyToOutputDirectorySettings.PreserveNewest -> yield "copy_content_to_output_dir: preserve_newest"
               | None -> ()
               match this.ImportTargets with
               | Some x -> yield "import_targets: " + x.ToString().ToLower()
@@ -403,6 +415,7 @@ type InstallSettings =
                 FrameworkRestrictions = filterRestrictions self.FrameworkRestrictions other.FrameworkRestrictions
                 OmitContent = self.OmitContent ++ other.OmitContent
                 CopyLocal = self.CopyLocal ++ other.CopyLocal
+                CopyContentToOutputDirectory = self.CopyContentToOutputDirectory ++ other.CopyContentToOutputDirectory
                 ReferenceCondition = self.ReferenceCondition ++ other.ReferenceCondition
                 IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
         }
@@ -446,6 +459,13 @@ type InstallSettings =
                 match getPair "condition" with
                 | Some c -> Some(c.ToUpper())
                 | _ -> None 
+              CopyContentToOutputDirectory =
+                match getPair "copy_content_to_output_dir" with
+                | Some "preserve_newest" -> Some CopyToOutputDirectorySettings.PreserveNewest 
+                | Some "always" -> Some CopyToOutputDirectorySettings.Always 
+                | Some "never" -> Some CopyToOutputDirectorySettings.Never
+                | None -> None
+                | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
               CopyLocal =
                 match getPair "copy_local" with
                 | Some "false" -> Some false 

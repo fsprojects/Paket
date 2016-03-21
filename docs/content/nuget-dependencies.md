@@ -213,6 +213,17 @@ It's possible to influence the `Private` property for references in project file
 
     nuget Newtonsoft.Json copy_local: false
 
+### CopyToOutputDirectory settings
+
+It's possible to influence the `CopyToOutputDirectory` property for content references in project files:
+
+    [lang=paket]
+    source https://nuget.org/api/v2
+
+    nuget jQuery CopyToOutputDirectory: always
+	nuget Fody CopyToOutputDirectory: never
+	nuget ServiceStack.Swagger CopyToOutputDirectory: preserve-newest
+
 ### redirects settings
 
 You can instruct Paket to create assembly binding redirects for NuGet packages:

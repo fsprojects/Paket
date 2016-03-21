@@ -203,6 +203,23 @@ let ``#1427 won't install content when content:none``() =
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
     s2 |> shouldEqual s1 // we do not touch it
 
+
+[<Test>]
+let ``#1522 install content and copy to output dir``() = 
+    let newLockFile = install "i001522-copy-content"
+    let newFile = Path.Combine(scenarioTempPath "i001522-copy-content","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001522-copy-content","MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+    s1.Contains "FodyWeavers.xml" |> shouldEqual true
+
+    let newWeavers = Path.Combine(scenarioTempPath "i001522-copy-content","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let oldWeavers = Path.Combine(originalScenarioPath "i001522-copy-content","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
+    let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
 [<Test>]
 let ``#1440 auto-detect framework``() = 
     let newLockFile = install "i001440-auto-detect"
