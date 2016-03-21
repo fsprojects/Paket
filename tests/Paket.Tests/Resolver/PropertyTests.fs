@@ -38,6 +38,7 @@ let isValid ((g,deps):ResolverPuzzle) resolution =
         match s with
         | Open [] -> Valid
         | Error -> Error
+        | Valid -> Valid
         | Open stillOpen ->
             let satisfiable =
                 stillOpen

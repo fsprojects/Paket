@@ -25,6 +25,7 @@ type FileItem =
     { BuildAction : BuildAction
       Include : string
       WithPaketSubNode: bool
+      CopyToOutputDirectory: CopyToOutputDirectorySettings option
       Link : string option }
 
 /// Project references inside of project files.
@@ -486,6 +487,11 @@ module ProjectFile =
                         |> addChild (createNodeSet "Private" "True" project)
                     | _ -> node
                 |> fun n -> if fileItem.WithPaketSubNode then addChild (createNodeSet "Paket" "True" project) n else n
+                |> fun n -> match fileItem.CopyToOutputDirectory with
+                            | Some CopyToOutputDirectorySettings.Always -> addChild (createNodeSet "CopyToOutputDirectory" "Always" project) n
+                            | Some CopyToOutputDirectorySettings.Never  -> addChild (createNodeSet "CopyToOutputDirectory" "Never" project) n
+                            | Some CopyToOutputDirectorySettings.PreserveNewest  -> addChild (createNodeSet "CopyToOutputDirectory" "PreserveNewest" project) n
+                            | None -> n
                 |> fun n -> match fileItem.Link with
                             | Some link -> addChild (createNodeSet "Link" (link.Replace("\\","/")) project) n
                             | _ -> n
@@ -509,17 +515,15 @@ module ProjectFile =
                 match existingNode with
                 | Some existingNode ->
                     match existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.tryFind (fun n -> n.Name = "Paket") with
-                    | Some child ->
+                    | None when hard ->
                         let parent = existingNode.ParentNode
                         parent.InsertBefore(libReferenceNode, existingNode) |> ignore
                         parent.RemoveChild(existingNode) |> ignore
-                    | None ->
-                        if hard && fileItem.WithPaketSubNode then 
-                            existingNode :?> XmlElement 
-                            |> addChild (createNodeSet "Paket" "True" project)
-                            |> ignore
-
-                        else verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include project.FileName
+                    | Some _ ->                    
+                        let parent = existingNode.ParentNode
+                        parent.InsertBefore(libReferenceNode, existingNode) |> ignore
+                        parent.RemoveChild(existingNode) |> ignore                        
+                    | None -> verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include project.FileName
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head 
                     firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore

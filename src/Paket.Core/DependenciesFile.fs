@@ -202,6 +202,7 @@ module DependenciesFileParser =
     | AutodetectFrameworkRestrictions
     | ImportTargets of bool
     | CopyLocal of bool
+    | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | ReferenceCondition of string
     | Redirects of bool option
     | ResolverStrategyForTransitives of ResolverStrategy option
@@ -280,6 +281,15 @@ module DependenciesFileParser =
             ParserOptions(ParserOption.OmitContent(setting))
         | String.StartsWith "import_targets" trimmed -> ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true"))
         | String.StartsWith "copy_local" trimmed -> ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true"))
+        | String.StartsWith "copy_content_to_output_dir" trimmed -> 
+            let setting =
+                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
+                | "always" -> CopyToOutputDirectorySettings.Always
+                | "never" -> CopyToOutputDirectorySettings.Never
+                | "preserve_newest" -> CopyToOutputDirectorySettings.PreserveNewest
+                | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
+                        
+            ParserOptions(ParserOption.CopyContentToOutputDir(setting))
         | String.StartsWith "condition" trimmed -> ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper()))
         | String.StartsWith "gist" _ as trimmed ->
             SourceFile(parseGitSource trimmed Origin.GistLink "gist")
@@ -347,6 +357,7 @@ module DependenciesFileParser =
         | ResolverStrategyForTransitives strategy -> { current.Options with ResolverStrategyForTransitives = strategy }
         | ResolverStrategyForDirectDependencies strategy -> { current.Options with ResolverStrategyForDirectDependencies = strategy }
         | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
+        | CopyContentToOutputDir mode -> { current.Options with Settings = { current.Options.Settings with CopyContentToOutputDirectory = Some mode } }
         | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
         | FrameworkRestrictions r -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
         | AutodetectFrameworkRestrictions ->

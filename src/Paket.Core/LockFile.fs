@@ -33,6 +33,11 @@ module LockFileSerializer =
         match options.Settings.CopyLocal with
         | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
         | None -> ()
+        match options.Settings.CopyContentToOutputDirectory with
+        | Some CopyToOutputDirectorySettings.Always -> yield "COPY-CONTENT-TO-OUTPUT-DIR: ALWAYS"
+        | Some CopyToOutputDirectorySettings.Never -> yield "COPY-CONTENT-TO-OUTPUT-DIR: NEVER"
+        | Some CopyToOutputDirectorySettings.PreserveNewest -> yield "COPY-CONTENT-TO-OUTPUT-DIR: PRESERVE-NEWEST"
+        | None -> ()
 
         match options.Settings.ImportTargets with
         | Some x -> yield "IMPORT-TARGETS: " + x.ToString().ToUpper()
@@ -201,6 +206,7 @@ module LockFileParser =
     | ImportTargets of bool
     | FrameworkRestrictions of FrameworkRestrictions
     | CopyLocal of bool
+    | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | Redirects of bool option
     | ReferenceCondition of string
     | ResolverStrategy of ResolverStrategy option
@@ -228,6 +234,15 @@ module LockFileParser =
             InstallOption(Redirects(setting))
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
+        | _, String.StartsWith "COPY-CONTENT-TO-OUTPUT-DIR:" trimmed -> 
+            let setting =
+                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
+                | "always" -> CopyToOutputDirectorySettings.Always
+                | "never" -> CopyToOutputDirectorySettings.Never
+                | "preserve_newest" -> CopyToOutputDirectorySettings.PreserveNewest
+                | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
+                                            
+            InstallOption(CopyContentToOutputDir(setting))
         | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(FrameworkRestrictionList (trimmed.Trim() |> Requirements.parseRestrictions)))
         | _, String.StartsWith "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
         | _, String.StartsWith "CONTENT:" trimmed -> 
@@ -274,6 +289,7 @@ module LockFileParser =
         | Redirects mode -> { currentGroup.Options with Redirects = mode }
         | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
         | CopyLocal mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
+        | CopyContentToOutputDir mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyContentToOutputDirectory = Some mode }}
         | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
         | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}

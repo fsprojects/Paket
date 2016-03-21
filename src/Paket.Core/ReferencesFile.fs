@@ -106,11 +106,12 @@ type ReferencesFile =
         let lines = File.ReadAllLines(fileName)
         { ReferencesFile.FromLines lines with FileName = fileName }
 
-    member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool, importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool, createBindingRedirects, referenceCondition) =
+    member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool,  importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool, createBindingRedirects, referenceCondition) =
         let package: PackageInstallSettings =
             { Name = packageName
               Settings = 
                   { CopyLocal = if not copyLocal then Some copyLocal else None
+                    CopyContentToOutputDirectory = None
                     ImportTargets = if not importTargets then Some importTargets else None
                     FrameworkRestrictions = frameworkRestrictions
                     IncludeVersionInPath = if includeVersionInPath then Some includeVersionInPath else None
