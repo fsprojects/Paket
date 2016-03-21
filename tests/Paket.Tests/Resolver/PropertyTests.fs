@@ -86,28 +86,31 @@ let ``can resolve empty requirements`` () =
         | _ -> false)
 
 [<Test>]
-[<Ignore>]
 let ``if it resolves then, it should satisfy all deps. if not we have a real conflict`` () =
     check (fun ((g,deps):ResolverPuzzle) ->
-        match resolve g deps with
-        | Resolution.Ok resolution ->
-            if hasDuplicates resolution then
-                failwithf "duplicates found in resolution: %A" resolution
+        try
+            match resolve g deps with
+            | Resolution.Ok resolution ->
+                if hasDuplicates resolution then
+                    failwithf "duplicates found in resolution: %A" resolution
 
-            if (resolution |> Seq.length) > 7 then
-                failwithf "Found big %A" resolution
-
-            deps
-            |> List.forall (fun (d,vr) -> 
-                match resolution |> Map.tryFind d with
-                | Some r -> vr.IsInRange(r.Version) 
-                | None -> false)
+                deps
+                |> List.forall (fun (d,vr) -> 
+                    match resolution |> Map.tryFind d with
+                    | Some r -> vr.IsInRange(r.Version) 
+                    | None -> false)
             
-        | conflict ->
-            match bruteForce (g,deps) with
-            | None -> ()
-            | Some resolution ->
-                failwithf "brute force found %A" resolution
+            | conflict ->
+                match bruteForce (g,deps) with
+                | None -> ()
+                | Some resolution ->
+                    failwithf "brute force found %A" resolution
 
-            let conflicts = conflict.GetConflicts()
-            conflicts |> List.isEmpty |> not)
+                let conflicts = conflict.GetConflicts()
+                conflicts |> List.isEmpty |> not
+        with
+        | exn ->
+            match bruteForce (g,deps) with
+            | None -> true
+            | Some resolution ->
+                failwithf "resolver failed with %s but brute force found %A" exn.Message resolution)

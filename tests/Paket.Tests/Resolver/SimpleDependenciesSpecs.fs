@@ -118,3 +118,35 @@ let ``should resolve prerelease config``() =
     let cfg = DependenciesFile.FromCode(config5)
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph5, PackageDetailsFromGraph graph5).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "Microsoft.AspNet.Mvc"] |> shouldEqual "6.0.0-beta6"
+
+
+[<Test>]
+let ``should resolve config with all packages``() = 
+    let graph = [
+       "P1", "34.22.3.14", []
+       "P20", "26.22.24", []
+       "P21", "34.14.16", []
+       "P28", "24.3.30", []
+       "P32", "33.15.8.28", []
+       "P6", "3.33.34.2", []
+       "P8", "4.6.27.21", []
+       "P9", "18.18.20", []
+    ]
+
+    let config = """
+source "https://www.nuget.org/api/v2"
+
+nuget P1
+nuget P20
+nuget P21 >= 34.14.16
+nuget P28 >= 24.3.30
+nuget P32 >= 11.13.20.28
+nuget P6 >= 2.7.3.2 < 5.3.2.7
+nuget P8 >= 2.7.3.2 < 5.3.2.7
+nuget P9 <= 18.18.20"
+"""
+    
+    let cfg = DependenciesFile.FromCode(config)
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[PackageName "P1"] |> shouldEqual "34.22.3.14"
+    
