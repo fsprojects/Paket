@@ -22,10 +22,9 @@ type ResolverPuzzle = PackageGraph * (Dependency list)
 
 type PackageTypes =
     static member PackageName() = 
-        Arb.from<NonNegativeInt>
-        |> Arb.convert 
-            (fun x -> PackageName("P" + (int x).ToString())) 
-            (fun x -> x.ToString().Replace("P","") |> int |> NonNegativeInt)
+        Arb.generate<NonNegativeInt>
+        |> Gen.map (fun x -> PackageName("P" + (int x).ToString()))
+        |> Arb.fromGen
 
     static member Versions() = 
          let minor =
