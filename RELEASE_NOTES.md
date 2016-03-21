@@ -1,3 +1,6 @@
+#### 2.53.3 - 21.03.2016
+* USABILITY: Unknown package settings are now reported
+
 #### 2.53.2 - 21.03.2016
 * BUGFIX: Fix regression where paket skipped packages with name ending in lib - https://github.com/fsprojects/Paket/issues/1531
 

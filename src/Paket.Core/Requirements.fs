@@ -410,41 +410,56 @@ type InstallSettings =
     static member Parse(text:string) : InstallSettings =
         let kvPairs = parseKeyValuePairs text
 
-        { ImportTargets =
-            match kvPairs.TryGetValue "import_targets" with
-            | true, "false" -> Some false 
-            | true, "true" -> Some true
+        let getPair key =
+            match kvPairs.TryGetValue key with
+            | true, x -> kvPairs.Remove key |> ignore; Some x
             | _ -> None
-          FrameworkRestrictions =
-            match kvPairs.TryGetValue "framework" with
-            | true, s -> FrameworkRestrictionList(parseRestrictions s)
-            | _ -> FrameworkRestrictionList []
-          OmitContent =
-            match kvPairs.TryGetValue "content" with
-            | true, "none" -> Some ContentCopySettings.Omit 
-            | true, "once" -> Some ContentCopySettings.OmitIfExisting
-            | true, "true" -> Some ContentCopySettings.Overwrite
-            | _ ->  None
-          CreateBindingRedirects =
-            match kvPairs.TryGetValue "redirects" with
-            | true, "on" -> Some On 
-            | true, "off" -> Some Off
-            | true, "force" -> Some Force
-            | _ ->  None
-          IncludeVersionInPath =
-            match kvPairs.TryGetValue "version_in_path" with
-            | true, "false" -> Some false 
-            | true, "true" -> Some true
-            | _ -> None 
-          ReferenceCondition =
-            match kvPairs.TryGetValue "condition" with
-            | true, c -> Some(c.ToUpper())
-            | _ -> None 
-          CopyLocal =
-            match kvPairs.TryGetValue "copy_local" with
-            | true, "false" -> Some false 
-            | true, "true" -> Some true
-            | _ -> None }
+
+        let settings =
+            { ImportTargets =
+                match getPair "import_targets" with
+                | Some "false" -> Some false 
+                | Some "true" -> Some true
+                | _ -> None
+              FrameworkRestrictions =
+                match getPair "framework" with
+                | Some s -> FrameworkRestrictionList(parseRestrictions s)
+                | _ -> FrameworkRestrictionList []
+              OmitContent =
+                match getPair "content" with
+                | Some "none" -> Some ContentCopySettings.Omit 
+                | Some "once" -> Some ContentCopySettings.OmitIfExisting
+                | Some "true" -> Some ContentCopySettings.Overwrite
+                | _ ->  None
+              CreateBindingRedirects =
+                match getPair "redirects" with
+                | Some "on" -> Some On 
+                | Some "off" -> Some Off
+                | Some "force" -> Some Force
+                | _ ->  None
+              IncludeVersionInPath =
+                match getPair "version_in_path" with
+                | Some "false" -> Some false 
+                | Some "true" -> Some true
+                | _ -> None 
+              ReferenceCondition =
+                match getPair "condition" with
+                | Some c -> Some(c.ToUpper())
+                | _ -> None 
+              CopyLocal =
+                match getPair "copy_local" with
+                | Some "false" -> Some false 
+                | Some "true" -> Some true
+                | _ -> None }
+
+        // ignore resolver settings here
+        getPair "strategy" |> ignore
+        getPair "lowest_matching" |> ignore
+
+        for kv in kvPairs do
+            failwithf "Unknown package settings %s: %s" kv.Key kv.Value
+
+        settings
 
     member this.AdjustWithSpecialCases(packageName) =
         if packageName = PackageName "Microsoft.Bcl.Build" && this.ImportTargets = None then
