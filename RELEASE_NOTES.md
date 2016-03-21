@@ -1,5 +1,8 @@
+#### 2.53.2 - 21.03.2016
+* BUGFIX: Fix regression where paket skipped packages with name ending in lib - https://github.com/fsprojects/Paket/issues/1531
+
 #### 2.53.1 - 19.03.2016
-* Improve warning text on conflict - https://github.com/fsprojects/Paket/pull/1530
+* USABILITY: Improve warning text on conflict - https://github.com/fsprojects/Paket/pull/1530
 
 #### 2.53.0 - 19.03.2016
 * Allow to restore recursively from remote dependencies file - https://github.com/fsprojects/Paket/issues/1507
