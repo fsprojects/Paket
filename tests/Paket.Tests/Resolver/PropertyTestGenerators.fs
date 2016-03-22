@@ -65,7 +65,7 @@ type PackageTypes =
           p,VersionRequirement(VersionRange.Maximum(v),PreReleaseStatus.All)
           p,VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.All)]
 
-    static member GenerateDependencies (packages:PackageList) =
+    static member GenerateDependencies max (packages:PackageList) =
         if packages = [] then [] else
         let r = System.Random()
         Gen.listOf (chooseFromList packages)
@@ -74,21 +74,20 @@ type PackageTypes =
             |> List.map PackageTypes.GenerateDependenciesForPackage
             |> List.concat
             |> List.sortBy (fun _ -> r.Next()))
-        |> Gen.eval 100 (Random.newSeed())          // create deps
+        |> Gen.eval max (Random.newSeed())          // create deps
         |> List.distinctBy fst
         |> List.sort
 
     static member ShrinkGraph (g:PackageGraph) : PackageGraph seq = 
         seq {
+            // remove one package
+            for (p,v,deps) in g do
+                yield g |> List.filter (fun (p',v',deps') -> p <> p' || v <> v')
+
             // remove one dependency
             for (p,v,deps) in g do
                 for d in deps do
                     yield g |> List.map (fun  (p',v',deps') -> if p = p' && v = v' then p,v,deps |> List.filter ((<>) d) else p',v',deps')
-
-
-            // remove one package
-            for (p,v,deps) in g do
-                yield g |> List.filter (fun (p',v',deps') -> p <> p' || v <> v')
         }
 
     static member FullGraph() : Arbitrary<PackageGraph> =
@@ -96,13 +95,9 @@ type PackageTypes =
             Arb.generate<PackageList>
             |> Gen.map (fun packages ->
                     packages 
-                    |> List.map (fun (p,vs) ->
-                        let deps = 
-                            Arb.generate<SemVerInfo list>
-                            |> Gen.eval 10 (Random.newSeed())
-                            |> List.map (fun v -> PackageTypes.GenerateDependenciesForPackage(p,v))
-                            |> List.concat
-                        p,vs,deps))
+                    |> List.map (fun (p,v) ->
+                        let deps = PackageTypes.GenerateDependencies 4 packages
+                        p,v,deps))
                     
         Arb.fromGenShrink (generator,PackageTypes.ShrinkGraph)
 
@@ -121,7 +116,7 @@ type PackageTypes =
     
         let generator =
             Arb.generate<PackageGraph>
-            |> Gen.map (fun g -> g,g |> List.map (fun (p,v,_) -> p,v) |> PackageTypes.GenerateDependencies)
+            |> Gen.map (fun g -> g,g |> List.map (fun (p,v,_) -> p,v) |> PackageTypes.GenerateDependencies 100)
 
         Arb.fromGenShrink (generator,PackageTypes.ShrinkPuzzle)
 

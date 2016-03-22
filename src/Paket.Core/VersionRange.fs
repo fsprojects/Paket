@@ -25,6 +25,7 @@ type VersionRange =
     | Range of fromB : VersionRangeBound * from : SemVerInfo * _to : SemVerInfo * _toB : VersionRangeBound
 
     static member AtLeast version = Minimum(SemVer.Parse version)
+    static member AtMost version = Maximum(SemVer.Parse version)
 
     static member Exactly version = Specific(SemVer.Parse version)
 
