@@ -1,3 +1,6 @@
+#### 2.55.0-alpha001 - 22.03.2016
+* Fix resolver bug spotted by property based testing - https://github.com/fsprojects/Paket/issues/1524
+
 #### 2.54.0 - 21.03.2016
 * It's possible to influence the CopyToOutputDirectory property for content references in project files - http://fsprojects.github.io/Paket/nuget-dependencies.html#CopyToOutputDirectory-settings
 * BUGFIX: Fix regression where paket skipped packages with name ending in lib - https://github.com/fsprojects/Paket/issues/1531
