@@ -1,8 +1,11 @@
-#### 3.0.0-alpha078 - 21.03.2016
+#### 3.0.0-alpha079 - 22.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
+
+#### 2.55.0-alpha001 - 22.03.2016
+* Fix resolver bug spotted by property based testing - https://github.com/fsprojects/Paket/issues/1524
 
 #### 2.54.0 - 21.03.2016
 * It's possible to influence the CopyToOutputDirectory property for content references in project files - http://fsprojects.github.io/Paket/nuget-dependencies.html#CopyToOutputDirectory-settings

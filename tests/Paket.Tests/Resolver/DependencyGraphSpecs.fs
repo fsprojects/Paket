@@ -112,3 +112,32 @@ let ``should report missing top-level versions``() =
     with exn ->
         if not <| exn.Message.Contains("package A") then
             reraise()
+
+let graphWithMissingDependency = [
+   "P44","9.44.25", []
+   "P44","43.24.27.26", ["P33",VersionRequirement(VersionRange.Exactly "21.30.42",PreReleaseStatus.No)] 
+]
+
+[<Test>]
+let ``should solve graph with missing specific dependency``() = 
+    let resolved = resolve graphWithMissingDependency ["P44",VersionRange.AtLeast "9.44.25" ]
+    getVersion resolved.[PackageName "P44"] |> shouldEqual "9.44.25"
+
+
+
+
+[<Test>]
+let ``should solve strange graph``() = 
+    let graph = [
+        "P1","10.11.11", ["P7", VersionRequirement (VersionRange.AtMost "4.2.11.10",PreReleaseStatus.No)]
+        "P3","1.1.3",    ["P8", VersionRequirement (VersionRange.AtMost "0.2.8",PreReleaseStatus.No)]
+        "P3","5.5.7.9", ["P1", VersionRequirement (VersionRange.AtMost "10.11.11",PreReleaseStatus.No)]
+        "P7","4.2.11.10", []
+        "P7","10.3.5.7", []
+        "P7","11.10.10.3", []
+    ]
+
+    let resolved = resolve graph ["P3",VersionRange.AtLeast "0"; "P7",VersionRange.AtMost "11.10.10.3"]
+    getVersion resolved.[PackageName "P1"] |> shouldEqual "10.11.11" 
+    getVersion resolved.[PackageName "P3"] |> shouldEqual "5.5.7.9"
+    getVersion resolved.[PackageName "P7"] |> shouldEqual "4.2.11.10"

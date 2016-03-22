@@ -22,10 +22,9 @@ type ResolverPuzzle = PackageGraph * (Dependency list)
 
 type PackageTypes =
     static member PackageName() = 
-        Arb.from<NonNegativeInt>
-        |> Arb.convert 
-            (fun x -> PackageName("P" + (int x).ToString())) 
-            (fun x -> x.ToString().Replace("P","") |> int |> NonNegativeInt)
+        Arb.generate<NonNegativeInt>
+        |> Gen.map (fun x -> PackageName("P" + (int x).ToString()))
+        |> Arb.fromGen
 
     static member Versions() = 
          let minor =
@@ -50,48 +49,45 @@ type PackageTypes =
             : PackageList)
         |> Arb.fromGen
 
-    static member Dependencies packages =
+    static member GenerateDependenciesForPackage (p,v) =
+        let between =
+            Arb.generate<SemVerInfo*SemVerInfo>
+            |> Gen.eval 10 (Random.newSeed()) 
+            |> fun (x,y) -> 
+                if x < y then 
+                    VersionRequirement(VersionRange.Between(x.ToString(),y.ToString()),PreReleaseStatus.All)
+                else
+                    VersionRequirement(VersionRange.Between(y.ToString(),y.ToString()),PreReleaseStatus.All)
+
+        [ p,between
+          p,VersionRequirement(VersionRange.Specific(v),PreReleaseStatus.All)
+          p,VersionRequirement(VersionRange.Minimum(v),PreReleaseStatus.All)
+          p,VersionRequirement(VersionRange.Maximum(v),PreReleaseStatus.All)
+          p,VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.All)]
+
+    static member GenerateDependencies max (packages:PackageList) =
         if packages = [] then [] else
         let r = System.Random()
         Gen.listOf (chooseFromList packages)
         |> Gen.map (fun dependencies ->
             dependencies
-            |> List.map (fun (p,v) -> 
-                let between =
-                    Arb.generate<SemVerInfo*SemVerInfo>
-                    |> Gen.eval 10 (Random.newSeed()) 
-                    |> fun (x,y) -> 
-                        if x < y then 
-                            VersionRequirement(VersionRange.Between(x.ToString(),y.ToString()),PreReleaseStatus.All)
-                        else
-                            VersionRequirement(VersionRange.Between(y.ToString(),y.ToString()),PreReleaseStatus.All)
-
-                [ p,between
-                  p,VersionRequirement(VersionRange.Specific(v),PreReleaseStatus.All)
-                  p,VersionRequirement(VersionRange.Minimum(v),PreReleaseStatus.All)
-                  p,VersionRequirement(VersionRange.Maximum(v),PreReleaseStatus.All)
-                  p,VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.All)])
+            |> List.map PackageTypes.GenerateDependenciesForPackage
             |> List.concat
             |> List.sortBy (fun _ -> r.Next()))
-        |> Gen.eval 100 (Random.newSeed())          // create deps
+        |> Gen.eval max (Random.newSeed())          // create deps
         |> List.distinctBy fst
         |> List.sort
 
-    static member DependenciesForPackage packages package =
-        PackageTypes.Dependencies packages
-        |> List.filter (fun (d,vr) -> d <> package)
-
     static member ShrinkGraph (g:PackageGraph) : PackageGraph seq = 
         seq {
+            // remove one package
+            for (p,v,deps) in g do
+                yield g |> List.filter (fun (p',v',deps') -> p <> p' || v <> v')
+
             // remove one dependency
             for (p,v,deps) in g do
                 for d in deps do
                     yield g |> List.map (fun  (p',v',deps') -> if p = p' && v = v' then p,v,deps |> List.filter ((<>) d) else p',v',deps')
-
-
-            // remove one package
-            for (p,v,deps) in g do
-                yield g |> List.filter (fun (p',v',deps') -> p <> p' || v <> v')
         }
 
     static member FullGraph() : Arbitrary<PackageGraph> =
@@ -99,11 +95,13 @@ type PackageTypes =
             Arb.generate<PackageList>
             |> Gen.map (fun packages ->
                     packages 
-                    |> List.map (fun (p,vs) -> p,vs, PackageTypes.DependenciesForPackage packages p))
+                    |> List.map (fun (p,v) ->
+                        let deps = PackageTypes.GenerateDependencies 4 packages
+                        p,v,deps))
                     
         Arb.fromGenShrink (generator,PackageTypes.ShrinkGraph)
 
-    static member ShrinkPuzzle ((g,deps):ResolverPuzzle) : ResolverPuzzle seq = 
+    static member ShrinkPuzzle ((g,deps):ResolverPuzzle) : ResolverPuzzle seq =
         seq {
             // remove one dependency
             for d in deps do
@@ -118,7 +116,7 @@ type PackageTypes =
     
         let generator =
             Arb.generate<PackageGraph>
-            |> Gen.map (fun g -> g,g |> List.map (fun (p,v,_) -> p,v) |> PackageTypes.Dependencies)
+            |> Gen.map (fun g -> g,g |> List.map (fun (p,v,_) -> p,v) |> PackageTypes.GenerateDependencies 100)
 
         Arb.fromGenShrink (generator,PackageTypes.ShrinkPuzzle)
 
