@@ -249,7 +249,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             
             let package = { package with Settings = { package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions } }
             exploredPackages.[key] <- package
-            package
+            Some package
         | false,_ ->
             match updateMode with
             | Install -> tracefn  " - %O %A" dependency.Name version
@@ -260,28 +260,31 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
 
             let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
             
-            let packageDetails : PackageDetails = getPackageDetailsF packageSources dependency.Name version
+            try
+                let packageDetails : PackageDetails = getPackageDetailsF packageSources dependency.Name version
 
-            let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
+                let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
 
-            let settings =
-                match dependency.Parent with
-                | DependenciesFile(_) -> dependency.Settings
-                | Package(_) -> 
-                    match rootSettings.TryGetValue packageDetails.Name with
-                    | true, s -> s + dependency.Settings 
-                    | _ -> dependency.Settings 
+                let settings =
+                    match dependency.Parent with
+                    | DependenciesFile(_) -> dependency.Settings
+                    | Package(_) -> 
+                        match rootSettings.TryGetValue packageDetails.Name with
+                        | true, s -> s + dependency.Settings 
+                        | _ -> dependency.Settings 
 
-            let settings = settings.AdjustWithSpecialCases packageDetails.Name
-            let explored =
-                { Name = packageDetails.Name
-                  Version = version
-                  Dependencies = filteredDependencies
-                  Unlisted = packageDetails.Unlisted
-                  Settings = settings
-                  Source = packageDetails.Source }
-            exploredPackages.Add(key,explored)
-            explored
+                let settings = settings.AdjustWithSpecialCases packageDetails.Name
+                let explored =
+                    { Name = packageDetails.Name
+                      Version = version
+                      Dependencies = filteredDependencies
+                      Unlisted = packageDetails.Unlisted
+                      Settings = settings
+                      Source = packageDetails.Source }
+                exploredPackages.Add(key,explored)
+                Some explored
+            with
+            | _ -> None
 
     let getCompatibleVersions(relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,openRequirements:Set<PackageRequirement>,currentRequirement:PackageRequirement) =
         verbosefn "  Trying to resolve %O" currentRequirement
@@ -460,32 +463,33 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                         trial := !trial + 1
                         let versionToExplore = Seq.head !versionsToExplore
                         versionsToExplore := Seq.tail !versionsToExplore
-                        let exploredPackage = getExploredPackage(currentRequirement,versionToExplore)
-
-                        if exploredPackage.Unlisted && not !useUnlisted then 
-                            () 
-                        else
-                            let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions
+                        match getExploredPackage(currentRequirement,versionToExplore) with
+                        | None -> ()
+                        | Some exploredPackage ->
+                            if exploredPackage.Unlisted && not !useUnlisted then 
+                                () 
+                            else
+                                let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions
                         
-                            let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
-                            if newOpen = openRequirements then 
-                                failwithf "The resolver confused itself. The new open requirements are the same as the old ones. This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A" Environment.NewLine currentRequirement Environment.NewLine newOpen
+                                let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
+                                if newOpen = openRequirements then 
+                                    failwithf "The resolver confused itself. The new open requirements are the same as the old ones. This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A" Environment.NewLine currentRequirement Environment.NewLine newOpen
 
-                            let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
+                                let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
 
-                            let newClosed = Set.add currentRequirement closedRequirements
+                                let newClosed = Set.add currentRequirement closedRequirements
 
-                            state := step (relax,newFilteredVersions,newResolution,newClosed,newOpen)
+                                state := step (relax,newFilteredVersions,newResolution,newClosed,newOpen)
 
-                            match !state with
-                            | Resolution.Conflict(resolved,closed,stillOpen,conflicts,lastPackageRequirement,getVersionF)
-                                when
-                                    (Set.isEmpty conflicts |> not) &&
-                                      (conflicts |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not) ->
-                                forceBreak := true
-                            | _ -> ()
+                                match !state with
+                                | Resolution.Conflict(resolved,closed,stillOpen,conflicts,lastPackageRequirement,getVersionF)
+                                    when
+                                        (Set.isEmpty conflicts |> not) &&
+                                          (conflicts |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not) ->
+                                    forceBreak := true
+                                | _ -> ()
 
-                            allUnlisted := exploredPackage.Unlisted && !allUnlisted
+                                allUnlisted := exploredPackage.Unlisted && !allUnlisted
 
                     if not !useUnlisted && !allUnlisted && not (isOk()) then
                         useUnlisted := true
