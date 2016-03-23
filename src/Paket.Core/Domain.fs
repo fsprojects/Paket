@@ -36,23 +36,26 @@ let PackageName(name:string) = PackageName.PackageName(name.Trim(),name.ToLowerI
 // Represents a filter of normalized package names
 [<System.Diagnostics.DebuggerDisplay("{Item}")>]
 type PackageFilter =
+| PackageName of PackageName
 | PackageFilter of string
-    member this.regex =
-        match this with
-        | PackageFilter f ->
-            Regex("^" + f + "$",
-                RegexOptions.Compiled 
-                ||| RegexOptions.CultureInvariant 
-                ||| RegexOptions.IgnoreCase)
+
     member this.Match (packageName : PackageName) =
-        this.regex.IsMatch (packageName.GetCompareString())
-    static member ofName name =
-        match name with
-        | PackageName (_,id) ->
-            id.Replace(".","\\.")
-            |> PackageFilter
+        match this with
+        | PackageName name -> name = packageName
+        | PackageFilter f ->
+            let regex =
+                Regex("^" + f + "$",
+                    RegexOptions.Compiled 
+                    ||| RegexOptions.CultureInvariant 
+                    ||| RegexOptions.IgnoreCase)
+
+            regex.IsMatch (packageName.GetCompareString())
+
+    static member ofName name = PackageFilter.PackageName name
+
     override this.ToString() =
         match this with
+        | PackageName name -> name.ToString()
         | PackageFilter filter -> filter
 
 /// Represents a normalized group name

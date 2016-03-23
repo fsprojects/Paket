@@ -226,7 +226,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
 
     let packageFilter =
         match updateMode with
-        | UpdateFiltered (_, f) -> Some f
+        | UpdateFiltered (g, f) when g = groupName -> Some f
         | _ -> None
 
     let rootSettings =

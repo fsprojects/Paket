@@ -217,7 +217,7 @@ type Dependencies(dependenciesFileName: string) =
 
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.UpdateFilteredPackages(dependenciesFileName, groupName, PackageName package, version,
+            fun () -> UpdateProcess.UpdateFilteredPackages(dependenciesFileName, groupName, package, version,
                                                   { UpdaterOptions.Default with
                                                       Common = InstallerOptions.CreateLegacyOptions(force, hard, withBindingRedirects, createNewBindingFiles, semVerUpdateMode)
                                                       NoInstall = installAfter |> not }))

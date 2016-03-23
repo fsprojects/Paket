@@ -29,8 +29,8 @@
     </DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001536-codedom\temp</StartWorkingDirectory>
+    <StartArguments>add nuget Newtonsoft.Json</StartArguments>
+    <StartWorkingDirectory>D:\code\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
