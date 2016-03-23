@@ -29,8 +29,8 @@
     </DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartArguments>add nuget Newtonsoft.Json</StartArguments>
-    <StartWorkingDirectory>D:\code\temp</StartWorkingDirectory>
+    <StartArguments>update  nuget FSharp.core</StartArguments>
+    <StartWorkingDirectory>D:\code\temp\BindingRedirectPaketBug</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

@@ -316,6 +316,19 @@ let ``#1248 redirects off with --redirects``() =
     let originalConfig = File.ReadAllText(originalConfigPath)
 
     config |> shouldEqual originalConfig
+
+    
+[<Test>]
+let ``#1544 redirects off``() = 
+    install "i001544-redirects" |> ignore
+    let path = Path.Combine(scenarioTempPath "i001544-redirects")
+    let configPath = Path.Combine(path, "BindingRedirectPaketBug", "app.config")
+    let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "app.config.expected")
+
+    let config = File.ReadAllText(configPath)
+    let originalConfig = File.ReadAllText(originalConfigPath)
+
+    config |> shouldEqual originalConfig
     
 [<Test>]
 let ``#1477 assembly redirects lock files``() = 

@@ -1,3 +1,6 @@
+#### 2.55.1 - 23.03.2016
+* BUGFIX: Global redirects:false is not disabling everything below anymore - https://github.com/fsprojects/Paket/issues/1544
+
 #### 2.55.0 - 23.03.2016
 * Correct src folder structure for packing with symbols - https://github.com/fsprojects/Paket/pull/1538
 * Fix resolver bug spotted by property based testing - https://github.com/fsprojects/Paket/issues/1524
