@@ -484,9 +484,9 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                                 match !state with
                                 | Resolution.Conflict(resolved,closed,stillOpen,conflicts,lastPackageRequirement,getVersionF)
                                     when
-                                        (Set.isEmpty conflicts |> not) &&
+                                        (Set.isEmpty conflicts |> not) && 
+                                          newResolution.Count > 1 &&
                                           (conflicts |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not) ->
-                                    if getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement) |> Set.isEmpty |> not then                                        
                                         forceBreak := true
                                 | _ -> ()
 
