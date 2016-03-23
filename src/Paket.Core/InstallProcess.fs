@@ -267,8 +267,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
               Culture = None })
         |> Seq.sort
 
-    if redirects <> Some false then
-        applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root bindingRedirects
+    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root bindingRedirects
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectType) =

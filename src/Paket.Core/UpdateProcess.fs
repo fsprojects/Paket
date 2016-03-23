@@ -72,10 +72,15 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                     |> Seq.filter (fun (g,_) -> g = groupName)
                     |> Seq.filter (fun (_, p) -> filter.Match p)
                     |> Set.ofSeq
+                    |> fun s -> 
+                        match filter with
+                        | PackageFilter.PackageName name -> Set.add (groupName,name) s
+                        | _ -> s
+                    
 
                 let groups =
                     dependenciesFile.Groups
-                    |> Map.filter (fun k _ -> k = groupName)
+                    |> Map.filter (fun k _ -> k = groupName || changes |> Seq.exists (fun (g,_) -> g = k))
 
                 changes,groups
             | Install ->
@@ -244,17 +249,17 @@ let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, ne
 
     let filter = PackageFilter.ofName packageName
 
-    SmartInstall(dependenciesFile, UpdateFiltered(groupName,filter), options)
+    SmartInstall(dependenciesFile, UpdateFiltered(groupName, filter), options)
 
 /// Update a filtered list of packages
-let UpdateFilteredPackages(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
+let UpdateFilteredPackages(dependenciesFileName, groupName, packageName : string, newVersion, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
-    let filter = PackageFilter <| packageName.ToString()
+    let filter = PackageFilter.PackageFilter(packageName.ToString())
 
     let dependenciesFile =
         match newVersion with
-        | Some v -> dependenciesFile.UpdatePackageVersion(groupName,packageName, v)
+        | Some v -> dependenciesFile.UpdatePackageVersion(groupName,PackageName packageName, v)
         | None -> 
             tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
             dependenciesFile

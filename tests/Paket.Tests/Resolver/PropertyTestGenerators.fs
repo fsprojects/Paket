@@ -42,8 +42,7 @@ type PackageTypes =
         Arb.generate<(PackageName * (SemVerInfo list)) list>
         |> Gen.map (fun packages ->
             packages
-            |> List.map (fun (p,vs) -> vs |> List.map (fun v -> p,v))
-            |> List.concat
+            |> List.collect (fun (p,vs) -> vs |> List.map (fun v -> p,v))
             |> List.distinct
             |> List.sort
             : PackageList)

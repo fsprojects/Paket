@@ -1,10 +1,14 @@
-#### 3.0.0-alpha080 - 23.03.2016
+#### 3.0.0-alpha081 - 23.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
 
-#### 2.55.0-alpha001 - 22.03.2016
+#### 2.55.1 - 23.03.2016
+* BUGFIX: Global redirects:false is not disabling everything below anymore - https://github.com/fsprojects/Paket/issues/1544
+
+#### 2.55.0 - 23.03.2016
+* Correct src folder structure for packing with symbols - https://github.com/fsprojects/Paket/pull/1538
 * Fix resolver bug spotted by property based testing - https://github.com/fsprojects/Paket/issues/1524
 
 #### 2.54.0 - 21.03.2016

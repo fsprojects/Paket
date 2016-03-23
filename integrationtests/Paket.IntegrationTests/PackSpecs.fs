@@ -261,6 +261,29 @@ let ``#1514 invliad pack should give proper warning``() =
 
     File.Delete(templatePath)
 
+[<Test>]
+let ``#1538 symbols src folder structure`` () =
+    let scenario = "i001538-symbols-src-folder-structure"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "PackWithSource.1.0.0.0.symbols.nupkg")
+    
+    paket ("pack -v output \"" + outPath + "\" symbols") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "net452", "PackWithSource.pdb") |> checkFileExists
+
+    let srcRoot = Path.Combine(outPath, "src", "PackWithSource")
+    Path.Combine(srcRoot, "ClassInSolutionRoot.cs") |> checkFileExists
+    Path.Combine(srcRoot, "LinkedInSolutionRoot.cs") |> checkFileExists
+    Path.Combine(srcRoot, "Folder", "ClassInFolder.cs") |> checkFileExists
+    Path.Combine(srcRoot, "Folder", "LinkedInFolder.cs") |> checkFileExists
+    Path.Combine(srcRoot, "Folder", "NestedFolder", "ClassInNestedFolder.cs") |> checkFileExists
+    Path.Combine(srcRoot, "Folder", "NestedFolder", "LinkedInNestedFolder.cs") |> checkFileExists
+    Path.Combine(srcRoot, "Properties", "AssemblyInfo.cs") |> checkFileExists
+
+    CleanDir rootPath
+
 
 [<Test>]
 [<Ignore>] // ignroe until we hear back
