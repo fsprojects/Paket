@@ -1,3 +1,6 @@
+#### 2.55.2 - 23.03.2016
+* BUGFIX: Ensuring that dependent dll's are not included in the package when usng include-referenced-projects - https://github.com/fsprojects/Paket/pull/1543
+ 
 #### 2.55.1 - 23.03.2016
 * BUGFIX: Global redirects:false is not disabling everything below anymore - https://github.com/fsprojects/Paket/issues/1544
 
