@@ -123,7 +123,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith "You should only try and add files to template files with complete metadata."
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions excludeProjectsWithTemplates =
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -137,7 +137,10 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         | _ -> PreReleaseStatus.All
     
     let deps, files = 
-        project.GetAllInterProjectDependenciesWithProjectTemplates |> Seq.toList
+        let interProjectDeps = if excludeProjectsWithTemplates then project.GetAllInterProjectDependenciesWithoutProjectTemplates 
+                               else project.GetAllInterProjectDependenciesWithProjectTemplates 
+        interProjectDeps
+        |> Seq.toList
         |> List.filter (fun proj -> proj <> project)
         |> List.fold (fun (deps, files) p -> 
             match Map.tryFind p.FileName map with
