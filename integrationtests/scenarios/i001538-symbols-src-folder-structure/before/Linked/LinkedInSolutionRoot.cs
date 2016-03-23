@@ -1,0 +1,6 @@
+﻿namespace PackWithSource
+{
+    class LinkedInSolutionRoot
+    {
+    }
+}

@@ -77,11 +77,9 @@ let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProje
     let sourceFiles =
         let getTarget compileItem =
             let item = match compileItem.Link with
-                       | Some link -> link
-                       | None -> compileItem.Include
-            
-            let tld = Path.GetFileName(compileItem.BaseDir)
-            Path.Combine("src", tld, Path.GetFileName(Path.GetDirectoryName(Path.GetFullPath(item))))
+                       | Some link -> Path.Combine(Path.GetFileName(compileItem.BaseDir), link)
+                       | None -> createRelativePath compileItem.BaseDir compileItem.Include
+            Path.Combine("src", Path.GetDirectoryName(item))
 
         projectFile.GetCompileItems(includeReferencedProjects)
         |> Seq.map (fun c -> c.Include, getTarget c)
