@@ -230,7 +230,9 @@ let pack (results : ParseResults<_>) =
                       minimumFromLockFile = results.Contains <@ PackArgs.LockDependenciesToMinimum @>,
                       symbols = results.Contains <@ PackArgs.Symbols @>,
                       includeReferencedProjects = results.Contains <@ PackArgs.IncludeReferencedProjects @>,
-                      ?projectUrl = results.TryGetResult <@ PackArgs.ProjectUrl @>)
+                      ?projectUrl = results.TryGetResult <@ PackArgs.ProjectUrl @>,
+                      excludeProjectsWithTemplates = results.Contains <@ PackArgs.ExcludeProjectsWithTemplates @>)
+
 
 let findPackages (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000

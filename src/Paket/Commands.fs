@@ -314,6 +314,7 @@ type PackArgs =
     | [<CustomCommandLine("symbols")>] Symbols
     | [<CustomCommandLine("include-referenced-projects")>] IncludeReferencedProjects
     | [<CustomCommandLine("project-url")>] ProjectUrl of string
+    | [<CustomCommandLine("exclude-projects-with-templates")>] ExcludeProjectsWithTemplates
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -331,6 +332,7 @@ with
             | Symbols -> "Build symbol/source packages in addition to library/content packages."
             | IncludeReferencedProjects -> "Include symbol/source from referenced projects."
             | ProjectUrl(_) -> "Url to the projects home page."
+            | ExcludeProjectsWithTemplates -> "Exclude symbol/source from referenced projects that have their own templates and thus their own nuget packages."
 
 type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of string
