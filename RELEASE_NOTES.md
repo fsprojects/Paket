@@ -1,4 +1,5 @@
-#### 2.55.0-alpha001 - 22.03.2016
+#### 2.55.0 - 23.03.2016
+* Correct src folder structure for packing with symbols - https://github.com/fsprojects/Paket/pull/1538
 * Fix resolver bug spotted by property based testing - https://github.com/fsprojects/Paket/issues/1524
 
 #### 2.54.0 - 21.03.2016
