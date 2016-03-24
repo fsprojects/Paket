@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -226,10 +226,9 @@
     <Compile Include="Resolver\GlobalPessimisticStrategySpecs.fs" />
     <Compile Include="Resolver\GlobalOptimisticStrategySpecs.fs" />
     <Compile Include="Resolver\StrategySpecs.fs" />
-    <Compile Include="ProjectJson\PropertySpecs.fs" />
-    <Compile Include="Resolver\StrategySpecs.fs" />     
     <Compile Include="Resolver\PropertyTestGenerators.fs" />
     <Compile Include="Resolver\PropertyTests.fs" />
+    <Compile Include="ProjectJson\PropertySpecs.fs" />
     <Compile Include="Lockfile\GeneratorSpecs.fs" />
     <Compile Include="Lockfile\GenerateWithOptionsSpecs.fs" />
     <Compile Include="Lockfile\GenerateAuthModeSpecs.fs" />
