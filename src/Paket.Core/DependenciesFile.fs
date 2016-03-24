@@ -743,8 +743,13 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     | Some found -> 
                         let pos = ref (found + 1)
                         let skipped = ref false
-                        while !pos < textRepresentation.Length - 1 && (String.IsNullOrWhiteSpace textRepresentation.[!pos] || String.startsWithIgnoreCase "source" textRepresentation.[!pos]) do
-                            if String.startsWithIgnoreCase "source" textRepresentation.[!pos] then
+                        while !pos < textRepresentation.Length - 1 &&
+                                (String.IsNullOrWhiteSpace textRepresentation.[!pos] || 
+                                 String.startsWithIgnoreCase "source" textRepresentation.[!pos] ||
+                                 String.startsWithIgnoreCase "cache" textRepresentation.[!pos]) do
+                            if (String.startsWithIgnoreCase "source" textRepresentation.[!pos]) ||
+                               (String.startsWithIgnoreCase "cache" textRepresentation.[!pos])
+                            then
                                 skipped := true
                             pos := !pos + 1
                             
