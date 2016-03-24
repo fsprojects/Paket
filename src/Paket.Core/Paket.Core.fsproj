@@ -96,6 +96,7 @@
     <Compile Include="GitCommandHelper.fs" />
     <Compile Include="GitHandling.fs" />
     <Compile Include="ConfigFile.fs" />
+    <Compile Include="Cache.fs" />
     <Compile Include="PackageSources.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="PlatformMatching.fs" />
