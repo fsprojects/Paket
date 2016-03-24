@@ -1,10 +1,7 @@
-#### 2.55.4 - 24.03.2016
+#### 2.56.0 - 24.03.2016
+* BUGFIX: Move props defintions up in project files - https://github.com/fsprojects/Paket/issues/1537
 * BUGFIX: Fixed missing src files when packing with symbols on Linux - https://github.com/fsprojects/Paket/pull/1545
-
-#### 2.55.3 - 24.03.2016
 * BUGFIX: Ensuring that dependent dll's are not included in the package when usng include-referenced-projects - https://github.com/fsprojects/Paket/pull/1543
- 
-#### 2.55.1 - 23.03.2016
 * BUGFIX: Global redirects:false is not disabling everything below anymore - https://github.com/fsprojects/Paket/issues/1544
 
 #### 2.55.0 - 23.03.2016

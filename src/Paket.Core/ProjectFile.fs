@@ -930,6 +930,10 @@ module ProjectFile =
             while !j < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!j].OuterXml.ToString()) do
                 incr j
 
+            let k = ref !j
+            while !k < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<PropertyGroup" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) do
+                incr k
+
             let addProps() =
                 if !j = 0 then
                     propsNodes
@@ -939,13 +943,13 @@ module ProjectFile =
                     |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,project.ProjectNode.ChildNodes.[!j-1]) |> ignore)
             
             if propertyChooseNode.ChildNodes.Count > 0 then
-                if !i <= 0 then
+                if !k = 0 then
                     project.ProjectNode.AppendChild propertyChooseNode |> ignore
 
                     propsNodes
                     |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
                 else
-                    let node = project.ProjectNode.ChildNodes.[!i]
+                    let node = project.ProjectNode.ChildNodes.[!k-1]
                     
                     propsNodes
                     |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,node) |> ignore)
