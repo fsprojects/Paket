@@ -325,8 +325,8 @@ let ``#1544 redirects off``() =
     let configPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config")
     let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config.expected")
 
-    let config = File.ReadAllText(configPath)
-    let originalConfig = File.ReadAllText(originalConfigPath)
+    let config = File.ReadAllText(configPath) |> normalizeLineEndings
+    let originalConfig = File.ReadAllText(originalConfigPath) |> normalizeLineEndings
 
     config |> shouldEqual originalConfig
     
