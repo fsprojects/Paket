@@ -23,5 +23,19 @@ let ``should recognize compilable files``() =
 let ``should recognize content files``() =
     (createProject "A.csproj").DetermineBuildAction "Something.js" |> shouldEqual BuildAction.Content
     (createProject "B.fsproj").DetermineBuildAction "config.yml" |> shouldEqual BuildAction.Content
-    (createProject "C.vbproj").DetermineBuildAction "noext" |> shouldEqual BuildAction.Content 
+    (createProject "C.vbproj").DetermineBuildAction "noext" |> shouldEqual BuildAction.Content
     (createProject "D.nproj").DetermineBuildAction "App.config" |> shouldEqual BuildAction.Content
+
+[<Test>]
+let ``should recognize page files``() =
+    (createProject "A.csproj").DetermineBuildAction "Form1.xaml" |> shouldEqual BuildAction.Page
+    (createProject "B.fsproj").DetermineBuildAction "Form1.Xaml" |> shouldEqual BuildAction.Page
+    (createProject "C.vbproj").DetermineBuildAction "Form1.XAML" |> shouldEqual BuildAction.Page
+    (createProject "D.nproj" ).DetermineBuildAction "Form1.XaML" |> shouldEqual BuildAction.Page
+
+[<Test>]
+let ``should recognize resource files``() =
+    (createProject "A.csproj").DetermineBuildAction "Form1.ttf" |> shouldEqual BuildAction.Resource
+    (createProject "B.fsproj").DetermineBuildAction "Form1.ico" |> shouldEqual BuildAction.Resource
+    (createProject "C.vbproj").DetermineBuildAction "Form1.png" |> shouldEqual BuildAction.Resource
+    (createProject "D.nproj" ).DetermineBuildAction "Form1.jpg" |> shouldEqual BuildAction.Resource
