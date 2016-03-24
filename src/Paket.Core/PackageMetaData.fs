@@ -247,11 +247,37 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
 
              yield! getPackages projectType]
     
-        match allReferences with
+        // filter out any references that are transient
+        let distinctRefs = allReferences |> List.distinct
+        let refs = 
+            distinctRefs
+            |> List.filter (fun (group, settings: Paket.PackageInstallSettings) ->
+                let isDependencyOfAnyOtherDependency packageName =
+                    distinctRefs 
+                    |> List.exists (fun (group, settings2) -> 
+                        settings2.Name <> packageName && 
+                            match group with
+                            | Some groupName ->
+                                match lockFile.GetAllDependenciesOfSafe(groupName, settings2.Name) with
+                                | Some packages -> packages.Contains packageName
+                                | _ -> false
+                            | None -> false)
+
+                match group with
+                | None -> true
+                | Some groupName -> 
+                    match dependenciesFile.Groups |> Map.tryFind groupName with
+                    | None -> true
+                    | Some group ->
+                        group.Packages |> List.exists (fun p -> p.Name = settings.Name) ||
+                          isDependencyOfAnyOtherDependency settings.Name |> not)
+            |> List.sortByDescending (fun (group, settings) -> settings.Name)
+
+        match refs with
         | [] -> withDepsAndIncluded
         | _ -> 
             let deps =
-                allReferences
+                refs
                 |> List.filter (fun (group, np) ->
                     match group with
                     | None ->  true
