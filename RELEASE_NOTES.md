@@ -1,3 +1,6 @@
+#### 2.56.1 - 24.03.2016
+* BUGFIX: Removing transitive dependencies from dependencies list during pack - https://github.com/fsprojects/Paket/pull/1547
+
 #### 2.56.0 - 24.03.2016
 * BUGFIX: Move props definitions further up in project files - https://github.com/fsprojects/Paket/issues/1537
 * BUGFIX: Fixed missing src files when packing with symbols on Linux - https://github.com/fsprojects/Paket/pull/1545
