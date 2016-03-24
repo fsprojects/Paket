@@ -243,11 +243,38 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
 
          yield! getPackages project]
     
-    match allReferences with
+    //System.Diagnostics.Debugger.Launch() |> ignore
+
+    // filter out any references that are transient to the 
+    let distinctRefs =  allReferences 
+                       |> Seq.distinct
+    let refs = distinctRefs
+               |> Seq.filter (fun (group, settings: Paket.PackageInstallSettings) ->
+                    let isDependencyOfAnyOtherDependency(packageName) =
+                        distinctRefs 
+                        |> Seq.exists (fun (group, settings2) -> 
+                            let result = (settings2.Name <> packageName) && 
+                                            match group with
+                                            | Some groupName ->
+                                                let pdeps = lockFile.GetAllDependenciesOfSafe(groupName, settings2.Name)
+                                                let result2 = pdeps.IsSome && pdeps.Value.Contains(packageName)
+                                                result2
+                                            | None -> false
+                            result)
+
+                    match group with
+                    | None -> true
+                    | Some groupName ->
+                        isDependencyOfAnyOtherDependency(settings.Name) |> not
+                )
+               |> Seq.sortByDescending (fun (group, settings) -> settings.Name)
+               |> Seq.toList
+
+    match refs with
     | [] -> withDepsAndIncluded
     | _ -> 
         let deps =
-            allReferences
+            refs
             |> List.filter (fun (group, np) ->
                 match group with
                 | None ->  true
