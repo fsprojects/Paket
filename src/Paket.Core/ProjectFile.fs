@@ -36,10 +36,10 @@ type ProjectReference =
       GUID : Guid }
 
 /// Compile items inside of project files.
-type CompileItem = 
-    { Include : string
-      Link : string option 
-      BaseDir : string}
+type CompileItem =
+    { SourceFile : string
+      DestinationPath : string
+      BaseDir : string }
 
 /// Project output type.
 [<RequireQualifiedAccess>]
@@ -1230,51 +1230,50 @@ module ProjectFile =
 
         tryNextPlat platforms []
 
+    let getCompileItems includeReferencedProjects this =
+        let getCompileRefs projectFile =
+            projectFile.Document
+            |> getDescendants "Compile"
+            |> Seq.map (fun compileNode -> projectFile, compileNode)
 
-    let getCompileItems (this : ProjectFile, includeReferencedProjects : bool) = 
-        let getItems (item: CompileItem) =
-            let getItem file = match item.Link with
-                               | Some link -> {Include = file
-                                               Link = Some(item.Link.Value.Replace("%(FileName)", Path.GetFileName(file)))
-                                               BaseDir = item.BaseDir}
-                               | None -> {Include = file
-                                          Link = item.Link
-                                          BaseDir = item.BaseDir}
-            let dir = Path.GetDirectoryName(item.Include)
-            let filespec = Path.GetFileName(item.Include)
-
-            seq {
-                    for file in (Directory.GetFiles(dir, filespec)) do 
-                        yield (getItem file)
-                }
-        
-        let getCompileItem (projfile : ProjectFile, compileNode : XmlNode) = 
-            let getIncludePath (projfile : ProjectFile) (includePath : string) = 
-                Path.Combine(Path.GetDirectoryName(Path.GetFullPath(projfile.FileName)), includePath)
-            
-            let includePath = 
+        let getCompileItem (projectFile, compileNode) =
+            let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
+            let sourceFile =
                 compileNode
                 |> getAttribute "Include"
-                |> fun a -> a.Value |> getIncludePath projfile
-            
-            compileNode
-            |> getDescendants "Link"
-            |> function 
-            | [] -> 
-                { Include = includePath
-                  Link = None 
-                  BaseDir = Path.GetDirectoryName(Path.GetFullPath(projfile.FileName))}
-            | [ link ] | link :: _ -> 
-                { Include = includePath
-                  Link = Some link.InnerText 
-                  BaseDir = Path.GetDirectoryName(Path.GetFullPath(projfile.FileName))}
-        
-        getProjects includeReferencedProjects this
+                |> fun attr -> attr.Value
+                |> normalizePath
+                |> fun relPath -> Path.Combine(projectFolder, relPath)
+            let destPath =
+                compileNode
+                |> getDescendants "Link"
+                |> function
+                    | [] -> createRelativePath (projectFolder + string Path.DirectorySeparatorChar) sourceFile
+                    | linkNode :: _ -> linkNode.InnerText
+                |> normalizePath
+                |> Path.GetDirectoryName
+            {
+                SourceFile = sourceFile
+                DestinationPath = destPath
+                BaseDir = projectFolder
+            }
+
+        let getRealItems compileItem =
+            let sourceFolder = Path.GetDirectoryName(compileItem.SourceFile)
+            let filespec = Path.GetFileName(compileItem.SourceFile)
+            Directory.GetFiles(sourceFolder, filespec)
+            |> Seq.map (fun realFile ->
+            {
+                SourceFile = realFile
+                DestinationPath = compileItem.DestinationPath.Replace("%(FileName)", Path.GetFileName(realFile))
+                BaseDir = compileItem.BaseDir
+            })
+
+        this |> getProjects includeReferencedProjects
         |> projectsWithoutTemplates this
-        |> Seq.collect (fun proj -> 
-                            proj.Document
-                            |> getDescendants "Compile"
-                            |> Seq.collect (fun i -> (getCompileItem (proj, i) |> getItems)))
+        |> Seq.collect getCompileRefs
+        |> Seq.map getCompileItem
+        |> Seq.collect getRealItems
 
 type ProjectFile with
 
@@ -1367,7 +1366,7 @@ type ProjectFile with
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
 
-    member this.GetCompileItems (includeReferencedProjects:bool) =  ProjectFile.getCompileItems(this,includeReferencedProjects) 
+    member this.GetCompileItems (includeReferencedProjects:bool) =  ProjectFile.getCompileItems includeReferencedProjects this
 
     static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream 
 
