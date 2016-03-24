@@ -261,7 +261,12 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
 
             match group with
             | None -> true
-            | Some groupName -> isDependencyOfAnyOtherDependency settings.Name |> not)
+            | Some groupName -> 
+                match dependenciesFile.Groups |> Map.tryFind groupName with
+                | None -> true
+                | Some group ->
+                    group.Packages |> List.exists (fun p -> p.Name = settings.Name) ||
+                      isDependencyOfAnyOtherDependency settings.Name |> not)
         |> List.sortByDescending (fun (group, settings) -> settings.Name)
 
     match refs with
