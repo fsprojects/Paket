@@ -756,15 +756,31 @@ let GetVersions force root (sources, packageName:PackageName) =
     |> List.map (fun (v,s) -> SemVer.Parse v,s |> List.map snd)
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(root, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
-    let targetFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
+let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
+    let nupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
+    let targetFileName = Path.Combine(Constants.NuGetCacheFolder, nupkgName)
     let targetFile = FileInfo targetFileName
     let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
+
+    let rec getFromCache (caches:Cache list) =
+        match caches with
+        | cache::rest ->
+            let cacheFolder = DirectoryInfo(cache.Location).FullName
+            let cacheFile = FileInfo(Path.Combine(cacheFolder,nupkgName))
+            if not cacheFile.Exists && cacheFile.Length > 0L then 
+                getFromCache rest
+            else
+                tracefn "Copying %O %O from cache %s" packageName version cache.Location
+                File.Copy(cacheFile.FullName,targetFileName)
+                true
+        | [] -> false
 
     let rec download authenticated =
         async {
             if not force && targetFile.Exists && targetFile.Length > 0L then 
                 verbosefn "%O %O already downloaded." packageName version
+            elif not force && getFromCache caches then
+                ()
             else
                 if authenticated then
                     tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
