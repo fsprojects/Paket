@@ -125,7 +125,7 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 
-let private parseAuth(text:string, source) =
+let internal parseAuth(text:string, source) =
     let getAuth() = ConfigFile.GetAuthentication source |> Option.map (function Credentials(username, password) -> ConfigAuthentication(username, password) | _ -> ConfigAuthentication("",""))
     if text.Contains("username:") || text.Contains("password:") then
         if not (userNameRegex.IsMatch(text) && passwordRegex.IsMatch(text)) then 

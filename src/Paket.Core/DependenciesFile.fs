@@ -32,6 +32,7 @@ type VersionStrategy = {
 type DependenciesGroup = {
     Name: GroupName
     Sources: PackageSource list 
+    Caches: Cache list 
     Options: InstallOptions
     Packages : PackageRequirement list
     RemoteFiles : UnresolvedSource list
@@ -41,6 +42,7 @@ type DependenciesGroup = {
             { Name = groupName
               Options = InstallOptions.Default
               Sources = []
+              Caches = []
               Packages = []
               RemoteFiles = [] }
 
@@ -53,6 +55,7 @@ type DependenciesGroup = {
                   ResolverStrategyForDirectDependencies = this.Options.ResolverStrategyForDirectDependencies ++ other.Options.ResolverStrategyForDirectDependencies 
                   ResolverStrategyForTransitives = this.Options.ResolverStrategyForTransitives ++ other.Options.ResolverStrategyForTransitives }
               Sources = this.Sources @ other.Sources |> List.distinct
+              Caches = this.Caches @ other.Caches |> List.distinct
               Packages = this.Packages @ other.Packages
               RemoteFiles = this.RemoteFiles @ other.RemoteFiles }
             
@@ -208,10 +211,16 @@ module DependenciesFileParser =
     | ResolverStrategyForTransitives of ResolverStrategy option
     | ResolverStrategyForDirectDependencies of ResolverStrategy option
 
+    type RemoteParserOption =
+    | PackageSource of PackageSource
+    | Cache of Cache
+
+
     let private (|Remote|Package|Empty|ParserOptions|SourceFile|Git|Group|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Empty(line)
-        | String.StartsWith "source" _ as trimmed -> Remote(PackageSource.Parse(trimmed))
+        | String.StartsWith "source" _ as trimmed -> Remote(RemoteParserOption.PackageSource(PackageSource.Parse(trimmed)))
+        | String.StartsWith "cache" _ as trimmed -> Remote(RemoteParserOption.Cache(Cache.Parse(trimmed)))
         | String.StartsWith "group" _ as trimmed -> Group(trimmed.Replace("group ",""))
         | String.StartsWith "nuget" trimmed -> 
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
@@ -373,7 +382,8 @@ module DependenciesFileParser =
                 match line with
                 | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::current::other
                 | Empty(_) -> lineNo, current::other
-                | Remote(newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
+                | Remote(RemoteParserOption.PackageSource newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
+                | Remote(RemoteParserOption.Cache newCache) -> lineNo, { current with Caches = current.Caches @ [newCache] |> List.distinct }::other
                 | ParserOptions(options) ->
                     lineNo,{ current with Options = parseOptions current options} ::other
                 | Package(name,version,rest) ->

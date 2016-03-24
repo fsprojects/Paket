@@ -1301,3 +1301,25 @@ let ``should read paket git config with tags``() =
     gitSource.OperatingSystemRestriction |> shouldEqual None
     gitSource.PackagePath |> shouldEqual (Some "/temp/")
     gitSource.Project |> shouldEqual "Paket"
+
+
+let simpleCacheConfig = """
+source https://nuget.org/api/v2
+cache ./dependencies versions:current
+cache //hive/dependencies versions:all
+
+nuget Newtonsoft.Json redirects: force
+nuget Argu
+nuget FSharp.Core redirects: force
+nuget Chessie
+"""
+
+[<Test>]
+let ``should read config with caches``() = 
+    let cfg = DependenciesFile.FromCode(simpleCacheConfig)
+    let main = cfg.Groups.[Constants.MainDependencyGroup]
+    main.Caches |> List.length |> shouldEqual 2
+    (main.Caches |> List.head).Location |> shouldEqual "./dependencies"
+    (main.Caches |> List.head).CacheType |> shouldEqual (Some CacheType.CurrentVersion)
+    (main.Caches |> List.item 1).Location |> shouldEqual "//hive/dependencies"
+    (main.Caches |> List.item 1).CacheType |> shouldEqual (Some CacheType.AllVersions)

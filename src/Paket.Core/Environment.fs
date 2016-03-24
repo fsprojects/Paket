@@ -95,7 +95,13 @@ module PaketEnv =
                 @ [""]
                 |> Array.ofList
 
-            let mainGroup = { Name = Constants.MainDependencyGroup; Options = InstallOptions.Default; Sources = sources; Packages = []; RemoteFiles = [] }
+            let mainGroup = 
+                { Name = Constants.MainDependencyGroup
+                  Options = InstallOptions.Default
+                  Sources = sources
+                  Caches = []
+                  Packages = []
+                  RemoteFiles = [] }
             let groups = [Constants.MainDependencyGroup, mainGroup] |> Map.ofSeq
                 
             let dependenciesFile = 
