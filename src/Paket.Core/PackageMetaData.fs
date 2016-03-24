@@ -142,7 +142,11 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | _ -> PreReleaseStatus.All
     
         let deps, files = 
-            projectType.GetAllInterProjectDependenciesWithProjectTemplates() |> Seq.toList
+            let interProjectDeps = if includeReferencedProjects then projectType.GetAllInterProjectDependenciesWithoutProjectTemplates 
+                                   else projectType.GetAllInterProjectDependenciesWithProjectTemplates 
+
+            interProjectDeps()
+            |> Seq.toList
             |> List.filter (fun proj -> proj <> projectType)
             |> List.fold (fun (deps, files) p -> 
                 match Map.tryFind p.FileName map with

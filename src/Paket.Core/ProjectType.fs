@@ -139,52 +139,49 @@ type ProjectType =
         member this.GetAllInterProjectDependenciesWithProjectTemplates() = this.ProjectsWithTemplates(this.GetAllReferencedProjects())
 
         member this.GetCompileItems (includeReferencedProjects : bool) = 
-            let getItems (item: CompileItem) =
-                let getItem file = match item.Link with
-                                   | Some link -> {Include = file
-                                                   Link = Some(item.Link.Value.Replace("%(FileName)", Path.GetFileName(file)))
-                                                   BaseDir = item.BaseDir}
-                                   | None -> {Include = file
-                                              Link = item.Link
-                                              BaseDir = item.BaseDir}
-                let dir = Path.GetDirectoryName(item.Include)
-                let filespec = Path.GetFileName(item.Include)
+            let getCompileRefs projectFile =
+                projectFile.Document
+                |> getDescendants "Compile"
+                |> Seq.map (fun compileNode -> projectFile, compileNode)
 
-                seq {
-                        for file in (Directory.GetFiles(dir, filespec)) do 
-                            yield (getItem file)
-                    }
-        
-            let getCompileItem (projfile : ProjectFile, compileNode : XmlNode) = 
-                let getIncludePath (projfile : ProjectFile) (includePath : string) = 
-                    Path.Combine(Path.GetDirectoryName(Path.GetFullPath(projfile.FileName)), includePath)
-            
-                let includePath = 
+            let getCompileItem (projectFile, compileNode) =
+                let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
+                let sourceFile =
                     compileNode
                     |> getAttribute "Include"
-                    |> fun a -> a.Value |> getIncludePath projfile
-            
-                compileNode
-                |> getDescendants "Link"
-                |> function 
-                | [] -> 
-                    { Include = includePath
-                      Link = None 
-                      BaseDir = Path.GetDirectoryName(Path.GetFullPath(projfile.FileName))}
-                | [ link ] | link :: _ -> 
-                    { Include = includePath
-                      Link = Some link.InnerText 
-                      BaseDir = Path.GetDirectoryName(Path.GetFullPath(projfile.FileName))}
-        
-            this.ProjectsWithoutTemplates(this.GetProjects includeReferencedProjects)
-            |> Seq.collect (fun proj -> 
-                                match proj with
-                                | ProjectType.ProjectJson proj -> Seq.empty // TODO: try to detect compile items
-                                | ProjectType.Project proj ->
-                                    proj.Document
-                                    |> getDescendants "Compile"
-                                    |> Seq.collect (fun i -> (getCompileItem (proj, i) |> getItems)))
+                    |> fun attr -> attr.Value
+                    |> normalizePath
+                    |> fun relPath -> Path.Combine(projectFolder, relPath)
+                let destPath =
+                    compileNode
+                    |> getDescendants "Link"
+                    |> function
+                        | [] -> createRelativePath (projectFolder + string Path.DirectorySeparatorChar) sourceFile
+                        | linkNode :: _ -> linkNode.InnerText
+                    |> normalizePath
+                    |> Path.GetDirectoryName
+                {
+                    SourceFile = sourceFile
+                    DestinationPath = destPath
+                    BaseDir = projectFolder
+                }
 
+            let getRealItems compileItem =
+                let sourceFolder = Path.GetDirectoryName(compileItem.SourceFile)
+                let filespec = Path.GetFileName(compileItem.SourceFile)
+                Directory.GetFiles(sourceFolder, filespec)
+                |> Seq.map (fun realFile ->
+                {
+                    SourceFile = realFile
+                    DestinationPath = compileItem.DestinationPath.Replace("%(FileName)", Path.GetFileName(realFile))
+                    BaseDir = compileItem.BaseDir
+                })
+
+            this.GetProjects includeReferencedProjects
+            |> this.ProjectsWithoutTemplates
+            |> Seq.collect (fun x -> match x with | ProjectType.Project p -> getCompileRefs p | _ -> Seq.empty)
+            |> Seq.map getCompileItem
+            |> Seq.collect getRealItems
 
         /// Finds all project files
         static member FindAllProjects folder =

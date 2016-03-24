@@ -322,11 +322,11 @@ let ``#1248 redirects off with --redirects``() =
 let ``#1544 redirects off``() = 
     install "i001544-redirects" |> ignore
     let path = Path.Combine(scenarioTempPath "i001544-redirects")
-    let configPath = Path.Combine(path, "BindingRedirectPaketBug", "app.config")
-    let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "app.config.expected")
+    let configPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config")
+    let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config.expected")
 
-    let config = File.ReadAllText(configPath)
-    let originalConfig = File.ReadAllText(originalConfigPath)
+    let config = File.ReadAllText(configPath) |> normalizeLineEndings
+    let originalConfig = File.ReadAllText(originalConfigPath) |> normalizeLineEndings
 
     config |> shouldEqual originalConfig
     

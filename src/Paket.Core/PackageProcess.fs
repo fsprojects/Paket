@@ -77,13 +77,11 @@ let private convertToNormal (symbols : bool) templateFile =
 let private convertToSymbols (projectFile : ProjectType) (includeReferencedProjects : bool) templateFile =
     let sourceFiles =
         let getTarget compileItem =
-            let item = match compileItem.Link with
-                       | Some link -> Path.Combine(Path.GetFileName(compileItem.BaseDir), link)
-                       | None -> createRelativePath compileItem.BaseDir compileItem.Include
-            Path.Combine("src", Path.GetDirectoryName(item))
+            let projectName = Path.GetFileName(compileItem.BaseDir)
+            Path.Combine("src", projectName, compileItem.DestinationPath)
 
         projectFile.GetCompileItems(includeReferencedProjects)
-        |> Seq.map (fun c -> c.Include, getTarget c)
+        |> Seq.map (fun c -> c.SourceFile, getTarget c)
         |> Seq.toList
 
     match templateFile.Contents with

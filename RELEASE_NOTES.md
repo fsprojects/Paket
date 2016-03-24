@@ -1,10 +1,13 @@
-#### 3.0.0-alpha081 - 23.03.2016
+#### 3.0.0-alpha082 - 24.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
 
-#### 2.55.1 - 23.03.2016
+#### 2.56.0 - 24.03.2016
+* BUGFIX: Move props defintions up in project files - https://github.com/fsprojects/Paket/issues/1537
+* BUGFIX: Fixed missing src files when packing with symbols on Linux - https://github.com/fsprojects/Paket/pull/1545
+* BUGFIX: Ensuring that dependent dll's are not included in the package when usng include-referenced-projects - https://github.com/fsprojects/Paket/pull/1543
 * BUGFIX: Global redirects:false is not disabling everything below anymore - https://github.com/fsprojects/Paket/issues/1544
 
 #### 2.55.0 - 23.03.2016
