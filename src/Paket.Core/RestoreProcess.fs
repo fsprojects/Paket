@@ -21,9 +21,11 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
     |> List.filter (fun ((group,package),resolved) -> NuGetV2.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
     |> List.map fst
 
-let private extractPackage package root source groupName version includeVersionInPath force =
+let private extractPackage caches package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
-        let! folder = NuGetV2.DownloadPackage(root, source, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let! fileName,folder = NuGetV2.DownloadPackage(root, source, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        caches
+        |> Seq.iter (fun cache -> NuGetV2.CopyToCache(cache,fileName,force))
         return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
@@ -42,7 +44,7 @@ let private extractPackage package root source groupName version includeVersionI
     }
 
 /// Downloads and extracts a package.
-let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) = 
+let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPackage) = 
     async { 
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
@@ -60,24 +62,26 @@ let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) =
                    | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file" package.Source.Url package.Name
                    | Some s -> s 
 
-            let! result = extractPackage package root source groupName v includeVersionInPath force 
-            return result
+            return! extractPackage caches package root source groupName v includeVersionInPath force
         | LocalNuGet path ->
             let path = Utils.normalizeLocalPath path
             let di = Utils.getDirectoryInfo path root
             let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
+
+            caches
+            |> Seq.iter (fun cache -> NuGetV2.CopyToCache(cache,nupkg.FullName,force))
 
             let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
 /// Restores the given dependencies from the lock file.
-let internal restore (root, groupName, sources, force, lockFile : LockFile, packages : Set<PackageName>) = 
+let internal restore (root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>) = 
     async { 
         let! _ = RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
         let! _ = lockFile.Groups.[groupName].Resolution
                  |> Map.filter (fun name _ -> packages.Contains name)
-                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, force, kv.Value))
+                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value))
                  |> Async.Parallel
         return ()
     }
@@ -120,8 +124,8 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
         match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
         | None ->
             failwithf "The group %O was not found in the paket.lock file but not in the paket.dependencies file. Please run \"paket install\" again." kv.Value.Name
-        | Some depFileGroup ->        
-            restore(root, kv.Key, depFileGroup.Sources, force, lockFile,Set.ofSeq packages)
+        | Some depFileGroup ->
+            restore(root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile,Set.ofSeq packages)
             |> Async.RunSynchronously
             |> ignore
 

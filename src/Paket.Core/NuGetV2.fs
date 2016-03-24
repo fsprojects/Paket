@@ -441,6 +441,16 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
             return! raise exn
     }
 
+/// Puts the package into the cache
+let CopyToCache(cache:Cache, fileName, force) =
+    let targetFolder = DirectoryInfo(cache.Location).FullName
+    let fi = FileInfo(fileName)
+    let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
+    if not force && targetFile.Exists then
+        verbosefn "%s already in cache %s" fi.Name targetFolder
+    else
+        File.Copy(fileName, targetFile.FullName)
+
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async { 
         if String.IsNullOrWhiteSpace licenseUrl then return () else
@@ -831,5 +841,6 @@ let DownloadPackage(root, (source : PackageSource), groupName, packageName:Packa
 
     async {
         do! download true
-        return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, includeVersionInPath, force, detailed)
+        let! files = CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, includeVersionInPath, force, detailed)
+        return targetFileName,files
     }
