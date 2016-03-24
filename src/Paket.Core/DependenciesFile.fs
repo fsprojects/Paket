@@ -383,7 +383,10 @@ module DependenciesFileParser =
                 | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::current::other
                 | Empty(_) -> lineNo, current::other
                 | Remote(RemoteParserOption.PackageSource newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
-                | Remote(RemoteParserOption.Cache newCache) -> lineNo, { current with Caches = current.Caches @ [newCache] |> List.distinct }::other
+                | Remote(RemoteParserOption.Cache newCache) -> 
+                    let caches = current.Caches @ [newCache] |> List.distinct
+                    let sources = current.Sources @ [LocalNuGet newCache.Location] |> List.distinct
+                    lineNo, { current with Caches = caches; Sources = sources }::other
                 | ParserOptions(options) ->
                     lineNo,{ current with Options = parseOptions current options} ::other
                 | Package(name,version,rest) ->

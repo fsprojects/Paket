@@ -1323,3 +1323,7 @@ let ``should read config with caches``() =
     (main.Caches |> List.head).CacheType |> shouldEqual (Some CacheType.CurrentVersion)
     (main.Caches |> List.item 1).Location |> shouldEqual "//hive/dependencies"
     (main.Caches |> List.item 1).CacheType |> shouldEqual (Some CacheType.AllVersions)
+
+    (main.Sources |> List.item 0) |> shouldEqual PackageSources.DefaultNuGetSource
+    (main.Sources |> List.item 1) |> shouldEqual (LocalNuGet("./dependencies"))
+    (main.Sources |> List.item 2) |> shouldEqual (LocalNuGet("//hive/dependencies"))
