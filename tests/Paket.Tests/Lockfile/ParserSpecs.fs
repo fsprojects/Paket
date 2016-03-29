@@ -522,20 +522,20 @@ let multipleFeedLockFile = """NUGET
   remote: http://internalfeed/NugetWebFeed/nuget
   specs:
     Internal_1 (1.2.10)
-      Newtonsoft.Json (>= 6.0.0 < 6.1.0)
+      Newtonsoft.Json (>= 6.0 < 6.1)
     log4net (1.2.10)
     Newtonsoft.Json (6.0.6)
   remote: https://www.nuget.org/api/v2
   specs:
     Microsoft.AspNet.WebApi (5.2.3)
-      Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3.0)
+      Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3)
     Microsoft.AspNet.WebApi.Client (5.2.3)
       Microsoft.Net.Http (>= 2.2.22) - framework: portable-wp80+win+net45+wp81+wpa81
       Newtonsoft.Json (>= 6.0.4) - framework: >= net45, portable-wp80+win+net45+wp81+wpa81
     Microsoft.AspNet.WebApi.Core (5.2.3)
       Microsoft.AspNet.WebApi.Client (>= 5.2.3)
     Microsoft.AspNet.WebApi.WebHost (5.2.3)
-      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3.0)
+      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3)
 """
 
 [<Test>]
@@ -765,9 +765,9 @@ let lockFileWithManyFrameworks = """NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     CommonServiceLocator (1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50
-    MvvmLightLibs (5.2.0)
-      CommonServiceLocator (>= 1.0.0) - framework: net35, sl40
-      CommonServiceLocator (>= 1.3.0) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""
+    MvvmLightLibs (5.2)
+      CommonServiceLocator (>= 1.0) - framework: net35, sl40
+      CommonServiceLocator (>= 1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""
 
 [<Test>]
 let ``should parse lock file many frameworks``() = 
@@ -782,6 +782,44 @@ let ``should parse lock file many frameworks``() =
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithManyFrameworks)
+
+let lockFileWithDependencies = """NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Argu (2.1)
+    Chessie (0.4)
+      FSharp.Core
+    FSharp.Core (4.0.0.1) - redirects: force
+    Newtonsoft.Json (8.0.3) - redirects: force"""
+
+[<Test>]
+let ``should parse lock file with depdencies``() = 
+    let lockFile = LockFileParser.Parse(toLines lockFileWithDependencies)
+    let main = lockFile.Head
+    let packages = List.rev main.Packages
+    
+    LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings lockFileWithDependencies)
+
+let lockFileWithGreaterZeroDependency = """NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Argu (2.1)
+    Chessie (0.4)
+      FSharp.Core (>= 0.0)
+    FSharp.Core (4.0.0.1) - redirects: force
+    Newtonsoft.Json (8.0.3) - redirects: force"""
+
+[<Test>]
+let ``should parse lock file with greater zero dependency``() = 
+    let lockFile = LockFileParser.Parse(toLines lockFileWithGreaterZeroDependency)
+    let main = lockFile.Head
+    let packages = List.rev main.Packages
+    
+    LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings lockFileWithDependencies)
 
 let fullGitLockFile = """
 GIT

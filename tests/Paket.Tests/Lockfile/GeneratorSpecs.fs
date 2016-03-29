@@ -35,14 +35,14 @@ let ``should generate lock file for packages``() =
   specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
-      Castle.Windsor (>= 2.0.0)
-      log4net (>= 1.0.0)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
     log (1.2)
     log4net (1.1)
-      log (>= 1.0.0)
+      log (>= 1.0)
     Rx-Core (2.1)
     Rx-Main (2.0)
-      Rx-Core (>= 2.1.0)"""
+      Rx-Core (>= 2.1)"""
 
     let cfg = DependenciesFile.FromCode(config1)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
@@ -62,14 +62,14 @@ let ``should generate lock file with framework restrictions for packages``() =
   specs:
     Castle.Windsor (2.1) - framework: net35
     Castle.Windsor-log4net (3.3) - framework: net35
-      Castle.Windsor (>= 2.0.0)
-      log4net (>= 1.0.0)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
     log (1.2) - framework: net35
     log4net (1.1) - framework: net35
-      log (>= 1.0.0)
+      log (>= 1.0)
     Rx-Core (2.1) - framework: >= net40
     Rx-Main (2.0) - framework: >= net40
-      Rx-Core (>= 2.1.0)"""
+      Rx-Core (>= 2.1)"""
 
     let cfg = DependenciesFile.FromCode(configWithRestrictions)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
@@ -90,14 +90,14 @@ let ``should generate lock file with no targets import for packages``() =
   specs:
     Castle.Windsor (2.1) - import_targets: false, framework: net35
     Castle.Windsor-log4net (3.3) - import_targets: false, framework: net35
-      Castle.Windsor (>= 2.0.0)
-      log4net (>= 1.0.0)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
     log (1.2) - import_targets: false, framework: net35
     log4net (1.1) - import_targets: false, framework: net35
-      log (>= 1.0.0)
+      log (>= 1.0)
     Rx-Core (2.1) - framework: >= net40
     Rx-Main (2.0) - framework: >= net40
-      Rx-Core (>= 2.1.0)"""
+      Rx-Core (>= 2.1)"""
 
     let cfg = DependenciesFile.FromCode(configWithNoImport)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
@@ -117,14 +117,14 @@ let ``should generate lock file with no copy local for packages``() =
   specs:
     Castle.Windsor (2.1) - copy_local: false, import_targets: false, framework: net35
     Castle.Windsor-log4net (3.3) - copy_local: false, import_targets: false, framework: net35
-      Castle.Windsor (>= 2.0.0)
-      log4net (>= 1.0.0)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
     log (1.2) - copy_local: false, import_targets: false, framework: net35
     log4net (1.1) - copy_local: false, import_targets: false, framework: net35
-      log (>= 1.0.0)
+      log (>= 1.0)
     Rx-Core (2.1) - framework: >= net40
     Rx-Main (2.0) - framework: >= net40
-      Rx-Core (>= 2.1.0)"""
+      Rx-Core (>= 2.1)"""
     let cfg = DependenciesFile.FromCode(configWithCopyLocal)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
@@ -144,14 +144,14 @@ let ``should generate lock file with disabled content for packages``() =
   specs:
     Castle.Windsor (2.1) - framework: net35
     Castle.Windsor-log4net (3.3) - framework: net35
-      Castle.Windsor (>= 2.0.0)
-      log4net (>= 1.0.0)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
     log (1.2) - framework: net35
     log4net (1.1) - framework: net35
-      log (>= 1.0.0)
+      log (>= 1.0)
     Rx-Core (2.1) - content: none, framework: >= net40
     Rx-Main (2.0) - content: none, framework: >= net40
-      Rx-Core (>= 2.1.0)"""
+      Rx-Core (>= 2.1)"""
     let cfg = DependenciesFile.FromCode(configWithDisabledContent)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
@@ -233,12 +233,12 @@ let expected3 = """NUGET
   remote: http://www.nuget.org/api/v2
   specs:
     GreaterThan.Package (2.1)
-      Maximum.Package (<= 3.0.0)
+      Maximum.Package (<= 3.0)
     LessThan.Package (1.9)
-      GreaterThan.Package (> 2.0.0)
+      GreaterThan.Package (> 2.0)
     Maximum.Package (2.9)
     OtherVersionRanges.Package (1.0)
-      LessThan.Package (< 2.0.0)"""
+      LessThan.Package (< 2.0)"""
 
 [<Test>]
 let ``should generate other version ranges for packages``() = 
@@ -368,14 +368,14 @@ let ``should generate lock file with second group``() =
   specs:
     Castle.Windsor (2.1) - copy_content_to_output_dir: preserve_newest
     Castle.Windsor-log4net (3.3) - framework: net35
-      Castle.Windsor (>= 2.0.0)
-      log4net (>= 1.0.0)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
     log (1.2)
     log4net (1.1) - copy_content_to_output_dir: never
-      log (>= 1.0.0)
+      log (>= 1.0)
     Rx-Core (2.1) - content: none
     Rx-Main (2.0) - content: none, framework: >= net40
-      Rx-Core (>= 2.1.0)
+      Rx-Core (>= 2.1)
 
 GROUP Build
 COPY-LOCAL: TRUE
