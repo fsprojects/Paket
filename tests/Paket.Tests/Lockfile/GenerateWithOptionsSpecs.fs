@@ -151,7 +151,7 @@ NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     NLog (1.0.1)
-    NLog.Contrib (1.0.0)
+    NLog.Contrib (1.0)
       NLog (>= 1.0.1)"""
 
     let cfg = DependenciesFile.FromCode(config)

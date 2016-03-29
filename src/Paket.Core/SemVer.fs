@@ -113,6 +113,19 @@ type SemVerInfo =
 
         sprintf "%d.%d.%d%s%s" x.Major x.Minor x.Patch build pre
 
+    member x.NormalizeToShorter() = 
+        let build = 
+            if String.IsNullOrEmpty x.Build |> not && x.Build <> "0" then "." + x.Build
+            else ""
+                        
+        let pre = 
+            match x.PreRelease with
+            | Some preRelease -> sprintf "-%s" preRelease.Origin
+            | None -> ""
+
+        let s = sprintf "%d.%d.%d%s%s" x.Major x.Minor x.Patch build pre
+        if s = sprintf "%d.%d.0" x.Major x.Minor then sprintf "%d.%d" x.Major x.Minor else s
+
     override x.ToString() = 
         match x.Original with
         | Some version -> version.Trim()
