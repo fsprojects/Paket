@@ -364,12 +364,20 @@ let ``#1507 allows to download remote dependencies``() =
 
 [<Test>]
 let ``#1552 install mvvmlightlibs again``() =
-    let newLockFile = install "i001552-install-mvvmlightlibs-again"
     let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","paket.lock"))
-    newLockFile.ToString() |> normalizeLineEndings |> shouldEqual (oldLockFile.ToString() |> normalizeLineEndings)
+    let expected = oldLockFile.ToString() |> normalizeLineEndings
+
+    let newLockFile = install "i001552-install-mvvmlightlibs-again"
+    newLockFile.ToString() |> normalizeLineEndings |> shouldEqual expected
 
     let newFile = Path.Combine(scenarioTempPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+    let newLockFile2 = update "i001552-install-mvvmlightlibs-again"
+    newLockFile2.ToString() |> normalizeLineEndings |> shouldEqual expected
+
+    let newLockFile3 = install "i001552-install-mvvmlightlibs-again"
+    newLockFile3.ToString() |> normalizeLineEndings |> shouldEqual expected
