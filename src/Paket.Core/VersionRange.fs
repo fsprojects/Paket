@@ -46,25 +46,25 @@ type VersionRange =
 
     override this.ToString() =
         match this with
-        | Specific v -> v.ToString()
+        | Specific v -> v.Normalize()
         | OverrideAll v -> "== " + v.ToString()
         | Minimum v ->
-            match v.ToString() with
+            match v.Normalize() with
             | "0" -> ""
             |  x  -> ">= " + x
-        | GreaterThan v -> "> " + v.ToString()
-        | Maximum v -> "<= " + v.ToString()
-        | LessThan v -> "< " + v.ToString()
+        | GreaterThan v -> "> " + v.Normalize()
+        | Maximum v -> "<= " + v.Normalize()
+        | LessThan v -> "< " + v.Normalize()
         | Range(fromB, from, _to, _toB) ->
             let from =
                 match fromB with
-                | VersionRangeBound.Excluding -> "> " + from.ToString()
-                | VersionRangeBound.Including -> ">= " + from.ToString()
+                | VersionRangeBound.Excluding -> "> " + from.Normalize()
+                | VersionRangeBound.Including -> ">= " + from.Normalize()
 
             let _to =
                 match _toB with
-                | VersionRangeBound.Excluding -> "< " + _to.ToString()
-                | VersionRangeBound.Including -> "<= " + _to.ToString()
+                | VersionRangeBound.Excluding -> "< " + _to.Normalize()
+                | VersionRangeBound.Including -> "<= " + _to.Normalize()
 
             from + " " + _to
 

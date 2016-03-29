@@ -377,10 +377,10 @@ let ``#1552 install mvvmlightlibs again``() =
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
 
-    directPaketInPath "update" scenarioPath |> ignore
+    directPaketInPath "update -f" scenarioPath |> ignore
     let newLockFile2 = LockFile.LoadFrom(Path.Combine(scenarioPath,"paket.lock"))
     newLockFile2.ToString() |> normalizeLineEndings |> shouldEqual expected
 
-    directPaketInPath "install" scenarioPath |> ignore
+    directPaketInPath "install -f" scenarioPath |> ignore
     let newLockFile3 = LockFile.LoadFrom(Path.Combine(scenarioPath,"paket.lock"))
     newLockFile3.ToString() |> normalizeLineEndings |> shouldEqual expected
