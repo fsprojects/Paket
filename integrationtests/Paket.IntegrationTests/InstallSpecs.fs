@@ -347,3 +347,15 @@ let ``#1507 allows to download remote dependencies``() =
 
     File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "privateeye.fsx")) |> shouldEqual true
     File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "bin", "PrivateEye.Bridge.dll")) |> shouldEqual true
+
+[<Test>]
+let ``#1552 install mvvmlightlibs again``() =
+    let newLockFile = install "i001552-install-mvvmlightlibs-again"
+    let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","paket.lock"))
+    newLockFile |> shouldEqual oldLockFile
+
+    let newFile = Path.Combine(scenarioTempPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
