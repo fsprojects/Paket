@@ -135,7 +135,7 @@ let ``can extract dependencies``() =
     let deps = doc.GetGlobalDependencies()
     deps 
     |> List.map (fun (n,v) ->n.ToString(),v.ToString())
-    |> shouldEqual ["a", "1.0.0"; "NETStandard.Library", "1.0.0-rc2-23727"]
+    |> shouldEqual ["a", "1.0"; "NETStandard.Library", "1.0.0-rc2-23727"]
 
 
 [<Test>]
