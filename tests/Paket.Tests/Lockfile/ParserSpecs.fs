@@ -781,17 +781,10 @@ let lockFileWithDependencies = """NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     Argu (2.1)
-    Chessie (0.4.0)
+    Chessie (0.4)
       FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
-    Newtonsoft.Json (8.0.3) - redirects: force
-GITHUB
-  remote: fsharp/FAKE
-  specs:
-    src/app/FakeLib/Globbing/Globbing.fs (3c2f89312b7b5a2048cb8eab991c7d1708136cc8)
-  remote: fsharp/FSharp.Data
-  specs:
-    src/CommonProviderImplementation/AssemblyReader.fs (f815de5e8108bb7de25dde75135707719afd8e09)"""
+    Newtonsoft.Json (8.0.3) - redirects: force"""
 
 [<Test>]
 let ``should parse lock file with depdencies``() = 
@@ -807,17 +800,10 @@ let lockFileWithGreaterZeroDependency = """NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     Argu (2.1)
-    Chessie (0.4.0)
-      FSharp.Core (>= 0.=)
+    Chessie (0.4)
+      FSharp.Core (>= 0.0)
     FSharp.Core (4.0.0.1) - redirects: force
-    Newtonsoft.Json (8.0.3) - redirects: force
-GITHUB
-  remote: fsharp/FAKE
-  specs:
-    src/app/FakeLib/Globbing/Globbing.fs (3c2f89312b7b5a2048cb8eab991c7d1708136cc8)
-  remote: fsharp/FSharp.Data
-  specs:
-    src/CommonProviderImplementation/AssemblyReader.fs (f815de5e8108bb7de25dde75135707719afd8e09)"""
+    Newtonsoft.Json (8.0.3) - redirects: force"""
 
 [<Test>]
 let ``should parse lock file with greater zero dependency``() = 
