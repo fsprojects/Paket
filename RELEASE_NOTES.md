@@ -1,3 +1,6 @@
+#### 2.56.3 - 29.03.2016
+* USABILITY: Better WPF support - https://github.com/fsprojects/Paket/pull/1550
+
 #### 2.56.2 - 29.03.2016
 * BUGFIX: Fixed inconsistent condition generation in paket.lock file - https://github.com/fsprojects/Paket/issues/1552
 
