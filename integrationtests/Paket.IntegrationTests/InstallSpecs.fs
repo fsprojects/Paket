@@ -364,23 +364,25 @@ let ``#1507 allows to download remote dependencies``() =
 
 [<Test>]
 let ``#1552 install mvvmlightlibs again``() =
-    let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","paket.lock"))
+    let scenarioName = "i001552-install-mvvmlightlibs-again"
+    let scenarioPath = scenarioTempPath scenarioName
+
+    let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.lock"))
     let expected = oldLockFile.ToString() |> normalizeLineEndings
 
-    let newLockFile = install "i001552-install-mvvmlightlibs-again"
-    newLockFile.ToString() |> normalizeLineEndings |> shouldEqual expected
+    let newLockFilePath = Path.Combine(scenarioPath,"paket.lock")
+    let lockFileShouldBeConsistentAfterCommand command =
+        directPaketInPath command scenarioPath |> ignore
+        LockFile.LoadFrom(newLockFilePath).ToString()
+        |> normalizeLineEndings |> shouldEqual expected
 
-    let scenarioPath = scenarioTempPath "i001552-install-mvvmlightlibs-again"
+    ["install -f"
+     "update -f"
+     "install"]
+    |> List.iter lockFileShouldBeConsistentAfterCommand
+
     let newFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csprojtemplate")
+    let oldFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
-
-    directPaketInPath "update -f" scenarioPath |> ignore
-    let newLockFile2 = LockFile.LoadFrom(Path.Combine(scenarioPath,"paket.lock"))
-    newLockFile2.ToString() |> normalizeLineEndings |> shouldEqual expected
-
-    directPaketInPath "install -f" scenarioPath |> ignore
-    let newLockFile3 = LockFile.LoadFrom(Path.Combine(scenarioPath,"paket.lock"))
-    newLockFile3.ToString() |> normalizeLineEndings |> shouldEqual expected
