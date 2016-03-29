@@ -377,11 +377,16 @@ let ``#1552 install mvvmlightlibs again``() =
         |> normalizeLineEndings |> shouldEqual expected
 
     prepare scenarioName
-    ["install -f"
-     "update -f"
-     "install"
-     "update"]
-    |> List.iter lockFileShouldBeConsistentAfterCommand
+    let commands =
+        ["install -f"
+         "update -f"
+         "install"
+         "update"]
+    let rnd = new Random((int)DateTime.Now.Ticks)
+    for _ in [1..10] do
+        let ind = rnd.Next(commands.Length)
+        let command = commands.[ind]
+        lockFileShouldBeConsistentAfterCommand command
 
     let newFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
     let oldFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
