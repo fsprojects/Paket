@@ -365,6 +365,7 @@ let ``#1507 allows to download remote dependencies``() =
 [<Test>]
 let ``#1552 install mvvmlightlibs again``() =
     let scenarioName = "i001552-install-mvvmlightlibs-again"
+    prepare scenarioName
     let scenarioPath = scenarioTempPath scenarioName
 
     let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.lock"))
@@ -390,6 +391,7 @@ let ``#1552 install mvvmlightlibs again``() =
 [<Test>]
 let ``#1552 install mvvmlightlibs again - different order``() =
     let scenarioName = "i001552-install-mvvmlightlibs-again"
+    prepare scenarioName
     let scenarioPath = scenarioTempPath scenarioName
 
     let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.lock"))
