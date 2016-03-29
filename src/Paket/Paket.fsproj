@@ -29,7 +29,7 @@
     </DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartArguments>update</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001552-install-mvvmlightlibs-again\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

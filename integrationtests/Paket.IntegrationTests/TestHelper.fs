@@ -28,10 +28,7 @@ let prepare scenario =
     Directory.GetFiles(scenarioPath, "*.templatetemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "template")))
 
-let directPaket command scenario =
-    let originalScenarioPath = originalScenarioPath scenario
-    let scenarioPath = scenarioTempPath scenario
-
+let directPaketInPath command scenarioPath =
     let result =
         ExecProcessAndReturnMessages (fun info ->
           info.FileName <- paketToolPath
@@ -42,6 +39,9 @@ let directPaket command scenario =
         printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
         failwith errors
     String.Join(Environment.NewLine,result.Messages)
+
+let directPaket command scenario =
+    directPaketInPath command (scenarioTempPath scenario)
 
 let paket command scenario =
     prepare scenario

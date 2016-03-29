@@ -370,14 +370,17 @@ let ``#1552 install mvvmlightlibs again``() =
     let newLockFile = install "i001552-install-mvvmlightlibs-again"
     newLockFile.ToString() |> normalizeLineEndings |> shouldEqual expected
 
-    let newFile = Path.Combine(scenarioTempPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csproj")
+    let scenarioPath = scenarioTempPath "i001552-install-mvvmlightlibs-again"
+    let newFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
 
-    let newLockFile2 = update "i001552-install-mvvmlightlibs-again"
+    directPaketInPath "update" scenarioPath |> ignore
+    let newLockFile2 = LockFile.LoadFrom(Path.Combine(scenarioPath,"paket.lock"))
     newLockFile2.ToString() |> normalizeLineEndings |> shouldEqual expected
 
-    let newLockFile3 = install "i001552-install-mvvmlightlibs-again"
+    directPaketInPath "install" scenarioPath |> ignore
+    let newLockFile3 = LockFile.LoadFrom(Path.Combine(scenarioPath,"paket.lock"))
     newLockFile3.ToString() |> normalizeLineEndings |> shouldEqual expected
