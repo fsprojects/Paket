@@ -376,9 +376,11 @@ let ``#1552 install mvvmlightlibs again``() =
         LockFile.LoadFrom(newLockFilePath).ToString()
         |> normalizeLineEndings |> shouldEqual expected
 
+    prepare scenarioName
     ["install -f"
      "update -f"
-     "install"]
+     "install"
+     "update"]
     |> List.iter lockFileShouldBeConsistentAfterCommand
 
     let newFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
