@@ -78,7 +78,7 @@ let ``should maintain order when updating project file items`` () =
     let rec nodes node = 
         seq {
             for node in node |> Seq.cast<XmlNode> do
-                if node.Name ="Compile" || node.Name = "Content"
+                if List.contains node.Name BuildAction.PaketFileNodeNames
                 then yield Paket.Xml.getAttribute "Include" node
                 yield! nodes node 
         }
@@ -120,7 +120,7 @@ let ``should remove missing files that exist in the project`` () =
     let rec nodes node = 
         seq {
             for node in node |> Seq.cast<XmlNode> do
-                if node.Name ="Compile" || node.Name = "Content"
+                if List.contains node.Name BuildAction.PaketFileNodeNames
                 then yield Paket.Xml.getAttribute "Include" node
                 yield! nodes node 
         }

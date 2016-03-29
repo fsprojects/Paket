@@ -75,6 +75,20 @@ let ``#1256 should report error in lock file``() =
     | exn when exn.Message.Contains("FAKE") && exn.Message.Contains("paket.lock") -> ()
 
 [<Test>]
+let ``#1260 install wpf\xaml and media files``() =
+    let newLockFile = install "i001260-csharp-wpf-project"
+    let newFile = Path.Combine(scenarioTempPath "i001260-csharp-wpf-project","WpfApplication","WpfApplication.csproj")
+    let project = ProjectFile.LoadFromFile(newFile)
+
+    let countNodes name count =
+        project.FindPaketNodes(name)
+        |> List.length |> shouldEqual count
+
+    countNodes "Page" 1
+    countNodes "Resource" 1
+    countNodes "Content" 2
+
+[<Test>]
 let ``#1270 install net461``() = 
     let newLockFile = install "i001270-net461"
     let newFile = Path.Combine(scenarioTempPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
@@ -347,6 +361,18 @@ let ``#1507 allows to download remote dependencies``() =
 
     File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "privateeye.fsx")) |> shouldEqual true
     File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "bin", "PrivateEye.Bridge.dll")) |> shouldEqual true
+
+[<Test>]
+let ``#1552 install mvvmlightlibs again``() =
+    let newLockFile = install "i001552-install-mvvmlightlibs-again"
+    let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","paket.lock"))
+    newLockFile.ToString() |> normalizeLineEndings |> shouldEqual (oldLockFile.ToString() |> normalizeLineEndings)
+
+    let newFile = Path.Combine(scenarioTempPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
 
 let resolvedNewPorjectJson = """{
     "version": "1.0.0-*",

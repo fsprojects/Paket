@@ -13,12 +13,19 @@ open Paket.Requirements
 [<RequireQualifiedAccess>]
 type BuildAction =
     | Compile | Content | Reference
+    | Resource | Page // These two are WPF only - https://msdn.microsoft.com/library/aa970494%28v=vs.100%29.aspx?f=255&MSPPError=-2147217396
+    // There are some other build actions - http://stackoverflow.com/questions/145752/what-are-the-various-build-action-settings-in-visual-studio-project-properties/145769#145769
 
     override this.ToString() = 
         match this with
         | Compile -> "Compile"
         | Content -> "Content"
         | Reference -> "Reference"
+        | Resource -> "Resource"
+        | Page -> "Page"
+
+    static member PaketFileNodeNames =
+        [Compile; Content; Resource; Page] |> List.map (fun x->x.ToString())
 
 /// File item inside of project files.
 type FileItem = 
@@ -461,11 +468,15 @@ module ProjectFile =
             | None ->
                 [BuildAction.Content, createNode "ItemGroup" project
                  BuildAction.Compile, createNode "ItemGroup" project
-                 BuildAction.Reference, createNode "ItemGroup" project ] 
+                 BuildAction.Reference, createNode "ItemGroup" project
+                 BuildAction.Resource, createNode "ItemGroup" project
+                 BuildAction.Page, createNode "ItemGroup" project ]
             | Some node ->
                 [BuildAction.Content, node :?> XmlElement
-                 BuildAction.Compile, node :?> XmlElement 
-                 BuildAction.Reference, node :?> XmlElement ]
+                 BuildAction.Compile, node :?> XmlElement
+                 BuildAction.Reference, node :?> XmlElement
+                 BuildAction.Resource, node :?> XmlElement
+                 BuildAction.Page, node :?> XmlElement ]
             |> dict
 
         for fileItem in fileItems |> List.rev do
@@ -485,6 +496,10 @@ module ProjectFile =
                         node
                         |> addChild (createNodeSet "HintPath" fileItem.Include project)
                         |> addChild (createNodeSet "Private" "True" project)
+                    | BuildAction.Page ->
+                        node
+                        |> addChild (createNodeSet "Generator" "MSBuild:Compile" project)
+                        |> addChild (createNodeSet "SubType" "Designer" project)
                     | _ -> node
                 |> fun n -> if fileItem.WithPaketSubNode then addChild (createNodeSet "Paket" "True" project) n else n
                 |> fun n -> match fileItem.CopyToOutputDirectory with
@@ -527,11 +542,12 @@ module ProjectFile =
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head 
                     firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore
-        
-        let paketNodes = 
-            (findPaketNodes "Compile" project)
-            @ (findPaketNodes "Content" project)
-           
+
+        let paketNodes =
+            BuildAction.PaketFileNodeNames
+            |> List.map (fun name -> findPaketNodes name project)
+            |> List.concat
+
         // remove unneeded files
         for paketNode in paketNodes do
             match getAttribute "Include" paketNode with
@@ -889,8 +905,9 @@ module ProjectFile =
             File.SetLastWriteTimeUtc(project.FileName, DateTime.UtcNow)
 
     let getPaketFileItems project =
-        findPaketNodes "Content" project
-        |> List.append <| findPaketNodes "Compile" project
+        BuildAction.PaketFileNodeNames
+        |> List.map (fun name -> findPaketNodes name project)
+        |> List.concat
         |> List.map (fun n -> FileInfo(Path.Combine(Path.GetDirectoryName project.FileName, n.Attributes.["Include"].Value)))
 
     let getProjectGuid project = 
@@ -1042,9 +1059,15 @@ module ProjectFile =
         |> Option.iter (fun n -> n.ParentNode.RemoveChild n |> ignore)
 
     let determineBuildAction fileName (project:ProjectFile) =
-        if Path.GetExtension project.FileName = Path.GetExtension fileName + "proj" 
-        then BuildAction.Compile
-        else BuildAction.Content
+        match (Path.GetExtension fileName).ToLowerInvariant() with
+        | ext when Path.GetExtension project.FileName = ext + "proj"
+            -> BuildAction.Compile
+        | ".xaml" -> BuildAction.Page
+        | ".ttf" | ".png" | ".ico" | ".jpg" | ".jpeg"| ".bmp" | ".gif"
+        | ".wav" | ".mid" | ".midi"| ".wma" | ".mp3" | ".ogg" | ".rma"
+        | ".avi" | ".mp4" | ".divx"| ".wmv"  //TODO: and other media types
+            -> BuildAction.Resource
+        | _ -> BuildAction.Content
 
     let determineBuildActionForRemoteItems fileName (project:ProjectFile) =
         if Path.GetExtension fileName = ".dll"

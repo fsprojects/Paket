@@ -761,6 +761,28 @@ let ``should parse lock file from auto-detect settings``() =
     let deps = packages.Tail.Head.Dependencies |> Seq.toList |> List.map (fun (n,_,_) -> n)
     deps.Head |> shouldEqual (PackageName "Autofac")
 
+let lockFileWithManyFrameworks = """NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    CommonServiceLocator (1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50
+    MvvmLightLibs (5.2.0)
+      CommonServiceLocator (>= 1.0) - framework: net35, sl40
+      CommonServiceLocator (>= 1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""
+
+[<Test>]
+let ``should parse lock file many frameworks``() = 
+    let lockFile = LockFileParser.Parse(toLines lockFileWithManyFrameworks)
+    let main = lockFile.Head
+    let packages = List.rev main.Packages
+    
+    packages.Length |> shouldEqual 2
+
+    packages.Head.Name |> shouldEqual (PackageName "CommonServiceLocator")
+    packages.Tail.Head.Name |> shouldEqual (PackageName "MvvmLightLibs")
+    LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings lockFileWithManyFrameworks)
+
 let fullGitLockFile = """
 GIT
   remote: git@github.com:fsprojects/Paket.git
@@ -810,4 +832,3 @@ let ``should parse local git lock file with build``() =
     lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "2942d23fcb13a2574b635194203aed7610b21903"
     lockFile.Head.SourceFiles.Head.Project |> shouldEqual "nupkgtest"
     lockFile.Head.SourceFiles.Head.Command |> shouldEqual (Some "build.cmd Test")
-

@@ -92,6 +92,7 @@
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001536-codedom\temp</StartWorkingDirectory>
     <StartArguments>update  nuget FSharp.core</StartArguments>
     <StartWorkingDirectory>D:\code\temp\BindingRedirectPaketBug</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001552-install-mvvmlightlibs-again\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
