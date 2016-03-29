@@ -388,3 +388,13 @@ let ``#1552 install mvvmlightlibs again``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1552 install mvvmlightlibs first time``() =
+    let scenarioName = "i001552-install-mvvmlightlibs-first-time"
+
+    let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.locktemplate"))
+    let expected = oldLockFile.ToString() |> normalizeLineEndings
+
+    let newLockFile = install scenarioName
+    newLockFile.ToString() |> normalizeLineEndings |> shouldEqual expected
