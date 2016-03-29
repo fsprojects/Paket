@@ -766,8 +766,8 @@ let lockFileWithManyFrameworks = """NUGET
   specs:
     CommonServiceLocator (1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50
     MvvmLightLibs (5.2.0)
-      CommonServiceLocator (>= 1.0) - framework: net35, sl40
-      CommonServiceLocator (>= 1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""
+      CommonServiceLocator (>= 1.0.0) - framework: net35, sl40
+      CommonServiceLocator (>= 1.3.0) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""
 
 [<Test>]
 let ``should parse lock file many frameworks``() = 

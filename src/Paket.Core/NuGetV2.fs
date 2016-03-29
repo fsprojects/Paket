@@ -162,7 +162,7 @@ let parseODataDetails(nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
         let split (d : string) =
             let a = d.Split ':'
             PackageName a.[0], 
-            VersionRequirement.Parse (if a.Length > 1 then a.[1] else "0"), 
+            VersionRequirement.Parse(if a.Length > 1 then a.[1] else "0"), 
             (if a.Length > 2 && a.[2] <> "" then 
                  if String.startsWithIgnoreCase "portable" a.[2] then [ FrameworkRestriction.Portable(a.[2]) ]
                  else 

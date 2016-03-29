@@ -364,15 +364,26 @@ let ``#1507 allows to download remote dependencies``() =
 
 [<Test>]
 let ``#1552 install mvvmlightlibs again``() =
-    let newLockFile = install "i001552-install-mvvmlightlibs-again"
     let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","paket.lock"))
-    newLockFile.ToString() |> normalizeLineEndings |> shouldEqual (oldLockFile.ToString() |> normalizeLineEndings)
+    let expected = oldLockFile.ToString() |> normalizeLineEndings
 
-    let newFile = Path.Combine(scenarioTempPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csproj")
+    let newLockFile = install "i001552-install-mvvmlightlibs-again"
+    newLockFile.ToString() |> normalizeLineEndings |> shouldEqual expected
+
+    let scenarioPath = scenarioTempPath "i001552-install-mvvmlightlibs-again"
+    let newFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+    directPaketInPath "update -f" scenarioPath |> ignore
+    let newLockFile2 = LockFile.LoadFrom(Path.Combine(scenarioPath,"paket.lock"))
+    newLockFile2.ToString() |> normalizeLineEndings |> shouldEqual expected
+
+    directPaketInPath "install -f" scenarioPath |> ignore
+    let newLockFile3 = LockFile.LoadFrom(Path.Combine(scenarioPath,"paket.lock"))
+    newLockFile3.ToString() |> normalizeLineEndings |> shouldEqual expected
 
 let resolvedNewPorjectJson = """{
     "version": "1.0.0-*",
@@ -448,3 +459,4 @@ let ``#736 install into nested project.json``() =
     let newFile = Path.Combine(scenarioTempPath "i000736-new-json-nested","project1","project.json")
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     normalizeLineEndings resolvedNewPorjectJson |> shouldEqual s2
+

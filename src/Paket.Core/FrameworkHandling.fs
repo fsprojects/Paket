@@ -102,7 +102,7 @@ type FrameworkIdentifier =
         | XamarinMac -> "xamarinmac"
         | Windows v -> "win" + v
         | WindowsPhoneSilverlight v -> "wp" + v
-        | WindowsPhoneApp v -> "wp" + v
+        | WindowsPhoneApp v -> "wpa" + v
         | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
 
 
@@ -217,7 +217,7 @@ module FrameworkDetection =
                 | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
                 | "wpa00" | "wpa" | "wpa81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp "v8.1")
                 | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhoneSilverlight "v8.0")
-                | "wp81"  | "wpv81" -> Some (WindowsPhoneSilverlight "v8.1")                
+                | "wp81"  | "wpv81" -> Some (WindowsPhoneSilverlight "v8.1")
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
                 | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
