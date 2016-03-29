@@ -1,4 +1,4 @@
-#### 2.56.5 - 29.03.2016
+#### 2.56.6 - 29.03.2016
 * BUGFIX: Fixed inconsistent condition generation in paket.lock file - https://github.com/fsprojects/Paket/issues/1552
 
 #### 2.56.3 - 29.03.2016

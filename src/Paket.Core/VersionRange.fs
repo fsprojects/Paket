@@ -51,6 +51,7 @@ type VersionRange =
         | Minimum v ->
             match v.NormalizeToShorter() with
             | "0" -> ""
+            | "0.0" -> ""
             |  x  -> ">= " + x
         | GreaterThan v -> "> " + v.NormalizeToShorter()
         | Maximum v -> "<= " + v.NormalizeToShorter()
