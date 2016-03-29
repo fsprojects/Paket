@@ -352,7 +352,7 @@ let ``#1507 allows to download remote dependencies``() =
 let ``#1552 install mvvmlightlibs again``() =
     let newLockFile = install "i001552-install-mvvmlightlibs-again"
     let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","paket.lock"))
-    newLockFile |> shouldEqual oldLockFile
+    newLockFile.ToString() |> normalizeLineEndings |> shouldEqual (oldLockFile.ToString() |> normalizeLineEndings)
 
     let newFile = Path.Combine(scenarioTempPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001552-install-mvvmlightlibs-again","CSharp","CSharp.csprojtemplate")

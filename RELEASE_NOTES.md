@@ -1,3 +1,6 @@
+#### 2.56.2 - 29.03.2016
+* BUGFIX: Fixed inconsistent condition generation in paket.lock file - https://github.com/fsprojects/Paket/issues/1552
+
 #### 2.56.1 - 24.03.2016
 * BUGFIX: Removing transitive dependencies from dependencies list during pack - https://github.com/fsprojects/Paket/pull/1547
 

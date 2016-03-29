@@ -84,8 +84,8 @@ type FrameworkIdentifier =
     | XamariniOS
     | XamarinMac
     | Windows of string
-    | WindowsPhoneApp of string
     | WindowsPhoneSilverlight of string
+    | WindowsPhoneApp of string
     | Silverlight of string
 
     
@@ -101,8 +101,8 @@ type FrameworkIdentifier =
         | XamariniOS -> "xamarinios"
         | XamarinMac -> "xamarinmac"
         | Windows v -> "win" + v
-        | WindowsPhoneApp v -> "wp" + v
         | WindowsPhoneSilverlight v -> "wp" + v
+        | WindowsPhoneApp v -> "wp" + v
         | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
 
 
@@ -211,12 +211,13 @@ module FrameworkDetection =
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
-                | "win8" | "win80" | "netcore45" | "win" | "winv45" -> Some (Windows "v4.5")
-                | "win81" | "netcore46" -> Some (Windows "v4.5.1")
+                | "win8" | "windows8" | "win80" | "netcore45" | "win" | "winv45" -> Some (Windows "v4.5")
+                | "win81" | "windows81"  | "netcore46" | "winv451" -> Some (Windows "v4.5.1")
                 | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
                 | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
-                | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhoneSilverlight "v8.0")
                 | "wpa00" | "wpa" | "wpa81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp "v8.1")
+                | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhoneSilverlight "v8.0")
+                | "wp81"  | "wpv81" -> Some (WindowsPhoneSilverlight "v8.1")                
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
                 | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)

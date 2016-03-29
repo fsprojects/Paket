@@ -38,7 +38,7 @@ type FrameworkRestrictions =
 
 let getRestrictionList (frameworkRestrictions:FrameworkRestrictions) =
     match frameworkRestrictions with 
-    | FrameworkRestrictionList list -> list 
+    | FrameworkRestrictionList list -> list
     | AutoDetectFramework -> failwith "The framework restriction could not be determined."
 
 let parseRestrictions(text:string) =
