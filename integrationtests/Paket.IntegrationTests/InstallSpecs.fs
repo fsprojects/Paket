@@ -370,11 +370,19 @@ let ``#1552 install mvvmlightlibs again``() =
     let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.lock"))
     let expected = oldLockFile.ToString() |> normalizeLineEndings
 
+    let oldProjectFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
+    let oldProjectFileText = File.ReadAllText oldProjectFile |> normalizeLineEndings
+
     let newLockFilePath = Path.Combine(scenarioPath,"paket.lock")
     let lockFileShouldBeConsistentAfterCommand command =
         directPaketInPath command scenarioPath |> ignore
+
         LockFile.LoadFrom(newLockFilePath).ToString()
         |> normalizeLineEndings |> shouldEqual expected
+
+        let newProjectFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
+        File.ReadAllText newProjectFile
+        |> normalizeLineEndings |> shouldEqual oldProjectFileText
 
     prepare scenarioName
     let commands =
@@ -383,16 +391,10 @@ let ``#1552 install mvvmlightlibs again``() =
          "install"
          "update"]
     let rnd = new Random((int)DateTime.Now.Ticks)
-    for _ in [1..10] do
-        let ind = rnd.Next(commands.Length)
+    for x in [1..10] do
+        let ind = if x<=4 then x-1 else rnd.Next(commands.Length)
         let command = commands.[ind]
         lockFileShouldBeConsistentAfterCommand command
-
-    let newFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
-    let oldFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1552 install mvvmlightlibs first time``() =
