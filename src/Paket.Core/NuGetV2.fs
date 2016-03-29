@@ -442,7 +442,7 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
     }
 
 /// Puts the package into the cache
-let CopyToCache(cache:Cache, fileName, force) =
+let CopyToCache(cache:Cache, packageName, version, fileName, force) =
     let targetFolder = DirectoryInfo(cache.Location).FullName
     let fi = FileInfo(fileName)
     let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
