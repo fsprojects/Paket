@@ -365,7 +365,6 @@ let ``#1507 allows to download remote dependencies``() =
 [<Test>]
 let ``#1552 install mvvmlightlibs again``() =
     let scenarioName = "i001552-install-mvvmlightlibs-again"
-    prepare scenarioName
     let scenarioPath = scenarioTempPath scenarioName
 
     let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.lock"))
@@ -377,35 +376,11 @@ let ``#1552 install mvvmlightlibs again``() =
         LockFile.LoadFrom(newLockFilePath).ToString()
         |> normalizeLineEndings |> shouldEqual expected
 
+    prepare scenarioName
     ["install -f"
      "update -f"
-     "install"]
-    |> List.iter lockFileShouldBeConsistentAfterCommand
-
-    let newFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
-    let oldFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
-let ``#1552 install mvvmlightlibs again - different order``() =
-    let scenarioName = "i001552-install-mvvmlightlibs-again"
-    prepare scenarioName
-    let scenarioPath = scenarioTempPath scenarioName
-
-    let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.lock"))
-    let expected = oldLockFile.ToString() |> normalizeLineEndings
-
-    let newLockFilePath = Path.Combine(scenarioPath,"paket.lock")
-    let lockFileShouldBeConsistentAfterCommand command =
-        directPaketInPath command scenarioPath |> ignore
-        LockFile.LoadFrom(newLockFilePath).ToString()
-        |> normalizeLineEndings |> shouldEqual expected
-
-    ["install"
-     "update -f"
-     "install -f"]
+     "install"
+     "update"]
     |> List.iter lockFileShouldBeConsistentAfterCommand
 
     let newFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
