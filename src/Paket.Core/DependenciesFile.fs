@@ -385,7 +385,7 @@ module DependenciesFileParser =
                 | Remote(RemoteParserOption.PackageSource newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
                 | Remote(RemoteParserOption.Cache newCache) -> 
                     let caches = current.Caches @ [newCache] |> List.distinct
-                    let sources = current.Sources @ [LocalNuGet newCache.Location] |> List.distinct
+                    let sources = current.Sources @ [LocalNuGet(newCache.Location,Some newCache)] |> List.distinct
                     lineNo, { current with Caches = caches; Sources = sources }::other
                 | ParserOptions(options) ->
                     lineNo,{ current with Options = parseOptions current options} ::other
@@ -435,7 +435,7 @@ module DependenciesFileParser =
                             let root = ""
                             let fullPath = remoteFile.ComputeFilePath(root,current.Name,path)
                             let relative = (createRelativePath root fullPath).Replace("\\","/")
-                            LocalNuGet(relative) :: current.Sources
+                            LocalNuGet(relative,None) :: current.Sources
                     lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile]; Sources = sources }::other
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message

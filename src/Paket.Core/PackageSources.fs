@@ -148,27 +148,16 @@ let internal parseAuth(text:string, source) =
     else
         getAuth()
 
-let normalizeFeedUrl (source:string) =
-    match source.TrimEnd([|'/'|]) with
-    | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream 
-    | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream.Replace("https","http")
-    | "https://nuget.org/api/v2" -> Constants.DefaultNuGetStream
-    | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-    | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
-    | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-    | url when url.EndsWith("/api/v3/index.json") -> url.Replace("/api/v3/index.json","")
-    | source -> source
-
 /// Represents the package source type.
 type PackageSource =
 | NuGetV2 of NugetSource
 | NuGetV3 of NugetV3Source
-| LocalNuGet of string
+| LocalNuGet of string * Cache option
     override this.ToString() =
         match this with
         | NuGetV2 source -> source.Url
         | NuGetV3 source -> source.Url
-        | LocalNuGet path -> path
+        | LocalNuGet(path,_) -> path
 
     static member Parse(line : string) =
         let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
@@ -189,27 +178,27 @@ type PackageSource =
             match System.Uri.TryCreate(source, System.UriKind.Absolute) with
             | true, uri -> 
                 if uri.Scheme = System.Uri.UriSchemeFile then 
-                    LocalNuGet source
+                    LocalNuGet(source,None)
                 else 
                     if String.endsWithIgnoreCase "v3/index.json" source then
                         NuGetV3 { Url = source; Authentication = auth }
                     else
                         NuGetV2 { Url = source; Authentication = auth }
             | _ ->  match System.Uri.TryCreate(source, System.UriKind.Relative) with
-                    | true, uri -> LocalNuGet source
+                    | true, uri -> LocalNuGet(source,None)
                     | _ -> failwithf "unable to parse package source: %s" source
 
     member this.Url = 
         match this with
         | NuGetV2 n -> n.Url
         | NuGetV3 n -> n.Url
-        | LocalNuGet n -> n
+        | LocalNuGet(n,_) -> n
 
     member this.Auth = 
         match this with
         | NuGetV2 n -> n.Authentication
         | NuGetV3 n -> n.Authentication
-        | LocalNuGet n -> None
+        | LocalNuGet(n,_) -> None
 
     static member NuGetV2Source url = NuGetV2 { Url = url; Authentication = None }
     static member NuGetV3Source url = NuGetV3 { Url = url; Authentication = None }
@@ -223,7 +212,7 @@ type PackageSource =
         match source with
         | NuGetV2 x -> n x.Url x.Authentication
         | NuGetV3 x -> n x.Url x.Authentication
-        | LocalNuGet path -> 
+        | LocalNuGet(path,_) -> 
             if not <| File.Exists path then 
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path
 

@@ -29,7 +29,7 @@ let CopyToCaches force caches packageName fileName =
 let private extractPackage caches package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
         let! fileName,folder = NuGetV2.DownloadPackage(root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
-        CopyToCaches force caches package fileName
+        CopyToCaches force caches package.Name fileName
         return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
@@ -67,12 +67,12 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
                    | Some s -> s 
 
             return! extractPackage caches package root source groupName v includeVersionInPath force
-        | LocalNuGet path ->
+        | LocalNuGet(path,_) ->
             let path = Utils.normalizeLocalPath path
             let di = Utils.getDirectoryInfo path root
             let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
 
-            CopyToCaches force caches package nupkg.FullName
+            CopyToCaches force caches package.Name nupkg.FullName
 
             let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder

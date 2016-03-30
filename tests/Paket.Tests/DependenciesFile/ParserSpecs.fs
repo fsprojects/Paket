@@ -273,7 +273,7 @@ nuget SignalR = 3.3.2
 [<Test>]
 let ``should read config local quoted source``() = 
     let cfg = DependenciesFile.FromCode(configLocalQuotedSource)
-    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head |> shouldEqual (LocalNuGet("D:\code\\temp with space"))
+    cfg.Groups.[Constants.MainDependencyGroup].Sources.Head.Url |> shouldEqual "D:\code\\temp with space"
     cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).Count |> shouldEqual 4
 
@@ -1325,5 +1325,5 @@ let ``should read config with caches``() =
     (main.Caches |> List.item 1).CacheType |> shouldEqual (Some CacheType.AllVersions)
 
     (main.Sources |> List.item 0) |> shouldEqual PackageSources.DefaultNuGetSource
-    (main.Sources |> List.item 1) |> shouldEqual (LocalNuGet("./dependencies"))
-    (main.Sources |> List.item 2) |> shouldEqual (LocalNuGet("//hive/dependencies"))
+    (main.Sources |> List.item 1).Url |> shouldEqual "./dependencies"
+    (main.Sources |> List.item 2).Url |> shouldEqual "//hive/dependencies"

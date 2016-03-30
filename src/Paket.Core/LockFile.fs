@@ -66,7 +66,7 @@ module LockFileSerializer =
                     match package.Source with
                     | NuGetV2 source -> source.Url,source.Authentication,package
                     | NuGetV3 source -> source.Url,source.Authentication,package
-                    | LocalNuGet path -> path,None,package
+                    | LocalNuGet(path,_) -> path,None,package
                 )
             |> Seq.groupBy (fun (a,b,_) -> a,b)
 

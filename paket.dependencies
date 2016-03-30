@@ -1,4 +1,5 @@
 source https://nuget.org/api/v2
+# cache ./nupkgs versions:current
 
 nuget Newtonsoft.Json redirects: force
 nuget Argu
@@ -11,6 +12,7 @@ github fsharp/FSharp.Data src/CommonProviderImplementation/AssemblyReader.fs
 group Build
 
   source https://nuget.org/api/v2
+  # cache ./nupkgs versions:current
   
   nuget FAKE prerelease
   nuget FSharp.Formatting
@@ -21,6 +23,7 @@ group Build
 group Test
 
   source https://nuget.org/api/v2
+  # cache ./nupkgs versions:current
 
   nuget NUnit.Runners.Net4
   nuget NUnit ~> 2

@@ -95,12 +95,16 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     }
 
 /// Gets versions of the given package from local NuGet feed.
-let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
+let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, root) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
+
         if not di.Exists then
-            failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." di.FullName Environment.NewLine
+            if isCache then
+                di.Create()
+            else
+                failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." di.FullName Environment.NewLine
 
         let versions = 
             Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
@@ -442,23 +446,26 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
     }
 
 /// Puts the package into the cache
-let CopyToCache(cache:Cache, packageName, fileName, force) =
-    let targetFolder = DirectoryInfo(cache.Location).FullName
+let CopyToCache(cache:Cache, packageName:PackageName, fileName, force) =
+    let targetFolder = DirectoryInfo(cache.Location)
+    if not targetFolder.Exists then
+        targetFolder.Create()
+
     let fi = FileInfo(fileName)
-    let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name)) 
+    let targetFile = FileInfo(Path.Combine(targetFolder.FullName, fi.Name)) 
 
     match cache.CacheType with
     | Some CacheType.CurrentVersion ->
-        let targetFileName = targetFile.FullName |> normalizePath
-        Directory.EnumerateFiles(Path.Combine(targetFolder,packageName.ToString() + ".*.nupkg"))
-        |> Seq.iter (fun packageFileName ->
-            let fi = FileInfo packageFileName
-            if fi.FullName |> normalizePath <> targetFileName then
+        let targetFileName = targetFile.Name |> normalizePath
+        
+        targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
+        |> Seq.iter (fun fi ->
+            if fi.Name |> normalizePath <> targetFile.Name then
                 fi.Delete())
     | _ -> ()
 
     if not force && targetFile.Exists then
-        verbosefn "%s already in cache %s" fi.Name targetFolder
+        verbosefn "%s already in cache %s" fi.Name targetFolder.FullName
     else
         File.Copy(fileName, targetFile.FullName)
 
@@ -592,7 +599,7 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
                             raise exn
                             return! tryV3 source nugetSource
 
-                | LocalNuGet path -> 
+                | LocalNuGet(path,_) -> 
                     let! result = getDetailsFromLocalNuGetPackage root path packageName version
                     return Some(source,result)
             with e ->
@@ -719,7 +726,8 @@ let GetVersions force root (sources, packageName:PackageName) =
                                 }
                         
                             [ resp ]
-                       | LocalNuGet path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
+                       | LocalNuGet(path,Some _) -> [ getAllVersionsFromLocalPath (true, path, packageName, root) ]
+                       | LocalNuGet(path,None) -> [ getAllVersionsFromLocalPath (false, path, packageName, root) ])
             |> Seq.toArray
             |> Array.map Async.Choice
             |> Async.Parallel

@@ -460,7 +460,7 @@ type Dependencies(dependenciesFileName: string) =
                 | Some _ -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
                 | None ->  Some(NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
             | NuGetV3 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
-            | LocalNuGet s -> 
+            | LocalNuGet(s,_) -> 
                 Some(async {
                     return
                         Fake.Globbing.search s (sprintf "**/*%s*" searchTerm)

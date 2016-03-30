@@ -38,13 +38,13 @@ let ``#1298 should autocomplete for msu on local teamcity``() =
 
 [<Test>]
 let ``#1298 should autocomplete for dapper on local feed``() = 
-    let result = Dependencies.FindPackagesByName([PackageSource.LocalNuGet(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo"))],"dapp")
+    let result = Dependencies.FindPackagesByName([PackageSource.LocalNuGet(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo"),None)],"dapp")
     result |> shouldContain "Dapper"
     result |> shouldNotContain "dapper"
     
 [<Test>]
 let ``#1298 should autocomplete for fake on local feed``() = 
-    let result = Dependencies.FindPackagesByName([PackageSource.LocalNuGet(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo"))],"fake")
+    let result = Dependencies.FindPackagesByName([PackageSource.LocalNuGet(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo"),None)],"fake")
     result |> shouldContain "FAKE.Core"
     result |> shouldNotContain "Dapper"
     result |> shouldNotContain "dapper"
@@ -66,6 +66,6 @@ let ``#1298 should autocomplete versions for msu on local teamcity``() =
 
 [<Test>]
 let ``#1298 should autocomplete versions for dapper on local feed``() = 
-    let result = Dependencies.FindPackageVersions("",[PackageSource.LocalNuGet(DirectoryInfo(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo")).FullName)],"Dapper")
+    let result = Dependencies.FindPackageVersions("",[PackageSource.LocalNuGet(DirectoryInfo(Path.Combine(originalScenarioPath "i001219-props-files", "nuget_repo")).FullName,None)],"Dapper")
     result |> shouldEqual [|"1.42.0"; "1.40"|]
     

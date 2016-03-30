@@ -592,7 +592,7 @@ let ``should parse lock file with groups``() =
     lockFile1.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile1.Options.Settings.ReferenceCondition |> shouldEqual None
 
-    packages1.Head.Source |> shouldEqual (PackageSource.LocalNuGet("D:\code\\temp with space"))
+    packages1.Head.Source.Url |> shouldEqual "D:\code\\temp with space"
     packages1.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
 
     let lockFile2 = LockFileParser.Parse(toLines groupsLockFile) |> List.head
@@ -606,7 +606,7 @@ let ``should parse lock file with groups``() =
     lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile2.Options.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
 
-    packages2.Head.Source |> shouldEqual (PackageSource.LocalNuGet("D:\code\\temp with space"))
+    packages2.Head.Source.Url |> shouldEqual "D:\code\\temp with space"
     packages2.[0].Name |> shouldEqual (PackageName "FAKE")
     packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some On)
 

@@ -3,7 +3,6 @@
 open System
 open System.IO
 open System.Text.RegularExpressions
-open Paket.PackageSources
 
 type CacheType = 
     | AllVersions

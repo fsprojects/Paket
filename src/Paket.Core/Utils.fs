@@ -232,6 +232,17 @@ let inline normalizeXml (doc:XmlDocument) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder() |> string
 
+let normalizeFeedUrl (source:string) =
+    match source.TrimEnd([|'/'|]) with
+    | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream 
+    | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream.Replace("https","http")
+    | "https://nuget.org/api/v2" -> Constants.DefaultNuGetStream
+    | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+    | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
+    | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+    | url when url.EndsWith("/api/v3/index.json") -> url.Replace("/api/v3/index.json","")
+    | source -> source
+
 let envProxies () =
     let getEnvValue (name:string) =
         let v = Environment.GetEnvironmentVariable(name.ToUpperInvariant())

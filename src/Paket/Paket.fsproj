@@ -93,7 +93,7 @@
     <StartArguments>update  nuget FSharp.core</StartArguments>
     <StartWorkingDirectory>D:\code\temp\BindingRedirectPaketBug</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001552-install-mvvmlightlibs-again\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket - Kopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
