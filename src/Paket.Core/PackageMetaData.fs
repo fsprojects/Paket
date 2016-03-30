@@ -78,6 +78,7 @@ let readAssembly fileName =
 
 let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectType) = 
     match projectFile with
+    | ProjectType.ProjectJson projectFile -> raise <| NotImplementedException()
     | ProjectType.Project projectFile ->
         FileInfo(
             Path.Combine
@@ -128,6 +129,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
 
 let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (projectType : ProjectType) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectType>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
     match projectType with
+    | ProjectType.ProjectJson projectFile -> raise <| NotImplementedException()
     | ProjectType.Project project -> 
         let targetDir = 
             match project.OutputType with
