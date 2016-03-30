@@ -5,7 +5,7 @@
 Paket works well with central repositories like [nuget.org](https://www.nuget.org/) or [myget.org](http://myget.org/). Under normal circumstances these repositories are always available and allow you to retrieve all packages for the rest of all time.
 Unfortunately there are times when the central repository is not reachable or even worse: packages can be removed permanently from the feed.
 
-This happened in other ecosystems, but also at [nuget.org](https://www.nuget.org/) and can lead to breaking builds and a lot of trouble for the users.
+This happened in other ecosystems, but also on [nuget.org](https://www.nuget.org/) and can lead to breaking builds and a lot of trouble for the users.
 
 There are different solutions to this problem and one is using "additional caches" with Paket.
 
