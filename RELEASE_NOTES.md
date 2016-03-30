@@ -1,3 +1,6 @@
+#### 2.57.1 - 30.03.2016
+* BUGFIX: Property Definitions: placed after csharp targets - https://github.com/fsprojects/Paket/pull/1522
+
 #### 2.57.0 - 30.03.2016
 * BUGFIX: Property Definitions: placed after non-paket imports if they directly follow the top property groups - https://github.com/fsprojects/Paket/pull/1561
 * BUGFIX: Fixed inconsistent condition generation in paket.lock file - https://github.com/fsprojects/Paket/issues/1552

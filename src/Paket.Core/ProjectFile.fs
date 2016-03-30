@@ -954,6 +954,12 @@ module ProjectFile =
                        String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString())))) do
                 incr k
 
+            let l = ref !k
+            while !l < project.ProjectNode.ChildNodes.Count do
+                if String.containsIgnoreCase "microsoft.csharp.targets"  (project.ProjectNode.ChildNodes.[!l].OuterXml.ToString()) then
+                    k := !l + 1
+                incr l
+
             let addProps() =
                 if !j = 0 then
                     propsNodes
