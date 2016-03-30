@@ -215,7 +215,7 @@ module FrameworkDetection =
                 | "win81" | "windows81"  | "netcore46" | "winv451" -> Some (Windows "v4.5.1")
                 | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
                 | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
-                | "wpa00" | "wpa" | "wpa81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp "v8.1")
+                | "wpa00" | "wpa" | "wpa81" | "wpav81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp "v8.1")
                 | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhoneSilverlight "v8.0")
                 | "wp81"  | "wpv81" -> Some (WindowsPhoneSilverlight "v8.1")
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)

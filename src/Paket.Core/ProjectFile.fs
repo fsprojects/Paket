@@ -863,7 +863,11 @@ module ProjectFile =
                 incr j
 
             let k = ref !j
-            while !k < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<PropertyGroup" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) do
+            while !k < project.ProjectNode.ChildNodes.Count &&
+                (String.startsWithIgnoreCase  "<PropertyGroup" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) ||
+                 (String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
+                  not (String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
+                       String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString())))) do
                 incr k
 
             let addProps() =

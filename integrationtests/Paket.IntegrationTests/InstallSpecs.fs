@@ -367,27 +367,49 @@ let ``#1552 install mvvmlightlibs again``() =
     let scenarioName = "i001552-install-mvvmlightlibs-again"
     let scenarioPath = scenarioTempPath scenarioName
 
-    let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.lock"))
-    let expected = oldLockFile.ToString() |> normalizeLineEndings
+    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.lock")) |> normalizeLineEndings
+
+    let oldProjectFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
+    let oldProjectFileText = File.ReadAllText oldProjectFile |> normalizeLineEndings
 
     let newLockFilePath = Path.Combine(scenarioPath,"paket.lock")
     let lockFileShouldBeConsistentAfterCommand command =
         directPaketInPath command scenarioPath |> ignore
-        LockFile.LoadFrom(newLockFilePath).ToString()
-        |> normalizeLineEndings |> shouldEqual expected
+
+        File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
+
+        let newProjectFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
+        File.ReadAllText newProjectFile
+        |> normalizeLineEndings |> shouldEqual oldProjectFileText
 
     prepare scenarioName
-    ["install -f"
-     "update -f"
-     "install"
-     "update"]
-    |> List.iter lockFileShouldBeConsistentAfterCommand
+    let commands =
+        ["install -f"
+         "update -f"
+         "install"
+         "update"]
+    let rnd = new Random((int)DateTime.Now.Ticks)
+    for x in [1..10] do
+        let ind = if x<=4 then x-1 else rnd.Next(commands.Length)
+        let command = commands.[ind]
+        lockFileShouldBeConsistentAfterCommand command
 
-    let newFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
-    let oldFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
+[<Test>]
+let ``#1552 install mvvmlightlibs first time``() =
+    let scenarioName = "i001552-install-mvvmlightlibs-first-time"
+
+    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.locktemplate")) |> normalizeLineEndings
+
+    install scenarioName |> ignore
+    
+    let newLockFilePath = Path.Combine(scenarioTempPath scenarioName,"paket.lock")
+    File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
+
+    directPaketInPath "install" (scenarioTempPath scenarioName) |> ignore
+    File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
+
+    directPaketInPath "install -f" (scenarioTempPath scenarioName) |> ignore
+    File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
 
 let resolvedNewPorjectJson = """{
     "version": "1.0.0-*",
@@ -463,4 +485,3 @@ let ``#736 install into nested project.json``() =
     let newFile = Path.Combine(scenarioTempPath "i000736-new-json-nested","project1","project.json")
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     normalizeLineEndings resolvedNewPorjectJson |> shouldEqual s2
-
