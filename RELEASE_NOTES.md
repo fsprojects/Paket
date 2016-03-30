@@ -1,11 +1,8 @@
-#### 2.56.7 - 30.03.2016
+#### 2.57.0 - 30.03.2016
+* BUGFIX: Property Definitions: placed after non-paket imports if they directly follow the top property groups - https://github.com/fsprojects/Paket/pull/1561
 * BUGFIX: Fixed inconsistent condition generation in paket.lock file - https://github.com/fsprojects/Paket/issues/1552
-
-#### 2.56.3 - 29.03.2016
-* USABILITY: Better WPF support - https://github.com/fsprojects/Paket/pull/1550
-
-#### 2.56.1 - 24.03.2016
 * BUGFIX: Removing transitive dependencies from dependencies list during pack - https://github.com/fsprojects/Paket/pull/1547
+* USABILITY: Better WPF support - https://github.com/fsprojects/Paket/pull/1550
 
 #### 2.56.0 - 24.03.2016
 * BUGFIX: Move props definitions further up in project files - https://github.com/fsprojects/Paket/issues/1537
