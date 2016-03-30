@@ -442,10 +442,21 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
     }
 
 /// Puts the package into the cache
-let CopyToCache(cache:Cache, packageName, version, fileName, force) =
+let CopyToCache(cache:Cache, packageName, fileName, force) =
     let targetFolder = DirectoryInfo(cache.Location).FullName
     let fi = FileInfo(fileName)
-    let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
+    let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name)) 
+
+    match cache.CacheType with
+    | Some CacheType.CurrentVersion ->
+        let targetFileName = targetFile.FullName |> normalizePath
+        Directory.EnumerateFiles(Path.Combine(targetFolder,packageName.ToString() + ".*.nupkg"))
+        |> Seq.iter (fun packageFileName ->
+            let fi = FileInfo packageFileName
+            if fi.FullName |> normalizePath <> targetFileName then
+                fi.Delete())
+    | _ -> ()
+
     if not force && targetFile.Exists then
         verbosefn "%s already in cache %s" fi.Name targetFolder
     else

@@ -22,14 +22,14 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
     |> List.map fst
 
 
-let CopyToCaches force caches packageName version fileName =
+let CopyToCaches force caches packageName fileName =
     caches
-    |> Seq.iter (fun cache -> NuGetV2.CopyToCache(cache,packageName,version,fileName,force))
+    |> Seq.iter (fun cache -> NuGetV2.CopyToCache(cache,packageName,fileName,force))
 
 let private extractPackage caches package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
         let! fileName,folder = NuGetV2.DownloadPackage(root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
-        CopyToCaches force caches package version fileName
+        CopyToCaches force caches package fileName
         return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
@@ -72,7 +72,7 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
             let di = Utils.getDirectoryInfo path root
             let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
 
-            CopyToCaches force caches package v nupkg.FullName
+            CopyToCaches force caches package nupkg.FullName
 
             let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
             return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
