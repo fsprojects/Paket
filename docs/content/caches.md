@@ -50,7 +50,7 @@ The configuration can be done in the  [`paket.dependencies` file](dependencies-f
 Paket allows you two caching options:
 
 * `versions:all` - stores all currently used version of the dependencies.
-* `versions:current` - stores only currently used version of the dependencies and deletes all other version. Should not be used with netwok shares.
+* `versions:current` - stores only currently used version of the dependencies and deletes all other version. Should not be used with netwok shares since it might affect other projects.
 
 ## Caches as package feeds
 
