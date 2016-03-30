@@ -367,8 +367,7 @@ let ``#1552 install mvvmlightlibs again``() =
     let scenarioName = "i001552-install-mvvmlightlibs-again"
     let scenarioPath = scenarioTempPath scenarioName
 
-    let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.lock"))
-    let expected = oldLockFile.ToString() |> normalizeLineEndings
+    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.lock")) |> normalizeLineEndings
 
     let oldProjectFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
     let oldProjectFileText = File.ReadAllText oldProjectFile |> normalizeLineEndings
@@ -377,8 +376,7 @@ let ``#1552 install mvvmlightlibs again``() =
     let lockFileShouldBeConsistentAfterCommand command =
         directPaketInPath command scenarioPath |> ignore
 
-        LockFile.LoadFrom(newLockFilePath).ToString()
-        |> normalizeLineEndings |> shouldEqual expected
+        File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
 
         let newProjectFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
         File.ReadAllText newProjectFile
@@ -400,8 +398,15 @@ let ``#1552 install mvvmlightlibs again``() =
 let ``#1552 install mvvmlightlibs first time``() =
     let scenarioName = "i001552-install-mvvmlightlibs-first-time"
 
-    let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath scenarioName,"paket.locktemplate"))
-    let expected = oldLockFile.ToString() |> normalizeLineEndings
+    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.locktemplate")) |> normalizeLineEndings
 
-    let newLockFile = install scenarioName
-    newLockFile.ToString() |> normalizeLineEndings |> shouldEqual expected
+    install scenarioName |> ignore
+    
+    let newLockFilePath = Path.Combine(scenarioTempPath scenarioName,"paket.lock")
+    File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
+
+    directPaketInPath "install" (scenarioTempPath scenarioName) |> ignore
+    File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
+
+    directPaketInPath "install -f" (scenarioTempPath scenarioName) |> ignore
+    File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
