@@ -459,26 +459,6 @@ let CopyToCache(cache:Cache, fileName, force) =
     else
         File.Copy(fileName, targetFile.FullName)
 
-
-/// Removes older packages from the cache
-let RemoveOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:SemVerInfo seq) =
-    let targetFolder = DirectoryInfo(cache.Location)
-    if not targetFolder.Exists then
-        targetFolder.Create()
-    
-    match cache.CacheType with
-    | Some CacheType.CurrentVersion ->
-        let fileNames =
-            versions
-            |> Seq.map (fun v -> packageName.ToString() + "." + v.ToString() + ".nupkg" |> normalizePath)
-            |> Set.ofSeq
-
-        targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
-        |> Seq.iter (fun fi ->            
-            if not <| fileNames.Contains(fi.Name |> normalizePath) then
-                fi.Delete())
-    | _ -> ()
-
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async { 
         if String.IsNullOrWhiteSpace licenseUrl then return () else

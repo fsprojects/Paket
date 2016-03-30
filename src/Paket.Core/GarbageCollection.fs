@@ -50,10 +50,26 @@ let deleteUnusedPackages root (lockFile:LockFile) =
     |> List.filter (fun p -> resolutions |> Map.containsKey (resolutionKey p) |> not)
     |> List.iter delete
 
-/// Remove all packages from the packages folder which are not part of the lock file.
-let CleanUp(root, dependenciesFile:DependenciesFile, lockFile) =
-    deleteUnusedPackages root lockFile
+/// Removes older packages from the cache
+let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:SemVerInfo seq) =
+    let targetFolder = DirectoryInfo(cache.Location)
+    if not targetFolder.Exists then
+        targetFolder.Create()
+    
+    match cache.CacheType with
+    | Some CacheType.CurrentVersion ->
+        let fileNames =
+            versions
+            |> Seq.map (fun v -> packageName.ToString() + "." + v.Normalize() + ".nupkg" |> normalizePath)
+            |> Set.ofSeq
 
+        targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
+        |> Seq.iter (fun fi ->            
+            if not <| fileNames.Contains(fi.Name |> normalizePath) then
+                fi.Delete())
+    | _ -> ()
+
+let cleanupCaches (dependenciesFile:DependenciesFile) (lockFile:LockFile) =
     let allCaches = dependenciesFile.Groups |> Seq.collect (fun kv -> kv.Value.Caches) |> Seq.toList
     if List.isEmpty allCaches then () else
     let allPackages = 
@@ -65,4 +81,11 @@ let CleanUp(root, dependenciesFile:DependenciesFile, lockFile) =
     for cache in allCaches do
         for packageName,versions in allPackages do
             let versions = versions |> Seq.map (fun v -> v.Version)
-            NuGetV2.RemoveOlderVersionsFromCache(cache,packageName,versions)
+            removeOlderVersionsFromCache(cache,packageName,versions)
+
+
+/// Remove all packages from the packages folder which are not part of the lock file.
+let CleanUp(root, dependenciesFile:DependenciesFile, lockFile) =
+    deleteUnusedPackages root lockFile
+
+    cleanupCaches dependenciesFile lockFile
