@@ -51,5 +51,18 @@ let deleteUnusedPackages root (lockFile:LockFile) =
     |> List.iter delete
 
 /// Remove all packages from the packages folder which are not part of the lock file.
-let CleanUp(root, lockFile) =
+let CleanUp(root, dependenciesFile:DependenciesFile, lockFile) =
     deleteUnusedPackages root lockFile
+
+    let allCaches = dependenciesFile.Groups |> Seq.collect (fun kv -> kv.Value.Caches) |> Seq.toList
+    if List.isEmpty allCaches then () else
+    let allPackages = 
+        lockFile.Groups 
+        |> Seq.collect (fun kv -> kv.Value.Resolution |> Seq.map (fun kv -> kv.Value)) 
+        |> Seq.toList
+        |> Seq.groupBy (fun p -> p.Name)
+
+    for cache in allCaches do
+        for packageName,versions in allPackages do
+            let versions = versions |> Seq.map (fun v -> v.Version)
+            NuGetV2.RemoveOlderVersionsFromCache(cache,packageName,versions)

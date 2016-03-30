@@ -446,28 +446,38 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
     }
 
 /// Puts the package into the cache
-let CopyToCache(cache:Cache, packageName:PackageName, fileName, force) =
+let CopyToCache(cache:Cache, fileName, force) =
     let targetFolder = DirectoryInfo(cache.Location)
     if not targetFolder.Exists then
         targetFolder.Create()
 
     let fi = FileInfo(fileName)
-    let targetFile = FileInfo(Path.Combine(targetFolder.FullName, fi.Name)) 
-
-    match cache.CacheType with
-    | Some CacheType.CurrentVersion ->
-        let targetFileName = targetFile.Name |> normalizePath
-        
-        targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
-        |> Seq.iter (fun fi ->
-            if fi.Name |> normalizePath <> targetFile.Name then
-                fi.Delete())
-    | _ -> ()
+    let targetFile = FileInfo(Path.Combine(targetFolder.FullName, fi.Name))
 
     if not force && targetFile.Exists then
         verbosefn "%s already in cache %s" fi.Name targetFolder.FullName
     else
         File.Copy(fileName, targetFile.FullName)
+
+
+/// Removes older packages from the cache
+let RemoveOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:SemVerInfo seq) =
+    let targetFolder = DirectoryInfo(cache.Location)
+    if not targetFolder.Exists then
+        targetFolder.Create()
+    
+    match cache.CacheType with
+    | Some CacheType.CurrentVersion ->
+        let fileNames =
+            versions
+            |> Seq.map (fun v -> packageName.ToString() + "." + v.ToString() + ".nupkg" |> normalizePath)
+            |> Set.ofSeq
+
+        targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
+        |> Seq.iter (fun fi ->            
+            if not <| fileNames.Contains(fi.Name |> normalizePath) then
+                fi.Delete())
+    | _ -> ()
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async { 
