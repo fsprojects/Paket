@@ -94,7 +94,7 @@ module LockFileSerializer =
                             { package.Settings with FrameworkRestrictions = FrameworkRestrictionList [] }
                         else
                             package.Settings
-                      let s = settings.ToString()
+                      let s = settings.ToString().ToLower()
 
                       if s = "" then 
                         yield sprintf "    %O %s" package.Name versionStr 
@@ -110,7 +110,7 @@ module LockFileSerializer =
                           if List.isEmpty restrictions || restrictions = getRestrictionList options.Settings.FrameworkRestrictions then
                             yield sprintf "      %O %s" name versionStr
                           else
-                            yield sprintf "      %O %s - framework: %s" name versionStr (String.Join(", ",restrictions))]
+                            yield sprintf "      %O %s - framework: %s" name versionStr (String.Join(", ",restrictions).ToLower())]
     
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
