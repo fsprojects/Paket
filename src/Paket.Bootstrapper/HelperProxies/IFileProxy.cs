@@ -1,4 +1,4 @@
-namespace Paket.Bootstrapper
+namespace Paket.Bootstrapper.HelperProxies
 {
     public interface IFileProxy
     {

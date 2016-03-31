@@ -2,6 +2,8 @@
 using System.Net;
 using Moq;
 using NUnit.Framework;
+using Paket.Bootstrapper.DownloadStrategies;
+using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper.Tests
 {

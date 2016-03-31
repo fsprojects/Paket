@@ -41,16 +41,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BootstrapperHelper.cs" />
-    <Compile Include="CacheDownloadStrategy.cs" />
-    <Compile Include="DirectoryProxy.cs" />
+    <Compile Include="DownloadStrategies\CacheDownloadStrategy.cs" />
+    <Compile Include="HelperProxies\DirectoryProxy.cs" />
     <Compile Include="DownloadArguments.cs" />
     <Compile Include="EnvProxy.cs" />
-    <Compile Include="FileProxy.cs" />
-    <Compile Include="GitHubDownloadStrategy.cs" />
-    <Compile Include="IDirectoryProxy.cs" />
-    <Compile Include="IDownloadStrategy.cs" />
-    <Compile Include="IFileProxy.cs" />
-    <Compile Include="NugetDownloadStrategy.cs" />
+    <Compile Include="HelperProxies\FileProxy.cs" />
+    <Compile Include="DownloadStrategies\GitHubDownloadStrategy.cs" />
+    <Compile Include="HelperProxies\IDirectoryProxy.cs" />
+    <Compile Include="DownloadStrategies\IDownloadStrategy.cs" />
+    <Compile Include="HelperProxies\IFileProxy.cs" />
+    <Compile Include="DownloadStrategies\NugetDownloadStrategy.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SemVer.cs" />

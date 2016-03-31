@@ -2,8 +2,9 @@
 using System.IO;
 using System.Linq;
 using System.Net;
+using Paket.Bootstrapper.HelperProxies;
 
-namespace Paket.Bootstrapper
+namespace Paket.Bootstrapper.DownloadStrategies
 {
     internal class CacheDownloadStrategy : IDownloadStrategy
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 
-namespace Paket.Bootstrapper
+namespace Paket.Bootstrapper.DownloadStrategies
 {
     internal class GitHubDownloadStrategy : IDownloadStrategy
     {

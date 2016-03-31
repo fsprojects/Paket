@@ -5,6 +5,8 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Paket.Bootstrapper.DownloadStrategies;
+using Paket.Bootstrapper.HelperProxies;
 
 [assembly: InternalsVisibleTo("Paket.Bootstrapper.Tests")]
 

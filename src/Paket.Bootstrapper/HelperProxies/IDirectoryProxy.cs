@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Paket.Bootstrapper
+namespace Paket.Bootstrapper.HelperProxies
 {
     public interface IDirectoryProxy
     {

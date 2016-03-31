@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace Paket.Bootstrapper
+namespace Paket.Bootstrapper.DownloadStrategies
 {
     public interface IDownloadStrategy
     {

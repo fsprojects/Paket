@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace Paket.Bootstrapper
+namespace Paket.Bootstrapper.HelperProxies
 {
     class FileProxy : IFileProxy
     {
