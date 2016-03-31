@@ -19,7 +19,7 @@ namespace Paket.Bootstrapper
             {
                 return _fallbackStrategy;
             }
-            set
+            private set
             {
                 if (value == null)
                     throw new ArgumentException("CacheDownloadStrategy needs a non-null FallbackStrategy");
@@ -27,9 +27,14 @@ namespace Paket.Bootstrapper
             }
         }
 
-        public CacheDownloadStrategy(IDownloadStrategy fallbackStrategy)
+        public IDirectoryProxy DirectoryProxy { get; set; }
+        public IFileProxy FileProxy { get; set; }
+
+        public CacheDownloadStrategy(IDownloadStrategy fallbackStrategy, IDirectoryProxy directoryProxy, IFileProxy fileProxy)
         {
             FallbackStrategy = fallbackStrategy;
+            DirectoryProxy = directoryProxy;
+            FileProxy = fileProxy;
         }
 
         public string GetLatestVersion(bool ignorePrerelease, bool silent)
@@ -59,21 +64,21 @@ namespace Paket.Bootstrapper
         {
             var cached = Path.Combine(_paketCacheDir, latestVersion, "paket.exe");
 
-            if (!File.Exists(cached))
+            if (!FileProxy.Exists(cached))
             {
                 if (!silent)
                     Console.WriteLine("Version {0} not found in cache.", latestVersion);
 
                 FallbackStrategy.DownloadVersion(latestVersion, target, silent);
-                Directory.CreateDirectory(Path.GetDirectoryName(cached));
-                File.Copy(target, cached);
+                DirectoryProxy.CreateDirectory(Path.GetDirectoryName(cached));
+                FileProxy.Copy(target, cached);
             }
             else
             {
                 if (!silent)
                     Console.WriteLine("Copying version {0} from cache.", latestVersion);
 
-                File.Copy(cached, target, true);
+                FileProxy.Copy(cached, target, true);
             }
         }
 
@@ -84,10 +89,10 @@ namespace Paket.Bootstrapper
 
         private string GetLatestVersionInCache(bool ignorePrerelease)
         {
-            Directory.CreateDirectory(_paketCacheDir);
+            DirectoryProxy.CreateDirectory(_paketCacheDir);
             var zero = new SemVer();
 
-            return Directory.GetDirectories(_paketCacheDir)
+            return DirectoryProxy.GetDirectories(_paketCacheDir)
                 .Select(Path.GetFileName)
                 .OrderByDescending(x =>
                 {

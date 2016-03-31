@@ -185,7 +185,7 @@ namespace Paket.Bootstrapper
                 gitHubDownloadStrategy.FallbackStrategy = nugetDownloadStrategy;
             }
 
-            return dlArgs.IgnoreCache ? effectiveStrategy : new CacheDownloadStrategy(effectiveStrategy);
+            return dlArgs.IgnoreCache ? effectiveStrategy : new CacheDownloadStrategy(effectiveStrategy, new DirectoryProxy(), new FileProxy());
         }
 
         private static DownloadArguments EvaluateCommandArgs(string[] args)
