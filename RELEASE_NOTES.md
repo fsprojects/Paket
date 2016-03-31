@@ -1,9 +1,9 @@
-#### 3.0.0-alpha092 - 30.03.2016
+#### 3.0.0-alpha093 - 31.03.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+* Additional local caches - http://fsprojects.github.io/Paket/caches.html
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
-* Additional local caches
 
 #### 2.57.1 - 30.03.2016
 * BUGFIX: Property Definitions: placed after csharp targets - https://github.com/fsprojects/Paket/pull/1522

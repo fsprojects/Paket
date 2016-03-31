@@ -56,3 +56,5 @@ Paket allows you two caching options:
 
 All configured caches are automatically used as additional package feeds. So if a package gets removed from the central repository even "paket update" will work.
 The fact that it's now only found in the cache will be written to the [`paket.lock` file](lock-file.html).
+
+All packages in the cache are treated as "unlisted". This means Paket's resolver will only use these packages in a new resolution if the central feed has no unlisted packages. 

@@ -296,9 +296,9 @@ let getPackageNameFromLocalFile fileName =
     nuspec.OfficialName
 
 /// Reads direct dependencies from a nupkg file
-let getDetailsFromLocalNuGetPackage root localNugetPath (packageName:PackageName) (version:SemVerInfo) =
+let getDetailsFromLocalNuGetPackage isCache root localNuGetPath (packageName:PackageName) (version:SemVerInfo) =
     async {
-        let localNugetPath = Utils.normalizeLocalPath localNugetPath
+        let localNugetPath = Utils.normalizeLocalPath localNuGetPath
         let di = getDirectoryInfo localNugetPath root
         let nupkg = findLocalPackage di.FullName packageName version
         
@@ -326,7 +326,7 @@ let getDetailsFromLocalNuGetPackage root localNugetPath (packageName:PackageName
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
               Version = version.Normalize()
-              Unlisted = false }
+              Unlisted = isCache }
     }
 
 
@@ -589,8 +589,11 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
                             raise exn
                             return! tryV3 source nugetSource
 
-                | LocalNuGet(path,_) -> 
-                    let! result = getDetailsFromLocalNuGetPackage root path packageName version
+                | LocalNuGet(path,Some _) -> 
+                    let! result = getDetailsFromLocalNuGetPackage true root path packageName version
+                    return Some(source,result)
+                | LocalNuGet(path,None) -> 
+                    let! result = getDetailsFromLocalNuGetPackage false root path packageName version
                     return Some(source,result)
             with e ->
                 verbosefn "Source '%O' exception: %O" source e
