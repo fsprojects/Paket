@@ -43,7 +43,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
         | SemVerUpdateMode.KeepMinor -> processFile (fun v -> sprintf "~> %d.%d.%d" v.Major v.Minor v.Patch + formatPrerelease v)
         | SemVerUpdateMode.KeepPatch -> processFile (fun v -> sprintf "~> %d.%d.%d.%s" v.Major v.Minor v.Patch v.Build + formatPrerelease v)
 
-    let getVersionsF,groupsToUpdate =
+    let getVersionsF,getPackageDetailsF,groupsToUpdate =
         let changes,groups =
             match updateMode with
             | UpdateAll ->
@@ -128,7 +128,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
         let preferredVersions = 
             DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
-            |> Map.map (fun k (v,s) -> v,[s])
+            |> Map.map (fun (groupName,packageName) (v,s) -> v,s :: (List.map PackageSources.PackageSource.FromCache (dependenciesFile.GetGroup(groupName).Caches)))
 
         let getVersionsF sources resolverStrategy groupName packageName = 
             seq { 
@@ -141,7 +141,13 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                 yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
             } |> Seq.cache
 
-        getVersionsF,groups
+        let getPackageDetailsF sources groupName packageName version =
+            let exploredPackage:PackageDetails = getPackageDetailsF sources groupName packageName version
+            match preferredVersions |> Map.tryFind (groupName,packageName) with
+            | Some (preferedVersion,_) when version = preferedVersion -> { exploredPackage with Unlisted = false }
+            | _ -> exploredPackage
+
+        getVersionsF,getPackageDetailsF,groups
 
     let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate, updateMode)
 

@@ -261,7 +261,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
             let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
             
             try
-                let packageDetails : PackageDetails = getPackageDetailsF packageSources dependency.Name version
+                let packageDetails : PackageDetails = getPackageDetailsF packageSources groupName dependency.Name version
 
                 let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
 
@@ -466,7 +466,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                         match getExploredPackage(currentRequirement,versionToExplore) with
                         | None -> ()
                         | Some exploredPackage ->
-                            if exploredPackage.Unlisted && not !useUnlisted then 
+                            if exploredPackage.Unlisted && not !useUnlisted then
                                 () 
                             else
                                 let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions

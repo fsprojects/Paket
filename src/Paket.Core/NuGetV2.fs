@@ -626,7 +626,7 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
       LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = nugetObject.Dependencies |> Set.ofList }
 
-let rec GetPackageDetails root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
+let rec GetPackageDetails root force (sources:PackageSource list) groupName packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
     try
         getPackageDetails root force sources packageName version
     with
@@ -806,7 +806,7 @@ let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName
                     verbosefn "  to %s" targetFileName
 
                 // discover the link on the fly
-                let nugetPackage = GetPackageDetails root force [source] packageName version
+                let nugetPackage = GetPackageDetails root force [source] groupName packageName version
                 try 
                     let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 

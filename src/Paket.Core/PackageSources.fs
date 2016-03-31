@@ -203,6 +203,8 @@ type PackageSource =
     static member NuGetV2Source url = NuGetV2 { Url = url; Authentication = None }
     static member NuGetV3Source url = NuGetV3 { Url = url; Authentication = None }
 
+    static member FromCache (cache:Cache) = LocalNuGet(cache.Location,Some cache)
+
     static member WarnIfNoConnection (source,_) = 
         let n url auth =
             use client = Utils.createWebClient(url, auth |> Option.map toBasicAuth)

@@ -9,7 +9,7 @@ open System.Xml
 open System.IO
 open Paket.Domain
 
-let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources (package:PackageName) (version:SemVerInfo) = 
+let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources groupName (package:PackageName) (version:SemVerInfo) = 
     let name,dependencies = 
         graph
         |> Seq.filter (fun (p, v, _) -> (PackageName p) = package && SemVer.Parse v = version)
