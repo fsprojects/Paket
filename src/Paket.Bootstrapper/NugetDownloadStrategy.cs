@@ -47,18 +47,15 @@ namespace Paket.Bootstrapper
             }
         }
 
-
         private PrepareWebClientDelegate PrepareWebClient { get; set; }
-        private GetDefaultWebProxyForDelegate GetDefaultWebProxyFor { get; set; }
         private string Folder { get; set; }
         private string NugetSource { get; set; }
         private const string PaketNugetPackageName = "Paket";
         private const string PaketBootstrapperNugetPackageName = "Paket.Bootstrapper";
 
-        public NugetDownloadStrategy(PrepareWebClientDelegate prepareWebClient, GetDefaultWebProxyForDelegate getDefaultWebProxyFor, string folder, string nugetSource)
+        public NugetDownloadStrategy(PrepareWebClientDelegate prepareWebClient, string folder, string nugetSource)
         {
             PrepareWebClient = prepareWebClient;
-            GetDefaultWebProxyFor = getDefaultWebProxyFor;
             Folder = folder;
             NugetSource = nugetSource;
         }

@@ -11,15 +11,13 @@ namespace Paket.Bootstrapper
     {
         private PrepareWebClientDelegate PrepareWebClient { get; set; }
         private PrepareWebRequestDelegate PrepareWebRequest { get; set; }
-        private GetDefaultWebProxyForDelegate GetDefaultWebProxyFor { get; set; }
         public string Name { get { return "Github"; } }
         public IDownloadStrategy FallbackStrategy { get; set; }
 
-        public GitHubDownloadStrategy(PrepareWebClientDelegate prepareWebClient, PrepareWebRequestDelegate prepareWebRequest, GetDefaultWebProxyForDelegate getDefaultWebProxyFor)
+        public GitHubDownloadStrategy(PrepareWebClientDelegate prepareWebClient, PrepareWebRequestDelegate prepareWebRequest)
         {
             PrepareWebClient = prepareWebClient;
             PrepareWebRequest = prepareWebRequest;
-            GetDefaultWebProxyFor = getDefaultWebProxyFor;
         }
 
         public string GetLatestVersion(bool ignorePrerelease, bool silent)
