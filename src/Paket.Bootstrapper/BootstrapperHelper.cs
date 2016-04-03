@@ -27,7 +27,7 @@ namespace Paket.Bootstrapper
         internal static string GetTempFile(string name)
         {
             var path = Path.GetTempPath();
-            var fileName = Path.Combine(path, name + System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
+            var fileName = Path.Combine(path, name + System.Diagnostics.Process.GetCurrentProcess().Id);
             if (File.Exists(fileName))
                 File.Delete(fileName);
             return fileName;
