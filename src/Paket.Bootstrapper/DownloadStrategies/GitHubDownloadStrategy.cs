@@ -2,34 +2,40 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Reflection;
+using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
-    internal class GitHubDownloadStrategy : IDownloadStrategy
+    public class GitHubDownloadStrategy : IDownloadStrategy
     {
-        private PrepareWebClientDelegate PrepareWebClient { get; set; }
-        private PrepareWebRequestDelegate PrepareWebRequest { get; set; }
+        private const int HttpBufferSize = 4096;
+
+        public static class Constants
+        {
+            public const string PaketReleasesLatestUrl = "https://github.com/fsprojects/Paket/releases/latest";
+            public const string PaketReleasesUrl = "https://github.com/fsprojects/Paket/releases";
+            public const string PaketExeDownloadUrlTemplate = "https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe";
+        }
+
+        public IWebRequestProxy WebRequestProxy { get; set; }
+        public IFileProxy FileProxy { get; set; }
         public string Name { get { return "Github"; } }
         public IDownloadStrategy FallbackStrategy { get; set; }
 
-        public GitHubDownloadStrategy(PrepareWebClientDelegate prepareWebClient, PrepareWebRequestDelegate prepareWebRequest)
+        public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileProxy fileProxy)
         {
-            PrepareWebClient = prepareWebClient;
-            PrepareWebRequest = prepareWebRequest;
+            WebRequestProxy = webRequestProxy;
+            FileProxy = fileProxy;
         }
 
         public string GetLatestVersion(bool ignorePrerelease, bool silent)
         {
-            using (var client = new WebClient())
-            {
-                var latestStable = GetLatestStable(client);
-                if (ignorePrerelease)
-                    return latestStable;
-                else
-                    return Max(GetLatestPrerelease(client), latestStable);
-            }
+            var latestStable = GetLatestStable();
+            if (ignorePrerelease)
+                return latestStable;
+            else
+                return Max(GetLatestPrerelease(), latestStable);
         }
 
         private string Max(string prerelease, string latestStable)
@@ -39,20 +45,16 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return greater.Original;
         }
 
-        private string GetLatestPrerelease(WebClient client)
+        private string GetLatestPrerelease()
         {
-            const string releases = "https://github.com/fsprojects/Paket/releases";
-            PrepareWebClient(client, releases);
-            var data = client.DownloadString(releases);
+            var data = WebRequestProxy.DownloadString(Constants.PaketReleasesUrl);
             return GetVersions(data).FirstOrDefault(s => s.Contains("-"));
         }
 
-        private string GetLatestStable(WebClient client)
+        private string GetLatestStable()
         {
-            const string latest = "https://github.com/fsprojects/Paket/releases/latest";
-            PrepareWebClient(client, latest);
-            var data = client.DownloadString(latest);
-            var title = data.Substring(data.IndexOf("<title>") + 7, (data.IndexOf("</title>") + 8 - data.IndexOf("<title>") + 7)); // grabs everything in the <title> tag
+            var data = WebRequestProxy.DownloadString(Constants.PaketReleasesLatestUrl);
+            var title = data.Substring(data.IndexOf("<title>") + 7, (data.IndexOf("</title>") + 8) - (data.IndexOf("<title>") + 7)); // grabs everything in the <title> tag
             var version = title.Split(' ')[1]; // Release, 1.34.0, etc, etc, etc <-- the release number is the second part fo this split string
             return version;
         }
@@ -73,32 +75,22 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         public void DownloadVersion(string latestVersion, string target, bool silent)
         {
-            var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe", latestVersion);
+            var url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
             if (!silent)
                 Console.WriteLine("Starting download from {0}", url);
 
-            var request = PrepareWebRequest(url);
-
-            using (var httpResponse = (HttpWebResponse)request.GetResponse())
+            using (var httpResponseStream = WebRequestProxy.GetResponseStream(url))
             {
-                using (var httpResponseStream = httpResponse.GetResponseStream())
+                //byte[] buffer = new byte[bufferSize];
+                var tmpFile = BootstrapperHelper.GetTempFile("paket");
+
+                using (var fileStream = FileProxy.Create(tmpFile))
                 {
-                    const int bufferSize = 4096;
-                    byte[] buffer = new byte[bufferSize];
-                    var tmpFile = BootstrapperHelper.GetTempFile("paket");
-
-                    using (var fileStream = File.Create(tmpFile))
-                    {
-                        int bytesRead;
-                        while ((bytesRead = httpResponseStream.Read(buffer, 0, bufferSize)) != 0)
-                        {
-                            fileStream.Write(buffer, 0, bytesRead);
-                        }
-                    }
-
-                    File.Copy(tmpFile, target, true);
-                    File.Delete(tmpFile);
+                    httpResponseStream.CopyTo(fileStream, HttpBufferSize);
                 }
+
+                FileProxy.Copy(tmpFile, target, true);
+                FileProxy.Delete(tmpFile);
             }
         }
 
@@ -106,7 +98,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
             string exePath = executingAssembly.Location;
-            var localVersion = BootstrapperHelper.GetLocalFileVersion(exePath);
+            var localVersion = FileProxy.GetLocalFileVersion(exePath);
             if (localVersion.StartsWith(latestVersion))
             {
                 if (!silent)
@@ -118,22 +110,17 @@ namespace Paket.Bootstrapper.DownloadStrategies
             if (!silent)
                 Console.WriteLine("Starting download of bootstrapper from {0}", url);
 
-            var request = PrepareWebRequest(url);
-
             string renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             string tmpDownloadPath = BootstrapperHelper.GetTempFile("newBootstrapper");
 
-            using (var httpResponse = (HttpWebResponse)request.GetResponse())
+            using (Stream httpResponseStream = WebRequestProxy.GetResponseStream(url), toStream = FileProxy.Create(tmpDownloadPath))
             {
-                using (Stream httpResponseStream = httpResponse.GetResponseStream(), toStream = File.Create(tmpDownloadPath))
-                {
-                    httpResponseStream.CopyTo(toStream);
-                }
+                httpResponseStream.CopyTo(toStream, HttpBufferSize);
             }
             try
             {
-                BootstrapperHelper.FileMove(exePath, renamedPath);
-                BootstrapperHelper.FileMove(tmpDownloadPath, exePath);
+                FileProxy.FileMove(exePath, renamedPath);
+                FileProxy.FileMove(tmpDownloadPath, exePath);
                 if (!silent)
                     Console.WriteLine("Self update of bootstrapper was successful.");
             }
@@ -141,7 +128,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 if (!silent)
                     Console.WriteLine("Self update failed. Resetting bootstrapper.");
-                BootstrapperHelper.FileMove(renamedPath, exePath);
+                FileProxy.FileMove(renamedPath, exePath);
                 throw;
             }
         }

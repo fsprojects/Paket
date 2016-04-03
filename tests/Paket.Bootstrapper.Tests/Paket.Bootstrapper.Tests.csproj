@@ -38,9 +38,10 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Strategies\CacheDownloadStrategyTest.cs" />
+    <Compile Include="DownloadStrategies\CacheDownloadStrategyTest.cs" />
     <Compile Include="EnvWebProxyShould.cs" />
     <Compile Include="ProgramTests.cs" />
+    <Compile Include="DownloadStrategies\GitHubDownloadStrategyTest.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.paket\paket.targets" />

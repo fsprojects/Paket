@@ -13,5 +13,25 @@ namespace Paket.Bootstrapper.HelperProxies
         {
             File.Copy(fileFrom, fileTo, overwrite);
         }
+
+        public void Delete(string filename)
+        {
+            File.Delete(filename);
+        }
+
+        public Stream Create(string filename)
+        {
+            return File.Create(filename);
+        }
+
+        public string GetLocalFileVersion(string filename)
+        {
+            return BootstrapperHelper.GetLocalFileVersion(filename);
+        }
+
+        public void FileMove(string fromFile, string toFile)
+        {
+            BootstrapperHelper.FileMove(fromFile, toFile);
+        }
     }
 }
