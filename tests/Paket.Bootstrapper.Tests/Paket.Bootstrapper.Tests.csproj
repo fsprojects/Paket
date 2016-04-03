@@ -38,7 +38,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheDownloadStrategyTest.cs" />
+    <Compile Include="Strategies\CacheDownloadStrategyTest.cs" />
     <Compile Include="EnvWebProxyShould.cs" />
     <Compile Include="ProgramTests.cs" />
   </ItemGroup>

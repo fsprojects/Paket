@@ -5,7 +5,7 @@ using NUnit.Framework;
 using Paket.Bootstrapper.DownloadStrategies;
 using Paket.Bootstrapper.HelperProxies;
 
-namespace Paket.Bootstrapper.Tests
+namespace Paket.Bootstrapper.Tests.Strategies
 {
     [TestFixture]
     public class CacheDownloadStrategyTest
