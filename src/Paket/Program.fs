@@ -76,7 +76,7 @@ let add (results : ParseResults<_>) =
         if results.Contains <@ AddArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
         if results.Contains <@ AddArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
-    let touchAffectedRefs = false
+    let touchAffectedRefs = results.Contains <@ AddArgs.Touch_Affected_Refs @>
 
     match results.TryGetResult <@ AddArgs.Project @> with
     | Some projectName ->
@@ -152,7 +152,7 @@ let install (results : ParseResults<_>) =
         if results.Contains <@ InstallArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
         if results.Contains <@ InstallArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
-    let touchAffectedRefs = false
+    let touchAffectedRefs = results.Contains <@ InstallArgs.Touch_Affected_Refs @>
 
     Dependencies.Locate().Install(force, hard, withBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode, touchAffectedRefs)
 
@@ -200,7 +200,7 @@ let update (results : ParseResults<_>) =
         if results.Contains <@ UpdateArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
         if results.Contains <@ UpdateArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
-    let touchAffectedRefs = false
+    let touchAffectedRefs = results.Contains <@ UpdateArgs.Touch_Affected_Refs @>
     let filter = results.Contains <@ UpdateArgs.Filter @>
 
     match results.TryGetResult <@ UpdateArgs.Nuget @> with
