@@ -76,13 +76,14 @@ let add (results : ParseResults<_>) =
         if results.Contains <@ AddArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
         if results.Contains <@ AddArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
+    let touchAffectedRefs = false
 
     match results.TryGetResult <@ AddArgs.Project @> with
     | Some projectName ->
-        Dependencies.Locate().AddToProject(group, packageName, version, force, hard, redirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode)
+        Dependencies.Locate().AddToProject(group, packageName, version, force, hard, redirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
     | None ->
         let interactive = results.Contains <@ AddArgs.Interactive @>
-        Dependencies.Locate().Add(group, packageName, version, force, hard, redirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode)
+        Dependencies.Locate().Add(group, packageName, version, force, hard, redirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
@@ -151,8 +152,9 @@ let install (results : ParseResults<_>) =
         if results.Contains <@ InstallArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
         if results.Contains <@ InstallArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
+    let touchAffectedRefs = false
 
-    Dependencies.Locate().Install(force, hard, withBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode)
+    Dependencies.Locate().Install(force, hard, withBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode, touchAffectedRefs)
 
 let outdated (results : ParseResults<_>) =
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
@@ -198,21 +200,22 @@ let update (results : ParseResults<_>) =
         if results.Contains <@ UpdateArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
         if results.Contains <@ UpdateArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
+    let touchAffectedRefs = false
     let filter = results.Contains <@ UpdateArgs.Filter @>
 
     match results.TryGetResult <@ UpdateArgs.Nuget @> with
     | Some packageName ->
         let version = results.TryGetResult <@ UpdateArgs.Version @>
         if filter then
-            Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
+            Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         else
-            Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
+            Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
     | _ ->
         match group with
         | Some groupName -> 
-            Dependencies.Locate().UpdateGroup(groupName, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
+            Dependencies.Locate().UpdateGroup(groupName, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         | None ->
-            Dependencies.Locate().Update(force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode)
+            Dependencies.Locate().Update(force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
 let pack (results : ParseResults<_>) =
     let outputPath = results.GetResult <@ PackArgs.Output @>

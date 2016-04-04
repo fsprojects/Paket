@@ -32,13 +32,14 @@ type InstallerOptions =
           OnlyReferenced = false
           TouchAffectedRefs = false }
 
-    static member CreateLegacyOptions(force, hard, redirects, createNewBindingFiles, semVerUpdateMode) =
+    static member CreateLegacyOptions(force, hard, redirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs) =
         { InstallerOptions.Default with
             Force = force
             Hard = hard
             CreateNewBindingFiles = createNewBindingFiles
-            Redirects = redirects 
-            SemVerUpdateMode = semVerUpdateMode }
+            Redirects = redirects
+            SemVerUpdateMode = semVerUpdateMode
+            TouchAffectedRefs = touchAffectedRefs }
 
 type UpdaterOptions =
     { Common : InstallerOptions
