@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Paket.Bootstrapper.HelperProxies;
@@ -79,19 +78,19 @@ namespace Paket.Bootstrapper.DownloadStrategies
             if (!silent)
                 Console.WriteLine("Starting download from {0}", url);
 
-            using (var httpResponseStream = WebRequestProxy.GetResponseStream(url))
+            //using (var httpResponseStream = WebRequestProxy.GetResponseStream(url))
+            //{
+            var tmpFile = BootstrapperHelper.GetTempFile("paket");
+
+            using (var fileStream = FileProxy.Create(tmpFile))
             {
-                //byte[] buffer = new byte[bufferSize];
-                var tmpFile = BootstrapperHelper.GetTempFile("paket");
-
-                using (var fileStream = FileProxy.Create(tmpFile))
-                {
-                    httpResponseStream.CopyTo(fileStream, HttpBufferSize);
-                }
-
-                FileProxy.Copy(tmpFile, target, true);
-                FileProxy.Delete(tmpFile);
+                WebRequestProxy.DownloadFile(url, fileStream, HttpBufferSize);
+                //httpResponseStream.CopyTo(fileStream, HttpBufferSize);
             }
+
+            FileProxy.Copy(tmpFile, target, true);
+            FileProxy.Delete(tmpFile);
+            //}
         }
 
         public void SelfUpdate(string latestVersion, bool silent)
@@ -113,9 +112,9 @@ namespace Paket.Bootstrapper.DownloadStrategies
             string renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             string tmpDownloadPath = BootstrapperHelper.GetTempFile("newBootstrapper");
 
-            using (Stream httpResponseStream = WebRequestProxy.GetResponseStream(url), toStream = FileProxy.Create(tmpDownloadPath))
+            using (var toStream = FileProxy.Create(tmpDownloadPath))
             {
-                httpResponseStream.CopyTo(toStream, HttpBufferSize);
+                WebRequestProxy.DownloadFile(url, toStream, HttpBufferSize);
             }
             try
             {

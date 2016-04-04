@@ -60,7 +60,8 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             var stream = new MemoryStream(byteArray);
             var tempFileName = BootstrapperHelper.GetTempFile("paket");
 
-            mockWebProxy.Setup(x => x.GetResponseStream(It.IsAny<string>())).Returns(stream);
+            mockWebProxy.Setup(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<int>()))
+                .Callback<string, Stream, int>((url, streamIn, bufferIn) => stream.CopyTo(streamIn));
             var buffer = new byte[byteArray.Length];
             mockFileProxy.Setup(x => x.Create(tempFileName)).Returns(new MemoryStream(buffer));
 
@@ -84,7 +85,8 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             var tempFileNameNew = BootstrapperHelper.GetTempFile("newBootstrapper");
             var tempFileNameOld = BootstrapperHelper.GetTempFile("oldBootstrapper");
 
-            mockWebProxy.Setup(x => x.GetResponseStream(It.IsAny<string>())).Returns(stream);
+            mockWebProxy.Setup(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<int>()))
+               .Callback<string, Stream, int>((url, streamIn, bufferIn) => stream.CopyTo(streamIn));
             var buffer = new byte[byteArray.Length];
             mockFileProxy.Setup(x => x.Create(tempFileNameNew)).Returns(new MemoryStream(buffer));
             mockFileProxy.Setup(x => x.GetLocalFileVersion(It.IsAny<string>())).Returns("2.52.1");

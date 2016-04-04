@@ -5,7 +5,7 @@ namespace Paket.Bootstrapper.HelperProxies
     public interface IWebRequestProxy
     {
         string DownloadString(string address);
-        Stream GetResponseStream(string url);
         void DownloadFile(string url, string targetLocation);
+        void DownloadFile(string url, Stream stream, int bufferSize);
     }
 }
