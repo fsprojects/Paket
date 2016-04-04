@@ -12,7 +12,7 @@ let private removePackageFromProject (project : ProjectType) groupName package =
         .RemoveNuGetReference(groupName,package)
         .Save()
 
-let private remove removeFromProjects dependenciesFileName groupName (package: PackageName) force hard installAfter = 
+let private remove removeFromProjects dependenciesFileName groupName (package: PackageName) force installAfter = 
     let root = Path.GetDirectoryName dependenciesFileName
     let allProjects = ProjectType.FindAllProjects root
     
@@ -46,11 +46,11 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
     
     if installAfter then
         let updatedGroups = Map.add groupName 0 Map.empty
-        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false, SemVerUpdateMode.NoRestriction), hasChanged, dependenciesFile, lockFile, updatedGroups)
+        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, false, false, SemVerUpdateMode.NoRestriction), hasChanged, dependenciesFile, lockFile, updatedGroups)
         GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
 
 /// Removes a package with the option to remove it from a specified project.
-let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, hard, projectName, installAfter) =
+let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, projectName, installAfter) =
     let groupName = 
         match groupName with
         | None -> Constants.MainDependencyGroup
@@ -65,10 +65,10 @@ let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, 
         | None ->
             traceErrorfn "Could not remove package %O from specified project %s. Project not found" packageName projectName
 
-    remove removeFromSpecifiedProject dependenciesFileName groupName packageName force hard installAfter
+    remove removeFromSpecifiedProject dependenciesFileName groupName packageName force installAfter
 
 /// Remove a package with the option to interactively remove it from multiple projects.
-let Remove(dependenciesFileName, groupName, packageName:PackageName, force, hard, interactive, installAfter) =
+let Remove(dependenciesFileName, groupName, packageName:PackageName, force, interactive, installAfter) =
     let groupName = 
         match groupName with
         | None -> Constants.MainDependencyGroup
@@ -80,4 +80,4 @@ let Remove(dependenciesFileName, groupName, packageName:PackageName, force, hard
                 if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s (group %O)?" project.FileName groupName) then
                     removePackageFromProject project groupName packageName
 
-    remove removeFromProjects dependenciesFileName groupName packageName force hard installAfter
+    remove removeFromProjects dependenciesFileName groupName packageName force installAfter

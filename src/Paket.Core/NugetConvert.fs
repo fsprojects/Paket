@@ -445,4 +445,4 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
     if installAfter then
         UpdateProcess.Update(
             result.PaketEnv.DependenciesFile.FileName,
-            { UpdaterOptions.Default with Common = { InstallerOptions.Default with Force = true; Hard = true; Redirects = true }})
+            { UpdaterOptions.Default with Common = { InstallerOptions.Default with Force = true; Redirects = true }})
