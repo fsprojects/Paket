@@ -97,12 +97,21 @@ It's possible to influence the `CopyToOutputDirectory` property for all content 
 
     [lang=paket]
     source https://nuget.org/api/v2
-	CopyToOutputDirectory: always
+	copy_content_to_output_dir: always
 
     nuget jQuery 
 	nuget Fody
 	nuget ServiceStack.Swagger
 
+It also possible to define this behavior on level of individual nugets:
+
+    [lang=paket]
+    source https://nuget.org/api/v2
+    
+    nuget jQuery 
+	nuget Fody copy_content_to_output_dir: always
+	nuget ServiceStack.Swagger
+	
 ### import_targets settings
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
