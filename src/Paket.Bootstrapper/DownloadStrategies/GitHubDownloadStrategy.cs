@@ -18,8 +18,8 @@ namespace Paket.Bootstrapper.DownloadStrategies
             public const string PaketExeDownloadUrlTemplate = "https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe";
         }
 
-        public IWebRequestProxy WebRequestProxy { get; set; }
-        public IFileProxy FileProxy { get; set; }
+        private IWebRequestProxy WebRequestProxy { get; set; }
+        private IFileProxy FileProxy { get; set; }
         public string Name { get { return "Github"; } }
         public IDownloadStrategy FallbackStrategy { get; set; }
 

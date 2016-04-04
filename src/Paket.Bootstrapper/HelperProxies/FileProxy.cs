@@ -1,4 +1,5 @@
 using System.IO;
+using System.IO.Compression;
 
 namespace Paket.Bootstrapper.HelperProxies
 {
@@ -33,5 +34,11 @@ namespace Paket.Bootstrapper.HelperProxies
         {
             BootstrapperHelper.FileMove(fromFile, toFile);
         }
+
+        public void ExtractToDirectory(string zipFile, string targetLocation)
+        {
+            ZipFile.ExtractToDirectory(zipFile, targetLocation);
+        }
+        
     }
 }

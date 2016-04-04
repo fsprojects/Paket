@@ -39,6 +39,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DownloadStrategies\CacheDownloadStrategyTest.cs" />
+    <Compile Include="DownloadStrategies\NugetDownloadStrategyTests.cs" />
     <Compile Include="EnvWebProxyShould.cs" />
     <Compile Include="ProgramTests.cs" />
     <Compile Include="DownloadStrategies\GitHubDownloadStrategyTest.cs" />

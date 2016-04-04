@@ -1,10 +1,9 @@
 using System;
 using System.Configuration;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
-using System.Net;
 using System.Reflection;
+using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
@@ -47,15 +46,19 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        private PrepareWebClientDelegate PrepareWebClient { get; set; }
+        private IWebRequestProxy WebRequestProxy { get; set; }
+        private IDirectoryProxy DirectoryProxy { get; set; }
+        private IFileProxy FileProxy { get; set; }
         private string Folder { get; set; }
         private string NugetSource { get; set; }
         private const string PaketNugetPackageName = "Paket";
         private const string PaketBootstrapperNugetPackageName = "Paket.Bootstrapper";
 
-        public NugetDownloadStrategy(PrepareWebClientDelegate prepareWebClient, string folder, string nugetSource)
+        public NugetDownloadStrategy(IWebRequestProxy webRequestProxy, IDirectoryProxy directoryProxy, IFileProxy fileProxy, string folder, string nugetSource)
         {
-            PrepareWebClient = prepareWebClient;
+            WebRequestProxy = webRequestProxy;
+            DirectoryProxy = directoryProxy;
+            FileProxy = fileProxy;
             Folder = folder;
             NugetSource = nugetSource;
         }
@@ -69,93 +72,87 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         public string GetLatestVersion(bool ignorePrerelease, bool silent)
         {
-            if (Directory.Exists(NugetSource))
+            if (DirectoryProxy.Exists(NugetSource))
             {
                 var paketPrefix = "paket.";
                 var latestLocalVersion =
-                    Directory.EnumerateFiles(NugetSource, "paket.*.nupkg", SearchOption.TopDirectoryOnly).
-                    Select(x => Path.GetFileNameWithoutExtension(x)).
-                    // If the specified character isn't a digit, then the file
-                    // likely contains the bootstrapper or paket.core
-                    Where(x => x.Length > paketPrefix.Length && Char.IsDigit(x[paketPrefix.Length])).
-                    Select(x => x.Substring(paketPrefix.Length)).
-                    Select(SemVer.Create).
-                    Where(x => !ignorePrerelease || (x.PreRelease == null)).
-                    OrderBy(x => x).
-                    LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
+                    DirectoryProxy.
+                        EnumerateFiles(NugetSource, "paket.*.nupkg", SearchOption.TopDirectoryOnly).
+                        Select(x => Path.GetFileNameWithoutExtension(x)).
+                        // If the specified character isn't a digit, then the file
+                        // likely contains the bootstrapper or paket.core
+                        Where(x => x.Length > paketPrefix.Length && Char.IsDigit(x[paketPrefix.Length])).
+                        Select(x => x.Substring(paketPrefix.Length)).
+                        Select(SemVer.Create).
+                        Where(x => !ignorePrerelease || (x.PreRelease == null)).
+                        OrderBy(x => x).
+                        LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
                 return latestLocalVersion != null ? latestLocalVersion.Original : String.Empty;
             }
             else
             {
                 var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
-                using (var client = new WebClient())
-                {
-                    var versionRequestUrl = apiHelper.GetAllPackageVersions(!ignorePrerelease);
-                    PrepareWebClient(client, versionRequestUrl);
-                    var versions = client.DownloadString(versionRequestUrl);
-                    var latestVersion = versions.
-                        Trim('[', ']').
-                        Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).
-                        Select(x => x.Trim('"')).
-                        Select(SemVer.Create).
-                        OrderBy(x => x).
-                        LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
-                    return latestVersion != null ? latestVersion.Original : String.Empty;
-                }
+                var versionRequestUrl = apiHelper.GetAllPackageVersions(!ignorePrerelease);
+                var versions = WebRequestProxy.DownloadString(versionRequestUrl);
+                var latestVersion = versions.
+                    Trim('[', ']').
+                    Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).
+                    Select(x => x.Trim('"')).
+                    Select(SemVer.Create).
+                    Where(x => !ignorePrerelease || (x.PreRelease == null)).
+                    OrderBy(x => x).
+                    LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
+                return latestVersion != null ? latestVersion.Original : String.Empty;
             }
         }
 
         public void DownloadVersion(string latestVersion, string target, bool silent)
         {
             var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
-            using (WebClient client = new WebClient())
+
+            const string paketNupkgFile = "paket.latest.nupkg";
+            const string paketNupkgFileTemplate = "paket.{0}.nupkg";
+
+            var paketDownloadUrl = apiHelper.GetLatestPackage();
+            var paketFile = paketNupkgFile;
+            if (!String.IsNullOrWhiteSpace(latestVersion))
             {
-                const string paketNupkgFile = "paket.latest.nupkg";
-                const string paketNupkgFileTemplate = "paket.{0}.nupkg";
-
-                var paketDownloadUrl = apiHelper.GetLatestPackage();
-                var paketFile = paketNupkgFile;
-                if (!String.IsNullOrWhiteSpace(latestVersion))
-                {
-                    paketDownloadUrl = apiHelper.GetSpecificPackageVersion(latestVersion);
-                    paketFile = String.Format(paketNupkgFileTemplate, latestVersion);
-                }
-
-                var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
-                Directory.CreateDirectory(randomFullPath);
-                var paketPackageFile = Path.Combine(randomFullPath, paketFile);
-
-                if (Directory.Exists(NugetSource))
-                {
-                    if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = this.GetLatestVersion(false, silent);
-                    var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
-
-                    if (!silent)
-                        Console.WriteLine("Starting download from {0}", sourcePath);
-
-                    File.Copy(sourcePath, paketPackageFile);
-                }
-                else
-                {
-                    if (!silent)
-                        Console.WriteLine("Starting download from {0}", paketDownloadUrl);
-
-                    PrepareWebClient(client, paketDownloadUrl);
-                    client.DownloadFile(paketDownloadUrl, paketPackageFile);
-                }
-
-                ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
-                var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
-                File.Copy(paketSourceFile, target, true);
-                Directory.Delete(randomFullPath, true);
+                paketDownloadUrl = apiHelper.GetSpecificPackageVersion(latestVersion);
+                paketFile = String.Format(paketNupkgFileTemplate, latestVersion);
             }
+
+            var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
+            DirectoryProxy.CreateDirectory(randomFullPath);
+            var paketPackageFile = Path.Combine(randomFullPath, paketFile);
+
+            if (DirectoryProxy.Exists(NugetSource))
+            {
+                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false, silent);
+                var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
+
+                if (!silent)
+                    Console.WriteLine("Starting download from {0}", sourcePath);
+
+                FileProxy.Copy(sourcePath, paketPackageFile);
+            }
+            else
+            {
+                if (!silent)
+                    Console.WriteLine("Starting download from {0}", paketDownloadUrl);
+
+                WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
+            }
+
+            FileProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
+            var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
+            FileProxy.Copy(paketSourceFile, target, true);
+            DirectoryProxy.Delete(randomFullPath, true);
         }
 
         public void SelfUpdate(string latestVersion, bool silent)
         {
-            var executingAssembly = Assembly.GetExecutingAssembly();
-            string target = executingAssembly.Location;
-            var localVersion = BootstrapperHelper.GetLocalFileVersion(target);
+            string target = Assembly.GetExecutingAssembly().Location;
+            var localVersion = FileProxy.GetLocalFileVersion(target);
             if (localVersion.StartsWith(latestVersion))
             {
                 if (!silent)
@@ -177,38 +174,35 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
 
             var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
-            Directory.CreateDirectory(randomFullPath);
+            DirectoryProxy.CreateDirectory(randomFullPath);
             var paketPackageFile = Path.Combine(randomFullPath, paketFile);
 
-            if (Directory.Exists(NugetSource))
+            if (DirectoryProxy.Exists(NugetSource))
             {
-                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = this.GetLatestVersion(false, silent);
+                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false, silent);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
                 if (!silent)
                     Console.WriteLine("Starting download from {0}", sourcePath);
 
-                File.Copy(sourcePath, paketPackageFile);
+                FileProxy.Copy(sourcePath, paketPackageFile);
             }
             else
             {
                 if (!silent)
                     Console.WriteLine("Starting download from {0}", paketDownloadUrl);
-                using (var client = new WebClient())
-                {
-                    PrepareWebClient(client, paketDownloadUrl);
-                    client.DownloadFile(paketDownloadUrl, paketPackageFile);
-                }
+
+                WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
             }
 
-            ZipFile.ExtractToDirectory(paketPackageFile, randomFullPath);
+            FileProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
 
             var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.bootstrapper.exe");
             var renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             try
             {
-                BootstrapperHelper.FileMove(target, renamedPath);
-                BootstrapperHelper.FileMove(paketSourceFile, target);
+                FileProxy.FileMove(target, renamedPath);
+                FileProxy.FileMove(paketSourceFile, target);
                 if (!silent)
                     Console.WriteLine("Self update of bootstrapper was successful.");
             }
@@ -216,10 +210,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 if (!silent)
                     Console.WriteLine("Self update failed. Resetting bootstrapper.");
-                BootstrapperHelper.FileMove(renamedPath, target);
+                FileProxy.FileMove(renamedPath, target);
                 throw;
             }
-            Directory.Delete(randomFullPath, true);
+            DirectoryProxy.Delete(randomFullPath, true);
         }
     }
 }

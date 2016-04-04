@@ -11,5 +11,6 @@ namespace Paket.Bootstrapper.HelperProxies
         Stream Create(string tmpFile);
         string GetLocalFileVersion(string filename);
         void FileMove(string fromFile, string toFile);
+        void ExtractToDirectory(string zipFile, string targetLocation);
     }
 }

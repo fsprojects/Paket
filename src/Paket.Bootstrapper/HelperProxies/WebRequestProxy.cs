@@ -1,15 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
+using Paket.Bootstrapper.DownloadStrategies;
 
-namespace Paket.Bootstrapper.DownloadStrategies
+namespace Paket.Bootstrapper.HelperProxies
 {
-    public interface IWebRequestProxy
-    {
-        string DownloadString(string address);
-        Stream GetResponseStream(string url);
-    }
-
     public class WebRequestProxy : IWebRequestProxy
     {
         public WebRequestProxy()
@@ -33,6 +27,12 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 return httpResponse.GetResponseStream();
             }
+        }
+
+        public void DownloadFile(string url, string targetLocation)
+        {
+            BootstrapperHelper.PrepareWebClient(Client, url);
+            Client.DownloadFile(url, targetLocation);
         }
     }
 }
