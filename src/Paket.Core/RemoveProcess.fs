@@ -43,7 +43,7 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
         dependenciesFile,UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.Install,SemVerUpdateMode.NoRestriction,force)
     
     if installAfter then
-        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false, SemVerUpdateMode.NoRestriction), hasChanged, dependenciesFile, lockFile)
+        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false, SemVerUpdateMode.NoRestriction), false, dependenciesFile, lockFile)
 
 /// Removes a package with the option to remove it from a specified project.
 let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, force, hard, projectName, installAfter) =
