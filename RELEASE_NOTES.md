@@ -1,9 +1,10 @@
-#### 3.0.0-alpha095 - 31.03.2016
+#### 3.0.0-alpha096 - 04.04.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Additional local caches - http://fsprojects.github.io/Paket/caches.html
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
+* BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
 
 #### 2.57.1 - 30.03.2016
 * BUGFIX: Property Definitions: placed after csharp targets - https://github.com/fsprojects/Paket/pull/1522
