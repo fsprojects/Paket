@@ -103,7 +103,7 @@ It's possible to influence the `CopyToOutputDirectory` property for all content 
 	nuget Fody
 	nuget ServiceStack.Swagger
 
-It also possible to define this behavior on level of individual nugets:
+It is also possible to define this behavior on level of individual NuGet packages:
 
     [lang=paket]
     source https://nuget.org/api/v2
