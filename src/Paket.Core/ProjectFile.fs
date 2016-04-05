@@ -461,7 +461,7 @@ module ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild node |> ignore
 
-    let updateFileItems (fileItems:FileItem list) hard (project:ProjectFile) = 
+    let updateFileItems (fileItems:FileItem list) (project:ProjectFile) = 
         let newItemGroups = 
             let firstItemGroup = project.ProjectNode |> getNodes "ItemGroup" |> List.tryHead
             match firstItemGroup with
@@ -529,16 +529,9 @@ module ProjectFile =
 
                 match existingNode with
                 | Some existingNode ->
-                    match existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.tryFind (fun n -> n.Name = "Paket") with
-                    | None when hard ->
-                        let parent = existingNode.ParentNode
-                        parent.InsertBefore(libReferenceNode, existingNode) |> ignore
-                        parent.RemoveChild(existingNode) |> ignore
-                    | Some _ ->                    
-                        let parent = existingNode.ParentNode
-                        parent.InsertBefore(libReferenceNode, existingNode) |> ignore
-                        parent.RemoveChild(existingNode) |> ignore                        
-                    | None -> verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include project.FileName
+                    let parent = existingNode.ParentNode
+                    parent.InsertBefore(libReferenceNode, existingNode) |> ignore
+                    parent.RemoveChild(existingNode) |> ignore
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head 
                     firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore
@@ -810,14 +803,13 @@ module ProjectFile =
 
     let updateReferences
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
-            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) hard (project:ProjectFile) =
+            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) (project:ProjectFile) =
         removePaketNodes project
 
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.map (fun kv -> 
-            if hard then
-                deleteCustomModelNodes (snd kv.Value) project
+            deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
             let projectModel =
                 (snd kv.Value)
@@ -1161,7 +1153,7 @@ type ProjectFile with
 
     member this.DeletePaketNodes name = ProjectFile.deletePaketNodes name this
     
-    member this.UpdateFileItems(fileItems : FileItem list, hard) = ProjectFile.updateFileItems fileItems hard this
+    member this.UpdateFileItems(fileItems : FileItem list) = ProjectFile.updateFileItems fileItems this
 
     member this.GetCustomModelNodes(model:InstallModel) = ProjectFile.getCustomModelNodes model this
 
@@ -1171,7 +1163,7 @@ type ProjectFile with
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
-    member this.UpdateReferences (completeModel, usedPackages, hard) = ProjectFile.updateReferences completeModel usedPackages hard this
+    member this.UpdateReferences (completeModel, usedPackages) = ProjectFile.updateReferences completeModel usedPackages this
 
     member this.Save(forceTouch) = ProjectFile.save forceTouch this
 

@@ -62,7 +62,6 @@ type Add() =
     [<Parameter>] member val Project = "" with get, set
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Interactive = SwitchParameter() with get, set
-    [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val NoInstall = SwitchParameter() with get, set
 
     override x.ProcessRecord() =
@@ -79,8 +78,6 @@ type Add() =
                     yield AddArgs.Force
                 if x.Interactive.IsPresent then
                     yield AddArgs.Interactive
-                if x.Hard.IsPresent then
-                    yield AddArgs.Hard
                 if x.NoInstall.IsPresent then
                     yield AddArgs.No_Install
             ]
@@ -238,7 +235,6 @@ type InstallCmdlet() =
     inherit PSCmdlet()
 
     [<Parameter>] member val Force = SwitchParameter() with get, set
-    [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val Redirects = SwitchParameter() with get, set
 
     override x.ProcessRecord() =
@@ -246,9 +242,7 @@ type InstallCmdlet() =
             let parser = ArgumentParser.Create<InstallArgs>()
             [
                 if x.Force.IsPresent then
-                    yield InstallArgs.Force
-                if x.Hard.IsPresent then
-                    yield InstallArgs.Hard             
+                    yield InstallArgs.Force       
                 if x.Redirects.IsPresent then
                     yield InstallArgs.Redirects
             ]
@@ -310,7 +304,6 @@ type RemoveCmdlet() =
     [<Parameter>] member val Project = "" with get, set
     [<Parameter>] member val Force = SwitchParameter() with get, set
     [<Parameter>] member val Interactive = SwitchParameter() with get, set
-    [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val NoInstall = SwitchParameter() with get, set
 
     override x.ProcessRecord() =
@@ -325,8 +318,6 @@ type RemoveCmdlet() =
                     yield RemoveArgs.Force
                 if x.Interactive.IsPresent then
                     yield RemoveArgs.Interactive
-                if x.Hard.IsPresent then
-                    yield RemoveArgs.Hard
                 if x.NoInstall.IsPresent then
                     yield RemoveArgs.No_Install
             ]
@@ -414,7 +405,6 @@ type UpdateCmdlet() =
     [<Parameter(Position=1)>][<ValidateNotNullOrEmpty>] member val NuGet = "" with get, set
     [<Parameter(Position=2)>] member val Version = "" with get, set
     [<Parameter>] member val Force = SwitchParameter() with get, set
-    [<Parameter>] member val Hard = SwitchParameter() with get, set
     [<Parameter>] member val Redirects = SwitchParameter() with get, set
 
     override x.ProcessRecord() =
@@ -427,8 +417,6 @@ type UpdateCmdlet() =
                     yield UpdateArgs.Version x.Version
                 if x.Force.IsPresent then
                     yield UpdateArgs.Force
-                if x.Hard.IsPresent then
-                    yield UpdateArgs.Hard
                 if x.Redirects.IsPresent then
                     yield UpdateArgs.Redirects
             ]

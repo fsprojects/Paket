@@ -4,9 +4,13 @@
         <supportedRuntime version="v4.0" sku=".NETFramework,Version=v4.5" />
     </startup>
 
-  <runtime>
-    
-  <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+  
+<runtime><assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+  <dependentAssembly>
+    <Paket>True</Paket>
+    <assemblyIdentity name="Common.Logging" publicKeyToken="af08829b84f0328e" culture="neutral" />
+    <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="2.2.0.0" />
+  </dependentAssembly>
   <dependentAssembly>
     <Paket>True</Paket>
     <assemblyIdentity name="Common.Logging.Core" publicKeyToken="af08829b84f0328e" culture="neutral" />
@@ -15,11 +19,6 @@
   <dependentAssembly>
     <Paket>True</Paket>
     <assemblyIdentity name="Common.Logging.NLog20" publicKeyToken="af08829b84f0328e" culture="neutral" />
-    <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="2.2.0.0" />
-  </dependentAssembly>
-  <dependentAssembly>
-    <Paket>True</Paket>
-    <assemblyIdentity name="Common.Logging" publicKeyToken="af08829b84f0328e" culture="neutral" />
     <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="2.2.0.0" />
   </dependentAssembly>
   <dependentAssembly>
@@ -37,5 +36,4 @@
     <assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />
     <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="8.0.0.0" />
   </dependentAssembly>
-</assemblyBinding></runtime>
-</configuration>
+</assemblyBinding></runtime></configuration>

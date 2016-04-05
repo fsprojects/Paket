@@ -137,7 +137,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
 
     removeCopiedFiles project
 
-    project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
+    project.UpdateFileItems(gitRemoteItems @ nuGetFileItems)
 
 
 let CreateInstallModel(root, groupName, sources, caches, force, package) =
@@ -194,7 +194,7 @@ module private LoadAssembliesSafe =
 
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindingRedirects redirects root groupName findDependencies extractedPackages =
+let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects root groupName findDependencies extractedPackages =
     let dependencyGraph = ConcurrentDictionary<_,Set<_>>()
     let projects = ConcurrentDictionary<_,ProjectFile option>();
     let referenceFiles = ConcurrentDictionary<_,ReferencesFile option>();
@@ -268,7 +268,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
               Culture = None })
         |> Seq.sort
 
-    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root bindingRedirects
+    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles root bindingRedirects
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectType) =
@@ -392,7 +392,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             NuGet.NuGetConfig.writeNuGetConfig dir sources
 
         | ProjectType.Project project ->
-            project.UpdateReferences(model, usedPackages, options.Hard)
+            project.UpdateReferences(model, usedPackages)
         
             Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
             |> updatePackagesConfigFile usedPackages 
@@ -466,7 +466,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
                     (snd kv.Value,packageRedirects))
-                |> applyBindingRedirects !first options.CreateNewBindingFiles options.Hard (g.Value.Options.Redirects ++ redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
+                |> applyBindingRedirects !first options.CreateNewBindingFiles (g.Value.Options.Redirects ++ redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
                 first := false
 
 
