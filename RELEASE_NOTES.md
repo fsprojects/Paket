@@ -1,3 +1,6 @@
+#### 2.58.2 - 05.04.2016
+* Touch: disabled by default in Add, Update, Install; enabled with --touch-affected-refs - https://github.com/fsprojects/Paket/pull/1571
+
 #### 2.58.1 - 05.04.2016
 * Using saved api key credentials for the push operation - https://github.com/fsprojects/Paket/pull/1570
 * BUGFIX: Property Definitions: placed after csharp targets - https://github.com/fsprojects/Paket/pull/1522
