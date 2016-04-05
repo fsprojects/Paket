@@ -2,14 +2,14 @@ NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     Argu (2.1)
-    Chessie (0.4.0)
+    Chessie (0.5.1)
       FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
     Newtonsoft.Json (8.0.3) - redirects: force
 GITHUB
   remote: fsharp/FAKE
   specs:
-    src/app/FakeLib/Globbing/Globbing.fs (3c2f89312b7b5a2048cb8eab991c7d1708136cc8)
+    src/app/FakeLib/Globbing/Globbing.fs (e72c7e00f28e52869e6cb98d2cf4009d28f74a57)
   remote: fsharp/FSharp.Data
   specs:
     src/CommonProviderImplementation/AssemblyReader.fs (f815de5e8108bb7de25dde75135707719afd8e09)
@@ -17,12 +17,12 @@ GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    FAKE (4.22.6)
+    FAKE (4.23.1)
     FSharp.Compiler.Service (2.0.0.6)
-    FSharp.Formatting (2.14.0)
-      FSharp.Compiler.Service (>= 2.0.0.3 < 2.1.0)
-      FSharpVSPowerTools.Core (>= 2.3.0 < 2.4.0)
-    FSharpVSPowerTools.Core (2.3.0)
+    FSharp.Formatting (2.14)
+      FSharp.Compiler.Service (>= 2.0.0.3 < 2.1)
+      FSharpVSPowerTools.Core (>= 2.3 < 2.4)
+    FSharpVSPowerTools.Core (2.3)
       FSharp.Compiler.Service (>= 2.0.0.3)
     ILRepack (2.0.10)
     Microsoft.Bcl (1.1.10) - framework: net10, net11, net20, net30, net35, net40, net40-full
@@ -31,18 +31,18 @@ NUGET
     Microsoft.Net.Http (2.2.29) - framework: net10, net11, net20, net30, net35, net40, net40-full
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
-    Octokit (0.19.0)
+    Octokit (0.19)
       Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (3c2f89312b7b5a2048cb8eab991c7d1708136cc8)
+    modules/Octokit/Octokit.fsx (e72c7e00f28e52869e6cb98d2cf4009d28f74a57)
       Octokit
 GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2
   specs:
-    FsCheck (2.2.4)
+    FsCheck (2.2.5)
       FSharp.Core (>= 3.1.2.5)
     FSharp.Core (4.0.0.1)
     NUnit (2.6.4)
