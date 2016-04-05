@@ -226,7 +226,8 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
     let projectsAndReferences = InstallProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
-        InstallProcess.InstallIntoProjects(options.Common, hasChanged, dependenciesFile, lockFile, projectsAndReferences)
+        let forceTouch = hasChanged && options.Common.TouchAffectedRefs
+        InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences)
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
