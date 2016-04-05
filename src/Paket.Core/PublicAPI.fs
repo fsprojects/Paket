@@ -544,11 +544,20 @@ type Dependencies(dependenciesFileName: string) =
     /// Pushes a nupkg file.
     static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
-        let apiKey = defaultArg apiKey (Environment.GetEnvironmentVariable("nugetkey"))
-        if String.IsNullOrEmpty apiKey then
-            failwithf "Could not push package %s. Please specify a NuGet API key via environment variable \"nugetkey\"." packageFileName
-        let maxTrials = defaultArg maxTrials 5
-        RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName
+        let envKey = Environment.GetEnvironmentVariable("nugetkey") |> Option.ofObj 
+        let configKey = url |> Option.bind ConfigFile.GetAuthentication |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
+        let firstPresentKey = 
+            [apiKey; envKey; configKey]
+            |> List.choose id
+            |> List.where (String.IsNullOrEmpty >> not)
+            |> List.tryHead
+
+        match firstPresentKey with
+        | None -> 
+            failwithf "Could not push package %s due to missing credentials for the url %s. Please specify a NuGet API key via the command line, the environment variable \"nugetkey\", or by using 'paket config add-token'." packageFileName urlWithEndpoint
+        | Some apiKey -> 
+            let maxTrials = defaultArg maxTrials 5
+            RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName
 
     /// Lists all paket.template files in the current solution.
     member this.ListTemplateFiles() : TemplateFile list =
