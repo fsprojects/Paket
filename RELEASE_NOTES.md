@@ -1,3 +1,6 @@
+#### 2.58.3 - 05.04.2016
+* BUGFIX: Add "*.fsi" files as <Compile> by default - https://github.com/fsprojects/Paket/pull/1573
+
 #### 2.58.2 - 05.04.2016
 * Touch: disabled by default in Add, Update, Install; enabled with --touch-affected-refs - https://github.com/fsprojects/Paket/pull/1571
 
