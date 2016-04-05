@@ -1,4 +1,4 @@
-#### 2.58.0 - 05.04.2016
+#### 2.58.1 - 05.04.2016
 * Using saved api key credentials for the push operation - https://github.com/fsprojects/Paket/pull/1570
 * BUGFIX: Property Definitions: placed after csharp targets - https://github.com/fsprojects/Paket/pull/1522
 
