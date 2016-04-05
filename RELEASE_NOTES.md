@@ -1,9 +1,12 @@
-#### 3.0.0-alpha096 - 05.04.2016
+#### 3.0.0-alpha097 - 05.04.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
 * Additional local caches - http://fsprojects.github.io/Paket/caches.html
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
+
+#### 2.58.2 - 05.04.2016
+* Touch: disabled by default in Add, Update, Install; enabled with --touch-affected-refs - https://github.com/fsprojects/Paket/pull/1571
 
 #### 2.58.1 - 05.04.2016
 * Using saved api key credentials for the push operation - https://github.com/fsprojects/Paket/pull/1570
