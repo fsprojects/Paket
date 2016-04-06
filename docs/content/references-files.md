@@ -82,6 +82,21 @@ In constract, you have the option to force Paket to not create a redirect:
 
 Redirects settings in [references files](references-files.html#Redirects-settings) takes precedence over settings in [dependencies file](nuget-dependencies.html#redirects-settings).
 
+## Excluding libraries
+
+<blockquote>This feature is only available in Paket 3.0 alpha versions.</blockquote>
+
+This option allows you to exclude libraries from being referenced in project files:
+
+    [lang=paket]
+	PackageA
+	  exclude A1.dll
+	  exclude A2.dll
+	Dapper
+	NUnit
+	  exclude nunit.framework.dll
+
+
 ## File name conventions
 
 If Paket finds `paket.references` in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.
