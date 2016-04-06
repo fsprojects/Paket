@@ -3,6 +3,6 @@ Chessie
 
 group Test
   NUnit
-  NUnit.Runners.Net4
+  NUnit.Runners
   FsCheck
   File:FsUnit.fs .
