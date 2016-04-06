@@ -385,3 +385,14 @@ File:countdown.js Scripts link: false"""
 let ``should parse and serialize reffiles with link false``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileWithLinkFalse).ToString()
     normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithLinkFalse)
+
+let refFileWithExcludes = """Castle.Windsor
+Newtonsoft.Json redirects: on
+FSharp.Core redirects: off
+   exclude FSharp.Core.dll
+File:countdown.js Scripts link: false"""
+
+[<Test>]
+let ``should parse and serialize reffiles with excludes``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithExcludes).ToString()
+    normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithExcludes)
