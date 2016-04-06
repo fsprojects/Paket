@@ -386,10 +386,25 @@ let ``should parse and serialize reffiles with link false``() =
     let refFile = ReferencesFile.FromLines(toLines refFileWithLinkFalse).ToString()
     normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithLinkFalse)
 
+let refFileWithWrongExcludes = """exclude FSharp.Core.dll
+Castle.Windsor
+Newtonsoft.Json redirects: on
+FSharp.Core redirects: off
+File:countdown.js Scripts link: false"""
+
+[<Test>]
+let ``should not parse reffiles with wrong excludes``() = 
+    try
+        ReferencesFile.FromLines(toLines refFileWithWrongExcludes) |> ignore
+        failwith "expected exception"
+    with
+    | exn when exn.Message.Contains "No package" -> ()
+
 let refFileWithExcludes = """Castle.Windsor
 Newtonsoft.Json redirects: on
 FSharp.Core redirects: off
-   exclude FSharp.Core.dll
+  exclude FSharp.Core.dll
+  exclude FSharp.Core2.dll
 File:countdown.js Scripts link: false"""
 
 [<Test>]

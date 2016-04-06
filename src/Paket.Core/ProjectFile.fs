@@ -814,6 +814,7 @@ module ProjectFile =
             let projectModel =
                 (snd kv.Value)
                     .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions|> getRestrictionList)
+                    .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
             
             match getTargetFramework project with 

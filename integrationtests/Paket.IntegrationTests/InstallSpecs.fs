@@ -485,3 +485,12 @@ let ``#736 install into nested project.json``() =
     let newFile = Path.Combine(scenarioTempPath "i000736-new-json-nested","project1","project.json")
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     normalizeLineEndings resolvedNewPorjectJson |> shouldEqual s2
+
+[<Test>]
+let ``#1145 don't install excludes``() = 
+    let newLockFile = install "i001145-excludes"
+    let newFile = Path.Combine(scenarioTempPath "i001145-excludes","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001145-excludes","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1

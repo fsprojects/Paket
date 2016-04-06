@@ -70,8 +70,17 @@ type ReferencesFile =
 
         
                     let nugetPackages =
-                        nugetLines
-                        |> List.map parsePackageInstallSettings
+                        let packages = System.Collections.Generic.List<PackageInstallSettings>()
+                        for line in nugetLines do
+                            if line.StartsWith "exclude " then
+                                if packages.Count = 0 then
+                                    failwithf "No package defined for '%s'." line
+                                let p = packages.[packages.Count-1]
+                                let e = line.Substring(7).Trim()
+                                packages.[packages.Count-1] <- { p with Settings = { p.Settings with Excludes = p.Settings.Excludes @ [e] }}
+                            else
+                                packages.Add(parsePackageInstallSettings line)
+                        packages |> Seq.toList
 
                     let remoteFiles = 
                         remoteLines
@@ -117,6 +126,7 @@ type ReferencesFile =
                     IncludeVersionInPath = if includeVersionInPath then Some includeVersionInPath else None
                     ReferenceCondition = if String.IsNullOrWhiteSpace referenceCondition |> not then Some referenceCondition else None
                     CreateBindingRedirects = createBindingRedirects
+                    Excludes = []
                     OmitContent = if omitContent then Some ContentCopySettings.Omit else None } }
 
 
@@ -168,7 +178,9 @@ type ReferencesFile =
               (match s.Settings.Link with | Some x -> " link: " + x.ToString().ToLower() | _ -> "")
 
         let printGroup g = 
-            (g.NugetPackages |> List.map (fun p -> String.Join(" ",[p.Name.ToString(); p.Settings.ToString()] |> List.filter (fun s -> s <> "")))) @
+            (g.NugetPackages |> List.collect (fun p -> 
+                 let packageStr = String.Join(" ",[p.Name.ToString(); p.Settings.ToString()] |> List.filter (fun s -> s <> ""))
+                 packageStr :: (p.Settings.Excludes |> List.map (fun e -> sprintf "  exclude %s" e)))) @
               (g.RemoteFiles |> List.map printSourceFile)
 
         String.Join
