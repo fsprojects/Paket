@@ -20,7 +20,7 @@ echo "Installing $LATEST ..."
 
 rm -rf $TMP
 mkdir -p $TMP
-wget -nc -q -4 -O $TMP/paket.zip $LATEST
+curl -L $LATEST -o $TMP/paket.zip
 unzip -qq -o -d $TMP/ $TMP/paket.zip
 
 rm -rf $LIB/paket
