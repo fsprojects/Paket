@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 
 namespace Paket.Bootstrapper.Tests
 {
@@ -91,5 +86,30 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(sut.PreReleaseBuild, Is.EqualTo("0"));
             Assert.That(sut.Original, Is.EqualTo("2.57.1.456-pre123"));
         }
+
+        [Test]
+        public void Compare()
+        {
+            //arrange
+
+            //act
+            var result = SemVer.Create("0.0").CompareTo(SemVer.Create("0.1"));
+
+            //assert
+            Assert.That(result, Is.EqualTo(0.CompareTo(1)));
+        }
+
+        [Test]
+        public void ComparePrereleaseToStable()
+        {
+            //arrange
+
+            //act
+            var result = SemVer.Create("0.1-pre").CompareTo(SemVer.Create("0.1"));
+
+            //assert
+            Assert.That(result, Is.EqualTo(0.CompareTo(1)));
+        }
+        
     }
 }

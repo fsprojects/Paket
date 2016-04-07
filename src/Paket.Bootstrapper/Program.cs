@@ -14,56 +14,18 @@ namespace Paket.Bootstrapper
 {
     class Program
     {
-        const string PreferNugetCommandArg = "--prefer-nuget";
-        const string PreferNugetAppSettingsKey = "PreferNuget";
-        const string ForceNugetCommandArg = "--force-nuget";
-        const string ForceNugetAppSettingsKey = "ForceNuget";
-        const string PrereleaseCommandArg = "prerelease";
-        const string PaketVersionEnv = "PAKET.VERSION";
-        const string PaketVersionAppSettingsKey = "PaketVersion";
-        const string SelfUpdateCommandArg = "--self";
-        const string SilentCommandArg = "-s";
-        const string NugetSourceArgPrefix = "--nuget-source=";
-        const string IgnoreCacheCommandArg = "-f";
-
+        
         static void Main(string[] args)
         {
             Console.CancelKeyPress += CancelKeyPressed;
 
-            var commandArgs = args;
-            var preferNuget = false;
-            var forceNuget = false;
+            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings, Environment.GetEnvironmentVariables());
+            if (!options.Silent && options.UnprocessedCommandArgs.Any())
+                Console.WriteLine("Ignoring the following unknown arguments: {0}", String.Join(", ", options.UnprocessedCommandArgs));
 
-            if (commandArgs.Contains(PreferNugetCommandArg))
-            {
-                preferNuget = true;
-                commandArgs = args.Where(x => x != PreferNugetCommandArg).ToArray();
-            }
-            else if (ConfigurationManager.AppSettings[PreferNugetAppSettingsKey] == "true")
-            {
-                preferNuget = true;
-            }
-            if (commandArgs.Contains(ForceNugetCommandArg))
-            {
-                forceNuget = true;
-                commandArgs = args.Where(x => x != ForceNugetCommandArg).ToArray();
-            }
-            else if (ConfigurationManager.AppSettings[ForceNugetAppSettingsKey] == "true")
-            {
-                forceNuget = true;
-            }
-            var silent = false;
-            if (commandArgs.Contains(SilentCommandArg))
-            {
-                silent = true;
-                commandArgs = args.Where(x => x != SilentCommandArg).ToArray();
-            }
+            var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
 
-            var dlArgs = EvaluateCommandArgs(commandArgs);
-
-            var effectiveStrategy = GetEffectiveDownloadStrategy(dlArgs, preferNuget, forceNuget);
-
-            StartPaketBootstrapping(effectiveStrategy, dlArgs, silent);
+            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, options.Silent);
         }
 
         private static void CancelKeyPressed(object sender, ConsoleCancelEventArgs e)
@@ -190,48 +152,5 @@ namespace Paket.Bootstrapper
             return dlArgs.IgnoreCache ? effectiveStrategy : new CacheDownloadStrategy(effectiveStrategy, new DirectoryProxy(), new FileProxy());
         }
 
-        private static DownloadArguments EvaluateCommandArgs(string[] args)
-        {
-            var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var target = Path.Combine(folder, "paket.exe");
-            string nugetSource = null;
-
-            var latestVersion = ConfigurationManager.AppSettings[PaketVersionAppSettingsKey] ?? Environment.GetEnvironmentVariable(PaketVersionEnv) ?? String.Empty;
-            var ignorePrerelease = true;
-            bool doSelfUpdate = false;
-            var ignoreCache = false;
-            var commandArgs = args;
-
-            if (commandArgs.Contains(SelfUpdateCommandArg))
-            {
-                commandArgs = commandArgs.Where(x => x != SelfUpdateCommandArg).ToArray();
-                doSelfUpdate = true;
-            }
-            var nugetSourceArg = commandArgs.SingleOrDefault(x => x.StartsWith(NugetSourceArgPrefix));
-            if (nugetSourceArg != null)
-            {
-                commandArgs = commandArgs.Where(x => !x.StartsWith(NugetSourceArgPrefix)).ToArray();
-                nugetSource = nugetSourceArg.Substring(NugetSourceArgPrefix.Length);
-            }
-            if (commandArgs.Contains(IgnoreCacheCommandArg))
-            {
-                commandArgs = commandArgs.Where(x => x != IgnoreCacheCommandArg).ToArray();
-                ignoreCache = true;
-            }
-            if (commandArgs.Length >= 1)
-            {
-                if (commandArgs[0] == PrereleaseCommandArg)
-                {
-                    ignorePrerelease = false;
-                    latestVersion = String.Empty;
-                }
-                else
-                {
-                    latestVersion = commandArgs[0];
-                }
-            }
-
-            return new DownloadArguments(latestVersion, ignorePrerelease, folder, target, doSelfUpdate, nugetSource, ignoreCache);
-        }
     }
 }
