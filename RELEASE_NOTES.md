@@ -1,3 +1,6 @@
+#### 2.58.6 - 07.04.2016
+* BUGFIX: Redirects for assemblies in the GAC were removed - https://github.com/fsprojects/Paket/issues/1574
+
 #### 2.58.5 - 07.04.2016
 * BUGFIX: Paket.dependency with version ranges failed when package has pinned dependency and that version is unlisted - https://github.com/fsprojects/Paket/issues/1579
 
