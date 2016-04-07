@@ -11,7 +11,7 @@ let ``Loading assembly metadata works``() =
     let workingDir = Path.GetFullPath(".")
     
     let fileName =
-        Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
+        Path.Combine(workingDir, "Paket.Tests.fsproj")
         |> normalizePath
     
     if File.Exists fileName |> not then
