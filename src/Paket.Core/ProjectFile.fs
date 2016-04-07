@@ -1156,6 +1156,7 @@ module ProjectFile =
         match (Path.GetExtension fileName).ToLowerInvariant() with
         | ext when Path.GetExtension project.FileName = ext + "proj"
             -> BuildAction.Compile
+        | ".fsi" -> BuildAction.Compile
         | ".xaml" -> BuildAction.Page
         | ".ttf" | ".png" | ".ico" | ".jpg" | ".jpeg"| ".bmp" | ".gif"
         | ".wav" | ".mid" | ".midi"| ".wma" | ".mp3" | ".ogg" | ".rma"

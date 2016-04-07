@@ -32,7 +32,8 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
         addToProjectsF projects groupName package
 
         if installAfter then
-            InstallProcess.Install(options, hasChanged, dependenciesFile, lockFile)
+            let forceTouch = hasChanged && options.TouchAffectedRefs
+            InstallProcess.Install(options, forceTouch, dependenciesFile, lockFile)
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter) =

@@ -118,8 +118,6 @@ let ``#1218 install hard should replace all assembly redirects with required onl
     config1 |> shouldContainText ``Castle.Core``
     config1.Contains ``Castle.Windsor`` |> shouldEqual false
 
-    config2.Contains "<assemblyIdentity " |> shouldEqual false
-
     config3.Contains Albedo |> shouldEqual false
     config3.Contains AutoFixture |> shouldEqual false
     config3.Contains ``AutoFixture.Idioms`` |> shouldEqual false
@@ -317,11 +315,22 @@ let ``#1248 redirects off with --redirects``() =
 
     config |> shouldEqual originalConfig
 
-    
 [<Test>]
 let ``#1544 redirects off``() = 
     install "i001544-redirects" |> ignore
     let path = Path.Combine(scenarioTempPath "i001544-redirects")
+    let configPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config")
+    let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config.expected")
+
+    let config = File.ReadAllText(configPath) |> normalizeLineEndings
+    let originalConfig = File.ReadAllText(originalConfigPath) |> normalizeLineEndings
+
+    config |> shouldEqual originalConfig
+
+[<Test>]
+let ``#1574 redirects GAC``() = 
+    paket "install --hard"  "i001574-redirect-gac" |> ignore
+    let path = Path.Combine(scenarioTempPath "i001574-redirect-gac")
     let configPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config")
     let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config.expected")
 
@@ -342,6 +351,5 @@ let ``#1477 assembly redirects lock files``() =
         Directory.Delete(scenarioTempPath scenario, true)
     with e ->
         failwith "could not delete directory, i.e. restore holds on to files"
-
     
     

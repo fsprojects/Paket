@@ -442,9 +442,12 @@ module DependenciesFileSerializer =
 
 /// Allows to parse and analyze paket.dependencies files.
 type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepresentation:string []) =
-    let isPackageLine name (l : string) = 
-        let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLowerInvariant().Trim())
-        splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name)
+    let tryMatchPackageLine packageNamePredicate (line : string) =
+        let tokens = line.Split([|' '|], StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun s -> s.ToLowerInvariant().Trim())
+        match List.ofArray tokens with
+        | "nuget"::packageName::_ when packageNamePredicate packageName -> Some packageName
+        | _ -> None
+    let isPackageLine name line = tryMatchPackageLine ((=) name) line |> Option.isSome
 
     let findGroupBorders groupName = 
         let _,_,firstLine,lastLine =
@@ -472,7 +475,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     match found with
                     | Some _ -> i+1,currentGroup,found
                     | None ->
-                        if currentGroup = groupName && isPackageLine (packageName.GetCompareString()) line then
+                        if currentGroup = groupName && isPackageLine name line then
                             i+1,currentGroup,Some i
                         else
                             if line.StartsWith "group " then
@@ -775,6 +778,22 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         else 
             traceWarnfn "%s doesn't contain package %O in group %O. ==> Ignored" fileName packageName groupName
             this
+
+    member this.UpdateFilteredPackageVersion(groupName, packageFilter: PackageFilter, version:string) =
+        let vr = DependenciesFileParser.parseVersionString version
+
+        tracefn "Updating %O to version %s in %s group %O" packageFilter version fileName groupName
+        let newLines =
+            this.Lines
+            |> Array.map (fun l ->
+                match tryMatchPackageLine (PackageName >> packageFilter.Match) l with
+                | Some matchedName ->
+                    let matchedPackageName = PackageName matchedName
+                    let p = this.GetPackage(groupName,matchedPackageName)
+                    DependenciesFileSerializer.packageString matchedPackageName vr.VersionRequirement vr.ResolverStrategy p.Settings
+                | None -> l)
+
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName newLines)
 
     member this.RootPath = FileInfo(fileName).Directory.FullName
 

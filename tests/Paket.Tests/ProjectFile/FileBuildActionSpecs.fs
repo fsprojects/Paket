@@ -16,6 +16,7 @@ let createProject name =
 let ``should recognize compilable files``() =
     (createProject "A.csproj").DetermineBuildAction "Class.cs" |> shouldEqual BuildAction.Compile
     (createProject "B.fsproj").DetermineBuildAction "Module.fs" |> shouldEqual BuildAction.Compile
+    (createProject "B.fsproj").DetermineBuildAction "Module.fsi" |> shouldEqual BuildAction.Compile
     (createProject "C.vbproj").DetermineBuildAction "Whatever.vb" |> shouldEqual BuildAction.Compile
     (createProject "D.nproj").DetermineBuildAction "Main.n" |> shouldEqual BuildAction.Compile
 

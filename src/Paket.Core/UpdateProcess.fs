@@ -226,7 +226,8 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
     let projectsAndReferences = InstallProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
-        InstallProcess.InstallIntoProjects(options.Common, hasChanged, dependenciesFile, lockFile, projectsAndReferences)
+        let forceTouch = hasChanged && options.Common.TouchAffectedRefs
+        InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences)
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
@@ -254,8 +255,8 @@ let UpdateFilteredPackages(dependenciesFileName, groupName, packageName : string
 
     let dependenciesFile =
         match newVersion with
-        | Some v -> dependenciesFile.UpdatePackageVersion(groupName,PackageName packageName, v)
-        | None -> 
+        | Some v -> dependenciesFile.UpdateFilteredPackageVersion(groupName, filter, v)
+        | None ->
             tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
             dependenciesFile
 

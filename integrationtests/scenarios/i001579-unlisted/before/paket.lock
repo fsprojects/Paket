@@ -1,0 +1,4 @@
+NUGET
+  remote: bin
+  specs:
+    Paket.Test.A (1.0.0)

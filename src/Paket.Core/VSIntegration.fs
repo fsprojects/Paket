@@ -20,7 +20,7 @@ let TurnOnAutoRestore environment =
         |> List.iter (fun project ->
             let relativePath = createRelativePath project.FileName paketTargetsPath
             project.AddImportForPaketTargets(relativePath)
-            project.Save(true)
+            project.Save(false)
         )
     } 
 
@@ -37,6 +37,6 @@ let TurnOffAutoRestore environment =
         |> List.iter (fun project ->
             let relativePath = createRelativePath project.FileName paketTargetsPath
             project.RemoveImportForPaketTargets(relativePath)
-            project.Save(true)
+            project.Save(false)
         )
     }

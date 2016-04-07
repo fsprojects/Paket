@@ -93,6 +93,17 @@ let ``#1178 update with [MN].* and without filter should fail``() =
     | exn when exn.Message.Contains "Package [MN].* was not found in paket.dependencies in group Main" -> ()
 
 [<Test>]
+let ``#1178 update with NUn.* filter to specific version``() =
+    paket "update nuget NUn.* --filter version 2.6.2" "i001178-update-with-regex" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001178-update-with-regex","paket.lock"))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Castle.Windsor"].Version
+    |> shouldEqual (SemVer.Parse "2.5.1")
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
+    |> shouldEqual (SemVer.Parse "2.6.2")
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.AspNet.WebApi.SelfHost"].Version
+    |> shouldEqual (SemVer.Parse "5.0.1")
+
+[<Test>]
 let ``#1413 doesn't take symbols``() =
     update "i001413-symbols" |> ignore
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001413-symbols","paket.lock"))
@@ -110,6 +121,14 @@ let ``#1432 update doesn't throw Stackoverflow``() =
     directPaket "pack templatefile paket.B.template version 1.0.0 output bin" scenario |> ignore
     directPaket "pack templatefile paket.C.template version 1.0.0-prerelease output bin" scenario |> ignore
     directPaket "pack templatefile paket.D.template version 1.0.0-prerelease output bin" scenario  |> ignore
+    directPaket "update" scenario|> ignore
+
+[<Test>]
+let ``#1579 update allows unpinned``() =
+    let scenario = "i001579-unlisted"
+
+    prepare scenario
+    directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario |> ignore
     directPaket "update" scenario|> ignore
 
 [<Test>]
