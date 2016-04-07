@@ -317,6 +317,16 @@ let ``#1523 should emit correct .NET in mixed setting``() =
     s2 |> shouldEqual s1
 
 [<Test>]
+let ``#1578 should reference transitive dep from ref``() = 
+    let scenario = "i001578-transitive-ref"
+    install scenario |> ignore
+    let newFile = Path.Combine(scenarioTempPath scenario,"TestPaketDotNet","TestPaketDotNet.csproj")
+    let oldFile = Path.Combine(originalScenarioPath scenario,"TestPaketDotNet","TestPaketDotNet.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
 let ``#1458 should not install conflicting deps from different groups``() =
     try
         install "i001458-group-conflict" |> ignore

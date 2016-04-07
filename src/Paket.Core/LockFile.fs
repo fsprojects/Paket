@@ -624,11 +624,22 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         let usedPackages = Dictionary<_,_>()
 
         for g in referencesFile.Groups do
-            for p in g.Value.NugetPackages do
-                let k = g.Key,p.Name
-                if usedPackages.ContainsKey k then
-                    failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName g.Key
-                usedPackages.Add(k,p)
+            match this.Groups |> Map.tryFind g.Key with
+            | None -> failwithf "Group %O was referenced in %s, but not found in paket.lock."  g.Key referencesFile.FileName
+            | Some lockGroup ->
+                for p in g.Value.NugetPackages do
+                    let k = g.Key,p.Name
+                    if usedPackages.ContainsKey k |> not then
+                        usedPackages.Add(k,p)
+
+                for r in g.Value.RemoteFiles do
+                    match lockGroup.RemoteFiles |> List.tryFind (fun x -> x.Name = r.Name) with
+                    | None -> failwithf "Remote file %O was referenced in %s, but not found in paket.lock."  r.Name referencesFile.FileName
+                    | Some lockRemote ->
+                        for p,_ in lockRemote.Dependencies do
+                            let k = g.Key,p
+                            if usedPackages.ContainsKey k |> not then
+                                usedPackages.Add(k,PackageInstallSettings.Default(p.ToString()))
 
         for g in referencesFile.Groups do
             g.Value.NugetPackages
@@ -641,6 +652,17 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                 with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
 
         usedPackages
+
+    member this.GetRemoteReferencedPackages(referencesFile:ReferencesFile,installGroup:InstallGroup) =
+        [for r in installGroup.RemoteFiles do
+            match this.Groups |> Map.tryFind installGroup.Name with
+            | None -> failwithf "Group %O was referenced in %s, but not found in paket.lock."  installGroup.Name referencesFile.FileName
+            | Some lockGroup ->
+                match lockGroup.RemoteFiles |> List.tryFind (fun x -> x.Name.EndsWith(r.Name)) with
+                | None -> failwithf "Remote file %O was referenced in %s, but not found in paket.lock."  r.Name referencesFile.FileName
+                | Some lockRemote ->
+                    for p,_ in lockRemote.Dependencies do
+                        yield PackageInstallSettings.Default(p.ToString())]
 
     member this.GetPackageHull(groupName,referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
