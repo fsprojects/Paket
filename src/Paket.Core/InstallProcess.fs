@@ -194,7 +194,7 @@ module private LoadAssembliesSafe =
 
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects root groupName findDependencies extractedPackages =
+let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects root groupName findDependencies allKnownLibs extractedPackages =
     let dependencyGraph = ConcurrentDictionary<_,Set<_>>()
     let projects = ConcurrentDictionary<_,ProjectFile option>();
     let referenceFiles = ConcurrentDictionary<_,ReferencesFile option>();
@@ -268,7 +268,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects r
               Culture = None })
         |> Seq.sort
 
-    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles root bindingRedirects
+    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles root allKnownLibs bindingRedirects
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectType) =
@@ -455,6 +455,12 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 | true -> Some true
                 | false -> None
 
+
+            let allKnownLibs =
+                model
+                |> Seq.map (fun kv -> (snd kv.Value).GetLibReferencesLazy.Force())
+                |> Set.unionMany
+
             for g in lockFile.Groups do
                 let group = g.Value
                 model
@@ -466,7 +472,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
                     (snd kv.Value,packageRedirects))
-                |> applyBindingRedirects !first options.CreateNewBindingFiles (g.Value.Options.Redirects ++ redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf
+                |> applyBindingRedirects !first options.CreateNewBindingFiles (g.Value.Options.Redirects ++ redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf allKnownLibs
                 first := false
 
 

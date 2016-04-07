@@ -118,8 +118,6 @@ let ``#1218 install should replace all assembly redirects with required only``()
     config1 |> shouldContainText ``Castle.Core``
     config1.Contains ``Castle.Windsor`` |> shouldEqual false
 
-    config2.Contains "<assemblyIdentity " |> shouldEqual false
-
     config3.Contains Albedo |> shouldEqual false
     config3.Contains AutoFixture |> shouldEqual false
     config3.Contains ``AutoFixture.Idioms`` |> shouldEqual false
@@ -253,7 +251,7 @@ let ``#1544 redirects off``() =
 
 [<Test>]
 let ``#1574 redirects GAC``() = 
-    paket "install --force"  "i001574-redirect-gac" |> ignore
+    paket "install"  "i001574-redirect-gac" |> ignore
     let path = Path.Combine(scenarioTempPath "i001574-redirect-gac")
     let configPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config")
     let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config.expected")

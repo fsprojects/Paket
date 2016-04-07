@@ -1,4 +1,4 @@
-#### 3.0.0-alpha102 - 07.04.2016
+#### 3.0.0-alpha103 - 07.04.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -6,6 +6,9 @@
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
 * Allows to exclude dll references from a NuGet package - http://fsprojects.github.io/Paket/references-files.html#Excluding-libraries
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
+
+#### 2.58.6 - 07.04.2016
+* BUGFIX: Redirects for assemblies in the GAC were removed - https://github.com/fsprojects/Paket/issues/1574
 
 #### 2.58.5 - 07.04.2016
 * BUGFIX: Paket.dependency with version ranges failed when package has pinned dependency and that version is unlisted - https://github.com/fsprojects/Paket/issues/1579

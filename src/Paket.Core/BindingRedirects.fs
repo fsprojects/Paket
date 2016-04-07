@@ -8,6 +8,7 @@ open System.IO
 open System.Reflection
 open Paket.Xml.Linq
 open System.Xml.XPath
+open Logging
 
 /// Represents a binding redirection
 type BindingRedirect = 
@@ -122,7 +123,7 @@ let private addConfigFileToProject project =
         project.Save(false))
 
 /// Applies a set of binding redirects to a single configuration file.
-let private applyBindingRedirects isFirstGroup bindingRedirects (configFilePath:string) =
+let private applyBindingRedirects isFirstGroup (allKnownLibs:Reference seq) bindingRedirects (configFilePath:string) =
     let config = 
         try
             XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
@@ -132,12 +133,19 @@ let private applyBindingRedirects isFirstGroup bindingRedirects (configFilePath:
     use originalContents = new StringReader(config.ToString())
     let original = XDocument.Load(originalContents, LoadOptions.None).ToString()
 
+    let libIsContained e =
+        let haystack = e.ToString().ToLower()
+        allKnownLibs 
+        |> Seq.exists (fun b -> 
+            let needle = (sprintf "name=\"%s\"" b.ReferenceName).ToLower()
+            haystack.Contains needle)
+
     let nsManager = XmlNamespaceManager(NameTable());
     nsManager.AddNamespace("bindings", bindingNs)
     config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
     |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))
     |> List.ofSeq
-    |> List.filter (fun e -> isFirstGroup)
+    |> List.filter (fun e -> isFirstGroup && libIsContained e)
     |> List.iter (fun e -> e.Remove())
 
     let config = Seq.fold setRedirect config bindingRedirects
@@ -148,7 +156,7 @@ let private applyBindingRedirects isFirstGroup bindingRedirects (configFilePath:
         config.Save(configFilePath, SaveOptions.DisableFormatting)
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
-let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles rootPath bindingRedirects =
+let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles rootPath allKnownLibs bindingRedirects =
     let applyBindingRedirects projectFile =
         let bindingRedirects = bindingRedirects projectFile
         let path = Path.GetDirectoryName projectFile.FileName
@@ -161,7 +169,7 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles rootPath bi
                 addConfigFileToProject projectFile
                 Some config
             | _ -> None
-        |> Option.iter (applyBindingRedirects isFirstGroup bindingRedirects)
+        |> Option.iter (applyBindingRedirects isFirstGroup allKnownLibs bindingRedirects)
 
     rootPath
     |> getProjectFilesWithPaketReferences Directory.GetFiles
