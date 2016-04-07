@@ -1,3 +1,6 @@
+#### 2.58.7 - 07.04.2016
+* Paket update supports combining filter with specific version - https://github.com/fsprojects/Paket/pull/1580
+
 #### 2.58.6 - 07.04.2016
 * BUGFIX: Redirects for assemblies in the GAC were removed - https://github.com/fsprojects/Paket/issues/1574
 
