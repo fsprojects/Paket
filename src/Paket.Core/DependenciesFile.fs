@@ -442,9 +442,10 @@ module DependenciesFileSerializer =
 
 /// Allows to parse and analyze paket.dependencies files.
 type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepresentation:string []) =
-    let isPackageLine name (l : string) = 
-        let splitted = l.Split(' ') |> Array.map (fun s -> s.ToLowerInvariant().Trim())
-        splitted |> Array.exists ((=) "nuget") && splitted |> Array.exists ((=) name)
+    let tryFindInPackageLine predicate (l : string) =
+        let tokens = l.Split(' ') |> Array.map (fun s -> s.ToLowerInvariant().Trim())
+        if not (Array.exists ((=) "nuget") tokens) then None else Array.tryFind predicate tokens
+    let isPackageLine name (l : string) = tryFindInPackageLine ((=) name) l |> Option.isSome
 
     let findGroupBorders groupName = 
         let _,_,firstLine,lastLine =
@@ -775,6 +776,22 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         else 
             traceWarnfn "%s doesn't contain package %O in group %O. ==> Ignored" fileName packageName groupName
             this
+
+    member this.UpdateFilteredPackageVersion(groupName, packageFilter: PackageFilter, version:string) =
+        let vr = DependenciesFileParser.parseVersionString version
+
+        tracefn "Updating %O to version %s in %s group %O" packageFilter version fileName groupName
+        let newLines =
+            this.Lines
+            |> Array.map (fun l ->
+                match tryFindInPackageLine (PackageName >> packageFilter.Match) l with
+                | Some matchedName ->
+                    let matchedPackageName = PackageName matchedName
+                    let p = this.GetPackage(groupName,matchedPackageName)
+                    DependenciesFileSerializer.packageString matchedPackageName vr.VersionRequirement vr.ResolverStrategy p.Settings
+                | None -> l)
+
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName newLines)
 
     member this.RootPath = FileInfo(fileName).Directory.FullName
 
