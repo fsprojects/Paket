@@ -441,7 +441,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                 let ready = ref false
                 let state = ref conflictStatus
                 let useUnlisted = ref false
-                let allUnlisted = ref true
+                let hasUnlisted = ref false
 
                 while not !ready do
                     let trial = ref 0
@@ -466,8 +466,9 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                         match getExploredPackage(currentRequirement,versionToExplore) with
                         | None -> ()
                         | Some exploredPackage ->
+                            hasUnlisted := exploredPackage.Unlisted || !hasUnlisted
                             if exploredPackage.Unlisted && not !useUnlisted then
-                                () 
+                                ()
                             else
                                 let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions
                         
@@ -488,11 +489,9 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                                           newResolution.Count > 1 &&
                                           (conflicts |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not) ->
                                         forceBreak := true
-                                | _ -> ()
+                                | _ -> ()                            
 
-                                allUnlisted := exploredPackage.Unlisted && !allUnlisted
-
-                    if not !useUnlisted && !allUnlisted && not (isOk()) then
+                    if not !useUnlisted && !hasUnlisted && not (isOk()) then
                         useUnlisted := true
                     else
                         ready := true
