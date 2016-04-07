@@ -1,3 +1,6 @@
+#### 2.58.5 - 07.04.2016
+* BUGFIX: Paket.dependency with version ranges failed when package has pinned dependency and that version is unlisted - https://github.com/fsprojects/Paket/issues/1579
+
 #### 2.58.4 - 07.04.2016
 * BUGFIX: Github dependencies reference transitive NuGet packages to projects - https://github.com/fsprojects/Paket/issues/1578
 

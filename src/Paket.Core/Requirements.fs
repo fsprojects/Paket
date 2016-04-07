@@ -555,6 +555,7 @@ type PackageRequirement =
     override this.ToString() =
         sprintf "%O %O (from %O)" this.Name this.VersionRequirement this.Parent
 
+
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
 
     member this.IncludingPrereleases() = 
