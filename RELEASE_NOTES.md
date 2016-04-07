@@ -1,3 +1,6 @@
+#### 2.58.4 - 07.04.2016
+* BUGFIX: Github dependencies reference transitive NuGet packages to projects - https://github.com/fsprojects/Paket/issues/1578
+
 #### 2.58.3 - 05.04.2016
 * BUGFIX: Add "*.fsi" files as <Compile> by default - https://github.com/fsprojects/Paket/pull/1573
 

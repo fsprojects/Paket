@@ -304,7 +304,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         let usedPackages =
             referenceFile.Groups
             |> Seq.map (fun kv ->
-                kv.Value.NugetPackages
+                lockFile.GetRemoteReferencedPackages(referenceFile,kv.Value) @ kv.Value.NugetPackages
                 |> Seq.map (fun ps ->
                     let group = 
                         match lockFile.Groups |> Map.tryFind kv.Key with
