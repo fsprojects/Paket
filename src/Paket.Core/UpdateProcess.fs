@@ -266,8 +266,8 @@ let UpdateFilteredPackages(dependenciesFileName, groupName, packageName : string
 
     let dependenciesFile =
         match newVersion with
-        | Some v -> dependenciesFile.UpdatePackageVersion(groupName,PackageName packageName, v)
-        | None -> 
+        | Some v -> dependenciesFile.UpdateFilteredPackageVersion(groupName, filter, v)
+        | None ->
             tracefn "Updating %O in %s group %O" packageName dependenciesFileName groupName
             dependenciesFile
 
