@@ -161,8 +161,7 @@ Target "RunTests" (fun _ ->
     |> NUnit3 (fun p ->
         { p with
             ShadowCopy = false
-            ToolPath = "packages/test/NUnit.ConsoleRunner/tools/nunit3-console.exe"
-            WorkingDir = "tests\Paket.Tests"
+            WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 20. })
 )
 
@@ -176,8 +175,7 @@ Target "QuickTest" (fun _ ->
     |> NUnit3 (fun p ->
         { p with
             ShadowCopy = false
-            ToolPath = "packages/test/NUnit.ConsoleRunner/tools/nunit3-console.exe"
-            WorkingDir = "tests\Paket.Tests"
+            WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 20. })
 )
 
@@ -187,8 +185,7 @@ Target "RunIntegrationTests" (fun _ ->
     |> NUnit3 (fun p ->
         { p with
             ShadowCopy = false
-            ToolPath = "packages/test/NUnit.ConsoleRunner/tools/nunit3-console.exe"
-            WorkingDir = "tests\Paket.Tests"
+            WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 40. })
 )
 
