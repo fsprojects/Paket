@@ -442,10 +442,12 @@ module DependenciesFileSerializer =
 
 /// Allows to parse and analyze paket.dependencies files.
 type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepresentation:string []) =
-    let tryFindInPackageLine predicate (l : string) =
-        let tokens = l.Split(' ') |> Array.map (fun s -> s.ToLowerInvariant().Trim())
-        if not (Array.exists ((=) "nuget") tokens) then None else Array.tryFind predicate tokens
-    let isPackageLine name (l : string) = tryFindInPackageLine ((=) name) l |> Option.isSome
+    let tryMatchPackageLine packageNamePredicate (line : string) =
+        let tokens = line.Split([|' '|], StringSplitOptions.RemoveEmptyEntries) |> Array.map (fun s -> s.ToLowerInvariant().Trim())
+        match List.ofArray tokens with
+        | "nuget"::packageName::_ when packageNamePredicate packageName -> Some packageName
+        | _ -> None
+    let isPackageLine name line = tryMatchPackageLine ((=) name) line |> Option.isSome
 
     let findGroupBorders groupName = 
         let _,_,firstLine,lastLine =
@@ -473,7 +475,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     match found with
                     | Some _ -> i+1,currentGroup,found
                     | None ->
-                        if currentGroup = groupName && isPackageLine (packageName.GetCompareString()) line then
+                        if currentGroup = groupName && isPackageLine name line then
                             i+1,currentGroup,Some i
                         else
                             if line.StartsWith "group " then
@@ -784,7 +786,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let newLines =
             this.Lines
             |> Array.map (fun l ->
-                match tryFindInPackageLine (PackageName >> packageFilter.Match) l with
+                match tryMatchPackageLine (PackageName >> packageFilter.Match) l with
                 | Some matchedName ->
                     let matchedPackageName = PackageName matchedName
                     let p = this.GetPackage(groupName,matchedPackageName)
