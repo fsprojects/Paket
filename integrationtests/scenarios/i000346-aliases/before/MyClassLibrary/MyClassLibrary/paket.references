@@ -1,0 +1,4 @@
+MultiTarget
+Dapper
+NUnit
+  alias nunit.framework.dll NUnit2

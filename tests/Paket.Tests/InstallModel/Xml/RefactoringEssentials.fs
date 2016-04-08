@@ -26,7 +26,7 @@ let ``should generate Xml for RefactoringEssentials in CSharp project``() =
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,true,true,None)
+    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,Map.empty,true,true,None)
     analyzerNodes
     |> (fun n -> n.OuterXml)
     |> normalizeXml
@@ -45,7 +45,7 @@ let ``should generate Xml for RefactoringEssentials in VisualBasic project``() =
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,true,true,None)
+    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,Map.empty,true,true,None)
     analyzerNodes
     |> (fun n -> n.OuterXml)
     |> normalizeXml

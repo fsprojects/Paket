@@ -607,7 +607,7 @@ module ProjectFile =
         |> List.sortBy(fun lib -> lib.Path)
         |> createAnalyzersNode
 
-    let generateXml (model:InstallModel) (copyLocal:bool) (importTargets:bool) (referenceCondition:string option) (project:ProjectFile) =
+    let generateXml (model:InstallModel) (aliases:Map<string,string>) (copyLocal:bool) (importTargets:bool) (referenceCondition:string option) (project:ProjectFile) =
         let references = 
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -621,12 +621,21 @@ module ProjectFile =
                 match lib with
                 | Reference.Library lib ->
                     let fi = FileInfo (normalizePath lib)
+                    let l = lib.ToLower()
+                    let aliases =
+                        aliases
+                        |> Seq.tryFind (fun kv -> l.Contains(kv.Key))
+                        |> Option.map (fun kv -> kv.Value)
                     
                     createNode "Reference" project
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
                     |> addChild (createNodeSet "HintPath" (createRelativePath project.FileName fi.FullName) project)
                     |> addChild (createNodeSet "Private" (if copyLocal then "True" else "False") project)
                     |> addChild (createNodeSet "Paket" "True" project)
+                    |> fun n ->
+                        match aliases with
+                        | None -> n
+                        | Some alias -> addChild (createNodeSet "Aliases" alias project) n
                     |> itemGroup.AppendChild
                     |> ignore
                 | Reference.FrameworkAssemblyReference frameworkAssembly ->
@@ -832,7 +841,7 @@ module ProjectFile =
             let copyLocal = defaultArg installSettings.CopyLocal true
             let importTargets = defaultArg installSettings.ImportTargets true
 
-            generateXml projectModel copyLocal importTargets installSettings.ReferenceCondition project)
+            generateXml projectModel installSettings.Aliases copyLocal importTargets installSettings.ReferenceCondition project)
         |> Seq.iter (fun (propsNodes,targetsNodes,chooseNode,propertyChooseNode, analyzersNode) ->
 
             let i = ref (project.ProjectNode.ChildNodes.Count-1)
@@ -1161,7 +1170,7 @@ type ProjectFile with
 
     member this.DeleteCustomModelNodes(model:InstallModel) = ProjectFile.deleteCustomModelNodes model this
 
-    member this.GenerateXml(model, copyLocal, importTargets, referenceCondition) = ProjectFile.generateXml model copyLocal importTargets referenceCondition this
+    member this.GenerateXml(model, aliases, copyLocal, importTargets, referenceCondition) = ProjectFile.generateXml model aliases copyLocal importTargets referenceCondition this
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
