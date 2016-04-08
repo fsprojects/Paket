@@ -11,21 +11,21 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
     public class CacheDownloadStrategyTest
     {
         private CacheDownloadStrategy sut;
-        private Mock<IDownloadStrategy> mockFallBack;
+        private Mock<IDownloadStrategy> mockEffectiveStrategy;
         private Mock<IDirectoryProxy> mockDirectoryProxy;
         private Mock<IFileProxy> mockFileProxy;
 
         [SetUp]
         public void Setup()
         {
-            mockFallBack = new Mock<IDownloadStrategy>();
+            mockEffectiveStrategy = new Mock<IDownloadStrategy>();
             mockDirectoryProxy = new Mock<IDirectoryProxy>();
             mockFileProxy = new Mock<IFileProxy>();
-            sut = new CacheDownloadStrategy(mockFallBack.Object, mockDirectoryProxy.Object, mockFileProxy.Object);
+            sut = new CacheDownloadStrategy(mockEffectiveStrategy.Object, mockDirectoryProxy.Object, mockFileProxy.Object);
         }
 
         [Test]
-        public void CreateStrategy_With_NoFallback()
+        public void CreateStrategy_With_NoEffective()
         {
             //arrange
             //act
@@ -34,42 +34,51 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         }
 
         [Test]
-        public void GetLatestVersion_NonPrerelease()
+        public void CreateStrategy_EffectiveStrategyHasFallback()
         {
             //arrange
-            mockFallBack.Setup(x => x.GetLatestVersion(true, false)).Returns("any");
-
             //act
-            var result = sut.GetLatestVersion(true, false);
-
             //assert
-            Assert.That(result, Is.EqualTo("any"));
-            mockFallBack.Verify();
+            mockEffectiveStrategy.SetupGet(x => x.FallbackStrategy).Returns(new Mock<IDownloadStrategy>().Object);
+            Assert.Throws<ArgumentException>(() => new CacheDownloadStrategy(mockEffectiveStrategy.Object, mockDirectoryProxy.Object, mockFileProxy.Object));
         }
 
         [Test]
-        public void GetLatestVersion_FallBackStrategyFails_UseOtherFallback()
+        public void GetLatestVersion_NonPrerelease()
         {
             //arrange
-            mockFallBack.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>().Verifiable();
-            var mockFallbackFallback = new Mock<IDownloadStrategy>();
-            mockFallbackFallback.Setup(x => x.GetLatestVersion(true, false)).Returns("any").Verifiable();
-            mockFallBack.SetupGet(x => x.FallbackStrategy).Returns(mockFallbackFallback.Object).Verifiable();
+            mockEffectiveStrategy.Setup(x => x.GetLatestVersion(true, false)).Returns("any");
 
             //act
             var result = sut.GetLatestVersion(true, false);
 
             //assert
             Assert.That(result, Is.EqualTo("any"));
-            mockFallBack.Verify();
-            mockFallbackFallback.Verify();
+            mockEffectiveStrategy.Verify();
+        }
+        
+        [Test]
+        public void GetLatestVersion_EffectiveStrategyFails_UseFallback()
+        {
+            //arrange
+            mockEffectiveStrategy.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>().Verifiable();
+            var mockFallback = new Mock<IDownloadStrategy>();
+            mockEffectiveStrategy.SetupGet(x => x.FallbackStrategy).Returns(mockFallback.Object);
+            mockDirectoryProxy.Setup(x => x.GetDirectories(It.IsAny<string>())).Returns(new[] { "1.0" });
+
+            //act
+            var result = sut.GetLatestVersion(true, false);
+
+            //assert
+            Assert.That(result, Is.EqualTo("1.0"));
+            mockFallback.Verify();
         }
 
         [Test]
         public void GetLatestVersion_NoFallBackStrategy_UseBestCachedVersion()
         {
             //arrange
-            mockFallBack.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>().Verifiable();
+            mockEffectiveStrategy.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>().Verifiable();
             mockDirectoryProxy.Setup(x => x.GetDirectories(It.IsAny<string>())).Returns(new[] {"2.1", "2.2"});
 
             //act
@@ -77,7 +86,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
 
             //assert
             Assert.That(result, Is.EqualTo("2.2"));
-            mockFallBack.Verify();
+            mockEffectiveStrategy.Verify();
         }
 
         [Test]
@@ -90,7 +99,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             sut.DownloadVersion("any", "any", true);
 
             //assert
-            mockFallBack.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
+            mockEffectiveStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
             mockFileProxy.Verify(x => x.Copy(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()));
         }
 
@@ -104,7 +113,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             sut.DownloadVersion("any", "any", true);
 
             //assert
-            mockFallBack.Verify(x => x.DownloadVersion("any", "any", true));
+            mockEffectiveStrategy.Verify(x => x.DownloadVersion("any", "any", true));
             mockFileProxy.Verify(x => x.Copy(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()));
         }
 
@@ -116,7 +125,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             sut.SelfUpdate("any", true);
 
             //assert
-            mockFallBack.Verify(x => x.SelfUpdate("any", true));
+            mockEffectiveStrategy.Verify(x => x.SelfUpdate("any", true));
         }
     }
 }

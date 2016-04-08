@@ -12,9 +12,9 @@ using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper
 {
-    class Program
+    static class Program
     {
-        
+
         static void Main(string[] args)
         {
             Console.CancelKeyPress += CancelKeyPressed;
@@ -112,7 +112,7 @@ namespace Paket.Bootstrapper
                     {
                         var fallbackStrategy = downloadStrategy.FallbackStrategy;
                         if (!silent)
-                            Console.WriteLine("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", 
+                            Console.WriteLine("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.",
                                 downloadStrategy.Name, fallbackStrategy.Name);
                         StartPaketBootstrapping(fallbackStrategy, dlArgs, silent, fileProxy);
                         shouldHandleException = !File.Exists(dlArgs.Target);
@@ -129,8 +129,8 @@ namespace Paket.Bootstrapper
 
         public static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
         {
-            var gitHubDownloadStrategy = new GitHubDownloadStrategy(new WebRequestProxy(), new FileProxy());
-            var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new DirectoryProxy(), new FileProxy(), dlArgs.Folder, dlArgs.NugetSource);
+            var gitHubDownloadStrategy = new GitHubDownloadStrategy(new WebRequestProxy(), new FileProxy()).AsCached(dlArgs.IgnoreCache);
+            var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new DirectoryProxy(), new FileProxy(), dlArgs.Folder, dlArgs.NugetSource).AsCached(dlArgs.IgnoreCache);
 
             IDownloadStrategy effectiveStrategy;
             if (forceNuget)
@@ -149,7 +149,14 @@ namespace Paket.Bootstrapper
                 gitHubDownloadStrategy.FallbackStrategy = nugetDownloadStrategy;
             }
 
-            return dlArgs.IgnoreCache ? effectiveStrategy : new CacheDownloadStrategy(effectiveStrategy, new DirectoryProxy(), new FileProxy());
+            return effectiveStrategy;
+        }
+
+        private static IDownloadStrategy AsCached(this IDownloadStrategy effectiveStrategy, bool ignoreCache)
+        {
+            if (ignoreCache)
+                return effectiveStrategy;
+            return new CacheDownloadStrategy(effectiveStrategy, new DirectoryProxy(), new FileProxy());
         }
 
     }

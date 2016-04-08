@@ -5,10 +5,15 @@ namespace Paket.Bootstrapper.DownloadStrategies
     public interface IDownloadStrategy
     {
         string Name { get; }
-        IDownloadStrategy FallbackStrategy { get; }
+        IDownloadStrategy FallbackStrategy { get; set; }
         string GetLatestVersion(bool ignorePrerelease, bool silent);
         void DownloadVersion(string latestVersion, string target, bool silent);
         void SelfUpdate(string latestVersion, bool silent);
+    }
+
+    public interface ICachedDownloadStrategy : IDownloadStrategy
+    {
+        IDownloadStrategy EffectiveStrategy { get; }
     }
 
     public delegate void PrepareWebClientDelegate(WebClient client, string url);

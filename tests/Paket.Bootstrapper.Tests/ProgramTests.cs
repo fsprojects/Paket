@@ -19,8 +19,10 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(strategy, Is.TypeOf<CacheDownloadStrategy>());
-            Assert.That(strategy.FallbackStrategy, Is.TypeOf<GitHubDownloadStrategy>());
-            Assert.That(strategy.FallbackStrategy.FallbackStrategy, Is.TypeOf<NugetDownloadStrategy>());
+            Assert.That(((CacheDownloadStrategy)strategy).EffectiveStrategy, Is.TypeOf<GitHubDownloadStrategy>());
+            Assert.That(strategy.FallbackStrategy, Is.TypeOf<CacheDownloadStrategy>());
+            Assert.That(((CacheDownloadStrategy)strategy.FallbackStrategy).EffectiveStrategy, Is.TypeOf<NugetDownloadStrategy>());
+            Assert.That(strategy.FallbackStrategy.FallbackStrategy, Is.Null);
         }
 
         [Test]
@@ -34,8 +36,9 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(strategy, Is.TypeOf<CacheDownloadStrategy>());
-            Assert.That(strategy.FallbackStrategy, Is.TypeOf<NugetDownloadStrategy>());
-            Assert.That(strategy.FallbackStrategy.FallbackStrategy, Is.TypeOf<GitHubDownloadStrategy>());
+            Assert.That(((CacheDownloadStrategy)strategy).EffectiveStrategy, Is.TypeOf<NugetDownloadStrategy>());
+            Assert.That(strategy.FallbackStrategy, Is.TypeOf<CacheDownloadStrategy>());
+            Assert.That(((CacheDownloadStrategy)strategy.FallbackStrategy).EffectiveStrategy, Is.TypeOf<GitHubDownloadStrategy>());
         }
 
         [Test]
@@ -49,8 +52,8 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(strategy, Is.TypeOf<CacheDownloadStrategy>());
-            Assert.That(strategy.FallbackStrategy, Is.TypeOf<NugetDownloadStrategy>());
-            Assert.That(strategy.FallbackStrategy.FallbackStrategy, Is.Null);
+            Assert.That(((CacheDownloadStrategy)strategy).EffectiveStrategy, Is.TypeOf<NugetDownloadStrategy>());
+            Assert.That(strategy.FallbackStrategy, Is.Null);
         }
 
         [Test]
@@ -64,8 +67,8 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(strategy, Is.TypeOf<CacheDownloadStrategy>());
-            Assert.That(strategy.FallbackStrategy, Is.TypeOf<NugetDownloadStrategy>());
-            Assert.That(strategy.FallbackStrategy.FallbackStrategy, Is.Null);
+            Assert.That(((CacheDownloadStrategy)strategy).EffectiveStrategy, Is.TypeOf<NugetDownloadStrategy>());
+            Assert.That(strategy.FallbackStrategy, Is.Null);
         }
     }
 }
