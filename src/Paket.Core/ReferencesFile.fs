@@ -72,14 +72,25 @@ type ReferencesFile =
                     let nugetPackages =
                         let packages = System.Collections.Generic.List<PackageInstallSettings>()
                         for line in nugetLines do
-                            if line.StartsWith "exclude " then
+                            match line with
+                            | x when x.StartsWith "exclude " ->
                                 if packages.Count = 0 then
                                     failwithf "No package defined for '%s'." line
                                 let p = packages.[packages.Count-1]
                                 let e = line.Substring(7).Trim()
                                 packages.[packages.Count-1] <- { p with Settings = { p.Settings with Excludes = p.Settings.Excludes @ [e] }}
-                            else
-                                packages.Add(parsePackageInstallSettings line)
+                            | x when x.StartsWith "alias " ->
+                                if packages.Count = 0 then
+                                    failwithf "No package defined for '%s'." line
+                                let p = packages.[packages.Count-1]
+                                let all = line.Substring(5).Trim()
+                                let parts = all.Split(' ')
+                                if parts.Length < 2 then
+                                    failwithf "Incorrect alias definition '%s'." line
+                                let e = parts.[0]
+                                let alias = all.Substring(e.Length).TrimStart()
+                                packages.[packages.Count-1] <- { p with Settings = { p.Settings with Aliases = Map.add e alias p.Settings.Aliases }}
+                            | _-> packages.Add(parsePackageInstallSettings line)
                         packages |> Seq.toList
 
                     let remoteFiles = 
@@ -127,6 +138,7 @@ type ReferencesFile =
                     ReferenceCondition = if String.IsNullOrWhiteSpace referenceCondition |> not then Some referenceCondition else None
                     CreateBindingRedirects = createBindingRedirects
                     Excludes = []
+                    Aliases = Map.empty
                     OmitContent = if omitContent then Some ContentCopySettings.Omit else None } }
 
 
@@ -180,7 +192,9 @@ type ReferencesFile =
         let printGroup g = 
             (g.NugetPackages |> List.collect (fun p -> 
                  let packageStr = String.Join(" ",[p.Name.ToString(); p.Settings.ToString()] |> List.filter (fun s -> s <> ""))
-                 packageStr :: (p.Settings.Excludes |> List.map (fun e -> sprintf "  exclude %s" e)))) @
+                 let excludes = (p.Settings.Excludes |> List.map (fun e -> sprintf "  exclude %s" e))
+                 let aliases = (p.Settings.Aliases |> Seq.map (fun kv -> sprintf "  alias %s %s" kv.Key kv.Value)) |> Seq.toList
+                 packageStr :: excludes @ aliases)) @
               (g.RemoteFiles |> List.map printSourceFile)
 
         String.Join

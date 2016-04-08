@@ -411,3 +411,15 @@ File:countdown.js Scripts link: false"""
 let ``should parse and serialize reffiles with excludes``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileWithExcludes).ToString()
     normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithExcludes)
+
+
+let refFileWithAliases = """Castle.Windsor
+Newtonsoft.Json redirects: on
+FSharp.Core redirects: off
+  alias FSharp.Core.dll FSharp.Core2
+File:countdown.js Scripts link: false"""
+
+[<Test>]
+let ``should parse and serialize reffiles with aliases``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithAliases).ToString()
+    normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithAliases)

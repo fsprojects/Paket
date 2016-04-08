@@ -358,6 +358,7 @@ type InstallSettings =
       CreateBindingRedirects : BindingRedirectsSettings option
       CopyLocal : bool option
       Excludes : string list
+      Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option }
 
     static member Default =
@@ -368,6 +369,7 @@ type InstallSettings =
           ReferenceCondition = None
           CreateBindingRedirects = None
           Excludes = []
+          Aliases = Map.empty
           CopyContentToOutputDirectory = None
           OmitContent = None }
 
@@ -470,6 +472,7 @@ type InstallSettings =
                 | None -> None
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
               Excludes = []
+              Aliases = Map.empty
               CopyLocal =
                 match getPair "copy_local" with
                 | Some "false" -> Some false 
