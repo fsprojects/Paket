@@ -1,3 +1,6 @@
+#### 2.58.8 - 08.04.2016
+* Property Definitions are placed after FSharp Targets - https://github.com/fsprojects/Paket/issues/1585
+
 #### 2.58.7 - 07.04.2016
 * Paket update supports combining filter with specific version - https://github.com/fsprojects/Paket/pull/1580
 
