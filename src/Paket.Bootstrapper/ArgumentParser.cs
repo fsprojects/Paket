@@ -34,7 +34,7 @@ namespace Paket.Bootstrapper
         public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables)
         {
             var options = new BootstrapperOptions();
-            
+
             var commandArgs = arguments.ToList();
 
             if (commandArgs.Contains(CommandArgs.PreferNuget))
@@ -42,7 +42,7 @@ namespace Paket.Bootstrapper
                 options.PreferNuget = true;
                 commandArgs.Remove(CommandArgs.PreferNuget);
             }
-            else if (appSettings.GetKey(AppSettingKeys.PreferNugetAppSettingsKey) == "true")
+            else if (appSettings.GetKey(AppSettingKeys.PreferNugetAppSettingsKey).ToLowerSafe() == "true")
             {
                 options.PreferNuget = true;
             }
@@ -51,7 +51,7 @@ namespace Paket.Bootstrapper
                 options.ForceNuget = true;
                 commandArgs.Remove(CommandArgs.ForceNuget);
             }
-            else if (appSettings.GetKey(AppSettingKeys.ForceNugetAppSettingsKey) == "true")
+            else if (appSettings.GetKey(AppSettingKeys.ForceNugetAppSettingsKey).ToLowerSafe() == "true")
             {
                 options.ForceNuget = true;
             }
@@ -119,27 +119,23 @@ namespace Paket.Bootstrapper
 
         private static string GetKey(this NameValueCollection appSettings, string key)
         {
+            if (appSettings != null && appSettings.AllKeys.Any(x => x == key))
+                return appSettings.Get(key);
             return null;
         }
 
         private static string GetKey(this IDictionary dictionary, string key)
         {
+            if (dictionary != null && dictionary.Keys.Cast<string>().Any(x => x == key))
+                return dictionary[key].ToString();
             return null;
         }
-    }
 
-    public class BootstrapperOptions
-    {
-        public BootstrapperOptions()
+        private static string ToLowerSafe(this string value)
         {
-            DownloadArguments = new DownloadArguments();
+            if (value != null)
+                return value.ToLower();
+            return null;
         }
-
-        public DownloadArguments DownloadArguments { get; set; }
-
-        public bool Silent { get; set; }
-        public bool ForceNuget { get; set; }
-        public bool PreferNuget { get; set; }
-        public IEnumerable<string> UnprocessedCommandArgs { get; set; }
     }
 }

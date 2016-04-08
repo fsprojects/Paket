@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="ArgumentParser.cs" />
     <Compile Include="BootstrapperHelper.cs" />
+    <Compile Include="BootstrapperOptions.cs" />
     <Compile Include="DownloadStrategies\CacheDownloadStrategy.cs" />
     <Compile Include="HelperProxies\IWebRequestProxy.cs" />
     <Compile Include="HelperProxies\WebRequestProxy.cs" />

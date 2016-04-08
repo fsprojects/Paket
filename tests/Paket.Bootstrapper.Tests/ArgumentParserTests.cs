@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using NUnit.Framework;
 
@@ -89,12 +91,40 @@ namespace Paket.Bootstrapper.Tests
         }
 
         [Test]
+        public void ForceNuget_FromAppSettings()
+        {
+            //arrange
+            var appSettings = new NameValueCollection();
+            appSettings.Add(ArgumentParser.AppSettingKeys.ForceNugetAppSettingsKey, "TrUe");
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] { }, appSettings, null);
+
+            //assert
+            Assert.That(result.ForceNuget, Is.True);
+        }
+
+        [Test]
         public void PreferNuget()
         {
             //arrange
 
             //act
             var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.PreferNuget }, null, null);
+
+            //assert
+            Assert.That(result.PreferNuget, Is.True);
+        }
+
+        [Test]
+        public void PreferNuget_FromAppSettings()
+        {
+            //arrange
+            var appSettings = new NameValueCollection();
+            appSettings.Add(ArgumentParser.AppSettingKeys.PreferNugetAppSettingsKey, "TrUe");
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] {}, appSettings, null);
 
             //assert
             Assert.That(result.PreferNuget, Is.True);
@@ -146,6 +176,32 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result.DownloadArguments.DoSelfUpdate, Is.True);
+        }
+
+        [Test]
+        public void LatestVersion()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { "1.0" }, null, null);
+
+            //assert
+            Assert.That(result.DownloadArguments.LatestVersion, Is.EqualTo("1.0"));
+        }
+
+        [Test]
+        public void LatestVersion_FromEnvironmentVariable()
+        {
+            //arrange
+            var envVariables= new Dictionary<string, string>();
+            envVariables.Add(ArgumentParser.EnvArgs.PaketVersionEnv, "1.0");
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] {}, null, envVariables);
+
+            //assert
+            Assert.That(result.DownloadArguments.LatestVersion, Is.EqualTo("1.0"));
         }
 
         [Test]
