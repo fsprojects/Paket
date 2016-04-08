@@ -96,6 +96,18 @@ This option allows you to exclude libraries from being referenced in project fil
 	NUnit
 	  exclude nunit.framework.dll
 
+## Library aliases
+
+<blockquote>This feature is only available in Paket 3.0 alpha versions.</blockquote>
+
+This option allows you to specify library aliases:
+
+    [lang=paket]
+	PackageA
+	  alias A1.dll Name2,Name3
+	  alias A2.dll MyAlias1
+	Dapper
+	NUnit
 
 ## File name conventions
 
