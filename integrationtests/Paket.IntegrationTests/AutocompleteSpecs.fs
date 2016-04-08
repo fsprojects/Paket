@@ -31,7 +31,7 @@ let ``#1298 should autocomplete for nunit on NuGet3``() =
     result |> shouldContain "NUnit"
 
 [<Test>]
-[<Ignore>] // it's only working on forki's machine
+[<Ignore("it's only working on forki's machine")>]
 let ``#1298 should autocomplete for msu on local teamcity``() = 
     let result = Dependencies.FindPackagesByName([PackageSource.NuGetV2Source "http://teamcity/guestAuth/app/nuget/v1/FeedService.svc/"],"msu")
     result |> shouldContain "msu.Addins"
@@ -58,7 +58,7 @@ let ``#1298 should autocomplete versions for FAKE on NuGet3``() =
     result |> shouldNotContain "FAKE.Core"
 
 [<Test>]
-[<Ignore>] // it's only working on forki's machine
+[<Ignore("it's only working on forki's machine")>]
 let ``#1298 should autocomplete versions for msu on local teamcity``() = 
     let result = Dependencies.FindPackageVersions("",[PackageSource.NuGetV2Source "http://teamcity/guestAuth/app/nuget/v1/FeedService.svc/"],"msu.Addins")
     result |> shouldNotContain "msu.Addins"

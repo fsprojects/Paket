@@ -286,7 +286,7 @@ let ``#1538 symbols src folder structure`` () =
 
 
 [<Test>]
-[<Ignore>] // ignroe until we hear back
+[<Ignore("ignore until we hear back")>]
 let ``#1504 unpacking should override``() =
     let scenario = "i001504-override"
 
