@@ -1,3 +1,6 @@
+#### 2.58.9 - 08.04.2016
+* BUGFIX: "paket.exe pack" with "include-referenced-projects" and "minimum-from-lock-file" did not work when project references have a paket.template file - https://github.com/fsprojects/Paket/issues/1586
+
 #### 2.58.8 - 08.04.2016
 * Property Definitions are placed after FSharp Targets - https://github.com/fsprojects/Paket/issues/1585
 

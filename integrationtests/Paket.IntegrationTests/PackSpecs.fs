@@ -294,3 +294,10 @@ let ``#1504 unpacking should override``() =
     directPaket "pack templatefile paket.B.template version 1.0.0 output bin" scenario |> ignore
     directPaket "pack templatefile paket.A.template version 1.0.0 output bin" scenario |> ignore
     directPaket "update" scenario|> ignore
+
+[<Test>]
+let ``#1586 pack dependent projects``() =
+    let scenario = "i001586-pack-referenced"
+
+    prepare scenario
+    directPaket "pack output . include-referenced-projects minimum-from-lock-file -v" scenario |> ignore

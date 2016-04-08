@@ -29,8 +29,8 @@
     </DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001585-websharper-props\temp</StartWorkingDirectory>
+    <StartArguments>pack output . include-referenced-projects minimum-from-lock-file</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001586-pack-referenced\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
