@@ -67,6 +67,15 @@ let ``#1233 install props with framework restrictions``() =
     s2 |> shouldEqual s1
 
 [<Test>]
+let ``#1585 install props with for websharper``() = 
+    let newLockFile = install "i001585-websharper-props"
+    let newFile = Path.Combine(scenarioTempPath "i001585-websharper-props","xUnitTests","xUnitTests.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001585-websharper-props","xUnitTests","xUnitTests.expected.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
 let ``#1256 should report error in lock file``() =
     try
         install "i001256-wrong-lock" |> ignore
