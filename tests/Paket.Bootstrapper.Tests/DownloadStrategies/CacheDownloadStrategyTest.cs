@@ -51,10 +51,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         public void GetLatestVersion_FallBackStrategyFails_UseOtherFallback()
         {
             //arrange
-            mockFallBack.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>();
+            mockFallBack.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>().Verifiable();
             var mockFallbackFallback = new Mock<IDownloadStrategy>();
-            mockFallbackFallback.Setup(x => x.GetLatestVersion(true, false)).Returns("any");
-            mockFallBack.SetupGet(x => x.FallbackStrategy).Returns(mockFallbackFallback.Object);
+            mockFallbackFallback.Setup(x => x.GetLatestVersion(true, false)).Returns("any").Verifiable();
+            mockFallBack.SetupGet(x => x.FallbackStrategy).Returns(mockFallbackFallback.Object).Verifiable();
 
             //act
             var result = sut.GetLatestVersion(true, false);
@@ -69,7 +69,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         public void GetLatestVersion_NoFallBackStrategy_UseBestCachedVersion()
         {
             //arrange
-            mockFallBack.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>();
+            mockFallBack.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>().Verifiable();
             mockDirectoryProxy.Setup(x => x.GetDirectories(It.IsAny<string>())).Returns(new[] {"2.1", "2.2"});
 
             //act

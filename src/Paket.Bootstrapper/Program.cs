@@ -25,7 +25,7 @@ namespace Paket.Bootstrapper
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
 
-            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, options.Silent);
+            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, options.Silent, new FileProxy());
         }
 
         private static void CancelKeyPressed(object sender, ConsoleCancelEventArgs e)
@@ -44,7 +44,7 @@ namespace Paket.Bootstrapper
             Environment.Exit(exitCode);
         }
 
-        private static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, bool silent)
+        public static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, bool silent, IFileProxy fileProxy)
         {
             Action<Exception> handleException = exception =>
             {
@@ -67,7 +67,7 @@ namespace Paket.Bootstrapper
                     Console.WriteLine("Checking Paket version ({0})...", versionRequested);
                 }
 
-                var localVersion = BootstrapperHelper.GetLocalFileVersion(dlArgs.Target);
+                var localVersion = fileProxy.GetLocalFileVersion(dlArgs.Target);
 
                 var specificVersionRequested = true;
                 var latestVersion = dlArgs.LatestVersion;
@@ -114,7 +114,7 @@ namespace Paket.Bootstrapper
                         if (!silent)
                             Console.WriteLine("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", 
                                 downloadStrategy.Name, fallbackStrategy.Name);
-                        StartPaketBootstrapping(fallbackStrategy, dlArgs, silent);
+                        StartPaketBootstrapping(fallbackStrategy, dlArgs, silent, fileProxy);
                         shouldHandleException = !File.Exists(dlArgs.Target);
                     }
                 }

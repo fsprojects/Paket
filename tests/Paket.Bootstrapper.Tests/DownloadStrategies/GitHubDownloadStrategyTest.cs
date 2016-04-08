@@ -27,7 +27,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         public void GetLatestVersion()
         {
             //arrange
-            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 2.57.1 · fsprojects/Paket</title>");
+            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 2.57.1 · fsprojects/Paket</title>").Verifiable();
 
             //act
             var result = sut.GetLatestVersion(true, false);
@@ -41,8 +41,8 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         public void GetLatestVersion_Prerelease()
         {
             //arrange
-            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 2.57.1 · fsprojects/Paket</title>");
-            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesUrl)).Returns("Paket/tree/2.57.2-pre\"Paket/tree/2.57.1\"");
+            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 2.57.1 · fsprojects/Paket</title>").Verifiable();
+            mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesUrl)).Returns("Paket/tree/2.57.2-pre\"Paket/tree/2.57.1\"").Verifiable();
 
             //act
             var result = sut.GetLatestVersion(false, false);
@@ -61,7 +61,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             var tempFileName = BootstrapperHelper.GetTempFile("paket");
 
             mockWebProxy.Setup(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<int>()))
-                .Callback<string, Stream, int>((url, streamIn, bufferIn) => stream.CopyTo(streamIn));
+                .Callback<string, Stream, int>((url, streamIn, bufferIn) => stream.CopyTo(streamIn)).Verifiable();
             var buffer = new byte[byteArray.Length];
             mockFileProxy.Setup(x => x.Create(tempFileName)).Returns(new MemoryStream(buffer));
 
@@ -86,7 +86,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             var tempFileNameOld = BootstrapperHelper.GetTempFile("oldBootstrapper");
 
             mockWebProxy.Setup(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<int>()))
-               .Callback<string, Stream, int>((url, streamIn, bufferIn) => stream.CopyTo(streamIn));
+               .Callback<string, Stream, int>((url, streamIn, bufferIn) => stream.CopyTo(streamIn)).Verifiable();
             var buffer = new byte[byteArray.Length];
             mockFileProxy.Setup(x => x.Create(tempFileNameNew)).Returns(new MemoryStream(buffer));
             mockFileProxy.Setup(x => x.GetLocalFileVersion(It.IsAny<string>())).Returns("2.52.1");

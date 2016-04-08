@@ -1,4 +1,6 @@
-﻿namespace Paket.Bootstrapper
+﻿using System;
+
+namespace Paket.Bootstrapper
 {
     public class DownloadArguments
     {
@@ -13,6 +15,7 @@
         public DownloadArguments()
         {
             IgnorePrerelease = true;
+            LatestVersion = String.Empty;
         }
 
         public DownloadArguments(string latestVersion, bool ignorePrerelease, string folder, string target, bool doSelfUpdate, string nugetSource, bool ignoreCache)
