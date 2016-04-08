@@ -93,7 +93,10 @@
     <Compile Include="Logging.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="Utils.fs" />
+    <Compile Include="GitCommandHelper.fs" />
+    <Compile Include="GitHandling.fs" />
     <Compile Include="ConfigFile.fs" />
+    <Compile Include="Cache.fs" />
     <Compile Include="PackageSources.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="PlatformMatching.fs" />
@@ -112,14 +115,17 @@
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="LockFile.fs" />
     <Compile Include="TemplateFile.fs" />
+    <Compile Include="ProjectJsonFile.fs" />
     <Compile Include="ProjectFile.fs" />
-    <Compile Include="DependencyModel.fs" />
     <Compile Include="DependencyChangeDetection.fs" />
+    <Compile Include="GarbageCollection.fs" />
     <Compile Include="RestoreProcess.fs" />
     <Compile Include="BindingRedirects.fs" />
     <Compile Include="NupkgWriter.fs" />
     <Compile Include="ProcessOptions.fs" />
     <Compile Include="PackagesConfigFile.fs" />
+    <Compile Include="ProjectType.fs" />
+    <Compile Include="DependencyModel.fs" />
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />
     <Compile Include="RemoveProcess.fs" />
@@ -140,6 +146,7 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.Linq" />

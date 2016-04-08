@@ -8,6 +8,7 @@ open Paket.PackageResolver
 open System.Collections.Generic
 open Chessie.ErrorHandling
 open Paket.Logging
+open InstallProcess
 
 let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
     let allVersions = Dictionary<PackageName,(SemVerInfo * (PackageSources.PackageSource list)) list>()
@@ -42,7 +43,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
         | SemVerUpdateMode.KeepMinor -> processFile (fun v -> sprintf "~> %d.%d.%d" v.Major v.Minor v.Patch + formatPrerelease v)
         | SemVerUpdateMode.KeepPatch -> processFile (fun v -> sprintf "~> %d.%d.%d.%s" v.Major v.Minor v.Patch v.Build + formatPrerelease v)
 
-    let getVersionsF,groupsToUpdate =
+    let getVersionsF,getPackageDetailsF,groupsToUpdate =
         let changes,groups =
             match updateMode with
             | UpdateAll ->
@@ -127,7 +128,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
         let preferredVersions = 
             DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
-            |> Map.map (fun k (v,s) -> v,[s])
+            |> Map.map (fun (groupName,packageName) (v,s) -> v,s :: (List.map PackageSources.PackageSource.FromCache (dependenciesFile.GetGroup(groupName).Caches)))
 
         let getVersionsF sources resolverStrategy groupName packageName = 
             seq { 
@@ -140,7 +141,13 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                 yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
             } |> Seq.cache
 
-        getVersionsF,groups
+        let getPackageDetailsF sources groupName packageName version =
+            let exploredPackage:PackageDetails = getPackageDetailsF sources groupName packageName version
+            match preferredVersions |> Map.tryFind (groupName,packageName) with
+            | Some (preferedVersion,_) when version = preferedVersion -> { exploredPackage with Unlisted = false }
+            | _ -> exploredPackage
+
+        getVersionsF,getPackageDetailsF,groups
 
     let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate, updateMode)
 
@@ -160,7 +167,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                       RemoteFiles = group.ResolvedSourceFiles }
                 | None -> lockFile.GetGroup groupName) // just copy from lockfile
     
-    LockFile(lockFile.FileName, groups)
+    LockFile(lockFile.FileName, groups),groupsToUpdate
 
 let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFile) =
     let root = Path.GetDirectoryName dependenciesFile.FileName
@@ -168,9 +175,12 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
         let targetFrameworks = lazy (
             InstallProcess.findAllReferencesFiles root |> returnOrFail
             |> List.map (fun (p,_) -> 
-                match p.GetTargetFramework() with
-                | Some fw -> Requirements.FrameworkRestriction.Exactly fw
-                | None -> failwithf "Could not detect target framework for project %s" p.FileName)
+                match p with 
+                | ProjectType.Project p ->
+                    match p.GetTargetFramework() with
+                    | Some fw -> Requirements.FrameworkRestriction.Exactly fw
+                    | None -> failwithf "Could not detect target framework for project %s" p.FileName
+                | ProjectType.ProjectJson p -> Requirements.FrameworkRestriction.Exactly (FrameworkIdentifier.DNXCore FrameworkVersion.V5_0))
             |> List.distinct)
 
         dependenciesFile.Groups
@@ -205,7 +215,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdat
 
     let dependenciesFile = detectProjectFrameworksForDependenciesFile dependenciesFile
 
-    let lockFile = 
+    let lockFile,updatedGroups =
         selectiveUpdate
             force 
             getSha1
@@ -216,18 +226,19 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdat
             updateMode
             semVerUpdateMode
     let hasChanged = lockFile.Save()
-    lockFile,hasChanged
+    lockFile,hasChanged,updatedGroups
 
 /// Smart install command
 let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
-    let lockFile,hasChanged = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
+    let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let projectsAndReferences = InstallProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
         let forceTouch = hasChanged && options.Common.TouchAffectedRefs
-        InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences)
+        InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
+        GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =

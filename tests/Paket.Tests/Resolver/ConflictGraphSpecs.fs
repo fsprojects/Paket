@@ -28,6 +28,7 @@ let defaultPackage =
     { Name = PackageName ""
       Parent = PackageRequirementSource.DependenciesFile ""
       Graph = []
+      Sources = []
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Settings = InstallSettings.Default
       ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 

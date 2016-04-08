@@ -66,7 +66,6 @@ let add (results : ParseResults<_>) =
     let packageName = results.GetResult <@ AddArgs.Nuget @>
     let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
     let force = results.Contains <@ AddArgs.Force @>
-    let hard = results.Contains <@ AddArgs.Hard @>
     let redirects = results.Contains <@ AddArgs.Redirects @>
     let createNewBindingFiles = results.Contains <@ AddArgs.CreateNewBindingFiles @>
     let group = results.TryGetResult <@ AddArgs.Group @>
@@ -80,10 +79,10 @@ let add (results : ParseResults<_>) =
 
     match results.TryGetResult <@ AddArgs.Project @> with
     | Some projectName ->
-        Dependencies.Locate().AddToProject(group, packageName, version, force, hard, redirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+        Dependencies.Locate().AddToProject(group, packageName, version, force, redirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
     | None ->
         let interactive = results.Contains <@ AddArgs.Interactive @>
-        Dependencies.Locate().Add(group, packageName, version, force, hard, redirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+        Dependencies.Locate().Add(group, packageName, version, force, redirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
@@ -143,7 +142,6 @@ let clearCache (results : ParseResults<ClearCacheArgs>) =
 
 let install (results : ParseResults<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
-    let hard = results.Contains <@ InstallArgs.Hard @>
     let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
     let createNewBindingFiles = results.Contains <@ InstallArgs.CreateNewBindingFiles @>
     let installOnlyReferenced = results.Contains <@ InstallArgs.Install_Only_Referenced @>
@@ -154,7 +152,7 @@ let install (results : ParseResults<_>) =
         SemVerUpdateMode.NoRestriction
     let touchAffectedRefs = results.Contains <@ InstallArgs.Touch_Affected_Refs @>
 
-    Dependencies.Locate().Install(force, hard, withBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode, touchAffectedRefs)
+    Dependencies.Locate().Install(force, withBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode, touchAffectedRefs)
 
 let outdated (results : ParseResults<_>) =
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
@@ -164,16 +162,15 @@ let outdated (results : ParseResults<_>) =
 let remove (results : ParseResults<_>) =
     let packageName = results.GetResult <@ RemoveArgs.Nuget @>
     let force = results.Contains <@ RemoveArgs.Force @>
-    let hard = results.Contains <@ RemoveArgs.Hard @>
     let noInstall = results.Contains <@ RemoveArgs.No_Install @>
     let group = results.TryGetResult <@ RemoveArgs.Group @>
     match results.TryGetResult <@ RemoveArgs.Project @> with
     | Some projectName ->
         Dependencies.Locate()
-                    .RemoveFromProject(group, packageName, force, hard, projectName, noInstall |> not)
+                    .RemoveFromProject(group, packageName, force, projectName, noInstall |> not)
     | None ->
         let interactive = results.Contains <@ RemoveArgs.Interactive @>
-        Dependencies.Locate().Remove(group, packageName, force, hard, interactive, noInstall |> not)
+        Dependencies.Locate().Remove(group, packageName, force, interactive, noInstall |> not)
 
 let restore (results : ParseResults<_>) =
     let force = results.Contains <@ RestoreArgs.Force @>
@@ -189,7 +186,6 @@ let simplify (results : ParseResults<_>) =
     Dependencies.Locate().Simplify(interactive)
 
 let update (results : ParseResults<_>) =
-    let hard = results.Contains <@ UpdateArgs.Hard @>
     let force = results.Contains <@ UpdateArgs.Force @>
     let noInstall = results.Contains <@ UpdateArgs.No_Install @>
     let group = results.TryGetResult <@ UpdateArgs.Group @>
@@ -207,15 +203,15 @@ let update (results : ParseResults<_>) =
     | Some packageName ->
         let version = results.TryGetResult <@ UpdateArgs.Version @>
         if filter then
-            Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         else
-            Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate().UpdatePackage(group, packageName, version, force, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
     | _ ->
         match group with
         | Some groupName -> 
-            Dependencies.Locate().UpdateGroup(groupName, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate().UpdateGroup(groupName, force, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         | None ->
-            Dependencies.Locate().Update(force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate().Update(force, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
 let pack (results : ParseResults<_>) =
     let outputPath = results.GetResult <@ PackArgs.Output @>
@@ -268,7 +264,7 @@ let getInstalledPackages (results : ParseResults<_>) =
         if showAll then dependenciesFile.GetInstalledPackages()
         else dependenciesFile.GetDirectDependencies()
     | Some project ->
-        match ProjectFile.FindReferencesFile(FileInfo project) with
+        match ProjectType.FindReferencesFile(FileInfo project) with
         | None -> []
         | Some referencesFile ->
             let referencesFile = ReferencesFile.FromFile referencesFile

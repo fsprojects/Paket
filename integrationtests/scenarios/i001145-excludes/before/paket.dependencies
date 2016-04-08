@@ -1,0 +1,5 @@
+source nuget_repo
+
+nuget MultiTarget
+nuget Dapper
+nuget NUnit

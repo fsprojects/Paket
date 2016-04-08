@@ -27,6 +27,8 @@ let prepare scenario =
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "vcxproj")))
     Directory.GetFiles(scenarioPath, "*.templatetemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "template")))
+    Directory.GetFiles(scenarioPath, "*.jsontemplate", SearchOption.AllDirectories)
+    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "json")))
 
 let directPaketInPath command scenarioPath =
     let result =
@@ -53,8 +55,10 @@ let update scenario =
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario =
-    paket "install" scenario |> ignore
+    paket "install -v" scenario |> ignore
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
+
+let restore scenario = paket "restore -v" scenario |> ignore
 
 let updateShouldFindPackageConflict packageName scenario =
     try

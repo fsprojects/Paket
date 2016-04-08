@@ -385,3 +385,41 @@ File:countdown.js Scripts link: false"""
 let ``should parse and serialize reffiles with link false``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileWithLinkFalse).ToString()
     normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithLinkFalse)
+
+let refFileWithWrongExcludes = """exclude FSharp.Core.dll
+Castle.Windsor
+Newtonsoft.Json redirects: on
+FSharp.Core redirects: off
+File:countdown.js Scripts link: false"""
+
+[<Test>]
+let ``should not parse reffiles with wrong excludes``() = 
+    try
+        ReferencesFile.FromLines(toLines refFileWithWrongExcludes) |> ignore
+        failwith "expected exception"
+    with
+    | exn when exn.Message.Contains "No package" -> ()
+
+let refFileWithExcludes = """Castle.Windsor
+Newtonsoft.Json redirects: on
+FSharp.Core redirects: off
+  exclude FSharp.Core.dll
+  exclude FSharp.Core2.dll
+File:countdown.js Scripts link: false"""
+
+[<Test>]
+let ``should parse and serialize reffiles with excludes``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithExcludes).ToString()
+    normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithExcludes)
+
+
+let refFileWithAliases = """Castle.Windsor
+Newtonsoft.Json redirects: on
+FSharp.Core redirects: off
+  alias FSharp.Core.dll FSharp.Core2
+File:countdown.js Scripts link: false"""
+
+[<Test>]
+let ``should parse and serialize reffiles with aliases``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithAliases).ToString()
+    normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithAliases)

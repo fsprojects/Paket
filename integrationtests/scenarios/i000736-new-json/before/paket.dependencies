@@ -1,0 +1,4 @@
+source https://www.myget.org/F/dotnet-core/api/v3/index.json
+source https://api.nuget.org/v3/index.json
+
+nuget NETStandard.Library prerelease

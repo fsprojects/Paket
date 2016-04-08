@@ -32,15 +32,17 @@ type VersionStrategy = {
 type DependenciesGroup = {
     Name: GroupName
     Sources: PackageSource list 
+    Caches: Cache list 
     Options: InstallOptions
     Packages : PackageRequirement list
-    RemoteFiles : UnresolvedSourceFile list
+    RemoteFiles : UnresolvedSource list
 }
     with
         static member New(groupName) =
             { Name = groupName
               Options = InstallOptions.Default
               Sources = []
+              Caches = []
               Packages = []
               RemoteFiles = [] }
 
@@ -53,17 +55,15 @@ type DependenciesGroup = {
                   ResolverStrategyForDirectDependencies = this.Options.ResolverStrategyForDirectDependencies ++ other.Options.ResolverStrategyForDirectDependencies 
                   ResolverStrategyForTransitives = this.Options.ResolverStrategyForTransitives ++ other.Options.ResolverStrategyForTransitives }
               Sources = this.Sources @ other.Sources |> List.distinct
+              Caches = this.Caches @ other.Caches |> List.distinct
               Packages = this.Packages @ other.Packages
               RemoteFiles = this.RemoteFiles @ other.RemoteFiles }
             
 /// [omit]
-module DependenciesFileParser = 
-
-    let private basicOperators = ["~>";"==";"<=";">=";"=";">";"<"]
-    let private strategyOperators = ['!';'@']
+module DependenciesFileParser =
     let private operators =
-        basicOperators
-        @ (basicOperators |> List.map (fun o -> strategyOperators |> List.map (fun s -> string s + o)) |> List.concat)
+        VersionRange.BasicOperators
+        @ (VersionRange.BasicOperators |> List.map (fun o -> VersionRange.StrategyOperators |> List.map (fun s -> string s + o)) |> List.concat)
 
     let (|NuGetStrategy|PaketStrategy|NoStrategy|) (text : string) =
         match text |> Seq.tryHead with
@@ -108,7 +108,7 @@ module DependenciesFileParser =
             |  ">" :: v1 :: "<=" :: v2 :: rest -> VersionRequirement(VersionRange.Range(VersionRangeBound.Excluding,SemVer.Parse v1,SemVer.Parse v2,VersionRangeBound.Including),parsePrerelease rest)
             | _ -> 
                 let splitVersion (text:string) =
-                    match basicOperators |> List.tryFind(text.StartsWith) with
+                    match VersionRange.BasicOperators |> List.tryFind(text.StartsWith) with
                     | Some token -> token, text.Replace(token + " ", "").Split(' ') |> Array.toList
                     | None -> "=", text.Split(' ') |> Array.toList
 
@@ -159,9 +159,9 @@ module DependenciesFileParser =
         | [| _; projectSpec |] -> origin, getParts projectSpec, Constants.FullProjectSourceFileName, None
         | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
 
+
     let private parseHttpSource trimmed = 
         let parts = parseDependencyLine trimmed
-        let removeInvalidChars (str : string) = System.Text.RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
         
         let getParts (projectSpec : string) fileSpec projectName authKey = 
             let projectSpec = projectSpec.TrimEnd('/')
@@ -211,10 +211,16 @@ module DependenciesFileParser =
     | ResolverStrategyForTransitives of ResolverStrategy option
     | ResolverStrategyForDirectDependencies of ResolverStrategy option
 
-    let private (|Remote|Package|Empty|ParserOptions|SourceFile|Group|) (line:string) =
+    type RemoteParserOption =
+    | PackageSource of PackageSource
+    | Cache of Cache
+
+
+    let private (|Remote|Package|Empty|ParserOptions|SourceFile|Git|Group|) (line:string) =
         match line.Trim() with
         | _ when String.IsNullOrWhiteSpace line -> Empty(line)
-        | String.StartsWith "source" _ as trimmed -> Remote(PackageSource.Parse(trimmed))
+        | String.StartsWith "source" _ as trimmed -> Remote(RemoteParserOption.PackageSource(PackageSource.Parse(trimmed)))
+        | String.StartsWith "cache" _ as trimmed -> Remote(RemoteParserOption.Cache(Cache.Parse(trimmed)))
         | String.StartsWith "group" _ as trimmed -> Group(trimmed.Replace("group ",""))
         | String.StartsWith "nuget" trimmed -> 
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
@@ -295,9 +301,13 @@ module DependenciesFileParser =
             ParserOptions(ParserOption.CopyContentToOutputDir(setting))
         | String.StartsWith "condition" trimmed -> ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper()))
         | String.StartsWith "gist" _ as trimmed ->
-            SourceFile(parseGitSource trimmed SingleSourceFileOrigin.GistLink "gist")
+            SourceFile(parseGitSource trimmed Origin.GistLink "gist")
         | String.StartsWith "github" _ as trimmed  ->
-            SourceFile(parseGitSource trimmed SingleSourceFileOrigin.GitHubLink "github")
+            SourceFile(parseGitSource trimmed Origin.GitHubLink "github")
+        | String.StartsWith "git" _ as trimmed  ->
+            Git(trimmed.Substring(4))
+        | String.StartsWith "file:" _ as trimmed  ->
+            Git(trimmed)
         | String.StartsWith "http" _ as trimmed  ->
             SourceFile(parseHttpSource trimmed)
         | String.StartsWith "//" _ -> Empty(line)
@@ -340,8 +350,9 @@ module DependenciesFileParser =
             else None 
           Parent = parent
           Graph = []
+          Sources = sources
           Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
-          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim(strategyOperators |> Array.ofList)) } 
+          VersionRequirement = parseVersionRequirement((version + " " + prereleases).Trim(VersionRange.StrategyOperators |> Array.ofList)) } 
 
     let parsePackageLine(sources,parent,line:string) =
         match line with 
@@ -371,16 +382,61 @@ module DependenciesFileParser =
                 match line with
                 | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::current::other
                 | Empty(_) -> lineNo, current::other
-                | Remote(newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
+                | Remote(RemoteParserOption.PackageSource newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
+                | Remote(RemoteParserOption.Cache newCache) -> 
+                    let caches = current.Caches @ [newCache] |> List.distinct
+                    let sources = current.Sources @ [LocalNuGet(newCache.Location,Some newCache)] |> List.distinct
+                    lineNo, { current with Caches = caches; Sources = sources }::other
                 | ParserOptions(options) ->
                     lineNo,{ current with Options = parseOptions current options} ::other
                 | Package(name,version,rest) ->
                     let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest)
 
                     lineNo, { current with Packages = current.Packages @ [package] }::other
-                | SourceFile(origin, (owner,project, commit), path, authKey) ->
-                    let remoteFile : UnresolvedSourceFile = { Owner = owner; Project = project; Commit = commit; Name = path; Origin = origin; AuthKey = authKey }
+                | SourceFile(origin, (owner,project, vr), path, authKey) ->
+                    let remoteFile : UnresolvedSource = 
+                        { Owner = owner
+                          Project = project
+                          Version = 
+                            match vr with
+                            | None -> VersionRestriction.NoVersionRestriction
+                            | Some x -> VersionRestriction.Concrete x
+                          Name = path
+                          Origin = origin
+                          Command = None
+                          OperatingSystemRestriction = None
+                          PackagePath = None
+                          AuthKey = authKey }
                     lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
+                | Git(url) ->
+                    let owner,vr,project,url,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts url
+                    let remoteFile : UnresolvedSource = 
+                        { Owner = owner
+                          Project = project
+                          Version = 
+                            match vr with
+                            | None -> VersionRestriction.NoVersionRestriction
+                            | Some x -> 
+                                try 
+                                    let vr = parseVersionRequirement x
+                                    VersionRestriction.VersionRequirement vr
+                                with 
+                                | _ -> VersionRestriction.Concrete x
+                          Command = buildCommand
+                          OperatingSystemRestriction = operatingSystemRestriction
+                          PackagePath = packagePath
+                          Name = ""
+                          Origin = Origin.GitLink url
+                          AuthKey = None }
+                    let sources = 
+                        match packagePath with
+                        | None -> current.Sources
+                        | Some path -> 
+                            let root = ""
+                            let fullPath = remoteFile.ComputeFilePath(root,current.Name,path)
+                            let relative = (createRelativePath root fullPath).Replace("\\","/")
+                            LocalNuGet(relative,None) :: current.Sources
+                    lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile]; Sources = sources }::other
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
         | [] -> failwithf "Error in paket.dependencies line %d" lineNo
@@ -399,7 +455,7 @@ module DependenciesFileParser =
         fileName, groups, lines
     
     let parseVersionString (version : string) = 
-        { VersionRequirement = parseVersionRequirement (version.Trim(strategyOperators |> Array.ofList))
+        { VersionRequirement = parseVersionRequirement (version.Trim(VersionRange.StrategyOperators |> Array.ofList))
           ResolverStrategy = parseResolverStrategy version }
 
 module DependenciesFileSerializer = 
@@ -542,7 +598,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let resolveGroup groupName _ =
             let group = this.GetGroup groupName
 
-            let resolveSourceFile (file:ResolvedSourceFile) : (PackageRequirement list * UnresolvedSourceFile list) =
+            let resolveSourceFile (file:ResolvedSourceFile) : (PackageRequirement list * UnresolvedSource list) =
                 let remoteDependenciesFile =
                     RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, groupName, DependenciesFile.FromCode, file)
                     |> Async.RunSynchronously
@@ -564,15 +620,20 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           ResolverStrategyForTransitives = Some ResolverStrategy.Max
                           Parent = PackageRequirementSource.DependenciesFile fileName
                           Graph = []
+                          Sources = group.Sources
                           Settings = group.Options.Settings })
                 |> Seq.toList
+            
+            if String.IsNullOrWhiteSpace fileName |> not then
+                RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
+                |> Async.RunSynchronously
+                |> ignore
 
             let resolution =
                 PackageResolver.Resolve(
-                    groupName,
-                    group.Sources,
                     getVersionF, 
                     getPackageDetailsF, 
+                    groupName,
                     group.Options.ResolverStrategyForDirectDependencies,
                     group.Options.ResolverStrategyForTransitives,
                     group.Options.Settings.FrameworkRestrictions,
@@ -587,7 +648,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
 
     member private this.AddFrameworkRestriction(groupName, frameworkRestrictions:FrameworkRestriction list) =
-        if frameworkRestrictions = [] then this else
+        if List.isEmpty frameworkRestrictions then this else
         let restrictionString = sprintf "framework %s" (String.Join(", ",frameworkRestrictions))
 
         let list = new System.Collections.Generic.List<_>()
@@ -688,8 +749,13 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     | Some found -> 
                         let pos = ref (found + 1)
                         let skipped = ref false
-                        while !pos < textRepresentation.Length - 1 && (String.IsNullOrWhiteSpace textRepresentation.[!pos] || String.startsWithIgnoreCase "source" textRepresentation.[!pos]) do
-                            if String.startsWithIgnoreCase "source" textRepresentation.[!pos] then
+                        while !pos < textRepresentation.Length - 1 &&
+                                (String.IsNullOrWhiteSpace textRepresentation.[!pos] || 
+                                 String.startsWithIgnoreCase "source" textRepresentation.[!pos] ||
+                                 String.startsWithIgnoreCase "cache" textRepresentation.[!pos]) do
+                            if (String.startsWithIgnoreCase "source" textRepresentation.[!pos]) ||
+                               (String.startsWithIgnoreCase "cache" textRepresentation.[!pos])
+                            then
                                 skipped := true
                             pos := !pos + 1
                             

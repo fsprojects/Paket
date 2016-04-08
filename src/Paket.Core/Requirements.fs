@@ -356,7 +356,9 @@ type InstallSettings =
       IncludeVersionInPath: bool option
       ReferenceCondition : string option
       CreateBindingRedirects : BindingRedirectsSettings option
-      CopyLocal : bool option 
+      CopyLocal : bool option
+      Excludes : string list
+      Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option }
 
     static member Default =
@@ -366,6 +368,8 @@ type InstallSettings =
           IncludeVersionInPath = None
           ReferenceCondition = None
           CreateBindingRedirects = None
+          Excludes = []
+          Aliases = Map.empty
           CopyContentToOutputDirectory = None
           OmitContent = None }
 
@@ -417,11 +421,12 @@ type InstallSettings =
                 CopyLocal = self.CopyLocal ++ other.CopyLocal
                 CopyContentToOutputDirectory = self.CopyContentToOutputDirectory ++ other.CopyContentToOutputDirectory
                 ReferenceCondition = self.ReferenceCondition ++ other.ReferenceCondition
+                Excludes = self.Excludes @ other.Excludes
                 IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
         }
 
     static member Parse(text:string) : InstallSettings =
-        let kvPairs = parseKeyValuePairs text
+        let kvPairs = parseKeyValuePairs (text.ToLower())
 
         let getPair key =
             match kvPairs.TryGetValue key with
@@ -466,6 +471,8 @@ type InstallSettings =
                 | Some "never" -> Some CopyToOutputDirectorySettings.Never
                 | None -> None
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
+              Excludes = []
+              Aliases = Map.empty
               CopyLocal =
                 match getPair "copy_local" with
                 | Some "false" -> Some false 
@@ -539,6 +546,7 @@ type PackageRequirement =
       ResolverStrategyForTransitives : ResolverStrategy option
       Parent: PackageRequirementSource
       Graph: PackageRequirement list
+      Sources: PackageSource list
       Settings: InstallSettings }
 
     override this.Equals(that) = 

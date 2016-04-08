@@ -71,7 +71,7 @@ type RemoteFileChange =
     { Owner : string
       Project : string
       Name : string
-      Origin : ModuleResolver.SingleSourceFileOrigin
+      Origin : ModuleResolver.Origin
       Commit : string option
       AuthKey : string option }
 
@@ -98,12 +98,17 @@ type RemoteFileChange =
           | :? RemoteFileChange as that -> RemoteFileChange.Compare(this,that)
           | _ -> invalidArg "that" "cannot compare value of different types"
 
-    static member CreateUnresolvedVersion (unresolved:ModuleResolver.UnresolvedSourceFile) : RemoteFileChange =
+    static member CreateUnresolvedVersion (unresolved:ModuleResolver.UnresolvedSource) : RemoteFileChange =
         { Owner = unresolved.Owner
           Project = unresolved.Project
           Name = unresolved.Name
           Origin = unresolved.Origin
-          Commit = unresolved.Commit
+          Commit = 
+            match unresolved.Version with
+            | ModuleResolver.VersionRestriction.NoVersionRestriction -> None
+            | ModuleResolver.VersionRestriction.Concrete x -> Some x
+            | ModuleResolver.VersionRestriction.VersionRequirement vr -> Some(vr.ToString())
+
           AuthKey = unresolved.AuthKey }
 
     static member CreateResolvedVersion (resolved:ModuleResolver.ResolvedSourceFile) : RemoteFileChange =

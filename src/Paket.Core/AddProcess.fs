@@ -6,11 +6,12 @@ open System
 open System.IO
 open Paket.Domain
 open Paket.Logging
+open InstallProcess
 
-let private notInstalled (project : ProjectFile) groupName package = project.HasPackageInstalled(groupName,package) |> not
+let private notInstalled (project : ProjectType) groupName package = project.HasPackageInstalled(groupName,package) |> not
 
-let private addToProject (project : ProjectFile) groupName package =
-    ProjectFile.FindOrCreateReferencesFile(FileInfo(project.FileName))
+let private addToProject (project : ProjectType) groupName package =
+    project.FindOrCreateReferencesFile()
         .AddNuGetReference(groupName,package)
         .Save()
 
@@ -24,8 +25,8 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
                 .Add(groupName,package,version)
 
         let updateMode = PackageResolver.UpdateMode.UpdateFiltered(groupName, PackageFilter.ofName package)
-        let lockFile,hasChanged = UpdateProcess.SelectiveUpdate(dependenciesFile, updateMode, options.SemVerUpdateMode, options.Force)
-        let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) -> p } // lazy sequence in case no project install required
+        let lockFile,hasChanged,updatedGroups = UpdateProcess.SelectiveUpdate(dependenciesFile, updateMode, options.SemVerUpdateMode, options.Force)
+        let projects = seq { for p in ProjectType.FindAllProjects(Path.GetDirectoryName lockFile.FileName) -> p } // lazy sequence in case no project install required
 
         dependenciesFile.Save()
 
@@ -33,7 +34,8 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
 
         if installAfter then
             let forceTouch = hasChanged && options.TouchAffectedRefs
-            InstallProcess.Install(options, forceTouch, dependenciesFile, lockFile)
+            InstallProcess.Install(options, forceTouch, dependenciesFile, lockFile, updatedGroups)
+            GarbageCollection.CleanUp(Path.GetDirectoryName dependenciesFileName, dependenciesFile, lockFile)
 
 // Add a package with the option to add it to a specified project.
 let AddToProject(dependenciesFileName, groupName, package, version, options : InstallerOptions, projectName, installAfter) =
@@ -42,12 +44,13 @@ let AddToProject(dependenciesFileName, groupName, package, version, options : In
         | None -> Constants.MainDependencyGroup
         | Some name -> GroupName name
 
-    let addToSpecifiedProject (projects : ProjectFile seq) groupName packageName =
-        match ProjectFile.TryFindProject(projects,projectName) with
+    let addToSpecifiedProject (projects : ProjectType seq) groupName packageName =
+        
+        match ProjectType.TryFindProject(projects,projectName) with
         | Some p ->
             if packageName |> notInstalled p groupName then
                 addToProject p groupName packageName
-            else traceWarnfn "Package %O already installed in project %s in group %O" packageName p.Name groupName
+            else traceWarnfn "Package %O already installed in project %s in group %O" packageName p.FileName groupName
         | None ->
             traceErrorfn "Could not install package in specified project %s. Project not found" projectName
 
@@ -60,10 +63,10 @@ let Add(dependenciesFileName, groupName, package, version, options : InstallerOp
         | None -> Constants.MainDependencyGroup
         | Some name -> GroupName name
 
-    let addToProjects (projects : ProjectFile seq) groupName package =
+    let addToProjects (projects : ProjectType seq) groupName package =
         if interactive then
             for project in projects do
-                if package |> notInstalled project groupName && Utils.askYesNo(sprintf "  Install to %s into group %O?" project.Name groupName) then
+                if package |> notInstalled project groupName && Utils.askYesNo(sprintf "  Install to %s into group %O?" project.FileName groupName) then
                     addToProject project groupName package
 
     add interactive addToProjects dependenciesFileName groupName package version options installAfter

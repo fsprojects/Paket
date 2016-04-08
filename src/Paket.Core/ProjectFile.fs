@@ -191,54 +191,6 @@ module ProjectFile =
             None
 
 
-    let tryFindProject (projects: ProjectFile seq) projectName =
-        match projects |> Seq.tryFind (fun p -> nameWithoutExtension p = projectName || name p = projectName) with
-        | Some p -> Some p
-        | None ->
-            try
-                let fi = FileInfo (normalizePath (projectName.Trim().Trim([|'\"'|]))) // check if we can detect the path
-                let rec checkDir (dir:DirectoryInfo) = 
-                    match projects |> Seq.tryFind (fun p -> 
-                        String.equalsIgnoreCase ((FileInfo p.FileName).Directory.ToString()) (dir.ToString())) with
-                    | Some p -> Some p
-                    | None ->
-                        if isNull dir.Parent then None else
-                        checkDir dir.Parent
-                checkDir fi.Directory
-            with
-            | _ -> None
-
-    /// Finds all project files
-    let findAllProjects folder =
-        let packagesPath = Path.Combine(folder,Constants.PackagesFolderName) |> normalizePath
-        let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
-
-        let findAllFiles (folder, pattern) = 
-            let rec search (di:DirectoryInfo) = 
-                try
-                    let files = di.GetFiles(pattern, SearchOption.TopDirectoryOnly)
-                    di.GetDirectories()
-                    |> Array.filter (fun di ->
-                        try 
-                            let path = di.FullName |> normalizePath
-                            if path = packagesPath then false else
-                            if path = paketPath then false else
-                            Path.Combine(path, Constants.DependenciesFileName) 
-                            |> File.Exists 
-                            |> not 
-                        with 
-                        | _ -> false)
-                    |> Array.collect search
-                    |> Array.append files
-                with
-                | _ -> Array.empty
-
-            search <| DirectoryInfo folder
-
-        findAllFiles(folder, "*.*proj")
-        |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj" || f.Extension = ".vcxproj")
-        |> Array.choose (fun fi -> tryLoad fi.FullName)
-
 
     let createNode name (project:ProjectFile) = 
         project.Document.CreateElement (name, Constants.ProjectDefaultNameSpace)
@@ -466,43 +418,7 @@ module ProjectFile =
     let getProperty propertyName (projectFile:ProjectFile) =
         getPropertyWithDefaults propertyName Map.empty<string, string> projectFile
 
-    let findCorrespondingFile (projectFile:FileInfo) (correspondingFile:string) =
-        let specificFile = FileInfo (Path.Combine(projectFile.Directory.FullName, projectFile.Name + "." + correspondingFile))
-        if specificFile.Exists then Some specificFile.FullName else
-        
-        let rec findInDir (currentDir:DirectoryInfo) = 
-            let generalFile = FileInfo(Path.Combine(currentDir.FullName, correspondingFile))
-            if generalFile.Exists then Some generalFile.FullName
-            elif (FileInfo (Path.Combine(currentDir.FullName, Constants.DependenciesFileName))).Exists then None
-            elif currentDir.Parent = null then None
-            else findInDir currentDir.Parent 
-                    
-        findInDir projectFile.Directory
 
-    let findReferencesFile (projectFile:FileInfo) = findCorrespondingFile projectFile Constants.ReferencesFile
-
-    let findTemplatesFile (projectFile:FileInfo) = findCorrespondingFile projectFile Constants.TemplateFile
-
-    let findOrCreateReferencesFile (projectFile : FileInfo) =
-        match findReferencesFile projectFile with
-        | None ->
-            let newFileName =
-                let fi = FileInfo(Path.Combine(projectFile.Directory.FullName,Constants.ReferencesFile))
-                if fi.Exists then
-                    Path.Combine(projectFile.Directory.FullName,projectFile.Name + "." + Constants.ReferencesFile)
-                else
-                    fi.FullName
-            ReferencesFile.New newFileName
-        | Some fileName -> ReferencesFile.FromFile fileName
-
-    let hasPackageInstalled groupName (package:PackageName) (project:ProjectFile) = 
-        let proj = FileInfo project.FileName
-        match findReferencesFile proj with
-        | None -> false
-        | Some fileName -> 
-            let referencesFile = ReferencesFile.FromFile fileName
-            referencesFile.Groups.[groupName].NugetPackages 
-            |> Seq.exists (fun p -> p.Name = package)
 
     let deleteIfEmpty name (project:ProjectFile) =
         let nodesToDelete = List<_>()
@@ -545,7 +461,7 @@ module ProjectFile =
         for node in nodesToDelete do
             node.ParentNode.RemoveChild node |> ignore
 
-    let updateFileItems (fileItems:FileItem list) hard (project:ProjectFile) = 
+    let updateFileItems (fileItems:FileItem list) (project:ProjectFile) = 
         let newItemGroups = 
             let firstItemGroup = project.ProjectNode |> getNodes "ItemGroup" |> List.tryHead
             match firstItemGroup with
@@ -613,16 +529,9 @@ module ProjectFile =
 
                 match existingNode with
                 | Some existingNode ->
-                    match existingNode.ChildNodes |> Seq.cast<XmlNode> |> Seq.tryFind (fun n -> n.Name = "Paket") with
-                    | None when hard ->
-                        let parent = existingNode.ParentNode
-                        parent.InsertBefore(libReferenceNode, existingNode) |> ignore
-                        parent.RemoveChild(existingNode) |> ignore
-                    | Some _ ->                    
-                        let parent = existingNode.ParentNode
-                        parent.InsertBefore(libReferenceNode, existingNode) |> ignore
-                        parent.RemoveChild(existingNode) |> ignore                        
-                    | None -> verbosefn "  - custom nodes for %s in %s ==> skipping" fileItem.Include project.FileName
+                    let parent = existingNode.ParentNode
+                    parent.InsertBefore(libReferenceNode, existingNode) |> ignore
+                    parent.RemoveChild(existingNode) |> ignore
                 | None  ->
                     let firstNode = fileItemsInSameDir |> Seq.head 
                     firstNode.ParentNode.InsertBefore(libReferenceNode, firstNode) |> ignore
@@ -894,18 +803,18 @@ module ProjectFile =
 
     let updateReferences
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
-            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) hard (project:ProjectFile) =
+            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) (project:ProjectFile) =
         removePaketNodes project
 
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.map (fun kv -> 
-            if hard then
-                deleteCustomModelNodes (snd kv.Value) project
+            deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
             let projectModel =
                 (snd kv.Value)
                     .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions|> getRestrictionList)
+                    .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
             
             match getTargetFramework project with 
@@ -1187,52 +1096,6 @@ module ProjectFile =
 
         sprintf "%s.%s" assemblyName (outputType project |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe")
 
-
-    let getAllReferencedProjects (this: ProjectFile) = 
-        let rec getProjects project = 
-            seq {
-                let projects = getInterProjectDependencies project |> Seq.map (fun proj -> tryLoad(proj.Path).Value)
-                yield! projects
-                for proj in projects do
-                    yield! (getProjects proj)
-            }
-        seq { 
-            yield this
-            yield! getProjects this
-        }
-    
-    let getProjects includeReferencedProjects this=
-        seq {
-            if includeReferencedProjects then
-                yield! getAllReferencedProjects this
-            else
-                yield this
-        }
-
-    let projectsWithoutTemplates this projects =
-        projects
-        |> Seq.filter(fun proj ->
-            if proj = this then true
-            else
-                let templateFilename = findTemplatesFile (FileInfo proj.FileName)
-                match templateFilename with
-                | Some tfn ->
-                    TemplateFile.IsProjectType tfn |> not
-                | None -> true
-        )
-
-    let projectsWithTemplates this projects =
-        projects
-        |> Seq.filter(fun proj ->
-            if proj = this then true
-            else
-                let templateFilename = findTemplatesFile (FileInfo proj.FileName)
-                match templateFilename with
-                | Some tfn -> TemplateFile.IsProjectType tfn
-                | None -> false
-        )
-
-
     let getOutputDirectory buildConfiguration buildPlatform (project:ProjectFile) =
         let platforms =
             if not <| String.IsNullOrWhiteSpace buildPlatform
@@ -1268,51 +1131,6 @@ module ProjectFile =
 
         tryNextPlat platforms []
 
-    let getCompileItems includeReferencedProjects this =
-        let getCompileRefs projectFile =
-            projectFile.Document
-            |> getDescendants "Compile"
-            |> Seq.map (fun compileNode -> projectFile, compileNode)
-
-        let getCompileItem (projectFile, compileNode) =
-            let projectFolder = projectFile.FileName |> Path.GetFullPath |> Path.GetDirectoryName
-            let sourceFile =
-                compileNode
-                |> getAttribute "Include"
-                |> fun attr -> attr.Value
-                |> normalizePath
-                |> fun relPath -> Path.Combine(projectFolder, relPath)
-            let destPath =
-                compileNode
-                |> getDescendants "Link"
-                |> function
-                    | [] -> createRelativePath (projectFolder + string Path.DirectorySeparatorChar) sourceFile
-                    | linkNode :: _ -> linkNode.InnerText
-                |> normalizePath
-                |> Path.GetDirectoryName
-            {
-                SourceFile = sourceFile
-                DestinationPath = destPath
-                BaseDir = projectFolder
-            }
-
-        let getRealItems compileItem =
-            let sourceFolder = Path.GetDirectoryName(compileItem.SourceFile)
-            let filespec = Path.GetFileName(compileItem.SourceFile)
-            Directory.GetFiles(sourceFolder, filespec)
-            |> Seq.map (fun realFile ->
-            {
-                SourceFile = realFile
-                DestinationPath = compileItem.DestinationPath.Replace("%(FileName)", Path.GetFileName(realFile))
-                BaseDir = compileItem.BaseDir
-            })
-
-        this |> getProjects includeReferencedProjects
-        |> projectsWithoutTemplates this
-        |> Seq.collect getCompileRefs
-        |> Seq.map getCompileItem
-        |> Seq.collect getRealItems
-
 type ProjectFile with
 
     member this.GetPropertyWithDefaults propertyName defaultProperties = ProjectFile.getPropertyWithDefaults propertyName defaultProperties this
@@ -1325,22 +1143,9 @@ type ProjectFile with
 
     member this.GetCustomReferenceAndFrameworkNodes() = ProjectFile.getCustomReferenceAndFrameworkNodes this
 
-    /// Finds all project files
-    static member FindAllProjects folder =  ProjectFile.findAllProjects folder
-
-    static member FindCorrespondingFile (projectInfo, correspondingFile) = ProjectFile.findCorrespondingFile projectInfo correspondingFile
-
-    static member FindReferencesFile (projectInfo : FileInfo) = ProjectFile.findReferencesFile projectInfo 
-
-    static member FindTemplatesFile (projectInfo : FileInfo) = ProjectFile.findTemplatesFile projectInfo 
-
-    static member FindOrCreateReferencesFile (projectInfo : FileInfo) = ProjectFile.findOrCreateReferencesFile projectInfo
-
     member this.CreateNode name =   ProjectFile.createNode name this
 
     member this.CreateNode(name, text) = ProjectFile.createNodeSet name text this
-
-    member this.HasPackageInstalled (groupName,package:PackageName) = ProjectFile.hasPackageInstalled groupName package this
 
     member this.DeleteIfEmpty name = ProjectFile.deleteIfEmpty name this
 
@@ -1350,7 +1155,7 @@ type ProjectFile with
 
     member this.DeletePaketNodes name = ProjectFile.deletePaketNodes name this
     
-    member this.UpdateFileItems(fileItems : FileItem list, hard) = ProjectFile.updateFileItems fileItems hard this
+    member this.UpdateFileItems(fileItems : FileItem list) = ProjectFile.updateFileItems fileItems this
 
     member this.GetCustomModelNodes(model:InstallModel) = ProjectFile.getCustomModelNodes model this
 
@@ -1360,7 +1165,7 @@ type ProjectFile with
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
-    member this.UpdateReferences (completeModel, usedPackages, hard) = ProjectFile.updateReferences completeModel usedPackages hard this
+    member this.UpdateReferences (completeModel, usedPackages) = ProjectFile.updateReferences completeModel usedPackages this
 
     member this.Save(forceTouch) = ProjectFile.save forceTouch this
 
@@ -1369,12 +1174,6 @@ type ProjectFile with
     member this.GetProjectGuid () = ProjectFile.getProjectGuid this
 
     member this.GetInterProjectDependencies () =  ProjectFile.getInterProjectDependencies this
-
-    member this.GetRecursiveInterProjectDependencies =  ProjectFile.getAllReferencedProjects this
-
-    member this.GetAllInterProjectDependenciesWithoutProjectTemplates = ProjectFile.getAllReferencedProjects this |> ProjectFile.projectsWithoutTemplates this
-
-    member this.GetAllInterProjectDependenciesWithProjectTemplates = ProjectFile.getAllReferencedProjects this |> ProjectFile.projectsWithTemplates this
 
     member this.ReplaceNuGetPackagesFile () = ProjectFile.replaceNuGetPackagesFile this
 
@@ -1404,12 +1203,8 @@ type ProjectFile with
 
     member this.GetAssemblyName () = ProjectFile.getAssemblyName this
 
-    member this.GetCompileItems (includeReferencedProjects:bool) =  ProjectFile.getCompileItems includeReferencedProjects this
-
     static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream 
 
     static member LoadFromFile(fileName:string) =  ProjectFile.loadFromFile fileName
 
     static member TryLoad(fileName:string) = ProjectFile.tryLoad fileName
-
-    static member TryFindProject(projects: ProjectFile seq,projectName) = ProjectFile.tryFindProject projects projectName

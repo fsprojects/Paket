@@ -95,12 +95,16 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     }
 
 /// Gets versions of the given package from local NuGet feed.
-let getAllVersionsFromLocalPath (localNugetPath, package:PackageName, root) =
+let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, root) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
         let di = getDirectoryInfo localNugetPath root
+
         if not di.Exists then
-            failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." di.FullName Environment.NewLine
+            if isCache then
+                di.Create()
+            else
+                failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." di.FullName Environment.NewLine
 
         let versions = 
             Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
@@ -292,9 +296,9 @@ let getPackageNameFromLocalFile fileName =
     nuspec.OfficialName
 
 /// Reads direct dependencies from a nupkg file
-let getDetailsFromLocalNuGetPackage root localNugetPath (packageName:PackageName) (version:SemVerInfo) =
+let getDetailsFromLocalNuGetPackage isCache root localNuGetPath (packageName:PackageName) (version:SemVerInfo) =
     async {
-        let localNugetPath = Utils.normalizeLocalPath localNugetPath
+        let localNugetPath = Utils.normalizeLocalPath localNuGetPath
         let di = getDirectoryInfo localNugetPath root
         let nupkg = findLocalPackage di.FullName packageName version
         
@@ -322,26 +326,68 @@ let getDetailsFromLocalNuGetPackage root localNugetPath (packageName:PackageName
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
               Version = version.Normalize()
-              Unlisted = false }
+              Unlisted = isCache }
     }
 
 
-let inline isExtracted fileName =
+let inline isExtracted (directory:DirectoryInfo) fileName =
     let fi = FileInfo(fileName)
     if not fi.Exists then false else
-    let di = fi.Directory
-    di.EnumerateFileSystemInfos()
+    if not directory.Exists then false else
+    directory.EnumerateFileSystemInfos()
     |> Seq.exists (fun f -> f.FullName <> fi.FullName)
 
 let IsPackageVersionExtracted(root, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath) =
-    let targetFolder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath).FullName
-    let targetFileName = Path.Combine(targetFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
-    isExtracted targetFileName
+    let targetFolder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath)
+    let targetFileName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
+    isExtracted targetFolder targetFileName
+
+// cleanup folder structure
+let rec private cleanup (dir : DirectoryInfo) = 
+    for sub in dir.GetDirectories() do
+        let newName = Uri.UnescapeDataString(sub.FullName)
+        if sub.FullName <> newName && not (Directory.Exists newName) then 
+            Directory.Move(sub.FullName, newName)
+            cleanup (DirectoryInfo newName)
+        else
+            cleanup sub
+    for file in dir.GetFiles() do
+        let newName = Uri.UnescapeDataString(file.Name)
+        if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
+            File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
+
+
+/// Extracts the given package to the user folder
+let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, detailed) =
+    async {
+        let targetFolder = DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.ToString()))
+
+        if isExtracted targetFolder fileName |> not then
+            Directory.CreateDirectory(targetFolder.FullName) |> ignore
+            let fi = FileInfo fileName
+            let targetPackageFileName = Path.Combine(targetFolder.FullName,fi.Name)
+            File.Copy(fileName,targetPackageFileName)
+
+            ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
+            
+            let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
+            if not <| File.Exists cachedHashFile then
+                use stream = File.OpenRead(fileName)
+                let packageSize = stream.Length
+                use hasher = new System.Security.Cryptography.SHA512CryptoServiceProvider() :> System.Security.Cryptography.HashAlgorithm
+                let packageHash = Convert.ToBase64String(hasher.ComputeHash(stream))
+                File.WriteAllText(cachedHashFile,packageHash)
+
+            File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
+            cleanup targetFolder
+        return targetFolder.FullName
+    }
 
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
-        if isExtracted fileName then
+        let directory = DirectoryInfo(targetFolder)
+        if isExtracted directory fileName then
              verbosefn "%O %O already extracted" packageName version
         else
             Directory.CreateDirectory(targetFolder) |> ignore
@@ -355,22 +401,10 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
                 let text = if detailed then sprintf "%s In rare cases a firewall might have blocked the download. Please look into the file and see if it contains text with further information." Environment.NewLine else ""
                 failwithf "Error during extraction of %s.%sMessage: %s%s" (Path.GetFullPath fileName) Environment.NewLine exn.Message text
 
-            // cleanup folder structure
-            let rec cleanup (dir : DirectoryInfo) = 
-                for sub in dir.GetDirectories() do
-                    let newName = Uri.UnescapeDataString(sub.FullName)
-                    if sub.FullName <> newName && not (Directory.Exists newName) then 
-                        Directory.Move(sub.FullName, newName)
-                        cleanup (DirectoryInfo newName)
-                    else
-                        cleanup sub
-                for file in dir.GetFiles() do
-                    let newName = Uri.UnescapeDataString(file.Name)
-                    if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
-                        File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
 
-            cleanup (DirectoryInfo targetFolder)
+            cleanup directory
             verbosefn "%O %O unzipped to %s" packageName version targetFolder
+        let! _ = ExtractPackageToUserFolder(fileName, packageName, version, detailed)
         return targetFolder
     }
 
@@ -410,6 +444,20 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
             Directory.Delete(targetFolder,true)
             return! raise exn
     }
+
+/// Puts the package into the cache
+let CopyToCache(cache:Cache, fileName, force) =
+    let targetFolder = DirectoryInfo(cache.Location)
+    if not targetFolder.Exists then
+        targetFolder.Create()
+
+    let fi = FileInfo(fileName)
+    let targetFile = FileInfo(Path.Combine(targetFolder.FullName, fi.Name))
+
+    if not force && targetFile.Exists then
+        verbosefn "%s already in cache %s" fi.Name targetFolder.FullName
+    else
+        File.Copy(fileName, targetFile.FullName)
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async { 
@@ -541,8 +589,11 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
                             raise exn
                             return! tryV3 source nugetSource
 
-                | LocalNuGet path -> 
-                    let! result = getDetailsFromLocalNuGetPackage root path packageName version
+                | LocalNuGet(path,Some _) -> 
+                    let! result = getDetailsFromLocalNuGetPackage true root path packageName version
+                    return Some(source,result)
+                | LocalNuGet(path,None) -> 
+                    let! result = getDetailsFromLocalNuGetPackage false root path packageName version
                     return Some(source,result)
             with e ->
                 verbosefn "Source '%O' exception: %O" source e
@@ -575,7 +626,7 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
       LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = nugetObject.Dependencies |> Set.ofList }
 
-let rec GetPackageDetails root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
+let rec GetPackageDetails root force (sources:PackageSource list) groupName packageName (version:SemVerInfo) : PackageResolver.PackageDetails = 
     try
         getPackageDetails root force sources packageName version
     with
@@ -626,7 +677,7 @@ let GetVersions force root (sources, packageName:PackageName) =
         let getVersionsFailedCacheFileName (source:PackageSource) =
             let h = source.Url |> normalizeUrl |> hash |> abs
             let packageUrl = sprintf "Versions.%O.s%d.failed" packageName h
-            FileInfo(Path.Combine(CacheFolder,packageUrl))
+            FileInfo(Path.Combine(Constants.NuGetCacheFolder,packageUrl))
 
         let sources = 
             sources 
@@ -668,7 +719,8 @@ let GetVersions force root (sources, packageName:PackageName) =
                                 }
                         
                             [ resp ]
-                       | LocalNuGet path -> [ getAllVersionsFromLocalPath (path, packageName, root) ])
+                       | LocalNuGet(path,Some _) -> [ getAllVersionsFromLocalPath (true, path, packageName, root) ]
+                       | LocalNuGet(path,None) -> [ getAllVersionsFromLocalPath (false, path, packageName, root) ])
             |> Seq.toArray
             |> Array.map Async.Choice
             |> Async.Parallel
@@ -716,22 +768,45 @@ let GetVersions force root (sources, packageName:PackageName) =
     |> List.map (fun (v,s) -> SemVer.Parse v,s |> List.map snd)
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(root, (source : PackageSource), groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
-    let targetFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".nupkg")
+let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
+    let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
+    let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
+    let targetFileName = Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
     let targetFile = FileInfo targetFileName
-    let licenseFileName = Path.Combine(CacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
+    let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
+
+    let rec getFromCache (caches:Cache list) =
+        match caches with
+        | cache::rest ->
+            let cacheFolder = DirectoryInfo(cache.Location).FullName
+            let cacheFile = FileInfo(Path.Combine(cacheFolder,normalizedNupkgName))
+            if cacheFile.Exists && cacheFile.Length > 0L then 
+                tracefn "Copying %O %O from cache %s" packageName version cache.Location
+                File.Copy(cacheFile.FullName,targetFileName)
+                true                
+            else
+                let cacheFile = FileInfo(Path.Combine(cacheFolder,nupkgName))
+                if cacheFile.Exists && cacheFile.Length > 0L then 
+                    tracefn "Copying %O %O from cache %s" packageName version cache.Location
+                    File.Copy(cacheFile.FullName,targetFileName)
+                    true
+                else
+                    getFromCache rest
+        | [] -> false
 
     let rec download authenticated =
         async {
             if not force && targetFile.Exists && targetFile.Length > 0L then 
                 verbosefn "%O %O already downloaded." packageName version
+            elif not force && getFromCache caches then
+                ()
             else
                 if authenticated then
                     tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
                     verbosefn "  to %s" targetFileName
 
                 // discover the link on the fly
-                let nugetPackage = GetPackageDetails root force [source] packageName version
+                let nugetPackage = GetPackageDetails root force [source] groupName packageName version
                 try 
                     let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
@@ -801,5 +876,6 @@ let DownloadPackage(root, (source : PackageSource), groupName, packageName:Packa
 
     async {
         do! download true
-        return! CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, includeVersionInPath, force, detailed)
+        let! files = CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, includeVersionInPath, force, detailed)
+        return targetFileName,files
     }

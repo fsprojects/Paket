@@ -274,7 +274,19 @@ module InstallModel =
     let addFrameworkAssemblyReferences references (installModel:InstallModel) : InstallModel = 
         references |> Seq.fold (addFrameworkAssemblyReference) (installModel:InstallModel) 
 
-    let filterBlackList  (installModel:InstallModel)  = 
+    let filterExcludes excludes (installModel:InstallModel) = 
+        let excluded e reference =
+            match reference with
+            | Reference.Library x -> x.Contains e
+            | Reference.TargetsFile x -> x.Contains e
+            | Reference.FrameworkAssemblyReference x -> x.Contains e
+
+        excludes
+        |> List.fold (fun (model:InstallModel) fileName ->
+                mapFiles (fun files -> { files with References = Set.filter (excluded fileName >> not) files.References }) model)
+                installModel
+
+    let filterBlackList (installModel:InstallModel) = 
 
         let includeReferences = function
             | Reference.Library lib -> not (String.endsWithIgnoreCase ".dll" lib || String.endsWithIgnoreCase ".exe" lib )
@@ -391,6 +403,8 @@ type InstallModel with
     member this.AddFrameworkAssemblyReferences references = InstallModel.addFrameworkAssemblyReferences references this
      
     member this.FilterBlackList () = InstallModel.filterBlackList this
+
+    member this.FilterExcludes excludes = InstallModel.filterExcludes excludes this
 
     member this.FilterReferences(references) = InstallModel.filterReferences references this
 

@@ -28,7 +28,7 @@ GITHUB
   specs:
     src/app/FAKE/Cli.fs (7699e40e335f3cc54ab382a8969253fecc1e08a9) gitHubAuth
     src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs (Globbing)
-"""   
+"""
 
 [<Test>]
 let ``should parse lock file``() = 
@@ -59,15 +59,21 @@ let ``should parse lock file``() =
         [ { Owner = "fsharp"
             Project = "FAKE"
             Name = "src/app/FAKE/Cli.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
+            Origin = ModuleResolver.Origin.GitHubLink
             Dependencies = Set.empty
             Commit = "7699e40e335f3cc54ab382a8969253fecc1e08a9"
+            Command = None
+            OperatingSystemRestriction = None
+            PackagePath = None
             AuthKey = Some "gitHubAuth" }
           { Owner = "fsharp"
             Project = "FAKE"
             Dependencies = Set.empty
             Name = "src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs"
-            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
+            Origin = ModuleResolver.Origin.GitHubLink
+            Command = None
+            OperatingSystemRestriction = None
+            PackagePath = None
             Commit = "Globbing"
             AuthKey = None } ]
     
@@ -90,7 +96,7 @@ NUGET
     log (1.2)
     log4net (1.1)
       log (>= 1.0)
-"""   
+"""
 
 [<Test>]
 let ``should parse strict lock file``() = 
@@ -127,7 +133,7 @@ NUGET
   remote: "D:\code\temp with space"
   specs:
     FAKE (4.0.0)
-"""   
+"""
 
 [<Test>]
 let ``should parse redirects lock file``() = 
@@ -160,7 +166,7 @@ NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
-"""   
+"""
 
 [<Test>]
 let ``should parse lock file with framework restrictions``() = 
@@ -411,8 +417,8 @@ let ``should parse simple http reference``() =
     let lockFile = LockFileParser.Parse(toLines simpleHTTP) |> List.head
     let references = lockFile.SourceFiles
 
-    references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"  
-    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))
+    references.[0].Name |> shouldEqual "ikvmbin-8.0.5449.0.zip"
+    references.[0].Origin |> shouldEqual (Origin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))
 
 
 let lockFileForStanfordNLPdotNET = """HTTP
@@ -434,10 +440,10 @@ let ``should parse lock file for http Stanford.NLP.NET project``() =
 
     references.Length |> shouldEqual 6
 
-    references.[0].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://nlp.stanford.edu"))
+    references.[0].Origin |> shouldEqual (Origin.HttpLink("http://nlp.stanford.edu"))
     references.[0].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
     references.[0].Project |> shouldEqual ""
-    references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
+    references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"
 
 let portableLockFile = """NUGET
   remote: https://www.nuget.org/api/v2
@@ -586,7 +592,7 @@ let ``should parse lock file with groups``() =
     lockFile1.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile1.Options.Settings.ReferenceCondition |> shouldEqual None
 
-    packages1.Head.Source |> shouldEqual (PackageSource.LocalNuGet("D:\code\\temp with space"))
+    packages1.Head.Source.Url |> shouldEqual "D:\code\\temp with space"
     packages1.[0].Name |> shouldEqual (PackageName "Castle.Windsor")
 
     let lockFile2 = LockFileParser.Parse(toLines groupsLockFile) |> List.head
@@ -600,7 +606,7 @@ let ``should parse lock file with groups``() =
     lockFile2.Options.Settings.CopyLocal |> shouldEqual (Some true)
     lockFile2.Options.Settings.ReferenceCondition |> shouldEqual (Some "LEGACY")
 
-    packages2.Head.Source |> shouldEqual (PackageSource.LocalNuGet("D:\code\\temp with space"))
+    packages2.Head.Source.Url |> shouldEqual "D:\code\\temp with space"
     packages2.[0].Name |> shouldEqual (PackageName "FAKE")
     packages2.[0].Settings.CreateBindingRedirects |> shouldEqual (Some On)
 
@@ -814,3 +820,53 @@ let ``should parse lock file with greater zero dependency``() =
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithDependencies)
+
+let fullGitLockFile = """
+GIT
+  remote: git@github.com:fsprojects/Paket.git
+  specs:
+     (528024723f314aa1011499a122258167b53699f7)
+"""
+
+[<Test>]
+let ``should parse full git lock file``() = 
+    let lockFile = LockFileParser.Parse(toLines fullGitLockFile)
+    lockFile.Head.RemoteUrl |> shouldEqual (Some "git@github.com:fsprojects/Paket.git")
+    lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "528024723f314aa1011499a122258167b53699f7"
+    lockFile.Head.SourceFiles.Head.Project |> shouldEqual "Paket"
+
+let localGitLockFile = """
+GIT
+  remote: file:///c:/code/Paket.VisualStudio
+  specs:
+     (528024723f314aa1011499a122258167b53699f7)
+"""
+
+[<Test>]
+let ``should parse local git lock file``() = 
+    let lockFile = LockFileParser.Parse(toLines localGitLockFile)
+    lockFile.Head.RemoteUrl |> shouldEqual (Some "file:///c:/code/Paket.VisualStudio")
+    lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "528024723f314aa1011499a122258167b53699f7"
+    lockFile.Head.SourceFiles.Head.Project |> shouldEqual "Paket.VisualStudio"
+    lockFile.Head.SourceFiles.Head.Command |> shouldEqual None
+
+
+let localGitLockFileWithBuild = """
+NUGET
+  remote: paket-files/github.com/nupkgtest/source
+  specs:
+    Argu (1.1.3)
+GIT
+  remote: https://github.com/forki/nupkgtest.git
+  specs:
+     (2942d23fcb13a2574b635194203aed7610b21903)
+      build: build.cmd Test
+"""
+
+[<Test>]
+let ``should parse local git lock file with build``() = 
+    let lockFile = LockFileParser.Parse(toLines localGitLockFileWithBuild)
+    lockFile.Head.RemoteUrl |> shouldEqual (Some "https://github.com/forki/nupkgtest.git")
+    lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "2942d23fcb13a2574b635194203aed7610b21903"
+    lockFile.Head.SourceFiles.Head.Project |> shouldEqual "nupkgtest"
+    lockFile.Head.SourceFiles.Head.Command |> shouldEqual (Some "build.cmd Test")

@@ -6,6 +6,7 @@ open System
 open Chessie.ErrorHandling
 open Domain
 open Releases
+open InstallProcess
 
 /// Activates the Visual Studio Nuget autorestore feature in all projects
 let TurnOnAutoRestore environment =
@@ -18,9 +19,12 @@ let TurnOnAutoRestore environment =
         environment.Projects
         |> List.map fst
         |> List.iter (fun project ->
-            let relativePath = createRelativePath project.FileName paketTargetsPath
-            project.AddImportForPaketTargets(relativePath)
-            project.Save(false)
+            match project with
+            | ProjectType.Project project -> 
+                let relativePath = createRelativePath project.FileName paketTargetsPath
+                project.AddImportForPaketTargets(relativePath)
+                project.Save(false)
+            | _ -> ()
         )
     } 
 
@@ -35,8 +39,11 @@ let TurnOffAutoRestore environment =
         environment.Projects
         |> List.map fst
         |> List.iter (fun project ->
-            let relativePath = createRelativePath project.FileName paketTargetsPath
-            project.RemoveImportForPaketTargets(relativePath)
-            project.Save(false)
+            match project with
+            | ProjectType.Project project -> 
+                let relativePath = createRelativePath project.FileName paketTargetsPath
+                project.RemoveImportForPaketTargets(relativePath)
+                project.Save(false)
+            | _ -> ()
         )
     }

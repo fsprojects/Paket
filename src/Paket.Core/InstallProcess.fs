@@ -15,6 +15,9 @@ open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Collections.Generic
 open System.Collections.Concurrent
+open Paket.ProjectJson
+open Xml
+open System.Xml
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -134,12 +137,12 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
 
     removeCopiedFiles project
 
-    project.UpdateFileItems(gitRemoteItems @ nuGetFileItems, options.Hard)
+    project.UpdateFileItems(gitRemoteItems @ nuGetFileItems)
 
 
-let CreateInstallModel(root, groupName, sources, force, package) =
+let CreateInstallModel(root, groupName, sources, caches, force, package) =
     async {
-        let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, force, package)
+        let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, caches, force, package)
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName) |> Array.toList
@@ -149,8 +152,11 @@ let CreateInstallModel(root, groupName, sources, force, package) =
     }
 
 /// Restores the given packages from the lock file.
-let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>) =
-    [|for kv in lockFile.Groups -> RemoteDownload.DownloadSourceFiles(root, kv.Key, force, kv.Value.RemoteFiles) |]
+let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>, updatedGroups:Map<_,_>) =
+    [|for kv in lockFile.Groups do
+            let files = if updatedGroups |> Map.containsKey kv.Key then [] else kv.Value.RemoteFiles
+            if List.isEmpty files |> not then
+                yield RemoteDownload.DownloadSourceFiles(root, kv.Key, force, files) |]
     |> Async.Parallel
     |> Async.RunSynchronously
     |> ignore
@@ -158,9 +164,10 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     lockFile.Groups
     |> Seq.map (fun kv' -> 
         let sources = dependenciesFile.Groups.[kv'.Key].Sources
+        let caches = dependenciesFile.Groups.[kv'.Key].Caches
         kv'.Value.Resolution
         |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,force,kv.Value))
+        |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,caches,force,kv.Value))
         |> Seq.toArray
         |> Async.Parallel
         |> Async.RunSynchronously)
@@ -187,13 +194,13 @@ module private LoadAssembliesSafe =
 
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindingRedirects redirects root groupName findDependencies allKnownLibs extractedPackages =
+let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects root groupName findDependencies allKnownLibs extractedPackages =
     let dependencyGraph = ConcurrentDictionary<_,Set<_>>()
     let projects = ConcurrentDictionary<_,ProjectFile option>();
     let referenceFiles = ConcurrentDictionary<_,ReferencesFile option>();
     let referenceFile (projectFile : ProjectFile) =
         let referenceFile (projectFile : ProjectFile) =
-            ProjectFile.FindReferencesFile (FileInfo projectFile.FileName)
+            (ProjectType.Project projectFile).FindReferencesFile()
             |> Option.map ReferencesFile.FromFile
         referenceFiles.GetOrAdd(projectFile, referenceFile)
 
@@ -261,13 +268,11 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles cleanBindin
               Culture = None })
         |> Seq.sort
 
-    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibs bindingRedirects
+    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles root allKnownLibs bindingRedirects
 
 let findAllReferencesFiles root =
-    root
-    |> ProjectFile.FindAllProjects
-    |> Array.map (fun p ->
-        match ProjectFile.FindReferencesFile(FileInfo p.FileName) with
+    let findRefFile (p:ProjectType) =
+        match p.FindReferencesFile() with
         | Some fileName -> 
                 try
                     ok <| (p, ReferencesFile.FromFile fileName)
@@ -278,11 +283,14 @@ let findAllReferencesFiles root =
                 let fi = FileInfo(p.FileName)
                 Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
 
-            ok <| (p, ReferencesFile.New fileName))
-     |> collect
+            ok <| (p, ReferencesFile.New fileName)
+
+    ProjectType.FindAllProjects root 
+    |> Array.map findRefFile
+    |> collect
 
 /// Installs all packages from the lock file.
-let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list) =
+let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectType * ReferencesFile) list, updatedGroups) =
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -296,7 +304,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Seq.map (fun kv -> kv.Key)
 
     let root = Path.GetDirectoryName lockFile.FileName
-    let model = CreateModel(root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall) |> Map.ofArray
+    let model = CreateModel(root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, updatedGroups) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
 
     for project, referenceFile in projectsAndReferences do
@@ -347,7 +355,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             for key,settings in usedPackageDependencies do
                 if (!d).ContainsKey key |> not then
-                  d := Map.add key settings !d
+                    d := Map.add key settings !d
 
             !d
 
@@ -363,92 +371,113 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     dict.Add(packageName,v)
                     true)
 
-        project.UpdateReferences(model, usedPackages, options.Hard)
-        
-        Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
-        |> updatePackagesConfigFile usedPackages 
+        match project with
+        | ProjectType.ProjectJson project ->
+            let deps = 
+                [for kv in usedPackages do
+                    let projectName = snd kv.Key
+                    let version = fst kv.Value
+                    yield projectName,version]
 
-        let gitRemoteItems =
-            referenceFile.Groups
-            |> Seq.map (fun kv ->
-                kv.Value.RemoteFiles
-                |> List.map (fun file ->
-                    let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
-                    let remoteFilePath = 
-                        if verbose then
-                            tracefn "FileName: %s " file.Name 
+            let project = project.WithDependencies deps
+            project.Save forceTouch
+            let dir = FileInfo(project.FileName).Directory.FullName
+            let sources =
+                let r = lockFile.GetGroupedResolution()
+                [for kv in r do
+                    let package = kv.Value
+                    yield package.Source]
+                |> Seq.distinct
+
+            NuGet.NuGetConfig.writeNuGetConfig dir sources
+
+        | ProjectType.Project project ->
+            project.UpdateReferences(model, usedPackages)
+        
+            Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
+            |> updatePackagesConfigFile usedPackages 
+
+            let gitRemoteItems =
+                referenceFile.Groups
+                |> Seq.map (fun kv ->
+                    kv.Value.RemoteFiles
+                    |> List.map (fun file ->
+                        let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
+                        let remoteFilePath = 
+                            if verbose then
+                                tracefn "FileName: %s " file.Name 
     
-                        let lockFileReference =
-                            match lockFile.Groups |> Map.tryFind kv.Key with
-                            | None -> None
-                            | Some group ->
-                                group.RemoteFiles
-                                |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
+                            let lockFileReference =
+                                match lockFile.Groups |> Map.tryFind kv.Key with
+                                | None -> None
+                                | Some group ->
+                                    group.RemoteFiles
+                                    |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
     
-                        match lockFileReference with
-                        | Some file -> file.FilePath(root,kv.Key)
-                        | None -> failwithf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName file.Name kv.Key
+                            match lockFileReference with
+                            | Some file -> file.FilePath(root,kv.Key)
+                            | None -> failwithf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName file.Name kv.Key
     
-                    let linked = defaultArg file.Settings.Link true
+                        let linked = defaultArg file.Settings.Link true
   
-                    let buildAction = project.DetermineBuildActionForRemoteItems file.Name
-                    if buildAction <> BuildAction.Reference && linked then
-                        { BuildAction = buildAction
-                          Include = createRelativePath project.FileName remoteFilePath
-                          WithPaketSubNode = true
-                          CopyToOutputDirectory = None
-                          Link = Some link }
-                    else
-                        { BuildAction = buildAction
-                          WithPaketSubNode = true
-                          CopyToOutputDirectory = None
-                          Include =
-                            if buildAction = BuildAction.Reference then
-                                 createRelativePath project.FileName remoteFilePath
-                            else
-                                let toDir = Path.GetDirectoryName(project.FileName)
-                                let targetFile = FileInfo(Path.Combine(toDir,link))
-                                if targetFile.Directory.Exists |> not then
-                                    targetFile.Directory.Create()
+                        let buildAction = project.DetermineBuildActionForRemoteItems file.Name
+                        if buildAction <> BuildAction.Reference && linked then
+                            { BuildAction = buildAction
+                              Include = createRelativePath project.FileName remoteFilePath
+                              WithPaketSubNode = true
+                              CopyToOutputDirectory = None
+                              Link = Some link }
+                        else
+                            { BuildAction = buildAction
+                              WithPaketSubNode = true
+                              CopyToOutputDirectory = None
+                              Include =
+                                if buildAction = BuildAction.Reference then
+                                     createRelativePath project.FileName remoteFilePath
+                                else
+                                    let toDir = Path.GetDirectoryName(project.FileName)
+                                    let targetFile = FileInfo(Path.Combine(toDir,link))
+                                    if targetFile.Directory.Exists |> not then
+                                        targetFile.Directory.Create()
     
-                                File.Copy(remoteFilePath,targetFile.FullName)
-                                createRelativePath project.FileName targetFile.FullName
-                          Link = None }))
-            |> List.concat
+                                    File.Copy(remoteFilePath,targetFile.FullName)
+                                    createRelativePath project.FileName targetFile.FullName
+                              Link = None }))
+                |> List.concat
 
-        processContentFiles root project usedPackages gitRemoteItems options
-        project.Save forceTouch
-        
-        let first = ref true
+            processContentFiles root project usedPackages gitRemoteItems options
+            project.Save forceTouch
 
-        let redirects =
-            match options.Redirects with
-            | true -> Some true
-            | false -> None
+            let first = ref true
+
+            let redirects =
+                match options.Redirects with
+                | true -> Some true
+                | false -> None
 
 
-        let allKnownLibs =
-            model
-            |> Seq.map (fun kv -> (snd kv.Value).GetLibReferencesLazy.Force())
-            |> Set.unionMany
+            let allKnownLibs =
+                model
+                |> Seq.map (fun kv -> (snd kv.Value).GetLibReferencesLazy.Force())
+                |> Set.unionMany
 
-        for g in lockFile.Groups do
-            let group = g.Value
-            model
-            |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
-            |> Seq.map (fun kv ->
-                let packageRedirects =
-                    group.Resolution
-                    |> Map.tryFind (snd kv.Key)
-                    |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
+            for g in lockFile.Groups do
+                let group = g.Value
+                model
+                |> Seq.filter (fun kv -> (fst kv.Key) = g.Key)
+                |> Seq.map (fun kv ->
+                    let packageRedirects =
+                        group.Resolution
+                        |> Map.tryFind (snd kv.Key)
+                        |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
-                (snd kv.Value,packageRedirects))
-            |> applyBindingRedirects !first options.CreateNewBindingFiles options.Hard (g.Value.Options.Redirects ++ redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf allKnownLibs
-            first := false
+                    (snd kv.Value,packageRedirects))
+                |> applyBindingRedirects !first options.CreateNewBindingFiles (g.Value.Options.Redirects ++ redirects) (FileInfo project.FileName).Directory.FullName g.Key lockFile.GetAllDependenciesOf allKnownLibs
+                first := false
 
 
 /// Installs all packages from the lock file.
-let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile) =
+let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
     let projects = findAllReferencesFiles root |> returnOrFail
-    InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects)
+    InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects, updatedGroups)

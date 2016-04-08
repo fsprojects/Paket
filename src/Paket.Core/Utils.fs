@@ -19,7 +19,8 @@ let notNullOrEmpty = not << System.String.IsNullOrEmpty
 
 let inline force (lz: 'a Lazy)  = lz.Force()
 let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
-let inline toLower str = (^a:(member ToLower:unit->string)str) 
+let inline toLower str = (^a:(member ToLower:unit->string)str)
+let internal removeInvalidChars (str : string) = RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
 
 type Auth = 
     | Credentials of Username : string * Password : string
@@ -71,7 +72,7 @@ let createDir path =
     with _ ->
         DirectoryCreateError path |> fail
 
-let rec deleteDir (dirInfo:DirectoryInfo) =
+let rec removeDirContents (dirInfo:DirectoryInfo) =
     if dirInfo.Exists then
         for fileInfo in dirInfo.GetFiles() do
             fileInfo.Attributes <- FileAttributes.Normal
@@ -81,6 +82,10 @@ let rec deleteDir (dirInfo:DirectoryInfo) =
             deleteDir childInfo
 
         dirInfo.Attributes <- FileAttributes.Normal
+
+and deleteDir (dirInfo:DirectoryInfo) =
+    if dirInfo.Exists then
+        removeDirContents dirInfo
         dirInfo.Delete()
 
 /// Cleans a directory by deleting it and recreating it.
@@ -151,6 +156,72 @@ let extractPath infix (fileName : string) : string option =
         let libPart = path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1)
         Some (libPart + nativePart)
 
+/// The path of the "Program Files" folder - might be x64 on x64 machine
+let ProgramFiles = Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles
+
+/// The path of Program Files (x86)
+/// It seems this covers all cases where PROCESSOR\_ARCHITECTURE may misreport and the case where the other variable 
+/// PROCESSOR\_ARCHITEW6432 can be null
+let ProgramFilesX86 = 
+    let wow64 = Environment.GetEnvironmentVariable "PROCESSOR_ARCHITEW6432"
+    let globalArch = Environment.GetEnvironmentVariable "PROCESSOR_ARCHITECTURE"
+    match wow64, globalArch with
+    | "AMD64", "AMD64" 
+    | null, "AMD64" 
+    | "x86", "AMD64" -> Environment.GetEnvironmentVariable "ProgramFiles(x86)"
+    | _ -> Environment.GetEnvironmentVariable "ProgramFiles"
+    |> fun detected -> if detected = null then @"C:\Program Files (x86)\" else detected
+
+/// The system root environment variable. Typically "C:\Windows"
+let SystemRoot = Environment.GetEnvironmentVariable "SystemRoot"
+
+/// Determines if the current system is an Unix system
+let isUnix = int Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128)
+
+/// Determines if the current system is a MacOs system
+let isMacOS =
+    (Environment.OSVersion.Platform = PlatformID.MacOSX) ||
+        // osascript is the AppleScript interpreter on OS X
+        File.Exists "/usr/bin/osascript"
+
+/// Determines if the current system is a Linux system
+let isLinux = isUnix && not isMacOS
+
+/// Determines if the current system is a Windows system
+let isWindows =
+    match Environment.OSVersion.Platform with
+    | PlatformID.Win32NT | PlatformID.Win32S | PlatformID.Win32Windows | PlatformID.WinCE -> true
+    | _ -> false
+
+/// Determines if the current system is a mono system
+/// Todo: Detect mono on windows
+let isMono = isUnix
+
+let monoPath =
+    if isMacOS && File.Exists "/Library/Frameworks/Mono.framework/Commands/mono" then
+        "/Library/Frameworks/Mono.framework/Commands/mono"
+    else
+        "mono"
+
+let isMatchingOperatingSystem (operatingSystemFilter : string option) =
+    let aliasesForOs =
+        match isMacOS, isUnix, isWindows with
+        | true, true, false -> [ "osx"; "mac" ]
+        | false, true, false -> [ "linux"; "unix"; "un*x" ]
+        | false, false, true -> [ "win"; "w7"; "w8"; "w10" ]
+        | _ -> []
+
+    match operatingSystemFilter with
+    | None -> true
+    | Some filter -> aliasesForOs |> List.exists (fun alias -> filter.ToLower().Contains(alias))
+
+let isMatchingPlatform (operatingSystemFilter : string option) =
+    match operatingSystemFilter with
+    | None -> true
+    | Some filter when filter = "mono" -> isMono
+    | Some filter when filter = "windows" -> not isMono
+    | _ -> isMatchingOperatingSystem operatingSystemFilter
+
 /// [omit]
 let inline normalizeXml (doc:XmlDocument) =
     use stringWriter = new StringWriter()
@@ -160,6 +231,17 @@ let inline normalizeXml (doc:XmlDocument) =
     doc.WriteTo xmlTextWriter
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder() |> string
+
+let normalizeFeedUrl (source:string) =
+    match source.TrimEnd([|'/'|]) with
+    | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream 
+    | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream.Replace("https","http")
+    | "https://nuget.org/api/v2" -> Constants.DefaultNuGetStream
+    | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+    | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
+    | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+    | url when url.EndsWith("/api/v3/index.json") -> url.Replace("/api/v3/index.json","")
+    | source -> source
 
 let envProxies () =
     let getEnvValue (name:string) =

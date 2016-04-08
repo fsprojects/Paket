@@ -73,7 +73,7 @@ let ``should maintain order when updating project file items`` () =
         { BuildAction = BuildAction.Compile; WithPaketSubNode = true; CopyToOutputDirectory = None; Include = "ProvidedTypes.fs"; Link = None }
         { BuildAction = BuildAction.Content; WithPaketSubNode = true; CopyToOutputDirectory = None; Include = "ProvidedTypes.fsi"; Link = None }
     ]
-    projFile.UpdateFileItems(fileItems, false)
+    projFile.UpdateFileItems(fileItems)
 
     let rec nodes node = 
         seq {
@@ -115,7 +115,7 @@ let ``should remove missing files that exist in the project`` () =
         { BuildAction = BuildAction.Compile; WithPaketSubNode = true; CopyToOutputDirectory = None; Include = "ProvidedTypes.fs"; Link = None }
         { BuildAction = BuildAction.Content; WithPaketSubNode = true; CopyToOutputDirectory = None; Include = "ProvidedTypes.fsi"; Link = None }
     ]
-    projFile.UpdateFileItems(fileItems, false)
+    projFile.UpdateFileItems(fileItems)
 
     let rec nodes node = 
         seq {

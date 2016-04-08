@@ -66,7 +66,7 @@ module LockFileSerializer =
                     match package.Source with
                     | NuGetV2 source -> source.Url,source.Authentication,package
                     | NuGetV3 source -> source.Url,source.Authentication,package
-                    | LocalNuGet path -> path,None,package
+                    | LocalNuGet(path,_) -> path,None,package
                 )
             |> Seq.groupBy (fun (a,b,_) -> a,b)
 
@@ -116,7 +116,7 @@ module LockFileSerializer =
 
     let serializeSourceFiles (files:ResolvedSourceFile list) =
         let all =
-            let updateHasReported = new List<SingleSourceFileOrigin>()
+            let updateHasReported = new List<Origin>()
 
             [ for (owner,project,origin), files in files |> List.groupBy (fun f -> f.Owner, f.Project, f.Origin) do
                 match origin with
@@ -124,15 +124,27 @@ module LockFileSerializer =
                     if not (updateHasReported.Contains(GitHubLink)) then
                         yield "GITHUB"
                         updateHasReported.Remove (HttpLink "") |> ignore
+                        updateHasReported.Remove (GitLink "") |> ignore
                         updateHasReported.Remove GistLink |> ignore
                         updateHasReported.Add GitHubLink
                     yield sprintf "  remote: %s/%s" owner project
                     yield "  specs:"
+                | GitLink url ->
+                    if not (updateHasReported.Contains(GitLink(""))) then
+                        yield "GIT"
+                        updateHasReported.Remove GitHubLink |> ignore
+                        updateHasReported.Remove GistLink |> ignore
+                        updateHasReported.Remove (HttpLink "") |> ignore
+                        updateHasReported.Add (GitLink "")
+                    yield sprintf "  remote: " + url
+                    yield "  specs:"
+               
                 | GistLink -> 
                     if not (updateHasReported.Contains(GistLink)) then
                         yield "GIST"
                         updateHasReported.Remove GitHubLink |> ignore
                         updateHasReported.Remove (HttpLink "") |> ignore
+                        updateHasReported.Remove (GitLink "") |> ignore
                         updateHasReported.Add GistLink
                     yield sprintf "  remote: %s/%s" owner project
                     yield "  specs:"
@@ -141,6 +153,7 @@ module LockFileSerializer =
                         yield "HTTP"
                         updateHasReported.Remove GitHubLink |> ignore
                         updateHasReported.Remove GistLink |> ignore
+                        updateHasReported.Remove (GitLink "") |> ignore
                         updateHasReported.Add (HttpLink "")
                     yield sprintf "  remote: " + url
                     yield "  specs:"
@@ -159,6 +172,14 @@ module LockFileSerializer =
                         match file.AuthKey with
                         | Some authKey -> yield sprintf "    %s %s" path authKey
                         | None -> yield sprintf "    %s" path
+
+                    match file.Command with
+                    | None -> ()
+                    | Some command -> yield "      build: " + command
+
+                    match file.OperatingSystemRestriction with
+                    | None -> ()
+                    | Some filter -> yield "      os: " + filter
 
                     for (name,v) in file.Dependencies do
                         let versionStr = 
@@ -189,11 +210,14 @@ module LockFileParser =
     | Redirects of bool option
     | ReferenceCondition of string
     | ResolverStrategy of ResolverStrategy option
+    | Command of string
+    | OperatingSystemRestriction of string
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
         | _, "HTTP" -> RepositoryType "HTTP"
         | _, "GIST" -> RepositoryType "GIST"
+        | _, "GIT" -> RepositoryType "GIT"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
         | Some "NUGET", String.StartsWith "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
@@ -237,6 +261,10 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption(ResolverStrategy(setting))
+        | _, String.StartsWith "build: " trimmed ->
+            InstallOption(Command trimmed)
+        | _, String.StartsWith "os: " trimmed ->
+            InstallOption(OperatingSystemRestriction trimmed)
         | _, trimmed when line.StartsWith "      " ->
             if trimmed.Contains("(") then
                 let parts = trimmed.Split '(' 
@@ -250,6 +278,7 @@ module LockFileParser =
         | Some "NUGET", trimmed -> NugetPackage trimmed
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)
+        | Some "GIT", trimmed -> SourceFile(GitLink(String.Empty), trimmed)
         | Some "HTTP", trimmed  -> SourceFile(HttpLink(String.Empty), trimmed)
         | Some _, _ -> failwithf "unknown repository type %s." line
         | _ -> failwithf "unknown lock file format %s" line
@@ -265,6 +294,7 @@ module LockFileParser =
         | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
         | ResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
+        | _ -> failwithf "Unknown option %A" option
 
     let Parse(lockFileLines) =
         let remove textToRemove (source:string) = source.Replace(textToRemove, "")
@@ -288,6 +318,18 @@ module LockFileParser =
                 match (currentGroup, line) with
                 | Remote(url) -> { currentGroup with RemoteUrl = Some url }::otherGroups
                 | Group(groupName) -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
+                | InstallOption(Command(command)) -> 
+                    let sourceFiles = 
+                        match currentGroup.SourceFiles with
+                        | sourceFile::rest ->{ sourceFile with Command = Some command } :: rest
+                        |  _ -> failwith "missig source file"
+                    { currentGroup with SourceFiles = sourceFiles }::otherGroups
+                | InstallOption(OperatingSystemRestriction(filter)) -> 
+                    let sourceFiles = 
+                        match currentGroup.SourceFiles with
+                        | sourceFile::rest ->{ sourceFile with OperatingSystemRestriction = Some filter } :: rest
+                        |  _ -> failwith "missig source file"
+                    { currentGroup with SourceFiles = sourceFiles }::otherGroups
                 | InstallOption option -> 
                     { currentGroup with Options = extractOption currentGroup option }::otherGroups
                 | RepositoryType repoType -> { currentGroup with RepositoryType = Some repoType }::otherGroups
@@ -347,10 +389,13 @@ module LockFileParser =
                                                 Origin = origin
                                                 Project = project
                                                 Dependencies = Set.empty
-                                                Name = path 
+                                                Name = path
+                                                Command = None
+                                                OperatingSystemRestriction = None
+                                                PackagePath = None
                                                 AuthKey = authKey } :: currentGroup.SourceFiles }::otherGroups
                         | _ -> failwith "invalid remote details."
-                    | HttpLink x ->
+                    | HttpLink _ ->
                         match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/' |> Array.toList) with
                         | Some [ protocol; _; domain; ] ->
                             let project, name, path, authKey = 
@@ -369,6 +414,9 @@ module LockFileParser =
                                   Project = project
                                   Dependencies = Set.empty
                                   Name = name
+                                  Command = None
+                                  OperatingSystemRestriction = None
+                                  PackagePath = None
                                   AuthKey = authKey } 
 
                             { currentGroup with
@@ -381,6 +429,9 @@ module LockFileParser =
                                                 Owner = domain
                                                 Origin = HttpLink(currentGroup.RemoteUrl.Value)
                                                 Project = project
+                                                Command = None
+                                                OperatingSystemRestriction = None
+                                                PackagePath = None
                                                 Dependencies = Set.empty
                                                 Name = details
                                                 AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
@@ -392,9 +443,29 @@ module LockFileParser =
                                                 Origin = HttpLink(currentGroup.RemoteUrl.Value)
                                                 Project = project + "/" + String.Join("/",moredetails)
                                                 Dependencies = Set.empty
+                                                Command = None
+                                                OperatingSystemRestriction = None
+                                                PackagePath = None
                                                 Name = details
                                                 AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
-                        | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl )
+                        | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl
+                    | GitLink _ ->
+                        match currentGroup.RemoteUrl with
+                        | Some cloneUrl ->
+                            let owner,commit,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts cloneUrl
+                            { currentGroup with
+                                LastWasPackage = false
+                                SourceFiles = { Commit = details.Replace("(","").Replace(")","")
+                                                Owner = owner
+                                                Origin = GitLink(cloneUrl)
+                                                Project = project
+                                                Dependencies = Set.empty
+                                                Command = buildCommand
+                                                OperatingSystemRestriction = operatingSystemRestriction
+                                                PackagePath = packagePath
+                                                Name = "" 
+                                                AuthKey = None } :: currentGroup.SourceFiles }::otherGroups
+                        | _ ->  failwithf "invalid remote details %A" currentGroup.RemoteUrl)
 
 
 /// Allows to parse and analyze paket.lock files.

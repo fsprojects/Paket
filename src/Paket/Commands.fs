@@ -29,7 +29,7 @@ with
         member this.Usage =
             match this with
             | Add -> "Adds a new package to your paket.dependencies file."
-            | ClearCache -> "Clears the NuGet cache folder."
+            | ClearCache -> "Clears the NuGet and git cache folders."
             | Config -> "Allows to store global configuration values like NuGet credentials."
             | ConvertFromNuget -> "Converts from using NuGet to Paket."
             | FindRefs -> "Finds all project files that have the given NuGet packages installed."
@@ -61,7 +61,6 @@ type AddArgs =
     | [<CustomCommandLine("group")>] Group of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
-    | Hard
     | Redirects
     | CreateNewBindingFiles
     | No_Install
@@ -79,7 +78,6 @@ with
             | Project(_) -> "Allows to add the package to a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to add the package to the projects's paket.references file."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
@@ -140,7 +138,6 @@ with
 
 type InstallArgs =
     | [<AltCommandLine("-f")>] Force
-    | Hard
     | Redirects
     | CreateNewBindingFiles
     | Keep_Major
@@ -153,7 +150,6 @@ with
         member this.Usage =
             match this with
             | Force -> "Forces the download and reinstallation of all packages."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
@@ -178,7 +174,6 @@ type RemoveArgs =
     | [<CustomCommandLine("group")>] Group of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
-    | Hard
     | No_Install
 with
     interface IArgParserTemplate with
@@ -189,7 +184,6 @@ with
             | Project(_) -> "Allows to remove the package from a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
 
 
@@ -228,7 +222,6 @@ type UpdateArgs =
     | [<CustomCommandLine("version")>] Version of string
     | [<CustomCommandLine("group")>] Group of string
     | [<AltCommandLine("-f")>] Force
-    | Hard
     | Redirects
     | CreateNewBindingFiles
     | No_Install
@@ -245,7 +238,6 @@ with
             | Group(_) -> "Allows to specify the dependency group."
             | Version(_) -> "Allows to specify version of the package."
             | Force -> "Forces the download and reinstallation of all packages."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."

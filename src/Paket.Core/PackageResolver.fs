@@ -220,7 +220,7 @@ type UpdateMode =
     | UpdateAll
 
 /// Resolves all direct and transitive dependencies
-let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
+let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
     let lastConflictReported = ref DateTime.Now
 
@@ -261,7 +261,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             let newRestrictions = filterRestrictions dependency.Settings.FrameworkRestrictions globalFrameworkRestrictions
             
             try
-                let packageDetails : PackageDetails = getPackageDetailsF packageSources dependency.Name version
+                let packageDetails : PackageDetails = getPackageDetailsF packageSources groupName dependency.Name version
 
                 let filteredDependencies = DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
 
@@ -307,10 +307,10 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             let getSingleVersion v =
                 match currentRequirement.Parent with
                 | PackageRequirementSource.Package(_,_,parentSource) -> 
-                    let sources = parentSource :: sources |> List.distinct
+                    let sources = parentSource :: currentRequirement.Sources |> List.distinct
                     Seq.singleton (v,sources)
                 | _ -> 
-                    let sources : PackageSource list = sources |> List.sortBy (fun x -> String.containsIgnoreCase "nuget.org" x.Url |> not) 
+                    let sources : PackageSource list = currentRequirement.Sources |> List.sortBy (fun x -> String.containsIgnoreCase "nuget.org" x.Url |> not) 
                     Seq.singleton (v,sources)
 
             availableVersions :=
@@ -319,7 +319,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                 | Specific v -> getSingleVersion v
                 | _ -> 
                     let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
-                    getVersionsF sources resolverStrategy groupName currentRequirement.Name
+                    getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
                 |> Seq.cache
 
             let preRelease v =
@@ -430,11 +430,11 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             let currentRequirement = getCurrentRequirement openRequirements
             let conflicts = getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement)
             if conflicts |> Set.isEmpty |> not then 
-                Resolution.Conflict(currentResolution,closedRequirements,openRequirements,conflicts,Seq.head conflicts,getVersionsF sources ResolverStrategy.Max groupName) 
+                Resolution.Conflict(currentResolution,closedRequirements,openRequirements,conflicts,Seq.head conflicts,getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName) 
             else
                 let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(relax,filteredVersions,openRequirements,currentRequirement)
 
-                let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,Set.empty,currentRequirement,getVersionsF sources ResolverStrategy.Max groupName)
+                let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,Set.empty,currentRequirement,getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName)
                 if Seq.isEmpty compatibleVersions then
                     boostConflicts (filteredVersions,currentRequirement,conflictStatus) 
 
@@ -467,7 +467,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
                         | None -> ()
                         | Some exploredPackage ->
                             hasUnlisted := exploredPackage.Unlisted || !hasUnlisted
-                            if exploredPackage.Unlisted && not !useUnlisted then 
+                            if exploredPackage.Unlisted && not !useUnlisted then
                                 ()
                             else
                                 let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions

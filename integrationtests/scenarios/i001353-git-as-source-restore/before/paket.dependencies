@@ -1,0 +1,3 @@
+git https://github.com/forki/nupkgtest.git nugetsource Packages: /source/
+
+nuget Argu

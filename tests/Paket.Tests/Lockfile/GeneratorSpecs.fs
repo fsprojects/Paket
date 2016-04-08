@@ -178,14 +178,18 @@ github "owner:project2:commit3" "folder/file3.fs" githubAuth """
     
     cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> List.map (fun f -> 
-        match f.Commit with
-        | Some commit ->  { Commit = commit
-                            Owner = f.Owner
-                            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
-                            Project = f.Project
-                            Dependencies = Set.empty
-                            Name = f.Name
-                            AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
+        match f.Version with
+        | VersionRestriction.Concrete commit -> 
+            { Commit = commit
+              Owner = f.Owner
+              Origin = ModuleResolver.Origin.GitHubLink
+              Project = f.Project
+              Command = None
+              OperatingSystemRestriction = None
+              PackagePath = None
+              Dependencies = Set.empty
+              Name = f.Name
+              AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
         | _ -> failwith "error")
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithGitHub)
@@ -243,15 +247,18 @@ let ``should generate other version ranges for packages``() =
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected3)
 
-let trivialResolve (f:ModuleResolver.UnresolvedSourceFile) =
+let trivialResolve (f:ModuleResolver.UnresolvedSource) =
     { Commit =
-        match f.Commit with
-        | Some(v) -> v
-        | None -> ""
+        match f.Version with
+        | VersionRestriction.Concrete(v) -> v
+        | _ -> ""
       Owner = f.Owner
       Origin = f.Origin
       Project = f.Project
       Dependencies = Set.empty
+      Command = None
+      OperatingSystemRestriction = None
+      PackagePath = None
       Name = f.Name
       AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
 
@@ -337,7 +344,7 @@ http http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"""
     
     references.Length |> shouldEqual 6
 
-    references.[5].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://nlp.stanford.edu"))
+    references.[5].Origin |> shouldEqual (Origin.HttpLink("http://nlp.stanford.edu"))
     references.[5].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
     references.[5].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
 
