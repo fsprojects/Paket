@@ -305,20 +305,24 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                             np.Name,VersionRequirement.Parse (v.ToString())
                         | None -> 
                             if minimumFromLockFile then
-                                let group =
+                                let groupName =
                                     lockFile.GetDependencyLookupTable()
                                     |> Seq.filter (fun m -> snd m.Key = np.Name)
                                     |> Seq.map (fun m -> m.Key)
-                                    |> Seq.head
-                                    |> fst
-                                    |> lockFile.GetGroup
+                                    |> Seq.tryHead
+                                    |> Option.map fst
 
-                                let lockedVersion = 
-                                    match Map.tryFind np.Name group.Resolution with
-                                    | Some resolvedPackage -> VersionRequirement(GreaterThan resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version)
-                                    | None -> VersionRequirement.AllReleases
+                                match groupName with
+                                | None -> np.Name,VersionRequirement.AllReleases
+                                | Some groupName -> 
+                                    let group = lockFile.GetGroup groupName
 
-                                np.Name,lockedVersion
+                                    let lockedVersion = 
+                                        match Map.tryFind np.Name group.Resolution with
+                                        | Some resolvedPackage -> VersionRequirement(GreaterThan resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version)
+                                        | None -> VersionRequirement.AllReleases
+
+                                    np.Name,lockedVersion
                             else
                                 np.Name,VersionRequirement.AllReleases
                     | Some groupName ->
