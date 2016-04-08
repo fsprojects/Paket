@@ -37,10 +37,21 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         public void CreateStrategy_EffectiveStrategyHasFallback()
         {
             //arrange
+            mockEffectiveStrategy.SetupGet(x => x.FallbackStrategy).Returns(new Mock<IDownloadStrategy>().Object);
+
             //act
             //assert
-            mockEffectiveStrategy.SetupGet(x => x.FallbackStrategy).Returns(new Mock<IDownloadStrategy>().Object);
             Assert.Throws<ArgumentException>(() => new CacheDownloadStrategy(mockEffectiveStrategy.Object, mockDirectoryProxy.Object, mockFileProxy.Object));
+        }
+
+        [Test]
+        public void Name()
+        {
+            //arrange
+            mockEffectiveStrategy.SetupGet(x => x.Name).Returns("any");
+            //act
+            //assert
+            Assert.That(sut.Name, Is.EqualTo("any - cached"));
         }
 
         [Test]
@@ -90,6 +101,34 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         }
 
         [Test]
+        public void GetLatestVersion_NoFallBackStrategy_UseBestCachedVersion_CanHandleWrongSubdirectories()
+        {
+            //arrange
+            mockEffectiveStrategy.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>().Verifiable();
+            mockDirectoryProxy.Setup(x => x.GetDirectories(It.IsAny<string>())).Returns(new[] { "2.1", "2.2", "wrongVersion" });
+
+            //act
+            var result = sut.GetLatestVersion(true, false);
+
+            //assert
+            Assert.That(result, Is.EqualTo("2.2"));
+        }
+
+        [Test]
+        public void GetLatestVersion_NoFallBackStrategy_UseBestCachedVersion_IgnorePrereleaseSubFolder()
+        {
+            //arrange
+            mockEffectiveStrategy.Setup(x => x.GetLatestVersion(true, false)).Throws<WebException>().Verifiable();
+            mockDirectoryProxy.Setup(x => x.GetDirectories(It.IsAny<string>())).Returns(new[] { "2.1", "2.2", "2.3-alpha" });
+
+            //act
+            var result = sut.GetLatestVersion(true, false);
+
+            //assert
+            Assert.That(result, Is.EqualTo("2.2"));
+        }
+
+        [Test]
         public void DownloadVersion_UseCachedVersion()
         {
             //arrange
@@ -127,5 +166,6 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             //assert
             mockEffectiveStrategy.Verify(x => x.SelfUpdate("any", true));
         }
+        
     }
 }
