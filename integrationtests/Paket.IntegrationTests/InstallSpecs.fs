@@ -429,3 +429,11 @@ let ``#1552 install mvvmlightlibs first time``() =
 
     directPaketInPath "install -f" (scenarioTempPath scenarioName) |> ignore
     File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
+
+[<Test>]
+let ``#1589 http dep restore in parallel``() =
+    let scenarioName = "i001589-http-dep-restore-in-parallel"
+    let scenarioPath = scenarioTempPath scenarioName
+    prepare scenarioName
+    directPaketInPath "restore" scenarioPath |> ignore
+    directPaketInPath "restore" scenarioPath |> ignore
