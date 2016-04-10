@@ -436,4 +436,4 @@ let ``#1589 http dep restore in parallel``() =
     let scenarioPath = scenarioTempPath scenarioName
     prepare scenarioName
     directPaketInPath "restore" scenarioPath |> ignore
-    directPaketInPath "restore" scenarioPath |> ignore
+    directPaketInPath "restore --force" scenarioPath |> ignore
