@@ -206,8 +206,6 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
                     msg |> Seq.iter (tracefn "%s")
             with 
             | exn -> failwithf "Could not run \"%s\".\r\nError: %s" tCommand exn.Message
-
-            
     | Origin.GistLink, Constants.FullProjectSourceFileName ->
         tracefn "Downloading %O to %s" remoteFile destination
         let fi = FileInfo(destination)
@@ -227,7 +225,6 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
                 } 
             ) |> Async.Parallel
         task |> Async.RunSynchronously |> ignore
-
     | Origin.GitHubLink, Constants.FullProjectSourceFileName ->  
         tracefn "Downloading %O to %s" remoteFile destination
         let fi = FileInfo(destination)
@@ -258,7 +255,8 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
             let targetFolder = FileInfo(destination).Directory
-            CleanDir targetFolder.FullName
+            if not targetFolder.Exists then
+                targetFolder.Create()
 
             do! downloadFromUrl(authentication, url) destination
             ZipFile.ExtractToDirectory(destination, targetFolder.FullName)
