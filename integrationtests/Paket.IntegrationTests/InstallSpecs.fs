@@ -431,6 +431,7 @@ let ``#1552 install mvvmlightlibs first time``() =
     File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
 
 [<Test>]
+[<Ignore("very slow test")>]
 let ``#1589 http dep restore in parallel``() =
     let scenarioName = "i001589-http-dep-restore-in-parallel"
     let scenarioPath = scenarioTempPath scenarioName

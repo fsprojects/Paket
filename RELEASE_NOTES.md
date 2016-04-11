@@ -1,3 +1,6 @@
+#### 2.58.10 - 11.04.2016
+* BUGFIX: Breaking some parallism and trying to prevent race conditions - https://github.com/fsprojects/Paket/issues/1589
+
 #### 2.58.9 - 08.04.2016
 * BUGFIX: "paket.exe pack" with "include-referenced-projects" and "minimum-from-lock-file" did not work when project references have a paket.template file - https://github.com/fsprojects/Paket/issues/1586
 
