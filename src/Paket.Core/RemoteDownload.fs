@@ -228,10 +228,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
             ) |> Async.Parallel
         task |> Async.RunSynchronously |> ignore
 
-        // GIST currently does not support zip-packages, so now this fetches all files separately.
-        // let downloadUrl = sprintf "https://gist.github.com/%s/%s/download" remoteFile.Owner remoteFile.Project //is a tar.gz
-
-    | Origin.GitHubLink, Constants.FullProjectSourceFileName -> 
+    | Origin.GitHubLink, Constants.FullProjectSourceFileName ->  
         tracefn "Downloading %O to %s" remoteFile destination
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
@@ -260,10 +257,11 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let authentication = auth remoteFile.AuthKey url
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
-            let targetFolder = FileInfo(destination).Directory.FullName
-            CleanDir targetFolder
+            let targetFolder = FileInfo(destination).Directory
+            CleanDir targetFolder.FullName
+
             do! downloadFromUrl(authentication, url) destination
-            ZipFile.ExtractToDirectory(destination, targetFolder)
+            ZipFile.ExtractToDirectory(destination, targetFolder.FullName)
         | _ -> do! downloadFromUrl(authentication, url) destination
 }
 
@@ -272,27 +270,29 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
         sourceFiles
         |> List.partition (fun x -> match x.Origin with | GitLink _ -> false | _ -> true)
 
-    let gitDownloads =
-        gitRepos
-        |> List.map (fun gitRepo ->
-            async {
-                let repoFolder = gitRepo.FilePath(rootPath,groupName)
-                let destination = DirectoryInfo(repoFolder).Parent.FullName
+    gitRepos
+    |> List.map (fun gitRepo ->
+        async {
+            let repoFolder = gitRepo.FilePath(rootPath,groupName)
+            let destination = DirectoryInfo(repoFolder).Parent.FullName
 
-                let isInCorrectVersion =
-                    if force then false else
-                    match Git.Handling.getCurrentHash repoFolder with
-                    | Some hash -> hash = gitRepo.Commit
-                    | None -> 
-                        // something is wrong with the repo
-                        Utils.deleteDir (DirectoryInfo repoFolder)
-                        false
+            let isInCorrectVersion =
+                if force then false else
+                match Git.Handling.getCurrentHash repoFolder with
+                | Some hash -> hash = gitRepo.Commit
+                | None -> 
+                    // something is wrong with the repo
+                    Utils.deleteDir (DirectoryInfo repoFolder)
+                    false
 
-                if isInCorrectVersion then
-                    verbosefn "%s is already up-to-date." repoFolder
-                else
-                    do! downloadRemoteFiles(gitRepo,destination) 
-            })
+            if isInCorrectVersion then
+                verbosefn "%s is already up-to-date." repoFolder
+            else
+                do! downloadRemoteFiles(gitRepo,destination) 
+        })
+    |> Async.Parallel
+    |> Async.RunSynchronously
+    |> ignore
 
     remoteFiles
     |> List.map (fun source ->
@@ -310,31 +310,24 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
             CleanDir destinationDir
 
         (versionFile, version), sources)
-    |> List.map (fun ((versionFile, version), sources) ->
-        async {
-            let! downloaded =
-                sources
-                |> List.map (fun (_, (destination, resolvedSourceFile)) ->
-                    async {
-                        let exists =
-                            if destination.EndsWith Constants.FullProjectSourceFileName then
-                                let di = FileInfo(destination).Directory
-                                di.Exists && FileInfo(Path.Combine(di.FullName, Constants.PaketVersionFileName)).Exists
-                            else
-                                File.Exists destination
+    |> List.iter (fun ((versionFile, version), sources) ->
+        sources
+        |> List.iter (fun (_, (destination, source)) ->
+            let exists =
+                if destination.EndsWith Constants.FullProjectSourceFileName then
+                    let di = FileInfo(destination).Directory
+                    di.Exists && FileInfo(Path.Combine(di.FullName, Constants.PaketVersionFileName)).Exists
+                else
+                    File.Exists destination
 
-                        if not force && exists then
-                            verbosefn "Sourcefile %O is already there." resolvedSourceFile
-                        else 
-                            do! downloadRemoteFiles(resolvedSourceFile,destination)
-                    })
-                |> Async.Parallel
+            if not force && exists then
+                verbosefn "Sourcefile %O is already there." source
+            else 
+                tracefn "Downloading %O to %s" source destination
+                Async.RunSynchronously <| downloadRemoteFiles(source,destination))
 
-            if File.Exists(versionFile.FullName) then
-                if not <| File.ReadAllText(versionFile.FullName).Contains(version) then
-                    File.AppendAllLines(versionFile.FullName, [version])
-            else
+        if File.Exists(versionFile.FullName) then
+            if not <| File.ReadAllText(versionFile.FullName).Contains(version) then
                 File.AppendAllLines(versionFile.FullName, [version])
-        })
-    |> List.append gitDownloads
-    |> Async.Parallel
+        else
+            File.AppendAllLines(versionFile.FullName, [version]))

@@ -81,7 +81,7 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
 /// Restores the given dependencies from the lock file.
 let internal restore (root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>) = 
     async { 
-        let! _ = RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
+        RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
         let! _ = lockFile.Groups.[groupName].Resolution
                  |> Map.filter (fun name _ -> packages.Contains name)
                  |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value))

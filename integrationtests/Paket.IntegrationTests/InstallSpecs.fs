@@ -430,6 +430,15 @@ let ``#1552 install mvvmlightlibs first time``() =
     directPaketInPath "install -f" (scenarioTempPath scenarioName) |> ignore
     File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
 
+[<Test>]
+[<Ignore("very slow test")>]
+let ``#1589 http dep restore in parallel``() =
+    let scenarioName = "i001589-http-dep-restore-in-parallel"
+    let scenarioPath = scenarioTempPath scenarioName
+    prepare scenarioName
+    directPaketInPath "restore" scenarioPath |> ignore
+    directPaketInPath "restore --force" scenarioPath |> ignore
+
 let resolvedNewPorjectJson = """{
     "version": "1.0.0-*",
     "compilationOptions": {

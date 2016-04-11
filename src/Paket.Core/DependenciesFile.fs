@@ -626,8 +626,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             
             if String.IsNullOrWhiteSpace fileName |> not then
                 RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
-                |> Async.RunSynchronously
-                |> ignore
 
             let resolution =
                 PackageResolver.Resolve(

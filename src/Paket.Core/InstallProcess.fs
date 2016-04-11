@@ -153,13 +153,10 @@ let CreateInstallModel(root, groupName, sources, caches, force, package) =
 
 /// Restores the given packages from the lock file.
 let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>, updatedGroups:Map<_,_>) =
-    [|for kv in lockFile.Groups do
-            let files = if updatedGroups |> Map.containsKey kv.Key then [] else kv.Value.RemoteFiles
-            if List.isEmpty files |> not then
-                yield RemoteDownload.DownloadSourceFiles(root, kv.Key, force, files) |]
-    |> Async.Parallel
-    |> Async.RunSynchronously
-    |> ignore
+    for kv in lockFile.Groups do
+         let files = if updatedGroups |> Map.containsKey kv.Key then [] else kv.Value.RemoteFiles
+         if List.isEmpty files |> not then
+             RemoteDownload.DownloadSourceFiles(root, kv.Key, force, files)
 
     lockFile.Groups
     |> Seq.map (fun kv' -> 

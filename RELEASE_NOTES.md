@@ -1,4 +1,4 @@
-#### 3.0.0-alpha107 - 08.04.2016
+#### 3.0.0-alpha108 - 11.04.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -7,6 +7,9 @@
 * Allows to exclude dll references from a NuGet package - http://fsprojects.github.io/Paket/references-files.html#Excluding-libraries
 * Allows to use aliases for libraries - http://fsprojects.github.io/Paket/references-files.html#Library-aliases
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
+
+#### 2.58.10 - 11.04.2016
+* BUGFIX: Breaking some parallism and trying to prevent race conditions - https://github.com/fsprojects/Paket/issues/1589
 
 #### 2.58.9 - 08.04.2016
 * BUGFIX: "paket.exe pack" with "include-referenced-projects" and "minimum-from-lock-file" did not work when project references have a paket.template file - https://github.com/fsprojects/Paket/issues/1586
