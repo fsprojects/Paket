@@ -1,3 +1,6 @@
+#### 2.58.12 - 11.04.2016
+* BUGFIX: Dependencies file should not take shortened versions - https://github.com/fsprojects/Paket/issues/1591
+
 #### 2.58.11 - 11.04.2016
 * BUGFIX: Breaking some parallism and trying to prevent race conditions - https://github.com/fsprojects/Paket/issues/1589
 

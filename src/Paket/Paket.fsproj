@@ -41,8 +41,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>restore</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001589-http-dep-restore-in-parallel\temp</StartWorkingDirectory>
+    <StartArguments>convert-from-nuget</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001591-convert-denormalized\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
