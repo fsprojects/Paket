@@ -27,17 +27,25 @@ let ``can detect encrypted passwords in nuget.config``() =
             Encoding.UTF8.GetBytes "NuGet", 
             DataProtectionScope.CurrentUser) 
         |> Convert.ToBase64String
-    let withPasswordFilled = File.ReadAllText("NuGetConfig/PasswordConfig.xml").Replace("placeholder-for-password", encrypted)
-    File.WriteAllText("NuGetConfig/PasswordConfig.xml", withPasswordFilled)
+
+    let originalFile = File.ReadAllText("NuGetConfig/PasswordConfig.xml")
+    try
+        let withPasswordFilled = originalFile.Replace("placeholder-for-password", encrypted)
+        if originalFile = withPasswordFilled then
+            failwith "could not replace password in NuGetConfig/PasswordConfig.xml"
+
+        File.WriteAllText("NuGetConfig/PasswordConfig.xml", withPasswordFilled)
     
-    parse "NuGetConfig/PasswordConfig.xml" 
-    |> shouldEqual
-        { PackageSources = 
-            [ "https://www.nuget.org/api/v2/", ("https://www.nuget.org/api/v2/",None)
-              "tc", ("https://tc/httpAuth/app/nuget/v1/FeedService.svc/", Some(Credentials("notty", "secret"))) ]
-            |> Map.ofList
-          PackageRestoreEnabled = false
-          PackageRestoreAutomatic = false }
+        parse "NuGetConfig/PasswordConfig.xml" 
+        |> shouldEqual
+            { PackageSources = 
+                [ "https://www.nuget.org/api/v2/", ("https://www.nuget.org/api/v2/",None)
+                  "tc", ("https://tc/httpAuth/app/nuget/v1/FeedService.svc/", Some(Credentials("notty", "secret"))) ]
+                |> Map.ofList
+              PackageRestoreEnabled = false
+              PackageRestoreAutomatic = false }
+    finally
+        File.WriteAllText("NuGetConfig/PasswordConfig.xml", originalFile)
 
 [<Test>]
 let ``can detect cleartextpasswords in nuget.config``() = 
