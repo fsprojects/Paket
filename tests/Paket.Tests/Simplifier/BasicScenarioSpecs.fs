@@ -208,13 +208,13 @@ nuget Autofac.WebApi2.Owin 3.2.0 framework: >= net45"""
 framework >= net45
 
 nuget angularjs 1.4.3
-nuget AngularTemplates.Compile 1.0
+nuget AngularTemplates.Compile 1.0.0
 nuget Antlr 3.4.1.9004
-nuget Autofac 3.5
-nuget Autofac.Owin 3.1
-nuget Autofac.WebApi 3.1
-nuget Autofac.WebApi2 3.4
-nuget Autofac.WebApi2.Owin 3.2"""
+nuget Autofac 3.5.0
+nuget Autofac.Owin 3.1.0
+nuget Autofac.WebApi 3.1.0
+nuget Autofac.WebApi2 3.4.0
+nuget Autofac.WebApi2.Owin 3.2.0"""
 
 
     let originalLockFile = DependenciesFile.FromCode(before)
@@ -260,17 +260,17 @@ nuget Autofac.WebApi2.Owin 3.2.0 framework: >= net40"""
 framework >= net45
 
 nuget angularjs 1.4.3
-nuget AngularTemplates.Compile 1.0
+nuget AngularTemplates.Compile 1.0.0
 nuget Antlr 3.4.1.9004
-nuget Autofac 3.5
+nuget Autofac 3.5.0
 
 group Build
 source https://www.nuget.org/api/v2/
 framework >= net40
-nuget Autofac.Owin 3.1
-nuget Autofac.WebApi 3.1
-nuget Autofac.WebApi2 3.4
-nuget Autofac.WebApi2.Owin 3.2"""
+nuget Autofac.Owin 3.1.0
+nuget Autofac.WebApi 3.1.0
+nuget Autofac.WebApi2 3.4.0
+nuget Autofac.WebApi2.Owin 3.2.0"""
 
 
     let originalLockFile = DependenciesFile.FromCode(before)
@@ -307,17 +307,17 @@ nuget Autofac.WebApi2.Owin 3.2.0 framework: sl4, sl5"""
 framework net40, net45
 
 nuget angularjs 1.4.3
-nuget AngularTemplates.Compile 1.0
+nuget AngularTemplates.Compile 1.0.0
 nuget Antlr 3.4.1.9004
-nuget Autofac 3.5
+nuget Autofac 3.5.0
 
 group Build
 source https://www.nuget.org/api/v2/
 framework sl40, sl50
-nuget Autofac.Owin 3.1
-nuget Autofac.WebApi 3.1
-nuget Autofac.WebApi2 3.4
-nuget Autofac.WebApi2.Owin 3.2"""
+nuget Autofac.Owin 3.1.0
+nuget Autofac.WebApi 3.1.0
+nuget Autofac.WebApi2 3.4.0
+nuget Autofac.WebApi2.Owin 3.2.0"""
 
 
     let originalLockFile = DependenciesFile.FromCode(before)
@@ -345,17 +345,17 @@ nuget Autofac.WebApi2.Owin 3.2.0 framework: sl4, sl5"""
 framework net40, net45
 
 nuget angularjs 1.4.3 framework: net20
-nuget AngularTemplates.Compile 1.0
+nuget AngularTemplates.Compile 1.0.0
 nuget Antlr 3.4.1.9004
-nuget Autofac 3.5
+nuget Autofac 3.5.0
 
 group Build
 source https://www.nuget.org/api/v2/
 framework sl40, sl50
-nuget Autofac.Owin 3.1
-nuget Autofac.WebApi 3.1
-nuget Autofac.WebApi2 3.4 framework: >= net45
-nuget Autofac.WebApi2.Owin 3.2"""
+nuget Autofac.Owin 3.1.0
+nuget Autofac.WebApi 3.1.0
+nuget Autofac.WebApi2 3.4.0 framework: >= net45
+nuget Autofac.WebApi2.Owin 3.2.0"""
 
 
     let originalLockFile = DependenciesFile.FromCode(before)

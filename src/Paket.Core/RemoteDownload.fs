@@ -252,12 +252,11 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         tracefn "Downloading %O to %s" remoteFile destination
         let url = origin + remoteFile.Commit
         let authentication = auth remoteFile.AuthKey url
+        let targetFolder = FileInfo(destination).Directory
+        if not targetFolder.Exists then
+            targetFolder.Create()
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
-            let targetFolder = FileInfo(destination).Directory
-            if not targetFolder.Exists then
-                targetFolder.Create()
-
             do! downloadFromUrl(authentication, url) destination
             ZipFile.ExtractToDirectory(destination, targetFolder.FullName)
         | _ -> do! downloadFromUrl(authentication, url) destination

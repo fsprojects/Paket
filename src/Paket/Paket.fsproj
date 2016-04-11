@@ -111,8 +111,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>restore</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001589-http-dep-restore-in-parallel\temp</StartWorkingDirectory>
+    <StartArguments>pack output out version 1.0.0 templatefile paket.template</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001594-pack\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

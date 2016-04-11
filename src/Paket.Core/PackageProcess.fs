@@ -129,17 +129,18 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                 match templateFile with
                 | CompleteTemplate _ -> false 
                 | IncompleteTemplate -> true)
-            |> Array.map (fun (projectFile,templateFile) ->
-                allTemplateFiles.Remove(templateFile.FileName) |> ignore
+            |> Array.map (fun (projectFile,templateFile') ->
+                allTemplateFiles.Remove(templateFile'.FileName) |> ignore
 
-                let merged = merge buildConfig buildPlatform version specificVersions projectFile templateFile
+                let merged = merge buildConfig buildPlatform version specificVersions projectFile templateFile'
                 Path.GetFullPath projectFile.FileName |> normalizePath,(merged,projectFile))
             |> Map.ofArray
 
         match templateFile with
         | Some template -> 
-            getAllProjectsFiles (FileInfo(template).Directory.FullName)
-            |> Map.filter (fun p (t,_) -> normalizePath t.FileName = normalizePath template)
+            let projects = getAllProjectsFiles (FileInfo(template).Directory.FullName)
+            projects
+            |> Map.filter (fun p (t,_) -> normalizePath (Path.GetFullPath t.FileName) = normalizePath (Path.GetFullPath template))
         | None -> getAllProjectsFiles workingDir
 
     // add dependencies
@@ -162,6 +163,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                 | _ -> failwithf "There was more than one project file found for template file %s" fileName
             | _ -> seq { yield templateFile }
 
+        let remaining = allTemplateFiles |> Seq.collect convertRemainingTemplate |> Seq.toList
         projectTemplates
         |> Map.toList
         |> Seq.collect(fun (_,(t, p)) -> 
@@ -174,7 +176,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                 let deps = findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile projectTemplates includeReferencedProjects version specificVersions
                 deps
             )
-         |> Seq.append (allTemplateFiles |> Seq.collect convertRemainingTemplate)
+         |> Seq.append remaining
          |> Seq.toList
 
     let excludedTemplates =
