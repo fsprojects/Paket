@@ -1,3 +1,6 @@
+#### 2.58.13 - 11.04.2016
+* BUGFIX: Create folder for http dependencies
+
 #### 2.58.12 - 11.04.2016
 * BUGFIX: Dependencies file should not take shortened versions - https://github.com/fsprojects/Paket/issues/1591
 
