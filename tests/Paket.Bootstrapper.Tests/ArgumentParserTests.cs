@@ -40,7 +40,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.DownloadArguments.IgnorePrerelease, Is.True);
             Assert.That(result.DownloadArguments.LatestVersion, Is.Empty);
             Assert.That(result.DownloadArguments.NugetSource, Is.Null);
-            Assert.That(result.DownloadArguments.Target, Is.StringEnding("\\paket.exe"));
+            Assert.That(result.DownloadArguments.Target, Does.EndWith("paket.exe"));
 
             var knownProps = new[] { "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Silent", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs" };
             var allProperties = GetAllProperties(result);
