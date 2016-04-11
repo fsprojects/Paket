@@ -1,0 +1,5 @@
+source https://nuget.org/api/v2
+
+http http://nlp.stanford.edu/software/stanford-ner-2015-12-09.zip
+http http://nlp.stanford.edu/software/stanford-segmenter-2015-12-09.zip
+
