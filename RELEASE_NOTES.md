@@ -8,7 +8,7 @@
 * Allows to use aliases for libraries - http://fsprojects.github.io/Paket/references-files.html#Library-aliases
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
 
-#### 2.58.10 - 11.04.2016
+#### 2.58.11 - 11.04.2016
 * BUGFIX: Breaking some parallism and trying to prevent race conditions - https://github.com/fsprojects/Paket/issues/1589
 
 #### 2.58.9 - 08.04.2016
