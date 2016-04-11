@@ -46,8 +46,18 @@ NUGET
       FSharp.Core (>= 3.1.2.5)
     FSharp.Core (4.0.0.1)
     Moq (4.2.1510.2205)
-    NUnit (2.6.4)
-    NUnit.Runners.Net4 (2.6.4)
+    NUnit (3.2)
+    NUnit.ConsoleRunner (3.2)
+    NUnit.Extension.NUnitProjectLoader (3.2)
+    NUnit.Extension.NUnitV2Driver (3.2)
+    NUnit.Extension.NUnitV2ResultWriter (3.2)
+    NUnit.Extension.VSProjectLoader (3.2)
+    NUnit.Runners (3.2)
+      NUnit.ConsoleRunner (3.2)
+      NUnit.Extension.NUnitProjectLoader (3.2)
+      NUnit.Extension.NUnitV2Driver (3.2)
+      NUnit.Extension.NUnitV2ResultWriter (3.2)
+      NUnit.Extension.VSProjectLoader (3.2)
 GITHUB
   remote: forki/FsUnit
   specs:

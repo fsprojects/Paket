@@ -11,6 +11,7 @@ open Fake.ReleaseNotesHelper
 open Fake.UserInputHelper
 open System
 open System.IO
+open Fake.Testing.NUnit3
 
 // --------------------------------------------------------------------------------------
 // START TODO: Provide project-specific details below
@@ -157,12 +158,11 @@ Target "BuildPowerShell" (fun _ ->
 
 Target "RunTests" (fun _ ->
     !! testAssemblies
-    |> NUnit (fun p ->
+    |> NUnit3 (fun p ->
         { p with
-            DisableShadowCopy = true
-            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
-            TimeOut = TimeSpan.FromMinutes 20.
-            OutputFile = "TestResults.xml" })
+            ShadowCopy = false
+            WorkingDir = "tests/Paket.Tests"
+            TimeOut = TimeSpan.FromMinutes 20. })
 )
 
 Target "QuickTest" (fun _ ->
@@ -172,23 +172,21 @@ Target "QuickTest" (fun _ ->
     |> ignore
 
     !! testAssemblies
-    |> NUnit (fun p ->
+    |> NUnit3 (fun p ->
         { p with
-            DisableShadowCopy = true
-            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
-            TimeOut = TimeSpan.FromMinutes 20.
-            OutputFile = "TestResults.xml" })
+            ShadowCopy = false
+            WorkingDir = "tests/Paket.Tests"
+            TimeOut = TimeSpan.FromMinutes 20. })
 )
 
 
 Target "RunIntegrationTests" (fun _ ->
     !! integrationTestAssemblies
-    |> NUnit (fun p ->
+    |> NUnit3 (fun p ->
         { p with
-            DisableShadowCopy = true
-            ToolPath = "packages/test/NUnit.Runners.Net4/tools"
-            TimeOut = TimeSpan.FromMinutes 40.
-            OutputFile = "TestResults.xml" })
+            ShadowCopy = false
+            WorkingDir = "tests/Paket.Tests"
+            TimeOut = TimeSpan.FromMinutes 40. })
 )
 
 

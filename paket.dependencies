@@ -22,8 +22,8 @@ group Test
 
   source https://nuget.org/api/v2
 
-  nuget NUnit.Runners.Net4
-  nuget NUnit ~> 2
+  nuget NUnit.Runners
+  nuget NUnit ~> 3
   nuget Moq
   nuget FSCheck
   github forki/FsUnit FsUnit.fs

@@ -1,3 +1,21 @@
+#### 2.58.14 - 11.04.2016
+* BUGFIX: Compare full filename for pack with template file - https://github.com/fsprojects/Paket/issues/1594
+
+#### 2.58.13 - 11.04.2016
+* BUGFIX: Create folder for http dependencies
+
+#### 2.58.12 - 11.04.2016
+* BUGFIX: Dependencies file should not take shortened versions - https://github.com/fsprojects/Paket/issues/1591
+
+#### 2.58.11 - 11.04.2016
+* BUGFIX: Breaking some parallism and trying to prevent race conditions - https://github.com/fsprojects/Paket/issues/1589
+
+#### 2.58.9 - 08.04.2016
+* BUGFIX: "paket.exe pack" with "include-referenced-projects" and "minimum-from-lock-file" did not work when project references have a paket.template file - https://github.com/fsprojects/Paket/issues/1586
+
+#### 2.58.8 - 08.04.2016
+* Property Definitions are placed after FSharp Targets - https://github.com/fsprojects/Paket/issues/1585
+
 #### 2.58.7 - 07.04.2016
 * Paket update supports combining filter with specific version - https://github.com/fsprojects/Paket/pull/1580
 

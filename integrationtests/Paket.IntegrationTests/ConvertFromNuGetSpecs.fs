@@ -63,3 +63,16 @@ let ``#1217 should replace packages.config files in project``() =
     let projectFile = ProjectFile.loadFromFile(Path.Combine(scenarioTempPath "i001217-convert-simple-project", "ClassLibrary1", "ClassLibrary1.csproj"))
     projectFile.Document.OuterXml.Contains("packages.config") |> shouldEqual false
     projectFile.Document.OuterXml.Contains("paket.references") |> shouldEqual true
+    
+
+[<Test>]
+let ``#1591 should convert denormalized versions``() = 
+    paket "convert-from-nuget" "i001591-convert-denormalized" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001591-convert-denormalized","paket.lock"))
+    let v = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "EntityFramework"].Version
+    v.Major |> shouldEqual 6u
+    v.Minor |> shouldEqual 1u
+    v.Patch |> shouldEqual 0u
+
+    let depsFile = File.ReadAllText(Path.Combine(scenarioTempPath "i001591-convert-denormalized","paket.dependencies"))
+    depsFile.Contains "6.1.0" |> shouldEqual true

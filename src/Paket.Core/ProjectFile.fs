@@ -956,7 +956,12 @@ module ProjectFile =
 
             let l = ref !k
             while !l < project.ProjectNode.ChildNodes.Count do
-                if String.containsIgnoreCase "microsoft.csharp.targets"  (project.ProjectNode.ChildNodes.[!l].OuterXml.ToString()) then
+                let node = project.ProjectNode.ChildNodes.[!l].OuterXml.ToString()
+                if String.startsWithIgnoreCase  "<import" node && 
+                   (String.containsIgnoreCase "microsoft.csharp.targets" node || 
+                     String.containsIgnoreCase "microsoft.fsharp.targets" node ||
+                     String.containsIgnoreCase "fsharptargetspath" node)
+                then
                     k := !l + 1
                 incr l
 

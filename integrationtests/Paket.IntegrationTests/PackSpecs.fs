@@ -286,7 +286,7 @@ let ``#1538 symbols src folder structure`` () =
 
 
 [<Test>]
-[<Ignore>] // ignroe until we hear back
+[<Ignore("ignore until we hear back")>]
 let ``#1504 unpacking should override``() =
     let scenario = "i001504-override"
 
@@ -294,3 +294,25 @@ let ``#1504 unpacking should override``() =
     directPaket "pack templatefile paket.B.template version 1.0.0 output bin" scenario |> ignore
     directPaket "pack templatefile paket.A.template version 1.0.0 output bin" scenario |> ignore
     directPaket "update" scenario|> ignore
+
+[<Test>]
+let ``#1586 pack dependent projects``() =
+    let scenario = "i001586-pack-referenced"
+
+    prepare scenario
+    directPaket "pack output . include-referenced-projects minimum-from-lock-file -v" scenario |> ignore
+
+[<Test>]
+let ``#1594 allows to pack directly``() =
+    let scenario = "i001594-pack"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"bin")
+    let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
+    paket "pack output bin version 1.0.0 templatefile paket.template" scenario |> ignore
+
+    let package = Path.Combine(outPath, "ClassLibrary1.1.0.0.nupkg")
+ 
+    ZipFile.ExtractToDirectory(package, outPath)
+    
+    File.Exists(Path.Combine(outPath, "lib", "net35", "ClassLibrary1.dll")) |> shouldEqual true
+    File.Delete(templatePath)

@@ -4,7 +4,7 @@ Newtonsoft.Json
 
 group Test
   NUnit
-  NUnit.Runners.Net4
+  NUnit.Runners
   File:FsUnit.fs .
 
 group Build

@@ -112,7 +112,7 @@ let ``can resolve empty requirements`` () =
         | _ -> false)
 
 [<Test>]
-[<Ignore>]
+[<Ignore("")>]
 let ``if it resolves then, it should satisfy all deps. if not we have a real conflict`` () =
     check (fun ((g,deps):ResolverPuzzle) ->
         try

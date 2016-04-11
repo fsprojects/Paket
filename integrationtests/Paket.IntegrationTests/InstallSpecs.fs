@@ -67,6 +67,15 @@ let ``#1233 install props with framework restrictions``() =
     s2 |> shouldEqual s1
 
 [<Test>]
+let ``#1585 install props with for websharper``() = 
+    let newLockFile = install "i001585-websharper-props"
+    let newFile = Path.Combine(scenarioTempPath "i001585-websharper-props","xUnitTests","xUnitTests.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001585-websharper-props","xUnitTests","xUnitTests.expected.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
 let ``#1256 should report error in lock file``() =
     try
         install "i001256-wrong-lock" |> ignore
@@ -363,7 +372,7 @@ let ``#1371 without download fail``() =
     paket "install -f"  "i001371-restore-error" |> ignore
 
 [<Test>]
-[<Ignore>]
+[<Ignore("")>]
 let ``#1507 allows to download remote dependencies``() =
     let scenario = "i001507-privateeye"
     
@@ -420,3 +429,12 @@ let ``#1552 install mvvmlightlibs first time``() =
 
     directPaketInPath "install -f" (scenarioTempPath scenarioName) |> ignore
     File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
+
+[<Test>]
+[<Ignore("very slow test")>]
+let ``#1589 http dep restore in parallel``() =
+    let scenarioName = "i001589-http-dep-restore-in-parallel"
+    let scenarioPath = scenarioTempPath scenarioName
+    prepare scenarioName
+    directPaketInPath "restore" scenarioPath |> ignore
+    directPaketInPath "restore --force" scenarioPath |> ignore

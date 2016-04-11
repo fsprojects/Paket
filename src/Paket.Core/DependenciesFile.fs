@@ -403,7 +403,7 @@ module DependenciesFileParser =
           ResolverStrategy = parseResolverStrategy version }
 
 module DependenciesFileSerializer = 
-    let formatVersionRange strategy (version : VersionRequirement) : string =
+    let formatVersionRange strategy (versionRequirement : VersionRequirement) : string =
         let prefix = 
             match strategy with
             | Some ResolverStrategy.Min -> "!"
@@ -411,22 +411,22 @@ module DependenciesFileSerializer =
             | None -> ""
 
         let preReleases = 
-            match version.PreReleases with
+            match versionRequirement.PreReleases with
             | No -> ""
             | PreReleaseStatus.All -> "prerelease"
             | Concrete list -> String.Join(" ",list)
             
         let version = 
-            match version.Range with
+            match versionRequirement.Range with
             | Minimum x when strategy = None && x = SemVer.Parse "0" -> ""
             | Minimum x -> ">= " + x.ToString()
             | GreaterThan x -> "> " + x.ToString()
             | Specific x when strategy = None -> x.ToString()
             | Specific x -> "= " + x.ToString()
             | VersionRange.Range(_, from, _, _) 
-                    when DependenciesFileParser.parseVersionRequirement ("~> " + from.ToString() + preReleases) = version -> 
+                    when DependenciesFileParser.parseVersionRequirement ("~> " + from.ToString() + preReleases) = versionRequirement -> 
                         "~> " + from.ToString()
-            | _ -> version.ToString()
+            | _ -> versionRequirement.ToString()
             
         let text = prefix + version
         if text <> "" && preReleases <> "" then text + " " + preReleases else text + preReleases
@@ -518,7 +518,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             let newRestrictions = oldRestrictions |> List.filter (fun r -> commonRestrictions |> List.contains r |> not)
                             if oldRestrictions = newRestrictions then d else
                             let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
-                            d.Add(group.Name,package.Name,package.VersionRequirement.ToString(),{ package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions })) newDependenciesFile
+                            let installSettings = { package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions }
+                            let vr = { VersionRequirement = package.VersionRequirement; ResolverStrategy = package.ResolverStrategyForDirectDependencies }
+                            d.AddAdditionalPackage(group.Name, package.Name,vr,installSettings)) newDependenciesFile
 
         this.Groups
         |> Seq.map (fun kv -> kv.Value)
@@ -707,6 +709,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member this.AddAdditionalPackage(groupName, packageName:PackageName,version:string,settings) =
         let vr = DependenciesFileParser.parseVersionString version
 
+        this.AddAdditionalPackage(groupName, packageName,vr,settings)
+
+    member this.AddAdditionalPackage(groupName, packageName:PackageName,vr:VersionStrategy,settings) =
         this.AddAdditionalPackage(groupName, packageName,vr.VersionRequirement,vr.ResolverStrategy,settings)
 
     member this.AddFixedPackage(groupName, packageName:PackageName,version:string,settings) =
