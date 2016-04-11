@@ -1,4 +1,4 @@
-#### 2.58.10 - 11.04.2016
+#### 2.58.11 - 11.04.2016
 * BUGFIX: Breaking some parallism and trying to prevent race conditions - https://github.com/fsprojects/Paket/issues/1589
 
 #### 2.58.9 - 08.04.2016
