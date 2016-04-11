@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
@@ -36,7 +35,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.DownloadArguments, Is.Not.Null);
             Assert.That(result.DownloadArguments.DoSelfUpdate, Is.False);
-            Assert.That(result.DownloadArguments.Folder, Is.Null);
+            Assert.That(result.DownloadArguments.Folder, Is.Not.Null);
             Assert.That(result.DownloadArguments.IgnoreCache, Is.False);
             Assert.That(result.DownloadArguments.IgnorePrerelease, Is.True);
             Assert.That(result.DownloadArguments.LatestVersion, Is.Empty);
@@ -164,6 +163,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result.DownloadArguments.IgnorePrerelease, Is.False);
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
         }
 
         [Test]
@@ -188,6 +188,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result.DownloadArguments.LatestVersion, Is.EqualTo("1.0"));
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
         }
 
         [Test]
@@ -210,7 +211,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { "leftover" }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { "2.22", "leftover" }, null, null);
 
             //assert
             Assert.That(result.UnprocessedCommandArgs, Is.Not.Empty.And.EqualTo(new[] { "leftover" }));

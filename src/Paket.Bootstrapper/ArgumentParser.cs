@@ -37,23 +37,15 @@ namespace Paket.Bootstrapper
 
             var commandArgs = arguments.ToList();
 
-            if (commandArgs.Contains(CommandArgs.PreferNuget))
+            if (commandArgs.Contains(CommandArgs.PreferNuget) || appSettings.GetKey(AppSettingKeys.PreferNugetAppSettingsKey).ToLowerSafe() == "true")
             {
                 options.PreferNuget = true;
                 commandArgs.Remove(CommandArgs.PreferNuget);
             }
-            else if (appSettings.GetKey(AppSettingKeys.PreferNugetAppSettingsKey).ToLowerSafe() == "true")
-            {
-                options.PreferNuget = true;
-            }
-            if (commandArgs.Contains(CommandArgs.ForceNuget))
+            if (commandArgs.Contains(CommandArgs.ForceNuget) || appSettings.GetKey(AppSettingKeys.ForceNugetAppSettingsKey).ToLowerSafe() == "true")
             {
                 options.ForceNuget = true;
                 commandArgs.Remove(CommandArgs.ForceNuget);
-            }
-            else if (appSettings.GetKey(AppSettingKeys.ForceNugetAppSettingsKey).ToLowerSafe() == "true")
-            {
-                options.ForceNuget = true;
             }
             if (commandArgs.Contains(CommandArgs.Silent))
             {
@@ -101,10 +93,12 @@ namespace Paket.Bootstrapper
                 {
                     ignorePrerelease = false;
                     latestVersion = String.Empty;
+                    commandArgs.Remove(CommandArgs.Prerelease);
                 }
                 else
                 {
                     latestVersion = commandArgs[0];
+                    commandArgs.Remove(commandArgs[0]);
                 }
             }
 
@@ -114,6 +108,7 @@ namespace Paket.Bootstrapper
             downloadArguments.NugetSource = nugetSource;
             downloadArguments.DoSelfUpdate = doSelfUpdate;
             downloadArguments.Target = target;
+            downloadArguments.Folder = folder;
             return commandArgs;
         }
 

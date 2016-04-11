@@ -4,7 +4,7 @@ namespace Paket.Bootstrapper
 {
     public class DownloadArguments
     {
-        public string Folder { get; private set; }
+        public string Folder { get; set; }
         public string Target { get; set; }
         public string NugetSource { get; set; }
         public bool DoSelfUpdate { get; set; }

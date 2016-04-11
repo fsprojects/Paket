@@ -21,7 +21,7 @@ namespace Paket.Bootstrapper
 
             var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings, Environment.GetEnvironmentVariables());
             if (!options.Silent && options.UnprocessedCommandArgs.Any())
-                Console.WriteLine("Ignoring the following unknown arguments: {0}", String.Join(", ", options.UnprocessedCommandArgs));
+                Console.WriteLine("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
 
