@@ -1,3 +1,6 @@
+#### 2.58.14 - 11.04.2016
+* BUGFIX: Compare full filename for pack with template file - https://github.com/fsprojects/Paket/issues/1594
+
 #### 2.58.13 - 11.04.2016
 * BUGFIX: Create folder for http dependencies
 

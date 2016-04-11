@@ -301,3 +301,18 @@ let ``#1586 pack dependent projects``() =
 
     prepare scenario
     directPaket "pack output . include-referenced-projects minimum-from-lock-file -v" scenario |> ignore
+
+[<Test>]
+let ``#1594 allows to pack directly``() =
+    let scenario = "i001594-pack"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"bin")
+    let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
+    paket "pack output bin version 1.0.0 templatefile paket.template" scenario |> ignore
+
+    let package = Path.Combine(outPath, "ClassLibrary1.1.0.0.nupkg")
+ 
+    ZipFile.ExtractToDirectory(package, outPath)
+    
+    File.Exists(Path.Combine(outPath, "lib", "net35", "ClassLibrary1.dll")) |> shouldEqual true
+    File.Delete(templatePath)
