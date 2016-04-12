@@ -316,3 +316,18 @@ let ``#1594 allows to pack directly``() =
     
     File.Exists(Path.Combine(outPath, "lib", "net35", "ClassLibrary1.dll")) |> shouldEqual true
     File.Delete(templatePath)
+
+[<Test>]
+let ``#1596 pack works for reflected definition assemblies``() =
+    let scenario = "i001596-pack-reflectedDefinition"
+
+    let outPath = Path.Combine(scenarioTempPath scenario,"bin")
+    let templatePath = Path.Combine(scenarioTempPath scenario, "paket.template")
+    let r = paket "pack output bin version 1.0.0 templatefile paket.template" scenario 
+    printfn "paket.pack said: %A" r
+    let package = Path.Combine(outPath, "Project2.1.0.0.nupkg")
+ 
+    ZipFile.ExtractToDirectory(package, outPath)
+    
+    File.Exists(Path.Combine(outPath, "lib", "net45", "Project2.dll")) |> shouldEqual true
+    File.Delete(templatePath)
