@@ -1,3 +1,6 @@
+#### 2.59.2 - 12.04.2016
+* BUGFIX: Fix CleanDir function - https://github.com/fsprojects/Paket/commit/1c2250ed5fae51a5f086325347fecefe16bba27a#commitcomment-17064085
+
 #### 2.59.1 - 12.04.2016
 * BUGFIX: Detect net30 moniker
 

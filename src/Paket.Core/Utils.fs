@@ -71,7 +71,7 @@ let createDir path =
     with _ ->
         DirectoryCreateError path |> fail
 
-let rec deleteDir (dirInfo:DirectoryInfo) =
+let rec emptyDir (dirInfo:DirectoryInfo) =
     if dirInfo.Exists then
         for fileInfo in dirInfo.GetFiles() do
             fileInfo.Attributes <- FileAttributes.Normal
@@ -81,6 +81,11 @@ let rec deleteDir (dirInfo:DirectoryInfo) =
             deleteDir childInfo
 
         dirInfo.Attributes <- FileAttributes.Normal
+
+and deleteDir (dirInfo:DirectoryInfo) =
+    if dirInfo.Exists then
+        emptyDir dirInfo
+
         dirInfo.Delete()
 
 /// Cleans a directory by deleting it and recreating it.
@@ -88,9 +93,9 @@ let CleanDir path =
     let di = DirectoryInfo path
     if di.Exists then 
         try
-            deleteDir di
+            emptyDir di
         with
-        | exn -> failwithf "Error during deletion of %s%s  - %s" di.FullName Environment.NewLine exn.Message 
+        | exn -> failwithf "Error during cleaning of %s%s  - %s" di.FullName Environment.NewLine exn.Message 
     else
         Directory.CreateDirectory path |> ignore
     // set writeable
