@@ -1,3 +1,6 @@
+#### 2.58.15 - 12.04.2016
+* BUGFIX: Remove process should remove packages from specified groups - https://github.com/fsprojects/Paket/issues/1596
+
 #### 2.58.14 - 11.04.2016
 * BUGFIX: Compare full filename for pack with template file - https://github.com/fsprojects/Paket/issues/1594
 
