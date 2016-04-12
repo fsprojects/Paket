@@ -69,7 +69,7 @@ let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let buildMergedDirPS = buildDir @@ "Paket.PowerShell"
 
-let nunitRunner = "packages/test/NUnit.ConsoleRunner/tools/nunit3-console.exe"
+let nunitRunner = "./packages/test/NUnit.ConsoleRunner/tools/nunit3-console.exe"
 
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 // Read additional information from the release notes document
