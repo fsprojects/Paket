@@ -24,9 +24,9 @@ type Dependencies(dependenciesFileName: string) =
         
     /// Clears the NuGet cache
     static member ClearCache() = 
-        Utils.removeDirContents (DirectoryInfo Constants.UserNuGetPackagesFolder)
-        Utils.removeDirContents (DirectoryInfo Constants.NuGetCacheFolder)
-        Utils.removeDirContents (DirectoryInfo Constants.GitRepoCacheFolder)
+        Utils.emptyDir (DirectoryInfo Constants.UserNuGetPackagesFolder)
+        Utils.emptyDir (DirectoryInfo Constants.NuGetCacheFolder)
+        Utils.emptyDir (DirectoryInfo Constants.GitRepoCacheFolder)
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate(): Dependencies = Dependencies.Locate(Environment.CurrentDirectory)

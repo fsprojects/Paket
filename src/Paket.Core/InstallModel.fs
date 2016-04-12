@@ -131,9 +131,9 @@ module InstallModel =
           TargetsFileFolders = [] 
           Analyzers = [] }
 
-    let extractLibFolder path = Utils.extractPath "lib" path
+    let extractLibFolder path = Utils.extractPath ("lib", path)
 
-    let extractBuildFolder path = Utils.extractPath "build" path
+    let extractBuildFolder path = Utils.extractPath ("build", path)
 
     let mapFolders mapfn (installModel:InstallModel) = 
         { installModel with 
@@ -183,12 +183,10 @@ module InstallModel =
         else
             this
 
-
     let calcLibFolders libs =
         libs 
         |> Seq.choose extractLibFolder 
         |> Seq.distinct 
-        |> List.ofSeq
         |> PlatformMatching.getSupportedTargetProfiles 
         |> Seq.map (fun entry -> { Name = entry.Key; Targets = List.ofSeq entry.Value; Files = InstallFiles.empty })
         |> Seq.toList
@@ -297,8 +295,6 @@ module InstallModel =
         let excludeSatelliteAssemblies = function
             | Reference.Library lib -> lib.EndsWith ".resources.dll"
             | _ -> false
-
-        let blacklisted (blacklist:string list) (file:string) = blacklist |> List.exists (String.endsWithIgnoreCase file )
 
         let blackList = 
             [ includeReferences

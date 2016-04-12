@@ -1,4 +1,4 @@
-#### 3.0.0-alpha111 - 12.04.2016
+#### 3.0.0-alpha112 - 12.04.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -8,7 +8,9 @@
 * Allows to use aliases for libraries - http://fsprojects.github.io/Paket/references-files.html#Library-aliases
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
 
-#### 2.59.1 - 12.04.2016
+#### 2.60.0 - 12.04.2016
+* Various performance optimizations - https://github.com/fsprojects/Paket/pull/1599
+* BUGFIX: Fix CleanDir function - https://github.com/fsprojects/Paket/commit/1c2250ed5fae51a5f086325347fecefe16bba27a#commitcomment-17064085
 * BUGFIX: Detect net30 moniker
 
 #### 2.59.0 - 12.04.2016
