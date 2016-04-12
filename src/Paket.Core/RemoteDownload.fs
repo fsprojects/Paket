@@ -160,6 +160,10 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
 
 /// Retrieves RemoteFiles
 let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
+    let targetFolder = FileInfo(destination).Directory
+    if not targetFolder.Exists then
+        targetFolder.Create()
+
     match remoteFile.Origin, remoteFile.Name with
     | Origin.GitLink cloneUrl, _ ->
         if not <| Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction then () else
@@ -252,9 +256,6 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         tracefn "Downloading %O to %s" remoteFile destination
         let url = origin + remoteFile.Commit
         let authentication = auth remoteFile.AuthKey url
-        let targetFolder = FileInfo(destination).Directory
-        if not targetFolder.Exists then
-            targetFolder.Create()
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
             do! downloadFromUrl(authentication, url) destination

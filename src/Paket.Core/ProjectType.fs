@@ -73,8 +73,11 @@ type ProjectType =
             | None -> false
             | Some fileName -> 
                 let referencesFile = ReferencesFile.FromFile fileName
-                referencesFile.Groups.[groupName].NugetPackages
-                |> Seq.exists (fun p -> p.Name = package)
+                match referencesFile.Groups |> Map.tryFind groupName with
+                | None -> false
+                | Some group ->
+                    group.NugetPackages 
+                    |> Seq.exists (fun p -> p.Name = package)
 
         member this.ProjectsWithoutTemplates projects =
             projects
