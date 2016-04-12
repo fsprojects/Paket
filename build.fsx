@@ -69,8 +69,6 @@ let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
 let buildMergedDirPS = buildDir @@ "Paket.PowerShell"
 
-let nunitRunner = FullName "./packages/test/NUnit.ConsoleRunner/tools/nunit3-console.exe"
-
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 // Read additional information from the release notes document
 let releaseNotesData = 
@@ -162,7 +160,6 @@ Target "RunTests" (fun _ ->
     !! testAssemblies
     |> NUnit3 (fun p ->
         { p with
-            ToolPath = nunitRunner
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 20. })
@@ -177,7 +174,6 @@ Target "QuickTest" (fun _ ->
     !! testAssemblies
     |> NUnit3 (fun p ->
         { p with
-            ToolPath = nunitRunner
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 20. })
@@ -188,7 +184,6 @@ Target "RunIntegrationTests" (fun _ ->
     !! integrationTestAssemblies
     |> NUnit3 (fun p ->
         { p with
-            ToolPath = nunitRunner
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 40. })
