@@ -1,5 +1,3 @@
-using System.Net;
-
 namespace Paket.Bootstrapper.DownloadStrategies
 {
     public interface IDownloadStrategy
@@ -15,8 +13,5 @@ namespace Paket.Bootstrapper.DownloadStrategies
     {
         IDownloadStrategy EffectiveStrategy { get; }
     }
-
-    public delegate void PrepareWebClientDelegate(WebClient client, string url);
-    public delegate HttpWebRequest PrepareWebRequestDelegate(string url);
-    public delegate IWebProxy GetDefaultWebProxyForDelegate(string url);
+    
 }
