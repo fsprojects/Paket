@@ -9,7 +9,7 @@
 [![Join the chat at https://gitter.im/fsprojects/Paket](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fsprojects/Paket?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Twitter](https://img.shields.io/badge/Twitter-PaketManager-blue.svg)](https://twitter.com/PaketManager)
 
-A package dependency manager for .NET with support for NuGet packages and GitHub repositories.
+A dependency manager for .NET with support for NuGet packages and git repositories.
 
 ## Why Paket?
 
@@ -22,7 +22,7 @@ Even more importantly: If two packages reference conflicting versions of a packa
 Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file][7] in the solution root.
 This file, together with the [`paket.dependencies` file][8] enables you to determine exactly what's happening with your dependencies.
 
-Paket also enables you to [reference files directly from GitHub (and Gist)][9] repositories or any [http-resource][11].
+Paket also enables you to [reference files directly from git][9] repositories or any [http-resource][11].
 
 For more reasons see the [FAQ][10].
 
@@ -73,7 +73,7 @@ The default maintainer account for projects under "fsprojects" is [@fsprojectsgi
  [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
  [7]: http://fsprojects.github.io/Paket/lock-file.html
  [8]: http://fsprojects.github.io/Paket/dependencies-file.html
- [9]: http://fsprojects.github.io/Paket/github-dependencies.html
+ [9]: http://fsprojects.github.io/Paket/git-dependencies.html
  [10]: http://fsprojects.github.io/Paket/faq.html
  [11]: http://fsprojects.github.io/Paket/http-dependencies.html
  [badge-pr-stats]: http://www.issuestats.com/github/fsprojects/Paket/badge/pr

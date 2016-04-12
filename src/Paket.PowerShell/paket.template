@@ -1,11 +1,11 @@
 type file
 id Paket.PowerShell
 description
-    A package dependency manager for .NET with support for NuGet packages and GitHub repositories.
+    A dependency manager for .NET with support for NuGet packages and git repositories.
 authors
     Paket team
 summary
-    A package dependency manager for .NET with support for NuGet packages and GitHub repositories.
+    A dependency manager for .NET with support for NuGet packages and git repositories.
 licenseurl http://fsprojects.github.io/Paket/license.html
 projecturl http://fsprojects.github.com/Paket
 iconurl https://raw.githubusercontent.com/fsprojects/Paket/master/docs/files/img/logo.png

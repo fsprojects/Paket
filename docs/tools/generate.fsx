@@ -40,7 +40,7 @@ let githubLink = "http://github.com/fsprojects/Paket"
 let info =
   [ "project-name", "Paket"
     "project-author", "Steffen Forkmann, Alexander Gross"
-    "project-summary", "A package dependency manager for .NET with support for NuGet packages and GitHub repositories."
+    "project-summary", "A dependency manager for .NET with support for NuGet packages and git repositories."
     "project-github", githubLink
     "project-nuget", "http://nuget.org/packages/Paket" ]
 

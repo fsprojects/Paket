@@ -29,11 +29,11 @@ let project = "Paket"
 
 // Short summary of the project
 // (used as description in AssemblyInfo and as a short summary for NuGet package)
-let summary = "A package dependency manager for .NET with support for NuGet packages and GitHub repositories."
+let summary = "A dependency manager for .NET with support for NuGet packages and git repositories."
 
 // Longer description of the project
 // (used as a description for NuGet package; line breaks are automatically cleaned up)
-let description = "A package dependency manager for .NET with support for NuGet packages and GitHub repositories."
+let description = "A dependency manager for .NET with support for NuGet packages and git repositories."
 
 // List of author names (for NuGet package)
 let authors = [ "Paket team" ]
