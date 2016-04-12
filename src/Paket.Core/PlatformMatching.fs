@@ -96,21 +96,22 @@ let rec findBestMatch (paths : #seq<string>) (targetProfile : TargetProfile) =
         // Fallback Portable Library
         KnownTargetProfiles.AllProfiles
         |> Seq.choose (fun p ->
-            if p.ProfilesCompatibleWithPortableProfile 
-               |> Seq.map SinglePlatform 
-               |> Seq.exists ((=)targetProfile)
-            then findBestMatch paths p
-            else None
+            match targetProfile with
+            | SinglePlatform x ->
+                if p.ProfilesCompatibleWithPortableProfile |> Seq.exists ((=) x)
+                then findBestMatch paths p
+                else None
+            | _ -> None
         )
         |> Seq.sortBy (fun x -> (extractPlatforms x).Length) // prefer portable platform whith less platforms
-        |> Seq.tryFind (fun _ -> true)
+        |> Seq.tryHead
     | path -> path
 
 let private matchedCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
-let getSupportedTargetProfiles (paths : string list) =    
+let getSupportedTargetProfiles (paths : string seq) =    
     let key = paths
     match matchedCache.TryGetValue key with
     | true, supportedFrameworks -> supportedFrameworks

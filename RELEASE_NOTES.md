@@ -1,42 +1,24 @@
-#### 2.58.14 - 11.04.2016
+#### 2.60.0 - 12.04.2016
+* Various performance optimizations - https://github.com/fsprojects/Paket/pull/1599
+* BUGFIX: Fix CleanDir function - https://github.com/fsprojects/Paket/commit/1c2250ed5fae51a5f086325347fecefe16bba27a#commitcomment-17064085
+* BUGFIX: Detect net30 moniker
+
+#### 2.59.0 - 12.04.2016
+* BUGFIX: Remove process should remove packages from specified groups - https://github.com/fsprojects/Paket/issues/1596
 * BUGFIX: Compare full filename for pack with template file - https://github.com/fsprojects/Paket/issues/1594
-
-#### 2.58.13 - 11.04.2016
-* BUGFIX: Create folder for http dependencies
-
-#### 2.58.12 - 11.04.2016
 * BUGFIX: Dependencies file should not take shortened versions - https://github.com/fsprojects/Paket/issues/1591
-
-#### 2.58.11 - 11.04.2016
 * BUGFIX: Breaking some parallism and trying to prevent race conditions - https://github.com/fsprojects/Paket/issues/1589
-
-#### 2.58.9 - 08.04.2016
 * BUGFIX: "paket.exe pack" with "include-referenced-projects" and "minimum-from-lock-file" did not work when project references have a paket.template file - https://github.com/fsprojects/Paket/issues/1586
-
-#### 2.58.8 - 08.04.2016
-* Property Definitions are placed after FSharp Targets - https://github.com/fsprojects/Paket/issues/1585
-
-#### 2.58.7 - 07.04.2016
-* Paket update supports combining filter with specific version - https://github.com/fsprojects/Paket/pull/1580
-
-#### 2.58.6 - 07.04.2016
+* BUGFIX: Property Definitions are placed after FSharp Targets - https://github.com/fsprojects/Paket/issues/1585
 * BUGFIX: Redirects for assemblies in the GAC were removed - https://github.com/fsprojects/Paket/issues/1574
-
-#### 2.58.5 - 07.04.2016
 * BUGFIX: Paket.dependency with version ranges failed when package has pinned dependency and that version is unlisted - https://github.com/fsprojects/Paket/issues/1579
-
-#### 2.58.4 - 07.04.2016
 * BUGFIX: Github dependencies reference transitive NuGet packages to projects - https://github.com/fsprojects/Paket/issues/1578
-
-#### 2.58.3 - 05.04.2016
 * BUGFIX: Add "*.fsi" files as <Compile> by default - https://github.com/fsprojects/Paket/pull/1573
-
-#### 2.58.2 - 05.04.2016
-* Touch: disabled by default in Add, Update, Install; enabled with --touch-affected-refs - https://github.com/fsprojects/Paket/pull/1571
-
-#### 2.58.1 - 05.04.2016
-* Using saved api key credentials for the push operation - https://github.com/fsprojects/Paket/pull/1570
+* BUGFIX: Touch feature disabled by default in Add, Update, Install; enabled with --touch-affected-refs - https://github.com/fsprojects/Paket/pull/1571
 * BUGFIX: Property Definitions: placed after csharp targets - https://github.com/fsprojects/Paket/pull/1522
+* BUGFIX: Create folder for all source file dependencies
+* USABILITY: Using saved api key credentials for the push operation - https://github.com/fsprojects/Paket/pull/1570
+* USABILITY: Paket update supports combining filter with specific version - https://github.com/fsprojects/Paket/pull/1580
 
 #### 2.57.0 - 30.03.2016
 * BUGFIX: Property Definitions: placed after non-paket imports if they directly follow the top property groups - https://github.com/fsprojects/Paket/pull/1561
