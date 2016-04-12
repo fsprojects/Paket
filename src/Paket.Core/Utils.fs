@@ -19,7 +19,17 @@ let notNullOrEmpty = not << System.String.IsNullOrEmpty
 
 let inline force (lz: 'a Lazy)  = lz.Force()
 let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
-let inline toLower str = (^a:(member ToLower:unit->string)str) 
+let inline toLower str = (^a:(member ToLower:unit->string)str)
+
+let memoize (f: 'a -> 'b) : 'a -> 'b =
+    let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, 'b>()
+    fun (x: 'a) ->
+        let value : 'b ref = ref Unchecked.defaultof<_>
+        if cache.TryGetValue(x, value) then !value
+        else
+            let value = f x
+            cache.[x] <- value
+            value
 
 type Auth = 
     | Credentials of Username : string * Password : string
@@ -137,25 +147,26 @@ let getNative (path:string) =
     if path.Contains "/address-model-64" then "/address-model-64" else
     ""
 
-let extractPath infix (fileName : string) : string option =
-    let path = fileName.Replace("\\", "/").ToLower()
-    let path = if path.StartsWith "lib/" then "/" + path else path
-    let fi = FileInfo path
-
-    let packagesPos = path.LastIndexOf "packages/"
-    let startPos =
-        if packagesPos >= 0 then
-            path.IndexOf(sprintf "/%s/" infix,packagesPos) + 1
+let extractPath =
+    memoize <| fun (infix, fileName : string) ->
+        let path = fileName.Replace("\\", "/").ToLower()
+        let path = if path.StartsWith "lib/" then "/" + path else path
+        let fi = FileInfo path
+        
+        let packagesPos = path.LastIndexOf "packages/"
+        let startPos =
+            if packagesPos >= 0 then
+                path.IndexOf(sprintf "/%s/" infix,packagesPos) + 1
+            else
+                path.LastIndexOf(sprintf "/%s/" infix) + 1
+        
+        let endPos = path.IndexOf('/', startPos + infix.Length + 1)
+        if startPos < 0 then None 
+        elif endPos < 0 then Some("")
         else
-            path.LastIndexOf(sprintf "/%s/" infix) + 1
-
-    let endPos = path.IndexOf('/', startPos + infix.Length + 1)
-    if startPos < 0 then None 
-    elif endPos < 0 then Some("")
-    else
-        let nativePart = getNative path
-        let libPart = path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1)
-        Some (libPart + nativePart)
+            let nativePart = getNative path
+            let libPart = path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1)
+            Some (libPart + nativePart)
 
 /// [omit]
 let inline normalizeXml (doc:XmlDocument) =
@@ -408,7 +419,7 @@ let RunInLockedAccessMode(rootFolder,action) =
         releaseLock()
         result
     with
-    | exn ->
+    | _ ->
         releaseLock()
         reraise()
 
@@ -517,7 +528,7 @@ module ObservableExtensions =
     type Microsoft.FSharp.Control.Async with 
       static member AwaitObservable(ev1:IObservable<'a>) =
         synchronize (fun f ->
-          Async.FromContinuations((fun (cont,econt,ccont) -> 
+          Async.FromContinuations((fun (cont,_econt,_ccont) -> 
             let rec callback = (fun value ->
               remover.Dispose()
               f cont value )
@@ -533,7 +544,7 @@ module ObservableExtensions =
         /// operation after 'let!' attaches handler)
         let guard f (e:IObservable<'Args>) =
           { new IObservable<'Args> with
-              member x.Subscribe observer =
+              member __.Subscribe observer =
                 let rm = e.Subscribe observer in f(); rm } 
 
         let sample milliseconds source =
@@ -547,17 +558,17 @@ module ObservableExtensions =
                 loop ()
 
             { new IObservable<'T> with
-                member this.Subscribe(observer:IObserver<'T>) =
+                member __.Subscribe(observer:IObserver<'T>) =
                     let cts = new System.Threading.CancellationTokenSource()
                     Async.Start (relay observer, cts.Token)
                     { new IDisposable with 
-                        member this.Dispose() = cts.Cancel() 
+                        member __.Dispose() = cts.Cancel() 
                     }
             }
 
         let ofSeq s = 
             let evt = new Event<_>()
-            evt.Publish |> guard (fun o ->
+            evt.Publish |> guard (fun _ ->
                 for n in s do evt.Trigger(n))
 
         let private oneAndDone (obs : IObserver<_>) value =
@@ -590,11 +601,11 @@ module ObservableExtensions =
                     let sub = 
                         input.Subscribe
                           ({ new IObserver<#seq<'a>> with
-                              member x.OnNext values = values |> Seq.iter obs.OnNext
-                              member x.OnCompleted() = 
+                              member __.OnNext values = values |> Seq.iter obs.OnNext
+                              member __.OnCompleted() = 
                                 cts.Cancel()
                                 obs.OnCompleted()
-                              member x.OnError e = 
+                              member __.OnError e = 
                                 cts.Cancel()
                                 obs.OnError e })
 
