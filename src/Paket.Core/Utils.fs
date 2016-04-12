@@ -21,7 +21,7 @@ let inline force (lz: 'a Lazy)  = lz.Force()
 let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
 let inline toLower str = (^a:(member ToLower:unit->string)str)
 
-let memoize (f: 'a -> 'b) : 'a -> 'b =
+let internal memoize (f: 'a -> 'b) : 'a -> 'b =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, 'b>()
     fun (x: 'a) ->
         let value : 'b ref = ref Unchecked.defaultof<_>
