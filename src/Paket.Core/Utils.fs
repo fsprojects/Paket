@@ -21,7 +21,7 @@ let inline force (lz: 'a Lazy)  = lz.Force()
 let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
 let inline toLower str = (^a:(member ToLower:unit->string)str)
 
-let memoze (f: 'a -> 'b) : 'a -> 'b =
+let memoize (f: 'a -> 'b) : 'a -> 'b =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, 'b>()
     fun (x: 'a) ->
         let value : 'b ref = ref Unchecked.defaultof<_>
@@ -143,7 +143,7 @@ let getNative (path:string) =
     ""
 
 let extractPath =
-    memoze <| fun (infix, fileName : string) ->
+    memoize <| fun (infix, fileName : string) ->
         let path = fileName.Replace("\\", "/").ToLower()
         let path = if path.StartsWith "lib/" then "/" + path else path
         let fi = FileInfo path
