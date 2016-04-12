@@ -1,3 +1,6 @@
+#### 2.59.1 - 12.04.2016
+* BUGFIX: Detect net30 moniker
+
 #### 2.59.0 - 12.04.2016
 * BUGFIX: Remove process should remove packages from specified groups - https://github.com/fsprojects/Paket/issues/1596
 * BUGFIX: Compare full filename for pack with template file - https://github.com/fsprojects/Paket/issues/1594
