@@ -1,3 +1,6 @@
+#### 2.58.16 - 12.04.2016
+* BUGFIX: Create folder for all source file dependencies
+
 #### 2.58.15 - 12.04.2016
 * BUGFIX: Remove process should remove packages from specified groups - https://github.com/fsprojects/Paket/issues/1596
 

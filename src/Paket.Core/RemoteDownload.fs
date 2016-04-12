@@ -128,7 +128,11 @@ let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
             DirectoryCopy(subdir.FullName, Path.Combine(destDirName, subdir.Name), copySubDirs)
 
 /// Gets a single file from github.
-let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
+let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {        
+    let targetFolder = FileInfo(destination).Directory
+    if not targetFolder.Exists then
+        targetFolder.Create()
+
     match remoteFile.Origin, remoteFile.Name with
     | SingleSourceFileOrigin.GistLink, Constants.FullProjectSourceFileName ->
         let fi = FileInfo(destination)
@@ -172,9 +176,6 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
     | SingleSourceFileOrigin.HttpLink(origin), _ ->
         let url = origin + remoteFile.Commit
         let authentication = auth remoteFile.AuthKey url
-        let targetFolder = FileInfo(destination).Directory
-        if not targetFolder.Exists then
-            targetFolder.Create()
         match Path.GetExtension(destination).ToLowerInvariant() with
         | ".zip" ->
             do! downloadFromUrl(authentication, url) destination
