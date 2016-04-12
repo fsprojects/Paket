@@ -30,7 +30,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesLatestUrl)).Returns("<title>Release 2.57.1 · fsprojects/Paket</title>").Verifiable();
 
             //act
-            var result = sut.GetLatestVersion(true, false);
+            var result = sut.GetLatestVersion(true);
 
             //assert
             Assert.That(result, Is.EqualTo("2.57.1"));
@@ -45,7 +45,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockWebProxy.Setup(x => x.DownloadString(GitHubDownloadStrategy.Constants.PaketReleasesUrl)).Returns("Paket/tree/2.57.2-pre\"Paket/tree/2.57.1\"").Verifiable();
 
             //act
-            var result = sut.GetLatestVersion(false, false);
+            var result = sut.GetLatestVersion(false);
 
             //assert
             Assert.That(result, Is.EqualTo("2.57.2-pre"));
@@ -66,7 +66,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockFileProxy.Setup(x => x.Create(tempFileName)).Returns(new MemoryStream(buffer));
 
             //act
-            sut.DownloadVersion("2.57.1", "paketExeLocation", false);
+            sut.DownloadVersion("2.57.1", "paketExeLocation");
 
             //assert
             mockWebProxy.Verify();
@@ -92,7 +92,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockFileProxy.Setup(x => x.GetLocalFileVersion(It.IsAny<string>())).Returns("2.52.1");
             
             //act
-            sut.SelfUpdate("2.57.1", false);
+            sut.SelfUpdate("2.57.1");
 
             //assert
             mockWebProxy.Verify();
