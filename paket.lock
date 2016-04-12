@@ -10,9 +10,9 @@ GITHUB
   remote: fsharp/FAKE
   specs:
     src/app/FakeLib/Globbing/Globbing.fs (59dfade480c5f9107107f11af366aaae1f4a9157)
-  remote: fsharp/FSharp.Data
+  remote: haraldsteinlechner/FSharp.Data
   specs:
-    src/CommonProviderImplementation/AssemblyReader.fs (f815de5e8108bb7de25dde75135707719afd8e09)
+    src/CommonProviderImplementation/AssemblyReader.fs (d4a30757dc5e5ef7096fffafc1ed377b6174771b)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
@@ -32,7 +32,7 @@ NUGET
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
     Octokit (0.19)
-      Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
+      Microsoft.Net.Http
 GITHUB
   remote: fsharp/FAKE
   specs:
