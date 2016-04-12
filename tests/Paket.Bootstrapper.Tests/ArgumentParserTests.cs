@@ -41,8 +41,9 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.DownloadArguments.LatestVersion, Is.Empty);
             Assert.That(result.DownloadArguments.NugetSource, Is.Null);
             Assert.That(result.DownloadArguments.Target, Does.EndWith("paket.exe"));
+            Assert.That(result.ShowHelp, Is.False);
 
-            var knownProps = new[] { "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Silent", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs" };
+            var knownProps = new[] { "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Silent", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp" };
             var allProperties = GetAllProperties(result);
             Assert.That(allProperties, Is.Not.Null.And.Count.EqualTo(knownProps.Length));
             Assert.That(allProperties, Is.EquivalentTo(knownProps));
@@ -101,6 +102,18 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result.ForceNuget, Is.True);
+        }
+
+        [Test]
+        public void ShowHelp()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.Help }, null, null);
+
+            //assert
+            Assert.That(result.ShowHelp, Is.True);
         }
 
         [Test]

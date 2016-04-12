@@ -12,6 +12,7 @@ namespace Paket.Bootstrapper
     {
         public static class CommandArgs
         {
+            public const string Help = "--help";
             public const string PreferNuget = "--prefer-nuget";
             public const string ForceNuget = "--force-nuget";
             public const string Prerelease = "prerelease";
@@ -51,6 +52,11 @@ namespace Paket.Bootstrapper
             {
                 options.Silent = true;
                 commandArgs.Remove(CommandArgs.Silent);
+            }
+            if (commandArgs.Contains(CommandArgs.Help))
+            {
+                options.ShowHelp = true;
+                commandArgs.Remove(CommandArgs.Help);
             }
 
             commandArgs = EvaluateDownloadOptions(options.DownloadArguments, commandArgs, appSettings, envVariables).ToList();

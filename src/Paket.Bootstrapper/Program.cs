@@ -20,6 +20,11 @@ namespace Paket.Bootstrapper
             Console.CancelKeyPress += CancelKeyPressed;
 
             var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings, Environment.GetEnvironmentVariables());
+            if (options.ShowHelp)
+            {
+                ConsoleImpl.WriteDebug(BootstrapperHelper.HelpText);
+                return;
+            }
             ConsoleImpl.IsSilent = options.Silent;
             if (options.UnprocessedCommandArgs.Any())
                 ConsoleImpl.WriteInfo("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
@@ -106,8 +111,7 @@ namespace Paket.Bootstrapper
                     if (downloadStrategy.FallbackStrategy != null)
                     {
                         var fallbackStrategy = downloadStrategy.FallbackStrategy;
-                        ConsoleImpl.WriteDebug("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.",
-                                downloadStrategy.Name, fallbackStrategy.Name);
+                        ConsoleImpl.WriteDebug("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
                         StartPaketBootstrapping(fallbackStrategy, dlArgs, fileProxy);
                         shouldHandleException = !File.Exists(dlArgs.Target);
                     }
