@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -72,38 +73,34 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         public string GetLatestVersion(bool ignorePrerelease)
         {
+            IEnumerable<string> allVersions = null;
             if (DirectoryProxy.Exists(NugetSource))
             {
                 var paketPrefix = "paket.";
-                var latestLocalVersion =
-                    DirectoryProxy.
-                        EnumerateFiles(NugetSource, "paket.*.nupkg", SearchOption.TopDirectoryOnly).
-                        Select(x => Path.GetFileNameWithoutExtension(x)).
-                        // If the specified character isn't a digit, then the file
-                        // likely contains the bootstrapper or paket.core
-                        Where(x => x.Length > paketPrefix.Length && Char.IsDigit(x[paketPrefix.Length])).
-                        Select(x => x.Substring(paketPrefix.Length)).
-                        Select(SemVer.Create).
-                        Where(x => !ignorePrerelease || (x.PreRelease == null)).
-                        OrderBy(x => x).
-                        LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
-                return latestLocalVersion != null ? latestLocalVersion.Original : String.Empty;
+                allVersions = DirectoryProxy.
+                    EnumerateFiles(NugetSource, "paket.*.nupkg", SearchOption.TopDirectoryOnly).
+                    Select(x => Path.GetFileNameWithoutExtension(x)).
+                    // If the specified character isn't a digit, then the file
+                    // likely contains the bootstrapper or paket.core
+                    Where(x => x.Length > paketPrefix.Length && Char.IsDigit(x[paketPrefix.Length])).
+                    Select(x => x.Substring(paketPrefix.Length));
             }
             else
             {
                 var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
                 var versionRequestUrl = apiHelper.GetAllPackageVersions(!ignorePrerelease);
                 var versions = WebRequestProxy.DownloadString(versionRequestUrl);
-                var latestVersion = versions.
+                allVersions = versions.
                     Trim('[', ']').
                     Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries).
-                    Select(x => x.Trim('"')).
+                    Select(x => x.Trim('"'));
+            }
+            var latestVersion = allVersions.
                     Select(SemVer.Create).
                     Where(x => !ignorePrerelease || (x.PreRelease == null)).
                     OrderBy(x => x).
                     LastOrDefault(x => !String.IsNullOrWhiteSpace(x.Original));
-                return latestVersion != null ? latestVersion.Original : String.Empty;
-            }
+            return latestVersion != null ? latestVersion.Original : String.Empty;
         }
 
         public void DownloadVersion(string latestVersion, string target)
