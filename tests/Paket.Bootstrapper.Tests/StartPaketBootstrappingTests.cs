@@ -83,6 +83,21 @@ namespace Paket.Bootstrapper.Tests
         }
 
         [Test]
+        public void DownloadCurrentVersion_LocalVersionIsPrerelease()
+        {
+            //arrange
+            mockFileProxy.Setup(x => x.GetLocalFileVersion("paket.exe")).Returns("1.1-alpha").Verifiable();
+            mockDownloadStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Returns("1.0");
+
+            //act
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+
+            //assert
+            mockFileProxy.Verify();
+            mockDownloadStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+        }
+
+        [Test]
         public void DownloadPrerelease_LocalVersionIsCurrent()
         {
             //arrange
