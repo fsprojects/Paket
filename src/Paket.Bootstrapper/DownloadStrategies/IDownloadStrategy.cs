@@ -6,9 +6,9 @@ namespace Paket.Bootstrapper.DownloadStrategies
     {
         string Name { get; }
         IDownloadStrategy FallbackStrategy { get; set; }
-        string GetLatestVersion(bool ignorePrerelease, bool silent);
-        void DownloadVersion(string latestVersion, string target, bool silent);
-        void SelfUpdate(string latestVersion, bool silent);
+        string GetLatestVersion(bool ignorePrerelease);
+        void DownloadVersion(string latestVersion, string target);
+        void SelfUpdate(string latestVersion);
     }
 
     public interface ICachedDownloadStrategy : IDownloadStrategy

@@ -50,24 +50,6 @@ namespace Paket.Bootstrapper
             return request;
         }
 
-        internal static void WriteConsoleError(string message)
-        {
-            WriteConsole(message, ConsoleColor.Red);
-        }
-
-        internal static void WriteConsoleInfo(string message)
-        {
-            WriteConsole(message, ConsoleColor.Yellow);
-        }
-
-        private static void WriteConsole(string message, ConsoleColor consoleColor)
-        {
-            var oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = consoleColor;
-            Console.WriteLine(message);
-            Console.ForegroundColor = oldColor;
-        }
-
         internal static IWebProxy GetDefaultWebProxyFor(String url)
         {
             Uri uri = new Uri(url);

@@ -28,7 +28,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             FileProxy = fileProxy;
         }
 
-        public string GetLatestVersion(bool ignorePrerelease, bool silent)
+        public string GetLatestVersion(bool ignorePrerelease)
         {
             var latestStable = GetLatestStable();
             if (ignorePrerelease)
@@ -72,11 +72,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return versions;
         }
 
-        public void DownloadVersion(string latestVersion, string target, bool silent)
+        public void DownloadVersion(string latestVersion, string target)
         {
             var url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
-            if (!silent)
-                Console.WriteLine("Starting download from {0}", url);
+            ConsoleImpl.WriteDebug("Starting download from {0}", url);
 
             //using (var httpResponseStream = WebRequestProxy.GetResponseStream(url))
             //{
@@ -93,21 +92,19 @@ namespace Paket.Bootstrapper.DownloadStrategies
             //}
         }
 
-        public void SelfUpdate(string latestVersion, bool silent)
+        public void SelfUpdate(string latestVersion)
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
             string exePath = executingAssembly.Location;
             var localVersion = FileProxy.GetLocalFileVersion(exePath);
             if (localVersion.StartsWith(latestVersion))
             {
-                if (!silent)
-                    Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
+                ConsoleImpl.WriteDebug("Bootstrapper is up to date. Nothing to do.");
                 return;
             }
 
             var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.bootstrapper.exe", latestVersion);
-            if (!silent)
-                Console.WriteLine("Starting download of bootstrapper from {0}", url);
+            ConsoleImpl.WriteDebug("Starting download of bootstrapper from {0}", url);
 
             string renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             string tmpDownloadPath = BootstrapperHelper.GetTempFile("newBootstrapper");
@@ -120,13 +117,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 FileProxy.FileMove(exePath, renamedPath);
                 FileProxy.FileMove(tmpDownloadPath, exePath);
-                if (!silent)
-                    Console.WriteLine("Self update of bootstrapper was successful.");
+                ConsoleImpl.WriteDebug("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
-                if (!silent)
-                    Console.WriteLine("Self update failed. Resetting bootstrapper.");
+                ConsoleImpl.WriteDebug("Self update failed. Resetting bootstrapper.");
                 FileProxy.FileMove(renamedPath, exePath);
                 throw;
             }

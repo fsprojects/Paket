@@ -70,7 +70,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         public IDownloadStrategy FallbackStrategy { get; set; }
 
-        public string GetLatestVersion(bool ignorePrerelease, bool silent)
+        public string GetLatestVersion(bool ignorePrerelease)
         {
             if (DirectoryProxy.Exists(NugetSource))
             {
@@ -106,7 +106,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        public void DownloadVersion(string latestVersion, string target, bool silent)
+        public void DownloadVersion(string latestVersion, string target)
         {
             var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
 
@@ -127,18 +127,16 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             if (DirectoryProxy.Exists(NugetSource))
             {
-                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false, silent);
+                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
-                if (!silent)
-                    Console.WriteLine("Starting download from {0}", sourcePath);
+                ConsoleImpl.WriteDebug("Starting download from {0}", sourcePath);
 
                 FileProxy.Copy(sourcePath, paketPackageFile);
             }
             else
             {
-                if (!silent)
-                    Console.WriteLine("Starting download from {0}", paketDownloadUrl);
+                ConsoleImpl.WriteDebug("Starting download from {0}", paketDownloadUrl);
 
                 WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
             }
@@ -149,14 +147,13 @@ namespace Paket.Bootstrapper.DownloadStrategies
             DirectoryProxy.Delete(randomFullPath, true);
         }
 
-        public void SelfUpdate(string latestVersion, bool silent)
+        public void SelfUpdate(string latestVersion)
         {
             string target = Assembly.GetExecutingAssembly().Location;
             var localVersion = FileProxy.GetLocalFileVersion(target);
             if (localVersion.StartsWith(latestVersion))
             {
-                if (!silent)
-                    Console.WriteLine("Bootstrapper is up to date. Nothing to do.");
+                ConsoleImpl.WriteDebug("Bootstrapper is up to date. Nothing to do.");
                 return;
             }
             var apiHelper = new NugetApiHelper(PaketBootstrapperNugetPackageName, NugetSource);
@@ -179,18 +176,16 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             if (DirectoryProxy.Exists(NugetSource))
             {
-                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false, silent);
+                if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
-                if (!silent)
-                    Console.WriteLine("Starting download from {0}", sourcePath);
+                ConsoleImpl.WriteDebug("Starting download from {0}", sourcePath);
 
                 FileProxy.Copy(sourcePath, paketPackageFile);
             }
             else
             {
-                if (!silent)
-                    Console.WriteLine("Starting download from {0}", paketDownloadUrl);
+                ConsoleImpl.WriteDebug("Starting download from {0}", paketDownloadUrl);
 
                 WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
             }
@@ -203,13 +198,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 FileProxy.FileMove(target, renamedPath);
                 FileProxy.FileMove(paketSourceFile, target);
-                if (!silent)
-                    Console.WriteLine("Self update of bootstrapper was successful.");
+                ConsoleImpl.WriteDebug("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
-                if (!silent)
-                    Console.WriteLine("Self update failed. Resetting bootstrapper.");
+                ConsoleImpl.WriteDebug("Self update failed. Resetting bootstrapper.");
                 FileProxy.FileMove(renamedPath, target);
                 throw;
             }
