@@ -70,5 +70,20 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(((CacheDownloadStrategy)strategy).EffectiveStrategy, Is.TypeOf<NugetDownloadStrategy>());
             Assert.That(strategy.FallbackStrategy, Is.Null);
         }
+
+        [Test]
+        public void GetDownloadStrategy_NotCached()
+        {
+            //arrange
+
+            //act
+            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, true);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false);
+
+            //assert
+            Assert.That(strategy, Is.TypeOf<GitHubDownloadStrategy>());
+            Assert.That(strategy.FallbackStrategy, Is.TypeOf<NugetDownloadStrategy>());
+            Assert.That(strategy.FallbackStrategy.FallbackStrategy, Is.Null);
+        }
     }
 }
