@@ -77,19 +77,14 @@ namespace Paket.Bootstrapper.DownloadStrategies
             var url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
             ConsoleImpl.WriteDebug("Starting download from {0}", url);
 
-            //using (var httpResponseStream = WebRequestProxy.GetResponseStream(url))
-            //{
             var tmpFile = BootstrapperHelper.GetTempFile("paket");
-
             using (var fileStream = FileProxy.Create(tmpFile))
             {
                 WebRequestProxy.DownloadFile(url, fileStream, HttpBufferSize);
-                //httpResponseStream.CopyTo(fileStream, HttpBufferSize);
             }
 
             FileProxy.Copy(tmpFile, target, true);
             FileProxy.Delete(tmpFile);
-            //}
         }
 
         public void SelfUpdate(string latestVersion)
