@@ -1,4 +1,4 @@
-#### 3.0.0-alpha112 - 12.04.2016
+#### 3.0.0-alpha113 - 13.04.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -7,6 +7,12 @@
 * Allows to exclude dll references from a NuGet package - http://fsprojects.github.io/Paket/references-files.html#Excluding-libraries
 * Allows to use aliases for libraries - http://fsprojects.github.io/Paket/references-files.html#Library-aliases
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
+
+#### 2.60.2 - 13.04.2016
+* BUGFIX: Don't set CopyToOutputDirectory for Compile items - https://github.com/fsprojects/Paket/issues/1592
+
+#### 2.60.1 - 13.04.2016
+* BUGFIX: Allow to pack packages with ReflectedDefinition - https://github.com/fsprojects/Paket/pull/1602
 
 #### 2.60.0 - 12.04.2016
 * Various performance optimizations - https://github.com/fsprojects/Paket/pull/1599

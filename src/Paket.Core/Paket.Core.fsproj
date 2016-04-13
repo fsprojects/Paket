@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -74,7 +74,7 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
-    <Compile Include="..\..\paket-files\fsharp\FSharp.Data\src\CommonProviderImplementation\AssemblyReader.fs">
+    <Compile Include="..\..\paket-files\haraldsteinlechner\FSharp.Data\src\CommonProviderImplementation\AssemblyReader.fs">
       <Paket>True</Paket>
       <Link>AssemblyReader.fs</Link>
     </Compile>

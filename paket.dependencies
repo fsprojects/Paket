@@ -7,7 +7,7 @@ nuget FSharp.Core redirects: force
 nuget Chessie
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
-github fsharp/FSharp.Data src/CommonProviderImplementation/AssemblyReader.fs
+github haraldsteinlechner/FSharp.Data src/CommonProviderImplementation/AssemblyReader.fs
 
 group Build
 

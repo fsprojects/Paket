@@ -502,11 +502,13 @@ module ProjectFile =
                         |> addChild (createNodeSet "SubType" "Designer" project)
                     | _ -> node
                 |> fun n -> if fileItem.WithPaketSubNode then addChild (createNodeSet "Paket" "True" project) n else n
-                |> fun n -> match fileItem.CopyToOutputDirectory with
-                            | Some CopyToOutputDirectorySettings.Always -> addChild (createNodeSet "CopyToOutputDirectory" "Always" project) n
-                            | Some CopyToOutputDirectorySettings.Never  -> addChild (createNodeSet "CopyToOutputDirectory" "Never" project) n
-                            | Some CopyToOutputDirectorySettings.PreserveNewest  -> addChild (createNodeSet "CopyToOutputDirectory" "PreserveNewest" project) n
-                            | None -> n
+                |> fun n -> 
+                    if fileItem.BuildAction <> BuildAction.Content then n else
+                    match fileItem.CopyToOutputDirectory with
+                    | Some CopyToOutputDirectorySettings.Always -> addChild (createNodeSet "CopyToOutputDirectory" "Always" project) n
+                    | Some CopyToOutputDirectorySettings.Never  -> addChild (createNodeSet "CopyToOutputDirectory" "Never" project) n
+                    | Some CopyToOutputDirectorySettings.PreserveNewest  -> addChild (createNodeSet "CopyToOutputDirectory" "PreserveNewest" project) n
+                    | None -> n
                 |> fun n -> match fileItem.Link with
                             | Some link -> addChild (createNodeSet "Link" (link.Replace("\\","/")) project) n
                             | _ -> n
