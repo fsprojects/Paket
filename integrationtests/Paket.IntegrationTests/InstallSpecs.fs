@@ -438,3 +438,12 @@ let ``#1589 http dep restore in parallel``() =
     prepare scenarioName
     directPaketInPath "restore" scenarioPath |> ignore
     directPaketInPath "restore --force" scenarioPath |> ignore
+
+[<Test>]
+let ``#1592 install source content without CopyToOutputDirectory``() = 
+    let newLockFile = install "i001592-source-content"
+    let newFile = Path.Combine(scenarioTempPath "i001592-source-content","xUnitTests","xUnitTests.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001592-source-content","xUnitTests","xUnitTests.expected.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
