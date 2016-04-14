@@ -112,7 +112,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

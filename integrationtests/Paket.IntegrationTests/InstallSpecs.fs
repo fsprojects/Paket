@@ -448,7 +448,7 @@ let ``#1592 install source content without CopyToOutputDirectory``() =
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
 
-let resolvedNewPorjectJson = """{
+let resolvedNewProjectJson = """{
     "version": "1.0.0-*",
     "compilationOptions": {
         "emitEntryPoint": true
@@ -514,14 +514,14 @@ let ``#736 install into new project.json``() =
     let newLockFile = install "i000736-new-json"
     let newFile = Path.Combine(scenarioTempPath "i000736-new-json","project.json")
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    normalizeLineEndings resolvedNewPorjectJson |> shouldEqual s2
+    normalizeLineEndings resolvedNewProjectJson |> shouldEqual s2
 
 [<Test>]
 let ``#736 install into nested project.json``() = 
     let newLockFile = install "i000736-new-json-nested"
     let newFile = Path.Combine(scenarioTempPath "i000736-new-json-nested","project1","project.json")
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    normalizeLineEndings resolvedNewPorjectJson |> shouldEqual s2
+    normalizeLineEndings resolvedNewProjectJson |> shouldEqual s2
 
 [<Test>]
 let ``#1145 don't install excludes``() = 

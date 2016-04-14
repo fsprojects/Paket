@@ -81,7 +81,6 @@ module LockFileSerializer =
 
                   yield "  remote: " + String.quoted source
 
-                  yield "  specs:"
                   for _,_,package in packages |> Seq.sortBy (fun (_,_,p) -> p.Name) do
                       let versionStr = 
                           let s'' = package.Version.ToString()
@@ -128,7 +127,6 @@ module LockFileSerializer =
                         updateHasReported.Remove GistLink |> ignore
                         updateHasReported.Add GitHubLink
                     yield sprintf "  remote: %s/%s" owner project
-                    yield "  specs:"
                 | GitLink url ->
                     if not (updateHasReported.Contains(GitLink(""))) then
                         yield "GIT"
@@ -137,7 +135,6 @@ module LockFileSerializer =
                         updateHasReported.Remove (HttpLink "") |> ignore
                         updateHasReported.Add (GitLink "")
                     yield sprintf "  remote: " + url
-                    yield "  specs:"
                
                 | GistLink -> 
                     if not (updateHasReported.Contains(GistLink)) then
@@ -147,7 +144,6 @@ module LockFileSerializer =
                         updateHasReported.Remove (GitLink "") |> ignore
                         updateHasReported.Add GistLink
                     yield sprintf "  remote: %s/%s" owner project
-                    yield "  specs:"
                 | HttpLink url ->
                     if not (updateHasReported.Contains(HttpLink(""))) then
                         yield "HTTP"
@@ -156,7 +152,6 @@ module LockFileSerializer =
                         updateHasReported.Remove (GitLink "") |> ignore
                         updateHasReported.Add (HttpLink "")
                     yield sprintf "  remote: " + url
-                    yield "  specs:"
 
                 for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
                     

@@ -25,7 +25,6 @@ COPY-LOCAL: FALSE
 FRAMEWORK: >= NET45
 NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Castle.Windsor-log4net (3.2)"""
 
 [<Test>]
@@ -52,7 +51,6 @@ let expected2 = """IMPORT-TARGETS: FALSE
 CONTENT: NONE
 NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Microsoft.SqlServer.Types (1.0)"""
 
 [<Test>]
@@ -76,7 +74,6 @@ let graph3 = [
 let expected3 = """REDIRECTS: ON
 NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Microsoft.SqlServer.Types (1.0)"""
 
 [<Test>]
@@ -98,7 +95,6 @@ let ``should generate strategy min lock file``() =
     let expected = """STRATEGY: MIN
 NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromCode(config)
@@ -118,7 +114,6 @@ let ``should generate strategy max lock file``() =
     let expected = """STRATEGY: MAX
 NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Microsoft.SqlServer.Types (1.0)"""
 
     let cfg = DependenciesFile.FromCode(config)
@@ -149,7 +144,6 @@ nuget NLog.Contrib
     let expected = """FRAMEWORK: >= NET40
 NUGET
   remote: https://www.nuget.org/api/v2
-  specs:
     NLog (1.0.1)
     NLog.Contrib (1.0)
       NLog (>= 1.0.1)"""

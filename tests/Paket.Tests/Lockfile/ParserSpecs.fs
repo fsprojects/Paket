@@ -520,13 +520,11 @@ let ``should parse reactiveui lockfile``() =
 
 let multipleFeedLockFile = """NUGET
   remote: http://internalfeed/NugetWebFeed/nuget
-  specs:
     Internal_1 (1.2.10)
       Newtonsoft.Json (>= 6.0 < 6.1)
     log4net (1.2.10)
     Newtonsoft.Json (6.0.6)
   remote: https://www.nuget.org/api/v2
-  specs:
     Microsoft.AspNet.WebApi (5.2.3)
       Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3)
     Microsoft.AspNet.WebApi.Client (5.2.3)
@@ -566,7 +564,6 @@ COPY-LOCAL: TRUE
 IMPORT-TARGETS: TRUE
 NUGET
   remote: "D:\code\temp with space"
-  specs:
     Castle.Windsor (2.1)
 
 GROUP Build
@@ -575,7 +572,6 @@ COPY-LOCAL: TRUE
 CONDITION: LEGACY
 NUGET
   remote: "D:\code\temp with space"
-  specs:
     FAKE (4.0) - redirects: on
 """
 
@@ -624,7 +620,6 @@ let ``should parse strategy min lock file``() =
     let lockFile = """STRATEGY: MIN
 NUGET
   remote: "D:\code\temp with space"
-  specs:
     Castle.Windsor (2.1)
 """
     let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
@@ -663,7 +658,6 @@ let ``should parse no strategy lock file``() =
 let packageRedirectsLockFile = """REDIRECTS: ON
 NUGET
   remote: "D:\code\temp with space"
-  specs:
     Castle.Windsor (2.1)
     DotNetZip (1.9.3) - redirects: on
     FAKE (3.5.5) - redirects: off
@@ -672,14 +666,12 @@ NUGET
 GROUP Build
 NUGET
   remote: "D:\code\temp with space"
-  specs:
     FAKE (4.0) - redirects: on
 
 GROUP Test
 REDIRECTS: OFF
 NUGET
   remote: "D:\code\temp with space"
-  specs:
     xUnit (2.0.0)
 """
 
@@ -763,7 +755,6 @@ let ``should parse lock file from auto-detect settings``() =
 
 let lockFileWithManyFrameworks = """NUGET
   remote: https://www.nuget.org/api/v2
-  specs:
     CommonServiceLocator (1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50
     MvvmLightLibs (5.2)
       CommonServiceLocator (>= 1.0) - framework: net35, sl40
@@ -785,7 +776,6 @@ let ``should parse lock file many frameworks``() =
 
 let lockFileWithDependencies = """NUGET
   remote: https://www.nuget.org/api/v2
-  specs:
     Argu (2.1)
     Chessie (0.4)
       FSharp.Core
@@ -866,6 +856,26 @@ GIT
 [<Test>]
 let ``should parse local git lock file with build``() = 
     let lockFile = LockFileParser.Parse(toLines localGitLockFileWithBuild)
+    lockFile.Head.RemoteUrl |> shouldEqual (Some "https://github.com/forki/nupkgtest.git")
+    lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "2942d23fcb13a2574b635194203aed7610b21903"
+    lockFile.Head.SourceFiles.Head.Project |> shouldEqual "nupkgtest"
+    lockFile.Head.SourceFiles.Head.Command |> shouldEqual (Some "build.cmd Test")
+
+
+let localGitLockFileWithBuildAndNoSpecs = """
+NUGET
+  remote: paket-files/github.com/nupkgtest/source
+  specs:
+    Argu (1.1.3)
+GIT
+  remote: https://github.com/forki/nupkgtest.git
+     (2942d23fcb13a2574b635194203aed7610b21903)
+      build: build.cmd Test
+"""
+
+[<Test>]
+let ``should parse local git lock file with build and no specs``() = 
+    let lockFile = LockFileParser.Parse(toLines localGitLockFileWithBuildAndNoSpecs)
     lockFile.Head.RemoteUrl |> shouldEqual (Some "https://github.com/forki/nupkgtest.git")
     lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "2942d23fcb13a2574b635194203aed7610b21903"
     lockFile.Head.SourceFiles.Head.Project |> shouldEqual "nupkgtest"

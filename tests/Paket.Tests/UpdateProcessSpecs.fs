@@ -374,7 +374,6 @@ let ``SelectiveUpdate generates paket.lock correctly``() =
 
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Castle.Core (4.0)
     Castle.Core-log4net (3.2)
       Castle.Core (>= 3.2)
