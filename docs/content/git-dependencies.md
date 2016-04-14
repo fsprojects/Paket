@@ -63,11 +63,9 @@ The generated [`paket.lock` file](lock-file.html) will look like this:
     [lang=paket]
     NUGET
       remote: paket-files/github.com/forki/nupkgtest/source
-      specs:
         Argu (1.1.3)
     GIT
       remote: https://github.com/forki/nupkgtest.git
-      specs:
          (05366e390e7552a569f3f328a0f3094249f3b93b)
 
 It's also possible to [run build scripts](git-dependencies.html#Running-a-build-in-git-repositories) to create the NuGet packages:

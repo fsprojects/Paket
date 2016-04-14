@@ -16,7 +16,6 @@ The [`paket.lock` file](lock-file.html) records the concrete dependency resoluti
     [lang=paket]
     NUGET
       remote: https://nuget.org/api/v2
-      specs:
         Castle.Core (3.3.0)
         Castle.Core-log4net (3.3.0)
           Castle.Core (>= 3.3.0)

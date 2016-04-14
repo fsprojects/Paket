@@ -18,7 +18,6 @@ Now, when you run `paket install`, your [`paket.lock` file][lockfile] would look
     [lang=paket]
     NUGET
       remote: https://nuget.org/api/v2
-      specs:
         Castle.Core (3.3.3)
         Castle.Windsor (3.3.0)
           Castle.Core (>= 3.3.0)

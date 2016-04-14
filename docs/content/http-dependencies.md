@@ -14,7 +14,6 @@ If you run the [`paket install` command](paket-install.html), it will add a new 
     [lang=paket]
     HTTP
       remote: http://www.fssnip.net/raw/1M/test1.fs
-      specs:
         test1.fs
 
 

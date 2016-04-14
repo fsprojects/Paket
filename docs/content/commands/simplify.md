@@ -68,7 +68,6 @@ Let us imagine that package Bar has a dependency on package Foo for any version 
     [lang=paket]
     NUGET
       remote: https://nuget.org/api/v2
-      specs:
         Foo (1.0.0)
         Bar (1.0.0)
           Foo (<= 2.0.0)

@@ -17,7 +17,6 @@ If you run the [`paket update` command](paket-update.html), it will download the
     [lang=paket]
     GITHUB
       remote: forki/FsUnit
-      specs:
         FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
 
 As you can see the file is pinned to a concrete commit. This allows you to reliably use the same file version in succeeding builds until you elect to perform a [`paket update` command](paket-update.html) at a time of your choosing.
@@ -86,7 +85,6 @@ This generates the following [`paket.lock` file](lock-file.html):
     [lang=paket]
 	NUGET
 	  remote: https://nuget.org/api/v2
-	  specs:
 		Microsoft.Bcl (1.1.9)
 		  Microsoft.Bcl.Build (>= 1.0.14)
 		Microsoft.Bcl.Build (1.0.21)
@@ -97,7 +95,6 @@ This generates the following [`paket.lock` file](lock-file.html):
 		  Microsoft.Net.Http (>= 0)
 	GITHUB
 	  remote: fsharp/FAKE
-	  specs:
 		modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
 		  Octokit (>= 0)
 
@@ -126,8 +123,6 @@ If you run the [`paket update` command](paket-update.html), it will add a new se
     [lang=paket]
     GIST
       remote: Thorium/1972308
-      specs:
         gistfile1.fs
       remote: Thorium/6088882
-      specs:
         FULLPROJECT

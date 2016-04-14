@@ -6,7 +6,7 @@
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
 * Allows to exclude dll references from a NuGet package - http://fsprojects.github.io/Paket/references-files.html#Excluding-libraries
 * Allows to use aliases for libraries - http://fsprojects.github.io/Paket/references-files.html#Library-aliases
-* USABILITY: Removed "specs:" from paket.lock since it was copied from Bundler and had no meaning in Paket
+* USABILITY: Removed "specs:" from paket.lock since it was copied from Bundler and had no meaning in Paket - https://github.com/fsprojects/Paket/pull/1608
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
 
 #### 2.60.2 - 13.04.2016
