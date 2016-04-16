@@ -1,6 +1,9 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
@@ -84,6 +87,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paket.Bootstrapper.Tests", 
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.IntegrationTests", "integrationtests\Paket.IntegrationTests\Paket.IntegrationTests.fsproj", "{7234B9B4-8CF5-4E68-AA29-050C087B9246}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.LoadingScripts", "Paket.LoadingScripts\Paket.LoadingScripts.fsproj", "{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -114,6 +119,10 @@ Global
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
