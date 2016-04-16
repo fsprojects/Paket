@@ -4,34 +4,38 @@ open Paket
 open Paket.Domain
 
 module LoadingScriptsGenerator =
-    let getLeafPackages (knownPackages:Set<PackageName>) (state:PackageResolver.ResolvedPackage list) =
+    
+    let getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) (openList) =
         let leafPackages =
-          state 
+          openList 
           |> List.filter (fun p ->
-              not (knownPackages.Contains(p.Name)) &&
-              p.Dependencies |> Seq.map (fun (n, _, _)-> n) |> Seq.forall (knownPackages.Contains))
+              not (knownPackages.Contains(getPackageName p)) &&
+              getDependencies p |> Seq.forall (knownPackages.Contains))
         let newKnownPackages =
           leafPackages
-          |> Seq.fold (fun state { Name = n } -> state |> Set.add n) knownPackages
+          |> Seq.fold (fun state package -> state |> Set.add (getPackageName package)) knownPackages
         let newState =
-          state
-          |> List.filter (fun p -> leafPackages |> Seq.forall (fun l -> l.Name <> p.Name))
+          openList
+          |> List.filter (fun p -> leafPackages |> Seq.forall (fun l -> getPackageName l <> getPackageName p))
         leafPackages, newKnownPackages, newState
 
-    let handleParseState (packages:PackageResolver.ResolvedPackage list) =
+    let getPackageOrderGeneric getPackageName getDependencies packages =
       let rec step finalList knownPackages currentPackages =
-        match currentPackages |> getLeafPackages knownPackages with
+        match currentPackages |> getLeafPackagesGeneric getPackageName getDependencies knownPackages with
         | ([], _, _) -> finalList
         | (leafPackages, newKnownPackages, newState) ->
           step (leafPackages @ finalList) newKnownPackages newState
       step [] Set.empty packages
-      |> List.rev
-          
+      |> List.rev  
 
+    let getPackageOrderResolvedPackage =
+      getPackageOrderGeneric 
+        (fun (p:PackageResolver.ResolvedPackage) -> p.Name) 
+        (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n)) 
     let getPackageOrderFromDependenciesFile (depFile:string) =
         let depFile = LockFileParser.Parse (System.IO.File.ReadAllLines depFile)
         depFile
-        |> Seq.map (fun p -> p.GroupName, handleParseState p.Packages)
+        |> Seq.map (fun p -> p.GroupName, getPackageOrderResolvedPackage p.Packages)
         |> Map.ofSeq
         // generateScriptsFromDependenciesFile generateIncludeScript depFile
 
@@ -56,7 +60,7 @@ module LoadingScriptsGenerator =
               Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None } }
           ]
       let result =
-        handleParseState testData
+        getPackageOrderResolvedPackage testData
         |> List.map (fun p -> p.Name)
 
       System.Diagnostics.Debug.Assert(
@@ -66,7 +70,7 @@ module LoadingScriptsGenerator =
           ] : bool)
           
       let result2 =
-        handleParseState (testData |> List.rev)
+        getPackageOrderResolvedPackage (testData |> List.rev)
         |> List.map (fun p -> p.Name)
 
       System.Diagnostics.Debug.Assert(
