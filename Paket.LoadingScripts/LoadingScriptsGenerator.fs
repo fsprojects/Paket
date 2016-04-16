@@ -48,7 +48,7 @@ module LoadingScriptsGenerator =
                 |> Set.add(
                     PackageName("other"), 
                     VersionRequirement(VersionRange.Specific (SemVer.Parse "1.0.0"), PreReleaseStatus.No),
-                    Paket.Requirements.FrameworkRestrictions.Empty)
+                    Paket.Requirements.FrameworkRestrictions.AutoDetectFramework)
               PackageResolver.ResolvedPackage.Unlisted = false
               PackageResolver.ResolvedPackage.Settings = Requirements.InstallSettings.Default
               PackageResolver.ResolvedPackage.Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None } }
