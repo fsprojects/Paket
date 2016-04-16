@@ -40,7 +40,7 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
         let dependenciesFile = exisitingDependenciesFile.Remove(groupName,package)
         dependenciesFile.Save()
         
-        dependenciesFile,UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.Install,SemVerUpdateMode.NoRestriction,force)
+        dependenciesFile,UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.UpdateGroup groupName,SemVerUpdateMode.NoRestriction,force)
     
     if installAfter then
         InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, hard, false, false, SemVerUpdateMode.NoRestriction, false), false, dependenciesFile, lockFile)
