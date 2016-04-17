@@ -298,17 +298,17 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
             with
             | _ -> None
 
-    let getCompatibleVersions(relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,openRequirements:Set<PackageRequirement>,currentRequirement:PackageRequirement) =
+    let getCompatibleVersions(currentStep:ResolverStep,currentRequirement:PackageRequirement) =
         verbosefn "  Trying to resolve %O" currentRequirement
 
         let availableVersions = ref Seq.empty
         let compatibleVersions = ref Seq.empty
         let globalOverride = ref false
        
-        match Map.tryFind currentRequirement.Name filteredVersions with
+        match Map.tryFind currentRequirement.Name currentStep.FilteredVersions with
         | None ->
             let allRequirementsOfCurrentPackage =
-                openRequirements
+                currentStep.OpenRequirements
                 |> Set.filter (fun r -> currentRequirement.Name = r.Name)
 
             // we didn't select a version yet so all versions are possible
@@ -364,7 +364,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
 
                 if Seq.isEmpty !compatibleVersions then
                     let withPrereleases = Seq.filter (fun (v,_) -> currentRequirement.IncludingPrereleases().VersionRequirement.IsInRange(v,currentRequirement.Parent.IsRootRequirement() |> not)) versions
-                    if relax then
+                    if currentStep.Relax then
                         compatibleVersions := withPrereleases
                     else
                         if Seq.isEmpty withPrereleases |> not then
@@ -446,31 +446,30 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
             if conflicts |> Set.isEmpty |> not then 
                 Resolution.Conflict(currentStep,conflicts,Seq.head conflicts,getVersionsF) 
             else
-                let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(currentStep.Relax,currentStep.FilteredVersions,currentStep.OpenRequirements,currentRequirement)
+                let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(currentStep,currentRequirement)
 
-                let conflictStatus = Resolution.Conflict(currentStep,Set.empty,currentRequirement,getVersionsF)
+                let state = ref (Resolution.Conflict(currentStep,Set.empty,currentRequirement,getVersionsF))
                 if Seq.isEmpty compatibleVersions then
-                    boostConflicts (currentStep.FilteredVersions,currentRequirement,conflictStatus) 
+                    boostConflicts (currentStep.FilteredVersions,currentRequirement,!state) 
 
                 let ready = ref false
-                let state = ref conflictStatus
                 let useUnlisted = ref false
                 let hasUnlisted = ref false
 
                 while not !ready do
-                    let trial = ref 0
+                    let firstTrial = ref true
                     let forceBreak = ref false
             
                     let versionsToExplore = ref compatibleVersions
 
-                    let shouldTryHarder trial =
+                    let shouldTryHarder () =
                         if !forceBreak then false else
                         if (!state).IsDone || Seq.isEmpty !versionsToExplore then false else
-                        if trial < 1 then true else
+                        if !firstTrial then true else
                         conflicts |> Set.isEmpty
 
-                    while shouldTryHarder !trial do
-                        trial := !trial + 1
+                    while shouldTryHarder() do
+                        firstTrial := false
                         let versionToExplore = Seq.head !versionsToExplore
                         versionsToExplore := Seq.tail !versionsToExplore
                         match getExploredPackage(currentRequirement,versionToExplore) with
