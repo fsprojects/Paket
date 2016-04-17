@@ -30,3 +30,8 @@ group Test
   nuget Moq
   nuget FSCheck
   github forki/FsUnit FsUnit.fs
+
+group ScriptBuilder
+  source https://nuget.org/api/v2
+  nuget QuickGraph
+  nuget Mono.Cecil

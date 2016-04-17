@@ -1,1 +1,6 @@
+Chessie
 FSharp.Core
+
+group ScriptBuilder
+  QuickGraph
+  Mono.Cecil
