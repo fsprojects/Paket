@@ -1,3 +1,6 @@
+#### 2.62.0 - 17.04.2016
+* Refactoring Bootstrapper to introduce better coverage and testing - https://github.com/fsprojects/Paket/pull/1603
+
 #### 2.61.0 - 17.04.2016
 * Support .NET platform standard packages - https://github.com/fsprojects/Paket/issues/1614
 * Support .NET 4.6.2 - https://github.com/fsprojects/Paket/issues/1614
