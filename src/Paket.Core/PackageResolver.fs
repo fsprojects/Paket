@@ -219,6 +219,13 @@ type UpdateMode =
     | Install
     | UpdateAll
 
+type ResolverStep = {
+    Relax: bool
+    FilteredVersions : Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>
+    CurrentResolution : Map<PackageName,ResolvedPackage>;
+    ClosedRequirements : Set<PackageRequirement>
+    OpenRequirements : Set<PackageRequirement> }
+
 /// Resolves all direct and transitive dependencies
 let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
@@ -420,23 +427,24 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                 lastConflictReported := DateTime.Now
         | _ -> ()
   
+    let nextSteps = System.Collections.Generic.Queue<ResolverStep>()
 
-    let rec step (relax,filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>,currentResolution:Map<PackageName,ResolvedPackage>,closedRequirements:Set<PackageRequirement>,openRequirements:Set<PackageRequirement>) =
-        if Set.isEmpty openRequirements then 
-            Resolution.Ok(cleanupNames currentResolution) 
+    let rec step (currentStep:ResolverStep) =
+        if Set.isEmpty currentStep.OpenRequirements then 
+            Resolution.Ok(cleanupNames currentStep.CurrentResolution) 
         else
-            verbosefn "  %d packages in resolution. %d requirements left" currentResolution.Count openRequirements.Count
+            verbosefn "  %d packages in resolution. %d requirements left" currentStep.CurrentResolution.Count currentStep.OpenRequirements.Count
         
-            let currentRequirement = getCurrentRequirement openRequirements
-            let conflicts = getConflicts(filteredVersions,closedRequirements,openRequirements,currentRequirement)
+            let currentRequirement = getCurrentRequirement currentStep.OpenRequirements
+            let conflicts = getConflicts(currentStep.FilteredVersions,currentStep.ClosedRequirements,currentStep.OpenRequirements,currentRequirement)
             if conflicts |> Set.isEmpty |> not then 
-                Resolution.Conflict(currentResolution,closedRequirements,openRequirements,conflicts,Seq.head conflicts,getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName) 
+                Resolution.Conflict(currentStep.CurrentResolution,currentStep.ClosedRequirements,currentStep.OpenRequirements,conflicts,Seq.head conflicts,getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName) 
             else
-                let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(relax,filteredVersions,openRequirements,currentRequirement)
+                let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(currentStep.Relax,currentStep.FilteredVersions,currentStep.OpenRequirements,currentRequirement)
 
-                let conflictStatus = Resolution.Conflict(currentResolution,closedRequirements,openRequirements,Set.empty,currentRequirement,getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName)
+                let conflictStatus = Resolution.Conflict(currentStep.CurrentResolution,currentStep.ClosedRequirements,currentStep.OpenRequirements,Set.empty,currentRequirement,getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName)
                 if Seq.isEmpty compatibleVersions then
-                    boostConflicts (filteredVersions,currentRequirement,conflictStatus) 
+                    boostConflicts (currentStep.FilteredVersions,currentRequirement,conflictStatus) 
 
                 let ready = ref false
                 let state = ref conflictStatus
@@ -470,23 +478,23 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                             if exploredPackage.Unlisted && not !useUnlisted then
                                 ()
                             else
-                                let newFilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) filteredVersions
-                        
-                                let newOpen = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,closedRequirements,openRequirements)
-                                if newOpen = openRequirements then 
-                                    failwithf "The resolver confused itself. The new open requirements are the same as the old ones. This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A" Environment.NewLine currentRequirement Environment.NewLine newOpen
+                                let nextStep =
+                                    { Relax = currentStep.Relax
+                                      FilteredVersions = Map.add currentRequirement.Name ([versionToExplore],globalOverride) currentStep.FilteredVersions
+                                      CurrentResolution =  Map.add exploredPackage.Name exploredPackage currentStep.CurrentResolution
+                                      ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
+                                      OpenRequirements = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep.ClosedRequirements,currentStep.OpenRequirements) }
 
-                                let newResolution = Map.add exploredPackage.Name exploredPackage currentResolution
-
-                                let newClosed = Set.add currentRequirement closedRequirements
-
-                                state := step (relax,newFilteredVersions,newResolution,newClosed,newOpen)
+                                if nextStep.OpenRequirements = currentStep.OpenRequirements then 
+                                    failwithf "The resolver confused itself. The new open requirements are the same as the old ones. This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A" Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
+                                    
+                                state := step nextStep
 
                                 match !state with
                                 | Resolution.Conflict(resolved,closed,stillOpen,conflicts,lastPackageRequirement,getVersionF)
                                     when
                                         (Set.isEmpty conflicts |> not) && 
-                                          newResolution.Count > 1 &&
+                                          nextStep.CurrentResolution.Count > 1 &&
                                           (conflicts |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not) ->
                                         forceBreak := true
                                 | _ -> ()                            
@@ -498,12 +506,19 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
 
                 !state
 
-    match step (false, Map.empty, Map.empty, Set.empty, rootDependencies) with
+    let startingStep =
+        { Relax = false
+          FilteredVersions = Map.empty
+          CurrentResolution = Map.empty
+          ClosedRequirements = Set.empty
+          OpenRequirements = rootDependencies }
+
+    match step startingStep with
     | Resolution.Conflict(resolved,closed,stillOpen,_,_,_) as conflict ->
         if !tryRelaxed then
             conflictHistory.Clear()
             knownConflicts.Clear() |> ignore
-            step (true, Map.empty, Map.empty, Set.empty, rootDependencies)
+            step { startingStep with Relax = true }
         else
             conflict
     | x -> x
