@@ -26,7 +26,6 @@ group Test
   nuget NUnit ~> 3
   nuget Moq
   nuget FSCheck
-  github forki/FsUnit FsUnit.fs
 
 group ScriptBuilder
   source https://nuget.org/api/v2

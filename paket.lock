@@ -40,6 +40,13 @@ NUGET
     Mono.Cecil (0.9.6.1)
     QuickGraph (3.6.61119.7)
 
+GROUP ScriptBuilder
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Mono.Cecil (0.9.6.1)
+    QuickGraph (3.6.61119.7)
+
 GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2
