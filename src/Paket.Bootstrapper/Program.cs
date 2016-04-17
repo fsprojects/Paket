@@ -149,15 +149,21 @@ namespace Paket.Bootstrapper
                 gitHubDownloadStrategy.FallbackStrategy = nugetDownloadStrategy;
             }
 
-            return effectiveStrategy;
+            return effectiveStrategy.AsTemporarilyIgnored(dlArgs.MaxFileAgeInMinutes, dlArgs.Target);
         }
 
         private static IDownloadStrategy AsCached(this IDownloadStrategy effectiveStrategy, bool ignoreCache)
         {
-            if (ignoreCache)
-                return effectiveStrategy;
-            return new CacheDownloadStrategy(effectiveStrategy, new DirectoryProxy(), new FileProxy());
+            return ignoreCache
+                ? effectiveStrategy
+                : new CacheDownloadStrategy(effectiveStrategy, new DirectoryProxy(), new FileProxy());
         }
 
+        private static IDownloadStrategy AsTemporarilyIgnored(this IDownloadStrategy effectiveStrategy, int? maxFileAgeInMinutes, string target)
+        {
+            return maxFileAgeInMinutes.HasValue
+                ? new TemporarilyIgnoreUpdatesDownloadStrategy(effectiveStrategy, new FileProxy(), target, maxFileAgeInMinutes.Value)
+                : effectiveStrategy;
+        }
     }
 }

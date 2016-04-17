@@ -14,7 +14,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false);
+            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, null);
             var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false);
 
             //assert
@@ -31,7 +31,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false);
+            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, null);
             var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, true, false);
 
             //assert
@@ -47,7 +47,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false);
+            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, null);
             var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, true, true);
 
             //assert
@@ -62,7 +62,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false);
+            var downloadArguments =  new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, null);
             var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, true);
 
             //assert
@@ -77,13 +77,47 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, true);
+            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, true, null);
             var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false);
 
             //assert
             Assert.That(strategy, Is.TypeOf<GitHubDownloadStrategy>());
             Assert.That(strategy.FallbackStrategy, Is.TypeOf<NugetDownloadStrategy>());
             Assert.That(strategy.FallbackStrategy.FallbackStrategy, Is.Null);
+        }
+
+        [Test]
+        public void GetDownloadStrategy_NotCached_TemporarilyIgnored()
+        {
+            //arrange
+
+            //act
+            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, true, 10);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, false, false);
+
+            //assert
+            Assert.That(strategy, Is.TypeOf<TemporarilyIgnoreUpdatesDownloadStrategy>());
+            var effectiveStrategy = ((TemporarilyIgnoreUpdatesDownloadStrategy)strategy).EffectiveStrategy;
+            Assert.That(effectiveStrategy, Is.TypeOf<GitHubDownloadStrategy>());
+            Assert.That(effectiveStrategy.FallbackStrategy, Is.TypeOf<NugetDownloadStrategy>());
+            Assert.That(effectiveStrategy.FallbackStrategy.FallbackStrategy, Is.Null);
+            Assert.That(strategy.FallbackStrategy, Is.Null);
+        }
+
+        [Test]
+        public void GetDownloadStrategy_TemporarilyIgnored_Cached_Nuget_Nothing()
+        {
+            //arrange
+
+            //act
+            var downloadArguments = new DownloadArguments(String.Empty, true, "any", "any", false, String.Empty, false, 10);
+            var strategy = Program.GetEffectiveDownloadStrategy(downloadArguments, true, true);
+
+            //assert
+            Assert.That(strategy, Is.TypeOf<TemporarilyIgnoreUpdatesDownloadStrategy>());
+            Assert.That(((TemporarilyIgnoreUpdatesDownloadStrategy)strategy).EffectiveStrategy, Is.TypeOf<CacheDownloadStrategy>());
+            Assert.That(((CacheDownloadStrategy)((TemporarilyIgnoreUpdatesDownloadStrategy)strategy).EffectiveStrategy).EffectiveStrategy, Is.TypeOf<NugetDownloadStrategy>());
+            Assert.That(strategy.FallbackStrategy, Is.Null);
         }
     }
 }
