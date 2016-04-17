@@ -6,6 +6,8 @@ open FsUnit
 open Paket.PlatformMatching
 
 module ``Given a target platform`` = 
+    let getPlatformPenalty = getPlatformPenalty Set.empty
+
     [<Test>]
     let ``it should return no penalty for the same platform``() = 
         getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5) (DotNetFramework FrameworkVersion.V4_5) 
@@ -20,6 +22,12 @@ module ``Given a target platform`` =
     let ``it should return > 1000 for an incompatible platform``() = 
         getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5) (Silverlight "v5.0")
          |> shouldBeGreaterThan MaxPenalty
+
+    [<Test>]
+    let ``it should prefer .net proper``() = 
+        let p1 = getPlatformPenalty (DotNetFramework FrameworkVersion.V4_6_2) (DotNetFramework FrameworkVersion.V4_5_1)
+        let p2 = getPlatformPenalty (DotNetFramework FrameworkVersion.V4_6_2) (DotNetStandard DotNetStandardVersion.V1_5)
+        p1 |> shouldBeSmallerThan p2
 
 module ``Given a path`` = 
     [<Test>]

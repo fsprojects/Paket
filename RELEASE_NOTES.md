@@ -1,4 +1,4 @@
-#### 3.0.0-beta001 - 15.04.2016
+#### 3.0.0-beta002 - 17.04.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -9,10 +9,10 @@
 * USABILITY: Removed "specs:" from paket.lock since it was copied from Bundler and had no meaning in Paket - https://github.com/fsprojects/Paket/pull/1608
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
 
-#### 2.60.2 - 13.04.2016
+#### 2.61.0 - 17.04.2016
+* Support .NET platform standard packages - https://github.com/fsprojects/Paket/issues/1614
+* Support .NET 4.6.2 - https://github.com/fsprojects/Paket/issues/1614
 * BUGFIX: Don't set CopyToOutputDirectory for Compile items - https://github.com/fsprojects/Paket/issues/1592
-
-#### 2.60.1 - 13.04.2016
 * BUGFIX: Allow to pack packages with ReflectedDefinition - https://github.com/fsprojects/Paket/pull/1602
 
 #### 2.60.0 - 12.04.2016
