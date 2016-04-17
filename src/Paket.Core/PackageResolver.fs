@@ -441,14 +441,17 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
             verbosefn "  %d packages in resolution. %d requirements left" currentStep.CurrentResolution.Count currentStep.OpenRequirements.Count
         
             let currentRequirement = getCurrentRequirement currentStep.OpenRequirements
-            let getVersionsF = getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName
             let conflicts = getConflicts(currentStep,currentRequirement)
-            if conflicts |> Set.isEmpty |> not then 
-                Resolution.Conflict(currentStep,conflicts,Seq.head conflicts,getVersionsF) 
-            else
-                let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(currentStep,currentRequirement)
+            let state = 
+                let getVersionsF = getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName
+                if Set.isEmpty conflicts then 
+                    ref (Resolution.Conflict(currentStep,Set.empty,currentRequirement,getVersionsF))
+                else
+                    ref (Resolution.Conflict(currentStep,conflicts,Seq.head conflicts,getVersionsF))
 
-                let state = ref (Resolution.Conflict(currentStep,Set.empty,currentRequirement,getVersionsF))
+            if Set.isEmpty conflicts then
+                let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(currentStep,currentRequirement)
+                
                 if Seq.isEmpty compatibleVersions then
                     boostConflicts (currentStep.FilteredVersions,currentRequirement,!state) 
 
@@ -465,8 +468,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                     let shouldTryHarder () =
                         if !forceBreak then false else
                         if (!state).IsDone || Seq.isEmpty !versionsToExplore then false else
-                        if !firstTrial then true else
-                        conflicts |> Set.isEmpty
+                        !firstTrial || Set.isEmpty conflicts
 
                     while shouldTryHarder() do
                         firstTrial := false
@@ -505,7 +507,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                     else
                         ready := true
 
-                !state
+            !state
 
     let startingStep =
         { Relax = false
