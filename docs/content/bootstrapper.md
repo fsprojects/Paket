@@ -27,6 +27,8 @@ Options:
 
   `-f`: Forces the bootstrapper to ignore any cached paket.exe versions and go directly to github.com or nuget.org based on other flags.
 
+  `--help`: Shows a help page with all possible options.
+
 Environment Variables:
 
   `PAKET.VERSION`: The requested version can also be set using this environment variable. Above options take precedence over the environment variable 
