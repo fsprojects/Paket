@@ -2,6 +2,7 @@
 
 open Paket
 open Paket.Domain
+open System.IO
 
 module LoadingScriptsGenerator =
     
@@ -31,13 +32,13 @@ module LoadingScriptsGenerator =
     let getPackageOrderResolvedPackage =
       getPackageOrderGeneric 
         (fun (p:PackageResolver.ResolvedPackage) -> p.Name) 
-        (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n)) 
-    let getPackageOrderFromDependenciesFile (depFile:string) =
-        let depFile = LockFileParser.Parse (System.IO.File.ReadAllLines depFile)
-        depFile
+        (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n))
+
+    let getPackageOrderFromDependenciesFile (lockFile:FileInfo) =
+        let lockFile = LockFileParser.Parse (System.IO.File.ReadAllLines lockFile.FullName)
+        lockFile
         |> Seq.map (fun p -> p.GroupName, getPackageOrderResolvedPackage p.Packages)
         |> Map.ofSeq
-        // generateScriptsFromDependenciesFile generateIncludeScript depFile
 
     let testOrdering =
       let testData =
@@ -83,9 +84,12 @@ module LoadingScriptsGenerator =
 module ScriptGeneratingModule =
   open System.IO
   let getScriptName (package: PackageName) = sprintf "Include_%s.fsx" (package.GetCompareString())
-  let generateFSharpScript packagesOrGroupFolder (knownIncludeScripts:Map<PackageName, string>) (package: PackageResolver.ResolvedPackage) =
-    let packageFolder = Path.Combine (packagesOrGroupFolder, package.Name.GetCompareString())
-    let scriptFile = Path.Combine (packageFolder, getScriptName package.Name)
+  let generateFSharpScript (packagesOrGroupFolder: DirectoryInfo) (knownIncludeScripts:Map<PackageName, string>) (package: PackageResolver.ResolvedPackage) =
+    let packageFolder = 
+      Path.Combine (packagesOrGroupFolder.FullName, package.Name.GetCompareString())
+      |> DirectoryInfo
+
+    let scriptFile = Path.Combine (packageFolder.FullName, getScriptName package.Name)
     let relScriptFile = Path.Combine (package.Name.GetCompareString(), getScriptName package.Name)
     let depLines =
       package.Dependencies
@@ -95,14 +99,14 @@ module ScriptGeneratingModule =
       if package.Name.GetCompareString().ToLowerInvariant() = "fsharp.core" then
         Seq.empty
       else
-        let libDir = Path.Combine (packageFolder, "lib")
+        let libDir = Path.Combine (packageFolder.FullName, "lib")
         // TODO: Replace with some intelligent code to use the correct framework dlls,
         // Generate multiple include scripts per-framework.
         let net40 = Path.Combine (libDir, "net40")
         let net45 = Path.Combine (libDir, "net45")
         let toRelative seq =
           seq
-          |> Seq.map (Path.GetFullPath >> (fun f -> f.Substring(packageFolder.Length + 1)))
+          |> Seq.map (Path.GetFullPath >> (fun f -> f.Substring(packageFolder.FullName.Length + 1)))
         if (Directory.Exists net45) then
           Directory.EnumerateFiles(net45, "*.dll")
           |> toRelative
@@ -142,14 +146,23 @@ module ScriptGeneratingModule =
 
         
   // Generate a fsharp script from the given order of packages, if a package is ordered before its dependencies this function will throw.
-  let generateFSharpScriptsFromDepFile packagesFolder (depFile) =
-      let depFile = LoadingScriptsGenerator.getPackageOrderFromDependenciesFile depFile
+  let generateFSharpScriptsForRootFolder (rootFolder: DirectoryInfo) =
+      let lockFile =
+          Path.Combine(rootFolder.FullName, "paket.lock")
+          |> FileInfo
+
+      let dependencies = LoadingScriptsGenerator.getPackageOrderFromDependenciesFile lockFile
       
-      depFile
-      |> Map.map (fun k packages ->
+      let packagesFolder =
+        Path.Combine(rootFolder.FullName, "packages")
+        |> DirectoryInfo
+
+      dependencies
+      |> Map.map (fun groupName packages ->
         let packagesOrGroupFolder =
-          let groupName = k.GetCompareString ()
-          if groupName = "main" then packagesFolder else Path.Combine(packagesFolder, groupName)
+          match groupName.GetCompareString () with
+          | "main"    -> packagesFolder 
+          | groupName -> Path.Combine(packagesFolder.FullName, groupName) |> DirectoryInfo
         generateFSharpScripts packagesOrGroupFolder packages
         )
       |> ignore
