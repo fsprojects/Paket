@@ -1,14 +1,22 @@
-﻿namespace Paket.Bootstrapper
+﻿using System;
+
+namespace Paket.Bootstrapper
 {
-    internal class DownloadArguments
+    public class DownloadArguments
     {
-        public string Folder { get; private set; }
-        public string Target { get; private set; }
-        public string NugetSource { get; private set; }
+        public string Folder { get; set; }
+        public string Target { get; set; }
+        public string NugetSource { get; set; }
         public bool DoSelfUpdate { get; set; }
-        public string LatestVersion { get; private set; }
-        public bool IgnorePrerelease { get; private set; }
-        public bool IgnoreCache { get; private set; }
+        public string LatestVersion { get; set; }
+        public bool IgnorePrerelease { get; set; }
+        public bool IgnoreCache { get; set; }
+
+        public DownloadArguments()
+        {
+            IgnorePrerelease = true;
+            LatestVersion = String.Empty;
+        }
 
         public DownloadArguments(string latestVersion, bool ignorePrerelease, string folder, string target, bool doSelfUpdate, string nugetSource, bool ignoreCache)
         {

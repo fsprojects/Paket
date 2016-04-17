@@ -27,5 +27,6 @@ group Test
 
   nuget NUnit.Runners
   nuget NUnit ~> 3
+  nuget Moq
   nuget FSCheck
   github forki/FsUnit FsUnit.fs

@@ -8,6 +8,19 @@ namespace Paket.Bootstrapper
 {
     internal static class BootstrapperHelper
     {
+        public static string HelpText = @"The paket.bootstrapper downloads the latest version of paket.
+Usage for paket bootstrapper:
+paket.bootstrapper [OPTIONS] [prerelease|<version>]
+
+Options:
+--help                         print this help
+--prefer-nuget                 prefer nuget as download source instead of github
+--force-nuget                  only use nuget as source
+--nuget-source=<NUGET_SOURCE>  uses <NUGET_SOURCE> to download latest paket.
+                               NUGET_SOURCE can also be a filepath
+--self                         downloads and updates paket.bootstrapper
+-f                             don't use local cache; always downloads
+-s                             silent mode; no output";
         const string PaketBootstrapperUserAgent = "Paket.Bootstrapper";
 
         internal static string GetLocalFileVersion(string target)
@@ -27,7 +40,7 @@ namespace Paket.Bootstrapper
         internal static string GetTempFile(string name)
         {
             var path = Path.GetTempPath();
-            var fileName = Path.Combine(path, name + System.Diagnostics.Process.GetCurrentProcess().Id.ToString());
+            var fileName = Path.Combine(path, name + System.Diagnostics.Process.GetCurrentProcess().Id);
             if (File.Exists(fileName))
                 File.Delete(fileName);
             return fileName;
@@ -48,24 +61,6 @@ namespace Paket.Bootstrapper
             request.Proxy = GetDefaultWebProxyFor(url);
             request.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
             return request;
-        }
-
-        internal static void WriteConsoleError(string message)
-        {
-            WriteConsole(message, ConsoleColor.Red);
-        }
-
-        internal static void WriteConsoleInfo(string message)
-        {
-            WriteConsole(message, ConsoleColor.Yellow);
-        }
-
-        private static void WriteConsole(string message, ConsoleColor consoleColor)
-        {
-            var oldColor = Console.ForegroundColor;
-            Console.ForegroundColor = consoleColor;
-            Console.WriteLine(message);
-            Console.ForegroundColor = oldColor;
         }
 
         internal static IWebProxy GetDefaultWebProxyFor(String url)
