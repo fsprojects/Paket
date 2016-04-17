@@ -3,7 +3,7 @@
 open System
 
 [<Literal>]
-let MaxPenalty = 1000
+let MaxPenalty = 1000000
 
 let inline split (path : string) = 
     path.Split('+')
@@ -13,7 +13,7 @@ let inline extractPlatforms path = split path |> Array.choose FrameworkDetection
 
 let private platformPenalties = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
-let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
+let rec getPlatformPenalty alreadyChecked (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
     if packagePlatform = targetPlatform then
         0
     else
@@ -23,10 +23,18 @@ let rec getPlatformPenalty (targetPlatform:FrameworkIdentifier) (packagePlatform
         | _ ->
             let penalty =
                 targetPlatform.SupportedPlatforms
-                |> List.map (fun target -> getPlatformPenalty target packagePlatform)
+                |> List.filter (fun x -> Set.contains x alreadyChecked |> not)
+                |> List.map (fun target -> getPlatformPenalty (Set.add target alreadyChecked) target packagePlatform)
                 |> List.append [MaxPenalty]
                 |> List.min
                 |> fun p -> p + 1
+
+            let penalty =
+                match targetPlatform, packagePlatform with
+                | DotNetFramework _, DotNetStandard _ -> 200 + penalty
+                | DotNetStandard _, DotNetFramework _ -> 200 + penalty
+                | _ -> penalty
+
             platformPenalties.[key] <- penalty
             penalty
 
@@ -44,7 +52,7 @@ let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
         | _ ->
             let penalty =
                 extractPlatforms path
-                |> Array.map (getPlatformPenalty platform)
+                |> Array.map (getPlatformPenalty Set.empty platform)
                 |> Array.append [| MaxPenalty |]
                 |> Array.min
             pathPenalties.[key] <- penalty
@@ -137,7 +145,7 @@ let getTargetCondition (target:TargetProfile) =
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNX(version) ->"$(TargetFrameworkIdentifier) == 'DNX'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNXCore(version) ->"$(TargetFrameworkIdentifier) == 'DNXCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | DotNetStandard(version) ->"$(TargetFrameworkIdentifier) == '.NETStandard'", sprintf "$(TargetFrameworkVersion) == '%s'" version
+        | DotNetStandard(version) ->"$(TargetFrameworkIdentifier) == '.NETStandard'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | Windows(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | Silverlight(version) -> "$(TargetFrameworkIdentifier) == 'Silverlight'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | WindowsPhoneApp(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version

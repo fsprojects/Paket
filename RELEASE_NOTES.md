@@ -1,7 +1,7 @@
-#### 2.60.2 - 13.04.2016
+#### 2.61.0 - 17.04.2016
+* Support .NET platform standard packages - https://github.com/fsprojects/Paket/issues/1614
+* Support .NET 4.6.2 - https://github.com/fsprojects/Paket/issues/1614
 * BUGFIX: Don't set CopyToOutputDirectory for Compile items - https://github.com/fsprojects/Paket/issues/1592
-
-#### 2.60.1 - 13.04.2016
 * BUGFIX: Allow to pack packages with ReflectedDefinition - https://github.com/fsprojects/Paket/pull/1602
 
 #### 2.60.0 - 12.04.2016

@@ -41,8 +41,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
+    <StartArguments>update --hard</StartArguments>
+    <StartWorkingDirectory>D:\code\kestrel-classic</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

@@ -57,6 +57,33 @@ type FrameworkVersion =
         | FrameworkVersion.V4_6_2 -> "462"
         | FrameworkVersion.V5_0 -> "50"
 
+[<RequireQualifiedAccess>]
+/// The .NET Standard version.
+type DotNetStandardVersion = 
+    | V1_0
+    | V1_1
+    | V1_2
+    | V1_3
+    | V1_4
+    | V1_5
+    override this.ToString() =
+        match this with
+        | V1_0 -> "v1.0"
+        | V1_1 -> "v1.1"
+        | V1_2 -> "v1.2"
+        | V1_3 -> "v1.3"
+        | V1_4 -> "v1.4"
+        | V1_5 -> "v1.5"
+
+    member this.ShortString() =
+        match this with
+        | DotNetStandardVersion.V1_0 -> "10"
+        | DotNetStandardVersion.V1_1 -> "11"
+        | DotNetStandardVersion.V1_2 -> "12"
+        | DotNetStandardVersion.V1_3 -> "13"
+        | DotNetStandardVersion.V1_4 -> "14"
+        | DotNetStandardVersion.V1_5 -> "15"
+
 module KnownAliases =
     let Data =
         [".net", "net"
@@ -80,7 +107,7 @@ type FrameworkIdentifier =
     | DotNetFramework of FrameworkVersion
     | DNX of FrameworkVersion
     | DNXCore of FrameworkVersion
-    | DotNetStandard of string
+    | DotNetStandard of DotNetStandardVersion
     | MonoAndroid
     | MonoTouch
     | MonoMac
@@ -98,7 +125,7 @@ type FrameworkIdentifier =
         | DotNetFramework v -> "net" + v.ShortString()
         | DNX v -> "dnx" + v.ShortString()
         | DNXCore v -> "dnxcore" + v.ShortString()
-        | DotNetStandard v -> "netstandard" + v
+        | DotNetStandard v -> "netstandard" + v.ShortString()
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
@@ -127,17 +154,22 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V3_5 -> [ DotNetFramework FrameworkVersion.V3 ]
         | DotNetFramework FrameworkVersion.V4_Client -> [ DotNetFramework FrameworkVersion.V3_5 ]
         | DotNetFramework FrameworkVersion.V4 -> [ DotNetFramework FrameworkVersion.V4_Client ]
-        | DotNetFramework FrameworkVersion.V4_5 -> [ DotNetFramework FrameworkVersion.V4 ]
-        | DotNetFramework FrameworkVersion.V4_5_1 -> [ DotNetFramework FrameworkVersion.V4_5 ]
-        | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1 ]
-        | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2 ]
-        | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
-        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6 ]
-        | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1 ]
-        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_2 ]
+        | DotNetFramework FrameworkVersion.V4_5 -> [ DotNetFramework FrameworkVersion.V4; DotNetStandard DotNetStandardVersion.V1_0 ]
+        | DotNetFramework FrameworkVersion.V4_5_1 -> [ DotNetFramework FrameworkVersion.V4_5; DotNetStandard DotNetStandardVersion.V1_1 ]
+        | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1; DotNetStandard DotNetStandardVersion.V1_2 ]
+        | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2; DotNetStandard DotNetStandardVersion.V1_2 ]
+        | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3; DotNetStandard DotNetStandardVersion.V1_3 ]
+        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4 ]
+        | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1; DotNetStandard DotNetStandardVersion.V1_5 ]
+        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_2; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
-        | DotNetStandard _ -> [ ]
+        | DotNetStandard DotNetStandardVersion.V1_0 -> [ DotNetFramework FrameworkVersion.V4 ]
+        | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0; DotNetFramework FrameworkVersion.V4_5 ]
+        | DotNetStandard DotNetStandardVersion.V1_2 -> [ DotNetStandard DotNetStandardVersion.V1_1; DotNetFramework FrameworkVersion.V4_5_2 ]
+        | DotNetStandard DotNetStandardVersion.V1_3 -> [ DotNetStandard DotNetStandardVersion.V1_2; DotNetFramework FrameworkVersion.V4_6 ]
+        | DotNetStandard DotNetStandardVersion.V1_4 -> [ DotNetStandard DotNetStandardVersion.V1_3; DotNetFramework FrameworkVersion.V4_6_1 ]
+        | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4; DotNetFramework FrameworkVersion.V4_6_2 ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -229,7 +261,13 @@ module FrameworkDetection =
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
                 | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
-                | v when v.StartsWith "netstandard" -> Some(DotNetStandard "1.5")
+                | "netstandard10" -> Some(DotNetStandard DotNetStandardVersion.V1_0)
+                | "netstandard11" -> Some(DotNetStandard DotNetStandardVersion.V1_1)
+                | "netstandard12" -> Some(DotNetStandard DotNetStandardVersion.V1_2)
+                | "netstandard13" -> Some(DotNetStandard DotNetStandardVersion.V1_3)
+                | "netstandard14" -> Some(DotNetStandard DotNetStandardVersion.V1_4)
+                | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
+                | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | _ -> None
 
             cache.[path] <- result
@@ -261,7 +299,10 @@ type TargetProfile =
                 | DotNetFramework FrameworkVersion.V4_5
                 | DotNetFramework FrameworkVersion.V4_5_1
                 | DotNetFramework FrameworkVersion.V4_5_2
-                | DotNetFramework FrameworkVersion.V4_5_3 ->
+                | DotNetFramework FrameworkVersion.V4_5_3
+                | DotNetFramework FrameworkVersion.V4_6
+                | DotNetFramework FrameworkVersion.V4_6_1
+                | DotNetFramework FrameworkVersion.V4_6_2 ->
                     [
                         MonoTouch
                         MonoAndroid
@@ -324,7 +365,8 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_5_2
         FrameworkVersion.V4_5_3
         FrameworkVersion.V4_6
-        FrameworkVersion.V4_6_1]
+        FrameworkVersion.V4_6_1
+        FrameworkVersion.V4_6_2]
 
     let DotNetFrameworkProfiles =
        DotNetFrameworkVersions
