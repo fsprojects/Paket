@@ -77,6 +77,7 @@ type FrameworkIdentifier =
     | DotNetFramework of FrameworkVersion
     | DNX of FrameworkVersion
     | DNXCore of FrameworkVersion
+    | DotNetStandard of string
     | MonoAndroid
     | MonoTouch
     | MonoMac
@@ -94,6 +95,7 @@ type FrameworkIdentifier =
         | DotNetFramework v -> "net" + v.ShortString()
         | DNX v -> "dnx" + v.ShortString()
         | DNXCore v -> "dnxcore" + v.ShortString()
+        | DotNetStandard v -> "netstandard" + v
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
@@ -131,6 +133,7 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_1 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
+        | DotNetStandard _ -> [ ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -222,6 +225,7 @@ module FrameworkDetection =
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
                 | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
+                | v when v.StartsWith "netstandard" -> Some(DotNetStandard "1.5")
                 | _ -> None
 
             cache.[path] <- result
