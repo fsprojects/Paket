@@ -4,8 +4,10 @@ open System.IO
 open System.Linq
 open Mono.Cecil
 open QuickGraph
-let rootFolder        = (__SOURCE_DIRECTORY__) |> DirectoryInfo
+
 let dependenciesFile, lockFile =
+  //let rootFolder = (@"C:\dev\src\g\fiddle3d") |> DirectoryInfo
+  let rootFolder = (__SOURCE_DIRECTORY__) |> DirectoryInfo
   let deps = Paket.Dependencies.Locate(rootFolder.FullName)
   let lock =
     deps.DependenciesFile
@@ -20,9 +22,6 @@ let getDllFilesWithinPackage (paketDependencies: Paket.Dependencies) packageName
     let groupName = None
     paketDependencies.GetInstalledPackageModel(groupName, packageName)
 
-  for p in installModel.ReferenceFileFolders do
-    printfn "reference file folders: %A" p
-  
   // HACK: take first one for now
   let references = installModel.ReferenceFileFolders.[0].Files.References
 
@@ -102,7 +101,7 @@ let packagesGraph = computePackageTopologyGraph lockFile
 
 for (group, package) in packagesGraph.Keys do
   
-  printfn "= %s %s =" (group.ToString()) (package.ToString())
+  printfn "= %s %s =" (group.ToString()) (package.GetCompareString())
   try
     let dlls = getDllFilesWithinPackage dependenciesFile (package.ToString())
     for d in dlls do
