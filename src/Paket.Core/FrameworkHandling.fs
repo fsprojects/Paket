@@ -19,6 +19,7 @@ type FrameworkVersion =
     | V4_5_3
     | V4_6
     | V4_6_1
+    | V4_6_2
     | V5_0
     override this.ToString() =
         match this with
@@ -35,6 +36,7 @@ type FrameworkVersion =
         | V4_5_3 -> "v4.5.3"
         | V4_6 -> "v4.6"
         | V4_6_1-> "v4.6.1"
+        | V4_6_2-> "v4.6.2"
         | V5_0 -> "v5.0"
 
     member this.ShortString() =
@@ -52,6 +54,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_5_3 -> "453"
         | FrameworkVersion.V4_6 -> "46"
         | FrameworkVersion.V4_6_1 -> "461"
+        | FrameworkVersion.V4_6_2 -> "462"
         | FrameworkVersion.V5_0 -> "50"
 
 module KnownAliases =
@@ -130,7 +133,8 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2 ]
         | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3 ]
         | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6 ]
-        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_1 ]
+        | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1 ]
+        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_2 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
         | DotNetStandard _ -> [ ]
