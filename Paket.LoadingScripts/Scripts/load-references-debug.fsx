@@ -1,0 +1,15 @@
+// Warning: generated file; your changes could be lost when a new file is generated.
+#I __SOURCE_DIRECTORY__
+#r "../../packages/Chessie/lib/net40/Chessie.dll"
+#r "../../bin/Paket.Core.dll"
+#r "System.Core.dll"
+#r "System.dll"
+#r "System.Numerics.dll"
+#r "../../packages/scriptbuilder/QuickGraph/lib/net4/QuickGraph.dll"
+#r "../../packages/scriptbuilder/QuickGraph/lib/net4/QuickGraph.Data.dll"
+#r "../../packages/scriptbuilder/QuickGraph/lib/net4/QuickGraph.Graphviz.dll"
+#r "../../packages/scriptbuilder/QuickGraph/lib/net4/QuickGraph.Serialization.dll"
+#r "../../packages/scriptbuilder/Mono.Cecil/lib/net45/Mono.Cecil.dll"
+#r "../../packages/scriptbuilder/Mono.Cecil/lib/net45/Mono.Cecil.Mdb.dll"
+#r "../../packages/scriptbuilder/Mono.Cecil/lib/net45/Mono.Cecil.Pdb.dll"
+#r "../../packages/scriptbuilder/Mono.Cecil/lib/net45/Mono.Cecil.Rocks.dll"
