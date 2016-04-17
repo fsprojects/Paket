@@ -161,6 +161,11 @@ type Resolution =
                 "  Please try to relax some conditions."
             |> failwithf "%s"
 
+    member this.IsDone =
+        match this with
+        | Resolution.Ok _ -> true
+        | _ -> false
+
 let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,(versionToExplore,_),dependency,resolverStep:ResolverStep) =
     let dependenciesByName =
         // there are packages which define multiple dependencies to the same package
@@ -436,13 +441,14 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
             verbosefn "  %d packages in resolution. %d requirements left" currentStep.CurrentResolution.Count currentStep.OpenRequirements.Count
         
             let currentRequirement = getCurrentRequirement currentStep.OpenRequirements
+            let getVersionsF = getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName
             let conflicts = getConflicts(currentStep,currentRequirement)
             if conflicts |> Set.isEmpty |> not then 
-                Resolution.Conflict(currentStep,conflicts,Seq.head conflicts,getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName) 
+                Resolution.Conflict(currentStep,conflicts,Seq.head conflicts,getVersionsF) 
             else
                 let availableVersions,compatibleVersions,globalOverride = getCompatibleVersions(currentStep.Relax,currentStep.FilteredVersions,currentStep.OpenRequirements,currentRequirement)
 
-                let conflictStatus = Resolution.Conflict(currentStep,Set.empty,currentRequirement,getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName)
+                let conflictStatus = Resolution.Conflict(currentStep,Set.empty,currentRequirement,getVersionsF)
                 if Seq.isEmpty compatibleVersions then
                     boostConflicts (currentStep.FilteredVersions,currentRequirement,conflictStatus) 
 
@@ -455,15 +461,11 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                     let trial = ref 0
                     let forceBreak = ref false
             
-                    let isOk() = 
-                        match !state with
-                        | Resolution.Ok _ -> true
-                        | _ -> false
                     let versionsToExplore = ref compatibleVersions
 
                     let shouldTryHarder trial =
                         if !forceBreak then false else
-                        if isOk() || Seq.isEmpty !versionsToExplore then false else
+                        if (!state).IsDone || Seq.isEmpty !versionsToExplore then false else
                         if trial < 1 then true else
                         conflicts |> Set.isEmpty
 
@@ -499,7 +501,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                                         forceBreak := true
                                 | _ -> ()                            
 
-                    if not !useUnlisted && !hasUnlisted && not (isOk()) then
+                    if not !useUnlisted && !hasUnlisted && not (!state).IsDone then
                         useUnlisted := true
                     else
                         ready := true
