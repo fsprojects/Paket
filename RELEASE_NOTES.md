@@ -1,3 +1,6 @@
+#### 2.62.1 - 17.04.2016
+* USABILITY: remove command restricts install to the specified group only - https://github.com/fsprojects/Paket/pull/1612
+
 #### 2.62.0 - 17.04.2016
 * Refactoring Bootstrapper to introduce better coverage and testing - https://github.com/fsprojects/Paket/pull/1603
 
