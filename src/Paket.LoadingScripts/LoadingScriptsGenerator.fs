@@ -40,46 +40,6 @@ module LoadingScriptsGenerator =
         |> Seq.map (fun p -> p.GroupName, getPackageOrderResolvedPackage p.Packages)
         |> Map.ofSeq
 
-    let testOrdering =
-      let testData =
-          [ { PackageResolver.ResolvedPackage.Name = PackageName("Test1")
-              PackageResolver.ResolvedPackage.Version = SemVer.Parse "1.0.0"
-              PackageResolver.ResolvedPackage.Dependencies =
-                Set.empty
-                |> Set.add(
-                    PackageName("other"), 
-                    VersionRequirement(VersionRange.Specific (SemVer.Parse "1.0.0"), PreReleaseStatus.No),
-                    Paket.Requirements.FrameworkRestrictions.AutoDetectFramework)
-              PackageResolver.ResolvedPackage.Unlisted = false
-              PackageResolver.ResolvedPackage.Settings = Requirements.InstallSettings.Default
-              PackageResolver.ResolvedPackage.Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None } }
-            { Name = PackageName("other")
-              Version = SemVer.Parse "1.0.0"
-              Dependencies = Set.empty
-              Unlisted = false
-              Settings = Requirements.InstallSettings.Default
-              Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None } }
-          ]
-      let result =
-        getPackageOrderResolvedPackage testData
-        |> List.map (fun p -> p.Name)
-
-      System.Diagnostics.Debug.Assert(
-        result = 
-          [  PackageName("other")
-             PackageName("Test1")
-          ] : bool)
-          
-      let result2 =
-        getPackageOrderResolvedPackage (testData |> List.rev)
-        |> List.map (fun p -> p.Name)
-
-      System.Diagnostics.Debug.Assert(
-        result2 = 
-          [  PackageName("other")
-             PackageName("Test1")
-          ] : bool)
-
 
 module ScriptGeneratingModule =
   open System.IO
