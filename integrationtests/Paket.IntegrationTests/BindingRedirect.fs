@@ -351,5 +351,17 @@ let ``#1477 assembly redirects lock files``() =
         Directory.Delete(scenarioTempPath scenario, true)
     with e ->
         failwith "could not delete directory, i.e. restore holds on to files"
+
+[<Test>]
+[<Ignore("this is not part of paket behaviour right now")>]
+let ``#1621 didn't generate binding redirect for projectB``() =
+    let scenario = "i001621-different-framework"
+    install scenario |> ignore
+    let ``NUnit`` = """<assemblyIdentity name="nunit.framework" publicKeyToken="2638cd05610744eb" culture="neutral" />"""
     
+    let path = Path.Combine(scenarioTempPath scenario, "projectB")
+    let configPath = Path.Combine(path, "app.config")
+
+    let config = File.ReadAllText(configPath) |> normalizeLineEndings
     
+    config |> shouldContainText ``NUnit``
