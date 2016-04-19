@@ -63,11 +63,10 @@ type CopyRuntimeDependencies() =
             try
                 let currentRuntime =
                     if isWindows then
-                       "win7-x64"
+                       "win7-x86"
                     elif isMacOS then "osx"
                     else "debian-x64"
 
-                let currentRuntime = "win7-x64"
                 base.Log.LogMessage(MessageImportance.Normal, "Current runtime is {0}", currentRuntime)
                 let projectFile = FileInfo(if String.IsNullOrWhiteSpace this.ProjectFile then this.BuildEngine.ProjectFileOfTaskNode else this.ProjectFile)
                 
