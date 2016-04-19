@@ -131,10 +131,12 @@ module InstallModel =
           TargetsFileFolders = [] 
           Analyzers = [] }
 
-    let extractLibFolder path = 
-        match Utils.extractPath ("lib", path) with        
-        | None when path.Contains "runtimes" -> Utils.extractPath ("runtimes", path)
-        | x -> x
+    let extractLibFolder (path:string) =
+        let path = path.Replace("\\", "/").ToLower()
+        if path.Contains "runtimes" then
+            Utils.extractPath ("runtimes", path)
+        else
+            Utils.extractPath ("lib", path)
 
     let extractBuildFolder path = Utils.extractPath ("build", path)
 
