@@ -254,6 +254,7 @@ module FrameworkDetection =
                 | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
                 | "runtimes/win7-x86" -> Some(Runtimes("Win32"))
                 | "runtimes/win7-arm" -> Some(Runtimes("arm"))
+                | "runtimes/aot" -> Some(Runtimes("aot"))
                 | "native" -> Some(Native("",""))
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
@@ -465,6 +466,7 @@ module KnownTargetProfiles =
           Runtimes("win7-x86")
           Runtimes("win7-arm")
           Runtimes("debian-x64")
+          Runtimes("aot")
           Runtimes("osx") ]
 
     let AllProfiles = (AllNativeProfiles |> List.map (fun p -> SinglePlatform p)) @ (AllRuntimes |> List.map (fun p -> SinglePlatform p)) @ AllDotNetProfiles

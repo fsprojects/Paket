@@ -40,6 +40,12 @@ let ``should understand libuv in runtimes``() =
 
     model.GetLibReferences(SinglePlatform (Runtimes("win7-x64"))) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
 
+[<Test>]
+let ``should understand aot in runtimes``() = 
+    let model = emptymodel.AddReferences [ @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll"; ] 
+
+    model.GetLibReferences(SinglePlatform (Runtimes("aot"))) |> shouldContain @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll"
+
 
 [<Test>]
 let ``should understand mylib in mylib.dll``() = 
