@@ -157,6 +157,7 @@ let getTargetCondition (target:TargetProfile) =
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
         | Native("","") -> "true", ""
         | Native("",bits) -> (sprintf "'$(Platform)'=='%s'" bits), ""
+        | Runtimes(platform) -> failwithf "Runtime dependencies are unsupported in project files."
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile bits), ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
@@ -181,14 +182,17 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
         |> CheckIfFullyInGroup "WindowsPhoneApp" (fun x -> match x with | SinglePlatform(WindowsPhoneApp(_)) -> true | _ -> false)
         |> CheckIfFullyInGroup "WindowsPhone" (fun x -> match x with | SinglePlatform(WindowsPhoneSilverlight(_)) -> true | _ -> false)
 
-    let conditions =        
-        if targets = [SinglePlatform(Native("",""))] then 
-            targets 
-        else 
+    let conditions = 
+        if targets = [ SinglePlatform(Native("", "")) ] then 
             targets
-            |> List.filter (fun x -> match x with | SinglePlatform(Native("","")) -> false | _ -> true  ) 
+        else 
+            targets 
+            |> List.filter (function
+                           | SinglePlatform(Native("", "")) -> false
+                           | SinglePlatform(Runtimes(_)) -> false
+                           | _ -> true)
         |> List.map getTargetCondition
-        |> List.filter (fun (_,v) -> v <> "false")
+        |> List.filter (fun (_, v) -> v <> "false")
         |> List.append grouped
         |> List.groupBy fst
 

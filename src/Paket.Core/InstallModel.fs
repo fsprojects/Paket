@@ -131,7 +131,10 @@ module InstallModel =
           TargetsFileFolders = [] 
           Analyzers = [] }
 
-    let extractLibFolder path = Utils.extractPath ("lib", path)
+    let extractLibFolder path = 
+        match Utils.extractPath ("lib", path) with        
+        | None when path.Contains "runtimes" -> Utils.extractPath ("runtimes", path)
+        | x -> x
 
     let extractBuildFolder path = Utils.extractPath ("build", path)
 
@@ -184,7 +187,7 @@ module InstallModel =
             this
 
     let calcLibFolders libs =
-        libs 
+       libs 
         |> Seq.choose extractLibFolder 
         |> Seq.distinct 
         |> PlatformMatching.getSupportedTargetProfiles 

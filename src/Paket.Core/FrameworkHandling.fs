@@ -112,6 +112,7 @@ type FrameworkIdentifier =
     | MonoTouch
     | MonoMac
     | Native of string * string
+    | Runtimes of string 
     | XamariniOS
     | XamarinMac
     | Windows of string
@@ -130,6 +131,7 @@ type FrameworkIdentifier =
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
         | Native(_) -> "native"
+        | Runtimes(_) -> "runtimes"
         | XamariniOS -> "xamarinios"
         | XamarinMac -> "xamarinmac"
         | Windows v -> "win" + v
@@ -145,6 +147,7 @@ type FrameworkIdentifier =
         | MonoTouch -> [ ]
         | MonoMac -> [ ]
         | Native(_) -> [ ]
+        | Runtimes(_) -> [ ]
         | XamariniOS -> [ ]
         | XamarinMac -> [ ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
@@ -196,6 +199,7 @@ type FrameworkIdentifier =
         | DNXCore _, DNXCore _ -> true
         | MonoAndroid _, MonoAndroid _ -> true
         | MonoMac _, MonoMac _ -> true
+        | Runtimes _, Runtimes _ -> true
         | MonoTouch _, MonoTouch _ -> true
         | Windows _, Windows _ -> true
         | WindowsPhoneApp _, WindowsPhoneApp _ -> true
@@ -247,6 +251,9 @@ module FrameworkDetection =
                 | "native/arm/release" -> Some(Native("Release","arm"))
                 | "native/address-model-32" -> Some(Native("","Win32"))
                 | "native/address-model-64" -> Some(Native("","x64"))
+                | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
+                | "runtimes/win7-x86" -> Some(Runtimes("Win32"))
+                | "runtimes/win7-arm" -> Some(Runtimes("arm"))
                 | "native" -> Some(Native("",""))
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
@@ -453,7 +460,14 @@ module KnownTargetProfiles =
           Native("Release","x64")
           Native("Release","arm")]
 
-    let AllProfiles = (AllNativeProfiles |> List.map (fun p -> SinglePlatform p)) @ AllDotNetProfiles
+    let AllRuntimes =
+        [ Runtimes("win7-x64")
+          Runtimes("win7-x86")
+          Runtimes("win7-arm")
+          Runtimes("debian-x64")
+          Runtimes("osx") ]
+
+    let AllProfiles = (AllNativeProfiles |> List.map (fun p -> SinglePlatform p)) @ (AllRuntimes |> List.map (fun p -> SinglePlatform p)) @ AllDotNetProfiles
 
     let FindPortableProfile name =
         AllProfiles

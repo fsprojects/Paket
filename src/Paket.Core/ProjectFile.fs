@@ -677,7 +677,10 @@ module ProjectFile =
 
         let conditions =
             model.ReferenceFileFolders
-            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition lib.Targets,createItemGroup lib.Files.References)
+            |> List.choose (fun lib -> 
+                match lib with
+                | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> None  // TODO: Add reference to custom task instead
+                | _ -> Some (PlatformMatching.getCondition referenceCondition lib.Targets,createItemGroup lib.Files.References))
             |> List.sortBy fst
 
         let targetsFileConditions =
