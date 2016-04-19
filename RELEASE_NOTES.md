@@ -1,3 +1,6 @@
+#### 2.62.2 - 19.04.2016
+* EXPERIMENTAL: paket resolves runtime dependency libs - https://github.com/fsprojects/Paket/pull/1626
+
 #### 2.62.1 - 17.04.2016
 * USABILITY: remove command restricts install to the specified group only - https://github.com/fsprojects/Paket/pull/1612
 
