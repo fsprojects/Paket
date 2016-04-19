@@ -35,6 +35,13 @@ let ``should understand lib in lib.dll``() =
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\FunScript.TypeScript\lib\net40\FunScript.TypeScript.Binding.lib.dll"
 
 [<Test>]
+let ``should understand libuv in runtimes``() = 
+    let model = emptymodel.AddReferences [ @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"; ] 
+
+    model.GetLibReferences(SinglePlatform (Runtimes("win7-x64"))) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
+
+
+[<Test>]
 let ``should understand mylib in mylib.dll``() = 
     let model = emptymodel.AddReferences [ @"c:/users/username/workspace/myproject/packages/mylib.mylib/lib/net45/mylib.mylib.dll"; ] 
 

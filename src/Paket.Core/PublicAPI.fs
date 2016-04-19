@@ -10,9 +10,6 @@ open Chessie.ErrorHandling
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
-    let getLockFile() =
-        let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
-        LockFile.LoadFrom(lockFileName.FullName)
 
     let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
         packages
@@ -33,6 +30,14 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate(): Dependencies = Dependencies.Locate(Environment.CurrentDirectory)
+
+    /// Returns an instance of the paket.lock file.
+    member this.GetLockFile() = 
+        let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+        LockFile.LoadFrom(lockFileName.FullName)
+
+    /// Returns an instance of the paket.dependencies file.
+    member this.GetDependenciesFile() = DependenciesFile.ReadFromFile dependenciesFileName
 
     /// Tries to locate the paket.dependencies file in the given folder or a parent folder.
     static member Locate(path: string): Dependencies =
@@ -311,7 +316,7 @@ type Dependencies(dependenciesFileName: string) =
             | None -> Constants.MainDependencyGroup
             | Some name -> GroupName name
 
-        match getLockFile().Groups |> Map.tryFind groupName with
+        match this.GetLockFile().Groups |> Map.tryFind groupName with
         | None -> None
         | Some group ->
             group.Resolution.TryFind(PackageName packageName)
@@ -319,7 +324,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Returns the installed versions of all installed packages.
     member this.GetInstalledPackages(): (string * string * string) list =
-        getLockFile().GetGroupedResolution()
+        this.GetLockFile().GetGroupedResolution()
         |> listPackages
 
     /// Returns all sources from the dependencies file.
@@ -340,7 +345,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Returns the installed versions of all installed packages which are referenced in the references file.
     member this.GetInstalledPackages(referencesFile:ReferencesFile): (string * string * string) list =
-        let lockFile = getLockFile()
+        let lockFile = this.GetLockFile()
         let resolved = lockFile.GetGroupedResolution()
         referencesFile
         |> lockFile.GetPackageHull
@@ -386,7 +391,7 @@ type Dependencies(dependenciesFileName: string) =
             |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> kv.Key, p.Name))
             |> List.concat
 
-        getLockFile().GetGroupedResolution()
+        this.GetLockFile().GetGroupedResolution()
         |> Seq.filter (fun kv -> normalizedDependendenciesFromRefFile |> Seq.exists ((=) kv.Key))
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
@@ -399,7 +404,7 @@ type Dependencies(dependenciesFileName: string) =
             |> Seq.map (fun kv -> dependenciesFile.GetDependenciesInGroup(kv.Value.Name) |> Seq.map (fun kv' -> kv.Key, kv'.Key)  |> Seq.toList)
             |> List.concat
 
-        getLockFile().GetGroupedResolution()
+        this.GetLockFile().GetGroupedResolution()
         |> Seq.filter (fun kv -> normalizedDependencies |> Seq.exists ((=) kv.Key))
         |> listPackages
 
@@ -412,7 +417,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Returns the direct dependencies for the given package.
     member this.GetDirectDependenciesForPackage(groupName,packageName:string): (string * string * string) list =
-        let resolvedPackages = getLockFile().GetGroupedResolution()
+        let resolvedPackages = this.GetLockFile().GetGroupedResolution()
         let package = resolvedPackages.[groupName, (PackageName packageName)]
         let normalizedDependencies = package.Dependencies |> Seq.map (fun (name,_,_) -> groupName, name) |> Seq.toList
 
@@ -560,7 +565,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Lists all paket.template files in the current solution.
     member this.ListTemplateFiles() : TemplateFile list =
-        let lockFile = getLockFile()
+        let lockFile = this.GetLockFile()
         ProjectFile.FindAllProjects(this.RootPath)
         |> Array.choose (fun proj -> ProjectFile.FindTemplatesFile(FileInfo(proj.FileName)))
         |> Array.choose (fun path ->
