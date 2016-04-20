@@ -1,4 +1,5 @@
-#### 2.62.4 - 20.04.2016
+#### 2.62.5 - 20.04.2016
+* Added support for MonoAndroid22 and MonoAndroid23 - https://github.com/fsprojects/Paket/pull/1628
 * EXPERIMENTAL: paket resolves runtime dependency libs - https://github.com/fsprojects/Paket/pull/1626
 
 #### 2.62.1 - 17.04.2016
