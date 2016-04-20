@@ -194,9 +194,7 @@ type FrameworkIdentifier =
     member x.IsSameCategoryAs y =
         match (x, y) with
         | DotNetFramework _, DotNetFramework _ -> true
-        | DotNetStandard _, DotNetStandard _ -> true
-        | DotNetFramework _, DotNetStandard _ -> true
-        | DotNetStandard _, DotNetFramework _ -> true
+        | DotNetStandard _, DotNetStandard _ -> true        
         | Silverlight _, Silverlight _ -> true
         | DNX _, DNX _ -> true
         | DNXCore _, DNXCore _ -> true

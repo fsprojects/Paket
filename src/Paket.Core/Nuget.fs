@@ -22,7 +22,7 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "2.4"
+    static member CurrentCacheVersion = "2.5"
 
 /// The NuGet cache folder.
 let CacheFolder = 
