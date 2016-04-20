@@ -195,6 +195,7 @@ type FrameworkIdentifier =
         match (x, y) with
         | DotNetFramework _, DotNetFramework _ -> true
         | DotNetStandard _, DotNetStandard _ -> true
+        
         | Silverlight _, Silverlight _ -> true
         | DNX _, DNX _ -> true
         | DNXCore _, DNXCore _ -> true
@@ -210,6 +211,39 @@ type FrameworkIdentifier =
         | Native _, Native _ -> true
         | _ -> false
 
+    member x.IsCompatible y = 
+        x = y || 
+          (x.SupportedPlatforms |> Seq.exists (fun x' -> x' = y && not (x'.IsSameCategoryAs x))) || 
+          (y.SupportedPlatforms |> Seq.exists (fun y' -> y' = x && not (y'.IsSameCategoryAs y)))
+
+    member x.IsAtLeast y =
+        if x.IsSameCategoryAs y then
+            x >= y                 
+        else 
+            let isCompatible() = 
+                y.SupportedPlatforms
+                |> Seq.exists x.IsAtLeast
+
+            match x,y with
+            | DotNetStandard _, DotNetFramework _ -> isCompatible()
+            | DotNetFramework _, DotNetStandard _ -> isCompatible()
+            | _ -> false
+
+    member x.IsAtMost y =
+        if x.IsSameCategoryAs y then
+            x < y                 
+        else 
+            let isCompatible() = 
+                y.SupportedPlatforms
+                |> Seq.exists x.IsAtMost
+
+            match x,y with
+            | DotNetStandard _, DotNetFramework _ -> isCompatible()
+            | DotNetFramework _, DotNetStandard _ -> isCompatible()
+            | _ -> false
+
+
+    member x.IsBetween(a,b) = x.IsAtLeast a && x.IsAtMost b
 
 module FrameworkDetection =
     let private cache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
