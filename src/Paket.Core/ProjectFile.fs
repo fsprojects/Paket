@@ -792,6 +792,8 @@ module ProjectFile =
                     yield node
                 elif node.Name = "UsingTask" && node.Attributes.["TaskName"] <> null && node.Attributes.["TaskName"].Value = "CopyRuntimeDependencies" then
                     yield node
+                elif node.Name = "CopyRuntimeDependencies" then
+                    yield node
                 yield! getPaketNodes node]
         
         for node in getPaketNodes project.Document do
@@ -824,6 +826,32 @@ module ProjectFile =
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) (project:ProjectFile) =
         removePaketNodes project
+
+
+        let findInsertSpot() =
+            let j = ref 0
+            while !j < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!j].OuterXml.ToString()) do
+                incr j
+
+            let k = ref !j
+            while !k < project.ProjectNode.ChildNodes.Count &&
+                (String.startsWithIgnoreCase  "<PropertyGroup" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) ||
+                 (String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
+                  not (String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
+                       String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString())))) do
+                incr k
+
+            let l = ref !k
+            while !l < project.ProjectNode.ChildNodes.Count do
+                let node = project.ProjectNode.ChildNodes.[!l].OuterXml.ToString()
+                if String.startsWithIgnoreCase  "<import" node && 
+                   (String.containsIgnoreCase "microsoft.csharp.targets" node || 
+                     String.containsIgnoreCase "microsoft.fsharp.targets" node ||
+                     String.containsIgnoreCase "fsharptargetspath" node)
+                then
+                    k := !l + 1
+                incr l
+            !j,!k
 
         let packagesWithRuntimeDependencies = System.Collections.Generic.HashSet<_>()
         completeModel
@@ -883,45 +911,24 @@ module ProjectFile =
                 if chooseNode.ChildNodes.Count > 0 then
                     project.ProjectNode.InsertAfter(chooseNode,node) |> ignore
 
-            let j = ref 0
-            while !j < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!j].OuterXml.ToString()) do
-                incr j
-
-            let k = ref !j
-            while !k < project.ProjectNode.ChildNodes.Count &&
-                (String.startsWithIgnoreCase  "<PropertyGroup" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) ||
-                 (String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
-                  not (String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
-                       String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString())))) do
-                incr k
-
-            let l = ref !k
-            while !l < project.ProjectNode.ChildNodes.Count do
-                let node = project.ProjectNode.ChildNodes.[!l].OuterXml.ToString()
-                if String.startsWithIgnoreCase  "<import" node && 
-                   (String.containsIgnoreCase "microsoft.csharp.targets" node || 
-                     String.containsIgnoreCase "microsoft.fsharp.targets" node ||
-                     String.containsIgnoreCase "fsharptargetspath" node)
-                then
-                    k := !l + 1
-                incr l
+            let j,k = findInsertSpot()
 
             let addProps() =
-                if !j = 0 then
+                if j = 0 then
                     propsNodes
                     |> Seq.iter (project.ProjectNode.PrependChild >> ignore)
                 else
                     propsNodes
-                    |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,project.ProjectNode.ChildNodes.[!j-1]) |> ignore)
+                    |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,project.ProjectNode.ChildNodes.[j-1]) |> ignore)
             
             if propertyChooseNode.ChildNodes.Count > 0 then
-                if !k = 0 then
+                if k = 0 then
                     project.ProjectNode.AppendChild propertyChooseNode |> ignore
 
                     propsNodes
                     |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
                 else
-                    let node = project.ProjectNode.ChildNodes.[!k-1]
+                    let node = project.ProjectNode.ChildNodes.[k-1]
                     
                     propsNodes
                     |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,node) |> ignore)
@@ -939,6 +946,19 @@ module ProjectFile =
 
         if Seq.isEmpty packagesWithRuntimeDependencies then () else
 
+        let j,k = findInsertSpot()
+        let toolPath = createRelativePath project.FileName (Path.Combine(rootPath, Constants.PaketFolderName, Constants.PaketFileName))
+        let usingTaskNode = 
+            createNode "UsingTask" project
+            |> addAttribute "TaskName" "CopyRuntimeDependencies"
+            |> addAttribute "AssemblyFile" toolPath
+
+        if k > 0 then
+            let pos = project.ProjectNode.ChildNodes.[k-1]
+            project.ProjectNode.InsertAfter(usingTaskNode,pos) |> ignore
+        else
+            project.ProjectNode.AppendChild(usingTaskNode) |> ignore
+
         let allPackages =
             packagesWithRuntimeDependencies 
             |> Seq.map (fun (group,packageName) ->
@@ -948,14 +968,30 @@ module ProjectFile =
                    sprintf "%O#%O" group packageName)
             |> fun xs -> String.Join(";",xs)
 
-        let pos = project.ProjectNode.ChildNodes.[0]
-        let toolPath = createRelativePath project.FileName (Path.Combine(rootPath, Constants.PaketFolderName, Constants.PaketFileName))
-        let n = 
-            createNode "UsingTask" project
-            |> addAttribute "TaskName" "CopyRuntimeDependencies"
-            |> addAttribute "AssemblyFile" toolPath
+        let runtimeDependenciesNode = 
+            createNode "CopyRuntimeDependencies" project
+            |> addAttribute "OutputPath" "$(OutputPath)"
+            |> addAttribute "ProjectsWithRuntimeLibs" allPackages
 
-        project.ProjectNode.InsertAfter(n,pos) |> ignore
+        let j = ref 0
+        let pos = ref None
+        while !j < project.ProjectNode.ChildNodes.Count && !pos = None do
+            let node = project.ProjectNode.ChildNodes.[!j]
+            let nodeText = node.OuterXml.ToString()
+            if String.startsWithIgnoreCase  "<target" nodeText && String.containsIgnoreCase "\"afterbuild\"" nodeText then
+                pos := Some node
+            incr j
+
+        match !pos with
+        | Some node -> node.AppendChild(runtimeDependenciesNode) |> ignore
+        | None ->
+            let afterBuildNode = 
+                createNode "Target" project
+                |> addAttribute "Name" "AfterBuild"
+
+            afterBuildNode.AppendChild(runtimeDependenciesNode) |> ignore
+            
+            project.ProjectNode.InsertAfter(afterBuildNode,usingTaskNode) |> ignore
 
     let save forceTouch project =
         if Utils.normalizeXml project.Document <> project.OriginalText || not (File.Exists(project.FileName)) then
