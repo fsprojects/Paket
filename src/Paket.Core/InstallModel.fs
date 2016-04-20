@@ -292,7 +292,7 @@ module InstallModel =
     let filterBlackList (installModel:InstallModel) = 
 
         let includeReferences = function
-            | Reference.Library lib -> not (String.endsWithIgnoreCase ".dll" lib || String.endsWithIgnoreCase ".exe" lib )
+            | Reference.Library lib -> not (String.endsWithIgnoreCase ".dll" lib || String.endsWithIgnoreCase ".exe" lib || String.endsWithIgnoreCase ".so" lib || String.endsWithIgnoreCase ".dylib" lib )
             | Reference.TargetsFile targetsFile -> 
                 (not (String.endsWithIgnoreCase ".props" targetsFile|| String.endsWithIgnoreCase ".targets" targetsFile))
             | _ -> false
