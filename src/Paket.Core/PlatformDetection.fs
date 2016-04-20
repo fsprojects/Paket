@@ -22,7 +22,7 @@ let isMacOS =
         (Environment.OSVersion.Platform = PlatformID.Unix && (File.Exists "/usr/bin/osascript"))
 
 /// Determines if the current system is a Linux system
-let isLinux = int System.Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128)
+let isLinux = (not isMacOS) && (int System.Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128))
 
 /// Determines if the current system is a mono system
 let isMono = isMonoRuntime || isLinux || isUnix || isMacOS
