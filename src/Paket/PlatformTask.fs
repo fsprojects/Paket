@@ -39,8 +39,7 @@ type CopyRuntimeDependencies() =
 
                 base.Log.LogMessage(MessageImportance.Normal, "Current runtime is {0}", currentRuntime)
                 let projectFile = FileInfo(if String.IsNullOrWhiteSpace this.ProjectFile then this.BuildEngine.ProjectFileOfTaskNode else this.ProjectFile)
-                
-               
+                               
                 let packagesToInstall = 
                     projectsWithRuntimeLibs.Split([|';'|],StringSplitOptions.RemoveEmptyEntries) 
                     |> Array.map (fun x -> 
@@ -65,6 +64,7 @@ type CopyRuntimeDependencies() =
                     match model |> Map.tryFind (group,packageName) with
                     | None -> failwithf "Package %O %O was not found in the install model" group packageName
                     | Some (package,model) ->
+                        base.Log.LogMessage(MessageImportance.Normal, "Installing runtime dependencies for {0} {1}", group, packageName)
                         let files =
                             model.ReferenceFileFolders
                             |> List.choose (fun lib -> 
