@@ -376,28 +376,32 @@ let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestriction
     FrameworkRestrictionList optimized
 
 /// Get if a target should be considered with the specified restrictions
-let isTargetMatchingRestrictions (restrictions:FrameworkRestriction list) = function
-    | SinglePlatform pf ->
-        restrictions
-        |> List.exists (fun restriction ->
-                match restriction with
-                | FrameworkRestriction.Exactly (Native("","")) -> match pf with | Native(_) -> true | _ -> false
-                | FrameworkRestriction.Exactly fw -> pf = fw
-                | FrameworkRestriction.Portable _ -> false
-                | FrameworkRestriction.AtLeast fw -> pf >= fw && pf.IsSameCategoryAs(fw)
-                | FrameworkRestriction.Between(min,max) -> pf >= min && pf < max && pf.IsSameCategoryAs(min))
-    | _ ->
-        restrictions
-        |> List.exists (fun restriction ->
-                match restriction with
-                | FrameworkRestriction.Portable r -> true
-                | _ -> false)
+let isTargetMatchingRestrictions =
+    memoize <| fun (restrictions:FrameworkRestriction list, target) ->
+        match target with
+        | SinglePlatform pf ->
+            restrictions
+            |> List.exists (fun restriction ->
+                    match restriction with
+                    | FrameworkRestriction.Exactly (Native("","")) -> 
+                        match pf with 
+                        | Native(_) -> true 
+                        | _ -> false
+                    | FrameworkRestriction.Exactly fw -> pf.IsCompatible(fw)
+                    | FrameworkRestriction.Portable _ -> false
+                    | FrameworkRestriction.AtLeast fw -> pf.IsAtLeast(fw)
+                    | FrameworkRestriction.Between(min,max) -> pf.IsBetween(min,max))
+        | _ ->
+            restrictions
+            |> List.exists (fun restriction ->
+                    match restriction with
+                    | FrameworkRestriction.Portable r -> true
+                    | _ -> false)
 
 /// Get all targets that should be considered with the specified restrictions
 let applyRestrictionsToTargets (restrictions:FrameworkRestriction list) (targets: TargetProfile list) =
-    let result = targets |> List.filter (isTargetMatchingRestrictions restrictions)
-    result
-
+    targets 
+    |> List.filter (fun t -> isTargetMatchingRestrictions(restrictions,t))
 
 type ContentCopySettings =
 | Omit
