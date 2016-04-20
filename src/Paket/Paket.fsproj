@@ -113,7 +113,7 @@
     </DocumentationFile>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
-    <StartArguments>update --hard</StartArguments>
+    <StartArguments>update</StartArguments>
     <StartWorkingDirectory>D:\code\kestrel-classic</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>

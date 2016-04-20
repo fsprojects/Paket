@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNetCore.Antiforgery</id>
+    <version>1.0.0-rc3-20550</version>
+    <authors>Microsoft.AspNetCore.Antiforgery</authors>
+    <owners>Microsoft.AspNetCore.Antiforgery</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>An antiforgery system for ASP.NET Core designed to generate and validate tokens to prevent Cross-Site Request Forgery attacks.</description>
+    <tags>aspnetcore,antiforgery</tags>
+    <dependencies>
+      <group targetFramework=".NETStandard1.3">
+        <dependency id="Microsoft.AspNetCore.DataProtection" version="[1.0.0-rc3-20550, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[1.0.0-rc3-20550, )" />
+        <dependency id="Microsoft.AspNetCore.WebUtilities" version="[1.0.0-rc3-20550, )" />
+        <dependency id="Microsoft.Extensions.ObjectPool" version="[1.0.0-rc3-20550, )" />
+      </group>
+      <group targetFramework=".NETFramework4.5.1">
+        <dependency id="Microsoft.AspNetCore.DataProtection" version="[1.0.0-rc3-20550, )" />
+        <dependency id="Microsoft.AspNetCore.Http.Abstractions" version="[1.0.0-rc3-20550, )" />
+        <dependency id="Microsoft.AspNetCore.WebUtilities" version="[1.0.0-rc3-20550, )" />
+        <dependency id="Microsoft.Extensions.ObjectPool" version="[1.0.0-rc3-20550, )" />
+      </group>
+    </dependencies>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <copyright>Copyright © Microsoft Corporation</copyright>
+    <projectUrl>http://www.asp.net/</projectUrl>
+  </metadata>
+</package>

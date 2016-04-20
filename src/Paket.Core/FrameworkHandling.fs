@@ -194,6 +194,9 @@ type FrameworkIdentifier =
     member x.IsSameCategoryAs y =
         match (x, y) with
         | DotNetFramework _, DotNetFramework _ -> true
+        | DotNetStandard _, DotNetStandard _ -> true
+        | DotNetFramework _, DotNetStandard _ -> true
+        | DotNetStandard _, DotNetFramework _ -> true
         | Silverlight _, Silverlight _ -> true
         | DNX _, DNX _ -> true
         | DNXCore _, DNXCore _ -> true
@@ -379,6 +382,18 @@ module KnownTargetProfiles =
     let DotNetFrameworkProfiles =
        DotNetFrameworkVersions
        |> List.map (fun x -> SinglePlatform(DotNetFramework(x)))
+
+    let DotNetStandardVersions =
+       [DotNetStandardVersion.V1_0
+        DotNetStandardVersion.V1_1
+        DotNetStandardVersion.V1_2
+        DotNetStandardVersion.V1_3
+        DotNetStandardVersion.V1_4
+        DotNetStandardVersion.V1_5]
+
+    let DotNetStandardProfiles =
+       DotNetStandardVersions
+       |> List.map (fun x -> SinglePlatform(DotNetStandard(x)))
 
     let WindowsProfiles =
        [SinglePlatform(Windows "v4.5")

@@ -154,6 +154,32 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
               FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V3_5))]]
 
 [<Test>]
+let ``can detect explicit dependencies for Microsoft.AspNetCore.Antiforgery``() = 
+    let deps = Nuspec.Load("Nuspec/Microsoft.AspNetCore.Antiforgery.nuspec").Dependencies
+
+    let v =
+        match DependenciesFileParser.parseVersionRequirement(">= 1.0.0-rc3-20550") with
+        | VersionRequirement(v,_) -> v
+
+    deps.[0]
+    |> shouldEqual 
+        (PackageName "Microsoft.AspNetCore.DataProtection", VersionRequirement(v,PreReleaseStatus.All), 
+            FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_3))])
+
+[<Test>]
+let ``can detect explicit dependencies for Microsoft.AspNetCore.Mvc.ViewFeatures``() = 
+    let deps = Nuspec.Load("Nuspec/Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec").Dependencies
+
+    let v =
+        match DependenciesFileParser.parseVersionRequirement(">= 1.0.0-rc3-20550") with
+        | VersionRequirement(v,_) -> v
+
+    deps.[0]
+    |> shouldEqual 
+        (PackageName "Microsoft.AspNetCore.Antiforgery", VersionRequirement(v,PreReleaseStatus.All), 
+            FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_5))])
+
+[<Test>]
 let ``can detect framework assemblies for MathNet.Numerics``() = 
     Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
