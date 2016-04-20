@@ -520,9 +520,6 @@ let removeFile (fileName : string) =
 let normalizeLineEndings (text : string) = 
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
 
-let isMonoRuntime =
-    not (Object.ReferenceEquals(Type.GetType "Mono.Runtime", null))
-
 // adapted from MiniRx
 // http://minirx.codeplex.com/
 [<AutoOpen>]
