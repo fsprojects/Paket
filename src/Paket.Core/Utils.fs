@@ -154,6 +154,9 @@ let getNative (path:string) =
     if path.Contains "/debian-x64" then "/debian-x64" else
     if path.Contains "/aot" then "/aot" else
     if path.Contains "/osx" then "/osx" else
+    if path.Contains "/win" then "/win" else
+    if path.Contains "/linux" then "/linux" else
+    if path.Contains "/unix" then "/unix" else
     ""
 
 let extractPath =

@@ -259,6 +259,7 @@ module FrameworkDetection =
 
             let result = 
                 match path with
+                | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
                 | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
                 | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
                 | "net20" | "net2" | "net" | "net20-full" | "net20-client" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
@@ -285,10 +286,6 @@ module FrameworkDetection =
                 | "native/arm/release" -> Some(Native("Release","arm"))
                 | "native/address-model-32" -> Some(Native("","Win32"))
                 | "native/address-model-64" -> Some(Native("","x64"))
-                | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
-                | "runtimes/win7-x86" -> Some(Runtimes("Win32"))
-                | "runtimes/win7-arm" -> Some(Runtimes("arm"))
-                | "runtimes/aot" -> Some(Runtimes("aot"))
                 | "native" -> Some(Native("",""))
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
@@ -513,6 +510,9 @@ module KnownTargetProfiles =
           Runtimes("win7-arm")
           Runtimes("debian-x64")
           Runtimes("aot")
+          Runtimes("win")
+          Runtimes("linux")
+          Runtimes("unix")
           Runtimes("osx") ]
 
     let AllProfiles = (AllNativeProfiles |> List.map (fun p -> SinglePlatform p)) @ (AllRuntimes |> List.map (fun p -> SinglePlatform p)) @ AllDotNetProfiles
