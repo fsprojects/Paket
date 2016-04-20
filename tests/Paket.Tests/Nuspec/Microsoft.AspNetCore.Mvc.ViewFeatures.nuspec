@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Microsoft.AspNetCore.Mvc.ViewFeatures</id>
+    <version>1.0.0-rc3-20550</version>
+    <authors>Microsoft.AspNetCore.Mvc.ViewFeatures</authors>
+    <owners>Microsoft.AspNetCore.Mvc.ViewFeatures</owners>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>View Rendering features for the MVC runtime</description>
+    <tags>
+    </tags>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5.1">
+        <dependency id="Microsoft.AspNetCore.Antiforgery" version="[1.0.0-rc3-20550, )" />
+      </group>
+      <group targetFramework=".NETStandard1.5">
+        <dependency id="Microsoft.AspNetCore.Antiforgery" version="[1.0.0-rc3-20550, )" />
+      </group>
+    </dependencies>
+    <licenseUrl>http://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
+    <copyright>Copyright © Microsoft Corporation</copyright>
+    <projectUrl>http://www.asp.net/</projectUrl>
+  </metadata>
+</package>
