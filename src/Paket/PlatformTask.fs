@@ -80,7 +80,7 @@ type CopyRuntimeDependencies() =
                                     base.Log.LogMessage(MessageImportance.Normal, "Copying {0} to {1}", sourceFile, this.OutputPath)
                                     let destFile = Path.Combine(this.OutputPath,sourceFile.Name)
 
-                                    File.Copy(sourceFile.FullName,destFile)
+                                    File.Copy(sourceFile.FullName,destFile,true)
                 true
             with
             | _ as ex -> base.Log.LogErrorFromException(ex, false); false
