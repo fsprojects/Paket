@@ -399,7 +399,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             NuGet.NuGetConfig.writeNuGetConfig dir sources
 
         | ProjectType.Project project ->
-            project.UpdateReferences(model, usedPackages)
+            project.UpdateReferences(root, model, usedPackages)
         
             Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
             |> updatePackagesConfigFile usedPackages 

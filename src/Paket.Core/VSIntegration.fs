@@ -10,11 +10,11 @@ open InstallProcess
 
 /// Activates the Visual Studio Nuget autorestore feature in all projects
 let TurnOnAutoRestore environment =
-    let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
+    let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
 
     trial {
         do! downloadLatestBootstrapperAndTargets environment
-        let paketTargetsPath = Path.Combine(exeDir, "paket.targets")
+        let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
 
         environment.Projects
         |> List.map fst
@@ -30,10 +30,10 @@ let TurnOnAutoRestore environment =
 
 /// Deactivates the Visual Studio Nuget autorestore feature in all projects
 let TurnOffAutoRestore environment = 
-    let exeDir = Path.Combine(environment.RootDirectory.FullName, ".paket")
+    let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
     
     trial {
-        let paketTargetsPath = Path.Combine(exeDir, "paket.targets")
+        let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
         do! removeFile paketTargetsPath
 
         environment.Projects

@@ -433,7 +433,9 @@ module ProjectFile =
 
     let internal findNodes paketOnes name (project:ProjectFile) =
         [for node in project.Document |> getDescendants name do
+            
             let isPaketNode = ref false
+
             for child in node.ChildNodes do
                 if child.Name = "Paket" && String.equalsIgnoreCase child.InnerText "true" then 
                     isPaketNode := true
@@ -442,7 +444,7 @@ module ProjectFile =
 
     let getCustomReferenceAndFrameworkNodes project = findNodes false "Reference" project
 
-    let findPaketNodes name (project:ProjectFile) = findNodes true name  project
+    let findPaketNodes name (project:ProjectFile) = findNodes true name project
 
     let getFrameworkAssemblies (project:ProjectFile) = 
         [for node in project.Document |> getDescendants "Reference" do
@@ -788,6 +790,8 @@ module ProjectFile =
                     (node |> withAttributeValue "Label" "Paket")
                 then
                     yield node
+                elif node.Name = "UsingTask" && node.Attributes.["TaskName"] <> null && node.Attributes.["TaskName"].Value = "CopyRuntimeDependencies" then
+                    yield node
                 yield! getPaketNodes node]
         
         for node in getPaketNodes project.Document do
@@ -816,6 +820,7 @@ module ProjectFile =
         | Some v -> FrameworkDetection.Extract(v.Replace("v","net"))
 
     let updateReferences
+            rootPath
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) (project:ProjectFile) =
         removePaketNodes project
@@ -932,17 +937,25 @@ module ProjectFile =
                 project.ProjectNode.AppendChild analyzersNode |> ignore
             )
 
- //       if Seq.isEmpty packagesWithRuntimeDependencies then () else
+        if Seq.isEmpty packagesWithRuntimeDependencies then () else
 
-//        let allPackages =
-//            packagesWithRuntimeDependencies 
-//            |> Seq.map (fun (group,packageName) ->
-//                if group = Constants.MainDependencyGroup then
-//                   packageName.ToString()
-//                else
-//                   sprintf "%O#%O" group packageName)
-//            |> fun xs -> String.Join(";",xs)
-//        failwithf "%s" allPackages
+        let allPackages =
+            packagesWithRuntimeDependencies 
+            |> Seq.map (fun (group,packageName) ->
+                if group = Constants.MainDependencyGroup then
+                   packageName.ToString()
+                else
+                   sprintf "%O#%O" group packageName)
+            |> fun xs -> String.Join(";",xs)
+
+        let pos = project.ProjectNode.ChildNodes.[0]
+        let toolPath = createRelativePath project.FileName (Path.Combine(rootPath, Constants.PaketFolderName, Constants.PaketFileName))
+        let n = 
+            createNode "UsingTask" project
+            |> addAttribute "TaskName" "CopyRuntimeDependencies"
+            |> addAttribute "AssemblyFile" toolPath
+
+        project.ProjectNode.InsertAfter(n,pos) |> ignore
 
     let save forceTouch project =
         if Utils.normalizeXml project.Document <> project.OriginalText || not (File.Exists(project.FileName)) then
@@ -1209,7 +1222,7 @@ type ProjectFile with
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
-    member this.UpdateReferences (completeModel, usedPackages) = ProjectFile.updateReferences completeModel usedPackages this
+    member this.UpdateReferences (root, completeModel, usedPackages) = ProjectFile.updateReferences root completeModel usedPackages this
 
     member this.Save(forceTouch) = ProjectFile.save forceTouch this
 
