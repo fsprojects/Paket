@@ -111,6 +111,7 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
+    <StartArguments>update --hard</StartArguments>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
     <StartArguments>update</StartArguments>

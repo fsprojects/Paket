@@ -89,26 +89,6 @@ let ``filtered with empty should not remove netstandard``() =
     |> shouldEqual set
 
 [<Test>]
-let ``filtered with lower .NETSTANDARD should work``() = 
-    let set = 
-      [PackageName("P1"), VersionRequirement.AllReleases, FrameworkRestrictionList []
-       PackageName("P2"), VersionRequirement.AllReleases, FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
-       PackageName("P3"), VersionRequirement.AllReleases, FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.Exactly (DotNetStandard(DotNetStandardVersion.V1_5))]]
-      |> Set.ofList
-
-    let expected =
-      [PackageName("P1"), VersionRequirement.AllReleases, FrameworkRestrictionList []
-       PackageName("P2"), VersionRequirement.AllReleases, FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))]
-       PackageName("P3"), VersionRequirement.AllReleases, FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.Exactly (DotNetStandard(DotNetStandardVersion.V1_5))]]
-      |> Set.ofList
-
-    set
-    |> DependencySetFilter.filterByRestrictions (FrameworkRestrictionList [FrameworkRestriction.Exactly (DotNetStandard(DotNetStandardVersion.V1_5))])
-    |> shouldEqual expected
-
-
-
-[<Test>]
 let ``filtered with concrete restriction should filter non-matching``() = 
     let original = 
       [PackageName("P1"), VersionRequirement.AllReleases,FrameworkRestrictionList []

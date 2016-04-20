@@ -1,4 +1,4 @@
-#### 3.0.0-beta007 - 19.04.2016
+#### 3.0.0-beta008 - 20.04.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -9,7 +9,7 @@
 * USABILITY: Removed "specs:" from paket.lock since it was copied from Bundler and had no meaning in Paket - https://github.com/fsprojects/Paket/pull/1608
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
 
-#### 2.62.3 - 19.04.2016
+#### 2.62.4 - 20.04.2016
 * EXPERIMENTAL: paket resolves runtime dependency libs - https://github.com/fsprojects/Paket/pull/1626
 
 #### 2.62.1 - 17.04.2016
