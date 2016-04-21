@@ -45,8 +45,9 @@ You can read more about the version range details in the corresponding [NuGet re
 If your referenced git repository contains a build script then Paket can execute this scipt after restore:
 
     [lang=paket]
-    git https://github.com/forki/nupkgtest.git build build:"build.cmd"
-
+    git https://github.com/forki/nupkgtest.git master build:"build.cmd", OS:windows
+    git https://github.com/forki/nupkgtest.git master build:"build.sh", OS:mono
+    
 This allows you to excute arbitray commands after restore.
 
 ## Using Git repositories as NuGet source
