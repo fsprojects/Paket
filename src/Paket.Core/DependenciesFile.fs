@@ -436,7 +436,7 @@ module DependenciesFileParser =
                             let fullPath = remoteFile.ComputeFilePath(root,current.Name,path)
                             let relative = (createRelativePath root fullPath).Replace("\\","/")
                             LocalNuGet(relative,None) :: current.Sources
-                    lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile]; Sources = sources }::other
+                    lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile]; Sources = List.distinct sources }::other
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
         | [] -> failwithf "Error in paket.dependencies line %d" lineNo

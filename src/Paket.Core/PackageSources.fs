@@ -194,6 +194,11 @@ type PackageSource =
         | NuGetV3 n -> n.Url
         | LocalNuGet(n,_) -> n
 
+    member this.IsLocalFeed = 
+        match this with
+        | LocalNuGet(n,_) -> true
+        | _ -> false
+
     member this.Auth = 
         match this with
         | NuGetV2 n -> n.Authentication

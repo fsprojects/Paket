@@ -310,7 +310,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                     let sources = parentSource :: currentRequirement.Sources |> List.distinct
                     Seq.singleton (v,sources)
                 | _ -> 
-                    let sources : PackageSource list = currentRequirement.Sources |> List.sortBy (fun x -> String.containsIgnoreCase "nuget.org" x.Url |> not) 
+                    let sources : PackageSource list = currentRequirement.Sources |> List.sortBy (fun x -> not x.IsLocalFeed, String.containsIgnoreCase "nuget.org" x.Url |> not) 
                     Seq.singleton (v,sources)
 
             availableVersions :=

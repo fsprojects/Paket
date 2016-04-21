@@ -114,8 +114,8 @@
     <StartArguments>update --hard</StartArguments>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\kestrel-classic</StartWorkingDirectory>
+    <StartArguments>update -f</StartArguments>
+    <StartWorkingDirectory>D:\code\testgit</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

@@ -768,7 +768,7 @@ let GetVersions force root (sources, packageName:PackageName) =
     versions
     |> Seq.toList
     |> List.groupBy fst
-    |> List.map (fun (v,s) -> SemVer.Parse v,s |> List.map snd)
+    |> List.map (fun (v,s) -> SemVer.Parse v,s |> List.map snd |> List.sortByDescending (fun s -> s.IsLocalFeed))    
 
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
