@@ -6,11 +6,11 @@ open System.Linq
 open Mono.Cecil
 open QuickGraph
 
-let rootFolder = (@"C:\dev\src\g\fiddle3d") |> DirectoryInfo
+let rootFolder = (@"C:\dev\src\projects\github.com\fsprojects\Paket.VisualStudio") |> DirectoryInfo
 //let rootFolder = (__SOURCE_DIRECTORY__) |> DirectoryInfo
 
 [
-  Paket.LoadingScripts.ScriptGeneratingModule.CSharp
-  Paket.LoadingScripts.ScriptGeneratingModule.FSharp
+  Paket.LoadingScripts.ScriptGeneration.CSharp
+  Paket.LoadingScripts.ScriptGeneration.FSharp
 ]
-|> Seq.iter (fun t -> Paket.LoadingScripts.ScriptGeneratingModule.generateScriptsForRootFolder t (Paket.FrameworkIdentifier.DotNetFramework Paket.FrameworkVersion.V4_5) rootFolder)
+|> Seq.iter (fun t -> Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder t (Paket.FrameworkIdentifier.DotNetFramework Paket.FrameworkVersion.V4_5) rootFolder)

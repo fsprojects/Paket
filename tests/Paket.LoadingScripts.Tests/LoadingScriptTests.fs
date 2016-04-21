@@ -28,7 +28,7 @@ let testData =
     
 [<Test>]
 let ``can re-order simple dependency``() = 
-    LoadingScriptsGenerator.getPackageOrderResolvedPackage testData
+    PackageAndAssemblyResolution.getPackageOrderResolvedPackage testData
     |> List.map (fun p -> p.Name)
     |> shouldEqual
         [ PackageName("other")
@@ -36,7 +36,7 @@ let ``can re-order simple dependency``() =
 
 [<Test>]
 let ``can keep order simple dependency``() = 
-    LoadingScriptsGenerator.getPackageOrderResolvedPackage (testData |> List.rev)
+    PackageAndAssemblyResolution.getPackageOrderResolvedPackage (testData |> List.rev)
     |> List.map (fun p -> p.Name)
     |> shouldEqual
         [ PackageName("other")
