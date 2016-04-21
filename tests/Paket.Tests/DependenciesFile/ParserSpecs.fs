@@ -1235,9 +1235,10 @@ let ``should read paket git config with build command``() =
     buildSource.PackagePath |> shouldEqual (Some "/source/")
     buildSource.Command |> shouldEqual (Some "build.cmd")
     buildSource.OperatingSystemRestriction |> shouldEqual None
-
-    let nupkgtestSource = cfg.Groups.[GroupName "Dev"].Sources.Tail.Head
-    nupkgtestSource.Url |> shouldEqual "paket-files/dev/github.com/forki/nupkgtest/source"
+ 
+    cfg.Groups.[GroupName "Dev"].Sources
+    |> List.map (fun x -> x.Url)
+    |> shouldContain "paket-files/dev/github.com/forki/nupkgtest/source"
 
 
 let paketGitTagsConfig = """
