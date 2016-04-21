@@ -38,7 +38,7 @@ type CopyRuntimeDependencies() =
                     else ["linux"; "debian-x64"; "unix"]
 
                 
-                base.Log.LogMessage(MessageImportance.Normal, "Currently detected runtimes are {0}", sprintf "%A" currentRuntimes)
+                base.Log.LogMessage(MessageImportance.Normal, "Detected runtimes: {0}", sprintf "%A" currentRuntimes)
                 let projectFile = FileInfo(if String.IsNullOrWhiteSpace this.ProjectFile then this.BuildEngine.ProjectFileOfTaskNode else this.ProjectFile)
                                
                 let packagesToInstall = 
@@ -66,7 +66,7 @@ type CopyRuntimeDependencies() =
                         match model |> Map.tryFind (group,packageName) with
                         | None -> failwithf "Package %O %O was not found in the install model" group packageName
                         | Some (package,model) ->
-                            base.Log.LogMessage(MessageImportance.Normal, "Installing runtime dependencies for {0} {1}", group, packageName)
+                            base.Log.LogMessage(MessageImportance.Normal, "Installing runtime dependencies for {0} {1}:", group, packageName)
                             let files =
                                 model.ReferenceFileFolders
                                 |> List.choose (fun lib -> 
@@ -77,7 +77,7 @@ type CopyRuntimeDependencies() =
                             for file in files do
                                 for reference in file.References do
                                     let sourceFile = FileInfo(reference.Path)
-                                    base.Log.LogMessage(MessageImportance.Normal, "Copying {0} to {1}", sourceFile, this.OutputPath)
+                                    base.Log.LogMessage(MessageImportance.Normal, "    Copying {0} to {1}", sourceFile.Name, this.OutputPath)
                                     let destFile = Path.Combine(this.OutputPath,sourceFile.Name)
 
                                     File.Copy(sourceFile.FullName,destFile,true)
