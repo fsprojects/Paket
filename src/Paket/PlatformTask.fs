@@ -37,8 +37,8 @@ type CopyRuntimeDependencies() =
                     elif isMacOS then ["unix"; "osx"]
                     else ["linux"; "debian-x64"; "unix"]
 
-                
                 base.Log.LogMessage(MessageImportance.Normal, "Detected runtimes: {0}", sprintf "%A" currentRuntimes)
+                let currentRuntimes = currentRuntimes |> Set.ofList
                 let projectFile = FileInfo(if String.IsNullOrWhiteSpace this.ProjectFile then this.BuildEngine.ProjectFileOfTaskNode else this.ProjectFile)
                                
                 let packagesToInstall = 
@@ -51,29 +51,32 @@ type CopyRuntimeDependencies() =
 
                 if Array.isEmpty packagesToInstall then true else
 
-                for currentRuntime in currentRuntimes do
-                    let referencesFile = ProjectType.FindReferencesFile projectFile
+                
+                let referencesFile = ProjectType.FindReferencesFile projectFile
 
-                    let dependencies = Dependencies.Locate projectFile.FullName
-                    let lockFile = dependencies.GetLockFile()
-                    let dependenciesFile = dependencies.GetDependenciesFile()
+                let dependencies = Dependencies.Locate projectFile.FullName
+                let lockFile = dependencies.GetLockFile()
+                let dependenciesFile = dependencies.GetDependenciesFile()
 
-                    let root = Path.GetDirectoryName lockFile.FileName
-                    let model = InstallProcess.CreateModel(root, false, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, Map.empty) |> Map.ofArray
-                    let projectDir = FileInfo(this.BuildEngine.ProjectFileOfTaskNode).Directory
+                let root = Path.GetDirectoryName lockFile.FileName
+                let model = InstallProcess.CreateModel(root, false, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, Map.empty) |> Map.ofArray
+                let projectDir = FileInfo(this.BuildEngine.ProjectFileOfTaskNode).Directory
 
-                    for group,packageName in packagesToInstall do
-                        match model |> Map.tryFind (group,packageName) with
-                        | None -> failwithf "Package %O %O was not found in the install model" group packageName
-                        | Some (package,model) ->
+                for group,packageName in packagesToInstall do
+                    match model |> Map.tryFind (group,packageName) with
+                    | None -> failwithf "Package %O %O was not found in the install model" group packageName
+                    | Some (package,model) ->
+                        let files =
+                            model.ReferenceFileFolders
+                            |> List.choose (fun lib -> 
+                                match lib with
+                                | x when (match x.Targets with | [SinglePlatform(Runtimes(x))] when currentRuntimes |> Set.contains x -> true | _ -> false) -> Some lib.Files
+                                | _ -> None)
+
+                        match files with
+                        | [] -> base.Log.LogMessage(MessageImportance.Normal, "No runtime dependencies found for {0} {1}.", group, packageName)
+                        | files ->
                             base.Log.LogMessage(MessageImportance.Normal, "Installing runtime dependencies for {0} {1}:", group, packageName)
-                            let files =
-                                model.ReferenceFileFolders
-                                |> List.choose (fun lib -> 
-                                    match lib with
-                                    | x when (match x.Targets with | [SinglePlatform(Runtimes(x))] when x = currentRuntime -> true | _ -> false) -> Some lib.Files
-                                    | _ -> None)
-
                             for file in files do
                                 for reference in file.References do
                                     let sourceFile = FileInfo(reference.Path)
