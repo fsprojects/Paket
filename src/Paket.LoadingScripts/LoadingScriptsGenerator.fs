@@ -135,49 +135,47 @@ module ScriptGeneratingModule =
     |> fun lines -> Seq.append lines dllLines
     |> fun lines -> Seq.append lines [ sprintf "System.Console.WriteLine(\"Loaded {0}\", \"%s\");" (packageName.GetCompareString()) ]
   
+  let getGroupNameAsOption groupName =
+      if groupName = Constants.MainDependencyGroup then
+          None
+      else
+          Some (groupName.ToString())
+
   // Generate a fsharp script from the given order of packages, if a package is ordered before its dependencies this function will throw.
   let generateScripts
-    (includeScriptsRootFolder : DirectoryInfo)
-    (scriptType               : ScriptType)
-    (framework                : FrameworkIdentifier)
-    (dependenciesFile         : Dependencies)
-    (packagesOrGroupFolder    : DirectoryInfo)
-    (groupName                : GroupName)
-    (orderedPackages          : PackageResolver.ResolvedPackage list) =
-      let scriptGenerator =
-        match scriptType with
-        | CSharp -> generateCSharpScript
-        | FSharp -> generateFSharpScript
-
+      (scriptGenerator          : FileInfo -> ScriptGenInput -> seq<string>)
+      (getScriptFile            : GroupName -> PackageName -> FileInfo)
+      (includeScriptsRootFolder : DirectoryInfo)
+      (framework                : FrameworkIdentifier)
+      (dependenciesFile         : Dependencies)
+      (packagesOrGroupFolder    : DirectoryInfo)
+      (groupName                : GroupName)
+      (orderedPackages          : PackageResolver.ResolvedPackage list)
+      =
       orderedPackages
       |> Seq.fold (fun (knownIncludeScripts: Map<_,_>) (package: PackageResolver.ResolvedPackage) ->
         
-        let scriptFile = getScriptFile includeScriptsRootFolder framework groupName package.Name scriptType
+          let scriptFile = getScriptFile groupName package.Name
         
-        let groupName =
-          if groupName = Constants.MainDependencyGroup then
-              None
-          else
-              Some (groupName.ToString())
+          let groupName = getGroupNameAsOption groupName
+          let dependencies = package.Dependencies |> Seq.map (fun (depName,_,_) -> knownIncludeScripts.[depName])
         
-        let dependencies = package.Dependencies |> Seq.map (fun (depName,_,_) -> knownIncludeScripts.[depName])
-        
-        let installModel = dependenciesFile.GetInstalledPackageModel(groupName, package.Name.GetCompareString())
+          let installModel = dependenciesFile.GetInstalledPackageModel(groupName, package.Name.GetCompareString())
 
-        let lines =
-          scriptGenerator scriptFile {
-              Framework                = framework
-              PackagesOrGroupFolder    = packagesOrGroupFolder
-              IncludeScriptsRootFolder = includeScriptsRootFolder
-              PackageInstallModel      = installModel
-              DependentScripts         = dependencies
-            }
+          let lines =
+              scriptGenerator scriptFile {
+                  Framework                = framework
+                  PackagesOrGroupFolder    = packagesOrGroupFolder
+                  IncludeScriptsRootFolder = includeScriptsRootFolder
+                  PackageInstallModel      = installModel
+                  DependentScripts         = dependencies
+              }
         
-        scriptFile.Directory.Create()
+          scriptFile.Directory.Create()
         
-        File.WriteAllLines (scriptFile.FullName, lines)
+          File.WriteAllLines (scriptFile.FullName, lines)
         
-        knownIncludeScripts |> Map.add package.Name scriptFile
+          knownIncludeScripts |> Map.add package.Name scriptFile
 
       ) Map.empty
 
@@ -185,7 +183,6 @@ module ScriptGeneratingModule =
 
   // Generate a fsharp script from the given order of packages, if a package is ordered before its dependencies this function will throw.
   let generateScriptsForRootFolder scriptType (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo)  =
-      
       let dependenciesFile, lockFile =
           let deps = Paket.Dependencies.Locate(rootFolder.FullName)
           let lock =
@@ -198,22 +195,29 @@ module ScriptGeneratingModule =
       let dependencies = LoadingScriptsGenerator.getPackageOrderFromDependenciesFile (FileInfo(lockFile.FileName))
       
       let packagesFolder =
-        Path.Combine(rootFolder.FullName, Constants.PackagesFolderName)
-        |> DirectoryInfo
-
-      dependencies
-      |> Map.map (fun groupName packages ->
-        let packagesOrGroupFolder =
-          
-          // note: we should probably find/use Paket way to resolve package group folder
-          match groupName.GetCompareString () with
-          | "main"    -> packagesFolder
-          | groupName -> Path.Combine(packagesFolder.FullName, groupName) |> DirectoryInfo
+          Path.Combine(rootFolder.FullName, Constants.PackagesFolderName)
+          |> DirectoryInfo
         
-        let includeScriptsRootFolder = 
+      let includeScriptsRootFolder = 
           Path.Combine(((dependenciesFile.DependenciesFile) |> FileInfo).Directory.FullName, Constants.PaketFilesFolderName, "include-scripts")
           |> DirectoryInfo
 
-        generateScripts includeScriptsRootFolder scriptType framework dependenciesFile packagesOrGroupFolder groupName packages
-        )
+      let scriptGenerator =
+          match scriptType with
+          | CSharp -> generateCSharpScript
+          | FSharp -> generateFSharpScript
+
+      let getScriptFile groupName packageName =
+        getScriptFile includeScriptsRootFolder framework groupName packageName scriptType
+
+      dependencies
+      |> Map.map (fun groupName packages ->
+          
+          let packagesOrGroupFolder =
+              match getGroupNameAsOption groupName with
+              | None           -> packagesFolder
+              | Some groupName -> Path.Combine(packagesFolder.FullName, groupName) |> DirectoryInfo
+
+          generateScripts scriptGenerator getScriptFile includeScriptsRootFolder framework dependenciesFile packagesOrGroupFolder groupName packages
+      )
       |> ignore
