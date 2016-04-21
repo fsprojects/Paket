@@ -168,14 +168,11 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
         |> Map.toList
         |> Seq.collect(fun (_,(t, p)) -> 
             seq {
-                for template in t |> optWithSymbols p do 
+                for template in optWithSymbols p t do 
                     yield template, p
                 }
             )
-         |> Seq.map (fun (t, p) -> 
-                let deps = findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile projectTemplates includeReferencedProjects version specificVersions
-                deps
-            )
+         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile projectTemplates includeReferencedProjects version specificVersions)
          |> Seq.append remaining
          |> Seq.toList
 

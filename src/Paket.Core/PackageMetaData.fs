@@ -144,11 +144,14 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | _ -> PreReleaseStatus.All
     
         let deps, files = 
-            let interProjectDeps = if includeReferencedProjects then projectType.GetAllInterProjectDependenciesWithoutProjectTemplates 
-                                   else projectType.GetAllInterProjectDependenciesWithProjectTemplates 
+            let interProjectDeps = 
+                if includeReferencedProjects then 
+                    projectType.GetAllInterProjectDependenciesWithoutProjectTemplates()
+                else 
+                    projectType.GetAllInterProjectDependenciesWithProjectTemplates()
+                |> Seq.toList
 
-            interProjectDeps()
-            |> Seq.toList
+            interProjectDeps
             |> List.filter (fun proj -> proj <> projectType)
             |> List.fold (fun (deps, files) p -> 
                 match Map.tryFind p.FileName map with
@@ -165,32 +168,37 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         let templateWithOutput =
             let additionalFiles = 
                 let assemblyNames = 
-                    if includeReferencedProjects then projectType.GetAllInterProjectDependenciesWithoutProjectTemplates() |> Seq.toList else [ projectType ]
+                    if includeReferencedProjects then 
+                        projectType.GetAllInterProjectDependenciesWithoutProjectTemplates() 
+                        |> Seq.toList 
+                    else 
+                        [ projectType ]
                     |> List.map (fun proj -> proj.GetAssemblyName())
             
                 assemblyNames
                 |> Seq.collect (fun assemblyFileName -> 
-                                    let assemblyfi = FileInfo(assemblyFileName)
-                                    let name = Path.GetFileNameWithoutExtension assemblyfi.Name
+                    let assemblyfi = FileInfo(assemblyFileName)
+                    let name = Path.GetFileNameWithoutExtension assemblyfi.Name
 
-                                    let projectdir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
-                                    let path = Path.Combine(projectDir, project.GetOutputDirectory config platform)
-                                    let files = Directory.GetFiles(path, name + ".*")
-                                    files 
-                                    |> Array.map (fun f -> FileInfo f)
-                                    |> Array.filter (fun fi -> 
-                                                        let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
-                                                        let validExtensions = match template.Contents with
-                                                                              | CompleteInfo(core, optional) ->
-                                                                                  if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                                                                  else [".xml"; ".dll"; ".exe";]
-                                                                              | ProjectInfo(core, optional) ->
-                                                                                  if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                                                                  else [".xml"; ".dll"; ".exe";]
-                                                        let isValidExtension = 
-                                                            validExtensions
-                                                            |> List.exists (String.equalsIgnoreCase fi.Extension)
-                                                        isSameFileName && isValidExtension)
+                    let projectdir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
+                    let path = Path.Combine(projectDir, project.GetOutputDirectory config platform)
+
+                    Directory.GetFiles(path, name + ".*")
+                    |> Array.map (fun f -> FileInfo f)
+                    |> Array.filter (fun fi -> 
+                                        let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
+                                        let validExtensions = 
+                                            match template.Contents with
+                                            | CompleteInfo(core, optional) ->
+                                                if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                                else [".xml"; ".dll"; ".exe";]
+                                            | ProjectInfo(core, optional) ->
+                                                if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                                else [".xml"; ".dll"; ".exe";]
+                                        let isValidExtension = 
+                                            validExtensions
+                                            |> List.exists (String.equalsIgnoreCase fi.Extension)
+                                        isSameFileName && isValidExtension)
                                )
                 |> Seq.toArray
 

@@ -87,7 +87,7 @@ let nuspecDoc (info:CompleteInfo) =
         dep
 
     let buildDependenciesNode excludedDependencies dependencyList =
-        if  List.isEmpty dependencyList then () else
+        if List.isEmpty dependencyList then () else
         let d = XElement(ns + "dependencies")
         dependencyList 
         |> List.filter (fun d -> Set.contains (fst d) excludedDependencies |> not)

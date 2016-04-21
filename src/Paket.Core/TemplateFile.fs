@@ -242,7 +242,8 @@ module internal TemplateFile =
         match Map.tryFind "dependencies" info with
         | None -> []
         | Some d ->
-            d.Split '\n' |> Array.map (fun d ->
+            d.Split '\n' 
+            |> Array.map (fun d ->
                 let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
                 let name = PackageName reg.Groups.["id"].Value
                 let versionRequirement =
@@ -271,7 +272,9 @@ module internal TemplateFile =
                                 | _ -> failwithf "The template file %s contains the placeholder LOCKEDVERSION, but more than one group contains package %O in paket.lock." fileName name
 
                         else s
+                                        
                     DependenciesFileParser.parseVersionRequirement versionString
+
                 name, versionRequirement)
             |> Array.toList
         
