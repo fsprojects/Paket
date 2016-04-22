@@ -1,0 +1,6 @@
+type project
+id PaketBug
+description
+    Silly empty demo project
+files
+  paket.references => content/net45+net451

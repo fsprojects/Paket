@@ -69,6 +69,24 @@ let ``#1376 fail template``() =
     File.Delete(Path.Combine(scenarioTempPath "i001376-pack-template","PaketBug","paket.template"))
 
 [<Test>]
+let ``#1376 template with plus``() = 
+    let outPath = Path.Combine(scenarioTempPath "i001376-pack-template-plus","out")
+    let templatePath = Path.Combine(scenarioTempPath "i001376-pack-template-plus","PaketBug", "paket.template")
+    paket ("pack -v output \"" + outPath + "\" templatefile " + templatePath) "i001376-pack-template-plus" |> ignore
+    let fileInfo = FileInfo(Path.Combine(outPath, "PaketBug.1.0.0.0.nupkg"))
+    let (expectedFileSize: int64) = int64(1542)
+    fileInfo.Length |> shouldBeGreaterThan expectedFileSize
+ 
+    ZipFile.ExtractToDirectory(fileInfo.FullName, outPath)
+
+    let expectedFile = Path.Combine(outPath, "content", "net45+net451", "paket.references")
+
+    File.Exists expectedFile |> shouldEqual true
+    File.Delete(templatePath)
+
+    File.Delete(Path.Combine(scenarioTempPath "i001376-pack-template-plus","PaketBug","paket.template"))
+
+[<Test>]
 let ``#1429 pack deps from template``() = 
     let outPath = Path.Combine(scenarioTempPath "i001429-pack-deps","out")
     let templatePath = Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug", "paket.template")
