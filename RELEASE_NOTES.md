@@ -1,3 +1,6 @@
+#### 2.62.7 - 22.04.2016
+* BUGFIX: allow directory names with + in paket.template
+
 #### 2.62.6 - 20.04.2016
 * Added support for MonoAndroid22 and MonoAndroid23 - https://github.com/fsprojects/Paket/pull/1628
 * EXPERIMENTAL: paket resolves runtime dependency libs - https://github.com/fsprojects/Paket/pull/1626
