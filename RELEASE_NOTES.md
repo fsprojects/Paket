@@ -1,3 +1,6 @@
+#### 2.62.8 - 22.04.2016
+* Added monoandroid43 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1631
+
 #### 2.62.7 - 22.04.2016
 * BUGFIX: allow directory names with + in paket.template
 
