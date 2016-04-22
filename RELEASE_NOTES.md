@@ -1,14 +1,9 @@
-#### 2.62.8 - 22.04.2016
+#### 2.63.0 - 22.04.2016
 * Added monoandroid43 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1631
-
-#### 2.62.7 - 22.04.2016
-* BUGFIX: allow directory names with + in paket.template
-
-#### 2.62.6 - 20.04.2016
 * Added support for MonoAndroid22 and MonoAndroid23 - https://github.com/fsprojects/Paket/pull/1628
+* BUGFIX: allow directory names with + in paket.template
+* BUGFIX: Generates binding redirect for references targeting different profiles - https://github.com/fsprojects/Paket/pull/1634
 * EXPERIMENTAL: paket resolves runtime dependency libs - https://github.com/fsprojects/Paket/pull/1626
-
-#### 2.62.1 - 17.04.2016
 * USABILITY: remove command restricts install to the specified group only - https://github.com/fsprojects/Paket/pull/1612
 
 #### 2.62.0 - 17.04.2016
