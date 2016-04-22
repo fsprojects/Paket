@@ -220,7 +220,8 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects
                 referenceFile.Groups
                 |> Seq.filter (fun g -> g.Key = groupName)
                 |> Seq.collect (fun g -> g.Value.NugetPackages |> List.map (fun p -> (groupName,p.Name)))
-                |> Seq.collect findDependencies)
+                |> Seq.collect findDependencies
+                |> Seq.map (fun x -> x, projectFile.GetTargetProfile()))
             |> Set.ofSeq
         | None -> Set.empty
 
@@ -241,33 +242,46 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects
         let assemblies =
             extractedPackages
             |> Seq.map (fun (model,redirects) -> (model, redirectsFromReference model.PackageName |> Option.fold (fun _ x -> Some x) redirects))
-            |> Seq.filter (fun (model,_) -> dependencies |> Set.contains model.PackageName)
-            |> Seq.collect (fun (model,redirects) -> model.GetLibReferences targetProfile |> Seq.map (fun lib -> lib,redirects))
-            |> Seq.groupBy (fun (p,_) -> FileInfo(p).Name)
+            |> Seq.collect (fun (model,redirects) -> 
+                dependencies
+                |> Set.filter (fst >> ((=) model.PackageName))
+                |> Seq.collect (fun (_,profile) ->
+                    model.GetLibReferences profile
+                    |> Seq.map (fun x -> x, redirects, profile)))
+            |> Seq.groupBy (fun (p,_,profile) -> profile,FileInfo(p).Name)
             |> Seq.choose(fun (_,librariesForPackage) ->
                 librariesForPackage
-                |> Seq.choose(fun (library,redirects) ->
+                |> Seq.choose(fun (library,redirects,profile) ->
                     try
                         let assembly = LoadAssembliesSafe.reflectionOnlyLoadFrom library
-                        Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.GetReferencedAssemblies(), redirects)
+                        Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.GetReferencedAssemblies(), redirects, profile)
                     with _ -> None)
-                |> Seq.sortBy(fun (assembly,_,_,_) -> assembly.GetName().Version)
+                |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.GetName().Version)
                 |> Seq.toList
                 |> List.rev
                 |> function | head :: _ -> Some head | _ -> None)
             |> Seq.cache
 
+        let referencesDifferentProfiles (assemblyName : AssemblyName) profile =
+            profile = targetProfile
+            && assemblies
+            |> Seq.filter (fun (_,_,_,_,p) -> p <> profile)
+            |> Seq.map (fun (a,_,_,_,_) -> a.GetName())
+            |> Seq.filter (fun a -> a.Name = assemblyName.Name)
+            |> Seq.exists (fun a -> a.Version <> assemblyName.Version)
+
         assemblies
-        |> Seq.choose (fun (assembly,token,refs,redirects) -> token |> Option.map (fun token -> (assembly,token,refs,redirects)))
-        |> Seq.filter (fun (_,_,_,packageRedirects) -> defaultArg ((packageRedirects |> Option.map ((<>) Off)) ++ redirects) false)
-        |> Seq.filter (fun (assembly,_,_,redirects) ->
+        |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> token |> Option.map (fun token -> (assembly,token,refs,redirects,profile)))
+        |> Seq.filter (fun (_,_,_,packageRedirects,_) -> defaultArg ((packageRedirects |> Option.map ((<>) Off)) ++ redirects) false)
+        |> Seq.filter (fun (assembly,_,_,redirects,profile) ->
             let assemblyName = assembly.GetName() 
             redirects = Some Force
+            || referencesDifferentProfiles assemblyName profile
             || assemblies
-            |> Seq.collect (fun (_,_,refs,_) -> refs)
+            |> Seq.collect (fun (_,_,refs,_,_) -> refs)
             |> Seq.filter (fun a -> assemblyName.Name = a.Name)
             |> Seq.exists (fun a -> assemblyName.Version > a.Version))
-        |> Seq.map(fun (assembly, token,_,_) ->
+        |> Seq.map(fun (assembly, token,_,_,_) ->
             { BindingRedirect.AssemblyName = assembly.GetName().Name
               Version = assembly.GetName().Version.ToString()
               PublicKeyToken = token

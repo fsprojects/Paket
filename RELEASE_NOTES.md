@@ -1,4 +1,4 @@
-#### 3.0.0-beta021 - 22.04.2016
+#### 3.0.0-beta022 - 22.04.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -9,17 +9,12 @@
 * USABILITY: Removed "specs:" from paket.lock since it was copied from Bundler and had no meaning in Paket - https://github.com/fsprojects/Paket/pull/1608
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
 
-#### 2.62.8 - 22.04.2016
+#### 2.63.0 - 22.04.2016
 * Added monoandroid43 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1631
-
-#### 2.62.7 - 22.04.2016
-* BUGFIX: allow directory names with + in paket.template
-
-#### 2.62.6 - 20.04.2016
 * Added support for MonoAndroid22 and MonoAndroid23 - https://github.com/fsprojects/Paket/pull/1628
+* BUGFIX: allow directory names with + in paket.template
+* BUGFIX: Generates binding redirect for references targeting different profiles - https://github.com/fsprojects/Paket/pull/1634
 * EXPERIMENTAL: paket resolves runtime dependency libs - https://github.com/fsprojects/Paket/pull/1626
-
-#### 2.62.1 - 17.04.2016
 * USABILITY: remove command restricts install to the specified group only - https://github.com/fsprojects/Paket/pull/1612
 
 #### 2.62.0 - 17.04.2016
