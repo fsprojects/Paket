@@ -431,8 +431,6 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                 traceWarn "Paket may still find a valid resolution, but this might take a while."
                 lastConflictReported := DateTime.Now
         | _ -> ()
-  
-    let nextSteps = System.Collections.Generic.Queue<ResolverStep>()
 
     let rec step (currentStep:ResolverStep) =
         if Set.isEmpty currentStep.OpenRequirements then 
