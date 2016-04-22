@@ -1,3 +1,6 @@
+#### 2.63.1 - 22.04.2016
+* Don't pack template files in packages or paket-files
+
 #### 2.63.0 - 22.04.2016
 * Added monoandroid43 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1631
 * Added support for MonoAndroid22 and MonoAndroid23 - https://github.com/fsprojects/Paket/pull/1628

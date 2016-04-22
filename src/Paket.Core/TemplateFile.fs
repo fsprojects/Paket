@@ -475,4 +475,10 @@ module internal TemplateFile =
 
 
     let FindTemplateFiles root =
-        Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.AllDirectories)
+        let findTemplates dir = Directory.EnumerateFiles(dir, "*" + Constants.TemplateFile, SearchOption.AllDirectories)
+        Directory.EnumerateDirectories(root)
+        |> Seq.filter (fun di -> 
+             let name = DirectoryInfo(di).Name.ToLower() 
+             name <> "packages" && name <> "paket-files")
+        |> Seq.collect findTemplates
+        |> Seq.append (Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.TopDirectoryOnly))
