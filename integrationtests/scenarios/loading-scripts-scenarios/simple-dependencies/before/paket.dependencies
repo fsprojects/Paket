@@ -1,3 +1,4 @@
 source "http://nuget.org/api/v2"
 nuget NUnit ~> 2
 nuget Argu ~> 1
+nuget log4net ~> 1
