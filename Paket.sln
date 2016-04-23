@@ -84,10 +84,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Paket.Bootstrapper.Tests", 
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.IntegrationTests", "integrationtests\Paket.IntegrationTests\Paket.IntegrationTests.fsproj", "{7234B9B4-8CF5-4E68-AA29-050C087B9246}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.LoadingScripts.Tests", "tests\Paket.LoadingScripts.Tests\Paket.LoadingScripts.Tests.fsproj", "{E6C1FC52-D7CF-44AA-842A-913455FA76E7}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.LoadingScripts", "src\Paket.LoadingScripts\Paket.LoadingScripts.fsproj", "{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -118,14 +114,6 @@ Global
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E6C1FC52-D7CF-44AA-842A-913455FA76E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E6C1FC52-D7CF-44AA-842A-913455FA76E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E6C1FC52-D7CF-44AA-842A-913455FA76E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E6C1FC52-D7CF-44AA-842A-913455FA76E7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E2677A2B-C2D9-4A28-9F7C-F93F3E2E7A7F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -137,6 +125,5 @@ Global
 		{4425A246-BD18-4622-86B5-0154F19165E4} = {8E6D5255-776D-4B61-85F9-73C37AA1FB9A}
 		{7C622582-E281-4EAB-AADA-B5893BB89B45} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 		{7234B9B4-8CF5-4E68-AA29-050C087B9246} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
-		{E6C1FC52-D7CF-44AA-842A-913455FA76E7} = {ED8079DD-2B06-4030-9F0F-DC548F98E1C4}
 	EndGlobalSection
 EndGlobal

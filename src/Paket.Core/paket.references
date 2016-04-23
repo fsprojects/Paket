@@ -1,5 +1,6 @@
 Newtonsoft.Json
 FSharp.Core
+Mono.Cecil
 Chessie
 File:Globbing.fs .
 File:AssemblyReader.fs .

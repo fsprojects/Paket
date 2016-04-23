@@ -5,6 +5,7 @@ nuget Newtonsoft.Json redirects: force
 nuget Argu
 nuget FSharp.Core redirects: force
 nuget Chessie
+nuget Mono.Cecil
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github haraldsteinlechner/FSharp.Data src/CommonProviderImplementation/AssemblyReader.fs
@@ -30,8 +31,3 @@ group Test
   nuget Moq
   nuget FSCheck
   github forki/FsUnit FsUnit.fs
-
-group ScriptBuilder
-  source https://nuget.org/api/v2
-  nuget QuickGraph
-  nuget Mono.Cecil

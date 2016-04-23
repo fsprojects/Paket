@@ -4,6 +4,7 @@ NUGET
     Chessie (0.5.1)
       FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
+    Mono.Cecil (0.9.6.1)
     Newtonsoft.Json (8.0.3) - redirects: force
 GITHUB
   remote: fsharp/FAKE
@@ -33,13 +34,6 @@ GITHUB
   remote: fsharp/FAKE
     modules/Octokit/Octokit.fsx (3bf706bd6058733a1a034755741076b3953aaf09)
       Octokit
-GROUP ScriptBuilder
-NUGET
-  remote: https://www.nuget.org/api/v2
-  specs:
-    Mono.Cecil (0.9.6.1)
-    QuickGraph (3.6.61119.7)
-
 GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2
