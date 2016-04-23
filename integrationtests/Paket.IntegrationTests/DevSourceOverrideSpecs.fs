@@ -1,8 +1,9 @@
 ﻿module Paket.IntegrationTests.DevSourceOverrideSpecs
 
 open System.IO
-open System.Xml.Linq
-open System.Xml.XPath
+open System.Xml
+
+open Paket.Xml
 
 open FsUnit
 
@@ -11,14 +12,19 @@ open NUnit.Framework
 [<Test>]
 let ``#1633 should favor overriden source from paket.local``() = 
     paket "restore" "i001633-dev-source-override" |> ignore
+    let doc = new XmlDocument()
+    Path.Combine(
+        scenarioTempPath "i001633-dev-source-override",
+        "packages",
+        "NUnit",
+        "NUnit.nuspec")
+    |> doc.Load
+
     let nunitVersion =
-        Path.Combine(
-            scenarioTempPath "i001633-dev-source-override",
-            "packages",
-            "NUnit",
-            "NUnit.nuspec")
-        |> XDocument.Load
-        |> fun doc -> doc.XPathSelectElement("/package/metadata/version")
-        |> fun elem -> elem.Value
+        doc 
+        |> getNode "package" 
+        |> optGetNode "metadata" 
+        |> optGetNode "version"
+        |> Option.map (fun n -> n.InnerText)
     
-    nunitVersion |> shouldEqual "2.6.4"
+    nunitVersion |> shouldEqual (Some "2.6.4")
