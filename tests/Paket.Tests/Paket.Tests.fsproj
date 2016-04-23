@@ -242,6 +242,7 @@
     <Compile Include="Lockfile\QuerySpecs.fs" />
     <Compile Include="Lockfile\ParserWithMultipleSourcesSpecs.fs" />
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
+    <Compile Include="LocalFile\LocalFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
     <None Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
