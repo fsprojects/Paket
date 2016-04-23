@@ -301,6 +301,66 @@ let push (results : ParseResults<_>) =
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
+let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) =
+    
+    let framework = results.TryGetResult <@ GenerateIncludeScriptsArgs.Framework @>
+
+    let scriptTypes = [Paket.LoadingScripts.ScriptGeneration.CSharp; Paket.LoadingScripts.ScriptGeneration.FSharp]
+    
+    let dependencies = 
+        Dependencies.Locate()
+        |> fun d -> DependenciesFile.ReadFromFile(d.DependenciesFile)
+        |> Paket.UpdateProcess.detectProjectFrameworksForDependenciesFile
+    
+    let rootFolder = 
+        dependencies.RootPath
+        |> DirectoryInfo
+    
+    let resolveFrameworksFromPaket () =
+        dependencies.Groups
+            |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
+            |> Seq.map(function 
+                | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
+                | Paket.Requirements.FrameworkRestrictionList list ->
+                  list |> Seq.map (
+                    function
+                    | Paket.Requirements.FrameworkRestriction.Exactly framework
+                    | Paket.Requirements.FrameworkRestriction.AtLeast framework
+                    | Paket.Requirements.FrameworkRestriction.Between (framework,_) -> framework
+                    | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
+                  )
+              )
+            |> Seq.concat
+
+    let resolveFrameworkFromEnvironment () =
+        // HACK: resolve .net version based on environment
+        // list of match is incomplete / innacurate
+        let version = Environment.Version
+        match version.Major, version.Minor, version.Build, version.Revision with
+        | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
+        | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
+        | _ -> DotNetFramework (FrameworkVersion.V3_5)
+
+    let allFrameworks =
+        let maybeFramework = 
+            match framework with
+            | Some framework -> FrameworkDetection.Extract framework
+            | None -> None
+        match maybeFramework with
+        | Some framework -> seq { yield framework }
+        | None ->
+            resolveFrameworksFromPaket ()
+            |> fun frameworks ->
+                if Seq.isEmpty frameworks then 
+                   seq { yield resolveFrameworkFromEnvironment() }
+                else frameworks
+
+    for framework in allFrameworks do
+        tracefn "generating scripts for framework %s" (framework.ToString())
+        for scriptType in scriptTypes do
+            Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
+    
+
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
 
@@ -345,6 +405,7 @@ let main() =
                 | ShowGroups -> processCommand showGroups
                 | Pack -> processCommand pack
                 | Push -> processCommand push
+                | GenerateIncludeScripts -> processCommand generateIncludeScripts
 
             let args = args.[1..]
 

@@ -195,7 +195,7 @@ module ScriptGeneration =
       |> ignore
 
   // Generate a fsharp script from the given order of packages, if a package is ordered before its dependencies this function will throw.
-  let generateScriptsForRootFolder extension scriptGenerator (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
+  let generateScriptsForRootFolderGeneric extension scriptGenerator (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
       let dependenciesFile, lockFile =
           let deps = Paket.Dependencies.Locate(rootFolder.FullName)
           let lock =
@@ -239,10 +239,10 @@ module ScriptGeneration =
         | CSharp -> "csx"
         | FSharp -> "fsx"
 
-  let generateScriptsForRootFolderSimple scriptType =
+  let generateScriptsForRootFolder scriptType =
       let scriptGenerator =
           match scriptType with
           | CSharp -> generateCSharpScript
           | FSharp -> generateFSharpScript
 
-      generateScriptsForRootFolder scriptType.Extension scriptGenerator
+      generateScriptsForRootFolderGeneric scriptType.Extension scriptGenerator

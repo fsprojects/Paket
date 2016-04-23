@@ -5,25 +5,26 @@ open System
 open Argu
 
 type Command =
-    | [<First>][<CustomCommandLine("add")>]                     Add
-    | [<First>][<CustomCommandLine("clear-cache")>]             ClearCache
-    | [<First>][<CustomCommandLine("config")>]                  Config
-    | [<First>][<CustomCommandLine("convert-from-nuget")>]      ConvertFromNuget
-    | [<First>][<CustomCommandLine("find-refs")>]               FindRefs 
-    | [<First>][<CustomCommandLine("init")>]                    Init
-    | [<First>][<CustomCommandLine("auto-restore")>]            AutoRestore
-    | [<First>][<CustomCommandLine("install")>]                 Install
-    | [<First>][<CustomCommandLine("outdated")>]                Outdated
-    | [<First>][<CustomCommandLine("remove")>]                  Remove
-    | [<First>][<CustomCommandLine("restore")>]                 Restore
-    | [<First>][<CustomCommandLine("simplify")>]                Simplify
-    | [<First>][<CustomCommandLine("update")>]                  Update
-    | [<First>][<CustomCommandLine("find-packages")>]           FindPackages
-    | [<First>][<CustomCommandLine("find-package-versions")>]   FindPackageVersions
-    | [<First>][<CustomCommandLine("show-installed-packages")>] ShowInstalledPackages
-    | [<First>][<CustomCommandLine("show-groups")>]             ShowGroups
-    | [<First>][<CustomCommandLine("pack")>]                    Pack
-    | [<First>][<CustomCommandLine("push")>]                    Push
+    | [<First>][<CustomCommandLine("add")>]                      Add
+    | [<First>][<CustomCommandLine("clear-cache")>]              ClearCache
+    | [<First>][<CustomCommandLine("config")>]                   Config
+    | [<First>][<CustomCommandLine("convert-from-nuget")>]       ConvertFromNuget
+    | [<First>][<CustomCommandLine("find-refs")>]                FindRefs 
+    | [<First>][<CustomCommandLine("init")>]                     Init
+    | [<First>][<CustomCommandLine("auto-restore")>]             AutoRestore
+    | [<First>][<CustomCommandLine("install")>]                  Install
+    | [<First>][<CustomCommandLine("outdated")>]                 Outdated
+    | [<First>][<CustomCommandLine("remove")>]                   Remove
+    | [<First>][<CustomCommandLine("restore")>]                  Restore
+    | [<First>][<CustomCommandLine("simplify")>]                 Simplify
+    | [<First>][<CustomCommandLine("update")>]                   Update
+    | [<First>][<CustomCommandLine("find-packages")>]            FindPackages
+    | [<First>][<CustomCommandLine("find-package-versions")>]    FindPackageVersions
+    | [<First>][<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages
+    | [<First>][<CustomCommandLine("show-groups")>]              ShowGroups
+    | [<First>][<CustomCommandLine("pack")>]                     Pack
+    | [<First>][<CustomCommandLine("push")>]                     Push
+    | [<First>][<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -45,9 +46,9 @@ with
             | FindPackageVersions -> "Allows to search for package versions."
             | ShowInstalledPackages -> "Shows all installed top-level packages."
             | ShowGroups -> "Shows all groups."
-            | Pack -> "Packs all paket.template files within this repository"
+            | Pack -> "Packs all paket.template files within this repository."
             | Push -> "Pushes the given `.nupkg` file."
-
+            | GenerateIncludeScripts -> "Generate include scripts for installed packages."
     member this.Name =
         let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
         (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>)
@@ -343,6 +344,16 @@ with
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
+type GenerateIncludeScriptsArgs = 
+    | [<CustomCommandLine("framework")>] Framework of string
+with
+  interface IArgParserTemplate with
+      member this.Usage = 
+        match this with
+        | Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore or xamarinios."
+      
+
+  
 let cmdLineSyntax (parser:ArgumentParser<_>) commandName =
     "paket " + commandName + " " + parser.PrintCommandLineSyntax()
 
@@ -402,7 +413,7 @@ let markdown (command : Command) (additionalText : string) =
         | ShowGroups -> syntaxAndOptions (ArgumentParser.Create<ShowGroupsArgs>())
         | Pack -> syntaxAndOptions (ArgumentParser.Create<PackArgs>())
         | Push -> syntaxAndOptions (ArgumentParser.Create<PushArgs>())
-
+        | GenerateIncludeScripts -> syntaxAndOptions (ArgumentParser.Create<GenerateIncludeScriptsArgs>())
     let replaceLinks (text : string) =
         text
         |> replace "(?<=\s)paket.dependencies( file(s)?)?" "[`paket.dependencies`$1](dependencies-file.html)"
