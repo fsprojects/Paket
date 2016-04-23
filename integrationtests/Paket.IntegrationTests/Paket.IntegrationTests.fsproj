@@ -119,6 +119,7 @@
     <Compile Include="AutocompleteSpecs.fs" />
     <Compile Include="BindingRedirect.fs" />
     <Compile Include="LoadingScriptGenerationTests.fs" />
+    <Compile Include="DevSourceOverrideSpecs.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
   </ItemGroup>
