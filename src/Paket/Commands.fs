@@ -346,11 +346,13 @@ with
 
 type GenerateIncludeScriptsArgs = 
     | [<CustomCommandLine("framework")>] Framework of string
+    | [<CustomCommandLine("type")>] ScriptType of string
 with
   interface IArgParserTemplate with
       member this.Usage = 
         match this with
         | Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore or xamarinios."
+        | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'. Can be provided multiple times."
       
 
   

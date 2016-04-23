@@ -303,9 +303,8 @@ let push (results : ParseResults<_>) =
 
 let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) =
     
-    let framework = results.TryGetResult <@ GenerateIncludeScriptsArgs.Framework @>
-
-    let scriptTypes = [Paket.LoadingScripts.ScriptGeneration.CSharp; Paket.LoadingScripts.ScriptGeneration.FSharp]
+    let providedFramework = results.GetResults <@ GenerateIncludeScriptsArgs.Framework @>
+    let providedScriptTypes = results.GetResults <@ GenerateIncludeScriptsArgs.ScriptType @>
     
     let dependencies = 
         Dependencies.Locate()
@@ -316,23 +315,24 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
         dependencies.RootPath
         |> DirectoryInfo
     
-    let resolveFrameworksFromPaket () =
+    let frameworksForDependencyGroups = lazy (
         dependencies.Groups
             |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
             |> Seq.map(function 
                 | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
                 | Paket.Requirements.FrameworkRestrictionList list ->
-                  list |> Seq.map (
+                  list |> Seq.collect (
                     function
                     | Paket.Requirements.FrameworkRestriction.Exactly framework
-                    | Paket.Requirements.FrameworkRestriction.AtLeast framework
-                    | Paket.Requirements.FrameworkRestriction.Between (framework,_) -> framework
+                    | Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
+                    | Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
                     | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
                   )
               )
             |> Seq.concat
+    )
 
-    let resolveFrameworkFromEnvironment () =
+    let environmentFramework = lazy (
         // HACK: resolve .net version based on environment
         // list of match is incomplete / innacurate
         let version = Environment.Version
@@ -340,24 +340,24 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
         | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
         | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
         | _ -> DotNetFramework (FrameworkVersion.V3_5)
+    )
 
-    let allFrameworks =
-        let maybeFramework = 
-            match framework with
-            | Some framework -> FrameworkDetection.Extract framework
-            | None -> None
-        match maybeFramework with
-        | Some framework -> seq { yield framework }
-        | None ->
-            resolveFrameworksFromPaket ()
-            |> fun frameworks ->
-                if Seq.isEmpty frameworks then 
-                   seq { yield resolveFrameworkFromEnvironment() }
-                else frameworks
+    let frameworksToGenerate =
+        let targetFrameworkList = providedFramework |> List.choose FrameworkDetection.Extract |> Seq.ofList
 
-    for framework in allFrameworks do
+        if targetFrameworkList |> Seq.isEmpty |> not then targetFrameworkList
+        else if frameworksForDependencyGroups.Value |> Seq.isEmpty |> not then frameworksForDependencyGroups.Value
+        else Seq.singleton environmentFramework.Value 
+    
+    let scriptTypesToGenerate = 
+      let parsed = providedScriptTypes |> List.choose Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate
+      match parsed with
+      | [] -> [Paket.LoadingScripts.ScriptGeneration.CSharp; Paket.LoadingScripts.ScriptGeneration.FSharp]
+      | xs -> xs
+
+    for framework in frameworksToGenerate do
         tracefn "generating scripts for framework %s" (framework.ToString())
-        for scriptType in scriptTypes do
+        for scriptType in scriptTypesToGenerate do
             Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
     
 

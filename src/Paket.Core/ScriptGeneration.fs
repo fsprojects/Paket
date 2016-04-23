@@ -238,6 +238,11 @@ module ScriptGeneration =
         match x with
         | CSharp -> "csx"
         | FSharp -> "fsx"
+      static member TryCreate s = 
+        match s with
+        | "csx" -> Some CSharp
+        | "fsx" -> Some FSharp
+        | _ -> None
 
   let generateScriptsForRootFolder scriptType =
       let scriptGenerator =
