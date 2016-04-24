@@ -341,25 +341,32 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
         | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
         | _ -> DotNetFramework (FrameworkVersion.V4_5) // paket.exe is compiled for framework 4.5
     )
+    let tupleMap f v = (v, f v)
+    let failOnMismatch toParse parsed f message =
+        if List.length toParse <> List.length parsed then
+            toParse
+            |> Seq.map (tupleMap f)
+            |> Seq.filter (snd >> Option.isNone)
+            |> Seq.map fst
+            |> String.concat ", "
+            |> sprintf "%s: %s. Cannot generate include scripts." message
+            |> failwith
 
     let frameworksToGenerate =
         let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract
         
-        if targetFrameworkList.Length <> providedFrameworks.Length then
-            // print out bogus frameworks
-            providedFrameworks
-            |> Seq.map (fun f -> f, FrameworkDetection.Extract f)
-            |> Seq.filter (snd >> Option.isNone)
-            |> Seq.iter (fst >> (traceErrorfn "framework %s was unrecognized"))
-            // not sure how we should exit instead of generating for default framework
-
+        failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
+        
         if targetFrameworkList |> Seq.isEmpty |> not then targetFrameworkList |> Seq.ofList
         else if frameworksForDependencyGroups.Value |> Seq.isEmpty |> not then frameworksForDependencyGroups.Value 
         else Seq.singleton environmentFramework.Value 
     
     let scriptTypesToGenerate = 
-      let parsed = providedScriptTypes |> List.choose Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate
-      match parsed with
+      let parsedScriptTypes = providedScriptTypes |> List.choose Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate
+      
+      failOnMismatch providedScriptTypes parsedScriptTypes Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate "Unrecognized Script Type(s)"
+
+      match parsedScriptTypes with
       | [] -> [Paket.LoadingScripts.ScriptGeneration.CSharp; Paket.LoadingScripts.ScriptGeneration.FSharp]
       | xs -> xs
 

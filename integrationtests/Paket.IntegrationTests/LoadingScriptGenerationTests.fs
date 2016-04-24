@@ -92,3 +92,34 @@ let ``only generates scripts for language provided`` (language : string) =
     let allMatching = scriptFiles |> Array.map (fun fi -> fi.Extension) |> Array.forall ((=) language)
     Assert.IsTrue(allMatching)
      
+[<Test; Category("scriptgen")>]
+let ``fails on wrong framework given`` () =
+    let scenario = "wrong-framework-or-scripttype"
+
+    paket "install" scenario |> ignore
+
+    let failure = Assert.Throws (fun () ->
+        let result = directPaket (sprintf "generate-include-scripts framework foo framework bar framework net45") scenario
+        printf "%s" result
+    )
+    let message = failure.ToString()
+    printfn "%s" message
+    Assert.IsTrue(message.Contains "Cannot generate include scripts.")
+    Assert.IsTrue(message.Contains "Unrecognized Framework(s)")
+    Assert.IsTrue(message.Contains "foo, bar")
+
+[<Test; Category("scriptgen")>]
+let ``fails on wrong scripttype given`` () =
+    let scenario = "wrong-framework-or-scripttype"
+
+    paket "install" scenario |> ignore
+
+    let failure = Assert.Throws (fun () ->
+        let result = directPaket (sprintf "generate-include-scripts type foo type bar framework net45") scenario
+        printf "%s" result
+    )
+    let message = failure.ToString()
+    printfn "%s" message
+    Assert.IsTrue(message.Contains "Cannot generate include scripts.")
+    Assert.IsTrue(message.Contains "Unrecognized Script Type(s)")
+    Assert.IsTrue(message.Contains "foo, bar")
