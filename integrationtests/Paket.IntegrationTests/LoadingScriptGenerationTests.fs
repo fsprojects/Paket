@@ -9,13 +9,11 @@ let makeScenarioPath scenario    = Path.Combine("loading-scripts-scenarios", sce
 let paket command scenario       = paket command (makeScenarioPath scenario)
 let directPaket command scenario = directPaket command (makeScenarioPath scenario)
 let scenarioTempPath scenario    = scenarioTempPath (makeScenarioPath scenario)
+let scriptRoot scenario = Path.Combine(scenarioTempPath scenario, "paket-files", "include-scripts") |> DirectoryInfo
 
 let getGeneratedScriptFiles framework scenario =
-  let directory =
-      Path.Combine(scenarioTempPath scenario, "paket-files", "include-scripts", (FrameworkDetection.Extract framework).Value |> string)
-      |> DirectoryInfo
-  
-  directory.GetFiles()
+  let frameworkDir = Path.Combine((scriptRoot scenario).FullName, framework |> FrameworkDetection.Extract |> Option.get |> string) |> DirectoryInfo
+  frameworkDir.GetFiles()
 
 [<Test; Category("scriptgen")>]
 let ``simple dependencies generates expected scripts``() = 
@@ -70,4 +68,14 @@ let ``framework specified``() =
 
   if not (Seq.isEmpty failures) then
     Assert.Fail (failures |> String.concat Environment.NewLine)
-  
+
+[<Test;Category("scriptgen")>]
+let ``don't generate scripts when no references are found``() = 
+    (* The deps file for this scenario just includes FAKE, which has no lib or framework references, so no script should be generated for it. *)
+    let scenario = "no-references"
+    paket "install" scenario |> ignore
+
+    directPaket "generate-include-scripts" scenario |> ignore
+    let scriptRoot = scriptRoot scenario
+    Assert.IsFalse(scriptRoot.Exists)
+
