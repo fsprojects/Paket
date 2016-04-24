@@ -4,7 +4,7 @@ open System.IO
 open System.Text.RegularExpressions
 
 /// Represents a NuGet package name
-[<System.Diagnostics.DebuggerDisplay("{Item}")>]
+[<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
 [<CustomEquality;CustomComparison>]
 type PackageName =
 | PackageName of string * string
@@ -34,7 +34,7 @@ type PackageName =
 let PackageName(name:string) = PackageName.PackageName(name.Trim(),name.ToLowerInvariant().Trim())
 
 // Represents a filter of normalized package names
-[<System.Diagnostics.DebuggerDisplay("{Item}")>]
+[<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
 type PackageFilter =
 | PackageName of PackageName
 | PackageFilter of string

@@ -69,7 +69,6 @@ module InstallFiles =
             References = Set.union that.References installFiles.References
             ContentFiles = Set.union that.ContentFiles installFiles.ContentFiles }
 
-
 type InstallFiles with
     member this.AddReference lib = InstallFiles.addReference  lib this
     member this.AddTargetsFile targetsFile = InstallFiles.addTargetsFile targetsFile this
@@ -77,6 +76,7 @@ type InstallFiles with
     member this.GetFrameworkAssemblies() = InstallFiles.getFrameworkAssemblies this
     member this.MergeWith that = InstallFiles.mergeWith that this
 
+/// Represents a subfolder of a nuget package that provides files (content, references, etc) for one or more Target Profiles.  This is a logical representation of the 'net45' folder in a NuGet package, for example.
 type LibFolder =
     { Name : string
       Targets : TargetProfile list
@@ -106,13 +106,13 @@ type AnalyzerLib =
         Path : string
         /// Target language for the analyzer
         Language : AnalyzerLanguage }
-
     static member FromFile(file : FileInfo) =
         {
             Path = file.FullName
             Language = AnalyzerLanguage.FromDirectory(file.Directory)
         }
 
+/// Represents the contents of a particular package at a particular version.  Any install-specific actions like Content files, References, Roslyn Analyzers, MsBuild targets are represented here.
 type InstallModel = 
     { PackageName : PackageName
       PackageVersion : SemVerInfo

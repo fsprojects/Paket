@@ -209,6 +209,8 @@ type FrameworkIdentifier =
         | XamariniOS _, XamariniOS _ -> true
         | Native _, Native _ -> true
         | _ -> false
+    
+    /// TODO: some notion of an increasing/decreasing sequence of FrameworkIdentitifers, so that Between(bottom, top) constraints can enumerate the list
 
     member x.IsCompatible y = 
         x = y || 
