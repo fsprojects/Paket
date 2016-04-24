@@ -303,7 +303,7 @@ let push (results : ParseResults<_>) =
 
 let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) =
     
-    let providedFramework = results.GetResults <@ GenerateIncludeScriptsArgs.Framework @>
+    let providedFrameworks = results.GetResults <@ GenerateIncludeScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateIncludeScriptsArgs.ScriptType @>
     
     let dependencies = 
@@ -343,11 +343,11 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
     )
 
     let frameworksToGenerate =
-        let targetFrameworkList = providedFramework |> List.choose FrameworkDetection.Extract
+        let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract
         
-        if targetFrameworkList.Length <> providedFramework.Length then
+        if targetFrameworkList.Length <> providedFrameworks.Length then
             // print out bogus frameworks
-            providedFramework
+            providedFrameworks
             |> Seq.map (fun f -> f, FrameworkDetection.Extract f)
             |> Seq.filter (snd >> Option.isNone)
             |> Seq.iter (fst >> (traceErrorfn "framework %s was unrecognized"))
