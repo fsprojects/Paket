@@ -76,6 +76,19 @@ let ``don't generate scripts when no references are found``() =
     paket "install" scenario |> ignore
 
     directPaket "generate-include-scripts" scenario |> ignore
-    let scriptRoot = scriptRoot scenario
-    Assert.IsFalse(scriptRoot.Exists)
+    let scriptRootDir = scriptRoot scenario
+    Assert.IsFalse(scriptRootDir.Exists)
 
+[<TestCase("csx");TestCase("fsx")>]
+[<Test;Category("scriptgen")>]
+let ``only generates scripts for language provided`` (language : string) = 
+    let scenario = "single-file-type"
+    paket "install" scenario |> ignore
+
+    directPaket (sprintf "generate-include-scripts type %s" language) scenario |> ignore
+
+    let scriptRootDir = scriptRoot scenario
+    let scriptFiles = scriptRootDir.GetFiles("", SearchOption.AllDirectories)
+    let allMatching = scriptFiles |> Array.map (fun fi -> fi.Extension) |> Array.forall ((=) language)
+    Assert.IsTrue(allMatching)
+     
