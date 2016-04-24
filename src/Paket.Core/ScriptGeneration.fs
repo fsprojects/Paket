@@ -189,9 +189,7 @@ module ScriptGeneration =
             DependentScripts             = dependencies
           }
 
-          let genResult = scriptGenerator scriptInfo
-
-          match genResult with
+          match scriptGenerator scriptInfo with
           | DoNotGenerate -> knownIncludeScripts
           | Generate lines -> 
             scriptFile.Directory.Create()
