@@ -17,7 +17,7 @@ let getGeneratedScriptFiles framework scenario =
   
   directory.GetFiles()
 
-[<Test>]
+[<Test; Category("scriptgen")>]
 let ``simple dependencies generates expected scripts``() = 
   let scenario = "simple-dependencies"
   let framework = "net4"
@@ -38,7 +38,7 @@ let ``simple dependencies generates expected scripts``() =
   Assert.AreEqual(expectedFiles, actualFiles)
   
 
-[<Test>]
+[<Test;Category("scriptgen")>]
 let ``framework specified``() = 
   let scenario = "framework-specified"
   paket "install" scenario |> ignore
