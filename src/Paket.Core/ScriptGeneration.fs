@@ -134,7 +134,7 @@ module ScriptGeneration =
       if groupName = Constants.MainDependencyGroup then
           getIncludeScriptRootFolder includeScriptsRootFolder framework
       else
-          Path.Combine((getIncludeScriptRootFolder includeScriptsRootFolder framework).FullName, groupName.ToString())
+          Path.Combine((getIncludeScriptRootFolder includeScriptsRootFolder framework).FullName, groupName.GetCompareString())
           |> DirectoryInfo
 
   let getScriptFile (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName) (package: PackageName) (extension: string) =
