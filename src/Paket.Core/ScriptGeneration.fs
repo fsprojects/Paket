@@ -100,10 +100,12 @@ module ScriptGeneration =
       then Seq.empty else input.OrderedRelativeDllReferences
       |> Seq.map (sprintf """#r "%s" """)
 
-    depLines
-    |> fun lines -> Seq.append lines framworkRefLines
-    |> fun lines -> Seq.append lines dllLines
-    |> fun lines -> Seq.append lines [ sprintf "printfn \"%%s\" \"Loaded %s\"" packageName ]
+    let lines = Seq.concat [depLines; framworkRefLines; dllLines]
+    
+    if Seq.isEmpty lines 
+    then Seq.empty // only write the status if we actually did anything
+    else Seq.append lines [ sprintf "printfn \"%%s\" \"Loaded %s\"" packageName ]
+
 
   // default implementation of C# include script generator
   let generateCSharpScript (input: ScriptGenInput) =
@@ -121,10 +123,11 @@ module ScriptGeneration =
       input.OrderedRelativeDllReferences
       |> Seq.map (sprintf """#r "%s" """)
 
-    depLines
-    |> fun lines -> Seq.append lines framworkRefLines
-    |> fun lines -> Seq.append lines dllLines
-    |> fun lines -> Seq.append lines [ sprintf "System.Console.WriteLine(\"Loaded {0}\", \"%s\");" packageName ]
+    let lines = Seq.concat [depLines; framworkRefLines; dllLines]
+
+    if Seq.isEmpty lines 
+    then Seq.empty // only write the status if we actually did anything
+    else Seq.append lines [ sprintf "System.Console.WriteLine(\"Loaded {0}\", \"%s\");" packageName ]
 
   let getIncludeScriptRootFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) = 
       Path.Combine(includeScriptsRootFolder.FullName, string framework)
@@ -166,7 +169,7 @@ module ScriptGeneration =
           let scriptFile = getScriptFile groupName package.Name
         
           let groupName = getGroupNameAsOption groupName
-          let dependencies = package.Dependencies |> Seq.map (fun (depName,_,_) -> knownIncludeScripts.[depName])
+          let dependencies = package.Dependencies |> Seq.choose (fun (depName,_,_) -> knownIncludeScripts.TryFind depName)
 
           let installModel = dependenciesFile.GetInstalledPackageModel(groupName, package.Name.GetCompareString())
 
@@ -183,12 +186,13 @@ module ScriptGeneration =
                   OrderedRelativeDllReferences = dllFiles
                   DependentScripts             = dependencies
               }
-        
-          scriptFile.Directory.Create()
-        
-          File.WriteAllLines (scriptFile.FullName, lines)
-        
-          knownIncludeScripts |> Map.add package.Name scriptFile
+
+          if Seq.isEmpty lines 
+          then knownIncludeScripts
+          else 
+            scriptFile.Directory.Create()
+            File.WriteAllLines (scriptFile.FullName, lines)
+            knownIncludeScripts |> Map.add package.Name scriptFile
 
       ) Map.empty
 
