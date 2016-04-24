@@ -442,7 +442,7 @@ let askYesNo question =
     getAnswer()
 
 let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString()).TrimEnd(Path.DirectorySeparatorChar)
-
+let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
