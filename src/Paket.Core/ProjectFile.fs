@@ -520,7 +520,8 @@ module ProjectFile =
                 |> getDescendants (string fileItem.BuildAction)
                 |> List.filter (fun node -> 
                     match node |> getAttribute "Include" with
-                    | Some path when path.StartsWith (Path.GetDirectoryName fileItem.Include) -> true
+                    // To make 'Path.GetDirectoryName' work cross platform we first need to make the string cross platform (msbuild files will always use windows paths)
+                    | Some path when path.StartsWith (Path.GetDirectoryName (fileItem.Include.Replace('\\', Path.DirectorySeparatorChar))) -> true
                     | _ -> false)
             
 
