@@ -63,7 +63,7 @@ module PackageAndAssemblyResolution =
         installModel
         |> InstallModel.getFrameworkAssembliesLazy
         |> force
-        |> Set.toSeq
+        |> Set.toList
 
 module ScriptGeneration =
   open PackageAndAssemblyResolution
@@ -75,10 +75,14 @@ module ScriptGeneration =
       Framework                    : FrameworkIdentifier
       PackagesOrGroupFolder        : DirectoryInfo
       IncludeScriptsRootFolder     : DirectoryInfo
-      DependentScripts             : FileInfo seq
-      FrameworkReferences          : string seq
-      OrderedRelativeDllReferences : string seq
+      DependentScripts             : FileInfo list
+      FrameworkReferences          : string list
+      OrderedRelativeDllReferences : string list
   }
+
+  type ScriptGenResult = 
+  | DoNotGenerate
+  | Generate of lines : string list
 
   let makeRelativePath (scriptFile: FileInfo) (libFile: FileInfo) =
     (scriptFile.FullName |> Uri).MakeRelativeUri(libFile.FullName |> Uri).ToString()
@@ -89,23 +93,24 @@ module ScriptGeneration =
 
     let depLines =
       input.DependentScripts
-      |> Seq.map (fun script -> sprintf """#load @"%s" """ script.Name)
+      |> List.map (fun fi -> fi.Name)
+      |> List.map (sprintf """#load @"%s" """)
 
-    let framworkRefLines =
+    let frameworkRefLines =
       input.FrameworkReferences
-      |> Seq.map (sprintf """#r "%s" """)
+      |> List.map (sprintf """#r "%s" """)
 
     let dllLines =
-      if packageName.ToLowerInvariant() = "fsharp.core"
-      then Seq.empty else input.OrderedRelativeDllReferences
-      |> Seq.map (sprintf """#r "%s" """)
+      match packageName.ToLowerInvariant() with
+      | "fsharp.core" -> []
+      | _ -> 
+        input.OrderedRelativeDllReferences 
+        |> List.map (sprintf """#r "%s" """)
 
-    let lines = Seq.concat [depLines; framworkRefLines; dllLines]
-    
-    if Seq.isEmpty lines 
-    then Seq.empty // only write the status if we actually did anything
-    else Seq.append lines [ sprintf "printfn \"%%s\" \"Loaded %s\"" packageName ]
-
+    let lines = List.concat [depLines; frameworkRefLines; dllLines]
+    match lines with
+    | [] -> DoNotGenerate
+    | xs -> List.append xs [ sprintf "printfn \"%%s\" \"Loaded %s\"" packageName ] |> Generate
 
   // default implementation of C# include script generator
   let generateCSharpScript (input: ScriptGenInput) =
@@ -113,21 +118,22 @@ module ScriptGeneration =
 
     let depLines =
       input.DependentScripts
-      |> Seq.map (fun script -> sprintf """#load "%s" """ script.Name)
+      |> List.map (fun fi -> fi.Name)
+      |> List.map (sprintf """#load "%s" """)
 
-    let framworkRefLines =
+    let frameworkRefLines =
       input.FrameworkReferences
-      |> Seq.map (sprintf """#r "%s" """)
+      |> List.map (sprintf """#r "%s" """)
 
     let dllLines =
       input.OrderedRelativeDllReferences
-      |> Seq.map (sprintf """#r "%s" """)
+      |> List.map (sprintf """#r "%s" """)
 
-    let lines = Seq.concat [depLines; framworkRefLines; dllLines]
+    let lines = List.concat [depLines; frameworkRefLines; dllLines]
 
-    if Seq.isEmpty lines 
-    then Seq.empty // only write the status if we actually did anything
-    else Seq.append lines [ sprintf "System.Console.WriteLine(\"Loaded {0}\", \"%s\");" packageName ]
+    match lines with
+    | [] -> DoNotGenerate
+    | xs -> List.append xs [ sprintf "System.Console.WriteLine(\"Loaded {0}\", \"%s\");" packageName ] |> Generate
 
   let getIncludeScriptRootFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) = 
       Path.Combine(includeScriptsRootFolder.FullName, string framework)
@@ -151,10 +157,12 @@ module ScriptGeneration =
           None
       else
           Some (groupName.ToString())
-
+  
+  let fst' (a,_,_) = a
+  
   // Generate a fsharp script from the given order of packages, if a package is ordered before its dependencies this function will throw.
   let generateScripts
-      (scriptGenerator          : ScriptGenInput -> seq<string>)
+      (scriptGenerator          : ScriptGenInput -> ScriptGenResult)
       (getScriptFile            : GroupName -> PackageName -> FileInfo)
       (includeScriptsRootFolder : DirectoryInfo)
       (framework                : FrameworkIdentifier)
@@ -165,31 +173,27 @@ module ScriptGeneration =
       =
       orderedPackages
       |> Seq.fold (fun (knownIncludeScripts: Map<_,_>) (package: PackageResolver.ResolvedPackage) ->
-        
           let scriptFile = getScriptFile groupName package.Name
-        
           let groupName = getGroupNameAsOption groupName
-          let dependencies = package.Dependencies |> Seq.choose (fun (depName,_,_) -> knownIncludeScripts.TryFind depName)
-
+          let dependencies = package.Dependencies |> Seq.map fst' |> Seq.choose knownIncludeScripts.TryFind |> List.ofSeq
           let installModel = dependenciesFile.GetInstalledPackageModel(groupName, package.Name.GetCompareString())
+          let dllFiles = getDllsWithinPackage framework installModel |> List.map (makeRelativePath scriptFile)
 
-          let dllFiles =
-            getDllsWithinPackage framework installModel
-            |> Seq.map (makeRelativePath scriptFile)
-          let lines =
-              scriptGenerator {
-                  PackageName                  = installModel.PackageName
-                  Framework                    = framework
-                  PackagesOrGroupFolder        = packagesOrGroupFolder
-                  IncludeScriptsRootFolder     = includeScriptsRootFolder
-                  FrameworkReferences          = getFrameworkReferencesWithinPackage installModel
-                  OrderedRelativeDllReferences = dllFiles
-                  DependentScripts             = dependencies
-              }
+          let scriptInfo = {
+            PackageName                  = installModel.PackageName
+            Framework                    = framework
+            PackagesOrGroupFolder        = packagesOrGroupFolder
+            IncludeScriptsRootFolder     = includeScriptsRootFolder
+            FrameworkReferences          = getFrameworkReferencesWithinPackage installModel
+            OrderedRelativeDllReferences = dllFiles
+            DependentScripts             = dependencies
+          }
 
-          if Seq.isEmpty lines 
-          then knownIncludeScripts
-          else 
+          let genResult = scriptGenerator scriptInfo
+
+          match genResult with
+          | DoNotGenerate -> knownIncludeScripts
+          | Generate lines -> 
             scriptFile.Directory.Create()
             File.WriteAllLines (scriptFile.FullName, lines)
             knownIncludeScripts |> Map.add package.Name scriptFile
