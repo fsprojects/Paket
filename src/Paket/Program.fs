@@ -355,8 +355,10 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
       | [] -> [Paket.LoadingScripts.ScriptGeneration.CSharp; Paket.LoadingScripts.ScriptGeneration.FSharp]
       | xs -> xs
 
+    let workaround() = null |> ignore
     for framework in frameworksToGenerate do
         tracefn "generating scripts for framework %s" (framework.ToString())
+        workaround() // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
         for scriptType in scriptTypesToGenerate do
             Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
     
