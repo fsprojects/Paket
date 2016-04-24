@@ -334,19 +334,27 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
 
     let environmentFramework = lazy (
         // HACK: resolve .net version based on environment
-        // list of match is incomplete / innacurate
+        // list of match is incomplete / inaccurate
         let version = Environment.Version
         match version.Major, version.Minor, version.Build, version.Revision with
         | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
         | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
-        | _ -> DotNetFramework (FrameworkVersion.V3_5)
+        | _ -> DotNetFramework (FrameworkVersion.V4_5) // paket.exe is compiled for framework 4.5
     )
 
     let frameworksToGenerate =
-        let targetFrameworkList = providedFramework |> List.choose FrameworkDetection.Extract |> Seq.ofList
+        let targetFrameworkList = providedFramework |> List.choose FrameworkDetection.Extract
+        
+        if targetFrameworkList.Length <> providedFramework.Length then
+            // print out bogus frameworks
+            providedFramework
+            |> Seq.map (fun f -> f, FrameworkDetection.Extract f)
+            |> Seq.filter (snd >> Option.isNone)
+            |> Seq.iter (fst >> (traceErrorfn "framework %s was unrecognized"))
+            // not sure how we should exit instead of generating for default framework
 
-        if targetFrameworkList |> Seq.isEmpty |> not then targetFrameworkList
-        else if frameworksForDependencyGroups.Value |> Seq.isEmpty |> not then frameworksForDependencyGroups.Value
+        if targetFrameworkList |> Seq.isEmpty |> not then targetFrameworkList |> Seq.ofList
+        else if frameworksForDependencyGroups.Value |> Seq.isEmpty |> not then frameworksForDependencyGroups.Value 
         else Seq.singleton environmentFramework.Value 
     
     let scriptTypesToGenerate = 
