@@ -1,6 +1,8 @@
 ﻿module Paket.LoadingScriptTests
 
+open System.IO
 open Paket.LoadingScripts
+open Paket.LoadingScripts.ScriptGeneration
 open NUnit.Framework
 open FsUnit
 open Paket
@@ -41,3 +43,29 @@ let ``can keep order simple dependency``() =
     |> shouldEqual
         [ PackageName("other")
           PackageName("Test1") ]
+
+let scriptGenInputWithNoDendency = {
+    PackageName                  = Paket.Domain.PackageName "foo"
+    Framework                    = FrameworkIdentifier.DotNetFramework FrameworkVersion.V4
+    PackagesOrGroupFolder        = "a" |> DirectoryInfo
+    IncludeScriptsRootFolder     = "b" |> DirectoryInfo
+    DependentScripts             = List.empty
+    FrameworkReferences          = List.empty
+    OrderedRelativeDllReferences = List.empty
+}
+
+[<Test>]
+let ``generateFSharpScript returns DoNotGenerate given empty dependency set``() =
+    let output = ScriptGeneration.generateFSharpScript scriptGenInputWithNoDendency
+
+    match output with
+    | Generate _ -> Assert.Fail()
+    | DoNotGenerate -> ()
+
+[<Test>]
+let ``generateCSharpScript returns DoNotGenerate given empty dependency set``() =
+    let output = ScriptGeneration.generateCSharpScript scriptGenInputWithNoDendency
+
+    match output with
+    | Generate _ -> Assert.Fail()
+    | DoNotGenerate -> ()

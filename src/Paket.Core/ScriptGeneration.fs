@@ -67,9 +67,7 @@ module PackageAndAssemblyResolution =
 
 module ScriptGeneration =
   open PackageAndAssemblyResolution
-  // this record holds what script generator needs
-  // it might benefit some shuffling / design reconsideration
-  // to get more consistent subset of required info
+
   type ScriptGenInput = {
       PackageName                  : PackageName
       Framework                    : FrameworkIdentifier
@@ -84,10 +82,10 @@ module ScriptGeneration =
   | DoNotGenerate
   | Generate of lines : string list
 
-  let makeRelativePath (scriptFile: FileInfo) (libFile: FileInfo) =
+  let private makeRelativePath (scriptFile: FileInfo) (libFile: FileInfo) =
     (scriptFile.FullName |> Uri).MakeRelativeUri(libFile.FullName |> Uri).ToString()
 
-  // default implementation of F# include script generator
+  /// default implementation of F# include script generator
   let generateFSharpScript (input: ScriptGenInput) =
     let packageName = input.PackageName.GetCompareString()
 
@@ -112,7 +110,7 @@ module ScriptGeneration =
     | [] -> DoNotGenerate
     | xs -> List.append xs [ sprintf "printfn \"%%s\" \"Loaded %s\"" packageName ] |> Generate
 
-  // default implementation of C# include script generator
+  /// default implementation of C# include script generator
   let generateCSharpScript (input: ScriptGenInput) =
     let packageName = input.PackageName.GetCompareString()
 
@@ -158,9 +156,9 @@ module ScriptGeneration =
       else
           Some (groupName.ToString())
   
-  let fst' (a,_,_) = a
-  
-  // Generate a fsharp script from the given order of packages, if a package is ordered before its dependencies this function will throw.
+  /// Generate a include script from given order of packages,
+  /// if a package is ordered before its dependencies this function 
+  /// will throw.
   let generateScripts
       (scriptGenerator          : ScriptGenInput -> ScriptGenResult)
       (getScriptFile            : GroupName -> PackageName -> FileInfo)
@@ -171,6 +169,8 @@ module ScriptGeneration =
       (groupName                : GroupName)
       (orderedPackages          : PackageResolver.ResolvedPackage list)
       =
+      let fst' (a,_,_) = a
+
       orderedPackages
       |> Seq.fold (fun (knownIncludeScripts: Map<_,_>) (package: PackageResolver.ResolvedPackage) ->
           let scriptFile = getScriptFile groupName package.Name
@@ -200,7 +200,8 @@ module ScriptGeneration =
 
       |> ignore
 
-  // Generate a fsharp script from the given order of packages, if a package is ordered before its dependencies this function will throw.
+  /// Generate a include scripts for all packages defined in paket.dependencies,
+  /// if a package is ordered before its dependencies this function will throw.
   let generateScriptsForRootFolderGeneric extension scriptGenerator (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
       let dependenciesFile, lockFile =
           let deps = Paket.Dependencies.Locate(rootFolder.FullName)
