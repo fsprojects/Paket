@@ -193,11 +193,13 @@ Target "RunIntegrationTests" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
+let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"]
+
 Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
 
     let toPack =
-        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"]
+        mergeLibs
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
@@ -214,7 +216,7 @@ Target "MergePowerShell" (fun _ ->
     CreateDir buildMergedDirPS
 
     let toPack =
-        ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Paket.PowerShell.dll"]
+        mergeLibs @ ["Paket.PowerShell.dll"]
         |> List.map (fun l -> buildDir @@ l)
         |> separated " "
 
