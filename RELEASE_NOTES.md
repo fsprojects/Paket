@@ -1,3 +1,6 @@
+#### 2.63.2 - 25.04.2016
+* Fix path issue on linux - https://github.com/fsprojects/Paket/pull/1644/files
+
 #### 2.63.1 - 22.04.2016
 * Don't pack template files in packages or paket-files
 
