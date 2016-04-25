@@ -150,3 +150,12 @@ let ``#1520 update with pinned dependency succeeds``() =
 [<Test>]
 let ``#1534 resolves Selenium.Support``() =
     update "i001534-selenium" |> ignore
+
+
+[<Test>]
+let ``#1635 should tell about auth issue``() =
+    try
+        update "i001635-wrong-pw" |> ignore
+        failwith "error expected"
+    with
+    | exn when exn.Message.Contains("Could not find versions for package Argu") -> ()

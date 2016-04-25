@@ -350,6 +350,9 @@ let main() =
 
             handler command args
             ()
+        | [] when results.IsUsageRequested ->
+            Environment.ExitCode <- 0
+            parser.Usage ("Help was requested:") |> trace
         | [] ->
             Environment.ExitCode <- 1
             traceError "Command was:"
