@@ -485,9 +485,8 @@ module ProjectFile =
             let libReferenceNode = 
                 let name = 
                     match fileItem.BuildAction with
-                    | BuildAction.Reference -> 
-                        let n = FileInfo(fileItem.Include).Name.TrimEnd('\\').Split('\\') |> Array.last
-                        n.Replace(Path.GetExtension n,"")
+                    | BuildAction.Reference ->
+                        fileItem.Include |> normalizePath |> Path.GetFileNameWithoutExtension
                     | _ -> fileItem.Include
 
                 createNode (string fileItem.BuildAction) project
@@ -520,7 +519,7 @@ module ProjectFile =
                 |> getDescendants (string fileItem.BuildAction)
                 |> List.filter (fun node -> 
                     match node |> getAttribute "Include" with
-                    | Some path when path.StartsWith (Path.GetDirectoryName fileItem.Include) -> true
+                    | Some path when path.StartsWith (fileItem.Include |> normalizePath |> Path.GetDirectoryName |> windowsPath) -> true
                     | _ -> false)
             
 
