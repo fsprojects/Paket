@@ -21,6 +21,6 @@ let ``should parse single dev source override``() =
         ]
         |> Trial.ok
 
-    let actual = LocalFile.parse (toLines contents)
+    let actual = LocalFile.parse (toLines contents |> Array.toList)
 
     actual |> shouldEqual expected
