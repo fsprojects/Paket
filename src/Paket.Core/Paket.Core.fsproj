@@ -117,6 +117,7 @@
     <Compile Include="LockFile.fs" />
     <Compile Include="TemplateFile.fs" />
     <Compile Include="ProjectFile.fs" />
+    <Compile Include="LocalFile.fs" />
     <Compile Include="DependencyChangeDetection.fs" />
     <Compile Include="GarbageCollection.fs" />
     <Compile Include="RestoreProcess.fs" />
