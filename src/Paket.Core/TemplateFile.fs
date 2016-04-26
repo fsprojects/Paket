@@ -297,7 +297,10 @@ module internal TemplateFile =
             d.Split '\n'
             |> Array.filter (fun s -> (isExclude.IsMatch>>not) s && (isComment.IsMatch>>not) s)
             |> Seq.map (fun (line:string) ->
-                let splitted = line.Split([|"==>"|],StringSplitOptions.None) |> Array.map String.trim 
+                let splitted = 
+                    line.Split([|"==>"|],StringSplitOptions.None)
+                    |> Array.collect (fun line -> line.Split([|"=>"|],StringSplitOptions.None))
+                    |> Array.map String.trim
                 let target = if splitted.Length < 2 then "lib" else splitted.[1]
                 splitted.[0],target)
             |> List.ofSeq
@@ -472,4 +475,10 @@ module internal TemplateFile =
 
 
     let FindTemplateFiles root =
-        Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.AllDirectories)
+        let findTemplates dir = Directory.EnumerateFiles(dir, "*" + Constants.TemplateFile, SearchOption.AllDirectories)
+        Directory.EnumerateDirectories(root)
+        |> Seq.filter (fun di -> 
+             let name = DirectoryInfo(di).Name.ToLower() 
+             name <> "packages" && name <> "paket-files")
+        |> Seq.collect findTemplates
+        |> Seq.append (Directory.EnumerateFiles(root, "*" + Constants.TemplateFile, SearchOption.TopDirectoryOnly))
