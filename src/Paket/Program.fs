@@ -231,6 +231,7 @@ let pack (results : ParseResults<_>) =
                       workingDir = Environment.CurrentDirectory,
                       lockDependencies = results.Contains <@ PackArgs.LockDependencies @>,
                       minimumFromLockFile = results.Contains <@ PackArgs.LockDependenciesToMinimum @>,
+                      pinProjectReferences = results.Contains <@ PackArgs.PinProjectReferences @>,
                       symbols = results.Contains <@ PackArgs.Symbols @>,
                       includeReferencedProjects = results.Contains <@ PackArgs.IncludeReferencedProjects @>,
                       ?projectUrl = results.TryGetResult <@ PackArgs.ProjectUrl @>)

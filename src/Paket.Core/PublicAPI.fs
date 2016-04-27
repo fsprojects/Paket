@@ -534,16 +534,17 @@ type Dependencies(dependenciesFileName: string) =
         FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) |> this.Process
 
     // Packs all paket.template files.
-    member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?symbols, ?includeReferencedProjects, ?projectUrl) =
+    member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?pinProjectReferences, ?symbols, ?includeReferencedProjects, ?projectUrl) =
         let dependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         let specificVersions = defaultArg specificVersions Seq.empty
         let workingDir = defaultArg workingDir (dependenciesFile.FileName |> Path.GetDirectoryName)
         let lockDependencies = defaultArg lockDependencies false
         let minimumFromLockFile = defaultArg minimumFromLockFile false
+        let pinProjectReferences = defaultArg pinProjectReferences false
         let symbols = defaultArg symbols false
         let includeReferencedProjects = defaultArg includeReferencedProjects false
         let projectUrl = defaultArg (Some(projectUrl)) None
-        PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, symbols, includeReferencedProjects, projectUrl)
+        PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, symbols, includeReferencedProjects, projectUrl)
 
     /// Pushes a nupkg file.
     static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
