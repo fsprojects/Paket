@@ -35,3 +35,28 @@ module LocalFile =
         >> List.map parseLine
         >> Trial.collect
         >> Trial.lift LocalFile
+
+    let readFile =
+        IO.File.ReadAllLines
+        >> Array.toList
+        >> parse
+
+    let empty = LocalFile []
+
+    let private overrideResolution (packageName, source) resolution = 
+        resolution
+        |> Map.map (fun name original -> 
+            if name = packageName then
+                { original with PackageResolver.ResolvedPackage.Source = source }
+            else
+                original)
+
+    let overrideDependency (lockFile: LockFile) = function
+        | DevNugetSourceOverride (p,s) -> 
+            let groups =
+                lockFile.Groups
+                |> Map.map (fun _ g -> { g with Resolution = overrideResolution (p,s) g.Resolution } )
+            LockFile(lockFile.FileName, groups)
+
+    let overrideLockFile (LocalFile overrides) lockFile =
+        List.fold overrideDependency lockFile overrides

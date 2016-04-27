@@ -98,13 +98,22 @@ let internal computePackageHull groupName (lockFile : LockFile) (referencesFileN
 
 let Restore(dependenciesFileName,force,group,referencesFileNames) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+    let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
 
     if not lockFileName.Exists then 
         failwithf "%s doesn't exist." lockFileName.FullName
 
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
-    let lockFile = LockFile.LoadFrom(lockFileName.FullName)
+    let localFile =
+        if not lockFileName.Exists then
+            LocalFile.empty
+        else
+            LocalFile.readFile localFileName.FullName
+            |> Chessie.ErrorHandling.Trial.returnOrFail
+    let lockFile = 
+        LockFile.LoadFrom(lockFileName.FullName)
+        |> LocalFile.overrideLockFile localFile
    
     let groups =
         match group with

@@ -20,11 +20,9 @@ let ``#1633 should favor overriden source from paket.local``() =
         "NUnit.nuspec")
     |> doc.Load
 
-    let nunitVersion =
-        doc 
-        |> getNode "package" 
-        |> optGetNode "metadata" 
-        |> optGetNode "version"
-        |> Option.map (fun n -> n.InnerText)
-    
-    nunitVersion |> shouldEqual (Some "2.6.4")
+    doc 
+    |> getNode "package" 
+    |> optGetNode "metadata" 
+    |> optGetNode "devSourceOverride"
+    |> Option.map (fun n -> n.InnerText)
+    |> shouldEqual (Some "true")
