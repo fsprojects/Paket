@@ -541,3 +541,12 @@ let ``#346 set aliases``() =
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
 
+[<Test>]
+let ``#1646 install .NET Standard``() = 
+    let scenario = "i001646-target-netstandard"
+    let newLockFile = install scenario
+    let newFile = Path.Combine(scenarioTempPath scenario, "MyClassLibrary","MyClassLibrary","KestrelClassic.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath scenario, "MyClassLibrary","MyClassLibrary","KestrelClassic.fsprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1

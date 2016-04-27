@@ -860,7 +860,7 @@ module ProjectFile =
             let installSettings = snd usedPackages.[kv.Key]
             let projectModel =
                 (snd kv.Value)
-                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions|> getRestrictionList)
+                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions |> getRestrictionList)
                     .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
             
