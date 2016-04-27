@@ -197,9 +197,10 @@ module InstallModel =
         |> Seq.toList
 
     let addFileToFolder (path:LibFolder) (file:string) (folders:LibFolder list) (addfn: string -> InstallFiles -> InstallFiles) =
-            folders |> List.map (fun p -> 
-                if p.Name <> path.Name then p else
-                { p with Files = addfn file p.Files }) 
+        folders 
+        |> List.map (fun p -> 
+            if p.Name <> path.Name then p else
+            { p with Files = addfn file p.Files }) 
                 
     let addPackageFile (path:LibFolder) (file:string) references (this:InstallModel) : InstallModel =
         let install = 

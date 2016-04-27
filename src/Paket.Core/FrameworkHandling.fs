@@ -495,6 +495,8 @@ module KnownTargetProfiles =
         PortableProfile("Profile336", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])
         PortableProfile("Profile344", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])]
 
+    let AllDotNetStandardProfiles = DotNetStandardProfiles
+
     let AllNativeProfiles =
         [ Native("","")
           Native("","Win32")
@@ -517,7 +519,11 @@ module KnownTargetProfiles =
           Runtimes("unix")
           Runtimes("osx") ]
 
-    let AllProfiles = (AllNativeProfiles |> List.map (fun p -> SinglePlatform p)) @ (AllRuntimes |> List.map (fun p -> SinglePlatform p)) @ AllDotNetProfiles
+    let AllProfiles = 
+        (AllNativeProfiles |> List.map (fun p -> SinglePlatform p)) @ 
+          (AllRuntimes |> List.map (fun p -> SinglePlatform p)) @
+          AllDotNetStandardProfiles @
+          AllDotNetProfiles
 
     let FindPortableProfile name =
         AllProfiles
