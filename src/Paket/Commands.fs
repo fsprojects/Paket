@@ -264,6 +264,7 @@ type PackArgs =
     | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of text:string
     | [<CustomCommandLine("lock-dependencies")>] LockDependencies
     | [<CustomCommandLine("minimum-from-lock-file")>] LockDependenciesToMinimum
+    | [<CustomCommandLine("pin-project-references")>] PinProjectReferences
     | [<CustomCommandLine("symbols")>] Symbols
     | [<CustomCommandLine("include-referenced-projects")>] IncludeReferencedProjects
     | [<CustomCommandLine("project-url")>] ProjectUrl of url:string
@@ -281,6 +282,7 @@ with
             | ReleaseNotes(_) -> "Specify relase notes for the package."
             | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
             | LockDependenciesToMinimum -> "Get the version requirements from paket.lock instead of paket.dependencies, and add them as a minimum version.  `lock-dependencies` will over-ride this option."
+            | PinProjectReferences -> "Pin dependencies generated from project references (=) instead of using minimum (>=) for version specification.  If `lock-dependencies` is specified, project references will be pinned even if this option is not specified."
             | Symbols -> "Build symbol/source packages in addition to library/content packages."
             | IncludeReferencedProjects -> "Include symbol/source from referenced projects."
             | ProjectUrl(_) -> "Url to the projects home page."
