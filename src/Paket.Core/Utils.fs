@@ -29,9 +29,10 @@ let internal memoize (f: 'a -> 'b) : 'a -> 'b =
         let value : 'b ref = ref Unchecked.defaultof<_>
         if cache.TryGetValue(x, value) then !value
         else
-            let value = f x
-            cache.[x] <- value
-            value
+            let y = f x
+            cache.TryAdd(x,y) |> ignore
+            y
+            
 
 type Auth = 
     | Credentials of Username : string * Password : string
@@ -310,30 +311,23 @@ let envProxies () =
 
 let calcEnvProxies = lazy (envProxies())
 
-let private proxies = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+let getDefaultProxyFor =
+    memoize
+      (fun (url:string) ->
+            let uri = Uri url
+            let getDefault () =
+                let result = WebRequest.GetSystemWebProxy()
+                let address = result.GetProxy uri 
 
-let getDefaultProxyFor url =
-    let uri = Uri url
-    let key = uri.Host,uri.Port,uri.Scheme
-    match proxies.TryGetValue key with
-    | true,proxy -> proxy
-    | _ ->
-        let getDefault () =
-            let result = WebRequest.GetSystemWebProxy()
-            let address = result.GetProxy uri 
+                if address = uri then null else
+                let proxy = WebProxy address
+                proxy.Credentials <- CredentialCache.DefaultCredentials
+                proxy.BypassProxyOnLocal <- true
+                proxy
 
-            if address = uri then null else
-            let proxy = WebProxy address
-            proxy.Credentials <- CredentialCache.DefaultCredentials
-            proxy.BypassProxyOnLocal <- true
-            proxy
-
-        let proxy =
             match calcEnvProxies.Force().TryFind uri.Scheme with
             | Some p -> if p.GetProxy uri <> uri then p else getDefault()
-            | None -> getDefault()
-        proxies.TryAdd(key,proxy) |> ignore
-        proxy
+            | None -> getDefault())
 
 let inline createWebClient (url,auth:Auth option) =
     let client = new WebClient()

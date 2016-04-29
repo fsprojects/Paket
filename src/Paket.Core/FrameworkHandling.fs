@@ -247,12 +247,9 @@ type FrameworkIdentifier =
     member x.IsBetween(a,b) = x.IsAtLeast a && x.IsAtMost b
 
 module FrameworkDetection =
-    let private cache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
-
-    let Extract(path:string) =
-        match cache.TryGetValue path with
-        | true,x -> x
-        | _ ->
+    let Extract =
+        memoize 
+          (fun (path:string) ->
             let path = 
                 let sb = new Text.StringBuilder(path.ToLower())
                 for pattern,replacement in KnownAliases.Data do
@@ -310,9 +307,7 @@ module FrameworkDetection =
                 | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | _ -> None
-
-            cache.[path] <- result
-            result
+            result)
 
     let DetectFromPath(path : string) : FrameworkIdentifier option =
         let path = path.Replace("\\", "/").ToLower()
