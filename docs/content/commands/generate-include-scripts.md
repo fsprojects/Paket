@@ -8,7 +8,7 @@ It is possible to generate include scripts for all registered Nuget packages def
 This will create .csx and .fsx scripts under `paket-files/include-scripts/net45/`, those files can now be 
 used in your scripts without having to bother with the list and order of all dependencies for given package.
 
-Note: this command only works after packages have been restored, please call `paket install` before using `paket generate-include-scripts`.
+Note: this command only works after packages have been restored, please call `paket restore` before using `paket generate-include-scripts` or `paket install` if you just changed your `paket.dependencies` file.
 
 ## Sample
 
