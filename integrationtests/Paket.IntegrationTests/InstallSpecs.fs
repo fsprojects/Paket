@@ -386,7 +386,7 @@ let ``#1552 install mvvmlightlibs again``() =
     let scenarioName = "i001552-install-mvvmlightlibs-again"
     let scenarioPath = scenarioTempPath scenarioName
 
-    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.lock")) |> normalizeLineEndings
+    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.locktemplate")) |> normalizeLineEndings
 
     let oldProjectFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
     let oldProjectFileText = File.ReadAllText oldProjectFile |> normalizeLineEndings

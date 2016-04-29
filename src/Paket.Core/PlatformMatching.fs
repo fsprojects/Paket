@@ -9,18 +9,13 @@ let inline split (path : string) =
     path.Split('+')
     |> Array.map (fun s -> s.Replace("portable-", ""))
     
-let inline extractPlatforms path = split path |> Array.choose FrameworkDetection.Extract
+let extractPlatforms = memoize (fun path  -> split path |> Array.choose FrameworkDetection.Extract)
 
-let private platformPenalties = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
-
-let rec getPlatformPenalty alreadyChecked (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
-    if packagePlatform = targetPlatform then
-        0
-    else
-        let key = targetPlatform,packagePlatform
-        match platformPenalties.TryGetValue key with
-        | true, penalty -> penalty
-        | _ ->
+let getPlatformPenalty =
+    let rec getPlatformPenalty alreadyChecked (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
+        if packagePlatform = targetPlatform then
+            0
+        else
             let penalty =
                 targetPlatform.SupportedPlatforms
                 |> List.filter (fun x -> Set.contains x alreadyChecked |> not)
@@ -29,39 +24,30 @@ let rec getPlatformPenalty alreadyChecked (targetPlatform:FrameworkIdentifier) (
                 |> List.min
                 |> fun p -> p + 1
 
-            let penalty =
-                match targetPlatform, packagePlatform with
-                | DotNetFramework _, DotNetStandard _ -> 200 + penalty
-                | DotNetStandard _, DotNetFramework _ -> 200 + penalty
-                | _ -> penalty
+            match targetPlatform, packagePlatform with
+            | DotNetFramework _, DotNetStandard _ -> 200 + penalty
+            | DotNetStandard _, DotNetFramework _ -> 200 + penalty
+            | _ -> penalty
 
-            platformPenalties.[key] <- penalty
-            penalty
+    memoize (fun (targetPlatform:FrameworkIdentifier,packagePlatform:FrameworkIdentifier) -> getPlatformPenalty Set.empty targetPlatform packagePlatform)
 
-let private pathPenalties = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
-
-let getPathPenalty (path:string) (platform:FrameworkIdentifier) =
-    if String.IsNullOrWhiteSpace path then
-        match platform with
-        | Native(_) -> MaxPenalty // an empty path is inconsidered compatible with native targets            
-        | _ -> 10 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
-    else
-        let key = path,platform
-        match pathPenalties.TryGetValue key with
-        | true,penalty -> penalty
-        | _ ->
-            let penalty =
-                extractPlatforms path
-                |> Array.map (getPlatformPenalty Set.empty platform)
-                |> Array.append [| MaxPenalty |]
-                |> Array.min
-            pathPenalties.[key] <- penalty
-            penalty
+let getPathPenalty =
+    memoize 
+      (fun (path:string,platform:FrameworkIdentifier) ->
+        if String.IsNullOrWhiteSpace path then
+            match platform with
+            | Native(_) -> MaxPenalty // an empty path is considered incompatible with native targets            
+            | _ -> 10 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
+        else
+            extractPlatforms path
+            |> Array.map (fun target -> getPlatformPenalty(platform,target))
+            |> Array.append [| MaxPenalty |]
+            |> Array.min)
 
 // Checks wether a list of target platforms is supported by this path and with which penalty. 
 let getPenalty (requiredPlatforms:FrameworkIdentifier list) (path:string) =
     requiredPlatforms
-    |> List.sumBy (getPathPenalty path)
+    |> List.sumBy (fun p -> getPathPenalty(path,p))
 
 type PathPenalty = (string * int)
 
@@ -87,55 +73,52 @@ let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
     else
         0
 
-let rec findBestMatch (paths : #seq<string>) (targetProfile : TargetProfile) = 
-    let requiredPlatforms = 
-        match targetProfile with
-        | PortableProfile(_, platforms) -> platforms
-        | SinglePlatform(platform) -> [ platform ]
-
-    match
-        paths 
-        |> Seq.map (fun path -> path, (getPenalty requiredPlatforms path))
-        |> Seq.filter (fun (_, penalty) -> penalty < MaxPenalty)
-        |> Seq.sortWith comparePaths
-        |> Seq.map fst
-        |> Seq.tryFind (fun _ -> true) with
-    | None ->
-        // Fallback Portable Library
-        KnownTargetProfiles.AllProfiles
-        |> Seq.choose (fun p ->
+let findBestMatch = 
+    let rec findBestMatch (paths : string list,targetProfile : TargetProfile) = 
+        let requiredPlatforms = 
             match targetProfile with
-            | SinglePlatform x ->
-                if p.ProfilesCompatibleWithPortableProfile |> Seq.exists ((=) x)
-                then findBestMatch paths p
-                else None
-            | _ -> None
-        )
-        |> Seq.sortBy (fun x -> (extractPlatforms x).Length) // prefer portable platform whith less platforms
-        |> Seq.tryHead
-    | path -> path
+            | PortableProfile(_, platforms) -> platforms
+            | SinglePlatform(platform) -> [ platform ]
 
-let private matchedCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+        let supported =
+            paths 
+            |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
+            |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
+            |> List.sortWith comparePaths
+            |> List.map fst
+            |> List.tryHead
+
+        match supported with
+        | None ->
+            // Fallback Portable Library
+            KnownTargetProfiles.AllProfiles
+            |> List.choose (fun p ->
+                match targetProfile with
+                | SinglePlatform x ->
+                    if p.ProfilesCompatibleWithPortableProfile |> List.exists ((=) x) then 
+                        findBestMatch(paths,p)
+                    else 
+                        None
+                | _ -> None)
+            |> List.sortBy (fun x -> (extractPlatforms x).Length) // prefer portable platform whith less platforms
+            |> List.tryHead
+        | path -> path
+
+    memoize (fun (paths : string list,targetProfile : TargetProfile) -> findBestMatch(paths,targetProfile))
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
-let getSupportedTargetProfiles (paths : string seq) =    
-    let key = paths
-    match matchedCache.TryGetValue key with
-    | true, supportedFrameworks -> supportedFrameworks
-    | _ ->
-        let supportedFrameworks =
+let getSupportedTargetProfiles =    
+    memoize 
+        (fun (paths : string list) ->
             KnownTargetProfiles.AllProfiles
-            |> Seq.map (fun target -> findBestMatch paths target, target)
-            |> Seq.collect (fun (path, target) -> 
-                    match path with
-                    | Some p -> [ p, target ]
-                    | _ -> [])
-            |> Seq.groupBy fst
-            |> Seq.map (fun (path, group) -> path, Seq.map snd group)
-            |> Map.ofSeq
-        matchedCache.[key] <- supportedFrameworks
-        supportedFrameworks
+            |> List.choose (fun target ->
+                match findBestMatch(paths,target) with
+                | Some p -> Some(p, target)
+                | _ -> None)
+            |> List.groupBy fst
+            |> List.map (fun (path, group) -> path, List.map snd group)
+            |> Map.ofList)
 
 
 let getTargetCondition (target:TargetProfile) =

@@ -190,10 +190,10 @@ module InstallModel =
 
     let calcLibFolders libs =
        libs 
-        |> Seq.choose extractLibFolder 
-        |> Seq.distinct 
+        |> List.choose extractLibFolder 
+        |> List.distinct 
         |> PlatformMatching.getSupportedTargetProfiles 
-        |> Seq.map (fun entry -> { Name = entry.Key; Targets = List.ofSeq entry.Value; Files = InstallFiles.empty })
+        |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
         |> Seq.toList
 
     let addFileToFolder (path:LibFolder) (file:string) (folders:LibFolder list) (addfn: string -> InstallFiles -> InstallFiles) =
@@ -213,13 +213,14 @@ module InstallModel =
             ReferenceFileFolders = addFileToFolder path file this.ReferenceFileFolders InstallFiles.addReference }
 
 
-    let addLibReferences (libs: string seq) references (installModel:InstallModel) : InstallModel =
+    let addLibReferences libs references (installModel:InstallModel) : InstallModel =
+        let libs = libs |> Seq.toList
         let libFolders = calcLibFolders libs
 
-        Seq.fold (fun (model:InstallModel) file ->
+        List.fold (fun (model:InstallModel) file ->
             match extractLibFolder file with
             | Some folderName ->
-                match Seq.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
+                match List.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
                 | Some path -> addPackageFile path file references model
                 | _ -> model
             | None -> model) { installModel with ReferenceFileFolders = libFolders } libs
@@ -230,6 +231,7 @@ module InstallModel =
             analyzerFiles
             |> Seq.map (fun file -> FileInfo file |> AnalyzerLib.FromFile)
             |> List.ofSeq
+
         { installModel with Analyzers = installModel.Analyzers @ analyzerLibs}
 
 
@@ -339,10 +341,10 @@ module InstallModel =
             |> Seq.map (fun entry -> { Name = entry.Key; Targets = List.ofSeq entry.Value; Files = InstallFiles.empty })
             |> Seq.toList
 
-        Seq.fold (fun model file ->
+        List.fold (fun model file ->
             match extractBuildFolder file with
             | Some folderName ->
-                match Seq.tryFind (fun folder -> folder.Name = folderName) model.TargetsFileFolders with
+                match List.tryFind (fun folder -> folder.Name = folderName) model.TargetsFileFolders with
                 | Some path -> addTargetsFile path file model
                 | _ -> model
             | None -> model) { this with TargetsFileFolders = targetsFileFolders } targetsFiles

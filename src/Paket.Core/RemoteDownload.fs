@@ -24,7 +24,7 @@ let private lookupDocument (auth,url : string)  = async {
 
 let private auth key url = 
     key
-    |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl key url)
+    |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl(key,url))
 
 
 // Gets the sha1 of a branch
@@ -109,7 +109,7 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
         let auth = 
             try
                 remoteFile.AuthKey
-                |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl key url)
+                |> Option.bind (fun key -> ConfigFile.GetAuthenticationForUrl(key,url))
             with
             | _ -> None
   
