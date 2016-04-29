@@ -59,7 +59,7 @@ let ``generateFSharpScript returns DoNotGenerate given empty dependency set``() 
     let output = ScriptGeneration.generateFSharpScript scriptGenInputWithNoDendency
 
     match output with
-    | Generate _ -> Assert.Fail()
+    | Generate _ -> Assert.Fail("F# script with no dependency was supposed to return DoNotGenerate")
     | DoNotGenerate -> ()
 
 [<Test>]
@@ -67,5 +67,5 @@ let ``generateCSharpScript returns DoNotGenerate given empty dependency set``() 
     let output = ScriptGeneration.generateCSharpScript scriptGenInputWithNoDendency
 
     match output with
-    | Generate _ -> Assert.Fail()
+    | Generate _ -> Assert.Fail("C# script with no dependency was supposed to return DoNotGenerate")
     | DoNotGenerate -> ()
