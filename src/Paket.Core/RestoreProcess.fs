@@ -106,7 +106,7 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
 
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let localFile =
-        if not lockFileName.Exists then
+        if not localFileName.Exists then
             LocalFile.empty
         else
             LocalFile.readFile localFileName.FullName
