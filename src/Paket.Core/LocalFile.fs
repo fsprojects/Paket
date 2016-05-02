@@ -5,6 +5,7 @@ open Paket.PackageSources
 
 type DevSourceOverride =
     | DevNugetSourceOverride of packageName: PackageName * devSource: PackageSource
+    | DevGitSourceOverride   of packageName: PackageName * gitSource: string
 
 type LocalFile = LocalFile of devSourceOverrides: DevSourceOverride list
 
@@ -27,6 +28,9 @@ module LocalFile =
             |> Trial.Catch PackageSource.Parse
             |> Trial.mapFailure (fun _ -> [sprintf "Cannot parse source '%s'" source])
             |> Trial.lift (fun s -> DevNugetSourceOverride (PackageName package, s))
+        | Regex "nuget[ ]+(.*)[ ]+->[ ]+(git[ ]+.*)"    [package; gitSource] ->
+            DevGitSourceOverride (PackageName package, gitSource)
+            |> Trial.ok
         | line ->
             Trial.fail (sprintf "Cannot parse line '%s'" line)
 
@@ -56,6 +60,22 @@ module LocalFile =
             let groups =
                 lockFile.Groups
                 |> Map.map (fun _ g -> { g with Resolution = overrideResolution (p,s) g.Resolution } )
+            LockFile(lockFile.FileName, groups)
+        | DevGitSourceOverride   (p,s) ->
+            let owner,vr,project,url,buildCommand,operatingSystemRestriction,packagePath = 
+                Git.Handling.extractUrlParts s
+            let source =
+                packagePath
+                |> Option.map (fun p -> LocalNuGet(p, None))
+
+            let groups =
+                lockFile.Groups
+                |> Map.map (fun _ g -> { g with Resolution = 
+                                                    match source with
+                                                    | Some source ->
+                                                        overrideResolution (p,source) g.Resolution
+                                                    | None -> g.Resolution
+                                                RemoteFiles = g.RemoteFiles } )
             LockFile(lockFile.FileName, groups)
 
     let overrideLockFile (LocalFile overrides) lockFile =
