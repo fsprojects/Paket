@@ -24,7 +24,7 @@ let ``simple dependencies generates expected scripts``() =
   directPaket (sprintf "generate-include-scripts framework %s" framework) scenario |> ignore
   
   let files = getGeneratedScriptFiles framework scenario
-  let actualFiles = files |> Array.map (fun f -> f.Name)
+  let actualFiles = files |> Array.map (fun f -> f.Name) |> Array.sortBy id
   let expectedFiles = [|
       "include.argu.csx"
       "include.argu.fsx"
