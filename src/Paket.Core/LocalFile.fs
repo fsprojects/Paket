@@ -76,22 +76,23 @@ module LocalFile =
                   PackagePath = packagePath
                   Name = "" 
                   AuthKey = None }
-            
+
+            let packagesPath = 
+                match packagePath with
+                | Some p -> p
+                | None   ->
+                    failwith "paket.local: only git repositories as NuGet source (with 'Packages: ...') are currently supported"
+
             let source groupName =
-                packagePath
-                |> Option.map (fun p -> 
-                    let root = ""
-                    let fullPath = remoteFile.ComputeFilePath(root,groupName, p)
-                    let relative = (createRelativePath root fullPath).Replace("\\","/")        
-                    LocalNuGet(relative, None))
+                let root = ""
+                let fullPath = remoteFile.ComputeFilePath(root,groupName, packagesPath)
+                let relative = (createRelativePath root fullPath).Replace("\\","/")        
+                LocalNuGet(relative, None)
 
             let groups =
                 lockFile.Groups
                 |> Map.map (fun _ g -> { g with Resolution = 
-                                                    match source g.Name with
-                                                    | Some source ->
-                                                        overrideResolution (p,source) g.Resolution
-                                                    | None -> g.Resolution
+                                                    overrideResolution (p,source g.Name) g.Resolution
                                                 RemoteFiles = g.RemoteFiles } )
             LockFile(lockFile.FileName, groups)
 
