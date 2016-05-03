@@ -63,10 +63,15 @@ module LocalFile =
                 |> Map.map (fun _ g -> { g with Resolution = overrideResolution (p,s) g.Resolution } )
             LockFile(lockFile.FileName, groups)
         | DevGitSourceOverride   (p,s) ->
-            let owner,commit,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = 
+            let owner,branch,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = 
                 Git.Handling.extractUrlParts s
+            let restriction = VersionRestriction.Concrete (defaultArg branch "master")
+            let sha = 
+                RemoteDownload.getSHA1OfBranch (GitLink(cloneUrl)) owner project restriction None 
+                |> Async.RunSynchronously
+
             let remoteFile =
-                { ResolvedSourceFile.Commit = defaultArg commit "master"
+                { ResolvedSourceFile.Commit = sha
                   Owner = owner
                   Origin = GitLink(cloneUrl)
                   Project = project
@@ -91,9 +96,9 @@ module LocalFile =
 
             let groups =
                 lockFile.Groups
-                |> Map.map (fun _ g -> { g with Resolution = 
-                                                    overrideResolution (p,source g.Name) g.Resolution
-                                                RemoteFiles = g.RemoteFiles } )
+                |> Map.map (fun _ g -> 
+                    { g with Resolution  = overrideResolution (p,source g.Name) g.Resolution
+                             RemoteFiles = remoteFile :: g.RemoteFiles } )
             LockFile(lockFile.FileName, groups)
 
     let overrideLockFile (LocalFile overrides) lockFile =
