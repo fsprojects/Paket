@@ -1,6 +1,7 @@
 ﻿namespace Paket
 
 open Paket.Domain
+open Paket.ModuleResolver
 open Paket.PackageSources
 
 type DevSourceOverride =
@@ -28,7 +29,7 @@ module LocalFile =
             |> Trial.Catch PackageSource.Parse
             |> Trial.mapFailure (fun _ -> [sprintf "Cannot parse source '%s'" source])
             |> Trial.lift (fun s -> DevNugetSourceOverride (PackageName package, s))
-        | Regex "nuget[ ]+(.*)[ ]+->[ ]+(git[ ]+.*)"    [package; gitSource] ->
+        | Regex "nuget[ ]+(.*)[ ]+->[ ]+git[ ]+(.*)"    [package; gitSource] ->
             DevGitSourceOverride (PackageName package, gitSource)
             |> Trial.ok
         | line ->
@@ -62,16 +63,32 @@ module LocalFile =
                 |> Map.map (fun _ g -> { g with Resolution = overrideResolution (p,s) g.Resolution } )
             LockFile(lockFile.FileName, groups)
         | DevGitSourceOverride   (p,s) ->
-            let owner,vr,project,url,buildCommand,operatingSystemRestriction,packagePath = 
+            let owner,commit,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = 
                 Git.Handling.extractUrlParts s
-            let source =
+            let remoteFile =
+                { ResolvedSourceFile.Commit = defaultArg commit "master"
+                  Owner = owner
+                  Origin = GitLink(cloneUrl)
+                  Project = project
+                  Dependencies = Set.empty
+                  Command = buildCommand
+                  OperatingSystemRestriction = operatingSystemRestriction
+                  PackagePath = packagePath
+                  Name = "" 
+                  AuthKey = None }
+            
+            let source groupName =
                 packagePath
-                |> Option.map (fun p -> LocalNuGet(p, None))
+                |> Option.map (fun p -> 
+                    let root = ""
+                    let fullPath = remoteFile.ComputeFilePath(root,groupName, p)
+                    let relative = (createRelativePath root fullPath).Replace("\\","/")        
+                    LocalNuGet(relative, None))
 
             let groups =
                 lockFile.Groups
                 |> Map.map (fun _ g -> { g with Resolution = 
-                                                    match source with
+                                                    match source g.Name with
                                                     | Some source ->
                                                         overrideResolution (p,source) g.Resolution
                                                     | None -> g.Resolution
