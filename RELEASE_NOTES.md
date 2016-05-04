@@ -1,3 +1,6 @@
+#### 2.63.3 - 04.05.2016
+* Added monoandroid60 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1659
+
 #### 2.63.2 - 25.04.2016
 * Fix path issue on linux - https://github.com/fsprojects/Paket/pull/1644/files
 
