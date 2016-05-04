@@ -718,9 +718,10 @@ module ProjectFile =
                 | Reference.Library lib ->
                     let fi = FileInfo (normalizePath lib)
                     
-                    createNode "Reference" project
+                    let relativePath = createRelativePath project.FileName fi.FullName
+                    if relativePath.Contains @"\native\" then createNode "NativeReference" project else createNode "Reference" project
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                    |> addChild (createNodeSet "HintPath" (createRelativePath project.FileName fi.FullName) project)
+                    |> addChild (createNodeSet "HintPath" relativePath project)
                     |> addChild (createNodeSet "Private" (if copyLocal then "True" else "False") project)
                     |> addChild (createNodeSet "Paket" "True" project)
                     |> itemGroup.AppendChild

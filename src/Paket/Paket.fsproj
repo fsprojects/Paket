@@ -45,7 +45,7 @@
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\kestrel-classic</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\ConsoleApplication1</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

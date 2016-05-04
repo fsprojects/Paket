@@ -1,3 +1,6 @@
+#### 2.63.4 - 04.05.2016
+* Implemented support for NativeReference - https://github.com/fsprojects/Paket/issues/1658
+
 #### 2.63.3 - 04.05.2016
 * Added monoandroid60 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1659
 
