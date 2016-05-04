@@ -116,6 +116,7 @@
     <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
     <StartArguments>update</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001646-target-netstandard\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\ConsoleApplication1</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
