@@ -1,14 +1,9 @@
-#### 2.63.4 - 04.05.2016
+#### 2.64.0 - 05.05.2016
 * Implemented support for NativeReference - https://github.com/fsprojects/Paket/issues/1658
-
-#### 2.63.3 - 04.05.2016
 * Added monoandroid60 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1659
-
-#### 2.63.2 - 25.04.2016
-* Fix path issue on linux - https://github.com/fsprojects/Paket/pull/1644/files
-
-#### 2.63.1 - 22.04.2016
-* Don't pack template files in packages or paket-files
+* BUGFIX: Understand InterprojectDependencies without Name - https://github.com/fsprojects/Paket/issues/1657
+* BUGFIX: Fix path issue on linux - https://github.com/fsprojects/Paket/pull/1644/files
+* BUGFIX: Don't pack template files in packages or paket-files
 
 #### 2.63.0 - 22.04.2016
 * Added monoandroid43 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1631

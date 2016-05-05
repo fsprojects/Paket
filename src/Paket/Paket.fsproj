@@ -44,8 +44,8 @@
     <StartArguments>update --hard</StartArguments>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\temp\ConsoleApplication1</StartWorkingDirectory>
+    <StartArguments>install -v</StartArguments>
+    <StartWorkingDirectory>D:\temp\fff\ConsoleApplication1</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
