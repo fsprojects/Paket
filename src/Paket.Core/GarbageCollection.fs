@@ -19,7 +19,7 @@ let discoverExtractedPackages root : ExtractedPackage list =
         | [| nuspec |] ->
             Some {
                 GroupName = groupName
-                PackageName = PackageName (Path.GetFileNameWithoutExtension nuspec.Name)
+                PackageName = PackageName (FileInfo(nuspec.FullName).Directory.Name)
                 Path = dir
             }
         | _ -> None
@@ -36,19 +36,15 @@ let discoverExtractedPackages root : ExtractedPackage list =
 
 /// Remove all packages from the packages folder which are not part of the lock file.
 let deleteUnusedPackages root (lockFile:LockFile) =
+    let resolution = lockFile.GetGroupedResolution()
 
-    let resolutionKey package = package.GroupName, package.PackageName
-    let delete package =
+    for package in discoverExtractedPackages root do
         try
-            Utils.deleteDir package.Path
+            if resolution |> Map.containsKey (package.GroupName, package.PackageName) |> not then
+                tracefn "Garbage collecting %O" package.Path
+                Utils.deleteDir package.Path
         with
-        | exn -> traceWarnfn "Could not delete no longer needed directory '%s'. %s." package.Path.FullName exn.Message
-
-    let resolutions = lockFile.GetGroupedResolution()
-
-    discoverExtractedPackages root
-    |> List.filter (fun p -> resolutions |> Map.containsKey (resolutionKey p) |> not)
-    |> List.iter delete
+        | exn -> traceWarnfn "Garbage collection on '%s' failed. %s." package.Path.FullName exn.Message
 
 /// Removes older packages from the cache
 let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:SemVerInfo seq) =

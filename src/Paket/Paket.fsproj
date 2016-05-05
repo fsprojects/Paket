@@ -117,8 +117,8 @@
     <StartArguments>update</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001646-target-netstandard\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\temp\ConsoleApplication1</StartWorkingDirectory>
-    <StartArguments>install -v</StartArguments>
-    <StartWorkingDirectory>D:\temp\fff\ConsoleApplication1</StartWorkingDirectory>
+    <StartArguments>restore</StartArguments>
+    <StartWorkingDirectory>D:\temp\NoCostura</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

@@ -128,7 +128,8 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
         | None ->
             failwithf "The group %O was not found in the paket.lock file but not in the paket.dependencies file. Please run \"paket install\" again." kv.Value.Name
         | Some depFileGroup ->
-            restore(root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile,Set.ofSeq packages)
+            let packages = Set.ofSeq packages
+            restore(root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages)
             |> Async.RunSynchronously
             |> ignore
 
