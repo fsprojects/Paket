@@ -453,7 +453,7 @@ module LockFileParser =
                                 SourceFiles = { Commit = details.Replace("(","").Replace(")","")
                                                 Owner = owner
                                                 Origin = GitLink(cloneUrl)
-                                                Project = project
+                                                Project = if Directory.Exists project then Path.GetFileName project else project
                                                 Dependencies = Set.empty
                                                 Command = buildCommand
                                                 OperatingSystemRestriction = operatingSystemRestriction

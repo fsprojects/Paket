@@ -412,7 +412,7 @@ module DependenciesFileParser =
                     let owner,vr,project,url,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts url
                     let remoteFile : UnresolvedSource = 
                         { Owner = owner
-                          Project = project
+                          Project = if Directory.Exists project then Path.GetFileName project else project
                           Version = 
                             match vr with
                             | None -> VersionRestriction.NoVersionRestriction
