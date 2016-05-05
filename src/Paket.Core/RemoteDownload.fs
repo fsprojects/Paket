@@ -54,7 +54,14 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
             | None -> 
                 failwithf "Could not find hash for %s" url
                 return ""
-        | ModuleResolver.Origin.GitLink url ->
+        | ModuleResolver.Origin.GitLink (LocalGitOrigin path) ->
+            return 
+                match versionRestriction with
+                | VersionRestriction.NoVersionRestriction -> Git.Handling.getHash path ""
+                | VersionRestriction.Concrete branch      -> Git.Handling.getHash path branch
+                | _                                       -> None
+                |> Option.get
+        | ModuleResolver.Origin.GitLink (RemoteGitOrigin url) ->
             return
                 match versionRestriction with
                 | VersionRestriction.NoVersionRestriction -> Git.Handling.getHashFromRemote url ""
@@ -165,7 +172,8 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         targetFolder.Create()
 
     match remoteFile.Origin, remoteFile.Name with
-    | Origin.GitLink cloneUrl, _ ->
+    | Origin.GitLink (RemoteGitOrigin cloneUrl), _
+    | Origin.GitLink (LocalGitOrigin  cloneUrl), _ ->
         if not <| Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction then () else
         let cloneUrl = cloneUrl.TrimEnd('/')
         

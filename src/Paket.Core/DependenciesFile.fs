@@ -426,7 +426,13 @@ module DependenciesFileParser =
                           OperatingSystemRestriction = operatingSystemRestriction
                           PackagePath = packagePath
                           Name = ""
-                          Origin = Origin.GitLink url
+                          Origin = 
+                            match url with
+                            | String.StartsWith @"file:\\\" _ ->
+                                LocalGitOrigin url
+                            | _ ->
+                                RemoteGitOrigin url
+                            |> Origin.GitLink
                           AuthKey = None }
                     let sources = 
                         match packagePath with

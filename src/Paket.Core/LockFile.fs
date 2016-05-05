@@ -123,17 +123,18 @@ module LockFileSerializer =
                     if not (updateHasReported.Contains(GitHubLink)) then
                         yield "GITHUB"
                         updateHasReported.Remove (HttpLink "") |> ignore
-                        updateHasReported.Remove (GitLink "") |> ignore
+                        updateHasReported.Remove (GitLink (RemoteGitOrigin"")) |> ignore
                         updateHasReported.Remove GistLink |> ignore
                         updateHasReported.Add GitHubLink
                     yield sprintf "  remote: %s/%s" owner project
-                | GitLink url ->
-                    if not (updateHasReported.Contains(GitLink(""))) then
+                | GitLink (LocalGitOrigin  url)
+                | GitLink (RemoteGitOrigin url) ->
+                    if not (updateHasReported.Contains(GitLink(RemoteGitOrigin""))) then
                         yield "GIT"
                         updateHasReported.Remove GitHubLink |> ignore
                         updateHasReported.Remove GistLink |> ignore
                         updateHasReported.Remove (HttpLink "") |> ignore
-                        updateHasReported.Add (GitLink "")
+                        updateHasReported.Add (GitLink (RemoteGitOrigin""))
                     yield sprintf "  remote: " + url
                
                 | GistLink -> 
@@ -141,7 +142,7 @@ module LockFileSerializer =
                         yield "GIST"
                         updateHasReported.Remove GitHubLink |> ignore
                         updateHasReported.Remove (HttpLink "") |> ignore
-                        updateHasReported.Remove (GitLink "") |> ignore
+                        updateHasReported.Remove (GitLink (RemoteGitOrigin"")) |> ignore
                         updateHasReported.Add GistLink
                     yield sprintf "  remote: %s/%s" owner project
                 | HttpLink url ->
@@ -149,7 +150,7 @@ module LockFileSerializer =
                         yield "HTTP"
                         updateHasReported.Remove GitHubLink |> ignore
                         updateHasReported.Remove GistLink |> ignore
-                        updateHasReported.Remove (GitLink "") |> ignore
+                        updateHasReported.Remove (GitLink (RemoteGitOrigin"")) |> ignore
                         updateHasReported.Add (HttpLink "")
                     yield sprintf "  remote: " + url
 
@@ -273,7 +274,7 @@ module LockFileParser =
         | Some "NUGET", trimmed -> NugetPackage trimmed
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)
-        | Some "GIT", trimmed -> SourceFile(GitLink(String.Empty), trimmed)
+        | Some "GIT", trimmed -> SourceFile(GitLink(RemoteGitOrigin""), trimmed)
         | Some "HTTP", trimmed  -> SourceFile(HttpLink(String.Empty), trimmed)
         | Some _, _ -> failwithf "unknown repository type %s." line
         | _ -> failwithf "unknown lock file format %s" line
@@ -452,7 +453,13 @@ module LockFileParser =
                                 LastWasPackage = false
                                 SourceFiles = { Commit = details.Replace("(","").Replace(")","")
                                                 Owner = owner
-                                                Origin = GitLink(cloneUrl)
+                                                Origin = 
+                                                    match cloneUrl with
+                                                    | String.StartsWith @"file:\\\" _ ->
+                                                        LocalGitOrigin cloneUrl
+                                                    | _ ->  
+                                                        RemoteGitOrigin cloneUrl
+                                                    |> GitLink
                                                 Project = if Directory.Exists project then Path.GetFileName project else project
                                                 Dependencies = Set.empty
                                                 Command = buildCommand

@@ -6,10 +6,14 @@ open System.IO
 open Paket.Domain
 open Paket.Requirements
 
+type GitLinkOrigin =
+| RemoteGitOrigin of string
+| LocalGitOrigin  of string
+
 type Origin = 
 | GitHubLink 
 | GistLink
-| GitLink of string
+| GitLink of GitLinkOrigin
 | HttpLink of string
 
 
@@ -54,7 +58,8 @@ type UnresolvedSource =
                 | VersionRestriction.VersionRequirement vr -> vr.ToString()
 
             sprintf "http %s%s %s" url v this.Name
-        | GitLink url -> url
+        | GitLink (RemoteGitOrigin url) -> url
+        | GitLink (LocalGitOrigin path) -> path
         | _ ->
             let link = 
                 match this.Origin with
