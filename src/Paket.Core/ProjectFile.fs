@@ -1022,7 +1022,12 @@ module ProjectFile =
         let forceGetInnerText node name =
             match node |> getNode name with 
             | Some n -> n.InnerText
-            | None -> failwithf "unable to parse %s" node.Name
+            | None ->
+                match node |> getAttribute "Include" with
+                | Some fileName ->
+                    let fi = FileInfo(normalizePath fileName)
+                    fi.Name.Replace(fi.Extension,"")
+                | None -> failwithf "unable to parse %O" node
 
         [for node in project.Document |> getDescendants "ProjectReference" -> 
             let path =

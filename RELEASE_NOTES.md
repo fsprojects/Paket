@@ -1,4 +1,4 @@
-#### 3.0.0-beta029 - 04.05.2016
+#### 3.0.0-beta030 - 05.05.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -10,17 +10,12 @@
 * USABILITY: Removed "specs:" from paket.lock since it was copied from Bundler and had no meaning in Paket - https://github.com/fsprojects/Paket/pull/1608
 * BREAKING CHANGE: Removed --hard parameter from all commands. Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
 
-#### 2.63.4 - 04.05.2016
+#### 2.64.0 - 05.05.2016
 * Implemented support for NativeReference - https://github.com/fsprojects/Paket/issues/1658
-
-#### 2.63.3 - 04.05.2016
 * Added monoandroid60 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1659
-
-#### 2.63.2 - 25.04.2016
-* Fix path issue on linux - https://github.com/fsprojects/Paket/pull/1644/files
-
-#### 2.63.1 - 22.04.2016
-* Don't pack template files in packages or paket-files
+* BUGFIX: Understand InterprojectDependencies without Name - https://github.com/fsprojects/Paket/issues/1657
+* BUGFIX: Fix path issue on linux - https://github.com/fsprojects/Paket/pull/1644/files
+* BUGFIX: Don't pack template files in packages or paket-files
 
 #### 2.63.0 - 22.04.2016
 * Added monoandroid43 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1631
