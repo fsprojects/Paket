@@ -4,6 +4,7 @@ open System
 open System.Collections.Generic
 open System.IO
 open Paket.Domain
+open Paket.Git.Handling
 open Paket.Logging
 open Paket.PackageResolver
 open Paket.ModuleResolver
@@ -448,19 +449,13 @@ module LockFileParser =
                     | GitLink _ ->
                         match currentGroup.RemoteUrl with
                         | Some cloneUrl ->
-                            let owner,commit,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts cloneUrl
+                            let owner,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts cloneUrl
                             { currentGroup with
                                 LastWasPackage = false
                                 SourceFiles = { Commit = details.Replace("(","").Replace(")","")
                                                 Owner = owner
-                                                Origin = 
-                                                    match cloneUrl with
-                                                    | String.StartsWith @"file:\\\" _ ->
-                                                        LocalGitOrigin cloneUrl
-                                                    | _ ->  
-                                                        RemoteGitOrigin cloneUrl
-                                                    |> GitLink
-                                                Project = if Directory.Exists project then Path.GetFileName project else project
+                                                Origin = GitLink origin
+                                                Project = project
                                                 Dependencies = Set.empty
                                                 Command = buildCommand
                                                 OperatingSystemRestriction = operatingSystemRestriction

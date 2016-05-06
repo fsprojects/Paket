@@ -5,6 +5,10 @@ open System.IO
 open Paket.Logging
 open Paket
 
+type GitLinkOrigin =
+| RemoteGitOrigin of string
+| LocalGitOrigin  of string
+
 let extractUrlParts (url:string) =
     let isOperator operator = VersionRange.BasicOperators |> List.exists ((=) operator)
     let url,commit,options = 
@@ -79,8 +83,16 @@ let extractUrlParts (url:string) =
         |> fun s -> s.Replace("git@","").Replace(":","/").TrimStart('/')
 
     let project = url.Substring(url.LastIndexOf('/')+1).Replace(".git","")
+    let project = if Directory.Exists project then Path.GetFileName project else project
 
-    server,commit,project,url,buildCommand,operatingSystemRestriction,packagePath
+    let origin =
+        match url with
+        | String.StartsWith @"file:\\\" _ ->
+            LocalGitOrigin url
+        | _ ->
+            RemoteGitOrigin url
+
+    server,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath
 
 let getHash repoFolder commitish = 
     try

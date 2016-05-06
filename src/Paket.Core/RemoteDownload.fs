@@ -9,6 +9,7 @@ open Paket.ModuleResolver
 open System.IO.Compression
 open Paket.Domain
 open Paket.Git.CommandHelper
+open Paket.Git.Handling
 
 let private githubCache = System.Collections.Concurrent.ConcurrentDictionary<_, _>()
 

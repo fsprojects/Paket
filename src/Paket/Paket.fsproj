@@ -99,7 +99,7 @@
     <StartArguments>update</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i000346-aliases\temp</StartWorkingDirectory>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001585-websharper-props\temp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
+    <StartArguments>install -v</StartArguments>
     <StartWorkingDirectory>c:\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

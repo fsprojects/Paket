@@ -5,10 +5,7 @@ open System
 open System.IO
 open Paket.Domain
 open Paket.Requirements
-
-type GitLinkOrigin =
-| RemoteGitOrigin of string
-| LocalGitOrigin  of string
+open Paket.Git.Handling
 
 type Origin = 
 | GitHubLink 
