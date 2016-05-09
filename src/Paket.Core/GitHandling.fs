@@ -70,11 +70,21 @@ let extractUrlParts (url:string) =
         | [url; commit] -> url
         | _ -> url
 
-    let server =
-        match url.Replace(":","/").LastIndexOf('/') with 
-        | -1 -> url
-        | pos -> url.Substring(0, pos)
+    let origin =
+        match url with
+        | String.StartsWith @"file:///" _ ->
+            LocalGitOrigin url
+        | _ ->
+            RemoteGitOrigin url
 
+    let server =
+        match origin with
+        | LocalGitOrigin _ ->
+            "localfilesystem"
+        | _ ->
+            match url.Replace(":","/").LastIndexOf('/') with 
+            | -1 -> url
+            | pos -> url.Substring(0, pos)
                         
     let server = 
         match server.IndexOf("://") with
@@ -84,13 +94,6 @@ let extractUrlParts (url:string) =
 
     let project = url.Substring(url.LastIndexOf('/')+1).Replace(".git","")
     let project = if Directory.Exists project then Path.GetFileName project else project
-
-    let origin =
-        match url with
-        | String.StartsWith @"file:\\\" _ ->
-            LocalGitOrigin url
-        | _ ->
-            RemoteGitOrigin url
 
     server,commit,project,origin,buildCommand,operatingSystemRestriction,packagePath
 

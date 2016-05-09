@@ -56,6 +56,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 failwithf "Could not find hash for %s" url
                 return ""
         | ModuleResolver.Origin.GitLink (LocalGitOrigin path) ->
+            let path = path.Replace(@"file:///", "")
             return 
                 match versionRestriction with
                 | VersionRestriction.NoVersionRestriction -> Git.Handling.getHash path ""
