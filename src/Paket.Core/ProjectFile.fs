@@ -527,7 +527,7 @@ module ProjectFile =
 
             if !isPaketNode = paketOnes then yield node]
 
-    let getCustomReferenceAndFrameworkNodes project = findNodes false "Reference" project
+    let getCustomReferenceAndFrameworkNodes project = (findNodes false "Reference" project) @ (findNodes false "NativeReference" project)
 
     let findPaketNodes name (project:ProjectFile) = findNodes true name  project
 
@@ -866,6 +866,7 @@ module ProjectFile =
     let removePaketNodes (project:ProjectFile) = 
         deletePaketNodes "Analyzer" project
         deletePaketNodes "Reference" project
+        deletePaketNodes "NativeReference" project
 
         let rec getPaketNodes (node:XmlNode) =
             [for node in node.ChildNodes do
