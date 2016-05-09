@@ -78,7 +78,8 @@ let ``#1591 should convert denormalized versions``() =
     depsFile.Contains "6.1.0" |> shouldEqual true
 
 [<Test>]
-let ``#1217 should convert simple project.json``() = 
+let ``#1217 should convert simple project.json``() =
+    if not Constants.UseProjectJson then () else
     let originalProjectFile = ProjectJsonFile.Load(Path.Combine(originalScenarioPath "i001217-convert-json-project", "project.jsontemplate"))
     originalProjectFile.GetGlobalDependencies() 
     |> List.map (fun (n,v) -> n.ToString(),v.ToString())
@@ -97,6 +98,7 @@ let ``#1217 should convert simple project.json``() =
 
 [<Test>]
 let ``#1217 should convert project.json app``() = 
+    if not Constants.UseProjectJson then () else
     let originalProjectFile = ProjectJsonFile.Load(Path.Combine(originalScenarioPath "i001217-convert-json-projects", "TestApp", "project.jsontemplate"))
     originalProjectFile.GetGlobalDependencies() 
     |> List.map (fun (n,v) -> n.ToString(),v.ToString())
