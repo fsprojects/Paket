@@ -119,6 +119,8 @@
     <StartWorkingDirectory>D:\temp\ConsoleApplication1</StartWorkingDirectory>
     <StartArguments>restore</StartArguments>
     <StartWorkingDirectory>D:\temp\NoCostura</StartWorkingDirectory>
+    <StartArguments>update -f</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001663-google-apis\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

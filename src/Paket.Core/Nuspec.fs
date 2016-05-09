@@ -86,12 +86,44 @@ type Nuspec =
                 |> getDescendants "group" 
                 |> List.map (fun node ->
                     match node |> getAttribute "targetFramework" with
+                    | Some framework when framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable").StartsWith "portable" ->
+                        let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
+                        [PackageName "",
+                          VersionRequirement.NoRestriction, 
+                          [ yield FrameworkRestriction.Portable framework]]
+
                     | Some framework ->
                         match FrameworkDetection.Extract framework with
                         | Some x -> [PackageName "",VersionRequirement.NoRestriction, [FrameworkRestriction.Exactly x]]
                         | None -> []
                     | _ -> [])
                 |> List.concat
+
+            let framworks = 
+                let isMatch n (n',v',r') =
+                     n = n' && 
+                       r' 
+                       |> List.exists (fun r -> 
+                            match r with 
+                            | FrameworkRestriction.Exactly(DotNetFramework _) -> true 
+                            | FrameworkRestriction.Exactly(DotNetStandard _) -> true 
+                            |_ -> false)
+
+                frameworks
+                |> Seq.collect (fun (n,v,r) ->
+                    match r with
+                    | [ FrameworkRestriction.Portable p ] -> 
+                        [yield n,v,r
+                         if not <| List.exists (isMatch n) frameworks then
+                             for p in p.Split([|'+'; '-'|]) do
+                                match FrameworkDetection.Extract p with
+                                | Some(DotNetFramework _ as r) ->
+                                    yield n,v,[FrameworkRestriction.Exactly r]
+                                | Some(DotNetStandard _ as r) ->
+                                    yield n,v,[FrameworkRestriction.Exactly r]
+                                | _ -> () ]
+                    |  _ -> [n,v,r])
+                |> Seq.toList
 
             let referenced =
                 doc 
