@@ -409,7 +409,7 @@ module DependenciesFileParser =
                           AuthKey = authKey }
                     lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
                 | Git(url) ->
-                    let owner,vr,project,url,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts url
+                    let owner,vr,project,origin,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts url
                     let remoteFile : UnresolvedSource = 
                         { Owner = owner
                           Project = project
@@ -426,7 +426,7 @@ module DependenciesFileParser =
                           OperatingSystemRestriction = operatingSystemRestriction
                           PackagePath = packagePath
                           Name = ""
-                          Origin = Origin.GitLink url
+                          Origin = GitLink origin
                           AuthKey = None }
                     let sources = 
                         match packagePath with
