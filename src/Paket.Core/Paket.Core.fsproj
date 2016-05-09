@@ -74,7 +74,7 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
-    <Compile Include="..\..\paket-files\haraldsteinlechner\FSharp.Data\src\CommonProviderImplementation\AssemblyReader.fs">
+    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
       <Paket>True</Paket>
       <Link>AssemblyReader.fs</Link>
     </Compile>
