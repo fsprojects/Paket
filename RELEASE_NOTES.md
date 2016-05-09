@@ -1,4 +1,4 @@
-#### 2.64.1 - 059.05.2016
+#### 2.64.1 - 09.05.2016
 * Blacklisting install.xdt and uninstall.xdt files - https://github.com/fsprojects/Paket/pull/1667
 
 #### 2.64.0 - 05.05.2016
