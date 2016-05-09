@@ -71,7 +71,8 @@ type UnresolvedSource =
 
     member this.GetCloneUrl() =
         match this.Origin with
-        | GitLink url -> url
+        | GitLink (LocalGitOrigin path) -> path
+        | GitLink (RemoteGitOrigin url) -> url
         | _ -> failwithf "invalid linktype %A" this.Origin
 
     member this.FilePath(root,groupName) = this.ComputeFilePath(root,groupName,this.Name)

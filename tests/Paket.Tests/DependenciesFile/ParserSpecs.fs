@@ -1152,7 +1152,7 @@ let ``should read paket git config``() =
     localGitSource.GetCloneUrl() |> shouldEqual "file:///c:/code/Paket.VisualStudio"
     localGitSource.Project |> shouldEqual "Paket.VisualStudio"
     localGitSource.Version |> shouldEqual VersionRestriction.NoVersionRestriction
-    localGitSource.Owner |> shouldEqual "c/code"
+    localGitSource.Owner |> shouldEqual "localfilesystem"
 
     let httpsGitSource = cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles.Tail.Tail.Head
     httpsGitSource.GetCloneUrl() |> shouldEqual "https://github.com/fsprojects/Paket.git"
