@@ -53,6 +53,8 @@ let contentFileBlackList : list<(FileInfo -> bool)> = [
     fun f -> f.Name.EndsWith ".pp"
     fun f -> f.Name.EndsWith ".tt"
     fun f -> f.Name.EndsWith ".ttinclude"
+    fun f -> f.Name.EndsWith ".install.xdt"
+    fun f -> f.Name.EndsWith ".uninstall.xdt"
 ]
 
 let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems options =

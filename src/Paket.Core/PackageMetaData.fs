@@ -68,8 +68,7 @@ let readAssembly fileName =
     let assemblyReader = 
         ProviderImplementation.AssemblyReader.ILModuleReaderAfterReadingAllBytes(
             fileName, 
-            ProviderImplementation.AssemblyReader.mkILGlobals ProviderImplementation.AssemblyReader.ecmaMscorlibScopeRef, 
-            true)
+            ProviderImplementation.AssemblyReader.mkILGlobals ProviderImplementation.AssemblyReader.EcmaMscorlibScopeRef)
    
     let versionFromAssembly = assemblyReader.ILModuleDef.ManifestOfAssembly.Version
     let id = assemblyReader.ILModuleDef.ManifestOfAssembly.Name
@@ -87,7 +86,7 @@ let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectTyp
             |> normalizePath).FullName
         |> readAssembly
 
-let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.CacheValue) = 
+let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.ILModuleReader) = 
     [for inp in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do 
          match ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp with
          | [] -> ()

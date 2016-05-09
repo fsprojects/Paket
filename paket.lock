@@ -1,5 +1,6 @@
 NUGET
   remote: https://www.nuget.org/api/v2
+  specs:
     Argu (2.1)
     Chessie (0.5.1)
       FSharp.Core
@@ -7,12 +8,15 @@ NUGET
     Newtonsoft.Json (8.0.3) - redirects: force
 GITHUB
   remote: fsharp/FAKE
-    src/app/FakeLib/Globbing/Globbing.fs (3bf706bd6058733a1a034755741076b3953aaf09)
-  remote: haraldsteinlechner/FSharp.Data
-    src/CommonProviderImplementation/AssemblyReader.fs (d4a30757dc5e5ef7096fffafc1ed377b6174771b)
+  specs:
+    src/app/FakeLib/Globbing/Globbing.fs (26ea4dbb3d60352b88162bb32577015af2e7c44e)
+  remote: fsprojects/FSharp.TypeProviders.StarterPack
+  specs:
+    src/AssemblyReader.fs (0a5fd0caa73df304062c8965e61850789d9f39e7)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
+  specs:
     FAKE (4.25.4)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.2)
@@ -28,14 +32,16 @@ NUGET
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
     Octokit (0.19)
-      Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
+      Microsoft.Net.Http
 GITHUB
   remote: fsharp/FAKE
+  specs:
     modules/Octokit/Octokit.fsx (3bf706bd6058733a1a034755741076b3953aaf09)
       Octokit
 GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2
+  specs:
     FsCheck (2.3)
       FSharp.Core (>= 3.1.2.5)
     FSharp.Core (4.0.0.1)
@@ -54,4 +60,5 @@ NUGET
       NUnit.Extension.VSProjectLoader (3.2)
 GITHUB
   remote: forki/FsUnit
+  specs:
     FsUnit.fs (f536bd5ed0eba8b38d2b01ae79d64e4e14fbd0a6)
