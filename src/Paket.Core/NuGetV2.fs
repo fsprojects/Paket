@@ -164,7 +164,8 @@ let parseODataDetails(nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
             PackageName a.[0], 
             VersionRequirement.Parse(if a.Length > 1 then a.[1] else "0"), 
             (if a.Length > 2 && a.[2] <> "" then 
-                 if String.startsWithIgnoreCase "portable" a.[2] then [ FrameworkRestriction.Portable(a.[2]) ]
+                 if String.startsWithIgnoreCase "portable" a.[2] then
+                    [ yield FrameworkRestriction.Portable a.[2]]
                  else 
                      match FrameworkDetection.Extract a.[2] with
                      | Some x -> [ FrameworkRestriction.Exactly x ]
@@ -174,7 +175,32 @@ let parseODataDetails(nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
         dependencies
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
         |> Array.map split
-        |> Array.toList
+
+    let packages = 
+        let isMatch n (n',v',r') =
+             n = n' && 
+               r' 
+               |> List.exists (fun r -> 
+                    match r with 
+                    | FrameworkRestriction.Exactly(DotNetFramework _) -> true 
+                    | FrameworkRestriction.Exactly(DotNetStandard _) -> true 
+                    |_ -> false)
+
+        packages
+        |> Seq.collect (fun (n,v,r) ->
+            match r with
+            | [ FrameworkRestriction.Portable p ] -> 
+                [yield n,v,r
+                 if not <| Array.exists (isMatch n) packages then
+                     for p in p.Split([|'+'; '-'|]) do
+                        match FrameworkDetection.Extract p with
+                        | Some(DotNetFramework _ as r) ->
+                            yield n,v,[FrameworkRestriction.Exactly r]
+                        | Some(DotNetStandard _ as r) ->
+                            yield n,v,[FrameworkRestriction.Exactly r]
+                        | _ -> () ]
+            |  _ -> [n,v,r])
+        |> Seq.toList
 
     let dependencies = Requirements.optimizeDependencies packages
     

@@ -1,3 +1,6 @@
+#### 2.64.2 - 09.05.2016
+* Framework resolution strategy for Google.Apis.Oauth2.v2 - https://github.com/fsprojects/Paket/issues/1663
+
 #### 2.64.1 - 09.05.2016
 * Blacklisting install.xdt and uninstall.xdt files - https://github.com/fsprojects/Paket/pull/1667
 
