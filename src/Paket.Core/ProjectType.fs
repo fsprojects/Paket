@@ -217,7 +217,7 @@ type ProjectType =
             |> Array.choose (fun f -> 
                 if f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj" || f.Extension = ".vcxproj" then
                     ProjectFile.tryLoad f.FullName |> Option.map (fun p -> ProjectType.Project p)
-                else if f.Name = "project.json" then
+                else if f.Name = "project.json" && Constants.UseProjectJson then
                     Some(ProjectType.ProjectJson(ProjectJsonFile.Load f.FullName))
                 else None)
 
