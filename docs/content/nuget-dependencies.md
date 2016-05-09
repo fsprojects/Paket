@@ -187,7 +187,7 @@ If you need to be NuGet compatible and want to have the version no. in the packa
     [lang=paket]
     source https://nuget.org/api/v2
 
-    nuget xunit.runners.visualstudio >= 2.0 version_in_path: true
+    nuget xunit.runner.visualstudio >= 2.0 version_in_path: true
     nuget UnionArgParser ~> 0.7
 
 ### No content option
