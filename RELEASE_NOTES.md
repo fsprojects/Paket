@@ -1,3 +1,6 @@
+#### 2.64.1 - 059.05.2016
+* Blacklisting install.xdt and uninstall.xdt files - https://github.com/fsprojects/Paket/pull/1667
+
 #### 2.64.0 - 05.05.2016
 * Implemented support for NativeReference - https://github.com/fsprojects/Paket/issues/1658
 * Added monoandroid60 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1659
