@@ -176,7 +176,7 @@ module ScriptGeneration =
           let scriptFile = getScriptFile groupName package.Name
           let groupName = getGroupNameAsOption groupName
           let dependencies = package.Dependencies |> Seq.map fst' |> Seq.choose knownIncludeScripts.TryFind |> List.ofSeq
-          let installModel = dependenciesFile.GetInstalledPackageModel(groupName, package.Name.GetCompareString())
+          let installModel = dependenciesFile.GetInstalledPackageModel(groupName, package.Name.ToString())
           let dllFiles = getDllsWithinPackage framework installModel |> List.map (makeRelativePath scriptFile)
 
           let scriptInfo = {
