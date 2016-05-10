@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Debug</Configuration>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2C1B4A0C-A56A-46C1-B550-598A2B75F50C}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DIPS.Infrastructure</RootNamespace>
+    <AssemblyName>DIPS.Infrastructure</AssemblyName>
+    <TargetFrameworkVersion Condition="'$(TargetFrameworkVersion)' == ''">v4.65</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors>612, 618</WarningsAsErrors>
+    <OutputPath>..\..\bin\$(TargetFrameworkVersion)\$(Platform)\$(Configuration)</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DefineConstants>TRACE;DEBUG;$(DefineConstants)</DefineConstants>
+    <Optimize>false</Optimize>
+    <DebugType>full</DebugType>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsAsErrors>612, 618</WarningsAsErrors>
+    <OutputPath>..\..\bin\$(TargetFrameworkVersion)\$(Platform)\$(Configuration)</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>False</SignAssembly>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Data" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Call.cs" />
+    <Compile Include="IProfilerStorage.cs" />
+    <Compile Include="IProfilingExecutor.cs" />
+    <Compile Include="ProfilingConstants.cs" />
+    <Compile Include="Profiler.cs">
+      <ExcludeFromStyleCop>False</ExcludeFromStyleCop>
+    </Compile>
+    <Compile Include="IProfiler.cs" />
+    <Compile Include="ProfilingExecutor.cs" />
+    <Compile Include="LogicalContextProfilerStorage.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\manual_reference\DIPS.Infrastructure.Services.csproj">
+      <Project>{479F0088-3377-4A96-9729-DD1A2B0434E1}</Project>
+      <Name>DIPS.Infrastructure.Services</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <Import Project="..\..\.paket\paket.targets" />
+  <Import Project="..\..\packages\build\BuildBundlerMinifier\build\BuildBundlerMinifier.targets" Condition="Exists('..\..\packages\build\BuildBundlerMinifier\build\BuildBundlerMinifier.targets')" Label="Paket" />
+  <Import Project="..\..\packages\build\BuildWebCompiler\build\BuildWebCompiler.targets" Condition="Exists('..\..\packages\build\BuildWebCompiler\build\BuildWebCompiler.targets')" Label="Paket" />
+</Project>

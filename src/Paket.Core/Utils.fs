@@ -161,7 +161,7 @@ let getNative (path:string) =
     ""
 
 let extractPath =
-    memoize <| fun (infix, fileName : string) ->
+    memoize <| fun (infix, packageName:PackageName, fileName : string) ->
         let path = fileName.Replace("\\", "/").ToLower()
         let path = if path.StartsWith "lib/" then "/" + path else path
         let needle = sprintf "/%s/" infix
@@ -171,7 +171,11 @@ let extractPath =
         let packagesPos = path.LastIndexOf "packages/"
         let startPos =
             if packagesPos >= 0 then
-                path.IndexOf(needle,packagesPos) + 1
+                let packagenamePos = path.IndexOf(packageName.ToString().ToLower() + "/",packagesPos)
+                if packagenamePos >= 0 then
+                    path.IndexOf(needle,packagenamePos) + 1
+                else
+                    path.IndexOf(needle,packagesPos) + 1
             else
                 path.LastIndexOf(needle) + 1
         

@@ -109,7 +109,7 @@ let ``should extract lib folders for SQLite``() =
 
     let model =
        libs 
-        |> List.choose extractLibFolder 
+        |> List.choose (extractLibFolder (PackageName "System.Data.SQLite.Core"))
         |> List.distinct 
 
     model |> shouldEqual ["net20"; "net40"; "net45"; "net451"]
@@ -122,7 +122,7 @@ let ``should calc lib folders for SQLite``() =
          @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll"]
 
-    let model = calcLibFolders libs 
+    let model = calcLibFolders (PackageName "System.Data.SQLite.Core") libs 
     let folder = model |> List.item 2
     folder.Targets |> shouldEqual [SinglePlatform (DotNetStandard(DotNetStandardVersion.V1_1)); SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 

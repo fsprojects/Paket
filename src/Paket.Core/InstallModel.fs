@@ -131,14 +131,14 @@ module InstallModel =
           TargetsFileFolders = [] 
           Analyzers = [] }
 
-    let extractLibFolder (path:string) =
+    let extractLibFolder packageName (path:string) =
         let path = path.Replace("\\", "/").ToLower()
         if path.Contains "runtimes" then
-            Utils.extractPath ("runtimes", path)
+            Utils.extractPath ("runtimes", packageName, path)
         else
-            Utils.extractPath ("lib", path)
+            Utils.extractPath ("lib", packageName, path)
 
-    let extractBuildFolder path = Utils.extractPath ("build", path)
+    let extractBuildFolder packageName path = Utils.extractPath ("build", packageName, path)
 
     let mapFolders mapfn (installModel:InstallModel) = 
         { installModel with 
@@ -188,9 +188,9 @@ module InstallModel =
         else
             this
 
-    let calcLibFolders libs =
+    let calcLibFolders packageName libs =
        libs 
-        |> List.choose extractLibFolder 
+        |> List.choose (extractLibFolder  packageName)
         |> List.distinct 
         |> PlatformMatching.getSupportedTargetProfiles 
         |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
@@ -215,10 +215,10 @@ module InstallModel =
 
     let addLibReferences libs references (installModel:InstallModel) : InstallModel =
         let libs = libs |> Seq.toList
-        let libFolders = calcLibFolders libs
+        let libFolders = calcLibFolders installModel.PackageName libs
 
         List.fold (fun (model:InstallModel) file ->
-            match extractLibFolder file with
+            match extractLibFolder installModel.PackageName file with
             | Some folderName ->
                 match List.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
                 | Some path -> addPackageFile path file references model
@@ -266,7 +266,7 @@ module InstallModel =
         
         let model = 
             if List.isEmpty installModel.ReferenceFileFolders then
-                let folders = calcLibFolders ["lib/Default.dll"]
+                let folders = calcLibFolders installModel.PackageName ["lib/Default.dll"]
                 { installModel with ReferenceFileFolders = folders } 
             else
                 installModel
@@ -278,7 +278,7 @@ module InstallModel =
                 folder)
 
     let addFrameworkAssemblyReferences references (installModel:InstallModel) : InstallModel = 
-        references |> Seq.fold (addFrameworkAssemblyReference) (installModel:InstallModel) 
+        references |> Seq.fold addFrameworkAssemblyReference (installModel:InstallModel) 
 
     let filterExcludes excludes (installModel:InstallModel) = 
         let excluded e reference =
@@ -335,14 +335,14 @@ module InstallModel =
     let rec addTargetsFiles (targetsFiles:string list) (this:InstallModel) : InstallModel =
         let targetsFileFolders = 
             targetsFiles 
-            |> List.choose extractBuildFolder
+            |> List.choose (extractBuildFolder this.PackageName)
             |> List.distinct 
             |> PlatformMatching.getSupportedTargetProfiles 
             |> Seq.map (fun entry -> { Name = entry.Key; Targets = List.ofSeq entry.Value; Files = InstallFiles.empty })
             |> Seq.toList
 
         List.fold (fun model file ->
-            match extractBuildFolder file with
+            match extractBuildFolder this.PackageName file with
             | Some folderName ->
                 match List.tryFind (fun folder -> folder.Name = folderName) model.TargetsFileFolders with
                 | Some path -> addTargetsFile path file model
