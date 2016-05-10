@@ -300,8 +300,8 @@ let ``#1505 should install conditionals``() =
 [<Test>]
 let ``#1663 should install google apis``() = 
     install "i001663-google-apis" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let newFile = Path.Combine(scenarioTempPath "i001663-google-apis","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001663-google-apis","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -453,6 +453,15 @@ let ``#1592 install source content without CopyToOutputDirectory``() =
     let newLockFile = install "i001592-source-content"
     let newFile = Path.Combine(scenarioTempPath "i001592-source-content","xUnitTests","xUnitTests.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001592-source-content","xUnitTests","xUnitTests.expected.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1663 should import build targets``() =
+    install "i001663-build-targets" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001663-build-targets","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001663-build-targets","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
