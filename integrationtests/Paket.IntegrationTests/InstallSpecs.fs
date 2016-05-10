@@ -456,3 +456,12 @@ let ``#1592 install source content without CopyToOutputDirectory``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1663 should import build targets``() =
+    install "i001663-build-targets" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001663-build-targets","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001663-build-targets","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
