@@ -1,6 +1,8 @@
-## Generating include scripts for all Nuget packages
+## Generating include scripts for all NuGet packages
 
-It is possible to generate include scripts for all registered Nuget packages defined in paket.dependencies.
+<blockquote>This feature is only available in Paket 3.0 prereleases.</blockquote>
+
+It is possible to generate include scripts for all registered NuGet packages defined in the [`paket.dependencies` file](dependencies-file.html).
 
     [lang=batchfile]
     $ paket generate-include-scripts framework net45
@@ -12,7 +14,7 @@ Note: this command only works after packages have been restored, please call `pa
 
 ## Sample
 
-Consider the following paket.dependencies file:
+Consider the following [`paket.dependencies` file](dependencies-file.html):
 
     [lang=paket]
     source https://nuget.org/api/v2
@@ -23,7 +25,7 @@ Now we run `paket install` to install the packages.
 
 Then we run `paket generate-include-scripts framework net45` to generate include scripts.
 
-in a .fsx script file you can now use
+In a .fsx script file you can now use
     
     [lang=fsharp]
     
@@ -31,7 +33,7 @@ in a .fsx script file you can now use
 
     // now ready to use FsLab and any of it's dependencies
 
-you'll see messages when you execute the `#load` line in FSI:
+You'll see messages when you execute the `#load` line in FSI:
 
     Loaded deedle
     Loaded deedle.rplugin
