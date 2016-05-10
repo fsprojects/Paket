@@ -337,6 +337,7 @@
     <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
+    <Compile Include="ScriptGeneration\LoadingScriptTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

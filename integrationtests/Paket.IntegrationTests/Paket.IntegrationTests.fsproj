@@ -118,6 +118,7 @@
     <Compile Include="ResolverSkipsConflictsFastSpecs.fs" />
     <Compile Include="AutocompleteSpecs.fs" />
     <Compile Include="BindingRedirect.fs" />
+    <Compile Include="LoadingScriptGenerationTests.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
   </ItemGroup>

@@ -301,6 +301,83 @@ let push (results : ParseResults<_>) =
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
+let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) =
+    
+    let providedFrameworks = results.GetResults <@ GenerateIncludeScriptsArgs.Framework @>
+    let providedScriptTypes = results.GetResults <@ GenerateIncludeScriptsArgs.ScriptType @>
+    
+    let dependencies = 
+        Dependencies.Locate()
+        |> fun d -> DependenciesFile.ReadFromFile(d.DependenciesFile)
+        |> Paket.UpdateProcess.detectProjectFrameworksForDependenciesFile
+    
+    let rootFolder = 
+        dependencies.RootPath
+        |> DirectoryInfo
+    
+    let frameworksForDependencyGroups = lazy (
+        dependencies.Groups
+            |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
+            |> Seq.map(function 
+                | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
+                | Paket.Requirements.FrameworkRestrictionList list ->
+                  list |> Seq.collect (
+                    function
+                    | Paket.Requirements.FrameworkRestriction.Exactly framework
+                    | Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
+                    | Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
+                    | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
+                  )
+              )
+            |> Seq.concat
+    )
+
+    let environmentFramework = lazy (
+        // HACK: resolve .net version based on environment
+        // list of match is incomplete / inaccurate
+        let version = Environment.Version
+        match version.Major, version.Minor, version.Build, version.Revision with
+        | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
+        | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
+        | _ -> DotNetFramework (FrameworkVersion.V4_5) // paket.exe is compiled for framework 4.5
+    )
+    let tupleMap f v = (v, f v)
+    let failOnMismatch toParse parsed f message =
+        if List.length toParse <> List.length parsed then
+            toParse
+            |> Seq.map (tupleMap f)
+            |> Seq.filter (snd >> Option.isNone)
+            |> Seq.map fst
+            |> String.concat ", "
+            |> sprintf "%s: %s. Cannot generate include scripts." message
+            |> failwith
+
+    let frameworksToGenerate =
+        let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract
+        
+        failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
+        
+        if targetFrameworkList |> Seq.isEmpty |> not then targetFrameworkList |> Seq.ofList
+        else if frameworksForDependencyGroups.Value |> Seq.isEmpty |> not then frameworksForDependencyGroups.Value 
+        else Seq.singleton environmentFramework.Value 
+    
+    let scriptTypesToGenerate = 
+      let parsedScriptTypes = providedScriptTypes |> List.choose Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate
+      
+      failOnMismatch providedScriptTypes parsedScriptTypes Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate "Unrecognized Script Type(s)"
+
+      match parsedScriptTypes with
+      | [] -> [Paket.LoadingScripts.ScriptGeneration.CSharp; Paket.LoadingScripts.ScriptGeneration.FSharp]
+      | xs -> xs
+
+    let workaround() = null |> ignore
+    for framework in frameworksToGenerate do
+        tracefn "generating scripts for framework %s" (framework.ToString())
+        workaround() // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
+        for scriptType in scriptTypesToGenerate do
+            Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
+    
+
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
 
@@ -345,6 +422,7 @@ let main() =
                 | ShowGroups -> processCommand showGroups
                 | Pack -> processCommand pack
                 | Push -> processCommand push
+                | GenerateIncludeScripts -> processCommand generateIncludeScripts
 
             let args = args.[1..]
 
