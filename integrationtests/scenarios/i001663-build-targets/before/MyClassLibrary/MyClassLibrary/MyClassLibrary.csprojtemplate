@@ -76,6 +76,6 @@
   </Target>
   -->
   <Import Project="..\..\.paket\paket.targets" />
-  <Import Project="..\packages\build\BuildBundlerMinifier\build\BuildBundlerMinifier.targets" Condition="Exists('..\packages\build\BuildBundlerMinifier\build\BuildBundlerMinifier.targets')" Label="Paket" />
-  <Import Project="..\packages\build\BuildWebCompiler\build\BuildWebCompiler.targets" Condition="Exists('..\packages\build\BuildWebCompiler\build\BuildWebCompiler.targets')" Label="Paket" />
+  <Import Project="..\..\packages\build\BuildBundlerMinifier\build\BuildBundlerMinifier.targets" Condition="Exists('..\..\packages\build\BuildBundlerMinifier\build\BuildBundlerMinifier.targets')" Label="Paket" />
+  <Import Project="..\..\packages\build\BuildWebCompiler\build\BuildWebCompiler.targets" Condition="Exists('..\..\packages\build\BuildWebCompiler\build\BuildWebCompiler.targets')" Label="Paket" />
 </Project>

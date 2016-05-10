@@ -45,7 +45,7 @@
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001663-google-apis\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001663-build-targets\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
