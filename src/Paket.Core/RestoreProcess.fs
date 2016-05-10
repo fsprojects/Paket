@@ -79,12 +79,13 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
     }
 
 /// Restores the given dependencies from the lock file.
-let internal restore (root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>) = 
+let internal restore (root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
         let! _ = lockFile.Groups.[groupName].Resolution
                  |> Map.filter (fun name _ -> packages.Contains name)
-                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value))
+                 |> Map.map (fun _ v -> (v, if overriden |> Set.contains v.Name then true else force))
+                 |> Seq.map (fun kv -> let (p,force) = kv.Value in ExtractPackage(root, groupName, sources, caches, force, p))
                  |> Async.Parallel
         return ()
     }
@@ -138,7 +139,8 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
             failwithf "The group %O was not found in the paket.lock file but not in the paket.dependencies file. Please run \"paket install\" again." kv.Value.Name
         | Some depFileGroup ->
             let packages = Set.ofSeq packages
-            restore(root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages)
+            let overriden = Set.filter (LocalFile.overrides localFile) packages
+            restore(root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
             |> Async.RunSynchronously
             |> ignore
 

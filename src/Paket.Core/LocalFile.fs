@@ -103,3 +103,8 @@ module LocalFile =
 
     let overrideLockFile (LocalFile overrides) lockFile =
         List.fold overrideDependency lockFile overrides
+
+    let overrides (LocalFile xs) package =
+        xs 
+        |> List.exists (function | DevNugetSourceOverride (p, _)
+                                 | DevGitSourceOverride   (p, _) -> p = package)
