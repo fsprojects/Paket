@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -29,78 +29,7 @@
     </DocumentationFile>
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
-    <StartArguments>update</StartArguments>
-    <StartArguments>restore</StartArguments>
-    <StartArguments>update</StartArguments>
-    <StartArguments>pack -v output "D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp\out" templatefile "D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp\PaketBug\paket.template"</StartArguments>
-    <StartArguments>pack -v output D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp\out</StartArguments>
-    <StartArguments>pack output "out/nuget"  version  0.9.3 releaseNotes  "[LanguageExtensions][New] New Ensure methods with exception parameter." include-referenced-projects</StartArguments>
-    <StartArguments>update</StartArguments>
-    <StartArguments>convert-from-nuget</StartArguments>
-    <StartArguments>pack templatefile paket.template output o</StartArguments>
-    <StartArguments>install</StartArguments>
-    <StartArguments>update -f</StartArguments>
-    <StartArguments>update</StartArguments>
     <StartAction>Project</StartAction>
-    <StartProgram>paket.exe</StartProgram>
-    <StartWorkingDirectory>c:\code\Paketkopie</StartWorkingDirectory>
-    <StartWorkingDirectory>C:\Temp\paket_test\</StartWorkingDirectory>
-    <StartWorkingDirectory>d:\code\paketkopie</StartWorkingDirectory>
-    <StartWorkingDirectory>d:\code\paketbug</StartWorkingDirectory>
-    <StartWorkingDirectory>d:\code\paketrepro</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001270-net461\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>C:\code\restore</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\FSharpVSPowerTools\</StartWorkingDirectory>
-    <StartWorkingDirectory>C:\code\Paket\integrationtests\scenarios\i001334-download-fail\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>d:\code\Paket\integrationtests\scenarios\i000284-full-git\temp\</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\ConsoleApplication8</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i000284-full-git\temp\</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001353-git-build-as-source-restore\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001359-wrong-prerelease\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001380-git-semvertag-as-source\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\paket-repro</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001387-nugetv3\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001376-pack-template\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001429-pack-deps\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Journalist</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001450-twiddle-wakka\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\test</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001467-cpp\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001467-cpp-native\before</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket-issue-1469</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001217-convert-json-projects\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001473-blocking\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001458-group-conflict\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001211-direct-v3\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001442-dont-warn\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001442-warn-Rx\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\PaketFrameworksProblemRepro\PaketFrameworksProblemRepro</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001505-conditionals\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001500-auto-detect\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001496-vsts\before</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001504-override\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001233-props-fw-files\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001507-privateeye\temp</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001427-content-once-remove\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001359-wrong-prerelease\temp</StartWorkingDirectory>
-    <StartArguments>update --hard</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001523-mixed-native\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001520-pinned-error\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001523-not-true\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001427-content-once-remove\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001536-codedom\temp</StartWorkingDirectory>
-    <StartArguments>update  nuget FSharp.core</StartArguments>
-    <StartWorkingDirectory>D:\code\temp\BindingRedirectPaketBug</StartWorkingDirectory>
-    <StartArguments>update nuget FAKE</StartArguments>
-    <StartWorkingDirectory>D:\code\uen</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001578-transitive-ref\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001579-unlisted\temp\</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i000346-aliases\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001585-websharper-props\temp</StartWorkingDirectory>
-    <StartArguments>install -v</StartArguments>
-    <StartWorkingDirectory>c:\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -111,16 +40,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update --hard</StartArguments>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001646-target-netstandard\temp</StartWorkingDirectory>
-    <StartWorkingDirectory>D:\temp\ConsoleApplication1</StartWorkingDirectory>
-    <StartArguments>restore</StartArguments>
-    <StartWorkingDirectory>D:\temp\NoCostura</StartWorkingDirectory>
-    <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001663-google-apis\temp</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

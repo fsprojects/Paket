@@ -311,9 +311,7 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
         |> fun d -> DependenciesFile.ReadFromFile(d.DependenciesFile)
         |> Paket.UpdateProcess.detectProjectFrameworksForDependenciesFile
     
-    let rootFolder = 
-        dependencies.RootPath
-        |> DirectoryInfo
+    let rootFolder = DirectoryInfo(dependencies.RootPath)
     
     let frameworksForDependencyGroups = lazy (
         dependencies.Groups
