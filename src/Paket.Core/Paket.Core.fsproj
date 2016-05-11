@@ -116,7 +116,6 @@
     <Compile Include="DependenciesFile.fs" />
     <Compile Include="LockFile.fs" />
     <Compile Include="TemplateFile.fs" />
-    <Compile Include="ProjectJsonFile.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="DependencyChangeDetection.fs" />
     <Compile Include="GarbageCollection.fs" />
@@ -125,7 +124,6 @@
     <Compile Include="NupkgWriter.fs" />
     <Compile Include="ProcessOptions.fs" />
     <Compile Include="PackagesConfigFile.fs" />
-    <Compile Include="ProjectType.fs" />
     <Compile Include="DependencyModel.fs" />
     <Compile Include="InstallProcess.fs" />
     <Compile Include="UpdateProcess.fs" />

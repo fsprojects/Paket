@@ -8,9 +8,9 @@ open Paket.Domain
 open Paket.Logging
 open InstallProcess
 
-let private notInstalled (project : ProjectType) groupName package = project.HasPackageInstalled(groupName,package) |> not
+let private notInstalled (project : ProjectFile) groupName package = project.HasPackageInstalled(groupName,package) |> not
 
-let private addToProject (project : ProjectType) groupName package =
+let private addToProject (project : ProjectFile) groupName package =
     project.FindOrCreateReferencesFile()
         .AddNuGetReference(groupName,package)
         .Save()
@@ -26,7 +26,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
 
         let updateMode = PackageResolver.UpdateMode.UpdateFiltered(groupName, PackageFilter.ofName package)
         let lockFile,hasChanged,updatedGroups = UpdateProcess.SelectiveUpdate(dependenciesFile, updateMode, options.SemVerUpdateMode, options.Force)
-        let projects = seq { for p in ProjectType.FindAllProjects(Path.GetDirectoryName lockFile.FileName) -> p } // lazy sequence in case no project install required
+        let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) -> p } // lazy sequence in case no project install required
 
         dependenciesFile.Save()
 
@@ -44,9 +44,9 @@ let AddToProject(dependenciesFileName, groupName, package, version, options : In
         | None -> Constants.MainDependencyGroup
         | Some name -> GroupName name
 
-    let addToSpecifiedProject (projects : ProjectType seq) groupName packageName =
+    let addToSpecifiedProject (projects : ProjectFile seq) groupName packageName =
         
-        match ProjectType.TryFindProject(projects,projectName) with
+        match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
             if packageName |> notInstalled p groupName then
                 addToProject p groupName packageName
@@ -63,7 +63,7 @@ let Add(dependenciesFileName, groupName, package, version, options : InstallerOp
         | None -> Constants.MainDependencyGroup
         | Some name -> GroupName name
 
-    let addToProjects (projects : ProjectType seq) groupName package =
+    let addToProjects (projects : ProjectFile seq) groupName package =
         if interactive then
             for project in projects do
                 if package |> notInstalled project groupName && Utils.askYesNo(sprintf "  Install to %s into group %O?" project.FileName groupName) then

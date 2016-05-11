@@ -29,7 +29,7 @@ let ``Loading assembly metadata works``() =
         if workingDir.Contains "Debug" then "Debug"
         else "Release"
     
-    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" (ProjectType.Project projFile)
+    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
     id |> shouldEqual "Paket.Tests"
     
     let attribs = PackageMetaData.loadAssemblyAttributes assemblyReader

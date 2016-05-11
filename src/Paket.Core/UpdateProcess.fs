@@ -175,12 +175,9 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
         let targetFrameworks = lazy (
             InstallProcess.findAllReferencesFiles root |> returnOrFail
             |> List.map (fun (p,_) -> 
-                match p with 
-                | ProjectType.Project p ->
-                    match p.GetTargetFramework() with
-                    | Some fw -> Requirements.FrameworkRestriction.Exactly fw
-                    | None -> failwithf "Could not detect target framework for project %s" p.FileName
-                | ProjectType.ProjectJson p -> Requirements.FrameworkRestriction.Exactly (FrameworkIdentifier.DNXCore FrameworkVersion.V5_0))
+                match p.GetTargetFramework() with
+                | Some fw -> Requirements.FrameworkRestriction.Exactly fw
+                | None -> failwithf "Could not detect target framework for project %s" p.FileName)
             |> List.distinct)
 
         dependenciesFile.Groups

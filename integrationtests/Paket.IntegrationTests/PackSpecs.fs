@@ -265,7 +265,7 @@ let ``#1506 allows to pack files without ending``() =
     File.Delete(templatePath)
 
 [<Test>]
-let ``#1514 invliad pack should give proper warning``() =
+let ``#1514 invalid pack should give proper warning``() =
     let scenario = "i001514-pack-error"
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")

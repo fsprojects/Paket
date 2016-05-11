@@ -55,5 +55,3 @@ let NuGetCacheFolder =
     if not di.Exists then
         di.Create()
     di.FullName
-
-let mutable UseProjectJson = false

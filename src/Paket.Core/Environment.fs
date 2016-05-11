@@ -10,7 +10,7 @@ type PaketEnv = {
     RootDirectory : DirectoryInfo
     DependenciesFile : DependenciesFile
     LockFile : option<LockFile>
-    Projects : list<ProjectType * ReferencesFile>
+    Projects : list<ProjectFile * ReferencesFile>
 }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]

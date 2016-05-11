@@ -137,20 +137,18 @@ type NugetEnv =
     { RootDirectory : DirectoryInfo
       NuGetConfig : NugetConfig
       NuGetConfigFiles : list<FileInfo>
-      NuGetProjectFiles : list<ProjectType * NugetPackagesConfig>
-      ProjectJsonFiles : list<ProjectType>
+      NuGetProjectFiles : list<ProjectFile * NugetPackagesConfig>
       NuGetTargets : option<FileInfo>
       NuGetExe : option<FileInfo> }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module NugetEnv = 
-    let create rootDirectory configFiles targets exe config packagesFiles projectJsonFiles = 
+    let create rootDirectory configFiles targets exe config packagesFiles = 
         { RootDirectory = rootDirectory
           NuGetConfig = config
           NuGetConfigFiles = configFiles
           NuGetProjectFiles = packagesFiles
           NuGetTargets = targets
-          ProjectJsonFiles = projectJsonFiles
           NuGetExe = exe
         }
         
@@ -180,32 +178,22 @@ module NugetEnv =
                 |> ok 
             with _ -> fail (NugetPackagesConfigParseError file)
 
-        let projectFiles,projectJsonFiles =
-            ProjectType.FindAllProjects rootDirectory.FullName
-            |> Array.partition (fun p -> 
-                    match p with 
-                    | ProjectType.Project _ -> true
-                    | ProjectType.ProjectJson _ -> false)
+        let projectFiles = ProjectFile.FindAllProjects rootDirectory.FullName
 
-        let projects =
-            projectFiles
-            |> Array.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), Constants.PackagesConfigFile))
-            |> Array.filter (fun (p,packages) -> File.Exists packages)
-            |> Array.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
-            |> collect
-
-        match projects with
-        | Result.Ok(r,m) -> Result.Ok((projectJsonFiles |> Array.toList,r),m)
-        | Result.Bad(m) -> Result.Bad(m)
+        projectFiles
+        |> Array.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), Constants.PackagesConfigFile))
+        |> Array.filter (fun (p,packages) -> File.Exists packages)
+        |> Array.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
+        |> collect
 
     let read (rootDirectory : DirectoryInfo) = trial {
         let configs = FindAllFiles(rootDirectory.FullName, "nuget.config") |> Array.toList
         let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Array.tryHead
         let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Array.tryHead
         let! config = readNugetConfig rootDirectory
-        let! projectJsonFiles,packages = readNuGetPackages rootDirectory
+        let! packages = readNuGetPackages rootDirectory
 
-        return create rootDirectory configs targets exe config packages projectJsonFiles
+        return create rootDirectory configs targets exe config packages
     }
 
 type ConvertResultR = 
@@ -237,15 +225,6 @@ let createPackageRequirement sources (packageName, version, restrictions) depend
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     
     let dependenciesFileName = Path.Combine(rootDirectory.FullName, Constants.DependenciesFileName)
-
-    let projectJsonPackages =
-        nugetEnv.ProjectJsonFiles 
-        |> List.map (fun p ->
-                 match p with
-                 | ProjectType.Project p -> failwithf "Project %s cannot be used as project.json" p.FileName
-                 | ProjectType.ProjectJson p -> p.GetGlobalDependencies())
-        |> List.concat
-        |> List.distinct
 
     let allVersionsGroupped =
         nugetEnv.NuGetProjectFiles
@@ -284,14 +263,9 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     let read() =
         let addPackages dependenciesFile =
-            let afterProject =
-                packages
-                |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = FrameworkRestrictionList restrictions})
-                |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,version,installSettings) -> dependenciesFile.Add(groupName, packageName,version,installSettings)) dependenciesFile
-
-            projectJsonPackages
-            |> List.fold (fun (dependenciesFile:DependenciesFile) (packageName,vr) -> 
-                dependenciesFile.AddAdditionalPackage(Constants.MainDependencyGroup, packageName,vr,None,InstallSettings.Default)) afterProject
+            packages
+            |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = FrameworkRestrictionList restrictions})
+            |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,version,installSettings) -> dependenciesFile.Add(groupName, packageName,version,installSettings)) dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
             |> ok
@@ -317,17 +291,10 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         |> lift (fun sources -> 
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
             let packageLines =
-                let afterProject =
-                    packages 
-                    |> List.map (fun (name,v,restr) -> 
-                        let vr = createPackageRequirement sources (name, v, FrameworkRestrictionList restr) dependenciesFileName
-                        DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
-
-
-                projectJsonPackages
-                |> List.map (fun (packageName,vr) -> 
-                    DependenciesFileSerializer.packageString packageName vr None InstallSettings.Default) 
-                |> List.append afterProject
+                packages 
+                |> List.map (fun (name,v,restr) -> 
+                    let vr = createPackageRequirement sources (name, v, FrameworkRestrictionList restr) dependenciesFileName
+                    DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray
 
@@ -337,7 +304,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     |> lift (fun d -> d.SimplifyFrameworkRestrictions())
 
 let convertPackagesConfigToReferencesFile projectFileName packagesConfig =
-    let referencesFile = ProjectType.FindOrCreateReferencesFile(FileInfo projectFileName)
+    let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
 
     packagesConfig.Packages
     |> List.map ((fun p -> p.Id) >> PackageName)
@@ -345,7 +312,7 @@ let convertPackagesConfigToReferencesFile projectFileName packagesConfig =
                  referencesFile
 
 let convertDependenciesConfigToReferencesFile projectFileName dependencies =
-    let referencesFile = ProjectType.FindOrCreateReferencesFile(FileInfo projectFileName)
+    let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
 
     dependencies
     |> List.fold (fun (r : ReferencesFile) (packageName,_) -> r.AddNuGetReference(Constants.MainDependencyGroup,packageName)) 
@@ -353,19 +320,10 @@ let convertDependenciesConfigToReferencesFile projectFileName dependencies =
 
 let convertProjects nugetEnv =
     [for project,packagesConfig in nugetEnv.NuGetProjectFiles do 
-        match project with
-        | ProjectType.Project project ->
-            project.ReplaceNuGetPackagesFile()
-            project.RemoveNuGetTargetsEntries()
-            project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
-            yield ProjectType.Project project, convertPackagesConfigToReferencesFile project.FileName packagesConfig
-        | ProjectType.ProjectJson p -> failwithf "Project %s cannot be used in classic NuGet conversion." p.FileName
-
-     for project in nugetEnv.ProjectJsonFiles do 
-        match project with
-        | ProjectType.Project p -> failwithf "Project %s cannot be used in classic NuGet conversion." p.FileName
-        | ProjectType.ProjectJson project -> 
-            yield ProjectType.ProjectJson project, convertDependenciesConfigToReferencesFile project.FileName (project.GetGlobalDependencies())]
+        project.ReplaceNuGetPackagesFile()
+        project.RemoveNuGetTargetsEntries()
+        project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
+        yield project, convertPackagesConfigToReferencesFile project.FileName packagesConfig]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode

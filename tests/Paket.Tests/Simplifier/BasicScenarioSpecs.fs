@@ -11,12 +11,11 @@ open Paket.InstallProcess
 
 let dummyDir = System.IO.DirectoryInfo("C:/")
 let dummyProjectFile = 
-    ProjectType.Project
-        { FileName = ""
-          OriginalText = ""
-          Document = null
-          ProjectNode = null
-          Language = ProjectLanguage.Unknown }
+    { FileName = ""
+      OriginalText = ""
+      Document = null
+      ProjectNode = null
+      Language = ProjectLanguage.Unknown }
 
 let lockFile1 = """
 NUGET
