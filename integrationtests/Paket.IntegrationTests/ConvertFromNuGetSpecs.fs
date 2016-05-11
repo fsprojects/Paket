@@ -10,7 +10,6 @@ open System.Diagnostics
 open Paket
 open Paket.Domain
 open Paket.Requirements
-open Paket.ProjectJson
 
 [<Test>]
 let ``#1217 should convert simple C# project``() = 
@@ -76,52 +75,3 @@ let ``#1591 should convert denormalized versions``() =
 
     let depsFile = File.ReadAllText(Path.Combine(scenarioTempPath "i001591-convert-denormalized","paket.dependencies"))
     depsFile.Contains "6.1.0" |> shouldEqual true
-
-[<Test>]
-let ``#1217 should convert simple project.json``() =
-    if not Constants.UseProjectJson then () else
-    let originalProjectFile = ProjectJsonFile.Load(Path.Combine(originalScenarioPath "i001217-convert-json-project", "project.jsontemplate"))
-    originalProjectFile.GetGlobalDependencies() 
-    |> List.map (fun (n,v) -> n.ToString(),v.ToString())
-    |> shouldEqual ["Newtonsoft.Json", ">= 1.0"]
-
-    paket "convert-from-nuget" "i001217-convert-json-project" |> ignore
-    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001217-convert-json-project","paket.lock"))
-    
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version
-    |> shouldBeGreaterThan (SemVer.Parse "1.0.0")
-
-    let projectFile = ProjectJsonFile.Load(Path.Combine(scenarioTempPath "i001217-convert-json-project", "project.json"))
-    projectFile.GetGlobalDependencies() 
-    |> List.map (fun (n,v) ->n.ToString(),v.ToString())
-    |> shouldEqual ["Newtonsoft.Json", lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version.ToString()]
-
-[<Test>]
-let ``#1217 should convert project.json app``() = 
-    if not Constants.UseProjectJson then () else
-    let originalProjectFile = ProjectJsonFile.Load(Path.Combine(originalScenarioPath "i001217-convert-json-projects", "TestApp", "project.jsontemplate"))
-    originalProjectFile.GetGlobalDependencies() 
-    |> List.map (fun (n,v) -> n.ToString(),v.ToString())
-    |> shouldEqual ["Newtonsoft.Json", ">= 1.0"]
-
-    let originalInterprojectDependencies = originalProjectFile.GetGlobalInterProjectDependencies()
-
-    paket "convert-from-nuget" "i001217-convert-json-projects" |> ignore
-    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001217-convert-json-projects","paket.lock"))
-    
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version
-    |> shouldBeGreaterThan (SemVer.Parse "1.0.0")
-
-    let projectFile = ProjectJsonFile.Load(Path.Combine(scenarioTempPath "i001217-convert-json-projects", "TestApp", "project.json"))
-    projectFile.GetGlobalDependencies() 
-    |> List.map (fun (n,v) ->n.ToString(),v.ToString())
-    |> shouldEqual ["Newtonsoft.Json", lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Version.ToString()]
-
-    projectFile.GetGlobalInterProjectDependencies()
-    |> shouldEqual (originalProjectFile.GetGlobalInterProjectDependencies())
-
-    let appReferences = ReferencesFile.FromFile(Path.Combine(scenarioTempPath "i001217-convert-json-projects", "TestApp", "paket.references"))
-    let libReferences = ReferencesFile.FromFile(Path.Combine(scenarioTempPath "i001217-convert-json-projects", "TestApp", "paket.references"))
-
-    appReferences.Groups.[Constants.MainDependencyGroup].NugetPackages |> List.map (fun n -> n.Name) |> shouldContain (PackageName "Newtonsoft.Json")
-    libReferences.Groups.[Constants.MainDependencyGroup].NugetPackages |> List.map (fun n -> n.Name) |> shouldContain (PackageName "Newtonsoft.Json")

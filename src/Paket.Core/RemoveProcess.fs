@@ -7,14 +7,14 @@ open Paket.Domain
 open Paket.Logging
 open InstallProcess
 
-let private removePackageFromProject (project : ProjectType) groupName package = 
+let private removePackageFromProject (project : ProjectFile) groupName package = 
     project.FindOrCreateReferencesFile()
         .RemoveNuGetReference(groupName,package)
         .Save()
 
 let private remove removeFromProjects dependenciesFileName groupName (package: PackageName) force installAfter = 
     let root = Path.GetDirectoryName dependenciesFileName
-    let allProjects = ProjectType.FindAllProjects root
+    let allProjects = ProjectFile.FindAllProjects root
     
     removeFromProjects allProjects
             
@@ -23,7 +23,7 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
         allProjects 
         |> Seq.exists (fun project -> 
             let proj = FileInfo(project.FileName)
-            match ProjectType.FindReferencesFile proj with
+            match ProjectFile.FindReferencesFile proj with
             | None -> false 
             | Some fileName -> 
                 let refFile = ReferencesFile.FromFile fileName
@@ -56,8 +56,8 @@ let RemoveFromProject(dependenciesFileName, groupName, packageName:PackageName, 
         | None -> Constants.MainDependencyGroup
         | Some name -> GroupName name
 
-    let removeFromSpecifiedProject (projects : ProjectType seq) =
-        match ProjectType.TryFindProject(projects,projectName) with
+    let removeFromSpecifiedProject (projects : ProjectFile seq) =
+        match ProjectFile.TryFindProject(projects,projectName) with
         | Some p ->
             if p.HasPackageInstalled(groupName,packageName) then
                 removePackageFromProject p groupName packageName
@@ -74,7 +74,7 @@ let Remove(dependenciesFileName, groupName, packageName:PackageName, force, inte
         | None -> Constants.MainDependencyGroup
         | Some name -> GroupName name
 
-    let removeFromProjects (projects: ProjectType seq) =
+    let removeFromProjects (projects: ProjectFile seq) =
         for project in projects do
             if project.HasPackageInstalled(groupName,packageName) then
                 if (not interactive) || Utils.askYesNo(sprintf "  Remove from %s (group %O)?" project.FileName groupName) then

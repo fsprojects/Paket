@@ -11,7 +11,7 @@ open Paket.PackageMetaData
 open Chessie.ErrorHandling
 open InstallProcess
 
-let private merge buildConfig buildPlatform versionFromAssembly specificVersions (projectFile:ProjectType) templateFile = 
+let private merge buildConfig buildPlatform versionFromAssembly specificVersions (projectFile:ProjectFile) templateFile = 
     let withVersion =
         match versionFromAssembly with
         | None -> templateFile
@@ -74,7 +74,7 @@ let private convertToNormal (symbols : bool) templateFile =
         let includePdbs = optional.IncludePdbs
         { templateFile with Contents = ProjectInfo(core, { optional with IncludePdbs = (if symbols then false else includePdbs) }) }
 
-let private convertToSymbols (projectFile : ProjectType) (includeReferencedProjects : bool) templateFile =
+let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) templateFile =
     let sourceFiles =
         let getTarget compileItem =
             let projectName = Path.GetFileName(compileItem.BaseDir)
@@ -120,8 +120,8 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
     // load up project files and grab meta data
     let projectTemplates = 
         let getAllProjectsFiles workingDir =
-            ProjectType.FindAllProjects workingDir
-            |> Array.choose (fun projectFile ->
+            ProjectFile.FindAllProjects workingDir
+            |> Array.choose (fun (projectFile:ProjectFile) ->
                 match projectFile.FindTemplatesFile() with
                 | None -> None
                 | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions)))
@@ -145,7 +145,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
 
     // add dependencies
     let allTemplates =
-        let optWithSymbols (projectFile:ProjectType) templateFile =
+        let optWithSymbols (projectFile:ProjectFile) templateFile =
             seq { yield (templateFile |> convertToNormal symbols); if symbols then yield templateFile |> convertToSymbols projectFile includeReferencedProjects }
 
         let convertRemainingTemplate fileName =
@@ -153,7 +153,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
             match templateFile with
             | { Contents = ProjectInfo(_) } -> 
                 let fi = FileInfo(fileName)
-                let allProjectFiles = ProjectType.FindAllProjects(fi.Directory.FullName) |> Array.toList
+                let allProjectFiles = ProjectFile.FindAllProjects(fi.Directory.FullName) |> Array.toList
 
                 match allProjectFiles with
                 | [ projectFile ] ->

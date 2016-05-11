@@ -52,7 +52,7 @@ type CopyRuntimeDependencies() =
                 if Array.isEmpty packagesToInstall then true else
 
                 
-                let referencesFile = ProjectType.FindReferencesFile projectFile
+                let referencesFile = ProjectFile.FindReferencesFile projectFile
 
                 let dependencies = Dependencies.Locate projectFile.FullName
                 let lockFile = dependencies.GetLockFile()

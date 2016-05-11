@@ -266,8 +266,8 @@ type Dependencies(dependenciesFileName: string) =
         else
             let referencesFiles =
                 this.RootPath
-                |> ProjectType.FindAllProjects
-                |> Array.choose (fun p -> p.FindReferencesFile())
+                |> ProjectFile.FindAllProjects
+                |> Array.choose (fun (p:ProjectFile) -> p.FindReferencesFile())
             if Array.isEmpty referencesFiles then
                 traceWarnfn "No paket.references files found for which packages could be installed."
             else 
@@ -529,10 +529,6 @@ type Dependencies(dependenciesFileName: string) =
     member this.FindProjectsFor(group:string,package: string): ProjectFile list =
         FindReferences.FindReferencesForPackage (GroupName group) (PackageName package) 
         |> this.Process
-        |> List.choose (fun p ->
-            match p with
-            | ProjectType.Project p -> Some p
-            | _ -> None)
 
     // Packs all paket.template files.
     member this.Pack(outputPath, ?buildConfig, ?buildPlatform, ?version, ?specificVersions, ?releaseNotes, ?templateFile, ?workingDir, ?excludedTemplates, ?lockDependencies, ?minimumFromLockFile, ?symbols, ?includeReferencedProjects, ?projectUrl) =
@@ -567,7 +563,7 @@ type Dependencies(dependenciesFileName: string) =
     /// Lists all paket.template files in the current solution.
     member this.ListTemplateFiles() : TemplateFile list =
         let lockFile = this.GetLockFile()
-        ProjectType.FindAllProjects(this.RootPath)
+        ProjectFile.FindAllProjects(this.RootPath)
         |> Array.choose (fun proj -> proj.FindTemplatesFile())
         |> Array.choose (fun path ->
                          try

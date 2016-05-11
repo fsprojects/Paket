@@ -528,22 +528,6 @@ let resolvedNewProjectJson = """{
 """
 
 [<Test>]
-let ``#736 install into new project.json``() = 
-    if not Constants.UseProjectJson then () else
-    let newLockFile = install "i000736-new-json"
-    let newFile = Path.Combine(scenarioTempPath "i000736-new-json","project.json")
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    normalizeLineEndings resolvedNewProjectJson |> shouldEqual s2
-
-[<Test>]
-let ``#736 install into nested project.json``() = 
-    if not Constants.UseProjectJson then () else
-    let newLockFile = install "i000736-new-json-nested"
-    let newFile = Path.Combine(scenarioTempPath "i000736-new-json-nested","project1","project.json")
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    normalizeLineEndings resolvedNewProjectJson |> shouldEqual s2
-
-[<Test>]
 let ``#1145 don't install excludes``() = 
     let newLockFile = install "i001145-excludes"
     let newFile = Path.Combine(scenarioTempPath "i001145-excludes","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")

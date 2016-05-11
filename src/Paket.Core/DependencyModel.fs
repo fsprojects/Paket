@@ -18,6 +18,6 @@ let CalcDependenciesForReferencesFile(dependenciesFile : DependenciesFile, group
 
 /// Calculates the used dependencies for a project.
 let CalcDependencies(dependenciesFile : DependenciesFile, groupName, projectFileName) = 
-    match ProjectType.FindReferencesFile(FileInfo(projectFileName)) with
+    match ProjectFile.FindReferencesFile(FileInfo(projectFileName)) with
     | Some referencesFile -> CalcDependenciesForReferencesFile(dependenciesFile, groupName, referencesFile)
     | None -> Map.empty
