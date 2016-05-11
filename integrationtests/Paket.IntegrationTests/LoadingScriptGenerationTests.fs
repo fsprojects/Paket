@@ -9,10 +9,10 @@ let makeScenarioPath scenario    = Path.Combine("loading-scripts-scenarios", sce
 let paket command scenario       = paket command (makeScenarioPath scenario)
 let directPaket command scenario = directPaket command (makeScenarioPath scenario)
 let scenarioTempPath scenario    = scenarioTempPath (makeScenarioPath scenario)
-let scriptRoot scenario = Path.Combine(scenarioTempPath scenario, "paket-files", "include-scripts") |> DirectoryInfo
+let scriptRoot scenario = DirectoryInfo(Path.Combine(scenarioTempPath scenario, "paket-files", "include-scripts"))
 
 let getGeneratedScriptFiles framework scenario =
-  let frameworkDir = Path.Combine((scriptRoot scenario).FullName, framework |> FrameworkDetection.Extract |> Option.get |> string) |> DirectoryInfo
+  let frameworkDir = DirectoryInfo(Path.Combine((scriptRoot scenario).FullName, framework |> FrameworkDetection.Extract |> Option.get |> string))
   frameworkDir.GetFiles() |> Array.sortBy (fun f -> f.FullName)
 
 let getScriptContentsFailedExpectations framework scenario expectations =
@@ -53,7 +53,6 @@ let ``simple dependencies generates expected scripts``() =
   |]
   if expectedFiles <> actualFiles then
     Assert.Ignore("this doesn't work on linux for some reason to be figured out")
-  //Assert.AreEqual(expectedFiles, actualFiles)
 
 [<Test;Category("scriptgen")>]
 let ``framework specified``() = 

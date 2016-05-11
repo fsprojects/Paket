@@ -83,7 +83,7 @@ module ScriptGeneration =
   | Generate of lines : string list
 
   let private makeRelativePath (scriptFile: FileInfo) (libFile: FileInfo) =
-    (scriptFile.FullName |> Uri).MakeRelativeUri(libFile.FullName |> Uri).ToString()
+    (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
 
   /// default implementation of F# include script generator
   let generateFSharpScript (input: ScriptGenInput) =
@@ -134,21 +134,18 @@ module ScriptGeneration =
     | xs -> List.append xs [ sprintf "System.Console.WriteLine(\"Loaded {0}\", \"%s\");" packageName ] |> Generate
 
   let getIncludeScriptRootFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) = 
-      Path.Combine(includeScriptsRootFolder.FullName, string framework)
-      |> DirectoryInfo
+      DirectoryInfo(Path.Combine(includeScriptsRootFolder.FullName, string framework))
 
   let getScriptFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName) =
       if groupName = Constants.MainDependencyGroup then
           getIncludeScriptRootFolder includeScriptsRootFolder framework
       else
-          Path.Combine((getIncludeScriptRootFolder includeScriptsRootFolder framework).FullName, groupName.GetCompareString())
-          |> DirectoryInfo
+          DirectoryInfo(Path.Combine((getIncludeScriptRootFolder includeScriptsRootFolder framework).FullName, groupName.GetCompareString()))
 
   let getScriptFile (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName) (package: PackageName) (extension: string) =
       let folder = getScriptFolder includeScriptsRootFolder framework groupName
 
-      Path.Combine(folder.FullName, sprintf "include.%s.%s" (package.GetCompareString()) extension)
-      |> FileInfo
+      FileInfo(Path.Combine(folder.FullName, sprintf "include.%s.%s" (package.GetCompareString()) extension))
 
   let getGroupNameAsOption groupName =
       if groupName = Constants.MainDependencyGroup then
@@ -214,13 +211,10 @@ module ScriptGeneration =
       
       let dependencies = getPackageOrderFromDependenciesFile (FileInfo(lockFile.FileName))
       
-      let packagesFolder =
-          Path.Combine(rootFolder.FullName, Constants.PackagesFolderName)
-          |> DirectoryInfo
+      let packagesFolder = DirectoryInfo(Path.Combine(rootFolder.FullName, Constants.PackagesFolderName))
         
       let includeScriptsRootFolder = 
-          Path.Combine(((dependenciesFile.DependenciesFile) |> FileInfo).Directory.FullName, Constants.PaketFilesFolderName, "include-scripts")
-          |> DirectoryInfo
+          DirectoryInfo(Path.Combine((FileInfo dependenciesFile.DependenciesFile).Directory.FullName, Constants.PaketFilesFolderName, "include-scripts"))
 
       let getScriptFile groupName packageName =
         getScriptFile includeScriptsRootFolder framework groupName packageName extension
@@ -231,7 +225,7 @@ module ScriptGeneration =
           let packagesOrGroupFolder =
               match getGroupNameAsOption groupName with
               | None           -> packagesFolder
-              | Some groupName -> Path.Combine(packagesFolder.FullName, groupName) |> DirectoryInfo
+              | Some groupName -> DirectoryInfo(Path.Combine(packagesFolder.FullName, groupName))
 
           generateScripts scriptGenerator getScriptFile includeScriptsRootFolder framework dependenciesFile packagesOrGroupFolder groupName packages
       )
