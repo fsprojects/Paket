@@ -5,7 +5,7 @@ open NUnit.Framework
 open Paket.IntegrationTests.TestHelpers
 open Paket
 
-let makeScenarioPath scenario    = Path.Combine("loading-scripts-scenarios", scenario)
+let makeScenarioPath scenario    = Path.Combine("loading-scripts", scenario)
 let paket command scenario       = paket command (makeScenarioPath scenario)
 let directPaket command scenario = directPaket command (makeScenarioPath scenario)
 let scenarioTempPath scenario    = scenarioTempPath (makeScenarioPath scenario)
@@ -98,7 +98,7 @@ let ``only generates scripts for language provided`` (language : string) =
      
 [<Test; Category("scriptgen")>]
 let ``fails on wrong framework given`` () =
-    let scenario = "wrong-framework-or-scripttype"
+    let scenario = "wrong-args"
 
     paket "install" scenario |> ignore
 
@@ -114,7 +114,7 @@ let ``fails on wrong framework given`` () =
 
 [<Test; Category("scriptgen")>]
 let ``fails on wrong scripttype given`` () =
-    let scenario = "wrong-framework-or-scripttype"
+    let scenario = "wrong-args"
 
     paket "install" scenario |> ignore
 
