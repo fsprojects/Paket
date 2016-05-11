@@ -56,7 +56,15 @@ module LocalFile =
             else
                 original)
 
-    let overrideDependency (lockFile: LockFile) = function
+    let private warning x =
+        match x with
+        | DevNugetSourceOverride (p,s) ->
+            Logging.traceWarnfn "paket.local override: nuget %s -> %s" (p.ToString()) (s.ToString())
+        | DevGitSourceOverride   (p,s) ->
+            Logging.traceWarnfn "paket.local override: nuget %s -> %s" (p.ToString()) s
+        x
+
+    let overrideDependency (lockFile: LockFile) = warning >> function
         | DevNugetSourceOverride (p,s) -> 
             let groups =
                 lockFile.Groups
