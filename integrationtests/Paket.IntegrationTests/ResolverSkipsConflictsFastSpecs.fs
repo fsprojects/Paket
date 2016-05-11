@@ -16,14 +16,5 @@ let ``#1166 Should resolve Nancy without timeout``() =
     |> shouldBeGreaterThan (SemVer.Parse "1.1")
 
 [<Test>]
-let ``#1157 should resolve from multiple feeds``() =
-    let lockFile = update "i001157-resolve-multiple-feeds"
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution
-    |> Seq.map (fun p -> p.Value.Source)
-    |> Seq.distinct
-    |> Seq.length
-    |> shouldEqual 2
-
-[<Test>]
 let ``#1174 Should find Ninject error``() =
     updateShouldFindPackageConflict "Ninject" "i001174-resolve-fast-conflict"
