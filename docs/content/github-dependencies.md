@@ -51,6 +51,12 @@ Or if you use ``.`` for the directory, the file will be placed under the root of
 
 ![alt text](img/github_ref_root.png "GitHub file referenced in project under root of project")
 
+The file can be renamed for your project by providing an explicit filename:
+
+    [lang=paket]
+    File:FsUnit.fs ./tests.fs
+    File:FsUnit.fs Tests\FsUnit\tests.fs
+
 ## Referencing a GitHub repository
 
 You can also reference a complete [github.com](http://www.github.com) repository by specifying the repository id in the [`paket.dependencies` file](dependencies-file.html):

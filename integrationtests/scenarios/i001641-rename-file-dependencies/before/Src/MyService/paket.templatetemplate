@@ -1,0 +1,8 @@
+type project
+id PaketDemo.MyService
+version 1.0
+authors Michael Baker
+description
+    Provides some kind of service
+#files
+#    bin\Debug\MyService.dll ==> lib

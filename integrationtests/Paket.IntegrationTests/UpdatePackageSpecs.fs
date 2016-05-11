@@ -159,3 +159,15 @@ let ``#1635 should tell about auth issue``() =
         failwith "error expected"
     with
     | exn when exn.Message.Contains("Could not find versions for package Argu") -> ()
+       
+[<Test>]
+let ``#1641 explicit custom file paths are respected``() =
+    let scenario = "i001641-rename-file-dependencies"
+
+    update scenario |> ignore
+
+    let projFile = Path.Combine(scenarioTempPath scenario, @"Src\MyService\MyService.csproj")
+    let projXml = File.ReadAllText(projFile)
+
+    projXml |> shouldContainText "<Content Include=\"..\\..\\paket-files\\forki\\FsUnit\\FsUnit.fs\">"
+    projXml |> shouldContainText "<Link>customname.fs</Link>"

@@ -397,10 +397,15 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Seq.map (fun kv ->
                 kv.Value.RemoteFiles
                 |> List.map (fun file ->
-                    let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
+                    let fileName = Path.GetFileName <| if Path.HasExtension(file.Link) then file.Link else file.Name
+                    let link = 
+                        let linkIsRelative = file.Link.StartsWith(".")
+                        let addPath path = Path.Combine(Path.GetDirectoryName(file.Link), path)
+                        if linkIsRelative then fileName else addPath fileName
+
                     let remoteFilePath = 
                         if verbose then
-                            tracefn "FileName: %s " file.Name 
+                            tracefn "FileName: %s " fileName 
     
                         let lockFileReference =
                             match lockFile.Groups |> Map.tryFind kv.Key with
