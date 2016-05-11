@@ -248,7 +248,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         yield None, { Name = PackageName name; Settings = InstallSettings.Default }
                 | _ -> yield! getPackages proj
 
-            yield! getPackages project]
+         yield! getPackages project]
     
     // filter out any references that are transient
     let distinctRefs = allReferences |> List.distinct
