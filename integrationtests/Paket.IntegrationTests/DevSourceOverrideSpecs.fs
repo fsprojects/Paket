@@ -10,7 +10,7 @@ open FsUnit
 open NUnit.Framework
 
 [<Test>]
-let ``#1633 should favor overriden source from paket.local``() = 
+let ``#1633 paket.local nuget - source``() = 
     paket "restore" "i001633-dev-source-override" |> ignore
     let doc = new XmlDocument()
     Path.Combine(
@@ -28,11 +28,29 @@ let ``#1633 should favor overriden source from paket.local``() =
     |> shouldEqual (Some "true")
 
 [<Test>]
-let ``#1633 should favor overriden remote git source from paket.local``() = 
+let ``#1633 paket.local nuget - git``() = 
     paket "restore" "i001633-dev-source-remote-git-override" |> ignore
     let doc = new XmlDocument()
     Path.Combine(
         scenarioTempPath "i001633-dev-source-remote-git-override",
+        "packages",
+        "Argu",
+        "Argu.nuspec")
+    |> doc.Load
+
+    doc 
+    |> getNode "package" 
+    |> optGetNode "metadata" 
+    |> optGetNode "summary"
+    |> Option.map (fun n -> n.InnerText)
+    |> shouldEqual (Some "Test paket source remote git override.")
+
+[<Test>]
+let ``#1633 paket.local git - git``() = 
+    paket "restore" "i001633-dev-remote-git-override" |> ignore
+    let doc = new XmlDocument()
+    Path.Combine(
+        scenarioTempPath "i001633-dev-remote-git-override",
         "packages",
         "Argu",
         "Argu.nuspec")

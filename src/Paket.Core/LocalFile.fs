@@ -59,9 +59,10 @@ module LocalFile =
     let private warning x =
         match x with
         | DevNugetSourceOverride (p,s) ->
-            Logging.traceWarnfn "paket.local override: nuget %s -> %s" (p.ToString()) (s.ToString())
+            sprintf "paket.local override: nuget %s -> %s" (p.ToString()) (s.ToString())
         | DevGitSourceOverride   (p,s) ->
-            Logging.traceWarnfn "paket.local override: nuget %s -> %s" (p.ToString()) s
+            sprintf "paket.local override: nuget %s -> %s" (p.ToString()) s
+        |> Logging.traceWarn
         x
 
     let overrideDependency (lockFile: LockFile) = warning >> function
