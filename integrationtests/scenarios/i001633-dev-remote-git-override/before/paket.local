@@ -1,1 +1,1 @@
-git https://github.com/fsprojects/Argu.git -> git https://github.com/theimowski/Argu.git paket_src_override
+nuget Argu -> git https://github.com/theimowski/Argu.git paket_src_override build:"build.cmd NuGet", Packages: /bin/

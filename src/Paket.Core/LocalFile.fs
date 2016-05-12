@@ -59,9 +59,10 @@ module LocalFile =
     let private warning x =
         match x with
         | DevNugetSourceOverride (p,s) ->
-            sprintf "paket.local override: nuget %s -> %s" (p.ToString()) (s.ToString())
+            sprintf "nuget %s -> %s" (p.ToString()) (s.ToString())
         | DevGitSourceOverride   (p,s) ->
-            sprintf "paket.local override: nuget %s -> %s" (p.ToString()) s
+            sprintf "nuget %s -> %s" (p.ToString()) s
+        |> (+) "paket.local override: "
         |> Logging.traceWarn
         x
 
@@ -109,7 +110,7 @@ module LocalFile =
                     { g with Resolution  = overrideResolution (p,source g.Name) g.Resolution
                              RemoteFiles = remoteFile :: g.RemoteFiles } )
             LockFile(lockFile.FileName, groups)
-
+            
     let overrideLockFile (LocalFile overrides) lockFile =
         List.fold overrideDependency lockFile overrides
 
