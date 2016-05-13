@@ -70,7 +70,11 @@ module LocalFile =
         | DevNugetSourceOverride (p,s) -> 
             let groups =
                 lockFile.Groups
-                |> Map.map (fun _ g -> { g with Resolution = overrideResolution (p,s) g.Resolution } )
+                |> Map.map (fun name g -> 
+                    if name.GetCompareString() = "main" then 
+                        { g with Resolution = overrideResolution (p,s) g.Resolution }
+                    else
+                        g )
             LockFile(lockFile.FileName, groups)
         | DevGitSourceOverride   (p,s) ->
             let owner,branch,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = 
@@ -106,9 +110,12 @@ module LocalFile =
 
             let groups =
                 lockFile.Groups
-                |> Map.map (fun _ g -> 
-                    { g with Resolution  = overrideResolution (p,source g.Name) g.Resolution
-                             RemoteFiles = remoteFile :: g.RemoteFiles } )
+                |> Map.map (fun name g -> 
+                    if name.GetCompareString() = "main" then
+                        { g with Resolution  = overrideResolution (p,source g.Name) g.Resolution
+                                 RemoteFiles = remoteFile :: g.RemoteFiles } 
+                    else
+                        g)
             LockFile(lockFile.FileName, groups)
             
     let overrideLockFile (LocalFile overrides) lockFile =
