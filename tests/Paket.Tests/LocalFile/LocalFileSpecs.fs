@@ -17,7 +17,7 @@ let ``should parse single dev source override``() =
         """
     let expected = 
         LocalFile [
-            DevNugetSourceOverride (PackageName "NUnit", LocalNuGet ("./local_source", None)) 
+            LocalSourceOverride (PackageName "NUnit", LocalNuGet ("./local_source", None)) 
         ]
         |> Trial.ok
 

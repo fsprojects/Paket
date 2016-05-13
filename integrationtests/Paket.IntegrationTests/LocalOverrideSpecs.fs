@@ -1,4 +1,4 @@
-﻿module Paket.IntegrationTests.DevSourceOverrideSpecs
+﻿module Paket.IntegrationTests.LocalOverrideSpecs
 
 open System.IO
 open System.Xml
@@ -10,11 +10,11 @@ open FsUnit
 open NUnit.Framework
 
 [<Test>]
-let ``#1633 paket.local nuget - source``() = 
-    paket "restore" "i001633-dev-source-override" |> ignore
+let ``#1633 paket.local local source override``() = 
+    paket "restore" "i001633-local-source-override" |> ignore
     let doc = new XmlDocument()
     Path.Combine(
-        scenarioTempPath "i001633-dev-source-override",
+        scenarioTempPath "i001633-local-source-override",
         "packages",
         "NUnit",
         "NUnit.nuspec")
@@ -28,11 +28,11 @@ let ``#1633 paket.local nuget - source``() =
     |> shouldEqual (Some "true")
 
 [<Test>]
-let ``#1633 paket.local nuget - git``() = 
-    paket "restore" "i001633-dev-source-remote-git-override" |> ignore
+let ``#1633 paket.local local git override``() = 
+    paket "restore" "i001633-local-git-override" |> ignore
     let doc = new XmlDocument()
     Path.Combine(
-        scenarioTempPath "i001633-dev-source-remote-git-override",
+        scenarioTempPath "i001633-local-git-override",
         "packages",
         "Argu",
         "Argu.nuspec")
@@ -46,11 +46,11 @@ let ``#1633 paket.local nuget - git``() =
     |> shouldEqual (Some "Test paket source remote git override.")
 
 [<Test>]
-let ``#1633 paket.local git - git``() = 
-    paket "restore" "i001633-dev-remote-git-override" |> ignore
+let ``#1633 paket.local local git override (git origin)``() = 
+    paket "restore" "i001633-local-git-override-git_origin" |> ignore
     let doc = new XmlDocument()
     Path.Combine(
-        scenarioTempPath "i001633-dev-remote-git-override",
+        scenarioTempPath "i001633-local-git-override-git_origin",
         "packages",
         "Argu",
         "Argu.nuspec")

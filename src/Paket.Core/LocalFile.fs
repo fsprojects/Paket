@@ -4,11 +4,11 @@ open Paket.Domain
 open Paket.ModuleResolver
 open Paket.PackageSources
 
-type DevSourceOverride =
-    | DevNugetSourceOverride of packageName: PackageName * devSource: PackageSource
-    | DevGitSourceOverride   of packageName: PackageName * gitSource: string
+type LocalOverride =
+    | LocalSourceOverride of packageName: PackageName * devSource: PackageSource
+    | LocalGitOverride    of packageName: PackageName * gitSource: string
 
-type LocalFile = LocalFile of devSourceOverrides: DevSourceOverride list
+type LocalFile = LocalFile of devSourceOverrides: LocalOverride list
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module LocalFile =
@@ -28,9 +28,9 @@ module LocalFile =
             source
             |> Trial.Catch PackageSource.Parse
             |> Trial.mapFailure (fun _ -> [sprintf "Cannot parse source '%s'" source])
-            |> Trial.lift (fun s -> DevNugetSourceOverride (PackageName package, s))
+            |> Trial.lift (fun s -> LocalSourceOverride (PackageName package, s))
         | Regex "nuget[ ]+(.*)[ ]+->[ ]+git[ ]+(.*)"    [package; gitSource] ->
-            DevGitSourceOverride (PackageName package, gitSource)
+            LocalGitOverride (PackageName package, gitSource)
             |> Trial.ok
         | line ->
             Trial.fail (sprintf "Cannot parse line '%s'" line)
@@ -58,16 +58,16 @@ module LocalFile =
 
     let private warning x =
         match x with
-        | DevNugetSourceOverride (p,s) ->
+        | LocalSourceOverride (p,s) ->
             sprintf "nuget %s -> %s" (p.ToString()) (s.ToString())
-        | DevGitSourceOverride   (p,s) ->
+        | LocalGitOverride   (p,s) ->
             sprintf "nuget %s -> %s" (p.ToString()) s
         |> (+) "paket.local override: "
         |> Logging.traceWarn
         x
 
     let overrideDependency (lockFile: LockFile) = warning >> function
-        | DevNugetSourceOverride (p,s) -> 
+        | LocalSourceOverride (p,s) -> 
             let groups =
                 lockFile.Groups
                 |> Map.map (fun name g -> 
@@ -76,7 +76,7 @@ module LocalFile =
                     else
                         g )
             LockFile(lockFile.FileName, groups)
-        | DevGitSourceOverride   (p,s) ->
+        | LocalGitOverride   (p,s) ->
             let owner,branch,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = 
                 Git.Handling.extractUrlParts s
             let restriction = VersionRestriction.Concrete (defaultArg branch "master")
@@ -123,5 +123,5 @@ module LocalFile =
 
     let overrides (LocalFile xs) package =
         xs 
-        |> List.exists (function | DevNugetSourceOverride (p, _)
-                                 | DevGitSourceOverride   (p, _) -> p = package)
+        |> List.exists (function | LocalSourceOverride (p, _)
+                                 | LocalGitOverride   (p, _) -> p = package)
