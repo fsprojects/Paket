@@ -37,7 +37,7 @@ let replaceInFile filePath (searchText: string) replaceText =
 let ``#1633 paket.local local git override``() = 
     let scenario = "i001633-local-git-override"
     replaceInFile 
-        (Path.Combine (scenarioTempPath scenario, "paket.local"))
+        (Path.Combine (originalScenarioPath scenario, "paket.local"))
         "[build-command]" 
         (if isUnix then "build.sh NuGet" else "build.cmd NuGet") 
     paket "restore" scenario |> ignore
@@ -60,7 +60,7 @@ let ``#1633 paket.local local git override``() =
 let ``#1633 paket.local local git override (git origin)``() = 
     let scenario = "i001633-local-git-override-git_origin"
     replaceInFile 
-        (Path.Combine (scenarioTempPath scenario, "paket.local"))
+        (Path.Combine (originalScenarioPath scenario, "paket.local"))
         "[build-command]" 
         (if isUnix then "build.sh NuGet" else "build.cmd NuGet") 
     paket "restore" scenario |> ignore
