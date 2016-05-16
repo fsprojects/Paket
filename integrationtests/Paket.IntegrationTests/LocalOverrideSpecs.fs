@@ -3,6 +3,7 @@
 open System.IO
 open System.Xml
 
+open Paket
 open Paket.Xml
 
 open FsUnit
@@ -27,12 +28,22 @@ let ``#1633 paket.local local source override``() =
     |> Option.map (fun n -> n.InnerText)
     |> shouldEqual (Some "true")
 
+let replaceInFile filePath (searchText: string) replaceText =
+    File.ReadAllText filePath
+    |> fun x -> x.Replace(searchText, replaceText)
+    |> fun x -> File.WriteAllText (filePath, x)
+
 [<Test>]
 let ``#1633 paket.local local git override``() = 
-    paket "restore" "i001633-local-git-override" |> ignore
+    let scenario = "i001633-local-git-override"
+    replaceInFile 
+        (Path.Combine (scenarioTempPath scenario, "paket.local"))
+        "[build-command]" 
+        (if isUnix then "build.sh NuGet" else "build.cmd NuGet") 
+    paket "restore" scenario |> ignore
     let doc = new XmlDocument()
     Path.Combine(
-        scenarioTempPath "i001633-local-git-override",
+        scenarioTempPath scenario,
         "packages",
         "Argu",
         "Argu.nuspec")
@@ -47,10 +58,15 @@ let ``#1633 paket.local local git override``() =
 
 [<Test>]
 let ``#1633 paket.local local git override (git origin)``() = 
-    paket "restore" "i001633-local-git-override-git_origin" |> ignore
+    let scenario = "i001633-local-git-override-git_origin"
+    replaceInFile 
+        (Path.Combine (scenarioTempPath scenario, "paket.local"))
+        "[build-command]" 
+        (if isUnix then "build.sh NuGet" else "build.cmd NuGet") 
+    paket "restore" scenario |> ignore
     let doc = new XmlDocument()
     Path.Combine(
-        scenarioTempPath "i001633-local-git-override-git_origin",
+        scenarioTempPath scenario,
         "packages",
         "Argu",
         "Argu.nuspec")
