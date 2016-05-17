@@ -278,7 +278,7 @@ let fixDatesInArchive fileName =
         for e in archive.Entries do
             try
                 let d = min maxTime e.LastWriteTime
-                ()
+                e.LastWriteTime <- d
             with
             | _ -> e.LastWriteTime <- DateTimeOffset.Now
     with
