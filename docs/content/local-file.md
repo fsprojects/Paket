@@ -92,6 +92,6 @@ Format of git source is the same as used in `paket.dependencies` for specifying 
     [lang=paket] 
     nuget Fake -> source c:\github\FAKE\bin
 
-Format of source is the same as [path sources](nuget-dependencies.html#Path-sources)
+The Format of the source is the same as in [path sources](nuget-dependencies.html#Path-sources).
 
 > Note: In case of source override, `paket restore` assumes the NuGet package **already exists** in   pointed directory - no build is going to be triggered.
