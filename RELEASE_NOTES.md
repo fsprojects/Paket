@@ -1,3 +1,6 @@
+#### 2.64.5 - 17.05.2016
+* BUGFIX: DateTime in package should not be in the future
+
 #### 2.64.4 - 17.05.2016
 * BUGFIX: Don't push non existing files - https://github.com/fsprojects/Paket/pull/1688
 

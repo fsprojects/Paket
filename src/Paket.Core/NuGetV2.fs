@@ -273,10 +273,11 @@ let fixDatesInArchive fileName =
     try
         use zipToOpen = new FileStream(fileName, FileMode.Open)
         use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
+        let maxTime = DateTimeOffset.Now
         
         for e in archive.Entries do
             try
-                let d = e.LastWriteTime
+                let d = min maxTime e.LastWriteTime
                 ()
             with
             | _ -> e.LastWriteTime <- DateTimeOffset.Now
