@@ -14,7 +14,7 @@ Sample use case
 
 In this tutorial you will learn how `paket.local` can help you to speed up your development process.
 
-The Paket porjetc uses [Argu](http://fsprojects.github.io/Argu/) as one of its own dependencies. Argu is a library that allows to manage command line parameters:
+The Paket project uses [Argu](http://fsprojects.github.io/Argu/) as one of its own dependencies. Argu is a library that allows to manage command line parameters:
 
 `paket.dependencies` ([browse](https://github.com/fsprojects/Paket/blob/master/paket.dependencies))
 
@@ -34,7 +34,7 @@ When running [`paket restore`](file:///C:/github/Paket/docs/output/paket-restore
     ...
 
 Now let's assume that we want to contribute to Paket by adding a new feature.
-The new feature however requires a change to Argu, so we'll need to contribute to the Argu project first.
+The new feature, however, requires a change to Argu, so we'll need to contribute to the Argu project first.
 
 Before we create a Pull Request to Argu, we might want to test the change locally by running Paket with the applied change in the Argu package.  
 Up until now, there was no convenient mechanism to do so, and e.g. we would manually copy updated Argu libraries to the packages folder in Paket's project after each rebuild.
