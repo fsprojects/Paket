@@ -41,6 +41,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "content", "content", "{8E6D
 		docs\content\http-dependencies.md = docs\content\http-dependencies.md
 		docs\content\index.md = docs\content\index.md
 		docs\content\installation.md = docs\content\installation.md
+		docs\content\local-file.md = docs\content\local-file.md
 		docs\content\lock-file.md = docs\content\lock-file.md
 		docs\content\nuget-dependencies.md = docs\content\nuget-dependencies.md
 		docs\content\paket-folder.md = docs\content\paket-folder.md
