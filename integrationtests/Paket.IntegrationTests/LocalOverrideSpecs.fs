@@ -58,7 +58,7 @@ let ``#1633 paket.local local git override``() =
 
 [<Test>]
 let ``#1633 paket.local local git override (git origin)``() = 
-    let scenario = "i001633-local-git-override-git_origin"
+    let scenario = "i001633-local-git_origin"
     replaceInFile 
         (Path.Combine (originalScenarioPath scenario, "paket.local"))
         "[build-command]" 
