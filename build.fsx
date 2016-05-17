@@ -459,7 +459,7 @@ Target "All" DoNothing
   ==> "KeepRunning"
 
 "BuildPackage"
-  // ==> "PublishChocolatey"
+  ==> "PublishChocolatey"
   ==> "PublishNuGet"
 
 "PublishNuGet"
