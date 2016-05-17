@@ -1,4 +1,4 @@
-#### 2.64.6 - 17.05.2016
+#### 2.64.7 - 17.05.2016
 * BUGFIX: DateTime in package should not be in the future
 
 #### 2.64.4 - 17.05.2016

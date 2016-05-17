@@ -280,7 +280,7 @@ let fixDatesInArchive fileName =
                 let d = min maxTime e.LastWriteTime
                 e.LastWriteTime <- d
             with
-            | _ -> e.LastWriteTime <- DateTimeOffset.Now
+            | _ -> e.LastWriteTime <- maxTime
     with
     | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
 
