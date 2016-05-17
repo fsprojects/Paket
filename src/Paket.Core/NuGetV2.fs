@@ -590,6 +590,10 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
 
     let getPackageDetails force =
         sources
+        |> List.sortBy (fun source -> 
+            match source with  // put local caches to the end
+            | LocalNuGet(_,Some _) -> true
+            | _ -> false)
         |> List.map (fun source -> async {
             try 
                 match source with

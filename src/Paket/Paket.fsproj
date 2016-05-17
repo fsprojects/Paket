@@ -45,8 +45,8 @@
     <StartArguments>update --hard</StartArguments>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
-    <StartArguments>pack buildconfig "Debug" buildplatform "AnyCPU" output "out" -v</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001514-pack-error\temp</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
