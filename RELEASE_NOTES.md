@@ -1,3 +1,6 @@
+#### 2.64.4 - 17.05.2016
+* BUGFIX: Don't push non existing files - https://github.com/fsprojects/Paket/pull/1688
+
 #### 2.64.3 - 10.05.2016
 * BUGFIX: Paket should imports build targets from packages in build dependency groups - https://github.com/fsprojects/Paket/pull/1674
 
