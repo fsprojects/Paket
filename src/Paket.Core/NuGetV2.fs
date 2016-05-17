@@ -277,13 +277,14 @@ let fixDatesInArchive fileName =
     try
         use zipToOpen = new FileStream(fileName, FileMode.Open)
         use archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update)
+        let maxTime = DateTimeOffset.Now
         
         for e in archive.Entries do
             try
-                let d = e.LastWriteTime
-                ()
+                let d = min maxTime e.LastWriteTime
+                e.LastWriteTime <- d
             with
-            | _ -> e.LastWriteTime <- DateTimeOffset.Now
+            | _ -> e.LastWriteTime <- maxTime
     with
     | exn -> traceWarnfn "Could not fix timestamps in %s. Error: %s" fileName exn.Message
 

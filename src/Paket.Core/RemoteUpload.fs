@@ -55,6 +55,8 @@ let GetUrlWithEndpoint (url: string option) (endPoint: string option) =
   
 let Push maxTrials url apiKey packageFileName =
     let rec push trial =
+        if not (File.Exists packageFileName) then
+            failwithf "The package file %s does not exist." packageFileName
         tracefn "Pushing package %s to %s - trial %d" packageFileName url trial
         try
             let client = Utils.createWebClient(url, None)
@@ -72,4 +74,4 @@ let Push maxTrials url apiKey packageFileName =
                 traceWarnfn "Could not push %s: %s" packageFileName exn.Message
                 push (trial + 1)
 
-    push 1 
+    push 1
