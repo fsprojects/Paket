@@ -1,0 +1,3 @@
+NUGET
+  remote: https://www.nuget.org/api/v2
+    NUnit (2.6.3)

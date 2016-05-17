@@ -886,5 +886,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     static member FindLockfile(dependenciesFileName) =
         FileInfo(Path.Combine(FileInfo(dependenciesFileName).Directory.FullName, Constants.LockFileName))
 
+    static member FindLocalfile(dependenciesFileName) =
+        FileInfo(Path.Combine(FileInfo(dependenciesFileName).Directory.FullName, Constants.LocalFileName))
+
     /// Find the matching lock file to a dependencies file
     member this.FindLockfile() = DependenciesFile.FindLockfile this.FileName

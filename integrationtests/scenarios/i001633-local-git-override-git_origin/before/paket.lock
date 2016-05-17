@@ -1,0 +1,7 @@
+NUGET
+  remote: paket-files/github.com/fsprojects/Argu/bin
+    Argu (2.0)
+GIT
+  remote: https://github.com/fsprojects/Argu.git
+     (5fbbb957bd08e6ffe64e0d3b45bb39fa88fd4ddb)
+      build: build.cmd NuGet
