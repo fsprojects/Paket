@@ -186,8 +186,7 @@ Target "RunIntegrationTests" (fun _ ->
         { p with
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
-            TimeOut = TimeSpan.FromMinutes 40.
-            Where = "test =~ /Paket.IntegrationTests.LocalOverrideSpecs/" })
+            TimeOut = TimeSpan.FromMinutes 40. })
 )
 
 
