@@ -1,3 +1,0 @@
-git https://github.com/fsprojects/Argu.git 2.0 build:"build.cmd NuGet", Packages: /bin/
-
-nuget Argu 2.0
