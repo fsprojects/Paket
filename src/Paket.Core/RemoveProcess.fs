@@ -46,7 +46,7 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
     
     if installAfter then
         let updatedGroups = Map.add groupName 0 Map.empty
-        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, false, false, SemVerUpdateMode.NoRestriction, false), false, dependenciesFile, lockFile, updatedGroups)
+        InstallProcess.Install(InstallerOptions.CreateLegacyOptions(force, false, false, false, SemVerUpdateMode.NoRestriction, false), false, dependenciesFile, lockFile, updatedGroups)
         GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
 
 /// Removes a package with the option to remove it from a specified project.

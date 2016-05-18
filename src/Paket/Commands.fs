@@ -64,6 +64,7 @@ type AddArgs =
     | [<AltCommandLine("-i")>] Interactive
     | Redirects
     | CreateNewBindingFiles
+    | Clean_Redirects
     | No_Install
     | Keep_Major
     | Keep_Minor
@@ -81,6 +82,7 @@ with
             | Interactive -> "Asks the user for every project if he or she wants to add the package to the projects's paket.references file."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
+            | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
@@ -141,6 +143,7 @@ type InstallArgs =
     | [<AltCommandLine("-f")>] Force
     | Redirects
     | CreateNewBindingFiles
+    | Clean_Redirects
     | Keep_Major
     | Keep_Minor
     | Keep_Patch
@@ -153,6 +156,7 @@ with
             | Force -> "Forces the download and reinstallation of all packages."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
+            | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
@@ -225,6 +229,7 @@ type UpdateArgs =
     | [<AltCommandLine("-f")>] Force
     | Redirects
     | CreateNewBindingFiles
+    | Clean_Redirects
     | No_Install
     | Keep_Major
     | Keep_Minor
@@ -241,6 +246,7 @@ with
             | Force -> "Forces the download and reinstallation of all packages."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
+            | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."

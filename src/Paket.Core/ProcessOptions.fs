@@ -16,6 +16,7 @@ type InstallerOptions =
     { Force : bool
       SemVerUpdateMode : SemVerUpdateMode
       Redirects : bool
+      CleanBindingRedirects : bool
       CreateNewBindingFiles : bool
       OnlyReferenced : bool
       TouchAffectedRefs : bool }
@@ -26,12 +27,14 @@ type InstallerOptions =
           SemVerUpdateMode = SemVerUpdateMode.NoRestriction
           CreateNewBindingFiles = false
           OnlyReferenced = false
+          CleanBindingRedirects = false
           TouchAffectedRefs = false }
 
-    static member CreateLegacyOptions(force, redirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs) =
+    static member CreateLegacyOptions(force, redirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs) =
         { InstallerOptions.Default with
             Force = force
             CreateNewBindingFiles = createNewBindingFiles
+            CleanBindingRedirects = cleanBindingRedirects
             Redirects = redirects
             SemVerUpdateMode = semVerUpdateMode
             TouchAffectedRefs = touchAffectedRefs }

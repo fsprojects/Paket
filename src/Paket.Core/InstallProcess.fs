@@ -196,7 +196,7 @@ let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionar
         value
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
-let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects 
+let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects cleanBindingRedirects
                                   root groupName findDependencies allKnownLibs 
                                   (projectCache: Dictionary<string, ProjectFile option>) 
                                   extractedPackages =
@@ -289,7 +289,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects
               Culture = None })
         |> Seq.sort
 
-    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles root allKnownLibs bindingRedirects
+    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibs bindingRedirects
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectFile) =
@@ -457,7 +457,6 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             | true -> Some true
             | false -> None
 
-
         let allKnownLibs =
             model
             |> Seq.map (fun kv -> (snd kv.Value).GetLibReferencesLazy.Force())
@@ -478,6 +477,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 !first 
                 options.CreateNewBindingFiles
                 (g.Value.Options.Redirects ++ redirects) 
+                options.CleanBindingRedirects
                 (FileInfo project.FileName).Directory.FullName 
                 g.Key 
                 lockFile.GetAllDependenciesOf 

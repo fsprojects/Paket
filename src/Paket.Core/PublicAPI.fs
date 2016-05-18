@@ -121,22 +121,22 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Adds the given package with the given version to the dependencies file.
     member this.Add(groupName: string option, package: string,version: string): unit =
-        this.Add(groupName, package, version, force = false,  withBindingRedirects = false,  createNewBindingFiles = false, interactive = false, installAfter = true, semVerUpdateMode = SemVerUpdateMode.NoRestriction, touchAffectedRefs = false)
+        this.Add(groupName, package, version, force = false,  withBindingRedirects = false, cleanBindingRedirects = false, createNewBindingFiles = false, interactive = false, installAfter = true, semVerUpdateMode = SemVerUpdateMode.NoRestriction, touchAffectedRefs = false)
 
     /// Adds the given package with the given version to the dependencies file.
-    member this.Add(groupName: string option, package: string,version: string,force: bool, withBindingRedirects: bool, createNewBindingFiles:bool, interactive: bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
+    member this.Add(groupName: string option, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool,  createNewBindingFiles:bool, interactive: bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
-                                     InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs),
+                                     InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs),
                                      interactive, installAfter))
 
    /// Adds the given package with the given version to the dependencies file.
-    member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
+    member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
-                                              InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs),
+                                              InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs),
                                               projectName, installAfter))
 
     /// Adds credentials for a Nuget feed
@@ -150,15 +150,11 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(this.RootPath, fun () -> ConfigFile.AddToken(source, token) |> returnOrFail)
 
     /// Installs all dependencies.
-    member this.Install(force: bool) = this.Install(force, false, false, SemVerUpdateMode.NoRestriction, false)
+    member this.Install(force: bool) = this.Install(force, false, false, false, false, SemVerUpdateMode.NoRestriction, false)
 
     /// Installs all dependencies.
-    member this.Install(force: bool, withBindingRedirects: bool, createNewBindingFiles:bool, semVerUpdateMode, touchAffectedRefs): unit =
-        this.Install(force, withBindingRedirects, createNewBindingFiles, false, semVerUpdateMode, touchAffectedRefs)
-
-    /// Installs all dependencies.
-    member this.Install(force: bool, withBindingRedirects: bool, createNewBindingFiles:bool, onlyReferenced: bool, semVerUpdateMode, touchAffectedRefs): unit =
-        this.Install({ InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs) with OnlyReferenced = onlyReferenced })
+    member this.Install(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, onlyReferenced: bool, semVerUpdateMode, touchAffectedRefs): unit =
+        this.Install({ InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs) with OnlyReferenced = onlyReferenced })
 
     /// Installs all dependencies.
     member private this.Install(options: InstallerOptions): unit =
@@ -170,7 +166,7 @@ type Dependencies(dependenciesFileName: string) =
                             { UpdaterOptions.Default with Common = options }))
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
-    static member Install(dependencies, ?path: string, ?force, ?withBindingRedirects, ?createNewBindingFiles, ?semVerUpdateMode, ?touchAffectedRefs) =
+    static member Install(dependencies, ?path: string, ?force, ?withBindingRedirects, ?cleanBindingRedirects, ?createNewBindingFiles, ?onlyReferenced, ?semVerUpdateMode, ?touchAffectedRefs) =
         let path = defaultArg path Environment.CurrentDirectory
         let fileName = Path.Combine(path, Constants.DependenciesFileName)
         File.WriteAllText(fileName, dependencies)
@@ -178,40 +174,42 @@ type Dependencies(dependenciesFileName: string) =
         dependencies.Install(
             force = defaultArg force false,
             withBindingRedirects = defaultArg withBindingRedirects false,
+            cleanBindingRedirects = defaultArg cleanBindingRedirects false,
             createNewBindingFiles = defaultArg createNewBindingFiles false,
+            onlyReferenced = defaultArg onlyReferenced false,
             semVerUpdateMode = defaultArg semVerUpdateMode SemVerUpdateMode.NoRestriction,
             touchAffectedRefs = defaultArg touchAffectedRefs false)
 
     /// Updates all dependencies.
-    member this.Update(force: bool): unit = this.Update(force, false, false)
+    member this.Update(force: bool): unit = this.Update(force, false, false, false)
 
     /// Updates all dependencies.
-    member this.Update(force: bool, withBindingRedirects:bool, createNewBindingFiles:bool): unit =
-        this.Update(force, withBindingRedirects, createNewBindingFiles, true, SemVerUpdateMode.NoRestriction, false)
+    member this.Update(force: bool, withBindingRedirects:bool, cleanBindingRedirects: bool, createNewBindingFiles:bool): unit =
+        this.Update(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, true, SemVerUpdateMode.NoRestriction, false)
 
     /// Updates all dependencies.
-    member this.Update(force: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
+    member this.Update(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.Update(
                         dependenciesFileName,
                         { UpdaterOptions.Default with
-                            Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs)
+                            Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs)
                             NoInstall = installAfter |> not }))
 
     /// Updates dependencies in single group.
-    member this.UpdateGroup(groupName, force: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode:SemVerUpdateMode, touchAffectedRefs): unit =
+    member this.UpdateGroup(groupName, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode:SemVerUpdateMode, touchAffectedRefs): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.UpdateGroup(
                             dependenciesFileName,
                             GroupName groupName,
                             { UpdaterOptions.Default with
-                                Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs)
+                                Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs)
                                 NoInstall = installAfter |> not }))
 
     /// Update a filtered set of packages
-    member this.UpdateFilteredPackages(groupName: string option, package: string, version: string option, force: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
+    member this.UpdateFilteredPackages(groupName: string option, package: string, version: string option, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         let groupName = 
             match groupName with
             | None -> Constants.MainDependencyGroup
@@ -221,15 +219,15 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.UpdateFilteredPackages(dependenciesFileName, groupName, package, version,
                                                   { UpdaterOptions.Default with
-                                                      Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs)
+                                                      Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs)
                                                       NoInstall = installAfter |> not }))
 
     /// Updates the given package.
     member this.UpdatePackage(groupName, package: string, version: string option, force: bool, semVerUpdateMode, touchAffectedRefs): unit =
-        this.UpdatePackage(groupName, package, version, force, false, false, true, semVerUpdateMode, touchAffectedRefs)
+        this.UpdatePackage(groupName, package, version, force, false, false, false, true, semVerUpdateMode, touchAffectedRefs)
 
     /// Updates the given package.
-    member this.UpdatePackage(groupName: string option, package: string, version: string option, force: bool, withBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
+    member this.UpdatePackage(groupName: string option, package: string, version: string option, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         let groupName = 
             match groupName with
             | None -> Constants.MainDependencyGroup
@@ -239,7 +237,7 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version,
                                                   { UpdaterOptions.Default with
-                                                      Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs)
+                                                      Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs)
                                                       NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
