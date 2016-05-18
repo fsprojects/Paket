@@ -1,1 +1,0 @@
-nuget Argu -> git https://github.com/theimowski/Argu.git paket_src_override build:"[build-command]", Packages: /bin/
