@@ -1,4 +1,4 @@
-#### 3.0.0-beta047 - 18.05.2016
+#### 3.0.0-beta048 - 18.05.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -15,19 +15,12 @@
     - Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
     - For the --hard use in the binding redirects there is a new parameter --clean-redirects - https://github.com/fsprojects/Paket/pull/1692 
 
-#### 2.64.8 - 17.05.2016
+#### 2.65.0 - 18.05.2016
+* BUGFIX: Fixed compatibility issues with nuget.org and myget - https://github.com/fsprojects/Paket/pull/1694
 * BUGFIX: DateTime in package should not be in the future
-
-#### 2.64.4 - 17.05.2016
 * BUGFIX: Don't push non existing files - https://github.com/fsprojects/Paket/pull/1688
-
-#### 2.64.3 - 10.05.2016
 * BUGFIX: Paket should imports build targets from packages in build dependency groups - https://github.com/fsprojects/Paket/pull/1674
-
-#### 2.64.2 - 09.05.2016
 * BUGFIX: Framework resolution strategy for Google.Apis.Oauth2.v2 - https://github.com/fsprojects/Paket/issues/1663
-
-#### 2.64.1 - 09.05.2016
 * BUGFIX: Blacklisting install.xdt and uninstall.xdt files - https://github.com/fsprojects/Paket/pull/1667
 
 #### 2.64.0 - 05.05.2016
