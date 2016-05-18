@@ -36,11 +36,12 @@ let replaceInFile filePath (searchText: string) replaceText =
 [<Test>]
 let ``#1633 paket.local local git override``() = 
     let scenario = "i001633-local-git-override"
+    prepare scenario
     replaceInFile 
-        (Path.Combine (originalScenarioPath scenario, "paket.local"))
+        (Path.Combine (scenarioTempPath scenario, "paket.local"))
         "[build-command]" 
         (if isUnix then "build.sh NuGet" else "build.cmd NuGet") 
-    paket "restore" scenario |> ignore
+    directPaket "restore" scenario |> ignore
     let doc = new XmlDocument()
     Path.Combine(
         scenarioTempPath scenario,
@@ -59,11 +60,12 @@ let ``#1633 paket.local local git override``() =
 [<Test>]
 let ``#1633 paket.local local git override (git origin)``() = 
     let scenario = "i001633-local-git_origin"
+    prepare scenario
     replaceInFile 
-        (Path.Combine (originalScenarioPath scenario, "paket.local"))
+        (Path.Combine (scenarioTempPath scenario, "paket.local"))
         "[build-command]" 
         (if isUnix then "build.sh NuGet" else "build.cmd NuGet") 
-    paket "restore" scenario |> ignore
+    directPaket "restore" scenario |> ignore
     let doc = new XmlDocument()
     Path.Combine(
         scenarioTempPath scenario,
