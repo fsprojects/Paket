@@ -36,7 +36,10 @@ module LocalFile =
             Trial.fail (sprintf "Cannot parse line '%s'" line)
 
     let parse =
-        List.filter (not << String.IsNullOrWhiteSpace)
+        List.map String.trim
+        >> List.filter (not << String.IsNullOrWhiteSpace)
+        >> List.filter (not << String.startsWithIgnoreCase @"//")
+        >> List.filter (not << String.startsWithIgnoreCase @"#")
         >> List.map parseLine
         >> Trial.collect
         >> Trial.lift LocalFile
