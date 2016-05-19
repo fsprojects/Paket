@@ -1,4 +1,4 @@
-#### 2.65.1 - 19.05.2016
+#### 2.65.2 - 19.05.2016
 * BUGFIX: Fallback from portable to net45 must be conversative - https://github.com/fsprojects/Paket/issues/1117
 
 #### 2.65.0 - 18.05.2016

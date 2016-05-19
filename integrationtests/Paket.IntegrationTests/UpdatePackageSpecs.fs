@@ -113,6 +113,11 @@ let ``#1117 can understand portable``() =
     | FrameworkRestrictionList l -> l.ToString() |> shouldEqual ("[portable-net45+win8+wp8+wpa81]")
     | _ -> failwith "wrong"
 
+    let restrictions = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
+    match restrictions with
+    | FrameworkRestrictionList l -> l.ToString() |> shouldEqual ("[portable-net45+win8+wp8+wpa81]")
+    | _ -> failwith "wrong"
+
 [<Test>]
 let ``#1413 doesn't take symbols``() =
     update "i001413-symbols" |> ignore
