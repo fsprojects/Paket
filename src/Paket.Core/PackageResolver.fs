@@ -183,6 +183,8 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
         let newRestrictions = 
             filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions
             |> filterRestrictions globalFrameworkRestrictions
+            |> fun xs -> if xs = FrameworkRestrictionList [] then exploredPackage.Settings.FrameworkRestrictions else xs
+
         { dependency with Name = n
                           VersionRequirement = v
                           Parent = Package(dependency.Name, versionToExplore, exploredPackage.Source)
