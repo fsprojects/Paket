@@ -1,3 +1,6 @@
+#### 2.65.1 - 19.05.2016
+* BUGFIX: Fallback from portable to net45 must be conversative - https://github.com/fsprojects/Paket/issues/1117
+
 #### 2.65.0 - 18.05.2016
 * BUGFIX: Fixed compatibility issues with nuget.org and myget - https://github.com/fsprojects/Paket/pull/1694
 * BUGFIX: DateTime in package should not be in the future

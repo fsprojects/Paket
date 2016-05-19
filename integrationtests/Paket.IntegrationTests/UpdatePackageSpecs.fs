@@ -103,6 +103,16 @@ let ``#1178 update with NUn.* filter to specific version``() =
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.AspNet.WebApi.SelfHost"].Version
     |> shouldEqual (SemVer.Parse "5.0.1")
 
+
+[<Test>]
+let ``#1117 can understand portable``() =
+    update "i001117-aws" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001117-aws","paket.lock"))
+    let restrictions = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "PCLStorage"].Settings.FrameworkRestrictions
+    match restrictions with
+    | FrameworkRestrictionList l -> l.ToString() |> shouldEqual ("[portable-net45+win8+wp8+wpa81]")
+    | _ -> failwith "wrong"
+
 [<Test>]
 let ``#1413 doesn't take symbols``() =
     update "i001413-symbols" |> ignore

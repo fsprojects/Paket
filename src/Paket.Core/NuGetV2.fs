@@ -176,22 +176,21 @@ let parseODataDetails(nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
         |> Array.map split
 
-    let packages = 
-        let isMatch n (n',v',r') =
-             n = n' && 
-               r' 
-               |> List.exists (fun r -> 
-                    match r with 
-                    | FrameworkRestriction.Exactly(DotNetFramework _) -> true 
-                    | FrameworkRestriction.Exactly(DotNetStandard _) -> true 
-                    |_ -> false)
+    let packages' = 
+        let isMatch (n',v',r') =
+            r' 
+            |> List.exists (fun r -> 
+                match r with 
+                | FrameworkRestriction.Exactly(DotNetFramework _) -> true 
+                | FrameworkRestriction.Exactly(DotNetStandard _) -> true 
+                |_ -> false)
 
         packages
         |> Seq.collect (fun (n,v,r) ->
             match r with
             | [ FrameworkRestriction.Portable p ] -> 
                 [yield n,v,r
-                 if not <| Array.exists (isMatch n) packages then
+                 if not <| Array.exists isMatch packages then
                      for p in p.Split([|'+'; '-'|]) do
                         match FrameworkDetection.Extract p with
                         | Some(DotNetFramework _ as r) ->
@@ -202,7 +201,7 @@ let parseODataDetails(nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
             |  _ -> [n,v,r])
         |> Seq.toList
 
-    let dependencies = Requirements.optimizeDependencies packages
+    let dependencies = Requirements.optimizeDependencies packages'
     
     { PackageName = officialName
       DownloadUrl = downloadLink

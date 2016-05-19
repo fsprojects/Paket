@@ -100,21 +100,20 @@ type Nuspec =
                 |> List.concat
 
             let framworks = 
-                let isMatch n (n',v',r') =
-                     n = n' && 
-                       r' 
-                       |> List.exists (fun r -> 
-                            match r with 
-                            | FrameworkRestriction.Exactly(DotNetFramework _) -> true 
-                            | FrameworkRestriction.Exactly(DotNetStandard _) -> true 
-                            |_ -> false)
+                let isMatch (n',v',r') =
+                    r' 
+                    |> List.exists (fun r -> 
+                        match r with 
+                        | FrameworkRestriction.Exactly(DotNetFramework _) -> true 
+                        | FrameworkRestriction.Exactly(DotNetStandard _) -> true 
+                        |_ -> false)
 
                 frameworks
                 |> Seq.collect (fun (n,v,r) ->
                     match r with
                     | [ FrameworkRestriction.Portable p ] -> 
                         [yield n,v,r
-                         if not <| List.exists (isMatch n) frameworks then
+                         if not <| List.exists isMatch frameworks then
                              for p in p.Split([|'+'; '-'|]) do
                                 match FrameworkDetection.Extract p with
                                 | Some(DotNetFramework _ as r) ->
