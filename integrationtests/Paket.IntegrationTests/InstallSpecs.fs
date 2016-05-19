@@ -377,10 +377,6 @@ let ``#1500 without install error``() =
     install "i001500-auto-detect" |> ignore
 
 [<Test>]
-let ``#1371 without download fail``() = 
-    paket "install -f"  "i001371-restore-error" |> ignore
-
-[<Test>]
 [<Ignore("")>]
 let ``#1507 allows to download remote dependencies``() =
     let scenario = "i001507-privateeye"
