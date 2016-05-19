@@ -95,3 +95,17 @@ Format of git source is the same as used in `paket.dependencies` for specifying 
 The Format of the source is the same as in [path sources](nuget-dependencies.html#Path-sources).
 
 > Note: In case of source override, `paket restore` assumes the NuGet package **already exists** in   pointed directory - no build is going to be triggered.
+
+### Comments
+
+All lines starting with with `//` or `#` are considered comments.
+
+    [lang=paket]
+    // this line is treated as comment
+    nuget Fake -> source c:\github\FAKE\bin
+
+Comments might prove helpful if you use `paket.local` override on regular basis - instead of typing the override by hand, you can just comment/uncomment relevant line:
+
+    [lang=paket]
+    // uncomment below to override FAKE package
+    // nuget FAKE -> source C:\github\FAKE\bin
