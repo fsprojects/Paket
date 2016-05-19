@@ -1,0 +1,2 @@
+source http://nuget.org/api/v2
+nuget AWSSDK.Core 3.1.5.3
