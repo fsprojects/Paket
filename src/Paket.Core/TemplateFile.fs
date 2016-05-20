@@ -132,6 +132,7 @@ type OptionalPackagingInfo =
       DevelopmentDependency : bool
       Dependencies : (PackageName * VersionRequirement) list
       ExcludedDependencies : Set<PackageName>
+      ExcludedGroups : Set<GroupName>
       References : string list
       FrameworkAssemblyReferences : string list
       Files : (string * string) list
@@ -152,6 +153,7 @@ type OptionalPackagingInfo =
           DevelopmentDependency = false
           Dependencies = []
           ExcludedDependencies = Set.empty
+          ExcludedGroups = Set.empty
           References = []
           FrameworkAssemblyReferences = []
           Files = []
@@ -286,6 +288,17 @@ module internal TemplateFile =
                 PackageName reg.Groups.["id"].Value)
             |> Array.toList
 
+    let private getExcludedGroups (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option) =
+        match Map.tryFind "excludedgroups" info with
+        | None -> []
+        | Some d -> 
+            d.Split '\n'
+            |> Array.map (fun d ->
+                let reg = Regex(@"(?<id>\S+)").Match d
+                GroupName reg.Groups.["id"].Value)
+            |> Array.toList
+
+
     let private fromReg = Regex("from (?<from>.*)", RegexOptions.Compiled)
     let private toReg = Regex("to (?<to>.*)", RegexOptions.Compiled)
     let private isExclude = Regex("\s*!\S", RegexOptions.Compiled)
@@ -353,6 +366,7 @@ module internal TemplateFile =
 
         let dependencies = getDependencies(fileName,lockFile,map,currentVersion,specificVersions)
         let excludedDependencies = getExcludedDependencies(fileName,lockFile,map,currentVersion)
+        let excludedGroups = getExcludedGroups(fileName,lockFile,map,currentVersion)
         
         let includePdbs = 
             match get "include-pdbs" with
@@ -373,6 +387,7 @@ module internal TemplateFile =
           DevelopmentDependency = developmentDependency
           Dependencies = dependencies
           ExcludedDependencies = Set.ofList excludedDependencies
+          ExcludedGroups = Set.ofList excludedGroups
           References = getReferences map
           FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map
