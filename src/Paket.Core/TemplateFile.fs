@@ -278,7 +278,7 @@ module internal TemplateFile =
             |> Array.toList
         
 
-    let private getExcludedDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option) =
+    let private getExcludedDependencies (info : Map<string, string>) =
         match Map.tryFind "excludeddependencies" info with
         | None -> []
         | Some d -> 
@@ -288,7 +288,7 @@ module internal TemplateFile =
                 PackageName reg.Groups.["id"].Value)
             |> Array.toList
 
-    let private getExcludedGroups (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option) =
+    let private getExcludedGroups (info : Map<string, string>) =
         match Map.tryFind "excludedgroups" info with
         | None -> []
         | Some d -> 
@@ -365,8 +365,9 @@ module internal TemplateFile =
             | _ -> false
 
         let dependencies = getDependencies(fileName,lockFile,map,currentVersion,specificVersions)
-        let excludedDependencies = getExcludedDependencies(fileName,lockFile,map,currentVersion)
-        let excludedGroups = getExcludedGroups(fileName,lockFile,map,currentVersion)
+
+        let excludedDependencies = map |> getExcludedDependencies
+        let excludedGroups = map |> getExcludedGroups
         
         let includePdbs = 
             match get "include-pdbs" with
