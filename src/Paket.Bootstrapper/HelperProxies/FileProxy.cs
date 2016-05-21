@@ -1,5 +1,6 @@
 using System.IO;
 using System.IO.Compression;
+using System;
 
 namespace Paket.Bootstrapper.HelperProxies
 {
@@ -39,6 +40,17 @@ namespace Paket.Bootstrapper.HelperProxies
         {
             ZipFile.ExtractToDirectory(zipFile, targetLocation);
         }
-        
+
+        public DateTime GetLastWriteTime(string filename)
+        {
+            var fileInfo = new FileInfo(filename);
+            return fileInfo.LastWriteTime;
+        }
+
+        public void Touch(string filename)
+        {
+            var fileInfo = new FileInfo(filename);
+            fileInfo.LastWriteTime = fileInfo.LastAccessTime = DateTimeProxy.Now;
+        }
     }
 }

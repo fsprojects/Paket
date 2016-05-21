@@ -6,7 +6,7 @@ using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
-    internal class CacheDownloadStrategy : ICachedDownloadStrategy
+    internal class CacheDownloadStrategy : IHaveEffectiveStrategy
     {
         public string Name { get { return String.Format("{0} - cached", EffectiveStrategy.Name); } }
         public IDownloadStrategy FallbackStrategy { get; set; }
