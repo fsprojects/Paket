@@ -20,6 +20,7 @@ namespace Paket.Bootstrapper
             public const string SelfUpdate = "--self";
             public const string Silent = "-s";
             public const string IgnoreCache = "-f";
+            public const string MaxFileAge = "--max-file-age=";
         }
         public static class AppSettingKeys
         {
@@ -76,6 +77,7 @@ namespace Paket.Bootstrapper
             bool doSelfUpdate = false;
             var ignoreCache = false;
             var commandArgs = args.ToList();
+            int? maxFileAgeInMinutes = null;
 
             if (commandArgs.Contains(CommandArgs.SelfUpdate))
             {
@@ -93,6 +95,22 @@ namespace Paket.Bootstrapper
                 commandArgs.Remove(CommandArgs.IgnoreCache);
                 ignoreCache = true;
             }
+
+            var maxFileAgeArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.MaxFileAge, StringComparison.Ordinal));
+            if (maxFileAgeArg != null)
+            {
+                var parts = maxFileAgeArg.Split("=".ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
+                if (parts.Length == 2)
+                {
+                    var maxFileAgeInMinutesCommandArg = parts[1];
+                    int parsedMaxFileAgeInMinutesCommandArg;
+                    if (int.TryParse(maxFileAgeInMinutesCommandArg, out parsedMaxFileAgeInMinutesCommandArg))
+                        maxFileAgeInMinutes = parsedMaxFileAgeInMinutesCommandArg;
+                }
+
+                commandArgs.Remove(maxFileAgeArg);
+            }
+
             if (commandArgs.Count >= 1)
             {
                 if (commandArgs[0] == CommandArgs.Prerelease)
@@ -115,6 +133,7 @@ namespace Paket.Bootstrapper
             downloadArguments.DoSelfUpdate = doSelfUpdate;
             downloadArguments.Target = target;
             downloadArguments.Folder = folder;
+            downloadArguments.MaxFileAgeInMinutes = maxFileAgeInMinutes;
             return commandArgs;
         }
 

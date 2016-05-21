@@ -18,6 +18,8 @@ Options:
 --force-nuget                  only use nuget as source
 --nuget-source=<NUGET_SOURCE>  uses <NUGET_SOURCE> to download latest paket.
                                NUGET_SOURCE can also be a filepath
+--max-file-age=<IN MINUTES>    if the paket.exe already exists, and it is not 
+                               older than <IN MINUTES> all checks will be skipped.
 --self                         downloads and updates paket.bootstrapper
 -f                             don't use local cache; always downloads
 -s                             silent mode; no output";

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 namespace Paket.Bootstrapper.Tests
 {
@@ -41,9 +42,10 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.DownloadArguments.LatestVersion, Is.Empty);
             Assert.That(result.DownloadArguments.NugetSource, Is.Null);
             Assert.That(result.DownloadArguments.Target, Does.EndWith("paket.exe"));
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
             Assert.That(result.ShowHelp, Is.False);
 
-            var knownProps = new[] { "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Silent", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp" };
+            var knownProps = new[] { "DownloadArguments.MaxFileAgeInMinutes", "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Silent", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp" };
             var allProperties = GetAllProperties(result);
             Assert.That(allProperties, Is.Not.Null.And.Count.EqualTo(knownProps.Length));
             Assert.That(allProperties, Is.EquivalentTo(knownProps));
@@ -189,6 +191,45 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result.DownloadArguments.DoSelfUpdate, Is.True);
+        }
+
+        [Test]
+        public void MaxFileAgeInMinutes()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.MaxFileAge + "10" }, null, null);
+
+            //assert
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(10));
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
+
+        [Test]
+        public void MaxFileAgeInMinutes_No_Value()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.MaxFileAge }, null, null);
+
+            //assert
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
+
+        [Test]
+        public void MaxFileAgeInMinutes_Non_Integer_Value()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.MaxFileAge+"FOO" }, null, null);
+
+            //assert
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
         }
 
         [Test]

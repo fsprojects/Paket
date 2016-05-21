@@ -149,7 +149,7 @@ namespace Paket.Bootstrapper
                 gitHubDownloadStrategy.FallbackStrategy = nugetDownloadStrategy;
             }
 
-            return effectiveStrategy;
+            return effectiveStrategy.AsTemporarilyIgnored(dlArgs.MaxFileAgeInMinutes, dlArgs.Target);
         }
 
         private static IDownloadStrategy AsCached(this IDownloadStrategy effectiveStrategy, bool ignoreCache)
@@ -159,5 +159,11 @@ namespace Paket.Bootstrapper
             return new CacheDownloadStrategy(effectiveStrategy, new DirectoryProxy(), new FileProxy());
         }
 
+        private static IDownloadStrategy AsTemporarilyIgnored(this IDownloadStrategy effectiveStrategy, int? maxFileAgeInMinutes, string target)
+        {
+            if (maxFileAgeInMinutes.HasValue)
+                return new TemporarilyIgnoreUpdatesDownloadStrategy(effectiveStrategy, new FileProxy(), target, maxFileAgeInMinutes.Value);
+            return effectiveStrategy;
+        }
     }
 }
