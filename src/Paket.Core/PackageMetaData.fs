@@ -109,7 +109,7 @@ let addDependency (templateFile : TemplateFile) (dependency : PackageName * Vers
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with Dependencies = newDeps }) }
     | IncompleteTemplate -> 
-        failwith "You should only try to add dependencies to template files with complete metadata."
+        failwith (sprintf "You should only try to add dependencies to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
 let excludeDependency (templateFile : TemplateFile) (exclude : PackageName) = 
     match templateFile with
@@ -119,7 +119,7 @@ let excludeDependency (templateFile : TemplateFile) (exclude : PackageName) =
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with ExcludedDependencies = newExcludes }) }
     | IncompleteTemplate -> 
-        failwith "You should only try to exclude dependencies to template files with complete metadata."
+        failwith (sprintf "You should only try to exclude dependencies to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
 let toFile config platform (p : ProjectFile) = 
     Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory config platform, p.GetAssemblyName())
@@ -130,7 +130,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with Files = (source,target) :: opt.Files }) }
     | IncompleteTemplate -> 
-        failwith "You should only try and add files to template files with complete metadata."
+        failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
 let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
     let targetDir = 
