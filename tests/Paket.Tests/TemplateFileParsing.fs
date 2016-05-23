@@ -170,6 +170,8 @@ dependencies
 excludeddependencies
       Newtonsoft.Json
       Chessie
+excludedgroups
+      build
 description
     Railway-oriented programming for .NET"""
 
@@ -203,6 +205,7 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.Dependencies |> shouldContain (PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]"))
     sut.ExcludedDependencies |> shouldContain (PackageName "Newtonsoft.Json")
     sut.ExcludedDependencies |> shouldContain (PackageName "Chessie")
+    sut.ExcludedGroups |> shouldContain (GroupName "build")
 
 [<Literal>]
 let Dependency1 = """type file

@@ -110,7 +110,17 @@ let addDependency (templateFile : TemplateFile) (dependency : PackageName * Vers
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with Dependencies = newDeps }) }
     | IncompleteTemplate -> 
-        failwith "You should only try to add dependencies to template files with complete metadata."
+        failwith (sprintf "You should only try to add dependencies to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
+
+let excludeDependency (templateFile : TemplateFile) (exclude : PackageName) = 
+    match templateFile with
+    | CompleteTemplate(core, opt) -> 
+        let newExcludes = 
+            opt.ExcludedDependencies |> Set.add exclude
+        { FileName = templateFile.FileName
+          Contents = CompleteInfo(core, { opt with ExcludedDependencies = newExcludes }) }
+    | IncompleteTemplate -> 
+        failwith (sprintf "You should only try to exclude dependencies to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
 let toFile config platform (p : ProjectFile) = 
     Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory config platform, p.GetAssemblyName())
@@ -121,7 +131,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with Files = (source,target) :: opt.Files }) }
     | IncompleteTemplate -> 
-        failwith "You should only try and add files to template files with complete metadata."
+        failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
 let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
     let targetDir = 
@@ -197,21 +207,28 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
 
         additionalFiles
         |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
+
+    let templateWithOutputAndExcludes =
+        match template.Contents with
+          | CompleteInfo(core, optional) -> optional.ExcludedGroups
+          | ProjectInfo(core, optional) -> optional.ExcludedGroups
+        |> Seq.collect dependenciesFile.GetDependenciesInGroup
+        |> Seq.fold (fun templatefile package -> excludeDependency templatefile package.Key) templateWithOutput
     
     // If project refs will also be packaged, add dependency
     let withDeps = 
         deps
         |> List.map (fun (templateFile, _) -> 
-                match templateFile with
-                | CompleteTemplate(core, opt) -> 
-                    match core.Version with
-                    | Some v -> 
-                        let versionConstraint = if not lockDependencies then Minimum v else Specific v
-                        PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
-                    | None -> failwithf "There was no version given for %s." templateFile.FileName
-                | IncompleteTemplate -> 
-                    failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
-        |> List.fold addDependency templateWithOutput
+               match templateFile with
+               | CompleteTemplate(core, opt) -> 
+                   match core.Version with
+                   | Some v -> 
+                       let versionConstraint = if not lockDependencies then Minimum v else Specific v
+                       PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
+                   | None -> failwithf "There was no version given for %s." templateFile.FileName
+               | IncompleteTemplate -> 
+                   failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
+        |> List.fold addDependency templateWithOutputAndExcludes
     
     // If project refs will not be packaged, add the assembly to the package
     let withDepsAndIncluded = 
@@ -275,7 +292,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                     group.Packages |> List.exists (fun p -> p.Name = settings.Name) ||
                         isDependencyOfAnyOtherDependency settings.Name |> not)
         |> List.sortByDescending (fun (group, settings) -> settings.Name)
-
+    
     match refs with
     | [] -> withDepsAndIncluded
     | _ -> 

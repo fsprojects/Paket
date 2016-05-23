@@ -49,6 +49,8 @@
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
+    <StartArguments>update --keep-major</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001701-keep-major\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
