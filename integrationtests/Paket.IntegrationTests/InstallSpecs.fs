@@ -226,6 +226,22 @@ let ``#1427 won't install content when content:none``() =
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
     s2 |> shouldEqual s1 // we do not touch it
 
+[<Test>]
+let ``#1427 won't install content when content:none and --keep-major``() = 
+    let newLockFile = paket "update --keep-major" "i001427-content-none"
+    let newFile = Path.Combine(scenarioTempPath "i001427-content-none","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001427-content-none","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+    s1.Contains "FodyWeavers.xml" |> shouldEqual false
+
+    let newWeavers = Path.Combine(scenarioTempPath "i001427-content-none","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-none","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
+    let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
+    s2 |> shouldEqual s1 // we do not touch it
+
 
 [<Test>]
 let ``#1522 install content and copy to output dir``() = 
