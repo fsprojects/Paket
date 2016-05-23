@@ -229,7 +229,7 @@ let ``#1427 won't install content when content:none``() =
 [<Test>]
 let ``#1701 won't install content when content:none and --keep-major``() = 
     let newLockFile = paket "update --keep-major" "i001701-keep-major"
-    let newFile = Path.Combine(scenarioTempPath "i001701-keep-major","TestPaket","TestPaket.csprojtemplate")
+    let newFile = Path.Combine(scenarioTempPath "i001701-keep-major","TestPaket","TestPaket.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001701-keep-major","testpaket","TestPaket.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
