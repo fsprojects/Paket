@@ -1,4 +1,5 @@
-#### 2.65.2 - 19.05.2016
+#### 2.66.0 - 23.05.2016
+* Package groups be excluded in a paket.template file - https://github.com/fsprojects/Paket/pull/1696
 * BUGFIX: Fallback from portable to net45 must be conversative - https://github.com/fsprojects/Paket/issues/1117
 
 #### 2.65.0 - 18.05.2016
