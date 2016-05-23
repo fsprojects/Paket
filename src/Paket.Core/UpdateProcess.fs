@@ -28,8 +28,8 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
     let dependenciesFile =
         let processFile createRequirementF =
           lockFile.GetGroupedResolution()
-          |> Map.fold (fun (dependenciesFile:DependenciesFile) (groupName,packageName) resolvedPackage -> 
-                             dependenciesFile.AddFixedPackage(groupName,packageName,createRequirementF resolvedPackage.Version)) dependenciesFile
+          |> Map.fold (fun (dependenciesFile:DependenciesFile) (groupName,packageName) resolvedPackage ->                             
+                             dependenciesFile.AddFixedPackage(groupName,packageName,createRequirementF resolvedPackage.Version,resolvedPackage.Settings)) dependenciesFile
     
         let formatPrerelease (v:SemVerInfo) =
             match v.PreRelease with

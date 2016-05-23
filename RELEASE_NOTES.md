@@ -1,3 +1,6 @@
+#### 2.66.1 - 23.05.2016
+* BUGFIX: Update with any of the --keep-major flag didn't honour content:none in paket.dependencies - https://github.com/fsprojects/Paket/issues/1701
+
 #### 2.66.0 - 23.05.2016
 * Package groups be excluded in a paket.template file - https://github.com/fsprojects/Paket/pull/1696
 * BUGFIX: Fallback from portable to net45 must be conversative - https://github.com/fsprojects/Paket/issues/1117
