@@ -185,6 +185,12 @@ If you need to exclude dependencies from the automatic discovery then you can us
 	  FSharp.Core
 	  Other.Dep
 
+Another way to exclude dependencies is to exclude a whole dependency group with the `excludedgroups` block:
+
+	excludedgroups
+	  build
+	  test
+
 #### Pdb files
 
 With the include-pdbs switch you can tell Paket to pack pdbs into the package.

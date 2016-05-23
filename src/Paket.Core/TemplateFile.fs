@@ -132,6 +132,7 @@ type OptionalPackagingInfo =
       DevelopmentDependency : bool
       Dependencies : (PackageName * VersionRequirement) list
       ExcludedDependencies : Set<PackageName>
+      ExcludedGroups : Set<GroupName>
       References : string list
       FrameworkAssemblyReferences : string list
       Files : (string * string) list
@@ -152,6 +153,7 @@ type OptionalPackagingInfo =
           DevelopmentDependency = false
           Dependencies = []
           ExcludedDependencies = Set.empty
+          ExcludedGroups = Set.empty
           References = []
           FrameworkAssemblyReferences = []
           Files = []
@@ -276,7 +278,7 @@ module internal TemplateFile =
             |> Array.toList
         
 
-    let private getExcludedDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option) =
+    let private getExcludedDependencies (info : Map<string, string>) =
         match Map.tryFind "excludeddependencies" info with
         | None -> []
         | Some d -> 
@@ -285,6 +287,17 @@ module internal TemplateFile =
                 let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match d
                 PackageName reg.Groups.["id"].Value)
             |> Array.toList
+
+    let private getExcludedGroups (info : Map<string, string>) =
+        match Map.tryFind "excludedgroups" info with
+        | None -> []
+        | Some d -> 
+            d.Split '\n'
+            |> Array.map (fun d ->
+                let reg = Regex(@"(?<id>\S+)").Match d
+                GroupName reg.Groups.["id"].Value)
+            |> Array.toList
+
 
     let private fromReg = Regex("from (?<from>.*)", RegexOptions.Compiled)
     let private toReg = Regex("to (?<to>.*)", RegexOptions.Compiled)
@@ -352,7 +365,9 @@ module internal TemplateFile =
             | _ -> false
 
         let dependencies = getDependencies(fileName,lockFile,map,currentVersion,specificVersions)
-        let excludedDependencies = getExcludedDependencies(fileName,lockFile,map,currentVersion)
+
+        let excludedDependencies = map |> getExcludedDependencies
+        let excludedGroups = map |> getExcludedGroups
         
         let includePdbs = 
             match get "include-pdbs" with
@@ -373,6 +388,7 @@ module internal TemplateFile =
           DevelopmentDependency = developmentDependency
           Dependencies = dependencies
           ExcludedDependencies = Set.ofList excludedDependencies
+          ExcludedGroups = Set.ofList excludedGroups
           References = getReferences map
           FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map
