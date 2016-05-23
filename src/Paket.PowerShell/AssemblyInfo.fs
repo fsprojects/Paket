@@ -7,9 +7,9 @@ open System.Reflection
 [<assembly: AssemblyDescriptionAttribute("A dependency manager for .NET with support for NuGet packages and git repositories.")>]
 [<assembly: AssemblyVersionAttribute("3.0.0")>]
 [<assembly: AssemblyFileVersionAttribute("3.0.0")>]
-[<assembly: AssemblyInformationalVersionAttribute("3.0.0-beta051")>]
+[<assembly: AssemblyInformationalVersionAttribute("3.0.0-beta052")>]
 do ()
 
 module internal AssemblyVersionInformation =
     let [<Literal>] Version = "3.0.0"
-    let [<Literal>] InformationalVersion = "3.0.0-beta051"
+    let [<Literal>] InformationalVersion = "3.0.0-beta052"
