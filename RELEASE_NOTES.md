@@ -1,4 +1,4 @@
-#### 2.66.1 - 23.05.2016
+#### 2.66.2 - 23.05.2016
 * BUGFIX: Update with any of the --keep-major flag didn't honour content:none in paket.dependencies - https://github.com/fsprojects/Paket/issues/1701
 
 #### 2.66.0 - 23.05.2016
