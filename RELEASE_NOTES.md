@@ -1,3 +1,6 @@
+#### 2.66.3 - 24.05.2016
+* BUGFIX: Use utf-8 to download strings - https://github.com/fsprojects/Paket/pull/1702
+
 #### 2.66.2 - 23.05.2016
 * BUGFIX: Update with any of the --keep-major flag didn't honour content:none in paket.dependencies - https://github.com/fsprojects/Paket/issues/1701
 
