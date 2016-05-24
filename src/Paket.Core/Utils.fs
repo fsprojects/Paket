@@ -341,6 +341,7 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             if notNullOrEmpty contentType then
                 client.Headers.Add(HttpRequestHeader.Accept, contentType)
 
+            client.Encoding <- Encoding.UTF8
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             return Some raw
         with _ -> return None
