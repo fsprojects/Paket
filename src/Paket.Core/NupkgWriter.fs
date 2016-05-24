@@ -71,7 +71,8 @@ let nuspecDoc (info:CompleteInfo) =
 
     let buildFrameworkReferencesNode libName =
         let element = XElement(ns + "frameworkAssembly")
-        element.SetAttributeValue(XName.Get "assemblyName", libName)
+        if String.IsNullOrEmpty libName then () else
+            element.SetAttributeValue(XName.Get "assemblyName", libName)
         element
 
     let buildFrameworkReferencesNode frameworkAssembliesList =
