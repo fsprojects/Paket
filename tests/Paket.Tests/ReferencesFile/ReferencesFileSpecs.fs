@@ -50,6 +50,18 @@ let ``should parse custom path correctly``() =
     refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
     refFile.RemoteFiles.Head.Link |> shouldEqual "Tests\Common"
 
+let refFileWithExplicitCustomPath = """
+File:FsUnit.fs Tests\Common\ExplicitName.fs
+"""
+
+[<Test>]
+let ``should parse custom path with explicit target filename correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithExplicitCustomPath).Groups.[Constants.MainDependencyGroup]
+    refFile.NugetPackages.Length |> shouldEqual 0
+    refFile.RemoteFiles.Length |> shouldEqual 1
+    refFile.RemoteFiles.Head.Name |> shouldEqual "FsUnit.fs"
+    refFile.RemoteFiles.Head.Link |> shouldEqual "Tests\Common\ExplicitName.fs"
+
 [<Test>]
 let ``should serialize customPath correctly``() = 
     let refFile = 
