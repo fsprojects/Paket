@@ -741,7 +741,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let removeElementAt index myArr =
                 [|  for i = 0 to Array.length myArr - 1 do 
                        if i <> index then yield myArr.[ i ] |]
-                                   
+            
             let fileName, groups, lines = 
               removeElementAt pos textRepresentation
               |> DependenciesFileParser.parseDependenciesFile fileName
@@ -751,15 +751,10 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
               |> Seq.map(fun item -> item.Value)
               |> Seq.filter(fun group -> group.Packages.IsEmpty)
               |> Seq.fold(fun (groups, (lines:string[])) emptyGroup ->
-
-                  groups |> Map.remove emptyGroup.Name,
-
+                  groups 
+                  |> Map.remove emptyGroup.Name,
                   lines 
-                    |> Array.choose(fun line -> 
-                      if line.StartsWith "group " && GroupName(line.Replace("group","")) = emptyGroup.Name
-                      then None
-                      else Some(line))
-
+                  |> Array.filter(fun line -> not(line.StartsWith "group " && GroupName(line.Replace("group","")) = emptyGroup.Name))
                 ) (groups, lines)
 
             DependenciesFile(fileName, filteredGroups, filteredLines)
