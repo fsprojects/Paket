@@ -136,7 +136,11 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
 
         match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
         | None ->
-            failwithf "The group %O was not found in the paket.lock file but not in the paket.dependencies file. Please run \"paket install\" again." kv.Value.Name
+            failwithf 
+                "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
+                kv.Value
+                Constants.LockFileName
+                Constants.DependenciesFileName
         | Some depFileGroup ->
             let packages = Set.ofSeq packages
             let overriden = Set.filter (LocalFile.overrides localFile) packages

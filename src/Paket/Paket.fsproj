@@ -45,6 +45,8 @@
     <StartArguments>update --hard</StartArguments>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
+    <StartArguments>update --keep-major</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001701-keep-major\temp</StartWorkingDirectory>
     <StartArguments>update</StartArguments>
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
