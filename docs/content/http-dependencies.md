@@ -21,7 +21,7 @@ If you run the [`paket install` command](paket-install.html), it will add a new 
 If you want to reference the file in one of your project files then add an entry to the project's [`paket.references` file.](references-files.html):
 
     [lang=paket]
-    File:test1.fs
+    File: test1.fs
 
 This will reference the linked file directly into your project.
 By default the linked file will be visible under ``paket-files`` folder in project.

@@ -36,14 +36,14 @@ Any [roslyn based analyzer](analyzers.html) present in the packages will also be
 It's possible to influence the `Private` property for references in project files:
 
     [lang=paket]
-    Newtonsoft.Json copy_local:false
+    Newtonsoft.Json copy_local: false
 
 ## import_targets settings
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
 
     [lang=paket]
-    Microsoft.Bcl.Build import_targets:false
+    Microsoft.Bcl.Build import_targets: false
 
 ## No content option
 
