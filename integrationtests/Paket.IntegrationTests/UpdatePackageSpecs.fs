@@ -166,6 +166,10 @@ let ``#1520 update with pinned dependency succeeds``() =
 let ``#1534 resolves Selenium.Support``() =
     update "i001534-selenium" |> ignore
 
+[<Test>]
+let ``#1703 resolves locally``() =
+    update "i001703-local" |> ignore
+
 
 [<Test>]
 let ``#1635 should tell about auth issue``() =

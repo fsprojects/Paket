@@ -340,14 +340,11 @@ let getDetailsFromLocalNuGetPackage isCache root localNuGetPath (packageName:Pac
         let nuspec = Nuspec.Load fileName
 
         File.Delete(fileName)
-        let dependencies = 
-            nuspec.Dependencies
-            |> List.map (fun (a,b,c) -> a,b, getRestrictionList c)
 
         return 
             { PackageName = nuspec.OfficialName
               DownloadUrl = packageName.ToString()
-              Dependencies = Requirements.optimizeDependencies dependencies
+              Dependencies = nuspec.Dependencies
               SourceUrl = di.FullName
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
