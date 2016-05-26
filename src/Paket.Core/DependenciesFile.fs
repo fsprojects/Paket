@@ -741,9 +741,28 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let removeElementAt index myArr =
                 [|  for i = 0 to Array.length myArr - 1 do 
                        if i <> index then yield myArr.[ i ] |]
+                                   
+            let fileName, groups, lines = 
+              removeElementAt pos textRepresentation
+              |> DependenciesFileParser.parseDependenciesFile fileName
+            
+            let filteredGroups, filteredLines =
+              groups
+              |> Seq.map(fun item -> item.Value)
+              |> Seq.filter(fun group -> group.Packages.IsEmpty)
+              |> Seq.fold(fun (groups, (lines:string[])) emptyGroup ->
 
-            let newLines = removeElementAt pos textRepresentation
-            DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName newLines)
+                  groups |> Map.remove emptyGroup.Name,
+
+                  lines 
+                    |> Array.choose(fun line -> 
+                      if line.StartsWith "group " && GroupName(line.Replace("group","")) = emptyGroup.Name
+                      then None
+                      else Some(line))
+
+                ) (groups, lines)
+
+            DependenciesFile(fileName, filteredGroups, filteredLines)
 
     member this.Add(groupName, packageName,version:string,?installSettings : InstallSettings) =
         let installSettings = defaultArg installSettings InstallSettings.Default
