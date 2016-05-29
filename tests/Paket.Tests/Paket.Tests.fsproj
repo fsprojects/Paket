@@ -115,8 +115,11 @@
     </Content>
     <Content Include="Nuspec\Fantomas.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    </Content>  
     <Content Include="Nuspec\Microsoft.Net.Http.nuspec">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Nuspec\RazorEngine.nuspec">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Nuspec\FsXaml.Wpf.nuspec">

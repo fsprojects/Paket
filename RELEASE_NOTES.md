@@ -1,3 +1,6 @@
+#### 2.66.4 - 26.05.2016
+* BUGFIX: Optimization of local dependencies - https://github.com/fsprojects/Paket/issues/1703
+
 #### 2.66.3 - 24.05.2016
 * BUGFIX: Use utf-8 to download strings - https://github.com/fsprojects/Paket/pull/1702
 

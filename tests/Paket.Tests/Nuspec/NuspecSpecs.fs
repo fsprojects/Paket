@@ -81,6 +81,15 @@ let ``can detect framework assemblies for Microsoft.Net.Http``() =
              FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]
 
 [<Test>]
+let ``can detect deps assemblies for RazorEngine``() = 
+    Nuspec.Load("Nuspec/RazorEngine.nuspec").Dependencies
+    |> shouldEqual 
+        [PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement("= 2.0.30506.0"), 
+            FrameworkRestrictionList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_Client))]
+         PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement(">= 3.0.0"),
+            FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))]]
+
+[<Test>]
 let ``can detect framework assemblies for FluentAssertions``() = 
     Nuspec.Load("Nuspec/FluentAssertions.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
