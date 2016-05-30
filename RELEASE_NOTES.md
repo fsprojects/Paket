@@ -1,3 +1,6 @@
+#### 2.66.5 - 30.05.2016
+* BUGFIX: Don't remove trailing zero if version is in package path - https://github.com/fsprojects/Paket/issues/1708
+
 #### 2.66.4 - 26.05.2016
 * BUGFIX: Optimization of local dependencies - https://github.com/fsprojects/Paket/issues/1703
 
