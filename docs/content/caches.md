@@ -30,7 +30,7 @@ Configuration of additional network share as caches can be done in the  [`paket.
 Many projects decide to commit all dependencies into the version control system.
 Some people argue that this bloats the version control system, but it also ensures that dependencies are always available after checkout.
 
-With a local dependencies cache you can instruct Paket to copy dependencies to a local folder. 
+With a local dependencies cache you can instruct Paket to copy dependencies to a local folder.
 This folder will then contain the `*.nupkgs files` of all dependencies and can be committed to source control.
 
 <blockquote>In contrast to the default <i>packages</i> folder this new folder will only contain the zipped dependencies. This way the <i>packages</i> folder which contains also the unzipped versions can still be gitignored.</blockquote>
@@ -39,7 +39,7 @@ The configuration can be done in the  [`paket.dependencies` file](dependencies-f
 
     [lang=paket]
     source https://nuget.org/api/v2
-	cache ./nupkgs versions:current
+	cache ./nupkgs versions: current
 
     nuget Newtonsoft.Json
     nuget UnionArgParser
@@ -57,4 +57,4 @@ Paket allows you two caching options:
 All configured caches are automatically used as additional package feeds. So if a package gets removed from the central repository even "paket update" will work.
 The fact that it's now only found in the cache will be written to the [`paket.lock` file](lock-file.html).
 
-All packages in the cache are treated as "unlisted". This means Paket's resolver will only use these packages in a new resolution if the central feed has no unlisted packages. 
+All packages in the cache are treated as "unlisted". This means Paket's resolver will only use these packages in a new resolution if the central feed has no unlisted packages.

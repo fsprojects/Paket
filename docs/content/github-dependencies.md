@@ -31,7 +31,7 @@ By default the `master` branch is used to determine the commit to reference, you
 If you want to reference the file in one of your project files then add an entry to the project's [`paket.references` file.](references-files.html):
 
     [lang=paket]
-    File:FsUnit.fs
+    File: FsUnit.fs
 
 and run [`paket install` command](paket-install.html). This will reference the linked file directly into your project and by default, be visible under ``paket-files`` folder in project.
 
@@ -40,14 +40,14 @@ and run [`paket install` command](paket-install.html). This will reference the l
 You can specify custom folder for the file:
 
     [lang=paket]
-    File:FsUnit.fs Tests\FsUnit
+    File: FsUnit.fs Tests\FsUnit
 
 ![alt text](img/github_ref_custom_link.png "GitHub file referenced in project with custom link")
 
 Or if you use ``.`` for the directory, the file will be placed under the root of the project:
 
     [lang=paket]
-    File:FsUnit.fs .
+    File: FsUnit.fs .
 
 ![alt text](img/github_ref_root.png "GitHub file referenced in project under root of project")
 
@@ -56,8 +56,8 @@ Or if you use ``.`` for the directory, the file will be placed under the root of
 You can also reference a complete [github.com](http://www.github.com) repository by specifying the repository id in the [`paket.dependencies` file](dependencies-file.html):
 
     [lang=paket]
-    github tpetricek/FSharp.Formatting                                         // master branch 
-    github tpetricek/FSharp.Formatting:2.13.5                                  // version 2.13.5 
+    github tpetricek/FSharp.Formatting                                         // master branch
+    github tpetricek/FSharp.Formatting:2.13.5                                  // version 2.13.5
     github tpetricek/FSharp.Formatting:30cd5366a4f3f25a443ca4cd62cd592fd16ac69 // specific commit 30cd5366a4f3f25a443ca4cd62cd592fd16ac69  
 
 This will download the given repository and put it into your `paket-files` folder. In this case we download the source of [reveal.js](http://lab.hakim.se/reveal-js/#/).
