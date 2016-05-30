@@ -12,4 +12,4 @@ open Paket.Domain
 
 [<Test>]
 let ``#1600 paket remove nuget should remove empty groups``() = 
-    paket "remove add Castle.Core testgroup" "i001600-remove-empty-group" |> ignore
+    paket "remove nuget Castle.Core group testgroup" "i001600-remove-empty-group" |> ignore
