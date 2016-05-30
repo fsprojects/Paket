@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>The paket.lock file
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="./content/style.css" />
+    <script type="text/javascript" src="./content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style type="text/css">
+      table.pre td.lines {
+        vertical-align: top;
+      }
+      pre.fssnip code[lang=batchfile],
+      pre.fssnip code[lang=msh] {
+        display: inline-block;
+        white-space: pre-wrap;       /* CSS 3 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+        word-break: keep-all;
+        padding-left: 2em;
+        text-indent: -2em;
+      }
+    </style>
+    <script type="text/javascript">
+      $(function() {
+        $("code[lang='batchfile'], code[lang='msh']").each(function() {
+          $(this).html($(this).html().replace(/ &lt;/g, "&nbsp;&lt;"))
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="./index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1><a name="The-paket-lock-file" class="anchor" href="#The-paket-lock-file">The paket.lock file</a></h1>
+<p>Consider the following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Castle.Windsor-log4net <span class="o">!</span><span class="o">~&gt;</span> <span class="n">3.2</span>
+<span class="k">nuget</span> Rx-Main <span class="o">!</span><span class="o">~&gt;</span> <span class="n">2.0</span>
+</code></pre></td></tr></table>
+<p>Here we <a href="dependencies-file.html">specify dependencies</a> on the default NuGet feed's <a href="https://www.nuget.org/packages/Castle.Windsor-log4net/"><code>Castle.Windsor-log4net</code></a> and <a href="https://www.nuget.org/packages/Rx-Main/"><code>Rx-Main</code></a> packages; both these packages have dependencies on further NuGet packages.</p>
+<p>The <a href="lock-file.html"><code>paket.lock</code> file</a> records the concrete dependency resolution of all direct <em>and transitive</em> dependencies of your project:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+<span class="l">29: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
+  <span class="k">remote</span>: https://nuget.org/api/v2
+    Castle.Core (<span class="n">3.3.0</span>)
+    Castle.Core-log4net (<span class="n">3.3.0</span>)
+      Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+      log4net (<span class="n">1.2.10</span>)
+    Castle.LoggingFacility (<span class="n">3.3.0</span>)
+      Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+      Castle.Windsor (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+    Castle.Windsor (<span class="n">3.3.0</span>)
+      Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+    Castle.Windsor-log4net (<span class="n">3.3.0</span>)
+      Castle.Core-log4net (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+      Castle.LoggingFacility (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+    Rx-Core (<span class="n">2.2.5</span>)
+      Rx-Interfaces (<span class="o">&gt;=</span> <span class="n">2.2.5</span>)
+    Rx-Interfaces (<span class="n">2.2.5</span>)
+    Rx-Linq (<span class="n">2.2.5</span>)
+      Rx-Interfaces (<span class="o">&gt;=</span> <span class="n">2.2.5</span>)
+      Rx-Core (<span class="o">&gt;=</span> <span class="n">2.2.5</span>)
+    Rx-Main (<span class="n">2.2.5</span>)
+      Rx-Interfaces (<span class="o">&gt;=</span> <span class="n">2.2.5</span>)
+      Rx-Core (<span class="o">&gt;=</span> <span class="n">2.2.5</span>)
+      Rx-Linq (<span class="o">&gt;=</span> <span class="n">2.2.5</span>)
+      Rx-PlatformServices (<span class="o">&gt;=</span> <span class="n">2.2.5</span>)
+    Rx-PlatformServices (<span class="n">2.2.5</span>)
+      Rx-Interfaces (<span class="o">&gt;=</span> <span class="n">2.2.5</span>)
+      Rx-Core (<span class="o">&gt;=</span> <span class="n">2.2.5</span>)
+    log4net (<span class="n">1.2.10</span>)
+</code></pre></td></tr></table>
+<p>If the <a href="lock-file.html"><code>paket.lock</code> file</a> is not present when <a href="paket-install.html"><code>paket install</code></a> is run, it will be generated. Subsequent runs of <a href="paket-install.html"><code>paket install</code></a> will only perform updates according to the latest changes in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</p>
+<p>Committing the <a href="lock-file.html"><code>paket.lock</code> file</a> to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when <a href="paket-restore.html"><code>paket restore</code></a> is executed.</p>
+<h2><a name="Performing-updates" class="anchor" href="#Performing-updates">Performing updates</a></h2>
+<p>If you make changes to <a href="dependencies-file.html"><code>paket.dependencies</code></a> or you want Paket to check for newer versions of the direct and transitive dependencies as specified in <a href="dependencies-file.html"><code>paket.dependencies</code></a>, run:</p>
+<ul>
+<li><a href="paket-outdated.html"><code>paket outdated</code></a> to check for new versions, and report what's available.</li>
+<li><a href="paket-install.html"><code>paket install</code></a> to analyze the modifications in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> and perform a selective update (only changed dependencies are updated).</li>
+<li><a href="paket-update.html"><code>paket update</code></a> to check for new versions, download any that fit the criteria, and update the references within the project files as specified by their associated <a href="references-files.html"><code>paket.references</code></a>.</li>
+</ul>
+
+
+        </div>
+        <div class="span3">
+          <img src="./img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="./index.html">Home page</a></li>
+            <li><a href="./getting-started.html">Getting started</a></li>
+            <li><a href="./convert-from-nuget-tutorial.html">Convert from NuGet</a></li>
+            <li><a href="./faq.html">FAQ</a></li>
+            <li><a href="./glossary.html">Glossary</a></li>
+            <li><a href="./release-notes.html">Release Notes</a></li>
+            <li><a href="./testimonials.html">Testimonials</a></li>
+            <li><a href="./license.html">License</a></li>
+
+            <li class="nav-header">Download Paket</li>
+            <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+            <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+            
+            <li class="nav-header">GitHub</li>
+            <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="./dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="./lock-file.html">paket.lock</a></li>
+            <li><a href="./references-files.html">paket.references</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./paket-folder.html">.paket folder</a></li>
+            <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
+            <li class="divider"></li>
+            <li><a href="./resolver.html">Package resolution algorithm</a></li>
+            <li><a href="./groups.html">Dependency Groups</a></li>
+            <li><a href="./caches.html">Additional Caches</a></li>
+            <li><a href="./nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="./git-dependencies.html">Git dependencies</a></li>
+            <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
+            <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li class="divider"></li>
+            <li><a href="./installation.html">Installation</a></li>
+            <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
+            <li><a href="./editor-support.html">Editor support</a></li>
+            <li class="divider"></li>
+            <li><a href="./reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="./paket-add.html">paket add</a></li>
+            <li><a href="./paket-auto-restore.html">paket auto-restore</a></li>
+            <li><a href="./paket-clear-cache.html">paket clear-cache</a></li>
+            <li><a href="./paket-config.html">paket config</a></li>
+            <li><a href="./paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+            <li><a href="./paket-find-refs.html">paket find-refs</a></li>
+            <li><a href="./paket-find-packages.html">paket find-packages</a></li>
+            <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-install.html">paket install</a></li>
+            <li><a href="./paket-outdated.html">paket outdated</a></li>
+            <li><a href="./paket-pack.html">paket pack</a></li>
+            <li><a href="./paket-push.html">paket push</a></li>
+            <li><a href="./paket-remove.html">paket remove</a></li>
+            <li><a href="./paket-restore.html">paket restore</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-show-groups.html">paket show-groups</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-update.html">paket update</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>

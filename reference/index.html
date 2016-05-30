@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Namespaces - Paket</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content=""/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="..//content/style.css" />
+    <script type="text/javascript" src="..//content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style type="text/css">
+      table.pre td.lines {
+        vertical-align: top;
+      }
+      pre.fssnip code[lang=batchfile],
+      pre.fssnip code[lang=msh] {
+        display: inline-block;
+        white-space: pre-wrap;       /* CSS 3 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+        word-break: keep-all;
+        padding-left: 2em;
+        text-indent: -2em;
+      }
+    </style>
+    <script type="text/javascript">
+      $(function() {
+        $("code[lang='batchfile'], code[lang='msh']").each(function() {
+          $(this).html($(this).html().replace(/ &lt;/g, "&nbsp;&lt;"))
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="..//index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+
+<h1>Paket</h1>
+
+
+  <h2>FSharp.Polyfill Namespace</h2>
+    <div>
+      <table class="table table-bordered module-list">
+    <thead>
+      <tr><td>Module</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="module-name">
+            <a href="fsharp-polyfill-asyncextensions.html">AsyncExtensions</a>
+          </td>
+          <td class="xmldoc"><p>Extensions for async workflows.</p>
+
+</td>
+        </tr>
+    </tbody>
+  </table>
+
+    </div>
+  <h2>Fake Namespace</h2>
+    <div>
+      <table class="table table-bordered module-list">
+    <thead>
+      <tr><td>Module</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="module-name">
+            <a href="fake-globbing.html">Globbing</a>
+          </td>
+          <td class="xmldoc"><p>This module contains a file pattern globbing implementation.</p>
+
+</td>
+        </tr>
+    </tbody>
+  </table>
+
+    </div>
+  <h2>Paket Namespace</h2>
+    <div>
+      <table class="table table-bordered type-list">
+    <thead>
+      <tr><td>Type</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="type-name">
+            <a href="paket-analyzerlanguage.html">AnalyzerLanguage</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-analyzerlib.html">AnalyzerLib</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-buildaction.html">BuildAction</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-cache.html">Cache</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-cachetype.html">CacheType</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-compileitem.html">CompileItem</a>
+          </td>
+          <td class="xmldoc"><p>Compile items inside of project files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-completecoreinfo.html">CompleteCoreInfo</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-completeinfo.html">CompleteInfo</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-dependencies.html">Dependencies</a>
+          </td>
+          <td class="xmldoc"><p>Paket API which is optimized for F# Interactive use.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-dependenciesfile.html">DependenciesFile</a>
+          </td>
+          <td class="xmldoc"><p>Allows to parse and analyze paket.dependencies files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-dependenciesgroup.html">DependenciesGroup</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-dotnetstandardversion.html">DotNetStandardVersion</a>
+          </td>
+          <td class="xmldoc"><p>The .NET Standard version.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-fileitem.html">FileItem</a>
+          </td>
+          <td class="xmldoc"><p>File item inside of project files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-frameworkassemblyreference.html">FrameworkAssemblyReference</a>
+          </td>
+          <td class="xmldoc"><p>Framework assembly reference inside of nuspec files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-frameworkidentifier.html">FrameworkIdentifier</a>
+          </td>
+          <td class="xmldoc"><p>Framework Identifier type.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-frameworkversion.html">FrameworkVersion</a>
+          </td>
+          <td class="xmldoc"><p>The Framework version.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-installfiles.html">InstallFiles</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-installgroup.html">InstallGroup</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-installmodel.html">InstallModel</a>
+          </td>
+          <td class="xmldoc"><p>Represents the contents of a particular package at a particular version.  Any install-specific actions like Content files, References, Roslyn Analyzers, MsBuild targets are represented here.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-installeroptions.html">InstallerOptions</a>
+          </td>
+          <td class="xmldoc"><p>Force             - Force the download and reinstallation of all packages
+Redirects         - Create binding redirects for the NuGet packages
+OnlyReferenced    - Only install packages that are referenced in paket.references files.
+TouchAffectedRefs - Touch projects referencing installed packages even if the project file does not change.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-libfolder.html">LibFolder</a>
+          </td>
+          <td class="xmldoc"><p>Represents a subfolder of a nuget package that provides files (content, references, etc) for one or more Target Profiles.  This is a logical representation of the 'net45' folder in a NuGet package, for example.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-localfile.html">LocalFile</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-localoverride.html">LocalOverride</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-lockfile.html">LockFile</a>
+          </td>
+          <td class="xmldoc"><p>Allows to parse and analyze paket.lock files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-lockfilegroup.html">LockFileGroup</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuspec.html">Nuspec</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-nuspecreferences.html">NuspecReferences</a>
+          </td>
+          <td class="xmldoc"><p>Nuspec reference type inside of nuspec files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-optionalpackaginginfo.html">OptionalPackagingInfo</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-packageinstallsettings.html">PackageInstallSettings</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-paketenv.html">PaketEnv</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-prerelease.html">PreRelease</a>
+          </td>
+          <td class="xmldoc"><p>Information about PreRelease packages.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-prereleasesegment.html">PreReleaseSegment</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-prereleasestatus.html">PreReleaseStatus</a>
+          </td>
+          <td class="xmldoc"><p>Defines if the range accepts prereleases</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-projectcoreinfo.html">ProjectCoreInfo</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-projectfile.html">ProjectFile</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods to read and manipulate project files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-projectlanguage.html">ProjectLanguage</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-projectoutputtype.html">ProjectOutputType</a>
+          </td>
+          <td class="xmldoc"><p>Project output type.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-projectreference.html">ProjectReference</a>
+          </td>
+          <td class="xmldoc"><p>Project references inside of project files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-reference.html">Reference</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-referencesfile.html">ReferencesFile</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-remotefilereference.html">RemoteFileReference</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-resolverstrategy.html">ResolverStrategy</a>
+          </td>
+          <td class="xmldoc"><p>Represents a resolver strategy.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-semverinfo.html">SemVerInfo</a>
+          </td>
+          <td class="xmldoc"><p>Contains the version information.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-semverupdatemode.html">SemVerUpdateMode</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-solutionfile.html">SolutionFile</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods to read and manipulate solution files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-targetprofile.html">TargetProfile</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-templatefile.html">TemplateFile</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-templatefilecontents.html">TemplateFileContents</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-updateroptions.html">UpdaterOptions</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-versionrange.html">VersionRange</a>
+          </td>
+          <td class="xmldoc"><p>Represents version information.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-versionrangebound.html">VersionRangeBound</a>
+          </td>
+          <td class="xmldoc"><p>Defines if the range bound is including or excluding.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-versionrequirement.html">VersionRequirement</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-versionstrategy.html">VersionStrategy</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+  <table class="table table-bordered module-list">
+    <thead>
+      <tr><td>Module</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="module-name">
+            <a href="paket-addprocess.html">AddProcess</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods for addition of new packages</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-bindingredirects.html">BindingRedirects</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-configfile.html">ConfigFile</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-constants.html">Constants</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-dependenciesfileserializer.html">DependenciesFileSerializer</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-dependencychangedetection.html">DependencyChangeDetection</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-dependencymodel.html">DependencyModel</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-domain.html">Domain</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-findoutdated.html">FindOutdated</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods to find outdated packages.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-findreferences.html">FindReferences</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-frameworkdetection.html">FrameworkDetection</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-garbagecollection.html">GarbageCollection</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods for the garbage collection of no longer needed files.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-installfilesmodule.html">InstallFiles</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-installmodelmodule.html">InstallModel</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-installprocess.html">InstallProcess</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods for the install process.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-knownaliases.html">KnownAliases</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-knowntargetprofiles.html">KnownTargetProfiles</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-languageevaluation.html">LanguageEvaluation</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-localfilemodule.html">LocalFile</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-lockfileparser.html">LockFileParser</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-lockfileserializer.html">LockFileSerializer</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-logging.html">Logging</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-moduleresolver.html">ModuleResolver</a>
+          </td>
+          <td class="xmldoc"><p>Contains logic which helps to resolve the dependency graph for modules</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-nuget.html">NuGet</a>
+          </td>
+          <td class="xmldoc"><p>Contains NuGet support.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-nugetconvert.html">NuGetConvert</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods for NuGet conversion</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-nugetv2.html">NuGetV2</a>
+          </td>
+          <td class="xmldoc"><p>Contains NuGet support.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-nugetv3.html">NuGetV3</a>
+          </td>
+          <td class="xmldoc"><p>Contains NuGet support.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-packageprocess.html">PackageProcess</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-packageresolver.html">PackageResolver</a>
+          </td>
+          <td class="xmldoc"><p>Contains logic which helps to resolve the dependency graph.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-packagesources.html">PackageSources</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-packagesconfigfile.html">PackagesConfigFile</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-paketenvmodule.html">PaketEnv</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-platformdetection.html">PlatformDetection</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-platformmatching.html">PlatformMatching</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-projectfilemodule.html">ProjectFile</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-releases.html">Releases</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-remotedownload.html">RemoteDownload</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-remoteupload.html">RemoteUpload</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-removeprocess.html">RemoveProcess</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods to remove installed packages</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-requirements.html">Requirements</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-restoreprocess.html">RestoreProcess</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods for the restore process.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-semver.html">SemVer</a>
+          </td>
+          <td class="xmldoc"><p>Parser which allows to deal with <a href="http://semver.org/">Semantic Versioning</a> (SemVer).</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-simplifier.html">Simplifier</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-updateprocess.html">UpdateProcess</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods for the update process.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-utils-0.html">Utils</a>
+          </td>
+          <td class="xmldoc"><p>Contains methods for IO.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-vsintegration.html">VSIntegration</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-xml.html">Xml</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-utils.html">utils</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+
+    </div>
+  <h2>Paket.Git Namespace</h2>
+    <div>
+      <table class="table table-bordered module-list">
+    <thead>
+      <tr><td>Module</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="module-name">
+            <a href="paket-git-commandhelper.html">CommandHelper</a>
+          </td>
+          <td class="xmldoc"><p>Contains helpers which allow to interact with <a href="http://git-scm.com/">git</a> via the command line.</p>
+
+</td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-git-handling.html">Handling</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+
+    </div>
+  <h2>Paket.LoadingScripts Namespace</h2>
+    <div>
+      <table class="table table-bordered module-list">
+    <thead>
+      <tr><td>Module</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="module-name">
+            <a href="paket-loadingscripts-packageandassemblyresolution.html">PackageAndAssemblyResolution</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="module-name">
+            <a href="paket-loadingscripts-scriptgeneration.html">ScriptGeneration</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+
+    </div>
+
+        </div>
+        <div class="span3">
+          <img src="..//img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="..//index.html">Home page</a></li>
+            <li><a href="..//getting-started.html">Getting started</a></li>
+            <li><a href="..//convert-from-nuget-tutorial.html">Convert from NuGet</a></li>
+            <li><a href="..//faq.html">FAQ</a></li>
+            <li><a href="..//glossary.html">Glossary</a></li>
+            <li><a href="..//release-notes.html">Release Notes</a></li>
+            <li><a href="..//testimonials.html">Testimonials</a></li>
+            <li><a href="..//license.html">License</a></li>
+
+            <li class="nav-header">Download Paket</li>
+            <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+            <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+            
+            <li class="nav-header">GitHub</li>
+            <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="..//dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="..//lock-file.html">paket.lock</a></li>
+            <li><a href="..//references-files.html">paket.references</a></li>
+            <li><a href="..//template-files.html">paket.template</a></li>            
+            <li><a href="..//local-file.html">paket.local</a></li>            
+            <li><a href="..//paket-folder.html">.paket folder</a></li>
+            <li><a href="..//bootstrapper.html">paket.bootstrapper.exe</a></li>
+            <li class="divider"></li>
+            <li><a href="..//resolver.html">Package resolution algorithm</a></li>
+            <li><a href="..//groups.html">Dependency Groups</a></li>
+            <li><a href="..//caches.html">Additional Caches</a></li>
+            <li><a href="..//nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="..//git-dependencies.html">Git dependencies</a></li>
+            <li><a href="..//github-dependencies.html">GitHub dependencies</a></li>
+            <li><a href="..//http-dependencies.html">HTTP dependencies</a></li>
+            <li><a href="..//analyzers.html">Analyzers</a></li>            
+            <li class="divider"></li>
+            <li><a href="..//installation.html">Installation</a></li>
+            <li><a href="..//reference-from-repl.html">Using Paket from F# Interactive</a></li>
+            <li><a href="..//editor-support.html">Editor support</a></li>
+            <li class="divider"></li>
+            <li><a href="..//reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="..//paket-add.html">paket add</a></li>
+            <li><a href="..//paket-auto-restore.html">paket auto-restore</a></li>
+            <li><a href="..//paket-clear-cache.html">paket clear-cache</a></li>
+            <li><a href="..//paket-config.html">paket config</a></li>
+            <li><a href="..//paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+            <li><a href="..//paket-find-refs.html">paket find-refs</a></li>
+            <li><a href="..//paket-find-packages.html">paket find-packages</a></li>
+            <li><a href="..//paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="..//paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
+            <li><a href="..//paket-init.html">paket init</a></li>          
+            <li><a href="..//paket-install.html">paket install</a></li>
+            <li><a href="..//paket-outdated.html">paket outdated</a></li>
+            <li><a href="..//paket-pack.html">paket pack</a></li>
+            <li><a href="..//paket-push.html">paket push</a></li>
+            <li><a href="..//paket-remove.html">paket remove</a></li>
+            <li><a href="..//paket-restore.html">paket restore</a></li>
+            <li><a href="..//paket-simplify.html">paket simplify</a></li>   
+            <li><a href="..//paket-show-groups.html">paket show-groups</a></li>
+            <li><a href="..//paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="..//paket-update.html">paket update</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Package resolution algorithm
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="./content/style.css" />
+    <script type="text/javascript" src="./content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style type="text/css">
+      table.pre td.lines {
+        vertical-align: top;
+      }
+      pre.fssnip code[lang=batchfile],
+      pre.fssnip code[lang=msh] {
+        display: inline-block;
+        white-space: pre-wrap;       /* CSS 3 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+        word-break: keep-all;
+        padding-left: 2em;
+        text-indent: -2em;
+      }
+    </style>
+    <script type="text/javascript">
+      $(function() {
+        $("code[lang='batchfile'], code[lang='msh']").each(function() {
+          $(this).html($(this).html().replace(/ &lt;/g, "&nbsp;&lt;"))
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="./index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1><a name="Package-resolution-algorithm" class="anchor" href="#Package-resolution-algorithm">Package resolution algorithm</a></h1>
+<h2><a name="Overview" class="anchor" href="#Overview">Overview</a></h2>
+<p>Paket uses the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> to specify project dependencies.
+Usually only direct dependencies are specified and often a broad range of package versions is allowed.
+During <a href="paket-install.html"><code>paket install</code></a> Paket needs to figure out concrete versions of the specified packages and their transitive dependencies.
+These versions are then persisted to the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
+<p>In order to figure out the concrete versions Paket needs to solve the following constraint satisfaction problem:</p>
+<ul>
+<li>Select the latest version for each of the packages in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>, plus all their transitive dependencies, such that all version constraints are satisfied.</li>
+</ul>
+<blockquote>Note:
+<ul>
+  <li>In general, more than one solution to this problem can exist and the solver will take the first solution that it finds.</li>
+  <li>If you change the <a href="dependencies-file.html#Strategy-option">resolution strategy</a> then Paket needs to find the <i>oldest matching version</i>.</li>
+</ul></blockquote>
+<h2><a name="Getting-data" class="anchor" href="#Getting-data">Getting data</a></h2>
+<p>The <a href="http://en.wikipedia.org/wiki/Constraint_satisfaction_problem">constraint satisfaction problem</a> is covered by many <a href="resolver.html#Further-reading">scientific papers</a>, but
+a big challenge for Paket's resolver is that it doesn't have the full constraints available.
+The algorithm needs to evaluate the package dependency graph along the way by retrieving data from the <a href="nuget-dependencies.html">NuGet</a> source feeds.</p>
+<p>The two important API questions are:</p>
+<ul>
+<li>What versions of a package are available?</li>
+<li>Given a concrete version of a package, what further dependencies are required?</li>
+</ul>
+<p>Answering these questions is a very expensive operation since it involves a HTTP request and therefore the resolver has to minimize these requests and only access the API when really needed.</p>
+<h2><a name="Basic-algorithm" class="anchor" href="#Basic-algorithm">Basic algorithm</a></h2>
+<p>Starting from the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> we have a set of package requirements.
+Every requirement specifies a version range and a resolver strategy for a package:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs10', 16)" onmouseover="showTip(event, 'fs10', 16)" class="t">PackageRequirementSource</span> <span class="o">=</span>
+| <span onmouseout="hideTip(event, 'fs11', 17)" onmouseover="showTip(event, 'fs11', 17)" class="p">DependenciesFile</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs1', 18)" onmouseover="showTip(event, 'fs1', 18)" class="t">string</span>
+| <span onmouseout="hideTip(event, 'fs12', 19)" onmouseover="showTip(event, 'fs12', 19)" class="p">Package</span> <span class="k">of</span> <span onmouseout="hideTip(event, 'fs2', 20)" onmouseover="showTip(event, 'fs2', 20)" class="t">PackageName</span> <span class="o">*</span> <span onmouseout="hideTip(event, 'fs3', 21)" onmouseover="showTip(event, 'fs3', 21)" class="t">SemVerInfo</span> 
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs13', 22)" onmouseover="showTip(event, 'fs13', 22)" class="t">ResolverStrategy</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs14', 23)" onmouseover="showTip(event, 'fs14', 23)" class="p">Max</span> | <span onmouseout="hideTip(event, 'fs15', 24)" onmouseover="showTip(event, 'fs15', 24)" class="p">Min</span>
+
+<span class="k">type</span> <span onmouseout="hideTip(event, 'fs16', 25)" onmouseover="showTip(event, 'fs16', 25)" class="t">PackageRequirement</span> <span class="o">=</span>
+    { <span onmouseout="hideTip(event, 'fs17', 26)" onmouseover="showTip(event, 'fs17', 26)" class="i">Name</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs2', 27)" onmouseover="showTip(event, 'fs2', 27)" class="t">PackageName</span>
+      <span onmouseout="hideTip(event, 'fs18', 28)" onmouseover="showTip(event, 'fs18', 28)" class="i">VersionRequirement</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs18', 29)" onmouseover="showTip(event, 'fs18', 29)" class="t">VersionRequirement</span>
+      <span onmouseout="hideTip(event, 'fs19', 30)" onmouseover="showTip(event, 'fs19', 30)" class="i">ResolverStrategy</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs19', 31)" onmouseover="showTip(event, 'fs19', 31)" class="t">ResolverStrategy</span>
+      <span onmouseout="hideTip(event, 'fs20', 32)" onmouseover="showTip(event, 'fs20', 32)" class="i">Parent</span><span class="o">:</span> <span onmouseout="hideTip(event, 'fs10', 33)" onmouseover="showTip(event, 'fs10', 33)" class="t">PackageRequirementSource</span>
+      <span onmouseout="hideTip(event, 'fs21', 34)" onmouseover="showTip(event, 'fs21', 34)" class="i">Sources</span> <span class="o">:</span> <span onmouseout="hideTip(event, 'fs8', 35)" onmouseover="showTip(event, 'fs8', 35)" class="t">PackageSource</span> <span onmouseout="hideTip(event, 'fs6', 36)" onmouseover="showTip(event, 'fs6', 36)" class="t">list</span> }
+</code></pre></td>
+</tr>
+</table>
+<p>The algorithm works as a <a href="https://en.wikipedia.org/wiki/Breadth-first_search">Breadth-first search</a>.
+In every step it selects a requirement from the set of <em>open</em> requirements and checks if the requirement can be satisfied.
+If no conflict arises then a package version gets selected and all it's dependencies are added to the <em>open</em> requirements.
+A set of <em>closed</em> requirements is maintained in order to prevent cycles in the search graph.</p>
+<p>If the selected requirement results in a conflict then the algorithm backtracks in the search tree and selects the next version.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+<span class="l">29: </span>
+<span class="l">30: </span>
+<span class="l">31: </span>
+<span class="l">32: </span>
+<span class="l">33: </span>
+<span class="l">34: </span>
+<span class="l">35: </span>
+<span class="l">36: </span>
+<span class="l">37: </span>
+<span class="l">38: </span>
+<span class="l">39: </span>
+<span class="l">40: </span>
+<span class="l">41: </span>
+<span class="l">42: </span>
+<span class="l">43: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="k">rec</span> <span onmouseout="hideTip(event, 'fs51', 94)" onmouseover="showTip(event, 'fs51', 94)" class="f">step</span>(<span onmouseout="hideTip(event, 'fs40', 95)" onmouseover="showTip(event, 'fs40', 95)" class="i">selectedPackageVersions</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs24', 96)" onmouseover="showTip(event, 'fs24', 96)" class="t">Set</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs9', 97)" onmouseover="showTip(event, 'fs9', 97)" class="t">ResolvedPackage</span><span class="o">&gt;</span>,
+             <span onmouseout="hideTip(event, 'fs52', 98)" onmouseover="showTip(event, 'fs52', 98)" class="i">closedRequirements</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs24', 99)" onmouseover="showTip(event, 'fs24', 99)" class="t">Set</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs16', 100)" onmouseover="showTip(event, 'fs16', 100)" class="t">PackageRequirement</span><span class="o">&gt;</span>,
+             <span onmouseout="hideTip(event, 'fs53', 101)" onmouseover="showTip(event, 'fs53', 101)" class="i">openRequirements</span><span class="o">:</span><span onmouseout="hideTip(event, 'fs24', 102)" onmouseover="showTip(event, 'fs24', 102)" class="t">Set</span><span class="o">&lt;</span><span onmouseout="hideTip(event, 'fs16', 103)" onmouseover="showTip(event, 'fs16', 103)" class="t">PackageRequirement</span><span class="o">&gt;</span>) <span class="o">=</span>
+
+    <span class="k">match</span> <span onmouseout="hideTip(event, 'fs22', 104)" onmouseover="showTip(event, 'fs22', 104)" class="f">selectNextRequirement</span> <span onmouseout="hideTip(event, 'fs53', 105)" onmouseover="showTip(event, 'fs53', 105)" class="i">openRequirements</span> <span class="k">with</span>
+    | <span onmouseout="hideTip(event, 'fs25', 106)" onmouseover="showTip(event, 'fs25', 106)" class="p">Some</span>(<span onmouseout="hideTip(event, 'fs54', 107)" onmouseover="showTip(event, 'fs54', 107)" class="i">currentRequirement</span>,<span onmouseout="hideTip(event, 'fs46', 108)" onmouseover="showTip(event, 'fs46', 108)" class="i">stillOpen</span>) <span class="k">-&gt;</span>
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs55', 109)" onmouseover="showTip(event, 'fs55', 109)" class="i">availableVersions</span> <span class="o">=</span>
+            <span class="k">match</span> <span onmouseout="hideTip(event, 'fs39', 110)" onmouseover="showTip(event, 'fs39', 110)" class="f">getSelectedPackageVersion</span> <span onmouseout="hideTip(event, 'fs54', 111)" onmouseover="showTip(event, 'fs54', 111)" class="i">currentRequirement</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 112)" onmouseover="showTip(event, 'fs17', 112)" class="i">Name</span> <span onmouseout="hideTip(event, 'fs40', 113)" onmouseover="showTip(event, 'fs40', 113)" class="i">selectedPackageVersions</span> <span class="k">with</span>
+            | <span onmouseout="hideTip(event, 'fs25', 114)" onmouseover="showTip(event, 'fs25', 114)" class="p">Some</span> <span onmouseout="hideTip(event, 'fs36', 115)" onmouseover="showTip(event, 'fs36', 115)" class="i">version</span> <span class="k">-&gt;</span>
+                <span class="c">// we already selected a version so we can&#39;t pick a different</span>
+                [<span onmouseout="hideTip(event, 'fs36', 116)" onmouseover="showTip(event, 'fs36', 116)" class="i">version</span>]
+            | <span onmouseout="hideTip(event, 'fs42', 117)" onmouseover="showTip(event, 'fs42', 117)" class="p">None</span> <span class="k">-&gt;</span>
+                <span class="c">// we didn&#39;t select a version yet so all versions are possible</span>
+                <span onmouseout="hideTip(event, 'fs28', 118)" onmouseover="showTip(event, 'fs28', 118)" class="f">getAllVersionsFromNuget</span> <span onmouseout="hideTip(event, 'fs54', 119)" onmouseover="showTip(event, 'fs54', 119)" class="i">currentRequirement</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 120)" onmouseover="showTip(event, 'fs17', 120)" class="i">Name</span>
+
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs56', 121)" onmouseover="showTip(event, 'fs56', 121)" class="i">compatibleVersions</span> <span class="o">=</span>
+            <span class="c">// consider only versions, which match the current requirement</span>
+            <span onmouseout="hideTip(event, 'fs55', 122)" onmouseover="showTip(event, 'fs55', 122)" class="i">availableVersions</span>
+            <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs57', 123)" onmouseover="showTip(event, 'fs57', 123)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs58', 124)" onmouseover="showTip(event, 'fs58', 124)" class="f">filter</span> (<span onmouseout="hideTip(event, 'fs30', 125)" onmouseover="showTip(event, 'fs30', 125)" class="f">isInRange</span> <span onmouseout="hideTip(event, 'fs54', 126)" onmouseover="showTip(event, 'fs54', 126)" class="i">currentRequirement</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs59', 127)" onmouseover="showTip(event, 'fs59', 127)" class="i">VersionRequirement</span>)
+
+        <span class="k">let</span> <span onmouseout="hideTip(event, 'fs60', 128)" onmouseover="showTip(event, 'fs60', 128)" class="i">sortedVersions</span> <span class="o">=</span>
+            <span class="k">match</span> <span onmouseout="hideTip(event, 'fs54', 129)" onmouseover="showTip(event, 'fs54', 129)" class="i">currentRequirement</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs61', 130)" onmouseover="showTip(event, 'fs61', 130)" class="i">ResolverStrategy</span> <span class="k">with</span>
+            | <span onmouseout="hideTip(event, 'fs13', 131)" onmouseover="showTip(event, 'fs13', 131)" class="t">ResolverStrategy</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs14', 132)" onmouseover="showTip(event, 'fs14', 132)" class="p">Max</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs57', 133)" onmouseover="showTip(event, 'fs57', 133)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs62', 134)" onmouseover="showTip(event, 'fs62', 134)" class="f">sort</span> <span onmouseout="hideTip(event, 'fs56', 135)" onmouseover="showTip(event, 'fs56', 135)" class="i">compatibleVersions</span> <span class="o">|&gt;</span> <span onmouseout="hideTip(event, 'fs57', 136)" onmouseover="showTip(event, 'fs57', 136)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs63', 137)" onmouseover="showTip(event, 'fs63', 137)" class="f">rev</span>
+            | <span onmouseout="hideTip(event, 'fs13', 138)" onmouseover="showTip(event, 'fs13', 138)" class="t">ResolverStrategy</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs15', 139)" onmouseover="showTip(event, 'fs15', 139)" class="p">Min</span> <span class="k">-&gt;</span> <span onmouseout="hideTip(event, 'fs57', 140)" onmouseover="showTip(event, 'fs57', 140)" class="t">List</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs62', 141)" onmouseover="showTip(event, 'fs62', 141)" class="f">sort</span> <span onmouseout="hideTip(event, 'fs56', 142)" onmouseover="showTip(event, 'fs56', 142)" class="i">compatibleVersions</span>
+        
+        <span class="k">let</span> <span class="k">mutable</span> <span onmouseout="hideTip(event, 'fs64', 143)" onmouseover="showTip(event, 'fs64', 143)" class="v">conflictState</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs48', 144)" onmouseover="showTip(event, 'fs48', 144)" class="t">Resolution</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs50', 145)" onmouseover="showTip(event, 'fs50', 145)" class="p">Conflict</span>(<span onmouseout="hideTip(event, 'fs46', 146)" onmouseover="showTip(event, 'fs46', 146)" class="i">stillOpen</span>)
+
+        <span class="k">for</span> <span onmouseout="hideTip(event, 'fs65', 147)" onmouseover="showTip(event, 'fs65', 147)" class="i">versionToExplore</span> <span class="k">in</span> <span onmouseout="hideTip(event, 'fs60', 148)" onmouseover="showTip(event, 'fs60', 148)" class="i">sortedVersions</span> <span class="k">do</span>
+            <span class="k">match</span> <span onmouseout="hideTip(event, 'fs64', 149)" onmouseover="showTip(event, 'fs64', 149)" class="v">conflictState</span> <span class="k">with</span>
+            | <span onmouseout="hideTip(event, 'fs48', 150)" onmouseover="showTip(event, 'fs48', 150)" class="t">Resolution</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs50', 151)" onmouseover="showTip(event, 'fs50', 151)" class="p">Conflict</span> _ <span class="k">-&gt;</span>
+                <span class="k">let</span> <span onmouseout="hideTip(event, 'fs44', 152)" onmouseover="showTip(event, 'fs44', 152)" class="i">packageDetails</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs34', 153)" onmouseover="showTip(event, 'fs34', 153)" class="f">getPackageDetails</span>(<span onmouseout="hideTip(event, 'fs54', 154)" onmouseover="showTip(event, 'fs54', 154)" class="i">currentRequirement</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 155)" onmouseover="showTip(event, 'fs17', 155)" class="i">Name</span>,<span onmouseout="hideTip(event, 'fs65', 156)" onmouseover="showTip(event, 'fs65', 156)" class="i">versionToExplore</span>)
+                
+                <span onmouseout="hideTip(event, 'fs64', 157)" onmouseover="showTip(event, 'fs64', 157)" class="v">conflictState</span> <span class="o">&lt;-</span> 
+                    <span onmouseout="hideTip(event, 'fs51', 158)" onmouseover="showTip(event, 'fs51', 158)" class="f">step</span>(<span onmouseout="hideTip(event, 'fs24', 159)" onmouseover="showTip(event, 'fs24', 159)" class="t">Set</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs66', 160)" onmouseover="showTip(event, 'fs66', 160)" class="f">add</span> <span onmouseout="hideTip(event, 'fs44', 161)" onmouseover="showTip(event, 'fs44', 161)" class="i">packageDetails</span> <span onmouseout="hideTip(event, 'fs40', 162)" onmouseover="showTip(event, 'fs40', 162)" class="i">selectedPackageVersions</span>,
+                         <span onmouseout="hideTip(event, 'fs24', 163)" onmouseover="showTip(event, 'fs24', 163)" class="t">Set</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs66', 164)" onmouseover="showTip(event, 'fs66', 164)" class="f">add</span> <span onmouseout="hideTip(event, 'fs54', 165)" onmouseover="showTip(event, 'fs54', 165)" class="i">currentRequirement</span> <span onmouseout="hideTip(event, 'fs52', 166)" onmouseover="showTip(event, 'fs52', 166)" class="i">closedRequirements</span>,
+                         <span onmouseout="hideTip(event, 'fs43', 167)" onmouseover="showTip(event, 'fs43', 167)" class="f">addDependenciesToOpenSet</span>(<span onmouseout="hideTip(event, 'fs44', 168)" onmouseover="showTip(event, 'fs44', 168)" class="i">packageDetails</span>,<span onmouseout="hideTip(event, 'fs52', 169)" onmouseover="showTip(event, 'fs52', 169)" class="i">closedRequirements</span>,<span onmouseout="hideTip(event, 'fs46', 170)" onmouseover="showTip(event, 'fs46', 170)" class="i">stillOpen</span>))
+            | <span onmouseout="hideTip(event, 'fs48', 171)" onmouseover="showTip(event, 'fs48', 171)" class="t">Resolution</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs49', 172)" onmouseover="showTip(event, 'fs49', 172)" class="p">Ok</span> _ <span class="k">-&gt;</span> ()
+
+        <span onmouseout="hideTip(event, 'fs64', 173)" onmouseover="showTip(event, 'fs64', 173)" class="v">conflictState</span>
+    | <span onmouseout="hideTip(event, 'fs42', 174)" onmouseover="showTip(event, 'fs42', 174)" class="p">None</span> <span class="k">-&gt;</span>
+        <span class="c">// we are done - return the selected versions</span>
+        <span onmouseout="hideTip(event, 'fs48', 175)" onmouseover="showTip(event, 'fs48', 175)" class="t">Resolution</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs49', 176)" onmouseover="showTip(event, 'fs49', 176)" class="p">Ok</span>(<span onmouseout="hideTip(event, 'fs40', 177)" onmouseover="showTip(event, 'fs40', 177)" class="i">selectedPackageVersions</span>)
+   
+</code></pre></td>
+</tr>
+</table>
+<h3><a name="Sorting-package-requirements" class="anchor" href="#Sorting-package-requirements">Sorting package requirements</a></h3>
+<p>In order to make progress in the search tree the algorithm needs to determine the next package.
+Paket uses a heuristic, which tries to process packages with small version ranges and high conflict potential first.
+Therefore, it orders the requirements based on:</p>
+<ul>
+<li>Is the <a href="nuget-dependencies.html#Use-exactly-this-version-constraint">version pinned</a>?</li>
+<li>Is it a direct requirement coming from the dependencies file?</li>
+<li>Is the <a href="dependencies-file.html#Strategy-option">resolver strategy</a> <code>Min</code> or <code>Max</code>?</li>
+<li>How big is the current <a href="resolver.html#Package-conflict-boost">package specific boost factor</a>?</li>
+<li>How big is the specified version range?</li>
+<li>The package name (alphabetically) as a tie breaker.</li>
+</ul>
+<h3><a name="Package-conflict-boost" class="anchor" href="#Package-conflict-boost">Package conflict boost</a></h3>
+<p>Whenever Paket encounters a package version conflict in the search tree it increases a boost factor for the involved packages.
+This heuristic influences the <a href="resolver.html#Sorting-package-requirements">package evaluation order</a> and forces the resolver to deal with conflicts much earlier in the search tree.</p>
+<h2><a name="Branch-and-bound" class="anchor" href="#Branch-and-bound">Branch and bound</a></h2>
+<p>Every known resolution conflict is stored in a HashSet. At every step Paket will always check if the current requirement set (union of <em>open</em> requirements and <em>closed</em> requirements) is
+a superset of a known conflict. In this case Paket can stop evaluating that part of the search tree.</p>
+<h2><a name="Caching-and-lazy-evaluation" class="anchor" href="#Caching-and-lazy-evaluation">Caching and lazy evaluation</a></h2>
+<p>Since HTTP requests to NuGet are very expensive Paket tries to reduce these calls as much as possible:</p>
+<ul>
+<li>The function <code>getAllVersionsFromNuget</code> will call the NuGet API at most once per package and Paket run.</li>
+<li>The function <code>getPackageDetails</code> will only call the NuGet API if package details are not found in the RAM or on disk.</li>
+</ul>
+<p>The second caching improvement means that subsequent runs of <code>paket update</code> can get faster since package details are already stored on disk.</p>
+<h2><a name="Error-reporting" class="anchor" href="#Error-reporting">Error reporting</a></h2>
+<p>If the resolver can't find a valid resolution, then it needs to report an error to the user.
+Since the search tree can be very large and might contain lots of different kinds of failures, reporting a good error message is difficult.
+Paket will only report the last conflict that it can't resolve and also some information about the origin of this conflict.</p>
+<p>If you need more information you can try the verbose mode by using the <code>-v</code> parameter.</p>
+<h2><a name="Further-reading" class="anchor" href="#Further-reading">Further reading</a></h2>
+<ul>
+<li><a href="http://journals.cambridge.org/action/displayAbstract?fromPage=online&amp;aid=83363&amp;fileId=S0956796801004051">Modular lazy search for Constraint Satisfaction Problems</a> by T. Nordin and A. Tolmach (<a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.34.4704&amp;rep=rep1&amp;type=pdf">PDF</a>)</li>
+<li><a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.45.2528">On The Forward Checking Algorithm</a> by F. Bacchus and A. Grove (<a href="http://www.cs.toronto.edu/~fbacchus/Papers/BGCP95.pdf">PDF</a>)</li>
+<li><a href="http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.52.6526">Structuring Depth-First Search Algorithms in Haskell</a> by D. King and J. Launchbury (<a href="http://galois.com/wp-content/uploads/2014/08/pub_JL_StructuringDFSAlgorithms.pdf">PDF</a>)</li>
+<li><a href="http://www.well-typed.com/blog/2015/03/qualified-goals/">Qualified Goals in the Cabal Solver</a> (<a href="https://vimeo.com/31846783">Video</a>)</li>
+</ul>
+
+<div class="tip" id="fs1">Multiple items<br />val string : value:&#39;T -&gt; string<br /><br />Full name: Microsoft.FSharp.Core.Operators.string<br /><br />--------------------<br />type string = System.String<br /><br />Full name: Microsoft.FSharp.Core.string</div>
+<div class="tip" id="fs2">type PackageName = string<br /><br />Full name: Resolver.PackageName</div>
+<div class="tip" id="fs3">type SemVerInfo = string<br /><br />Full name: Resolver.SemVerInfo</div>
+<div class="tip" id="fs4">type FrameworkRestrictions = FrameworkRestriction list<br /><br />Full name: Resolver.FrameworkRestrictions</div>
+<div class="tip" id="fs5">type FrameworkRestriction = string<br /><br />Full name: Resolver.FrameworkRestriction</div>
+<div class="tip" id="fs6">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
+<div class="tip" id="fs7">type VersionRequirement = string<br /><br />Full name: Resolver.VersionRequirement</div>
+<div class="tip" id="fs8">type PackageSource = string<br /><br />Full name: Resolver.PackageSource</div>
+<div class="tip" id="fs9">type ResolvedPackage = PackageName * SemVerInfo<br /><br />Full name: Resolver.ResolvedPackage</div>
+<div class="tip" id="fs10">type PackageRequirementSource =<br />&#160;&#160;| DependenciesFile of string<br />&#160;&#160;| Package of PackageName * SemVerInfo<br /><br />Full name: Resolver.PackageRequirementSource</div>
+<div class="tip" id="fs11">union case PackageRequirementSource.DependenciesFile: string -&gt; PackageRequirementSource</div>
+<div class="tip" id="fs12">union case PackageRequirementSource.Package: PackageName * SemVerInfo -&gt; PackageRequirementSource</div>
+<div class="tip" id="fs13">type ResolverStrategy =<br />&#160;&#160;| Max<br />&#160;&#160;| Min<br /><br />Full name: Resolver.ResolverStrategy</div>
+<div class="tip" id="fs14">union case ResolverStrategy.Max: ResolverStrategy</div>
+<div class="tip" id="fs15">union case ResolverStrategy.Min: ResolverStrategy</div>
+<div class="tip" id="fs16">type PackageRequirement =<br />&#160;&#160;{Name: PackageName;<br />&#160;&#160;&#160;VersionRequirement: VersionRequirement;<br />&#160;&#160;&#160;ResolverStrategy: ResolverStrategy;<br />&#160;&#160;&#160;Parent: PackageRequirementSource;<br />&#160;&#160;&#160;Sources: PackageSource list;}<br /><br />Full name: Resolver.PackageRequirement</div>
+<div class="tip" id="fs17">PackageRequirement.Name: PackageName</div>
+<div class="tip" id="fs18">Multiple items<br />PackageRequirement.VersionRequirement: VersionRequirement<br /><br />--------------------<br />type VersionRequirement = string<br /><br />Full name: Resolver.VersionRequirement</div>
+<div class="tip" id="fs19">Multiple items<br />PackageRequirement.ResolverStrategy: ResolverStrategy<br /><br />--------------------<br />type ResolverStrategy =<br />&#160;&#160;| Max<br />&#160;&#160;| Min<br /><br />Full name: Resolver.ResolverStrategy</div>
+<div class="tip" id="fs20">PackageRequirement.Parent: PackageRequirementSource</div>
+<div class="tip" id="fs21">PackageRequirement.Sources: PackageSource list</div>
+<div class="tip" id="fs22">val selectNextRequirement : xs:Set&lt;PackageRequirement&gt; -&gt; (PackageRequirement * Set&lt;PackageRequirement&gt;) option<br /><br />Full name: Resolver.selectNextRequirement<br /><em><br /><br />&#160;Orders the requirement set with a heuristic and selects the next requirement</em></div>
+<div class="tip" id="fs23">val xs : Set&lt;PackageRequirement&gt;</div>
+<div class="tip" id="fs24">Multiple items<br />module Set<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type Set&lt;&#39;T (requires comparison)&gt; =<br />&#160;&#160;interface IComparable<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;interface ICollection&lt;&#39;T&gt;<br />&#160;&#160;new : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt;<br />&#160;&#160;member Add : value:&#39;T -&gt; Set&lt;&#39;T&gt;<br />&#160;&#160;member Contains : value:&#39;T -&gt; bool<br />&#160;&#160;override Equals : obj -&gt; bool<br />&#160;&#160;member IsProperSubsetOf : otherSet:Set&lt;&#39;T&gt; -&gt; bool<br />&#160;&#160;member IsProperSupersetOf : otherSet:Set&lt;&#39;T&gt; -&gt; bool<br />&#160;&#160;...<br /><br />Full name: Microsoft.FSharp.Collections.Set&lt;_&gt;<br /><br />--------------------<br />new : elements:seq&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt;</div>
+<div class="tip" id="fs25">union case Option.Some: Value: &#39;T -&gt; Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs26">module Seq<br /><br />from Microsoft.FSharp.Collections</div>
+<div class="tip" id="fs27">val head : source:seq&lt;&#39;T&gt; -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Collections.Seq.head</div>
+<div class="tip" id="fs28">val getAllVersionsFromNuget : x:PackageName -&gt; SemVerInfo list<br /><br />Full name: Resolver.getAllVersionsFromNuget<br /><em><br /><br />&#160;Calls the NuGet API and retrieves all versions for a package</em></div>
+<div class="tip" id="fs29">val x : PackageName</div>
+<div class="tip" id="fs30">val isInRange : vr:VersionRequirement -&gt; v:SemVerInfo -&gt; bool<br /><br />Full name: Resolver.isInRange<br /><em><br /><br />&#160;Checks if the given version is in the specified verion range</em></div>
+<div class="tip" id="fs31">val vr : VersionRequirement</div>
+<div class="tip" id="fs32">val v : SemVerInfo</div>
+<div class="tip" id="fs33">type bool = System.Boolean<br /><br />Full name: Microsoft.FSharp.Core.bool</div>
+<div class="tip" id="fs34">val getPackageDetails : name:PackageName * version:SemVerInfo -&gt; ResolvedPackage<br /><br />Full name: Resolver.getPackageDetails</div>
+<div class="tip" id="fs35">val name : PackageName</div>
+<div class="tip" id="fs36">val version : SemVerInfo</div>
+<div class="tip" id="fs37">module Unchecked<br /><br />from Microsoft.FSharp.Core.Operators</div>
+<div class="tip" id="fs38">val defaultof&lt;&#39;T&gt; : &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.Unchecked.defaultof</div>
+<div class="tip" id="fs39">val getSelectedPackageVersion : name:PackageName -&gt; selectedPackageVersions:Set&lt;ResolvedPackage&gt; -&gt; SemVerInfo option<br /><br />Full name: Resolver.getSelectedPackageVersion<br /><em><br /><br />&#160;Looks into the cache if the algorithm already selected that package</em></div>
+<div class="tip" id="fs40">val selectedPackageVersions : Set&lt;ResolvedPackage&gt;</div>
+<div class="tip" id="fs41">type &#39;T option = Option&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Core.option&lt;_&gt;</div>
+<div class="tip" id="fs42">union case Option.None: Option&lt;&#39;T&gt;</div>
+<div class="tip" id="fs43">val addDependenciesToOpenSet : packageDetails:ResolvedPackage * closed:Set&lt;PackageRequirement&gt; * stillOpen:Set&lt;PackageRequirement&gt; -&gt; Set&lt;PackageRequirement&gt;<br /><br />Full name: Resolver.addDependenciesToOpenSet<br /><em><br /><br />&#160;Puts all dependencies of the package into the open set</em></div>
+<div class="tip" id="fs44">val packageDetails : ResolvedPackage</div>
+<div class="tip" id="fs45">val closed : Set&lt;PackageRequirement&gt;</div>
+<div class="tip" id="fs46">val stillOpen : Set&lt;PackageRequirement&gt;</div>
+<div class="tip" id="fs47">val empty&lt;&#39;T (requires comparison)&gt; : Set&lt;&#39;T&gt; (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.Set.empty</div>
+<div class="tip" id="fs48">type Resolution =<br />&#160;&#160;| Ok of Set&lt;ResolvedPackage&gt;<br />&#160;&#160;| Conflict of Set&lt;PackageRequirement&gt;<br /><br />Full name: Resolver.Resolution</div>
+<div class="tip" id="fs49">union case Resolution.Ok: Set&lt;ResolvedPackage&gt; -&gt; Resolution</div>
+<div class="tip" id="fs50">union case Resolution.Conflict: Set&lt;PackageRequirement&gt; -&gt; Resolution</div>
+<div class="tip" id="fs51">val step : selectedPackageVersions:Set&lt;ResolvedPackage&gt; * closedRequirements:Set&lt;PackageRequirement&gt; * openRequirements:Set&lt;PackageRequirement&gt; -&gt; Resolution<br /><br />Full name: Resolver.step</div>
+<div class="tip" id="fs52">val closedRequirements : Set&lt;PackageRequirement&gt;</div>
+<div class="tip" id="fs53">val openRequirements : Set&lt;PackageRequirement&gt;</div>
+<div class="tip" id="fs54">val currentRequirement : PackageRequirement</div>
+<div class="tip" id="fs55">val availableVersions : SemVerInfo list</div>
+<div class="tip" id="fs56">val compatibleVersions : SemVerInfo list</div>
+<div class="tip" id="fs57">Multiple items<br />module List<br /><br />from Microsoft.FSharp.Collections<br /><br />--------------------<br />type List&lt;&#39;T&gt; =<br />&#160;&#160;| ( [] )<br />&#160;&#160;| ( :: ) of Head: &#39;T * Tail: &#39;T list<br />&#160;&#160;interface IEnumerable<br />&#160;&#160;interface IEnumerable&lt;&#39;T&gt;<br />&#160;&#160;member GetSlice : startIndex:int option * endIndex:int option -&gt; &#39;T list<br />&#160;&#160;member Head : &#39;T<br />&#160;&#160;member IsEmpty : bool<br />&#160;&#160;member Item : index:int -&gt; &#39;T with get<br />&#160;&#160;member Length : int<br />&#160;&#160;member Tail : &#39;T list<br />&#160;&#160;static member Cons : head:&#39;T * tail:&#39;T list -&gt; &#39;T list<br />&#160;&#160;static member Empty : &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List&lt;_&gt;</div>
+<div class="tip" id="fs58">val filter : predicate:(&#39;T -&gt; bool) -&gt; list:&#39;T list -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.filter</div>
+<div class="tip" id="fs59">PackageRequirement.VersionRequirement: VersionRequirement</div>
+<div class="tip" id="fs60">val sortedVersions : SemVerInfo list</div>
+<div class="tip" id="fs61">PackageRequirement.ResolverStrategy: ResolverStrategy</div>
+<div class="tip" id="fs62">val sort : list:&#39;T list -&gt; &#39;T list (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.List.sort</div>
+<div class="tip" id="fs63">val rev : list:&#39;T list -&gt; &#39;T list<br /><br />Full name: Microsoft.FSharp.Collections.List.rev</div>
+<div class="tip" id="fs64">val mutable conflictState : Resolution</div>
+<div class="tip" id="fs65">val versionToExplore : SemVerInfo</div>
+<div class="tip" id="fs66">val add : value:&#39;T -&gt; set:Set&lt;&#39;T&gt; -&gt; Set&lt;&#39;T&gt; (requires comparison)<br /><br />Full name: Microsoft.FSharp.Collections.Set.add</div>
+
+        </div>
+        <div class="span3">
+          <img src="./img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="./index.html">Home page</a></li>
+            <li><a href="./getting-started.html">Getting started</a></li>
+            <li><a href="./convert-from-nuget-tutorial.html">Convert from NuGet</a></li>
+            <li><a href="./faq.html">FAQ</a></li>
+            <li><a href="./glossary.html">Glossary</a></li>
+            <li><a href="./release-notes.html">Release Notes</a></li>
+            <li><a href="./testimonials.html">Testimonials</a></li>
+            <li><a href="./license.html">License</a></li>
+
+            <li class="nav-header">Download Paket</li>
+            <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+            <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+            
+            <li class="nav-header">GitHub</li>
+            <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="./dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="./lock-file.html">paket.lock</a></li>
+            <li><a href="./references-files.html">paket.references</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./paket-folder.html">.paket folder</a></li>
+            <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
+            <li class="divider"></li>
+            <li><a href="./resolver.html">Package resolution algorithm</a></li>
+            <li><a href="./groups.html">Dependency Groups</a></li>
+            <li><a href="./caches.html">Additional Caches</a></li>
+            <li><a href="./nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="./git-dependencies.html">Git dependencies</a></li>
+            <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
+            <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li class="divider"></li>
+            <li><a href="./installation.html">Installation</a></li>
+            <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
+            <li><a href="./editor-support.html">Editor support</a></li>
+            <li class="divider"></li>
+            <li><a href="./reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="./paket-add.html">paket add</a></li>
+            <li><a href="./paket-auto-restore.html">paket auto-restore</a></li>
+            <li><a href="./paket-clear-cache.html">paket clear-cache</a></li>
+            <li><a href="./paket-config.html">paket config</a></li>
+            <li><a href="./paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+            <li><a href="./paket-find-refs.html">paket find-refs</a></li>
+            <li><a href="./paket-find-packages.html">paket find-packages</a></li>
+            <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-install.html">paket install</a></li>
+            <li><a href="./paket-outdated.html">paket outdated</a></li>
+            <li><a href="./paket-pack.html">paket pack</a></li>
+            <li><a href="./paket-push.html">paket push</a></li>
+            <li><a href="./paket-remove.html">paket remove</a></li>
+            <li><a href="./paket-restore.html">paket restore</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-show-groups.html">paket show-groups</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-update.html">paket update</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>

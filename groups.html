@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <title>Dependency Groups
+</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+
+    <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
+    <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
+    <script src="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/js/bootstrap.min.js"></script>
+    <link href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.2.1/css/bootstrap-combined.min.css" rel="stylesheet"/>
+
+    <link type="text/css" rel="stylesheet" href="./content/style.css" />
+    <script type="text/javascript" src="./content/tips.js"></script>
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <style type="text/css">
+      table.pre td.lines {
+        vertical-align: top;
+      }
+      pre.fssnip code[lang=batchfile],
+      pre.fssnip code[lang=msh] {
+        display: inline-block;
+        white-space: pre-wrap;       /* CSS 3 */
+        white-space: -moz-pre-wrap;  /* Mozilla, since 1999 */
+        white-space: -pre-wrap;      /* Opera 4-6 */
+        white-space: -o-pre-wrap;    /* Opera 7 */
+        word-wrap: break-word;       /* Internet Explorer 5.5+ */
+        word-break: keep-all;
+        padding-left: 2em;
+        text-indent: -2em;
+      }
+    </style>
+    <script type="text/javascript">
+      $(function() {
+        $("code[lang='batchfile'], code[lang='msh']").each(function() {
+          $(this).html($(this).html().replace(/ &lt;/g, "&nbsp;&lt;"))
+        })
+      })
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="masthead">
+        <ul class="nav nav-pills pull-right">
+          <li><a href="http://github.com/fsprojects/Paket">github page</a></li>
+        </ul>
+        <h3 class="muted"><a href="./index.html">Paket</a></h3>
+      </div>
+      <hr />
+      <div class="row">
+        <div class="span9" id="main">
+          
+<h1><a name="Dependency-Groups" class="anchor" href="#Dependency-Groups">Dependency Groups</a></h1>
+<p><em>Groups</em> allow for better organization of dependencies and also enable <a href="groups.html#Conflict-resolution-with-groups">easier conflict resolution</a>.
+Let's consider a small example:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Newtonsoft.Json
+<span class="k">nuget</span> UnionArgParser
+<span class="k">nuget</span> FSharp.Core
+
+<span class="k">github</span> forki/FsUnit FsUnit.fs
+<span class="k">github</span> fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
+<span class="k">github</span> fsprojects/Chessie src/Chessie/ErrorHandling.fs
+
+<span class="k">group</span> Build
+
+    <span class="k">source</span> https://nuget.org/api/v2
+
+    <span class="k">nuget</span> FAKE
+    <span class="k">nuget</span> FSharp.Formatting
+    <span class="k">nuget</span> ILRepack
+
+    <span class="k">github</span> fsharp/FAKE modules/Octokit/Octokit.fsx
+
+<span class="k">group</span> Test
+
+    <span class="k">source</span> https://nuget.org/api/v2
+
+    <span class="k">nuget</span> NUnit.Runners
+    <span class="k">nuget</span> NUnit
+</code></pre></td></tr></table>
+<p>As you can see we have 3 different groups in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.
+The first one is the default group (internally called "Main") and the other two groups contain dependencies that are used for <code>Build</code> and <code>Test</code>.</p>
+<blockquote>Notice the indentation in groups is optional.</blockquote>
+<p>After <a href="paket-install.html"><code>paket install</code></a> the generated <a href="lock-file.html"><code>paket.lock</code> file</a> looks like the following:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+<span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
+<span class="l">14: </span>
+<span class="l">15: </span>
+<span class="l">16: </span>
+<span class="l">17: </span>
+<span class="l">18: </span>
+<span class="l">19: </span>
+<span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
+<span class="l">23: </span>
+<span class="l">24: </span>
+<span class="l">25: </span>
+<span class="l">26: </span>
+<span class="l">27: </span>
+<span class="l">28: </span>
+<span class="l">29: </span>
+<span class="l">30: </span>
+<span class="l">31: </span>
+<span class="l">32: </span>
+<span class="l">33: </span>
+<span class="l">34: </span>
+<span class="l">35: </span>
+<span class="l">36: </span>
+<span class="l">37: </span>
+<span class="l">38: </span>
+<span class="l">39: </span>
+<span class="l">40: </span>
+<span class="l">41: </span>
+<span class="l">42: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
+  <span class="k">remote</span>: https://nuget.org/api/v2
+    FSharp.Core (<span class="n">4.0.0.1</span>)
+    Newtonsoft.Json (<span class="n">7.0.1</span>)
+    UnionArgParser (<span class="n">0.6.3</span>)
+<span class="k">GITHUB</span>
+  <span class="k">remote</span>: forki/FsUnit
+    FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
+  <span class="k">remote</span>: fsharp/FAKE
+    src/app/FakeLib/Globbing/Globbing.fs (991bea743c5d5e8eec0defc7338a89281ed3f51a)
+  <span class="k">remote</span>: fsprojects/Chessie
+    src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
+
+<span class="k">GROUP</span> Build
+<span class="k">NUGET</span>
+  <span class="k">remote</span>: https://nuget.org/api/v2
+    FAKE (<span class="n">4.3.1</span>)
+    FSharp.Compiler.Service (<span class="n">1.4.0.1</span>)
+    FSharp.Formatting (<span class="n">2.10.0</span>)
+      FSharp.Compiler.Service (<span class="o">&gt;=</span> <span class="n">0.0.87</span>)
+      FSharpVSPowerTools.Core (<span class="n">1.8.0</span>)
+    FSharpVSPowerTools.Core (<span class="n">1.8.0</span>)
+      FSharp.Compiler.Service (<span class="o">&gt;=</span> <span class="n">0.0.87</span>)
+    ILRepack (<span class="n">2.0.5</span>)
+    Microsoft.Bcl (<span class="n">1.1.10</span>)
+      Microsoft.Bcl.Build (<span class="o">&gt;=</span> <span class="n">1.0.14</span>)
+    Microsoft.Bcl.Build (<span class="n">1.0.21</span>)
+    Microsoft.Net.Http (<span class="n">2.2.29</span>)
+      Microsoft.Bcl (<span class="o">&gt;=</span> <span class="n">1.1.10</span>)
+      Microsoft.Bcl.Build (<span class="o">&gt;=</span> <span class="n">1.0.14</span>)
+    Octokit (<span class="n">0.14.0</span>)
+      Microsoft.Net.Http
+<span class="k">GITHUB</span>
+  <span class="k">remote</span>: fsharp/FAKE
+    modules/Octokit/Octokit.fsx (991bea743c5d5e8eec0defc7338a89281ed3f51a)
+      Octokit
+
+<span class="k">GROUP</span> Test
+<span class="k">NUGET</span>
+  <span class="k">remote</span>: https://nuget.org/api/v2
+    NUnit (<span class="n">2.6.4</span>)
+    NUnit.Runners (<span class="n">2.6.4</span>)
+</code></pre></td></tr></table>
+<p>As you can see every group is listed separately and it's possible to let Paket <a href="paket-restore.html">restore only specific groups</a>.
+If you want to reference dependencies from projects you can do this via the following syntax in the <a href="references-files.html"><code>paket.references</code> file.</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">FSharp.Core
+
+<span class="k">group</span> Test
+  NUnit
+  NUnit.Runners
+</code></pre></td></tr></table>
+<h2><a name="Conflict-resolution-with-groups" class="anchor" href="#Conflict-resolution-with-groups">Conflict resolution with groups</a></h2>
+<p>Paket's group feature allows you to use multiple versions of the same package. Let consider the following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Newtonsoft.Json
+
+<span class="k">group</span> Legacy
+    <span class="k">source</span> https://nuget.org/api/v2
+
+    <span class="k">nuget</span> Newtonsoft.Json <span class="o">~&gt;</span> <span class="n">6</span>
+</code></pre></td></tr></table>
+<p>Every group will be resolved independently to the following <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
+  <span class="k">remote</span>: https://nuget.org/api/v2
+    Newtonsoft.Json (<span class="n">7.0.1</span>)
+
+<span class="k">GROUP</span> Legacy
+<span class="k">NUGET</span>
+  <span class="k">remote</span>: https://nuget.org/api/v2
+    Newtonsoft.Json (<span class="n">6.0.8</span>)
+</code></pre></td></tr></table>
+<p>Paket is downloading both version. You will get <code>packages/Newtonsoft.Json</code> with version 7.0.1 and <code>packages/legacy/Newtonsoft.Json</code> with the 6.0.8 bits.
+In your  <a href="references-files.html"><code>paket.references</code> file.</a> you can now decide which version you want to use:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">group</span> Legacy
+Newtonsoft.Json <span class="c">// uses 6.0.8</span>
+</code></pre></td></tr></table>
+
+
+        </div>
+        <div class="span3">
+          <img src="./img/logo.png" alt="F# Project" style="width:150px;margin:10px" />
+          <ul class="nav nav-list" id="menu" style="margin-top: 20px;">
+            <li class="nav-header">Paket</li>
+            <li><a href="./index.html">Home page</a></li>
+            <li><a href="./getting-started.html">Getting started</a></li>
+            <li><a href="./convert-from-nuget-tutorial.html">Convert from NuGet</a></li>
+            <li><a href="./faq.html">FAQ</a></li>
+            <li><a href="./glossary.html">Glossary</a></li>
+            <li><a href="./release-notes.html">Release Notes</a></li>
+            <li><a href="./testimonials.html">Testimonials</a></li>
+            <li><a href="./license.html">License</a></li>
+
+            <li class="nav-header">Download Paket</li>
+            <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
+            <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
+            
+            <li class="nav-header">GitHub</li>
+            <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+
+            <li class="nav-header">Documentation</li>
+            <li><a href="./dependencies-file.html">paket.dependencies</a></li>
+            <li><a href="./lock-file.html">paket.lock</a></li>
+            <li><a href="./references-files.html">paket.references</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./paket-folder.html">.paket folder</a></li>
+            <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
+            <li class="divider"></li>
+            <li><a href="./resolver.html">Package resolution algorithm</a></li>
+            <li><a href="./groups.html">Dependency Groups</a></li>
+            <li><a href="./caches.html">Additional Caches</a></li>
+            <li><a href="./nuget-dependencies.html">NuGet dependencies</a></li>
+            <li><a href="./git-dependencies.html">Git dependencies</a></li>
+            <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
+            <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li class="divider"></li>
+            <li><a href="./installation.html">Installation</a></li>
+            <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
+            <li><a href="./editor-support.html">Editor support</a></li>
+            <li class="divider"></li>
+            <li><a href="./reference/index.html">API Reference</a></li>
+
+            <li class="nav-header">Paket commands</li>
+            <li><a href="./paket-add.html">paket add</a></li>
+            <li><a href="./paket-auto-restore.html">paket auto-restore</a></li>
+            <li><a href="./paket-clear-cache.html">paket clear-cache</a></li>
+            <li><a href="./paket-config.html">paket config</a></li>
+            <li><a href="./paket-convert-from-nuget.html">paket convert-from-nuget</a></li>
+            <li><a href="./paket-find-refs.html">paket find-refs</a></li>
+            <li><a href="./paket-find-packages.html">paket find-packages</a></li>
+            <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-install.html">paket install</a></li>
+            <li><a href="./paket-outdated.html">paket outdated</a></li>
+            <li><a href="./paket-pack.html">paket pack</a></li>
+            <li><a href="./paket-push.html">paket push</a></li>
+            <li><a href="./paket-remove.html">paket remove</a></li>
+            <li><a href="./paket-restore.html">paket restore</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-show-groups.html">paket show-groups</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-update.html">paket update</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <a href="http://github.com/fsprojects/Paket"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"/></a>
+  </body>
+</html>
