@@ -122,6 +122,7 @@
     <Compile Include="LocalOverrideSpecs.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
+    <Compile Include="RemoveSpecs.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\src\Paket.Core\Paket.Core.fsproj">
