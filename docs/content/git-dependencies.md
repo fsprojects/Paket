@@ -45,9 +45,9 @@ You can read more about the version range details in the corresponding [NuGet re
 If your referenced git repository contains a build script then Paket can execute this scipt after restore:
 
     [lang=paket]
-    git https://github.com/forki/nupkgtest.git master build:"build.cmd", OS:windows
-    git https://github.com/forki/nupkgtest.git master build:"build.sh", OS:mono
-    
+    git https://github.com/forki/nupkgtest.git master build: "build.cmd", OS: windows
+    git https://github.com/forki/nupkgtest.git master build: "build.sh", OS: mono
+
 This allows you to excute arbitray commands after restore.
 
 ## Using Git repositories as NuGet source
@@ -74,8 +74,8 @@ The generated [`paket.lock` file](lock-file.html) will look like this:
 It's also possible to [run build scripts](git-dependencies.html#Running-a-build-in-git-repositories) to create the NuGet packages:
 
     [lang=paket]
-    git https://github.com/forki/nupkgtest.git master build:"build.cmd", Packages: /source/, OS:windows
-    git https://github.com/forki/nupkgtest.git master build:"build.sh", Packages: /source/, OS:mono
+    git https://github.com/forki/nupkgtest.git master build: "build.cmd", Packages: /source/, OS: windows
+    git https://github.com/forki/nupkgtest.git master build: "build.sh", Packages: /source/, OS: mono
 
     nuget Argu
 
