@@ -20,7 +20,7 @@ NUGET
   specs:
     FAKE (4.25.4)
     FSharp.Compiler.Service (2.0.0.6)
-    FSharp.Formatting (2.14.2)
+    FSharp.Formatting (2.14.3)
       FSharp.Compiler.Service (2.0.0.6)
       FSharpVSPowerTools.Core (>= 2.3 < 2.4)
     FSharpVSPowerTools.Core (2.3)
@@ -33,11 +33,11 @@ NUGET
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
     Octokit (0.19)
-      Microsoft.Net.Http
+      Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
 GITHUB
   remote: fsharp/FAKE
   specs:
-    modules/Octokit/Octokit.fsx (3bf706bd6058733a1a034755741076b3953aaf09)
+    modules/Octokit/Octokit.fsx (8c077f35f8cd0350485109ddd1810dafe9885d1a)
       Octokit
 GROUP Test
 NUGET
