@@ -159,35 +159,23 @@ The first one is the default group (internally called "Main") and the other two 
 <span class="l">40: </span>
 <span class="l">41: </span>
 <span class="l">42: </span>
-<span class="l">43: </span>
-<span class="l">44: </span>
-<span class="l">45: </span>
-<span class="l">46: </span>
-<span class="l">47: </span>
-<span class="l">48: </span>
-<span class="l">49: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
   <span class="k">remote</span>: https://nuget.org/api/v2
-  <span class="k">specs</span>:
     FSharp.Core (<span class="n">4.0.0.1</span>)
     Newtonsoft.Json (<span class="n">7.0.1</span>)
     UnionArgParser (<span class="n">0.6.3</span>)
 <span class="k">GITHUB</span>
   <span class="k">remote</span>: forki/FsUnit
-  <span class="k">specs</span>:
     FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
   <span class="k">remote</span>: fsharp/FAKE
-  <span class="k">specs</span>:
     src/app/FakeLib/Globbing/Globbing.fs (991bea743c5d5e8eec0defc7338a89281ed3f51a)
   <span class="k">remote</span>: fsprojects/Chessie
-  <span class="k">specs</span>:
     src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
 
 <span class="k">GROUP</span> Build
 <span class="k">NUGET</span>
   <span class="k">remote</span>: https://nuget.org/api/v2
-  <span class="k">specs</span>:
     FAKE (<span class="n">4.3.1</span>)
     FSharp.Compiler.Service (<span class="n">1.4.0.1</span>)
     FSharp.Formatting (<span class="n">2.10.0</span>)
@@ -206,14 +194,12 @@ The first one is the default group (internally called "Main") and the other two 
       Microsoft.Net.Http
 <span class="k">GITHUB</span>
   <span class="k">remote</span>: fsharp/FAKE
-  <span class="k">specs</span>:
     modules/Octokit/Octokit.fsx (991bea743c5d5e8eec0defc7338a89281ed3f51a)
       Octokit
 
 <span class="k">GROUP</span> Test
 <span class="k">NUGET</span>
   <span class="k">remote</span>: https://nuget.org/api/v2
-  <span class="k">specs</span>:
     NUnit (<span class="n">2.6.4</span>)
     NUnit.Runners (<span class="n">2.6.4</span>)
 </code></pre></td></tr></table>
@@ -252,26 +238,22 @@ If you want to reference dependencies from projects you can do this via the foll
     <span class="k">nuget</span> Newtonsoft.Json <span class="o">~&gt;</span> <span class="n">6</span>
 </code></pre></td></tr></table>
 <p>Every group will be resolved independently to the following <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
   <span class="k">remote</span>: https://nuget.org/api/v2
-  <span class="k">specs</span>:
     Newtonsoft.Json (<span class="n">7.0.1</span>)
 
 <span class="k">GROUP</span> Legacy
 <span class="k">NUGET</span>
   <span class="k">remote</span>: https://nuget.org/api/v2
-  <span class="k">specs</span>:
     Newtonsoft.Json (<span class="n">6.0.8</span>)
 </code></pre></td></tr></table>
 <p>Paket is downloading both version. You will get <code>packages/Newtonsoft.Json</code> with version 7.0.1 and <code>packages/legacy/Newtonsoft.Json</code> with the 6.0.8 bits.
@@ -311,6 +293,7 @@ Newtonsoft.Json <span class="c">// uses 6.0.8</span>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
             <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -338,6 +321,7 @@ Newtonsoft.Json <span class="c">// uses 6.0.8</span>
             <li><a href="./paket-find-refs.html">paket find-refs</a></li>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
             <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>

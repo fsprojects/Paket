@@ -60,7 +60,7 @@
 <p>Adds a new package to your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket add nuget &lt;string&gt; [version &lt;string&gt;] [project &lt;string&gt;] [group &lt;string&gt;] [--force|-f] [--interactive|-i] [--hard] [--redirects] [--createnewbindingfiles] [--no-install] [--keep-major] [--keep-minor] [--keep-patch] [--touch-affected-refs]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket add nuget &lt;string&gt; [version &lt;string&gt;] [project &lt;string&gt;] [group &lt;string&gt;] [--force|-f] [--interactive|-i] [--redirects] [--createnewbindingfiles] [--clean-redirects] [--no-install] [--keep-major] [--keep-minor] [--keep-patch] [--touch-affected-refs]
 </code></pre></td></tr></table>
 <h3><a name="Options" class="anchor" href="#Options">Options:</a></h3>
 <p><code>nuget &lt;string&gt;</code>: NuGet package id.</p>
@@ -69,9 +69,9 @@
 <p><code>group &lt;string&gt;</code>: Add the package to the given group. If omited the Main group is used.</p>
 <p><code>--force [-f]</code>: Forces the download and reinstallation of all packages.</p>
 <p><code>--interactive [-i]</code>: Asks the user for every project if he or she wants to add the package to the projects's <a href="references-files.html"><code>paket.references</code> file</a>.</p>
-<p><code>--hard</code>: Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed).</p>
 <p><code>--redirects</code>: Creates binding redirects for the NuGet packages.</p>
 <p><code>--createnewbindingfiles</code>: Creates binding redirect files if needed.</p>
+<p><code>--clean-redirects</code>: Removes all binding redirects that are not specified by Paket.</p>
 <p><code>--no-install</code>: Skips paket install process (patching of csproj, fsproj, ... files) after the generation of <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
 <p><code>--keep-major</code>: Allows only updates that are not changing the major version of the NuGet packages.</p>
 <p><code>--keep-minor</code>: Allows only updates that are not changing the minor version of the NuGet packages.</p>
@@ -83,7 +83,7 @@
 <p>It's also possible to add a package to a specified project only:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">$ paket add nuget PACKAGENAME [version VERSION] [project PROJECT] [--force] [--hard]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">$ paket add nuget PACKAGENAME [version VERSION] [project PROJECT] [--force]
 </code></pre></td></tr></table>
 <p>See also <a href="paket-remove.html">paket remove</a>.</p>
 <h2><a name="Sample" class="anchor" href="#Sample">Sample</a></h2>
@@ -138,6 +138,7 @@
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
             <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -165,6 +166,7 @@
             <li><a href="./paket-find-refs.html">paket find-refs</a></li>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
             <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
