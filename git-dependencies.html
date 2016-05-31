@@ -126,12 +126,16 @@ If you don't have git installed then Paket still allows you to <a href="github-d
 <span class="l">4: </span>
 <span class="l">5: </span>
 <span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
   <span class="k">remote</span>: paket-files/github.com/forki/nupkgtest/source
+  <span class="k">specs</span>:
     Argu (<span class="n">1.1.3</span>)
 <span class="k">GIT</span>
   <span class="k">remote</span>: https://github.com/forki/nupkgtest.git
+  <span class="k">specs</span>:
      (05366e390e7552a569f3f328a0f3094249f3b93b)
 </code></pre></td></tr></table>
 <p>It's also possible to <a href="git-dependencies.html#Running-a-build-in-git-repositories">run build scripts</a> to create the NuGet packages:</p>
@@ -175,7 +179,6 @@ If you don't have git installed then Paket still allows you to <a href="github-d
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
             <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -203,7 +206,6 @@ If you don't have git installed then Paket still allows you to <a href="github-d
             <li><a href="./paket-find-refs.html">paket find-refs</a></li>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
-            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
             <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>

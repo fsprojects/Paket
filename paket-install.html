@@ -60,7 +60,7 @@
 <p>Download the dependencies specified by the <a href="dependencies-file.html"><code>paket.dependencies</code></a> or <a href="lock-file.html"><code>paket.lock</code> file</a> into the <code>packages/</code> directory and update projects.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket install [--force|-f] [--redirects] [--createnewbindingfiles] [--clean-redirects] [--keep-major] [--keep-minor] [--keep-patch] [--only-referenced] [--touch-affected-refs]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket install [--force|-f] [--hard] [--redirects] [--createnewbindingfiles] [--keep-major] [--keep-minor] [--keep-patch] [--only-referenced] [--touch-affected-refs]
 </code></pre></td></tr></table>
 <p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
@@ -71,9 +71,9 @@ new versions of dependencies that have been modified in <a href="dependencies-fi
 and use the version from <a href="lock-file.html"><code>paket.lock</code></a> for all other dependencies.</p>
 <h3><a name="Options" class="anchor" href="#Options">Options:</a></h3>
 <p><code>--force [-f]</code>: Forces the download and reinstallation of all packages.</p>
+<p><code>--hard</code>: Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed).</p>
 <p><code>--redirects</code>: Creates binding redirects for the NuGet packages.</p>
 <p><code>--createnewbindingfiles</code>: Creates binding redirect files if needed.</p>
-<p><code>--clean-redirects</code>: Removes all binding redirects that are not specified by Paket.</p>
 <p><code>--keep-major</code>: Allows only updates that are not changing the major version of the NuGet packages.</p>
 <p><code>--keep-minor</code>: Allows only updates that are not changing the minor version of the NuGet packages.</p>
 <p><code>--keep-patch</code>: Allows only updates that are not changing the patch version of the NuGet packages.</p>
@@ -108,7 +108,6 @@ and use the version from <a href="lock-file.html"><code>paket.lock</code></a> fo
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
             <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -136,7 +135,6 @@ and use the version from <a href="lock-file.html"><code>paket.lock</code></a> fo
             <li><a href="./paket-find-refs.html">paket find-refs</a></li>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
-            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
             <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
