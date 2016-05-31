@@ -48,34 +48,48 @@ let private extractPackage caches package root source groupName version includeV
     }
 
 /// Downloads and extracts a package.
-let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPackage) = 
+let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
     async { 
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
-        match package.Source with
-        | NuGetV2 _ | NuGetV3 _ -> 
-            let source = 
-                let normalized = package.Source.Url |> normalizeFeedUrl
-                sources 
-                    |> List.tryPick (fun source -> 
-                            match source with
-                            | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some(source)
-                            | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some(source)
-                            | _ -> None)
-                |> function
-                   | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file" package.Source.Url package.Name
-                   | Some s -> s 
+        let targetDir = getTargetFolder root groupName package.Name package.Version includeVersionInPath
+        let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
+        let force = if (localOverride || overridenFile.Exists) then true else force
+        let! result = async {
+            match package.Source with
+            | NuGetV2 _ | NuGetV3 _ -> 
+                let source = 
+                    let normalized = package.Source.Url |> normalizeFeedUrl
+                    sources 
+                        |> List.tryPick (fun source -> 
+                                match source with
+                                | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some(source)
+                                | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some(source)
+                                | _ -> None)
+                    |> function
+                       | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file" package.Source.Url package.Name
+                       | Some s -> s 
 
-            return! extractPackage caches package root source groupName v includeVersionInPath force
-        | LocalNuGet(path,_) ->
-            let path = Utils.normalizeLocalPath path
-            let di = Utils.getDirectoryInfo path root
-            let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
+                return! extractPackage caches package root source groupName v includeVersionInPath force
+            | LocalNuGet(path,_) ->
+                let path = Utils.normalizeLocalPath path
+                let di = Utils.getDirectoryInfo path root
+                let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
 
-            CopyToCaches force caches nupkg.FullName
+                CopyToCaches force caches nupkg.FullName
 
-            let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
-            return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+                let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
+                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+        }
+
+        // manipulate overridenFile after package extraction
+        match localOverride, overridenFile.Exists with
+        | true , false -> overridenFile.Create().Dispose()
+        | false, true  -> overridenFile.Delete()
+        | true , true
+        | false, false -> ()
+
+        return result
     }
 
 /// Restores the given dependencies from the lock file.
@@ -84,8 +98,7 @@ let internal restore (root, groupName, sources, caches, force, lockFile : LockFi
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
         let! _ = lockFile.Groups.[groupName].Resolution
                  |> Map.filter (fun name _ -> packages.Contains name)
-                 |> Map.map (fun _ v -> (v, if overriden |> Set.contains v.Name then true else force))
-                 |> Seq.map (fun kv -> let (p,force) = kv.Value in ExtractPackage(root, groupName, sources, caches, force, p))
+                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
                  |> Async.Parallel
         return ()
     }
