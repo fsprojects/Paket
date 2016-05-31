@@ -11,9 +11,10 @@ open Paket.Logging
 open InstallProcess
 
 let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
-    let allVersions = Dictionary<PackageName,(SemVerInfo * (PackageSources.PackageSource list)) list>()
+    let allVersions = Dictionary<PackageName*PackageSources.PackageSource list,(SemVerInfo * (PackageSources.PackageSource list)) list>()
     let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName : seq<SemVerInfo * PackageSources.PackageSource list> =
-        match allVersions.TryGetValue(packageName) with
+        let key = packageName,sources
+        match allVersions.TryGetValue key with
         | false,_ ->
             let versions = 
                 verbosefn "  - fetching versions for %O" packageName
@@ -21,7 +22,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
             if Seq.isEmpty versions then
                 failwithf "Couldn't retrieve versions for %O." packageName
-            allVersions.Add(packageName,versions)
+            allVersions.Add(key,versions)
             versions
         | true,versions -> versions
         |> List.toSeq

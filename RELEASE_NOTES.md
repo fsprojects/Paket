@@ -1,4 +1,4 @@
-#### 3.0.0-beta056 - 30.05.2016
+#### 3.0.0-beta057 - 31.05.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -15,6 +15,9 @@
     - Removed --hard parameter from all commands. 
     - Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
     - For the --hard use in the binding redirects there is a new parameter --clean-redirects - https://github.com/fsprojects/Paket/pull/1692 
+
+#### 2.66.6 - 31.05.2016
+* BUGFIX: Groups with different sources should not resolve to wrong packages - https://github.com/fsprojects/Paket/issues/1711
 
 #### 2.66.5 - 30.05.2016
 * BUGFIX: Don't remove trailing zero if version is in package path - https://github.com/fsprojects/Paket/issues/1708
