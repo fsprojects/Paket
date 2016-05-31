@@ -1,3 +1,6 @@
+#### 2.66.6 - 31.05.2016
+* BUGFIX: Groups with different sources should not resolve to wrong packages - https://github.com/fsprojects/Paket/issues/1711
+
 #### 2.66.5 - 30.05.2016
 * BUGFIX: Don't remove trailing zero if version is in package path - https://github.com/fsprojects/Paket/issues/1708
 

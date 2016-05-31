@@ -1,0 +1,6 @@
+source TestA
+nuget Test
+
+group Cumulus.1.0
+    source TestB
+    nuget Test
