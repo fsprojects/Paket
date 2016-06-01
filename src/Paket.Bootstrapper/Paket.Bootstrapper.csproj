@@ -59,6 +59,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SemVer.cs" />
+    <Compile Include="DownloadStrategies\TemporarilyIgnoreUpdatesDownloadStrategy.cs" />
+    <Compile Include="HelperProxies\DateTimeProxy.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.template" />

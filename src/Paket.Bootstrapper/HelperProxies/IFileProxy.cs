@@ -12,5 +12,7 @@ namespace Paket.Bootstrapper.HelperProxies
         string GetLocalFileVersion(string filename);
         void FileMove(string fromFile, string toFile);
         void ExtractToDirectory(string zipFile, string targetLocation);
+        DateTime GetLastWriteTime(string filename);
+        void Touch(string filename);
     }
 }
