@@ -179,6 +179,10 @@ module LockFileSerializer =
                     | None -> ()
                     | Some command -> yield "      build: " + command
 
+                    match file.PackagePath with
+                    | None -> ()
+                    | Some path -> yield "      path: " + path
+
                     match file.OperatingSystemRestriction with
                     | None -> ()
                     | Some filter -> yield "      os: " + filter
@@ -213,6 +217,7 @@ module LockFileParser =
     | ReferenceCondition of string
     | ResolverStrategy of ResolverStrategy option
     | Command of string
+    | PackagePath of string
     | OperatingSystemRestriction of string
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
@@ -265,6 +270,8 @@ module LockFileParser =
             InstallOption(ResolverStrategy(setting))
         | _, String.StartsWith "build: " trimmed ->
             InstallOption(Command trimmed)
+        | _, String.StartsWith "path: " trimmed ->
+            InstallOption(PackagePath trimmed)
         | _, String.StartsWith "os: " trimmed ->
             InstallOption(OperatingSystemRestriction trimmed)
         | _, trimmed when line.StartsWith "      " ->
@@ -324,13 +331,19 @@ module LockFileParser =
                     let sourceFiles = 
                         match currentGroup.SourceFiles with
                         | sourceFile::rest ->{ sourceFile with Command = Some command } :: rest
-                        |  _ -> failwith "missig source file"
+                        |  _ -> failwith "missing source file"
+                    { currentGroup with SourceFiles = sourceFiles }::otherGroups
+                | InstallOption(PackagePath(path)) -> 
+                    let sourceFiles = 
+                        match currentGroup.SourceFiles with
+                        | sourceFile::rest ->{ sourceFile with PackagePath = Some path } :: rest
+                        |  _ -> failwith "missing source file"
                     { currentGroup with SourceFiles = sourceFiles }::otherGroups
                 | InstallOption(OperatingSystemRestriction(filter)) -> 
                     let sourceFiles = 
                         match currentGroup.SourceFiles with
                         | sourceFile::rest ->{ sourceFile with OperatingSystemRestriction = Some filter } :: rest
-                        |  _ -> failwith "missig source file"
+                        |  _ -> failwith "missing source file"
                     { currentGroup with SourceFiles = sourceFiles }::otherGroups
                 | InstallOption option -> 
                     { currentGroup with Options = extractOption currentGroup option }::otherGroups

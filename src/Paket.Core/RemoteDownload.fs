@@ -287,7 +287,12 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
             let isInCorrectVersion =
                 if force then false else
                 match Git.Handling.getCurrentHash repoFolder with
-                | Some hash -> hash = gitRepo.Commit
+                | Some hash -> 
+                    match gitRepo.Command, gitRepo.PackagePath with
+                    | Some _, Some path when not (DirectoryInfo(repoFolder + path).Exists) ->
+                        false
+                    | _ ->
+                        hash = gitRepo.Commit
                 | None -> 
                     // something is wrong with the repo
                     Utils.deleteDir (DirectoryInfo repoFolder)
