@@ -1,4 +1,4 @@
-#### 3.0.0-beta059 - 02.06.2016
+#### 3.0.0-beta060 - 02.06.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -12,8 +12,8 @@
 * Remove command removes empty group when removing last dependency - https://github.com/fsprojects/Paket/pull/1706
 * New bootstrapper option --max-file-age - http://fsprojects.github.io/Paket/bootstrapper.html 
 * USABILITY: Removed "specs:" from paket.lock since it was copied from Bundler and had no meaning in Paket - https://github.com/fsprojects/Paket/pull/1608
-* BREAKING CHANGE: 
-    - Removed --hard parameter from all commands. 
+* BREAKING CHANGE: "lib", "runtimes" are not allowed as group names
+* BREAKING CHANGE: Removed --hard parameter from all commands. 
     - Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
     - For the --hard use in the binding redirects there is a new parameter --clean-redirects - https://github.com/fsprojects/Paket/pull/1692 
 
