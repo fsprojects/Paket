@@ -1,4 +1,4 @@
-#### 2.66.7 - 02.06.2016
+#### 2.66.8 - 02.06.2016
 * BUGFIX: Automatic prerelease expansion should not be done if explicit prereleases are requested - https://github.com/fsprojects/Paket/issues/1714
 
 #### 2.66.6 - 31.05.2016

@@ -338,7 +338,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             else
                 if Seq.isEmpty !compatibleVersions then
                     let prereleaseStatus =
-                        if currentRequirement.Parent.IsRootRequirement() && currentRequirement.VersionRequirement.PreReleases <> PreReleaseStatus.No then
+                        if currentRequirement.Parent.IsRootRequirement() && currentRequirement.VersionRequirement <> VersionRequirement.AllReleases then
                             currentRequirement.VersionRequirement.PreReleases
                         else
                             PreReleaseStatus.All
