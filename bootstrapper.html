@@ -69,6 +69,7 @@
 <p><code>version</code>: Downloads the given version of paket.exe from github.com.</p>
 <p><code>--prefer-nuget</code>: Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails</p>
 <p><code>--force-nuget</code>: As with the <code>--prefer-nuget</code> option, downloads paket.exe from nuget.org instead of github.com, but does <em>not</em> use github.com as a fallback.</p>
+<p><code>--max-file-age=120</code>: if the paket.exe already exists, and it is not older than <code>120</code> minutes all checks will be skipped.</p>
 <p><code>--nuget-source</code>: When specified as <code>--nuget-source=http://local.site/path/here</code>, the specified path is used instead of nuget.org when trying to fetch paket.exe as a nuget package. Combine this with either <code>--prefer-nuget</code> or <code>--force-nuget</code> to get paket.exe from a custom source.</p>
 <p><code>--self</code>: Self updating the paket.bootstrapper.exe. When this option is used the download of paket.exe will be skipped. (Can be combined with <code>--prefer-nuget</code>)</p>
 <p><code>-s</code>: If this flag is set the bootstrapper will not perform any output.</p>
