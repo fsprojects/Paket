@@ -336,7 +336,7 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                 globalOverride := true
             else
-                if Seq.isEmpty !compatibleVersions then
+                if Seq.isEmpty !compatibleVersions && currentRequirement.VersionRequirement.PreReleases = PreReleaseStatus.No then
                     let prereleases = Seq.filter (isInRange (fun r -> r.IncludingPrereleases())) (!availableVersions) |> Seq.toList
                     let allPrereleases = prereleases |> List.filter (fun (v,_) -> v.PreRelease <> None) = prereleases
                     if allPrereleases then

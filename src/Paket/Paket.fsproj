@@ -51,7 +51,7 @@
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001711-wrong-groupsource\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\paket-issue-repro</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
