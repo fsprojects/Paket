@@ -1,8 +1,8 @@
-#### 3.0.0-beta062 - 02.06.2016
+#### 3.0.0-rc001 - 02.06.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
-* Allow to override package sources in paket.local - http://fsprojects.github.io/Paket/local-file.html
+* Allow to override package sources in paket.local - http://fsprojects.github.io/Paket/local-file.html http://theimowski.com/blog/2016/05-19-paket-workflow-for-testing-new-nuget-package-before-release/index.html
 * NEW COMMAND: "paket generate-include-scripts" creates package include scripts for F# Interactive - http://fsprojects.github.io/Paket/paket-generate-include-scripts.html
 * Additional local caches - http://fsprojects.github.io/Paket/caches.html
 * Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
