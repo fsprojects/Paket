@@ -1,4 +1,4 @@
-#### 3.0.0-beta058 - 01.06.2016
+#### 3.0.0-beta059 - 02.06.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -10,6 +10,7 @@
 * Allows to use aliases for libraries - http://fsprojects.github.io/Paket/references-files.html#Library-aliases
 * Create Choose nodes for .NET Standard
 * Remove command removes empty group when removing last dependency - https://github.com/fsprojects/Paket/pull/1706
+* New bootstrapper option --max-file-age - http://fsprojects.github.io/Paket/bootstrapper.html 
 * USABILITY: Removed "specs:" from paket.lock since it was copied from Bundler and had no meaning in Paket - https://github.com/fsprojects/Paket/pull/1608
 * BREAKING CHANGE: 
     - Removed --hard parameter from all commands. 
