@@ -146,7 +146,7 @@ This will ensure that you get notified whenever a dependency update breaks your 
 <ol>
 <li>Analyse your <code>packages.config</code> files and extract the referenced packages into a paket.dependencies file.</li>
 <li>Convert each <code>packages.config</code> file to a paket.references file. This is very easy - you just have to remove all the XML and keep the package names.</li>
-<li>Run <a href="paket-install.html">paket install</a> with the <code>--hard</code> flag. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent <code>Reference</code>s in a syntax that can be managed automatically by Paket.</li>
+<li>Run <a href="paket-install.html">paket install</a>. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent <code>Reference</code>s in a syntax that can be managed automatically by Paket.</li>
 <li>(Optional) Raise corresponding issue <a href="https://github.com/fsprojects/Paket/issues">here</a> so that we can make the command even better.</li>
 </ol>
 <h2><a name="How-do-I-convert-a-new-project-to-Paket-when-my-solution-is-already-using-Paket" class="anchor" href="#How-do-I-convert-a-new-project-to-Paket-when-my-solution-is-already-using-Paket">How do I convert a new project to Paket when my solution is already using Paket</a></h2>
@@ -204,6 +204,7 @@ set NO_PROXY=.company.com,localhost
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
             <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -231,6 +232,7 @@ set NO_PROXY=.company.com,localhost
             <li><a href="./paket-find-refs.html">paket find-refs</a></li>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
             <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
