@@ -626,10 +626,12 @@ type PackageRequirement =
 
 
     override this.GetHashCode() = hash (this.Name,this.VersionRequirement)
-
-    member this.IncludingPrereleases() = 
-        { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,PreReleaseStatus.All) }
     
+    member this.IncludingPrereleases(releaseStatus) = 
+        { this with VersionRequirement = VersionRequirement(this.VersionRequirement.Range,releaseStatus) }
+
+    member this.IncludingPrereleases() = this.IncludingPrereleases(PreReleaseStatus.All)    
+
     member this.Depth = this.Graph.Length
 
     static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =

@@ -336,12 +336,19 @@ let Resolve(groupName:GroupName, sources, getVersionsF, getPackageDetailsF, glob
             if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                 globalOverride := true
             else
-                if Seq.isEmpty !compatibleVersions && currentRequirement.VersionRequirement.PreReleases = PreReleaseStatus.No then
-                    let prereleases = Seq.filter (isInRange (fun r -> r.IncludingPrereleases())) (!availableVersions) |> Seq.toList
+                if Seq.isEmpty !compatibleVersions then
+                    let prereleaseStatus =
+                        if currentRequirement.Parent.IsRootRequirement() && currentRequirement.VersionRequirement.PreReleases <> PreReleaseStatus.No then
+                            currentRequirement.VersionRequirement.PreReleases
+                        else
+                            PreReleaseStatus.All
+
+                    let prereleases = Seq.filter (isInRange (fun r -> r.IncludingPrereleases(prereleaseStatus))) (!availableVersions) |> Seq.toList
                     let allPrereleases = prereleases |> List.filter (fun (v,_) -> v.PreRelease <> None) = prereleases
                     if allPrereleases then
                         availableVersions := Seq.ofList prereleases
                         compatibleVersions := Seq.ofList prereleases
+
         | Some(versions,globalOverride') -> 
             // we already selected a version so we can't pick a different
             globalOverride := globalOverride'
