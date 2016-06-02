@@ -57,7 +57,7 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-pack" class="anchor" href="#paket-pack">paket pack</a></h1>
-<p>Packs all <a href="template-files.html"><code>paket.template</code> files</a> within this repository.</p>
+<p>Packs all <a href="template-files.html"><code>paket.template</code> files</a> within this repository</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket pack output &lt;string&gt; [buildconfig &lt;string&gt;] [buildplatform &lt;string&gt;] [version &lt;string&gt;] [templatefile &lt;string&gt;] [exclude &lt;string&gt;] [specific-version &lt;string&gt; &lt;string&gt;] [releaseNotes &lt;string&gt;] [lock-dependencies] [minimum-from-lock-file] [symbols] [include-referenced-projects] [project-url &lt;string&gt;]
@@ -102,9 +102,11 @@
 <span class="l">4: </span>
 <span class="l">5: </span>
 <span class="l">6: </span>
+<span class="l">7: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
   <span class="k">remote</span>: https://nuget.org/api/v2
+  <span class="k">specs</span>:
     Castle.Core (<span class="n">3.3.3</span>)
     Castle.Windsor (<span class="n">3.3.0</span>)
       Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
@@ -184,7 +186,6 @@ by using the <code>minimum-from-lock-file</code> parameter the dependencies of t
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
             <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -212,7 +213,6 @@ by using the <code>minimum-from-lock-file</code> parameter the dependencies of t
             <li><a href="./paket-find-refs.html">paket find-refs</a></li>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
-            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
             <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
