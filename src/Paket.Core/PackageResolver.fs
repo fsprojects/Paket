@@ -349,13 +349,14 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                 globalOverride := true
             else
                 if Seq.isEmpty !compatibleVersions then
-                    let prereleaseStatus =
-                        if currentRequirement.Parent.IsRootRequirement() && currentRequirement.VersionRequirement <> VersionRequirement.AllReleases then
-                            currentRequirement.VersionRequirement.PreReleases
+                    let prereleaseStatus (r:PackageRequirement) =
+                        if r.Parent.IsRootRequirement() && r.VersionRequirement <> VersionRequirement.AllReleases then
+                            r.VersionRequirement.PreReleases
                         else
                             PreReleaseStatus.All
 
-                    let prereleases = Seq.filter (isInRange (fun r -> r.IncludingPrereleases(prereleaseStatus))) (!availableVersions) |> Seq.toList
+                    let available = !availableVersions |> Seq.toList
+                    let prereleases = List.filter (isInRange (fun r -> r.IncludingPrereleases(prereleaseStatus r))) available
                     let allPrereleases = prereleases |> List.filter (fun (v,_) -> v.PreRelease <> None) = prereleases
                     if allPrereleases then
                         availableVersions := Seq.ofList prereleases

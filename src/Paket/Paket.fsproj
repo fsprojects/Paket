@@ -51,7 +51,7 @@
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
+    <StartArguments>update nuget CityTouch.Util.Nhibernate</StartArguments>
     <StartWorkingDirectory>D:\temp\paket-issue-repro</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
