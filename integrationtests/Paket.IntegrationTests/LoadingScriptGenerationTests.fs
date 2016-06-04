@@ -103,7 +103,7 @@ let ``fails on wrong framework given`` () =
     paket "install" scenario |> ignore
 
     let failure = Assert.Throws (fun () ->
-        let result = directPaket (sprintf "generate-include-scripts framework foo framework bar framework net45") scenario
+        let result = directPaket "generate-include-scripts framework foo framework bar framework net45" scenario
         printf "%s" result
     )
     let message = failure.ToString()
@@ -133,7 +133,7 @@ let ``issue 1676 casing`` () =
     let scenario = "issue-1676"
     paket "install" scenario |> ignore
 
-    directPaket (sprintf "generate-include-scripts framework net46") scenario |> ignore
+    directPaket "generate-include-scripts framework net46" scenario |> ignore
 
     let expectations = [
         "include.entityframework.csx", [
@@ -150,3 +150,21 @@ let ``issue 1676 casing`` () =
 
     if not (Seq.isEmpty failures) then
         Assert.Fail (failures |> String.concat Environment.NewLine)
+
+[<Test; Category("scriptgen")>]
+let ``mscorlib excluded from f# script`` () =
+    let scenario = "mscorlib"
+    paket "install" scenario |> ignore
+
+    directPaket "generate-include-scripts framework net46" scenario |> ignore
+
+    let scriptRootDir = scriptRoot scenario
+    let hasFilesWithMsCorlib =
+        scriptRootDir.GetFiles("*.fsx", SearchOption.AllDirectories) 
+        |> Seq.exists (fun f -> 
+            f.FullName 
+            |> File.ReadAllText 
+            |> String.containsIgnoreCase "mscorlib"
+        )
+
+    Assert.False hasFilesWithMsCorlib
