@@ -96,6 +96,14 @@ module ScriptGeneration =
 
     let frameworkRefLines =
       input.FrameworkReferences
+      |> List.filter (
+          function 
+          | "mscorlib" ->
+              // we never want to reference mscorlib directly (some nuget package state it as a dependency)
+              // reason is that having it referenced more than once fails in FSI
+              false 
+          | _ -> true
+      )
       |> List.map (sprintf """#r "%s" """)
 
     let dllLines =
