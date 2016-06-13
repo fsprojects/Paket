@@ -2,3 +2,4 @@ type project
 id PaketBug
 description
     Silly empty demo project
+authors Paket team
