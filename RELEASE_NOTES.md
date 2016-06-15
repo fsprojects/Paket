@@ -1,3 +1,6 @@
+#### 3.0.2 - 15.06.2016
+* Filter empty When conditions - https://github.com/fsprojects/Paket/issues/1727
+
 #### 3.0.1 - 15.06.2016
 * Do not garbage collect pacakges with version in path
 

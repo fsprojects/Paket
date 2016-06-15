@@ -680,7 +680,10 @@ module ProjectFile =
             |> List.choose (fun lib -> 
                 match lib with
                 | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> None  // TODO: Add reference to custom task instead
-                | _ -> Some (PlatformMatching.getCondition referenceCondition lib.Targets,createItemGroup lib.Files.References))
+                | _ -> 
+                    match PlatformMatching.getCondition referenceCondition lib.Targets with
+                    | "" -> None
+                    | condition -> Some (condition,createItemGroup lib.Files.References))
             |> List.sortBy fst
 
         let targetsFileConditions =
