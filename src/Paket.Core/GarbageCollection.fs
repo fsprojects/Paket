@@ -31,7 +31,8 @@ let discoverExtractedPackages root : ExtractedPackage list =
     let packagesFolder = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
     [
         findGroupPackages Constants.MainDependencyGroup packagesFolder
-        packagesFolder.GetDirectories() |> Array.collect (fun dir -> findGroupPackages (GroupName dir.Name) dir)
+        packagesFolder.GetDirectories() 
+        |> Array.collect (fun dir -> findGroupPackages (GroupName dir.Name) dir)
     ] |> Array.concat |> List.ofArray
 
 /// Remove all packages from the packages folder which are not part of the lock file.
@@ -41,8 +42,13 @@ let deleteUnusedPackages root (lockFile:LockFile) =
     for package in discoverExtractedPackages root do
         try
             if resolution |> Map.containsKey (package.GroupName, package.PackageName) |> not then
-                tracefn "Garbage collecting %O" package.Path
-                Utils.deleteDir package.Path
+                if resolution |> Seq.exists (fun kv -> 
+                                                    fst kv.Key = package.GroupName && 
+                                                     (kv.Value.Name.ToString() + "." + kv.Value.Version.ToString() = package.PackageName.ToString() ||
+                                                      kv.Value.Name.ToString() + "." + kv.Value.Version.Normalize() = package.PackageName.ToString())) |> not
+                then
+                    tracefn "Garbage collecting %O" package.Path
+                    Utils.deleteDir package.Path
         with
         | exn -> traceWarnfn "Garbage collection on '%s' failed. %s." package.Path.FullName exn.Message
 

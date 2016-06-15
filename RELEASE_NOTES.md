@@ -1,3 +1,6 @@
+#### 3.0.1 - 15.06.2016
+* Do not garbage collect pacakges with version in path
+
 #### 3.0.0 - 15.06.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
