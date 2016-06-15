@@ -123,7 +123,7 @@ Excluding certain files looks like this:
         ../outside/file.* ==> folder/in/nupkg/other
         !../outside/file.zip
 
-The pattern needs to match file-names, excluding directories like `!second` won't have an effect, please use `!second/*.*` instead.
+The pattern needs to match file-names, excluding directories like `!second` won't have an effect. Please use `!second/*.*` instead.
 
 In a project template, the files included will be:
 
