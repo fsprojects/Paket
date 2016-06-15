@@ -480,7 +480,7 @@ let CopyToCache(cache:Cache, fileName, force) =
     if not force && targetFile.Exists then
         verbosefn "%s already in cache %s" fi.Name targetFolder.FullName
     else
-        File.Copy(fileName, targetFile.FullName)
+        File.Copy(fileName, targetFile.FullName, force)
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async { 
