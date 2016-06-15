@@ -388,10 +388,22 @@ let isTargetMatchingRestrictions =
                         match pf with 
                         | Native(_) -> true 
                         | _ -> false
-                    | FrameworkRestriction.Exactly fw -> pf.IsCompatible(fw)
+                    | FrameworkRestriction.Exactly fw -> 
+                            match fw, pf with
+                            | DotNetFramework _, DotNetStandard _ -> false
+                            | DotNetStandard _,  DotNetFramework _ -> false
+                            | _ -> pf.IsCompatible(fw)
                     | FrameworkRestriction.Portable _ -> false
-                    | FrameworkRestriction.AtLeast fw -> pf.IsAtLeast(fw)
-                    | FrameworkRestriction.Between(min,max) -> pf.IsBetween(min,max))
+                    | FrameworkRestriction.AtLeast fw ->
+                        match fw, pf with
+                        | DotNetFramework _, DotNetStandard _ -> false
+                        | DotNetStandard _,  DotNetFramework _ -> false
+                        | _ -> pf.IsAtLeast(fw)
+                    | FrameworkRestriction.Between(min,max) -> 
+                        match min, pf with
+                        | DotNetFramework _, DotNetStandard _ -> false
+                        | DotNetStandard _, DotNetFramework _ -> false
+                        | _ -> pf.IsBetween(min,max))
         | _ ->
             restrictions
             |> List.exists (fun restriction ->

@@ -498,3 +498,12 @@ let ``#1646 install .NET Standard``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1720 install concrete net45``() = 
+    let newLockFile = install "i001720-explicit-net45"
+    let newFile = Path.Combine(scenarioTempPath "i001720-explicit-net45","projectA","projectA.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001720-explicit-net45","projectA","projectA.fsprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
