@@ -112,7 +112,7 @@ If you want to use the command then:</p>
 <li><p>If there is a solution-level <code>packages.config</code>, then it will be removed and its dependencies will be included into the paket.dependencies file.</p></li>
 <li><p>If you use NuGet Package Restore (<a href="http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore">MSBuild-Integrated or Automatic Visual Studio Package Restore</a>), then the <a href="paket-auto-restore.html"><code>paket auto-restore</code></a> command will be invoked.</p></li>
 <li>
-<p>Next (unless <code>--no-install</code> is specified), the <a href="paket-install.html">paket install</a> process with the <code>--hard</code> flag will be executed. This will:</p>
+<p>Next (unless <code>--no-install</code> is specified), the <a href="paket-install.html">paket install</a> process will be executed. This will:</p>
 <ul>
 <li>analyze the dependencies.</li>
 <li>generate a paket.lock file.</li>
@@ -170,6 +170,7 @@ However, if for some reason you happen to have a mixture of projects already mig
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
             <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -197,6 +198,7 @@ However, if for some reason you happen to have a mixture of projects already mig
             <li><a href="./paket-find-refs.html">paket find-refs</a></li>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
+            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
             <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
