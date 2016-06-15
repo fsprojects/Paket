@@ -53,7 +53,7 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                         [ if merged.Id = None then yield "Id"
                           if merged.Version = None then yield "Version"
                           if merged.Authors = None || merged.Authors = Some [] then yield "Authors"
-                          if merged.Description = None then yield "Description" ]
+                          if merged.Description = None || merged.Description = Some "" then yield "Description" ]
                         |> fun xs -> String.Join(", ",xs)
 
                     failwithf 
