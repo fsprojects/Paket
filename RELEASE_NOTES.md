@@ -1,3 +1,6 @@
+#### 2.66.10 - 15.06.2016
+* BUGFIX: Paket update failed on silverlight projects - https://github.com/fsprojects/Paket/pull/1719
+
 #### 2.66.9 - 03.06.2016
 * BUGFIX: Automatic prerelease expansion should not be done if explicit prereleases are requested - https://github.com/fsprojects/Paket/issues/1716 https://github.com/fsprojects/Paket/issues/1714
 
