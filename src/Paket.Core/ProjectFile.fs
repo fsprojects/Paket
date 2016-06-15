@@ -39,8 +39,8 @@ type FileItem =
 type ProjectReference = 
     { Path : string
       RelativePath : string
-      Name : string
-      GUID : Guid }
+      Name : string option
+      GUID : Guid option }
 
 /// Compile items inside of project files.
 type CompileItem =
@@ -1045,13 +1045,13 @@ module ProjectFile =
     let getInterProjectDependencies project =
         let forceGetInnerText node name =
             match node |> getNode name with 
-            | Some n -> n.InnerText
+            | Some n -> Some n.InnerText
             | None ->
                 match node |> getAttribute "Include" with
                 | Some fileName ->
                     let fi = FileInfo(normalizePath fileName)
-                    fi.Name.Replace(fi.Extension,"")
-                | None -> failwithf "unable to parse %O" node
+                    Some <| fi.Name.Replace(fi.Extension,"")
+                | None -> None
 
         [for node in project.Document |> getDescendants "ProjectReference" -> 
             let path =
@@ -1069,7 +1069,7 @@ module ProjectFile =
 
               RelativePath = path.Replace("/","\\")
               Name = forceGetInnerText node "Name"
-              GUID = forceGetInnerText node "Project" |> Guid.Parse }]
+              GUID = forceGetInnerText node "Project" |> Option.map Guid.Parse }]
 
     let replaceNuGetPackagesFile project =
         let noneAndContentNodes = 
