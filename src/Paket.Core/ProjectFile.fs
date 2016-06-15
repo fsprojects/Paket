@@ -965,6 +965,7 @@ module ProjectFile =
                    packageName.ToString()
                 else
                    sprintf "%O#%O" group packageName)
+            |> Seq.sort
             |> fun xs -> String.Join(";",xs)
 
         let runtimeDependenciesNode = 
