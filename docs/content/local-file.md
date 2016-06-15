@@ -24,7 +24,7 @@ The Paket project uses [Argu](http://fsprojects.github.io/Argu/) as one of its o
     nuget Argu
     ...
 
-When running [`paket restore`](file:///C:/github/Paket/docs/output/paket-restore.html), the Argu package is always restored from the NuGet source tha was specified in Paket's own `paket.lock` file:
+When running [`paket restore`](file:///C:/github/Paket/docs/output/paket-restore.html), the Argu package is always restored from the NuGet source that was specified in Paket's own `paket.lock` file:
 
     [lang=paket]
     NUGET

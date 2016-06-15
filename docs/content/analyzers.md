@@ -63,8 +63,8 @@ project type :
 
 - There is currently no way to create analyzers for F#.
 - The `dotnet` part of the path is in fact the host platform that is targeted. The only one currently in existence
-  is the roslyn compiler and it require the `dotnet` framework.
-- The roslyn developers maintains some analyzers under the
+  is the Roslyn compiler and it require the `dotnet` framework.
+- The Roslyn developers maintains some analyzers under the
   [roslyn-analyzers](https://github.com/dotnet/roslyn-analyzers) project but others have started to appear
   like [Refactoring Essentials](http://vsrefactoringessentials.com/) or
   [Code Cracker](https://code-cracker.github.io/).

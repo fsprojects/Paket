@@ -5,7 +5,7 @@ This guide will show you
   * [how to manually setup Paket](getting-started.html#Manual-setup) in your .NET / mono solutions
   * and [how to use the automatic NuGet conversion](convert-from-nuget-tutorial.html).
 
-<blockquote>The following guide is assuming you are using the paket.exe command line tool. For information on installing the commmand line tool follow the instructions for your operating system for <a href="installation.html">installation</a>.
+<blockquote>The following guide is assuming you are using the paket.exe command line tool. For information on installing the command line tool follow the instructions for your operating system for <a href="installation.html">installation</a>.
 There are editor plugins for Visual Studio, Atom and other which can make this process easier and provide additional tooling like syntax highlighting.
 Check our <a href="editor-support.html">editor support page</a> to see if your editor has a Paket plugin.</blockquote>
 
@@ -14,7 +14,7 @@ This project helps you get started with a new .NET/Mono project solution with ev
 
 ## Manual setup
 
-### Downloading Paket and it's BootStrapper
+### Downloading Paket and its Bootstrapper
 
   * Create a `.paket` folder in the root of your solution.
   * Download the latest [paket.bootstrapper.exe](https://github.com/fsprojects/Paket/releases/latest) into that folder.
@@ -75,7 +75,7 @@ You can read more about the `paket.lock` file in the [docs](lock-file.html).
 
 ### Installing dependencies into projects
 
-In the last paragraph you learned how to install packages into your repository, but usally you want to use the dependencies in your C#, VB or F# projects.
+In the last paragraph you learned how to install packages into your repository, but usually you want to use the dependencies in your C#, VB or F# projects.
 In order to do so you need a [`paket.references` files](references-files.html) alongside your Visual Studio project files.
 By listing the direct dependencies in a `paket.references` file, Paket will automatically sync references to the corresponding projects whenever an `install` or `update` takes place.
 

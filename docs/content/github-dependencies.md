@@ -100,9 +100,9 @@ This generates the following [`paket.lock` file](lock-file.html):
 
 As you can see Paket also resolved the Octokit dependency.
 
-## Referencing a private github repository
+## Referencing a private GitHub repository
 
-To reference a private github repository the syntax is identical to
+To reference a private GitHub repository the syntax is identical to
 above and supports the same branch and file definitions the only extra
 item to add is an identifier which defines which credential key to
 use (see [`paket config`](paket-config.html)).

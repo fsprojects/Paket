@@ -175,8 +175,8 @@ The `LOCKEDVERSION` placeholder allows to reference the currently used dependenc
 
 In a project file, the following dependencies will be added:
 
-* any paket dependency with the range specified in the [`paket.dependencies` file](dependencies-file.html).
-* any paket dependency with the range specified in the [`paket.lock` file](lock-file.html) (if `lock-dependencies` parameter is used in [`paket pack`](paket-pack.html)).
+* any Paket dependency with the range specified in the [`paket.dependencies` file](dependencies-file.html).
+* any Paket dependency with the range specified in the [`paket.lock` file](lock-file.html) (if `lock-dependencies` parameter is used in [`paket pack`](paket-pack.html)).
 * any project reference with a matching paket.template file with a minimum version requirement of the version currently being packaged.
 
 If you need to exclude dependencies from the automatic discovery then you can use the `excludeddependencies` block:
@@ -191,9 +191,9 @@ Another way to exclude dependencies is to exclude a whole dependency group with 
 	  build
 	  test
 
-#### Pdb files
+#### PDB files
 
-With the include-pdbs switch you can tell Paket to pack pdbs into the package.
+With the include-pdbs switch you can tell Paket to pack PDBs into the package.
 
     include-pdbs true
 

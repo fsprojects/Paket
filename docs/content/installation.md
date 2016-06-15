@@ -4,11 +4,11 @@ This guide will show you
 
   * How to set up Paket for a specific repository.
   * How to install Paket for Windows, Linux, or OS-X.
-  * How to ensure `paket` is available via commmand line and other methods of use.
+  * How to ensure `paket` is available via command line and other methods of use.
 
 ## Installation per repository
 
-The most common use of Paket is as a command line tool inside your project repostiory.
+The most common use of Paket is as a command line tool inside your project repository.
 
   * Create a `.paket` folder in the root of your solution.
   * Download the latest [paket.bootstrapper.exe](https://github.com/fsprojects/Paket/releases/latest) into that folder.
@@ -45,7 +45,7 @@ The install.sh script will add Paket as a command line option into bash and most
 
 ### Installation on OS-X
 
-For OS-X the build and installation procecss is as follows.
+For OS-X the build and installation process is as follows.
 
     ./build.sh
 

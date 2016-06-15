@@ -4,7 +4,7 @@ Paket allows one to automatically manage the linking of files from HTTP resource
 
 ## Referencing a single file
 
-You can reference a single file from a HTTP resource simply by specifying the url in the [`paket.dependencies` file](dependencies-file.html):
+You can reference a single file from a HTTP resource simply by specifying the URL in the [`paket.dependencies` file](dependencies-file.html):
 
     [lang=paket]
     http http://www.fssnip.net/raw/1M/test1.fs
@@ -41,7 +41,7 @@ The pattern expected is
     [lang=paket]
     http url [FileSpec] [SourceName]
 
-* **FileSpec** - This allows you to define the path to which the file that is downloaded will be written to. For example specfying the following
+* **FileSpec** - This allows you to define the path to which the file that is downloaded will be written to. For example specifying the following
 
     [lang=paket]
 		http http://www.fssnip.net/raw/1M/test1.fs src/test1.fs
@@ -49,8 +49,8 @@ The pattern expected is
 	will write the file to `paket-files\www.fssnip.net\src\test.fs`
 
 * **SourceName** - The source name allows you to override the folder which the downloaded file is written to and also acts as a key to lookup any authentication
-that maybe assoicated for that key. For example if I had added an authentication source using [``paket config add-authentication MySource``](commands\config.html)
-then each time paket extracts a HTTP dependency with `MySource` as a `SourceName` the credentails will be made part of the HTTP request. If no keys exist in the authentication store
+that maybe associated for that key. For example if I had added an authentication source using [``paket config add-authentication MySource``](commands\config.html)
+then each time Paket extracts a HTTP dependency with `MySource` as a `SourceName` the credentials will be made part of the HTTP request. If no keys exist in the authentication store
 then the request will be made without any authentication headers.
 
 ## Allowed http schemes

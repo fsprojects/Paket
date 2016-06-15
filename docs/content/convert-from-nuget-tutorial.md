@@ -6,7 +6,7 @@ Paket comes with a command that helps to convert existing solution from NuGet's 
 If you want to use the command then:
 
   * Please start by making a **back-up of your repository**
-  * Download Paket and it's BootStrapper as described in the ["Getting started" tutorial](getting-started.html#Downloading-Paket-and-it-s-BootStrapper)
+  * Download Paket and it's bootstrapper as described in the ["Getting started" tutorial](getting-started.html#Downloading-Paket-and-it-s-BootStrapper)
   * Run the `convert-from-nuget` command:
 
 
@@ -19,9 +19,9 @@ You can read more about the details and specific parameters for `convert-from-nu
 
 Choose a folder to run the conversion from that is parent to **all** the projects to be converted.
 
-When using nuget package restore, the ``packages`` folder is alongside the solution. It is possible with a solution that the folder parent to ``packages`` is **not** also parent to all the projects in the solution.
+When using NuGet package restore, the ``packages`` folder is alongside the solution. It is possible with a solution that the folder parent to ``packages`` is **not** also parent to all the projects in the solution.
 
-A solution is in effect acting as a symlink but this indirection via the solution is not possible with paket because paket manages projects and not solutions. In the example below, it would not be possible to run the ``paket convert-from-nuget`` command from the ``Build`` folder but it would be from the root folder.
+A solution is in effect acting as a symlink but this indirection via the solution is not possible with Paket because Paket manages projects and not solutions. In the example below, it would not be possible to run the ``paket convert-from-nuget`` command from the ``Build`` folder but it would be from the root folder.
 
 <pre>
 +---Build
