@@ -1,3 +1,6 @@
+#### 3.0.3 - 15.06.2016
+* Made Name and Guid in ProjectRefrence optional - https://github.com/fsprojects/Paket/issues/1729
+
 #### 3.0.2 - 15.06.2016
 * Filter empty When conditions - https://github.com/fsprojects/Paket/issues/1727
 
