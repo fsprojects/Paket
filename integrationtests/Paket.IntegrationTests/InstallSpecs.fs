@@ -490,20 +490,19 @@ let ``#346 set aliases``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1646 install .NET Standard``() = 
-    let scenario = "i001646-target-netstandard"
-    let newLockFile = install scenario
-    let newFile = Path.Combine(scenarioTempPath scenario, "MyClassLibrary","MyClassLibrary","KestrelClassic.fsproj")
-    let oldFile = Path.Combine(originalScenarioPath scenario, "MyClassLibrary","MyClassLibrary","KestrelClassic.fsprojtemplate")
+let ``#1720 install concrete net45``() = 
+    let newLockFile = install "i001720-explicit-net45"
+    let newFile = Path.Combine(scenarioTempPath "i001720-explicit-net45","projectA","projectA.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001720-explicit-net45","projectA","projectA.fsprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1720 install concrete net45``() = 
-    let newLockFile = install "i001720-explicit-net45"
-    let newFile = Path.Combine(scenarioTempPath "i001720-explicit-net45","projectA","projectA.fsproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001720-explicit-net45","projectA","projectA.fsprojtemplate")
+let ``#1720 install concrete netstandard15``() = 
+    let newLockFile = install "i001720-explicit-netstandard15"
+    let newFile = Path.Combine(scenarioTempPath "i001720-explicit-netstandard15","projectA","projectA.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001720-explicit-netstandard15","projectA","projectA.fsprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1

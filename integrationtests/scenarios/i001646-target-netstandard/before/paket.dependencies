@@ -1,5 +1,0 @@
-source https://www.myget.org/F/aspnetvnext/api/v3/index.json
-source https://www.nuget.org/api/v2/
-
-nuget System.Diagnostics.Contracts
-nuget Microsoft.Extensions.Configuration
