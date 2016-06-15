@@ -794,8 +794,14 @@ let GetVersions force root (sources, packageName:PackageName) =
 
     versions
     |> Seq.toList
-    |> List.groupBy fst
-    |> List.map (fun (v,s) -> SemVer.Parse v,s |> List.map snd |> List.sortByDescending (fun s -> s.IsLocalFeed))    
+    |> List.map (fun (v,s) -> SemVer.Parse v,v,s)
+    |> List.groupBy (fun (v,_,_) -> v.Normalize())
+    |> List.map (fun (_,s) -> 
+        let sorted = s |> List.sortByDescending (fun (_,_,s) -> s.IsLocalFeed)
+
+        let _,v,_ = List.head sorted
+        SemVer.Parse v,sorted |> List.map (fun (_,_,x) -> x))
+        
 
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) = 
