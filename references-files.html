@@ -86,7 +86,7 @@ RestSharp
 </code></pre></td></tr></table>
 <p>For each MSBuild project alongside a <code>paket.references</code>, <a href="paket-install.html"><code>paket install</code></a> and <a href="paket-update.html"><code>paket update</code></a> will add references to the dependencies listed in <code>paket.references</code> <em>and all their transitive dependencies</em> (unless <a href="dependencies-file.html#Strict-references">noted otherwise</a>).</p>
 <p>The references injected into the MSBuild project reflect the complete set of rules specified within the package for each <code>lib</code> and <code>Content</code> item; each reference is <code>Condition</code>al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.</p>
-<p>Any <a href="analyzers.html">roslyn based analyzer</a> present in the packages will also be installed in the project.</p>
+<p>Any <a href="analyzers.html">Roslyn based analyzer</a> present in the packages will also be installed in the project.</p>
 <h2><a name="copy_local-settings" class="anchor" href="#copy_local-settings">copy_local settings</a></h2>
 <p>It's possible to influence the <code>Private</code> property for references in project files:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -128,14 +128,13 @@ DotNetZip <span class="k">framework</span>: <span class="o">&gt;=</span> net45
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket">FSharp.Core <span class="k">redirects</span>: force
 </code></pre></td></tr></table>
-<p>In constract, you have the option to force Paket to not create a redirect:</p>
+<p>In contrast, you have the option to force Paket to not create a redirect:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket">FSharp.Core <span class="k">redirects</span>: off
 </code></pre></td></tr></table>
 <p>Redirects settings in <a href="references-files.html#Redirects-settings">references files</a> takes precedence over settings in <a href="nuget-dependencies.html#redirects-settings">dependencies file</a>.</p>
 <h2><a name="Excluding-libraries" class="anchor" href="#Excluding-libraries">Excluding libraries</a></h2>
-<blockquote>This feature is only available in Paket 3.0 alpha versions.</blockquote>
 <p>This option allows you to exclude libraries from being referenced in project files:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -152,7 +151,6 @@ NUnit
   exclude nunit.framework.dll
 </code></pre></td></tr></table>
 <h2><a name="Library-aliases" class="anchor" href="#Library-aliases">Library aliases</a></h2>
-<blockquote>This feature is only available in Paket 3.0 alpha versions.</blockquote>
 <p>This option allows you to specify library aliases:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -168,7 +166,7 @@ NUnit
 </code></pre></td></tr></table>
 <h2><a name="File-name-conventions" class="anchor" href="#File-name-conventions">File name conventions</a></h2>
 <p>If Paket finds <code>paket.references</code> in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.</p>
-<p>If you have multiple MSBuild projects in a folder that require a non-homogenous set of references, you have two options:</p>
+<p>If you have multiple MSBuild projects in a folder that require a non-homogeneous set of references, you have two options:</p>
 <ul>
 <li>Have a shared <code>paket.references</code> file that acts as a default for all except ones that require special treatment. For each special-case project, add a <code>&lt;MSBuild project&gt;.paket.references</code> file</li>
 <li>Add a project-specific <code>&lt;MSBuild project&gt;.paket.references</code> file for each and every project that requires any references</li>

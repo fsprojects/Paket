@@ -62,7 +62,7 @@
 If you want to use the command then:</p>
 <ul>
 <li>Please start by making a <strong>back-up of your repository</strong></li>
-<li>Download Paket and it's BootStrapper as described in the <a href="getting-started.html#Downloading-Paket-and-it-s-BootStrapper">"Getting started" tutorial</a></li>
+<li>Download Paket and it's bootstrapper as described in the <a href="getting-started.html#Downloading-Paket-and-it-s-BootStrapper">"Getting started" tutorial</a></li>
 <li>Run the <code>convert-from-nuget</code> command:</li>
 </ul>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -72,8 +72,8 @@ If you want to use the command then:</p>
 <p>You can read more about the details and specific parameters for <code>convert-from-nuget</code> in the <a href="paket-convert-from-nuget.html">docs</a>.</p>
 <h3><a name="Preparation" class="anchor" href="#Preparation">Preparation</a></h3>
 <p>Choose a folder to run the conversion from that is parent to <strong>all</strong> the projects to be converted.</p>
-<p>When using nuget package restore, the <code>packages</code> folder is alongside the solution. It is possible with a solution that the folder parent to <code>packages</code> is <strong>not</strong> also parent to all the projects in the solution.</p>
-<p>A solution is in effect acting as a symlink but this indirection via the solution is not possible with paket because paket manages projects and not solutions. In the example below, it would not be possible to run the <code>paket convert-from-nuget</code> command from the <code>Build</code> folder but it would be from the root folder.</p>
+<p>When using NuGet package restore, the <code>packages</code> folder is alongside the solution. It is possible with a solution that the folder parent to <code>packages</code> is <strong>not</strong> also parent to all the projects in the solution.</p>
+<p>A solution is in effect acting as a symlink but this indirection via the solution is not possible with Paket because Paket manages projects and not solutions. In the example below, it would not be possible to run the <code>paket convert-from-nuget</code> command from the <code>Build</code> folder but it would be from the root folder.</p>
 <pre>
 +---Build
 |   |   Numbers.sln

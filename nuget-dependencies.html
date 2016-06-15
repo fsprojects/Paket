@@ -131,13 +131,13 @@ It's also possible to provide login information for private NuGet feeds:
 A needs exactly C 1.0 and B wants version 1.1 of C.
 This is a version conflict and Paket will complain during resolution phase.</p>
 <p>If we specify C = 1.1 in the dependencies file then Paket still considers this as a version conflict with the version requirement in A.
-By specifying C == 1.1 we overwrite all other requirements and paket will not complain about the conflict anymore.</blockquote></p>
+By specifying C == 1.1 we overwrite all other requirements and Paket will not complain about the conflict anymore.</blockquote></p>
 <p>If your transitive dependencies result in a version conflict you might want to instruct Paket to use a specific version. The <code>==</code> operator allows you to manually resolve the conflict:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">==</span> <span class="n">1.2.3</span> <span class="c">// take exactly this version</span>
 </code></pre></td></tr></table>
-<blockquote>Important: If you want to restrict the version to a specific version then use the <a href="nuget-dependencies.html#Pinned-version-constraint">= operator</a>. The == operator should only be used if you need to overwrite a dependency resultion due to a conflict.</blockquote>
+<blockquote>Important: If you want to restrict the version to a specific version then use the <a href="nuget-dependencies.html#Pinned-version-constraint">= operator</a>. The == operator should only be used if you need to overwrite a dependency resolution due to a conflict.</blockquote>
 <h4><a name="Further-version-constraints" class="anchor" href="#Further-version-constraints">Further version constraints</a></h4>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -196,8 +196,8 @@ By specifying C == 1.1 we overwrite all other requirements and paket will not co
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">~&gt;</span> <span class="n">1.2</span> <span class="o">&gt;=</span> <span class="n">1.2.3</span>
 </code></pre></td></tr></table>
 <p>The example above translates to <code>1.2.3 &lt;= x &lt; 2.0</code>.</p>
-<h3><a name="PreReleases" class="anchor" href="#PreReleases">PreReleases</a></h3>
-<p>If you want to dependend on prereleases then Paket can assist you. In contrast to NuGet, Paket allows you to depend on different prerelease channels:</p>
+<h3><a name="Prereleases" class="anchor" href="#Prereleases">Prereleases</a></h3>
+<p>If you want to depend on prereleases then Paket can assist you. In contrast to NuGet, Paket allows you to depend on different prerelease channels:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -288,7 +288,7 @@ By specifying C == 1.1 we overwrite all other requirements and paket will not co
 
 <span class="k">nuget</span> FSharp.Core <span class="k">redirects</span>: force
 </code></pre></td></tr></table>
-<p>In constract, you have the option to force Paket to not create a redirect:</p>
+<p>In contrast, you have the option to force Paket to not create a redirect:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -358,7 +358,7 @@ The following code is doing the same by using the <code>!</code> operator in you
 
 <span class="k">nuget</span> Example <span class="o">!</span><span class="o">~&gt;</span> <span class="n">1.2</span> <span class="c">// use "min" version resolution strategy</span>
 </code></pre></td></tr></table>
-<p>The stragey setting and the corresponding <code>!</code> and <code>@</code> modifiers are applicable to all <a href="#Version-constraints">version constraints</a>:</p>
+<p>The strategy setting and the corresponding <code>!</code> and <code>@</code> modifiers are applicable to all <a href="#Version-constraints">version constraints</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>

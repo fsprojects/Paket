@@ -59,7 +59,7 @@
 <h1><a name="HTTP-dependencies" class="anchor" href="#HTTP-dependencies">HTTP dependencies</a></h1>
 <p>Paket allows one to automatically manage the linking of files from HTTP resources into your projects.</p>
 <h2><a name="Referencing-a-single-file" class="anchor" href="#Referencing-a-single-file">Referencing a single file</a></h2>
-<p>You can reference a single file from a HTTP resource simply by specifying the url in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<p>You can reference a single file from a HTTP resource simply by specifying the URL in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">http</span> http://www.fssnip.net/raw/1M/test1.fs
@@ -96,15 +96,15 @@ The pattern expected is</p>
 </code></pre></td></tr></table>
 <ul>
 <li>
-<p><strong>FileSpec</strong> - This allows you to define the path to which the file that is downloaded will be written to. For example specfying the following</p>
+<p><strong>FileSpec</strong> - This allows you to define the path to which the file that is downloaded will be written to. For example specifying the following</p>
 <p>[lang=paket]
 http <a href="http://www.fssnip.net/raw/1M/test1.fs">http://www.fssnip.net/raw/1M/test1.fs</a> src/test1.fs</p>
 <p>will write the file to <code>paket-files\www.fssnip.net\src\test.fs</code></p>
 </li>
 <li>
 <p><strong>SourceName</strong> - The source name allows you to override the folder which the downloaded file is written to and also acts as a key to lookup any authentication
-that maybe assoicated for that key. For example if I had added an authentication source using <a href="commands\config.html"><code>paket config add-authentication MySource</code></a>
-then each time paket extracts a HTTP dependency with <code>MySource</code> as a <code>SourceName</code> the credentails will be made part of the HTTP request. If no keys exist in the authentication store
+that maybe associated for that key. For example if I had added an authentication source using <a href="commands\config.html"><code>paket config add-authentication MySource</code></a>
+then each time Paket extracts a HTTP dependency with <code>MySource</code> as a <code>SourceName</code> the credentials will be made part of the HTTP request. If no keys exist in the authentication store
 then the request will be made without any authentication headers.</p>
 </li>
 </ul>

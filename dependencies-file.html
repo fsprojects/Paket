@@ -109,6 +109,7 @@
 <p>Paket supports the following source types:</p>
 <ul>
 <li><a href="nuget-dependencies.html">NuGet</a></li>
+<li><a href="git-dependencies.html">Git</a></li>
 <li><a href="github-dependencies.html">GitHub and Gist</a></li>
 <li><a href="http-dependencies.html">HTTP</a> (any single file from any site without version control)</li>
 </ul>
@@ -287,7 +288,7 @@ To make your transition to Paket easier and to allow package authors to correct 
 
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
-<p>A <code>min</code> strategy means you get the <em>lowest matching version</em> of your transitive dependencies (i.e. NuGet-style). In constrast, a <code>max</code> strategy will get you the <em>highest matching version</em>.</p>
+<p>A <code>min</code> strategy means you get the <em>lowest matching version</em> of your transitive dependencies (i.e. NuGet-style). In contrast, a <code>max</code> strategy will get you the <em>highest matching version</em>.</p>
 <p>Note, however, that all direct dependencies will still get their <em>latest matching versions</em>, no matter the value of the <code>strategy</code> option.
 If you want to influence the resolution of direct dependencies then read about the <a href="dependencies-file.html#Lowest_matching-option">lowest_matching option</a>.</p>
 <p>The only exception is when you are updating a single package and one of your direct dependencies is a transitive dependency for that specific package.
@@ -306,7 +307,7 @@ In this case, only the updating package will get its <em>latest matching version
 
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
-<p>A <code>lowest_matching: true</code> setting means you get the <em>lowest matching version</em> of your direct dependencies. In constrast, a <code>lowest_matching:false</code> will get you the <em>highest matching version</em>.</p>
+<p>A <code>lowest_matching: true</code> setting means you get the <em>lowest matching version</em> of your direct dependencies. In contrast, a <code>lowest_matching:false</code> will get you the <em>highest matching version</em>.</p>
 <p>Note, however, that all transitive dependencies will still get their <em>latest matching versions</em>, no matter the value of the <code>lowest_matching</code> option.
 If you want to influence the resolution of transitive dependencies then read about the <a href="dependencies-file.html#Strategy-option">strategy option</a>.</p>
 <p>To override a <code>lowest_matching</code> option for a single NuGet package, you can use the package specific <a href="nuget-dependencies.html#Lowest_matching-option">lowest_matching option</a>.</p>

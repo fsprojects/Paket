@@ -57,7 +57,6 @@
         <div class="span9" id="main">
           
 <h1><a name="Additional-Caches" class="anchor" href="#Additional-Caches">Additional Caches</a></h1>
-<blockquote>This feature is only available in Paket 3.0 alpha versions.</blockquote>
 <p>Paket works well with central repositories like <a href="https://www.nuget.org/">nuget.org</a> or <a href="http://myget.org/">myget.org</a>. Under normal circumstances these repositories are always available and allow you to retrieve all packages for the rest of all time.
 Unfortunately there are times when the central repository is not reachable or even worse: packages can be removed permanently from the feed.</p>
 <p>This happened in other ecosystems, but also on <a href="https://www.nuget.org/">nuget.org</a> and can lead to breaking builds and a lot of trouble for the users.</p>
@@ -106,7 +105,7 @@ This folder will then contain the <code>*.nupkgs files</code> of all dependencie
 <p>Paket allows you two caching options:</p>
 <ul>
 <li><code>versions:all</code> - stores all currently used version of the dependencies.</li>
-<li><code>versions:current</code> - stores only currently used version of the dependencies and deletes all other version. This option should not be used with netwok shares since it might affect other projects.</li>
+<li><code>versions:current</code> - stores only currently used version of the dependencies and deletes all other version. This option should not be used with network shares since it might affect other projects.</li>
 </ul>
 <h2><a name="Caches-as-package-feeds" class="anchor" href="#Caches-as-package-feeds">Caches as package feeds</a></h2>
 <p>All configured caches are automatically used as additional package feeds. So if a package gets removed from the central repository even "paket update" will work.

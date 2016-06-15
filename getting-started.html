@@ -62,13 +62,13 @@
 <li><a href="getting-started.html#Manual-setup">how to manually setup Paket</a> in your .NET / mono solutions</li>
 <li>and <a href="convert-from-nuget-tutorial.html">how to use the automatic NuGet conversion</a>.</li>
 </ul>
-<blockquote>The following guide is assuming you are using the paket.exe command line tool. For information on installing the commmand line tool follow the instructions for your operating system for <a href="installation.html">installation</a>.
+<blockquote>The following guide is assuming you are using the paket.exe command line tool. For information on installing the command line tool follow the instructions for your operating system for <a href="installation.html">installation</a>.
 There are editor plugins for Visual Studio, Atom and other which can make this process easier and provide additional tooling like syntax highlighting.
 Check our <a href="editor-support.html">editor support page</a> to see if your editor has a Paket plugin.</blockquote>
 <blockquote>If you are starting a new solution from scratch then take a look at <a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>.
 This project helps you get started with a new .NET/Mono project solution with everything needed for successful organising of code, tools and publishing and includes Paket.</blockquote>
 <h2><a name="Manual-setup" class="anchor" href="#Manual-setup">Manual setup</a></h2>
-<h3><a name="Downloading-Paket-and-it-s-BootStrapper" class="anchor" href="#Downloading-Paket-and-it-s-BootStrapper">Downloading Paket and it's BootStrapper</a></h3>
+<h3><a name="Downloading-Paket-and-its-Bootstrapper" class="anchor" href="#Downloading-Paket-and-its-Bootstrapper">Downloading Paket and its Bootstrapper</a></h3>
 <ul>
 <li>Create a <code>.paket</code> folder in the root of your solution.</li>
 <li>Download the latest <a href="https://github.com/fsprojects/Paket/releases/latest">paket.bootstrapper.exe</a> into that folder.</li>
@@ -145,7 +145,7 @@ The file might look like this:</p>
 <p>This file shows all direct and transitive dependencies and pins every dependency to a concrete version. In most cases you want to commit this file to your version control system (<a href="faq.html#Why-should-I-commit-the-lock-file">read why</a>).</p>
 <p>You can read more about the <code>paket.lock</code> file in the <a href="lock-file.html">docs</a>.</p>
 <h3><a name="Installing-dependencies-into-projects" class="anchor" href="#Installing-dependencies-into-projects">Installing dependencies into projects</a></h3>
-<p>In the last paragraph you learned how to install packages into your repository, but usally you want to use the dependencies in your C#, VB or F# projects.
+<p>In the last paragraph you learned how to install packages into your repository, but usually you want to use the dependencies in your C#, VB or F# projects.
 In order to do so you need a <a href="references-files.html"><code>paket.references</code> files</a> alongside your Visual Studio project files.
 By listing the direct dependencies in a <code>paket.references</code> file, Paket will automatically sync references to the corresponding projects whenever an <code>install</code> or <code>update</code> takes place.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>

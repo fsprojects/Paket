@@ -58,11 +58,10 @@
           
 <h1><a name="Git-dependencies" class="anchor" href="#Git-dependencies">Git dependencies</a></h1>
 <p>Paket allows you to automatically manage the linking of files from any git repo.</p>
-<blockquote>This feature is only available in Paket 3.0 prereleases.</blockquote>
 <blockquote>This feature assumes that you have <a href="https://git-scm.com/">git</a> installed.
-If you don't have git installed then Paket still allows you to <a href="github-dependencies.html">reference files from github</a>.</blockquote>
+If you don't have git installed then Paket still allows you to <a href="github-dependencies.html">reference files from GitHub</a>.</blockquote>
 <h2><a name="Referencing-a-Git-repository" class="anchor" href="#Referencing-a-Git-repository">Referencing a Git repository</a></h2>
-<p>You can also reference a complete git repository by specifying the clone url in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<p>You can also reference a complete git repository by specifying the clone URL in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
@@ -101,14 +100,14 @@ If you don't have git installed then Paket still allows you to <a href="github-d
 </code></pre></td></tr></table>
 <p>You can read more about the version range details in the corresponding <a href="nuget-dependencies.html#Version-constraints">NuGet reference section</a>.</p>
 <h2><a name="Running-a-build-in-git-repositories" class="anchor" href="#Running-a-build-in-git-repositories">Running a build in git repositories</a></h2>
-<p>If your referenced git repository contains a build script then Paket can execute this scipt after restore:</p>
+<p>If your referenced git repository contains a build script then Paket can execute this script after restore:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">git</span> https://github.com/forki/nupkgtest.git master build: <span class="s">"build.cmd"</span>, OS: windows
 <span class="k">git</span> https://github.com/forki/nupkgtest.git master build: <span class="s">"build.sh"</span>, OS: mono
 </code></pre></td></tr></table>
-<p>This allows you to excute arbitray commands after restore.</p>
+<p>This allows you to execute arbitrary commands after restore.</p>
 <h2><a name="Using-Git-repositories-as-NuGet-source" class="anchor" href="#Using-Git-repositories-as-NuGet-source">Using Git repositories as NuGet source</a></h2>
 <p>If you have NuGet packages inside a git repository you can easily use the repository as a NuGet source from the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>

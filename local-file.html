@@ -57,7 +57,6 @@
         <div class="span9" id="main">
           
 <h1><a name="The-paket-local-file" class="anchor" href="#The-paket-local-file">The paket.local file</a></h1>
-<blockquote>This feature is only available in Paket 3.0 prereleases.</blockquote>
 <p>The <code>paket.local</code> file is used for testing changes before releasing new version of a dependent project.</p>
 <blockquote>
 <p>Note: you <strong>shouldn't commit</strong> <code>paket.local</code>. This file should always be added to <code>.gitignore</code>, because it specifies file paths that are only accessible on your machine.</p>
@@ -76,7 +75,7 @@
 <span class="k">nuget</span> Argu
 ...
 </code></pre></td></tr></table>
-<p>When running <a href="file:///C:/github/Paket/docs/output/paket-restore.html"><code>paket restore</code></a>, the Argu package is always restored from the NuGet source tha was specified in Paket's own <code>paket.lock</code> file:</p>
+<p>When running <a href="file:///C:/github/Paket/docs/output/paket-restore.html"><code>paket restore</code></a>, the Argu package is always restored from the NuGet source that was specified in Paket's own <code>paket.lock</code> file:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
