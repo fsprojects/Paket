@@ -275,15 +275,24 @@ module LockFileParser =
         | _, String.StartsWith "os: " trimmed ->
             InstallOption(OperatingSystemRestriction trimmed)
         | _, trimmed when line.StartsWith "      " ->
+            let frameworkSettings =
+                if trimmed.Contains(" - ") then
+                    let pos = trimmed.LastIndexOf(" - ")
+                    try
+                        InstallSettings.Parse(trimmed.Substring(pos + 3))
+                    with
+                    | _ -> InstallSettings.Parse("framework: " + trimmed.Substring(pos + 3)) // backwards compatible
+                else
+                    InstallSettings.Default
             if trimmed.Contains("(") then
                 let parts = trimmed.Split '(' 
-                NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim())
+                NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim(),frameworkSettings)
             else
                 if trimmed.Contains("  -") then
                     let pos = trimmed.IndexOf("  -")
-                    NugetDependency (trimmed.Substring(0,pos),">= 0")
+                    NugetDependency (trimmed.Substring(0,pos),">= 0",frameworkSettings)
                 else
-                    NugetDependency (trimmed,">= 0")
+                    NugetDependency (trimmed,">= 0",frameworkSettings)
         | Some "NUGET", trimmed -> NugetPackage trimmed
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)
@@ -368,14 +377,14 @@ module LockFileParser =
                                       Settings = settings
                                       Version = SemVer.Parse version } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."
-                | NugetDependency (name, v) ->
+                | NugetDependency (name, v, frameworkSettings) ->
                     let version,settings = parsePackage v
                     if currentGroup.LastWasPackage then
                         match currentGroup.Packages with
                         | currentPackage :: otherPackages -> 
                             { currentGroup with
                                     Packages = { currentPackage with
-                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, settings.FrameworkRestrictions) currentPackage.Dependencies
+                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version, frameworkSettings.FrameworkRestrictions) currentPackage.Dependencies
                                                 } :: otherPackages } ::otherGroups
                         | [] -> failwithf "cannot set a dependency to %s %s - no package has been specified." name v
                     else

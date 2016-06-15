@@ -52,7 +52,7 @@
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001720-explicit-netstandard15\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\Paket - Kopie</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
