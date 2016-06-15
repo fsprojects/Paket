@@ -7,13 +7,13 @@ Pushes the given `.nupkg` file.
 
 ### Options:
 
-  `url <string>`: URL of the NuGet feed.
+  `url <string>`: Url of the NuGet feed.
 
   `file <string>`: Path to the package.
 
   `apikey <string>`: Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable.
 
-  `endpoint <string>`: Optionally specify a custom API endpoint to push to. Defaults to `/api/v2/package`.
+  `endpoint <string>`: Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`.
 
 If you add the `-v` flag, then Paket will run in verbose mode and show detailed information.
 
