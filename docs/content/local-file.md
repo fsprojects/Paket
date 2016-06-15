@@ -1,10 +1,6 @@
 The paket.local file
 ===================
 
-
-<blockquote>This feature is only available in Paket 3.0 prereleases.</blockquote>
-
-
 The `paket.local` file is used for testing changes before releasing new version of a dependent project.
 
 > Note: you **shouldn't commit** `paket.local`. This file should always be added to `.gitignore`, because it specifies file paths that are only accessible on your machine.

@@ -1,7 +1,5 @@
 # Additional Caches
 
-<blockquote>This feature is only available in Paket 3.0.</blockquote>
-
 Paket works well with central repositories like [nuget.org](https://www.nuget.org/) or [myget.org](http://myget.org/). Under normal circumstances these repositories are always available and allow you to retrieve all packages for the rest of all time.
 Unfortunately there are times when the central repository is not reachable or even worse: packages can be removed permanently from the feed.
 

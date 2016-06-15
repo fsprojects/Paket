@@ -84,8 +84,6 @@ Redirects settings in [references files](references-files.html#Redirects-setting
 
 ## Excluding libraries
 
-<blockquote>This feature is only available in Paket 3.0.</blockquote>
-
 This option allows you to exclude libraries from being referenced in project files:
 
     [lang=paket]
@@ -97,8 +95,6 @@ This option allows you to exclude libraries from being referenced in project fil
 	  exclude nunit.framework.dll
 
 ## Library aliases
-
-<blockquote>This feature is only available in Paket 3.0.</blockquote>
 
 This option allows you to specify library aliases:
 
