@@ -1,4 +1,4 @@
-#### 3.0.0-rc002 - 03.06.2016
+#### 3.0.0-rc002 - 15.06.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
 * Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
 * Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
@@ -16,6 +16,9 @@
 * BREAKING CHANGE: Removed --hard parameter from all commands. 
     - Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
     - For the --hard use in the binding redirects there is a new parameter --clean-redirects - https://github.com/fsprojects/Paket/pull/1692 
+
+#### 2.66.10 - 15.06.2016
+* BUGFIX: Paket update failed on silverlight projects - https://github.com/fsprojects/Paket/pull/1719
 
 #### 2.66.9 - 03.06.2016
 * BUGFIX: Automatic prerelease expansion should not be done if explicit prereleases are requested - https://github.com/fsprojects/Paket/issues/1716 https://github.com/fsprojects/Paket/issues/1714

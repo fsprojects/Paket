@@ -815,10 +815,31 @@ module ProjectFile =
 
     let getTargetFrameworkProfile (project:ProjectFile) = getProperty "TargetFrameworkProfile" project
 
+    let getTargetProfile (project:ProjectFile) =
+        match getTargetFrameworkProfile project with
+        | Some profile when profile = "Client" ->
+            SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)
+        | Some profile when String.IsNullOrWhiteSpace profile |> not ->
+            KnownTargetProfiles.FindPortableProfile profile
+        | _ ->
+            let prefix =
+                match getTargetFrameworkIdentifier project with
+                | None -> "net"
+                | Some x -> x
+            let framework = getProperty "TargetFrameworkVersion" project
+            let defaultResult = SinglePlatform (DotNetFramework FrameworkVersion.V4)
+            match framework with
+            | None -> defaultResult
+            | Some s ->
+                match FrameworkDetection.Extract(prefix + s.Replace("v","")) with
+                | None -> defaultResult
+                | Some x -> SinglePlatform x
+
     let getTargetFramework (project:ProjectFile) = 
-        match getProperty "TargetFrameworkVersion" project with
-        | None -> None
-        | Some v -> FrameworkDetection.Extract(v.Replace("v","net"))
+        match getTargetProfile project with
+        | SinglePlatform x -> Some x
+        | PortableProfile (_, x::_) -> Some x
+        | _ -> None
 
     let updateReferences
             rootPath
@@ -1123,26 +1144,6 @@ module ProjectFile =
                 | "WinExe" -> ProjectOutputType.Exe
                 | _        -> ProjectOutputType.Library }
         |> Seq.head
-
-    let getTargetProfile (project:ProjectFile) =
-        match getTargetFrameworkProfile project with
-        | Some profile when profile = "Client" ->
-            SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)
-        | Some profile when String.IsNullOrWhiteSpace profile |> not ->
-            KnownTargetProfiles.FindPortableProfile profile
-        | _ ->
-            let prefix =
-                match getTargetFrameworkIdentifier project with
-                | None -> "net"
-                | Some x -> x
-            let framework = getProperty "TargetFrameworkVersion" project
-            let defaultResult = SinglePlatform (DotNetFramework FrameworkVersion.V4)
-            match framework with
-            | None -> defaultResult
-            | Some s ->
-                match FrameworkDetection.Extract(prefix + s.Replace("v","")) with
-                | None -> defaultResult
-                | Some x -> SinglePlatform x
     
     let addImportForPaketTargets relativeTargetsPath (project:ProjectFile) =
         match project.Document 
