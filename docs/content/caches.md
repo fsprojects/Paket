@@ -1,6 +1,6 @@
 # Additional Caches
 
-<blockquote>This feature is only available in Paket 3.0 alpha versions.</blockquote>
+<blockquote>This feature is only available in Paket 3.0.</blockquote>
 
 Paket works well with central repositories like [nuget.org](https://www.nuget.org/) or [myget.org](http://myget.org/). Under normal circumstances these repositories are always available and allow you to retrieve all packages for the rest of all time.
 Unfortunately there are times when the central repository is not reachable or even worse: packages can be removed permanently from the feed.
@@ -50,7 +50,7 @@ The configuration can be done in the  [`paket.dependencies` file](dependencies-f
 Paket allows you two caching options:
 
 * `versions:all` - stores all currently used version of the dependencies.
-* `versions:current` - stores only currently used version of the dependencies and deletes all other version. This option should not be used with netwok shares since it might affect other projects.
+* `versions:current` - stores only currently used version of the dependencies and deletes all other version. This option should not be used with network shares since it might affect other projects.
 
 ## Caches as package feeds
 
