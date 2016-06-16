@@ -1,13 +1,8 @@
-#### 3.0.4 - 16.06.2016
-* BUGFIX: Prerelease version range are working with ~> again
-
-#### 3.0.3 - 15.06.2016
+#### 3.1.0 - 16.06.2016
+* Paket pack doesn't allow empty string as authors and description metadata - https://github.com/fsprojects/Paket/pull/1728
 * Made Name and Guid in ProjectRefrence optional - https://github.com/fsprojects/Paket/issues/1729
-
-#### 3.0.2 - 15.06.2016
+* BUGFIX: Prerelease version range are working with ~> again
 * BUGFIX: Filter empty When conditions - https://github.com/fsprojects/Paket/issues/1727
-
-#### 3.0.1 - 15.06.2016
 * BUGFIX: Do not garbage collect pacakges with version in path
 
 #### 3.0.0 - 15.06.2016
