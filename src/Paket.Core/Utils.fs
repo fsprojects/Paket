@@ -445,7 +445,7 @@ let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar,
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
-let getTargetFolder root groupName (packageName:PackageName) (version:SemVerInfo) includeVersionInPath = 
+let getTargetFolder root groupName (packageName:PackageName) version includeVersionInPath = 
     let packageFolder = string packageName + if includeVersionInPath then "." + string version else ""
     if groupName = Constants.MainDependencyGroup then
         Path.Combine(root, Constants.PackagesFolderName, packageFolder)

@@ -124,8 +124,8 @@ type VersionRequirement =
         match this with
         | VersionRequirement(_,prereleases) -> prereleases
 
-    static member AllReleases = VersionRequirement(Minimum(SemVer.Parse "0"),PreReleaseStatus.No)
-    static member NoRestriction = VersionRequirement(Minimum(SemVer.Parse "0"),PreReleaseStatus.All)
+    static member AllReleases = VersionRequirement(Minimum(SemVer.Zero),PreReleaseStatus.No)
+    static member NoRestriction = VersionRequirement(Minimum(SemVer.Zero),PreReleaseStatus.All)
 
     override this.ToString() = this.Range.ToString()
 
@@ -182,7 +182,7 @@ type VersionRequirement =
                             | VersionRangeBound.Including, VersionRangeBound.Including -> Minimum(versions.[0])
                             | VersionRangeBound.Including, VersionRangeBound.Excluding -> Minimum(versions.[0])
                             | _ -> failwithf "unable to parse %s" text
-                    | 0 -> Minimum(SemVer.Parse "0")
+                    | 0 -> Minimum(SemVer.Zero)
                     | _ -> failwithf "unable to parse %s" text
             match parsed with
             | Range(fromB, from, _to, _toB) -> 

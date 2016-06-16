@@ -212,7 +212,7 @@ let createPackageRequirement sources (packageName, version, restrictions) depend
      { Name = PackageName packageName
        VersionRequirement =
             if version = "" then
-                VersionRequirement(VersionRange.Minimum <| SemVer.Parse "0", PreReleaseStatus.No)
+                VersionRequirement(VersionRange.Minimum SemVer.Zero, PreReleaseStatus.No)
             else
                 VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
        ResolverStrategyForDirectDependencies = None
