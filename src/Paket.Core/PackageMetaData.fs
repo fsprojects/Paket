@@ -49,8 +49,8 @@ let getVersion versionFromAssembly attributes =
 
 let getAuthors attributes = 
     attributes
-    |> Seq.tryPick (function Company a -> Some a | _ -> None)
-    |> Option.map (fun a -> 
+    |> Seq.tryPick (function Company a when notNullOrEmpty a -> Some a | _ -> None)
+    |> Option.map (fun a ->
             a.Split(',')
             |> Array.map (fun s -> s.Trim())
             |> List.ofArray)

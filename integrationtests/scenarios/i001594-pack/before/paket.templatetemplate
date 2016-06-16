@@ -1,2 +1,4 @@
 type project
+description Test project.
+authors Paket team
 licenseUrl http://opensource.org/licenses/MIT
