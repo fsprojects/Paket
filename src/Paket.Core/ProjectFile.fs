@@ -1012,6 +1012,7 @@ module ProjectFile =
             let afterBuildNode = 
                 createNode "Target" project
                 |> addAttribute "Name" "AfterBuild"
+                |> addAttribute "Condition" (sprintf "Exists('%s')" toolPath)
 
             afterBuildNode.AppendChild(runtimeDependenciesNode) |> ignore
             
