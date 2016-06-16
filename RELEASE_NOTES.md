@@ -1,3 +1,6 @@
+#### 3.1.3 - 16.06.2016
+* BUGFIX: Trailing slash will be removed from credentials - https://github.com/fsprojects/Paket/pull/1735
+
 #### 3.1.2 - 16.06.2016
 * COSMETICS: Add condition to AfterBuild target to unbreak nCrunch - https://github.com/fsprojects/Paket/pull/1734
 
