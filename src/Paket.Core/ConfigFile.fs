@@ -202,4 +202,4 @@ let askAndAddAuth (source : string) (username : string) =
             username
 
     let password = readPassword "Password: "
-    AddCredentials (source, username, password)
+    AddCredentials (source.TrimEnd [|'/'|], username, password)
