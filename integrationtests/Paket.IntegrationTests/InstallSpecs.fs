@@ -506,3 +506,12 @@ let ``#1720 install concrete netstandard15``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1732 aliases ignore cases``() = 
+    let newLockFile = install "i001732-lowercase-aliases"
+    let newFile = Path.Combine(scenarioTempPath "i001732-lowercase-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001732-lowercase-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1

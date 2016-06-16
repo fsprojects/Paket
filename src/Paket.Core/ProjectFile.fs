@@ -622,11 +622,9 @@ module ProjectFile =
                 match lib with
                 | Reference.Library lib ->
                     let fi = FileInfo (normalizePath lib)
-                    let l = lib.ToLower()
                     let aliases =
                         aliases
-                        |> Seq.tryFind (fun kv -> l.Contains(kv.Key))
-                        |> Option.map (fun kv -> kv.Value)
+                        |> Map.tryPick (fun dll alias -> if fi.Name.Equals(dll, StringComparison.OrdinalIgnoreCase) then Some(alias) else None)
                     
                     let relativePath = createRelativePath project.FileName fi.FullName
                     if relativePath.Contains @"\native\" then createNode "NativeReference" project else createNode "Reference" project
