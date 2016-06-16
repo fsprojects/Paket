@@ -1,3 +1,6 @@
+#### 3.1.2 - 16.06.2016
+* COSMETICS: Add condition to AfterBuild target to unbreak nCrunch - https://github.com/fsprojects/Paket/pull/1734
+
 #### 3.1.1 - 16.06.2016
 * BUGFIX: Ignore case in aliases dll names - https://github.com/fsprojects/Paket/pull/1733
 
