@@ -1,3 +1,6 @@
+#### 3.1.1 - 16.06.2016
+* BUGFIX: Ignore case in aliases dll names - https://github.com/fsprojects/Paket/pull/1733
+
 #### 3.1.0 - 16.06.2016
 * Paket pack doesn't allow empty string as authors and description metadata - https://github.com/fsprojects/Paket/pull/1728
 * Made Name and Guid in ProjectRefrence optional - https://github.com/fsprojects/Paket/issues/1729
