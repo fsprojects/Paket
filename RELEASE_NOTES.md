@@ -1,3 +1,6 @@
+#### 3.1.4 - 17.06.2016
+* BUGFIX: Added a username and password option scripting - https://github.com/fsprojects/Paket/pull/1736
+
 #### 3.1.3 - 16.06.2016
 * BUGFIX: Trailing slash will be removed from credentials - https://github.com/fsprojects/Paket/pull/1735
 
