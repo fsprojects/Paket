@@ -92,12 +92,16 @@ with
 type ConfigArgs =
     | [<CustomCommandLine("add-credentials")>] AddCredentials of string
     | [<CustomCommandLine("add-token")>] AddToken of string * string
+    | Username of string
+    | Password of string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | AddCredentials(_) -> "Add credentials for the specified NuGet feed."
             | AddToken(_) -> "Add token for the specified source."
+            | Username(_) -> "Provide a username (for scripting)"
+            | Password(_) -> "provide a password on the commandline (for scripting)"
 
 type ConvertFromNugetArgs =
     | [<AltCommandLine("-f")>] Force

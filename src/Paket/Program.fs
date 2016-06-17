@@ -100,12 +100,9 @@ let config (results : ParseResults<_>) =
     | true, _ -> 
       let args = results.GetResults <@ ConfigArgs.AddCredentials @>
       let source = args.Item 0
-      let username =
-          if(args.Length > 1) then
-              args.Item 1
-          else
-              ""
-      Dependencies.Locate().AddCredentials(source, username)
+      let username, password = results.GetResult (<@ ConfigArgs.Username @>, ""), results.GetResult (<@ ConfigArgs.Password @>, "") 
+            
+      Dependencies.Locate().AddCredentials(source, username, password)
     | _, true ->
       let args = results.GetResults <@ ConfigArgs.AddToken @>
       let source, token = args.Item 0

@@ -193,7 +193,7 @@ let AddToken (source, token) =
         | None -> () 
     }
 
-let askAndAddAuth (source : string) (username : string) = 
+let askAndAddAuth (source : string) (username : string) (password : string) = 
     let username =
         if username = "" then
             Console.Write "Username: "
@@ -201,5 +201,9 @@ let askAndAddAuth (source : string) (username : string) =
         else 
             username
 
-    let password = readPassword "Password: "
+    let password = 
+        if password = "" then
+            readPassword "Password: "
+        else
+            password
     AddCredentials (source.TrimEnd [|'/'|], username, password)
