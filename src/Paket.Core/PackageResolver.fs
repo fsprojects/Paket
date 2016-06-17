@@ -298,7 +298,9 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                 exploredPackages.Add(key,explored)
                 Some explored
             with
-            | _ -> None
+            | _ ->
+                traceWarnfn "    Package not available."
+                None
 
     let getCompatibleVersions(currentStep:ResolverStep,currentRequirement:PackageRequirement) =
         verbosefn "  Trying to resolve %O" currentRequirement
