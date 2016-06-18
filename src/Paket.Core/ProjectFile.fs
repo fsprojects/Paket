@@ -1042,7 +1042,7 @@ module ProjectFile =
         | _ -> Guid.Empty
 
     let getInterProjectDependencies project =
-        let forceGetInnerText node name =
+        let forceGetName node name =
             match node |> getNode name with 
             | Some n -> Some n.InnerText
             | None ->
@@ -1051,6 +1051,9 @@ module ProjectFile =
                     let fi = FileInfo(normalizePath fileName)
                     Some <| fi.Name.Replace(fi.Extension,"")
                 | None -> None
+
+        let forceGetInnerText node name =
+            node |> getNode name |> Option.map (fun n -> n.InnerText)
 
         [for node in project.Document |> getDescendants "ProjectReference" -> 
             let path =
@@ -1067,8 +1070,8 @@ module ProjectFile =
                 Path.Combine(di.FullName,path) |> Path.GetFullPath
 
               RelativePath = path.Replace("/","\\")
-              Name = forceGetInnerText node "Name"
-              GUID = forceGetInnerText node "Project" |> Option.map Guid.Parse }]
+              Name = forceGetName node "Name"
+              GUID = (forceGetInnerText node "Project") |> Option.map Guid.Parse }]
 
     let replaceNuGetPackagesFile project =
         let noneAndContentNodes = 
