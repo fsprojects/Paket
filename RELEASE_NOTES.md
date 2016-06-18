@@ -1,3 +1,6 @@
+#### 3.1.5 - 18.06.2016
+* BUGFIX: Make sure Guid in project reference is parsed well  - https://github.com/fsprojects/Paket/pull/1738
+
 #### 3.1.4 - 17.06.2016
 * BUGFIX: Added a username and password option scripting - https://github.com/fsprojects/Paket/pull/1736
 
