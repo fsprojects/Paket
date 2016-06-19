@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>DependencyModel - Paket</title>
+    <title>DependenciesFileParser - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,7 +58,7 @@
 
 
 
-<h1>DependencyModel</h1>
+<h1>DependenciesFileParser</h1>
 <p>
   <span>Namespace: Paket</span><br />
 </p>
@@ -66,6 +66,23 @@
 </div>
 
 <!-- Render nested types and modules, if there are any -->
+  <h2>Nested types and modules</h2>
+  <div>
+      <table class="table table-bordered type-list">
+    <thead>
+      <tr><td>Type</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="type-name">
+            <a href="paket-dependenciesfileparser-remoteparseroption.html">RemoteParserOption</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
+
+  </div>
 
   <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
@@ -76,61 +93,172 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '66', 66)" onmouseover="showTip(event, '66', 66)">
-            CalcDependencies (...)
+          <code onmouseout="hideTip(event, '54', 54)" onmouseover="showTip(event, '54', 54)">
+            parseDependenciesFile fileName lines
           </code>
-          <div class="tip" id="66">
-            <strong>Signature:</strong> (dependenciesFile:DependenciesFile * groupName:GroupName * projectFileName:string) -&gt; Map&lt;PackageName,VersionRequirement&gt;<br />
+          <div class="tip" id="54">
+            <strong>Signature:</strong> fileName:string -&gt; lines:string [] -&gt; string * Map&lt;GroupName,DependenciesGroup&gt; * string []<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyModel.fs#L20-20" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependenciesFileParser.fs#L436-436" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Calculates the used dependencies for a project.</p>
-
-
+          
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '67', 67)" onmouseover="showTip(event, '67', 67)">
-            CalcDependenciesForDirectPackages (...)
+          <code onmouseout="hideTip(event, '55', 55)" onmouseover="showTip(event, '55', 55)">
+            parseDependencyLine line
           </code>
-          <div class="tip" id="67">
-            <strong>Signature:</strong> (dependenciesFile:DependenciesFile * groupName:GroupName * references:PackageName list) -&gt; Map&lt;PackageName,VersionRequirement&gt;<br />
+          <div class="tip" id="55">
+            <strong>Signature:</strong> line:string -&gt; string []<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyModel.fs#L8-8" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependenciesFileParser.fs#L117-117" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Calculates the used dependencies for the given direct references.</p>
-
-
+          
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '68', 68)" onmouseover="showTip(event, '68', 68)">
-            CalcDependenciesForReferencesFile (...)
+          <code onmouseout="hideTip(event, '56', 56)" onmouseover="showTip(event, '56', 56)">
+            parsePackage (...)
           </code>
-          <div class="tip" id="68">
-            <strong>Signature:</strong> (dependenciesFile:DependenciesFile * groupName:GroupName * referencesFile:string) -&gt; Map&lt;PackageName,VersionRequirement&gt;<br />
+          <div class="tip" id="56">
+            <strong>Signature:</strong> (sources:PackageSource list * parent:PackageRequirementSource * name:string * version:string * rest:string) -&gt; PackageRequirement<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyModel.fs#L13-13" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependenciesFileParser.fs#L305-305" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          <p>Calculates the used dependencies for given references file.</p>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
 
+          <code onmouseout="hideTip(event, '57', 57)" onmouseover="showTip(event, '57', 57)">
+            parsePackageLine (sources, parent, line)
+          </code>
+          <div class="tip" id="57">
+            <strong>Signature:</strong> (sources:PackageSource list * parent:PackageRequirementSource * line:string) -&gt; PackageRequirement<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependenciesFileParser.fs#L349-349" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
 
+          <code onmouseout="hideTip(event, '58', 58)" onmouseover="showTip(event, '58', 58)">
+            parseResolverStrategy text
+          </code>
+          <div class="tip" id="58">
+            <strong>Signature:</strong> text:string -&gt; ResolverStrategy option<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependenciesFileParser.fs#L21-21" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '59', 59)" onmouseover="showTip(event, '59', 59)">
+            parseVersionRequirement text
+          </code>
+          <div class="tip" id="59">
+            <strong>Signature:</strong> text:string -&gt; VersionRequirement<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependenciesFileParser.fs#L39-39" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '60', 60)" onmouseover="showTip(event, '60', 60)">
+            parseVersionString version
+          </code>
+          <div class="tip" id="60">
+            <strong>Signature:</strong> version:string -&gt; VersionStrategy<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependenciesFileParser.fs#L449-449" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '61', 61)" onmouseover="showTip(event, '61', 61)">
+            twiddle minimum
+          </code>
+          <div class="tip" id="61">
+            <strong>Signature:</strong> minimum:string -&gt; string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependenciesFileParser.fs#L27-27" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Active patterns</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Active pattern</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '62', 62)" onmouseover="showTip(event, '62', 62)">
+            ( |NuGetStrategy|PaketStrategy|NoStrategy| ) (...)
+          </code>
+          <div class="tip" id="62">
+            <strong>Signature:</strong> text:string -&gt; Choice&lt;unit,unit,unit&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependenciesFileParser.fs#L15-15" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>|NuGetStrategy|PaketStrategy|NoStrategy|</code></p>
         </td>
       </tr>
     </tbody>
