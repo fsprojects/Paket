@@ -120,6 +120,7 @@
     <Compile Include="BindingRedirect.fs" />
     <Compile Include="LoadingScriptGenerationTests.fs" />
     <Compile Include="LocalOverrideSpecs.fs" />
+    <Compile Include="SimplifierSpecs.fs" />
     <None Include="paket.references" />
     <Content Include="App.config" />
   </ItemGroup>

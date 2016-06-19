@@ -113,10 +113,12 @@
     <Compile Include="Nuget.fs" />
     <Compile Include="NuGetV3.fs" />
     <Compile Include="NuGetV2.fs" />
-    <Compile Include="DependenciesFile.fs" />
+    <Compile Include="DependenciesTypes.fs" />
+    <Compile Include="DependenciesFileParser.fs" />
     <Compile Include="LockFile.fs" />
     <Compile Include="TemplateFile.fs" />
     <Compile Include="ProjectFile.fs" />
+    <Compile Include="DependenciesFile.fs" />
     <Compile Include="LocalFile.fs" />
     <Compile Include="DependencyChangeDetection.fs" />
     <Compile Include="GarbageCollection.fs" />
