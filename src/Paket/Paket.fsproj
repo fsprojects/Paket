@@ -28,9 +28,8 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartAction>Project</StartAction>
-    <StartProgram>D:\develop\github\Paket\bin\paket.exe</StartProgram>
-    <StartAction>Program</StartAction>
-    <StartArguments>add-credentials http://blub --batch blub bli</StartArguments>
+    <StartProgram>paket.exe</StartProgram>
+    <StartAction>Project</StartAction>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
