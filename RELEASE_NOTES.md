@@ -1,3 +1,6 @@
+#### 3.1.7 - 20.06.2016
+* BUGFIX: Create folder if needed during package extraction - https://github.com/fsprojects/Paket/issues/1741
+
 #### 3.1.6 - 19.06.2016
 * BUGFIX: Simplify works with auto-detected target frameworks - https://github.com/fsprojects/Paket/pull/1740
 

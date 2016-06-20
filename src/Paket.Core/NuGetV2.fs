@@ -375,9 +375,14 @@ let rec private cleanup (dir : DirectoryInfo) =
         else
             cleanup sub
     for file in dir.GetFiles() do
+
         let newName = Uri.UnescapeDataString(file.Name)
-        if file.Name <> newName && not (File.Exists <| Path.Combine(file.DirectoryName, newName)) then
-            File.Move(file.FullName, Path.Combine(file.DirectoryName, newName))
+        let newFullName = Path.Combine(file.DirectoryName, newName)
+        if file.Name <> newName && not (File.Exists newFullName) then
+            if not file.Directory.Exists then
+                file.Directory.Create()
+
+            File.Move(file.FullName, newFullName)
 
 
 /// Extracts the given package to the user folder
