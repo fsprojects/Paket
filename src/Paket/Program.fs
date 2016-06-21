@@ -17,8 +17,9 @@ let private stopWatch = new Stopwatch()
 stopWatch.Start()
 
 let filterGlobalArgs args =
+    let error = ref None
     let verbose = args |> Array.exists (fun x -> x = "--verbose" || x = "-v")
-    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.map (fun i -> if args.Length - 1 > i then args.[i+1] else failwithf "--log-file was specifed, but no log file was given")
+    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.bind (fun i -> if args.Length - 1 > i then Some args.[i+1] else error := Some "--log-file was specifed, but no log file was given"; None)
 
     let rest =
         match logFile with
@@ -29,9 +30,9 @@ let filterGlobalArgs args =
         if verbose then rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
         else rest
 
-    verbose, logFile, rest
+    error,verbose, logFile, rest
 
-let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
+let globalError,v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
 let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
 
 let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command
@@ -44,7 +45,10 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
 
     let resultsValid = validateF (results)
     if results.IsUsageRequested || not resultsValid then
-        if not resultsValid then
+        if !globalError <> None then
+            traceError (!globalError).Value
+            Environment.ExitCode <- 1
+        elif not resultsValid then
             traceError "Command was:"
             traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
             parser.Usage(Commands.cmdLineUsageMessage command parser) |> traceError
