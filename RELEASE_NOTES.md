@@ -1,3 +1,6 @@
+#### 3.1.8 - 21.06.2016
+* BUGFIX: Better error message when log file is missing - https://github.com/fsprojects/Paket/issues/1743
+
 #### 3.1.7 - 20.06.2016
 * BUGFIX: Create folder if needed during package extraction - https://github.com/fsprojects/Paket/issues/1741
 

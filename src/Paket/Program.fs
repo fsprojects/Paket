@@ -18,7 +18,7 @@ stopWatch.Start()
 
 let filterGlobalArgs args =
     let verbose = args |> Array.exists (fun x -> x = "--verbose" || x = "-v")
-    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.map (fun i -> args.[i+1])
+    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.map (fun i -> if args.Length - 1 > i then args.[i+1] else failwithf "--log-file was specifed, but no log file was given")
 
     let rest =
         match logFile with

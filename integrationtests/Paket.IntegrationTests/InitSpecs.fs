@@ -18,6 +18,14 @@ let ``#1040 init should download release version of bootstrapper``() =
     productVersion.Contains("-") |> shouldEqual false
 
 [<Test>]
+let ``#1743 empty log file``() =
+    try
+        paket "init --log-file" "i001040-init-downloads-bootstrapper" |> ignore
+        failwith "expected error"
+    with
+    | exn when exn.Message.Contains "log file" -> ()
+
+[<Test>]
 let ``#1240 current bootstrapper should work``() = 
     CleanDir (scenarioTempPath "i001240-bootstrapper")
     let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.bootstrapper.exe")

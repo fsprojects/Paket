@@ -60,12 +60,14 @@ let ``should detect solution path for dependencies in Project4 proj file``() =
 
 [<Test>]
 let ``should return None Guids for dependencies in Project5 proj file``() =
-    ProjectFile.TryLoad("./ProjectFile/TestData/Project5.fsprojtest").Value.GetInterProjectDependencies()
+    let proj = ProjectFile.TryLoad("./ProjectFile/TestData/Project5.fsprojtest")
+    proj.Value.GetInterProjectDependencies()
     |> List.map (fun p -> p.GUID)
     |> shouldEqual [None; None]
 
 [<Test>]
 let ``should return Name based on Include if not set for dependencies in Project5 proj file``() =
-    ProjectFile.TryLoad("./ProjectFile/TestData/Project5.fsprojtest").Value.GetInterProjectDependencies()
+    let proj = ProjectFile.TryLoad("./ProjectFile/TestData/Project5.fsprojtest")
+    proj.Value.GetInterProjectDependencies()
     |> List.map (fun p -> p.Name)
     |> shouldEqual [Some "Paket"; Some "Paket.Core"]
