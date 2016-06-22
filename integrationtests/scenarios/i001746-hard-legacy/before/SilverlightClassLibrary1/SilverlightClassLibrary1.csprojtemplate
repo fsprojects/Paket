@@ -55,6 +55,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Net" >
       <Private>True</Private>
+      <Paket>False</Paket>
     </Reference>
     <Reference Include="System.Windows.Browser" />
   </ItemGroup>

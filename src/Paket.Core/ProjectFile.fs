@@ -570,11 +570,13 @@ module ProjectFile =
             getCustomModelNodes model project
             |> List.filter (fun node ->
                 let isFrameworkNode = ref true
+                let isManualNode = ref false
                 for child in node.ChildNodes do
                     if child.Name = "HintPath" then isFrameworkNode := false
-                    if child.Name = "Private" then isFrameworkNode := false
+                    if child.Name = "Paket" && String.equalsIgnoreCase child.InnerText "false" then 
+                        isManualNode := true
 
-                not !isFrameworkNode)
+                not !isFrameworkNode && not !isManualNode)
         
         if nodesToDelete <> [] then
             verbosefn "    - Deleting custom projects nodes for %O" model.PackageName

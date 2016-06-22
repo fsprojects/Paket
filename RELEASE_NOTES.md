@@ -1,3 +1,6 @@
+#### 3.1.9 - 22.06.2016
+* BUGFIX: Do not take over control over manual nodes - https://github.com/fsprojects/Paket/issues/1746
+
 #### 3.1.8 - 21.06.2016
 * BUGFIX: Better error message when log file is missing - https://github.com/fsprojects/Paket/issues/1743
 
