@@ -26,8 +26,11 @@ group Test
   source https://nuget.org/api/v2
   cache ./nupkgs versions:current
 
-  nuget NUnit.Runners 3.2
-  nuget NUnit 3.2
   nuget Moq
   nuget FSCheck
+  
+  source http://ci.appveyor.com/nuget/nunit
+  nuget NUnit 3.3.0-CI-2857-issue-1593
+  nuget NUnit.Console 3.3.0-CI-2857-issue-1593
+
   github forki/FsUnit FsUnit.fs
