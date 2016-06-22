@@ -2,4 +2,4 @@ redirects: off
 framework: net40, net45, sl5
 source https://www.nuget.org/api/v2
 
-nuget Castle.Core
+nuget microsoft.bcl.async v1.0.168
