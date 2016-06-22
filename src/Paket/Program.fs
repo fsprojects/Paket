@@ -24,7 +24,7 @@ let filterGlobalArgs args =
     let rest =
         match logFile with
         | Some file -> args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
-        | None -> args
+        | None -> args |> Array.filter (fun a -> a <> "--log-file")
 
     let rest =
         if verbose then rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
@@ -44,7 +44,7 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
              errorHandler = ProcessExiter())
 
     let resultsValid = validateF (results)
-    if results.IsUsageRequested || not resultsValid then
+    if results.IsUsageRequested || not resultsValid || !globalError <> None then
         if !globalError <> None then
             traceError (!globalError).Value
             Environment.ExitCode <- 1
