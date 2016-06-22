@@ -265,9 +265,9 @@ By specifying C == 1.1 we overwrite all other requirements and Paket will not co
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
 
-<span class="k">nuget</span> jQuery <span class="k">CopyToOutputDirectory</span>: always
-<span class="k">nuget</span> Fody <span class="k">CopyToOutputDirectory</span>: never
-<span class="k">nuget</span> ServiceStack.Swagger <span class="k">CopyToOutputDirectory</span>: preserve-newest
+<span class="k">nuget</span> jQuery <span class="k">copy_content_to_output_dir</span>: always
+<span class="k">nuget</span> Fody <span class="k">copy_content_to_output_dir</span>: never
+<span class="k">nuget</span> ServiceStack.Swagger <span class="k">copy_content_to_output_dir</span>: preserve-newest
 </code></pre></td></tr></table>
 <h3><a name="redirects-settings" class="anchor" href="#redirects-settings">redirects settings</a></h3>
 <p>You can instruct Paket to create assembly binding redirects for NuGet packages:</p>
