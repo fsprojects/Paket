@@ -220,9 +220,9 @@ It's possible to influence the `CopyToOutputDirectory` property for content refe
     [lang=paket]
     source https://nuget.org/api/v2
 
-    nuget jQuery CopyToOutputDirectory: always
-	nuget Fody CopyToOutputDirectory: never
-	nuget ServiceStack.Swagger CopyToOutputDirectory: preserve-newest
+    nuget jQuery copy_content_to_output_dir: always
+	nuget Fody copy_content_to_output_dir: never
+	nuget ServiceStack.Swagger copy_content_to_output_dir: preserve-newest
 
 ### redirects settings
 
