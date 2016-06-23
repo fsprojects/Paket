@@ -85,38 +85,10 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
                 changes,groups
             | Install ->
-                let nuGetChanges = DependencyChangeDetection.findNuGetChangesInDependenciesFile(dependenciesFile,lockFile)
-                let nuGetChangesPerGroup =
-                    nuGetChanges
-                    |> Seq.groupBy fst
-                    |> Map.ofSeq
+                let hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile)
 
-                let remoteFileChanges = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(dependenciesFile,lockFile)
-                let remoteFileChangesPerGroup =
-                    remoteFileChanges
-                    |> Seq.groupBy fst
-                    |> Map.ofSeq
-
-                let hasNuGetChanges groupName =
-                    match nuGetChangesPerGroup |> Map.tryFind groupName with
-                    | None -> false
-                    | Some x -> Seq.isEmpty x |> not
-
-                let hasRemoteFileChanges groupName =
-                    match remoteFileChangesPerGroup |> Map.tryFind groupName with
-                    | None -> false
-                    | Some x -> Seq.isEmpty x |> not
-
-                let hasChangedSettings groupName =
-                    match dependenciesFile.Groups |> Map.tryFind groupName with
-                    | None -> true
-                    | Some dependenciesFileGroup -> 
-                        match lockFile.Groups |> Map.tryFind groupName with
-                        | None -> true
-                        | Some lockFileGroup -> dependenciesFileGroup.Options <> lockFileGroup.Options
-
-                let hasChanges groupName _ = 
-                    let hasChanges = hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName
+                let hasChanges groupName x = 
+                    let hasChanges = hasChanges groupName x
                     if not hasChanges then
                         tracefn "Skipping resolver for group %O since it is already up-to-date" groupName
                     hasChanges

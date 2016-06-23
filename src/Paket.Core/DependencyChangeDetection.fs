@@ -175,3 +175,44 @@ let GetPreferredNuGetVersions (dependenciesFile:DependenciesFile,lockFile:LockFi
             | Some s -> kv.Key, (kv.Value.Version, s)
             | None -> kv.Key, (kv.Value.Version, kv.Value.Source))
     |> Map.ofSeq
+
+let GetChanges(dependenciesFile,lockFile) =
+    let nuGetChanges = findNuGetChangesInDependenciesFile(dependenciesFile,lockFile)
+    let nuGetChangesPerGroup =
+        nuGetChanges
+        |> Seq.groupBy fst
+        |> Map.ofSeq
+
+    let remoteFileChanges = findRemoteFileChangesInDependenciesFile(dependenciesFile,lockFile)
+    let remoteFileChangesPerGroup =
+        remoteFileChanges
+        |> Seq.groupBy fst
+        |> Map.ofSeq
+
+    let hasNuGetChanges groupName =
+        match nuGetChangesPerGroup |> Map.tryFind groupName with
+        | None -> false
+        | Some x -> Seq.isEmpty x |> not
+
+    let hasRemoteFileChanges groupName =
+        match remoteFileChangesPerGroup |> Map.tryFind groupName with
+        | None -> false
+        | Some x -> Seq.isEmpty x |> not
+
+    let hasChangedSettings groupName =
+        match dependenciesFile.Groups |> Map.tryFind groupName with
+        | None -> true
+        | Some dependenciesFileGroup -> 
+            match lockFile.Groups |> Map.tryFind groupName with
+            | None -> true
+            | Some lockFileGroup -> dependenciesFileGroup.Options <> lockFileGroup.Options
+
+    let hasChanges groupName _ = hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName
+
+    let hasAnyChanges =
+        dependenciesFile.Groups
+        |> Map.filter hasChanges
+        |> Map.isEmpty
+        |> not
+
+    hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges

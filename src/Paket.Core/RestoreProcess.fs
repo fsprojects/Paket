@@ -128,7 +128,12 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
     let lockFile = 
         LockFile.LoadFrom(lockFileName.FullName)
         |> LocalFile.overrideLockFile localFile
-   
+
+    let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile)
+
+    if hasAnyChanges then 
+        failwithf "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
+
     let groups =
         match group with
         | None -> lockFile.Groups 
