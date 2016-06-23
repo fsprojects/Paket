@@ -378,6 +378,7 @@ let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestriction
 /// Get if a target should be considered with the specified restrictions
 let isTargetMatchingRestrictions =
     memoize <| fun (restrictions:FrameworkRestriction list, target) ->
+        if List.isEmpty restrictions then true else
         match target with
         | SinglePlatform (Runtimes _ ) -> true
         | SinglePlatform pf ->

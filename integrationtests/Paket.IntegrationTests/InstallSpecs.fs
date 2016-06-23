@@ -361,12 +361,6 @@ let ``#1458 should not install conflicting deps from different groups``() =
     with
     | exn when exn.Message.Contains "Package Nancy is referenced in different versions" -> ()
 
-
-[<Test>]
-let ``#1442 warn if install finds no libs``() = 
-    let result = paket "install" "i001442-warn-if-empty"
-    result |> shouldContainText "contains libraries, but not for the selected TargetFramework"
-
 [<Test>]
 let ``#1442 should not warn on SonarLint``() = 
     let result = paket "install" "i001442-dont-warn"

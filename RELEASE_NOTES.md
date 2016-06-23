@@ -1,4 +1,5 @@
-#### 3.2.0-alpha001 - 23.06.2016
+#### 3.2.0-alpha002 - 23.06.2016
+* BUGFIX: Don't report warnings for packages that are not installed for current target framework - https://github.com/fsprojects/Paket/issues/1693
 * BUGFIX: Runtime deps are copied based on TargetFramework - https://github.com/fsprojects/Paket/issues/1751
 * BUGFIX: Do not take over control over manual nodes - https://github.com/fsprojects/Paket/issues/1746
 * BUGFIX: Better error message when log file is missing - https://github.com/fsprojects/Paket/issues/1743

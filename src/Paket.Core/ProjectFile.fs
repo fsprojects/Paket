@@ -882,23 +882,25 @@ module ProjectFile =
         |> Seq.map (fun kv -> 
             deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
+            let restrictionList = installSettings.FrameworkRestrictions |> getRestrictionList
             let projectModel =
                 (snd kv.Value)
-                    .ApplyFrameworkRestrictions(installSettings.FrameworkRestrictions |> getRestrictionList)
+                    .ApplyFrameworkRestrictions(restrictionList)
                     .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
             
             match getTargetFramework project with 
             | Some targetFramework ->
-                if projectModel.GetLibReferences targetFramework |> Seq.isEmpty then
-                    let libReferences = 
-                        projectModel.GetLibReferencesLazy |> force
-                        |> Seq.filter (fun l -> match l with | Reference.Library _ -> true | _ -> false)
+                if isTargetMatchingRestrictions(restrictionList,SinglePlatform targetFramework) then
+                    if projectModel.GetLibReferences targetFramework |> Seq.isEmpty then
+                        let libReferences = 
+                            projectModel.GetLibReferencesLazy |> force
+                            |> Seq.filter (fun l -> match l with | Reference.Library _ -> true | _ -> false)
 
-                    if not (Seq.isEmpty libReferences) then
-                        traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
-                            (snd kv.Key) targetFramework project.FileName
-            | None -> ()
+                        if not (Seq.isEmpty libReferences) then
+                            traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
+                                (snd kv.Key) targetFramework project.FileName
+            | _ -> ()
 
             let copyLocal = defaultArg installSettings.CopyLocal true
             let importTargets = defaultArg installSettings.ImportTargets true

@@ -81,10 +81,11 @@ type CopyRuntimeDependencies() =
                             try
                                 let g = lockFile.Groups.[groupName]
                                 let p = g.Resolution.[packageName]
-                                match filterRestrictions g.Options.Settings.FrameworkRestrictions p.Settings.FrameworkRestrictions with
-                                | FrameworkRestrictionList restrictions ->
-                                    isTargetMatchingRestrictions(restrictions,restriction)
-                                | _ -> true
+                                let restrictions =
+                                    filterRestrictions g.Options.Settings.FrameworkRestrictions p.Settings.FrameworkRestrictions 
+                                    |> getRestrictionList
+                                
+                                isTargetMatchingRestrictions(restrictions,restriction)
                             with
                             | _ -> true)
                     else 
