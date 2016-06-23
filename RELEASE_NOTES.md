@@ -1,4 +1,4 @@
-#### 3.2.0-alpha003 - 23.06.2016
+#### 3.2.0-alpha004 - 23.06.2016
 * Show out-of-sync error message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750
 * BUGFIX: Don't report warnings for packages that are not installed for current target framework - https://github.com/fsprojects/Paket/issues/1693
 * BUGFIX: Runtime deps are copied based on TargetFramework - https://github.com/fsprojects/Paket/issues/1751

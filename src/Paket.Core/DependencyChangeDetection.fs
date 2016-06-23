@@ -4,7 +4,7 @@ open Paket.Domain
 open Paket.Requirements
 open Paket.PackageResolver
 
-let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =
+let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile,strict) =
     let allTransitives groupName = lockFile.GetTransitiveDependencies groupName
     let hasChanged groupName transitives (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
         let settingsChanged() =
@@ -14,7 +14,13 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
                 else true
             else false
 
-        newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not || settingsChanged()
+        let requirementOk =
+            if strict then
+                newRequirement.VersionRequirement.IsInRange originalPackage.Version
+            else
+                newRequirement.IncludingPrereleases().VersionRequirement.IsInRange originalPackage.Version
+
+        (not requirementOk) || settingsChanged()
 
     let added groupName transitives =
         match dependenciesFile.Groups |> Map.tryFind groupName with
@@ -176,8 +182,8 @@ let GetPreferredNuGetVersions (dependenciesFile:DependenciesFile,lockFile:LockFi
             | None -> kv.Key, (kv.Value.Version, kv.Value.Source))
     |> Map.ofSeq
 
-let GetChanges(dependenciesFile,lockFile) =
-    let nuGetChanges = findNuGetChangesInDependenciesFile(dependenciesFile,lockFile)
+let GetChanges(dependenciesFile,lockFile,strict) =
+    let nuGetChanges = findNuGetChangesInDependenciesFile(dependenciesFile,lockFile,strict)
     let nuGetChangesPerGroup =
         nuGetChanges
         |> Seq.groupBy fst
