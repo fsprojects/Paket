@@ -62,7 +62,7 @@
   <Import Project="$(FSharpTargetsPath)" />
   <UsingTask TaskName="CopyRuntimeDependencies" AssemblyFile="..\.paket\paket.exe" />
   <Target Name="AfterBuild" Condition="Exists('..\.paket\paket.exe')">
-    <CopyRuntimeDependencies OutputPath="$(OutputPath)" ProjectsWithRuntimeLibs="System.Collections;System.Diagnostics.Debug;System.Globalization;System.IO;System.Private.Uri;System.Reflection;System.Reflection.Extensions;System.Reflection.Primitives;System.Resources.ResourceManager;System.Runtime;System.Runtime.Extensions;System.Runtime.InteropServices;System.Text.Encoding;System.Text.Encoding.Extensions;System.Threading;System.Threading.Tasks" />
+    <CopyRuntimeDependencies OutputPath="$(OutDir)" TargetFramework="$(TargetFrameworkIdentifier) - $(TargetFrameworkVersion)" ProjectsWithRuntimeLibs="System.Collections;System.Diagnostics.Debug;System.Globalization;System.IO;System.Private.Uri;System.Reflection;System.Reflection.Extensions;System.Reflection.Primitives;System.Resources.ResourceManager;System.Runtime;System.Runtime.Extensions;System.Runtime.InteropServices;System.Text.Encoding;System.Text.Encoding.Extensions;System.Threading;System.Threading.Tasks" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

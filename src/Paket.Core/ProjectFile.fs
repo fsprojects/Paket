@@ -893,7 +893,7 @@ module ProjectFile =
                 if projectModel.GetLibReferences targetFramework |> Seq.isEmpty then
                     let libReferences = 
                         projectModel.GetLibReferencesLazy |> force
-                        |> Seq.filter (fun l ->  match l with | Reference.Library _ -> true | _ -> false)
+                        |> Seq.filter (fun l -> match l with | Reference.Library _ -> true | _ -> false)
 
                     if not (Seq.isEmpty libReferences) then
                         traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
@@ -994,7 +994,8 @@ module ProjectFile =
 
         let runtimeDependenciesNode = 
             createNode "CopyRuntimeDependencies" project
-            |> addAttribute "OutputPath" "$(OutputPath)"
+            |> addAttribute "OutputPath" "$(OutDir)"
+            |> addAttribute "TargetFramework" "$(TargetFrameworkIdentifier) - $(TargetFrameworkVersion)"
             |> addAttribute "ProjectsWithRuntimeLibs" allPackages
 
         let j = ref 0

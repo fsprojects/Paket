@@ -1,28 +1,13 @@
-#### 3.1.9 - 22.06.2016
+#### 3.2.0-alpha001 - 23.06.2016
+* BUGFIX: Runtime deps are copied based on TargetFramework - https://github.com/fsprojects/Paket/issues/1751
 * BUGFIX: Do not take over control over manual nodes - https://github.com/fsprojects/Paket/issues/1746
-
-#### 3.1.8 - 21.06.2016
 * BUGFIX: Better error message when log file is missing - https://github.com/fsprojects/Paket/issues/1743
-
-#### 3.1.7 - 20.06.2016
 * BUGFIX: Create folder if needed during package extraction - https://github.com/fsprojects/Paket/issues/1741
-
-#### 3.1.6 - 19.06.2016
 * BUGFIX: Simplify works with auto-detected target frameworks - https://github.com/fsprojects/Paket/pull/1740
-
-#### 3.1.5 - 18.06.2016
 * BUGFIX: Make sure Guid in project reference is parsed well - https://github.com/fsprojects/Paket/pull/1738
-
-#### 3.1.4 - 17.06.2016
 * BUGFIX: Added a username and password option scripting - https://github.com/fsprojects/Paket/pull/1736
-
-#### 3.1.3 - 16.06.2016
 * BUGFIX: Trailing slash will be removed from credentials - https://github.com/fsprojects/Paket/pull/1735
-
-#### 3.1.2 - 16.06.2016
 * COSMETICS: Add condition to AfterBuild target to unbreak nCrunch - https://github.com/fsprojects/Paket/pull/1734
-
-#### 3.1.1 - 16.06.2016
 * BUGFIX: Ignore case in aliases dll names - https://github.com/fsprojects/Paket/pull/1733
 
 #### 3.1.0 - 16.06.2016
@@ -30,7 +15,7 @@
 * Made Name and Guid in ProjectRefrence optional - https://github.com/fsprojects/Paket/issues/1729
 * BUGFIX: Prerelease version range are working with ~> again
 * BUGFIX: Filter empty When conditions - https://github.com/fsprojects/Paket/issues/1727
-* BUGFIX: Do not garbage collect pacakges with version in path
+* BUGFIX: Do not garbage collect packages with version in path
 
 #### 3.0.0 - 15.06.2016
 * Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html

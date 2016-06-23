@@ -6,11 +6,13 @@ open Microsoft.Build.Utilities
 open Microsoft.Build.Framework
 open Paket
 open Paket.Domain
+open Paket.Requirements
 
 type CopyRuntimeDependencies() =
     inherit Task()
 
     let mutable outputPath = ""
+    let mutable targetFramework = ""
     let mutable projectFile = ""
     let mutable projectsWithRuntimeLibs = ""
 
@@ -28,6 +30,10 @@ type CopyRuntimeDependencies() =
         with get() = outputPath
         and set(v) = outputPath <- v
 
+    member this.TargetFramework
+        with get() = targetFramework
+        and set(v) = targetFramework <- v
+
     override this.Execute() = 
         let resultCode =
             try
@@ -38,6 +44,8 @@ type CopyRuntimeDependencies() =
                     else ["linux"; "debian-x64"; "unix"]
 
                 base.Log.LogMessage(MessageImportance.Normal, "Detected runtimes: {0}", sprintf "%A" currentRuntimes)
+                base.Log.LogMessage(MessageImportance.Normal, "Target framework: {0}", targetFramework)
+                
                 let currentRuntimes = currentRuntimes |> Set.ofList
                 let projectFile = FileInfo(if String.IsNullOrWhiteSpace this.ProjectFile then this.BuildEngine.ProjectFileOfTaskNode else this.ProjectFile)
                                
@@ -59,15 +67,40 @@ type CopyRuntimeDependencies() =
                 let dependenciesFile = dependencies.GetDependenciesFile()
 
                 let root = Path.GetDirectoryName lockFile.FileName
+
+                let packagesToInstall = 
+                    if not <| String.IsNullOrEmpty targetFramework then
+                        let s = targetFramework.Split([|" - "|],StringSplitOptions.None)
+                        let restriction =
+                            match FrameworkDetection.Extract(s.[0] + s.[1].Replace("v","")) with
+                            | None -> SinglePlatform(DotNetFramework FrameworkVersion.V4)
+                            | Some x -> SinglePlatform(x)
+
+                        packagesToInstall
+                        |> Array.filter (fun (groupName,packageName) ->
+                            try
+                                let g = lockFile.Groups.[groupName]
+                                let p = g.Resolution.[packageName]
+                                match filterRestrictions g.Options.Settings.FrameworkRestrictions p.Settings.FrameworkRestrictions with
+                                | FrameworkRestrictionList restrictions ->
+                                    isTargetMatchingRestrictions(restrictions,restriction)
+                                | _ -> true
+                            with
+                            | _ -> true)
+                    else 
+                        packagesToInstall
+
                 let model = InstallProcess.CreateModel(root, false, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, Map.empty) |> Map.ofArray
+
                 let projectDir = FileInfo(this.BuildEngine.ProjectFileOfTaskNode).Directory
 
                 for group,packageName in packagesToInstall do
                     match model |> Map.tryFind (group,packageName) with
                     | None -> failwithf "Package %O %O was not found in the install model" group packageName
-                    | Some (package,model) ->
+                    | Some (package,projectModel) ->
+
                         let files =
-                            model.ReferenceFileFolders
+                            projectModel.ReferenceFileFolders
                             |> List.choose (fun lib -> 
                                 match lib with
                                 | x when (match x.Targets with | [SinglePlatform(Runtimes(x))] when currentRuntimes |> Set.contains x -> true | _ -> false) -> Some lib.Files
