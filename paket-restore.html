@@ -60,7 +60,7 @@
 <p>Download the dependencies specified by the <a href="lock-file.html"><code>paket.lock</code> file</a> into the <code>packages/</code> directory.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket restore [--force|-f] [--only-referenced] [--touch-affected-refs] [group &lt;string&gt;] [--references-files &lt;string&gt; ...]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket restore [--force|-f] [--only-referenced] [--touch-affected-refs] [--ignore-checks] [group &lt;string&gt;] [--references-files &lt;string&gt; ...]
 </code></pre></td></tr></table>
 <p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
@@ -70,6 +70,7 @@ No packages are downloaded in that case. Please see <code>paket install</code> a
 <p><code>--force [-f]</code>: Forces the download of all packages.</p>
 <p><code>--only-referenced</code>: Allows to restore packages that are referenced in <a href="references-files.html"><code>paket.references</code> files</a>, instead of all packages in <a href="dependencies-file.html"><code>paket.dependencies</code></a>.</p>
 <p><code>--touch-affected-refs</code>: Touches project files referencing packages which are being restored, to help incremental build tools detecting the change.</p>
+<p><code>--ignore-checks</code>: Skips the test if <a href="dependencies-file.html"><code>paket.dependencies</code></a> and <a href="lock-file.html"><code>paket.lock</code></a> are in sync.</p>
 <p><code>group &lt;string&gt;</code>: Allows to restore a single group.</p>
 <p><code>--references-files &lt;string&gt; ...</code>: Allows to restore all packages from the given <a href="references-files.html"><code>paket.references</code> files</a>. This implies --only-referenced.</p>
 
