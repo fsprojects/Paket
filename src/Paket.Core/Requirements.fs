@@ -253,74 +253,104 @@ let optimizeDependencies packages =
         |> List.map (fun (n,vr,_) -> n,vr)
         |> Set.ofList
 
-    [for (name,versionRequirement:VersionRequirement),group in grouped do
-        if name <> PackageName "" then
-            let hasEmpty = not (Set.isEmpty emptyRestrictions) && Set.contains (name,versionRequirement) emptyRestrictions 
-            let hasAll = not (Set.isEmpty packagesWithAllRestrictions) && Set.contains (name,versionRequirement) packagesWithAllRestrictions 
+    let newRestictions =
+        [for (name,versionRequirement:VersionRequirement),group in grouped do
+            if name <> PackageName "" then
+                let hasEmpty = not (Set.isEmpty emptyRestrictions) && Set.contains (name,versionRequirement) emptyRestrictions 
+                let hasAll = not (Set.isEmpty packagesWithAllRestrictions) && Set.contains (name,versionRequirement) packagesWithAllRestrictions 
             
-            if hasEmpty && hasAll then
-                yield name,versionRequirement,[]
-            else
-                let plain' = 
-                    group 
-                    |> List.map (fun (_,_,res) -> res) 
-                    |> List.concat
-                    |> List.distinct
-                    |> List.sort
+                if hasEmpty && hasAll then
+                    yield name,versionRequirement,[]
+                else
+                    let plain' = 
+                        group 
+                        |> List.map (fun (_,_,res) -> res) 
+                        |> List.concat
+                        |> List.distinct
+                        |> List.sort
 
-                let localMaxDotNetRestriction = findMaxDotNetRestriction plain'
-                let localMaxStandardRestriction = findMaxStandardRestriction plain'
-                let globalMax = defaultArg globalMax localMaxDotNetRestriction
-                let globalStandardMax = defaultArg globalStandardMax localMaxStandardRestriction
+                    let localMaxDotNetRestriction = findMaxDotNetRestriction plain'
+                    let localMaxStandardRestriction = findMaxStandardRestriction plain'
+                    let globalMax = defaultArg globalMax localMaxDotNetRestriction
+                    let globalStandardMax = defaultArg globalStandardMax localMaxStandardRestriction
 
-                let plain =
-                    match plain' with
-                    | [] ->
-                        let globalMin = defaultArg globalMin localMaxDotNetRestriction
-                        let globalStandardMin = defaultArg globalStandardMin localMaxDotNetRestriction
+                    let plain =
+                        match plain' with
+                        | [] ->
+                            let globalMin = defaultArg globalMin localMaxDotNetRestriction
+                            let globalStandardMin = defaultArg globalStandardMin localMaxDotNetRestriction
 
-                        let frameworks =
-                            KnownTargetProfiles.DotNetFrameworkVersions 
-                            |> List.filter (fun fw -> DotNetFramework(fw) < globalMin)
-                            |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetFramework(fw)))
-                        let standards =
-                            KnownTargetProfiles.DotNetStandardVersions 
-                            |> List.filter (fun fw -> DotNetStandard(fw) < globalStandardMin)
-                            |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetStandard(fw)))
+                            let frameworks =
+                                KnownTargetProfiles.DotNetFrameworkVersions 
+                                |> List.filter (fun fw -> DotNetFramework(fw) < globalMin)
+                                |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetFramework(fw)))
+                            let standards =
+                                KnownTargetProfiles.DotNetStandardVersions 
+                                |> List.filter (fun fw -> DotNetStandard(fw) < globalStandardMin)
+                                |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetStandard(fw)))
 
-                        frameworks @ standards
+                            frameworks @ standards
 
-                    | _ -> plain'
+                        | _ -> plain'
 
-                let dotnetRestrictions,others = 
-                    plain
-                    |> List.partition (fun p ->
-                        match p with
-                        | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true 
-                        | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true 
-                        | FrameworkRestriction.Exactly(DotNetStandard(_)) -> true 
-                        | FrameworkRestriction.AtLeast(DotNetStandard(_)) -> true 
-                        | _ -> false)
+                    let dotnetRestrictions,others = 
+                        plain
+                        |> List.partition (fun p ->
+                            match p with
+                            | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true 
+                            | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true 
+                            | FrameworkRestriction.Exactly(DotNetStandard(_)) -> true 
+                            | FrameworkRestriction.AtLeast(DotNetStandard(_)) -> true 
+                            | _ -> false)
 
-                let restrictions' = 
-                    dotnetRestrictions
-                    |> List.map (fun restriction ->
-                        match restriction with
-                        | FrameworkRestriction.Exactly(DotNetFramework _ as r) ->
-                            if r = localMaxDotNetRestriction && r = globalMax then
-                                FrameworkRestriction.AtLeast r
-                            else
-                                restriction
-                        | FrameworkRestriction.Exactly (DotNetStandard _ as r) ->
-                            if r = localMaxStandardRestriction && r = globalStandardMax then
-                                FrameworkRestriction.AtLeast r
-                            else
-                                restriction
-                        | _ -> restriction)
+                    let restrictions' = 
+                        dotnetRestrictions
+                        |> List.map (fun restriction ->
+                            match restriction with
+                            | FrameworkRestriction.Exactly(DotNetFramework _ as r) ->
+                                if r = localMaxDotNetRestriction && r = globalMax then
+                                    FrameworkRestriction.AtLeast r
+                                else
+                                    restriction
+                            | FrameworkRestriction.Exactly (DotNetStandard _ as r) ->
+                                if r = localMaxStandardRestriction && r = globalStandardMax then
+                                    FrameworkRestriction.AtLeast r
+                                else
+                                    restriction
+                            | _ -> restriction)
 
-                let restrictions = optimizeRestrictions restrictions'
+                    let restrictions = optimizeRestrictions restrictions'
 
-                yield name,versionRequirement,others @ restrictions]
+                    yield name,versionRequirement,others @ restrictions]
+
+    let hasDotNetFramework =
+        newRestictions
+        |> List.exists (fun (_,_,rs) ->
+            rs
+            |> List.exists (function
+                            | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true 
+                            | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true 
+                            | FrameworkRestriction.Exactly(DotNetStandard(_)) -> true 
+                            | FrameworkRestriction.AtLeast(DotNetStandard(_)) -> true
+                            | _ -> false))
+
+    if not hasDotNetFramework then 
+        newRestictions 
+    else
+        newRestictions
+        |> List.map (fun (p,v,rs) ->
+            let filtered =
+                rs
+                |> List.map (fun r ->
+                    match r with
+                    | FrameworkRestriction.Portable portable ->
+                        let newPortable =
+                            portable.Split('+')
+                            |> Array.filter (fun s -> s.StartsWith "net" |> not)
+                            |> fun xs -> String.Join("+",xs)
+                        FrameworkRestriction.Portable newPortable
+                    | _ -> r)
+            p,v,filtered)
     |> List.map (fun (a,b,c) -> a,b, FrameworkRestrictionList c)
 
 let private combineSameCategoryOrPortableRestrictions x y =

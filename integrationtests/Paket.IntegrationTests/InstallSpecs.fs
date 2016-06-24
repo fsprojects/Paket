@@ -520,10 +520,20 @@ let ``#1734 ncrunch condition``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#746 hard should be softer``() =
+let ``#1746 hard should be softer``() =
     install "i001746-hard-legacy" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001746-hard-legacy","SilverlightClassLibrary1","SilverlightClassLibrary1.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001746-hard-legacy","SilverlightClassLibrary1","SilverlightClassLibrary1.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+
+[<Test>]
+let ``#1753 use net45 and not portable``() =
+    install "i001753-portablenet451" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001753-portablenet451","SilverlightClassLibrary1","SilverlightClassLibrary1.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001753-portablenet451","SilverlightClassLibrary1","SilverlightClassLibrary1.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
