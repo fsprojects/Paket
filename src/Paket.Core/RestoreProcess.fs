@@ -110,7 +110,7 @@ let internal computePackageHull groupName (lockFile : LockFile) (referencesFileN
         |> Seq.map (fun p -> (snd p.Key)))
     |> Seq.concat
 
-let Restore(dependenciesFileName,force,group,referencesFileNames) = 
+let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -129,10 +129,11 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
         LockFile.LoadFrom(lockFileName.FullName)
         |> LocalFile.overrideLockFile localFile
 
-    let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
+    if not ignoreChecks then
+        let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
 
-    if hasAnyChanges then 
-        failwithf "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
+        if hasAnyChanges then 
+            failwithf "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
 
     let groups =
         match group with
