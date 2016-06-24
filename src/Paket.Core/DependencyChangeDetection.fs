@@ -213,10 +213,17 @@ let GetChanges(dependenciesFile,lockFile,strict) =
         | Some dependenciesFileGroup -> 
             match lockFile.Groups |> Map.tryFind groupName with
             | None -> true
-            | Some lockFileGroup -> dependenciesFileGroup.Options <> lockFileGroup.Options
+            | Some lockFileGroup ->
+                let lockFileGroupOptions =
+                    if dependenciesFileGroup.Options.Settings.FrameworkRestrictions = AutoDetectFramework then
+                        { lockFileGroup.Options with Settings = { lockFileGroup.Options.Settings with FrameworkRestrictions = AutoDetectFramework } }
+                    else
+                        lockFileGroup.Options
+                dependenciesFileGroup.Options <> lockFileGroupOptions
 
-    let hasChanges groupName _ = hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName
-
+    let hasChanges groupName _ = 
+        hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName
+        
     let hasAnyChanges =
         dependenciesFile.Groups
         |> Map.filter hasChanges

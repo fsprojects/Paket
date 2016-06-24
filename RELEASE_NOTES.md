@@ -1,3 +1,6 @@
+#### 3.2.2 - 24.06.2016
+* BUGFIX: Fixed out-of-date check for auto-detection of frameworks - https://github.com/fsprojects/Paket/issues/1750
+
 #### 3.2.1 - 24.06.2016
 * Paket.SemVer.Parse is now in PublicAPI.fs - https://github.com/fsprojects/Paket/pull/1754
 
