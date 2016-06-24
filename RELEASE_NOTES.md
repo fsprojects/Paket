@@ -1,4 +1,7 @@
-#### 3.2.0 - 23.06.2016
+#### 3.2.1 - 24.06.2016
+* Paket.SemVer.Parse is now in PublicAPI.fs - https://github.com/fsprojects/Paket/pull/1754
+
+#### 3.2.0 - 24.06.2016
 * Show out-of-sync error message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750
 * BUGFIX: Dependency resolution for .NETFramework4.5 and .NETPortable0.0-wp8+netcore45+net45+wp81+wpa81 fixed - https://github.com/fsprojects/Paket/issues/1753
 * BUGFIX: Don't report warnings for packages that are not installed for current target framework - https://github.com/fsprojects/Paket/issues/1693
