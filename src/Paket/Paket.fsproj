@@ -51,7 +51,7 @@
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
-    <StartArguments>update -f</StartArguments>
+    <StartArguments>find-packages source http://nuget.org/api/v2</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001753-portablenet451\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
