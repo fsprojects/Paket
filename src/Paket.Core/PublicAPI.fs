@@ -575,3 +575,8 @@ type Dependencies(dependenciesFileName: string) =
                          with
                            | _ -> None)
         |> Array.toList
+
+module PublicAPI =
+    /// Takes a version string formatted for Semantic Versioning and parses it
+    /// into the internal representation used by Paket.
+    let ParseSemVer (version:string) = SemVer.Parse version
