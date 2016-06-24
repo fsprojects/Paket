@@ -127,9 +127,9 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks) =
             let localFile =
                 LocalFile.readFile localFileName.FullName
                 |> Chessie.ErrorHandling.Trial.returnOrFail
-            LocalFile.overrideLockFile localFile lockFile,localFile,false
+            LocalFile.overrideLockFile localFile lockFile,localFile,true
 
-    if not (hasLocalFile || ignoreChecks) then
+    if not hasLocalFile && not ignoreChecks then
         let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
 
         if hasAnyChanges then 
