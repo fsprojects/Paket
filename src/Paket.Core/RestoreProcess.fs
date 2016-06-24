@@ -119,17 +119,17 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks) =
         failwithf "%s doesn't exist." lockFileName.FullName
 
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
-    let localFile =
+    let lockFile,localFile,hasLocalFile =
+        let lockFile = LockFile.LoadFrom(lockFileName.FullName)
         if not localFileName.Exists then
-            LocalFile.empty
+            lockFile,LocalFile.empty,false
         else
-            LocalFile.readFile localFileName.FullName
-            |> Chessie.ErrorHandling.Trial.returnOrFail
-    let lockFile = 
-        LockFile.LoadFrom(lockFileName.FullName)
-        |> LocalFile.overrideLockFile localFile
+            let localFile =
+                LocalFile.readFile localFileName.FullName
+                |> Chessie.ErrorHandling.Trial.returnOrFail
+            LocalFile.overrideLockFile localFile lockFile,localFile,false
 
-    if not ignoreChecks then
+    if not (hasLocalFile || ignoreChecks) then
         let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
 
         if hasAnyChanges then 

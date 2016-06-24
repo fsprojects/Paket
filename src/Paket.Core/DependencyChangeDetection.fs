@@ -141,11 +141,13 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
                     let lockFileRemoteFiles =
                         lockFilegroup.RemoteFiles
                         |> List.map RemoteFileChange.CreateResolvedVersion
+                        |> List.map (fun r -> if r.Commit = None then r else { r with Commit = Some "" })
                         |> Set.ofList
 
                     let dependenciesFileRemoteFiles =
                         dependenciesFileGroup.RemoteFiles
                         |> List.map RemoteFileChange.CreateUnresolvedVersion
+                        |> List.map (fun r -> if r.Commit = None then r else { r with Commit = Some "" })
                         |> Set.ofList
 
                     let u =
