@@ -1,3 +1,6 @@
+#### 3.3.1 - 25.06.2016
+* BUGFIX: Make the copy task more robust if we can't parse target framework - https://github.com/fsprojects/Paket/issues/1756
+
 #### 3.3.0 - 25.06.2016
 * Paket fails on dependencies file that has same package twice in same group - https://github.com/fsprojects/Paket/issues/1757
 * Paket.SemVer.Parse is now in PublicAPI.fs - https://github.com/fsprojects/Paket/pull/1754

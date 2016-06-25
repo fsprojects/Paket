@@ -70,24 +70,27 @@ type CopyRuntimeDependencies() =
 
                 let packagesToInstall = 
                     if not <| String.IsNullOrEmpty targetFramework then
-                        let s = targetFramework.Split([|" - "|],StringSplitOptions.None)
-                        let restriction =
-                            match FrameworkDetection.Extract(s.[0] + s.[1].Replace("v","")) with
-                            | None -> SinglePlatform(DotNetFramework FrameworkVersion.V4)
-                            | Some x -> SinglePlatform(x)
+                        try
+                            let s = targetFramework.Split([|" - "|],StringSplitOptions.None)
+                            let restriction =
+                                match FrameworkDetection.Extract(s.[0] + s.[1].Replace("v","")) with
+                                | None -> SinglePlatform(DotNetFramework FrameworkVersion.V4)
+                                | Some x -> SinglePlatform(x)
 
-                        packagesToInstall
-                        |> Array.filter (fun (groupName,packageName) ->
-                            try
-                                let g = lockFile.Groups.[groupName]
-                                let p = g.Resolution.[packageName]
-                                let restrictions =
-                                    filterRestrictions g.Options.Settings.FrameworkRestrictions p.Settings.FrameworkRestrictions 
-                                    |> getRestrictionList
+                            packagesToInstall
+                            |> Array.filter (fun (groupName,packageName) ->
+                                try
+                                    let g = lockFile.Groups.[groupName]
+                                    let p = g.Resolution.[packageName]
+                                    let restrictions =
+                                        filterRestrictions g.Options.Settings.FrameworkRestrictions p.Settings.FrameworkRestrictions 
+                                        |> getRestrictionList
                                 
-                                isTargetMatchingRestrictions(restrictions,restriction)
-                            with
-                            | _ -> true)
+                                    isTargetMatchingRestrictions(restrictions,restriction)
+                                with
+                                | _ -> true)
+                        with
+                        | _ -> packagesToInstall
                     else 
                         packagesToInstall
 
