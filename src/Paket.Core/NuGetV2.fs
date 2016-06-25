@@ -377,10 +377,15 @@ let rec private cleanup (dir : DirectoryInfo) =
     for file in dir.GetFiles() do
 
         let newName = Uri.UnescapeDataString(file.Name)
+        if newName.Contains "..\\" || newName.Contains "../" then
+          failwithf "Relative paths are not supported. Please tell the package author to fix the package to not use relative paths. The invalid file was '%s'" file.FullName
+        if newName.Contains "\\" || newName.Contains "/" then
+          traceWarnfn "File '%s' contains back- or forward-slashes, probably because it wasn't properly packaged (for example with windows paths in nuspec on a unix like system). Please tell the package author to fix it." file.FullName
         let newFullName = Path.Combine(file.DirectoryName, newName)
         if file.Name <> newName && not (File.Exists newFullName) then
-            if not file.Directory.Exists then
-                file.Directory.Create()
+            let dir = Path.GetDirectoryName newFullName
+            if not <| Directory.Exists dir then
+                Directory.CreateDirectory dir |> ignore
 
             File.Move(file.FullName, newFullName)
 
