@@ -824,20 +824,23 @@ let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName
     let rec getFromCache (caches:Cache list) =
         match caches with
         | cache::rest ->
-            let cacheFolder = DirectoryInfo(cache.Location).FullName
-            let cacheFile = FileInfo(Path.Combine(cacheFolder,normalizedNupkgName))
-            if cacheFile.Exists && cacheFile.Length > 0L then 
-                tracefn "Copying %O %O from cache %s" packageName version cache.Location
-                File.Copy(cacheFile.FullName,targetFileName)
-                true                
-            else
-                let cacheFile = FileInfo(Path.Combine(cacheFolder,nupkgName))
+            try
+                let cacheFolder = DirectoryInfo(cache.Location).FullName
+                let cacheFile = FileInfo(Path.Combine(cacheFolder,normalizedNupkgName))
                 if cacheFile.Exists && cacheFile.Length > 0L then 
                     tracefn "Copying %O %O from cache %s" packageName version cache.Location
                     File.Copy(cacheFile.FullName,targetFileName)
-                    true
+                    true                
                 else
-                    getFromCache rest
+                    let cacheFile = FileInfo(Path.Combine(cacheFolder,nupkgName))
+                    if cacheFile.Exists && cacheFile.Length > 0L then 
+                        tracefn "Copying %O %O from cache %s" packageName version cache.Location
+                        File.Copy(cacheFile.FullName,targetFileName)
+                        true
+                    else
+                        getFromCache rest
+            with
+            | _ -> getFromCache rest
         | [] -> false
 
     let rec download authenticated =

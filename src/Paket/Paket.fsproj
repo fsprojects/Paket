@@ -51,8 +51,8 @@
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
-    <StartArguments>convert-from-nuget</StartArguments>
-    <StartWorkingDirectory>D:\temp\paket</StartWorkingDirectory>
+    <StartArguments>restore</StartArguments>
+    <StartWorkingDirectory>d:\code\uen</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

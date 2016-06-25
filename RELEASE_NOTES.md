@@ -1,3 +1,6 @@
+#### 3.3.2 - 25.06.2016
+* BUGFIX: Using network cache with invalid credentials should not fail restore - https://github.com/fsprojects/Paket/issues/1758
+
 #### 3.3.1 - 25.06.2016
 * BUGFIX: Make the copy task more robust if we can't parse target framework - https://github.com/fsprojects/Paket/issues/1756
 

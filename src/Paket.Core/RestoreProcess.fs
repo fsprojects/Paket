@@ -24,7 +24,11 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
 
 let CopyToCaches force caches fileName =
     caches
-    |> Seq.iter (fun cache -> NuGetV2.CopyToCache(cache,fileName,force))
+    |> Seq.iter (fun cache -> 
+        try
+            NuGetV2.CopyToCache(cache,fileName,force)
+        with
+        | exn -> traceWarnfn "Could not copy %s to cache %s" fileName cache.Location)
 
 let private extractPackage caches package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
