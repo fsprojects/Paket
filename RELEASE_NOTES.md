@@ -1,3 +1,6 @@
+#### 3.2.3 - 25.06.2016
+* BUGFIX: Automatic repair of broken file paths in NuGet packages - https://github.com/fsprojects/Paket/issues/1755
+
 #### 3.2.2 - 24.06.2016
 * BUGFIX: Fixed out-of-date check for auto-detection of frameworks - https://github.com/fsprojects/Paket/issues/1750
 
