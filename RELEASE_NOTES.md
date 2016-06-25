@@ -1,11 +1,8 @@
-#### 3.2.3 - 25.06.2016
-* BUGFIX: Automatic repair of broken file paths in NuGet packages - https://github.com/fsprojects/Paket/issues/1755
-
-#### 3.2.2 - 24.06.2016
-* BUGFIX: Fixed out-of-date check for auto-detection of frameworks - https://github.com/fsprojects/Paket/issues/1750
-
-#### 3.2.1 - 24.06.2016
+#### 3.3.0 - 25.06.2016
+* Paket fails on dependencies file that has same package twice in same group - https://github.com/fsprojects/Paket/issues/1757
 * Paket.SemVer.Parse is now in PublicAPI.fs - https://github.com/fsprojects/Paket/pull/1754
+* BUGFIX: Automatic repair of broken file paths in NuGet packages - https://github.com/fsprojects/Paket/issues/1755
+* BUGFIX: Fixed out-of-date check for auto-detection of frameworks - https://github.com/fsprojects/Paket/issues/1750
 
 #### 3.2.0 - 24.06.2016
 * Show out-of-sync error message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750

@@ -233,7 +233,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         DependenciesFile(
             list 
             |> Seq.toArray
-            |> DependenciesFileParser.parseDependenciesFile fileName)
+            |> DependenciesFileParser.parseDependenciesFile fileName false)
 
     member __.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
         let pinDown = defaultArg pinDown false
@@ -333,7 +333,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         DependenciesFile(
             list 
             |> Seq.toArray
-            |> DependenciesFileParser.parseDependenciesFile fileName)
+            |> DependenciesFileParser.parseDependenciesFile fileName false)
 
 
     member this.AddAdditionalPackage(groupName, packageName:PackageName,version:string,settings) =
@@ -374,7 +374,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             
             let fileName, groups, lines = 
               removeElementAt pos textRepresentation
-              |> DependenciesFileParser.parseDependenciesFile fileName
+              |> DependenciesFileParser.parseDependenciesFile fileName false
             
             let filteredGroups, filteredLines =
               groups
@@ -423,7 +423,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         DependenciesFileSerializer.packageString packageName vr.VersionRequirement vr.ResolverStrategy p.Settings
                     else l)
 
-            DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName newLines)
+            DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName false newLines)
         else 
             traceWarnfn "%s doesn't contain package %O in group %O. ==> Ignored" fileName packageName groupName
             this
@@ -442,7 +442,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     DependenciesFileSerializer.packageString matchedPackageName vr.VersionRequirement vr.ResolverStrategy p.Settings
                 | None -> l)
 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName newLines)
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName false newLines)
 
     member this.RootPath = FileInfo(fileName).Directory.FullName
 
@@ -453,14 +453,14 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         tracefn "Dependencies files saved to %s" fileName
 
     static member FromCode(rootPath,code:string) : DependenciesFile = 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile (Path.Combine(rootPath,Constants.DependenciesFileName)) <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile (Path.Combine(rootPath,Constants.DependenciesFileName)) true <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
 
     static member FromCode(code:string) : DependenciesFile = 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile "" <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile "" true <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
 
     static member ReadFromFile fileName : DependenciesFile = 
         verbosefn "Parsing %s" fileName
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName <| File.ReadAllLines fileName)
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName true <| File.ReadAllLines fileName)
 
     /// Find the matching lock file to a dependencies file
     static member FindLockfile(dependenciesFileName) =

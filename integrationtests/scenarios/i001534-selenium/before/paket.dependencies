@@ -8,7 +8,6 @@ nuget FubuMVC.RavenDb 3.0.0.2189-alpha -pre
 nuget FubuMVC.LightningQueues 3.0.0.2189-alpha -pre
 nuget GhostScriptSharp == 1.3.1.4
 nuget log4net 1.2.10.0
-nuget Newtonsoft.Json == 4.5.9
 nuget NLog == 3.1.0.0
 nuget NUnit == 2.6.3.0
 nuget NUnit.Runners == 2.6.3.0

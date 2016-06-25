@@ -366,7 +366,7 @@ module DependenciesFileParser =
         | OmitContent omit -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
         | ReferenceCondition condition -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
 
-    let private parseLine fileName (lineNo, state) line =
+    let private parseLine fileName checkDuplicates (lineNo, state) line =
         match state with
         | current::other ->
             let lineNo = lineNo + 1
@@ -382,9 +382,11 @@ module DependenciesFileParser =
                 | ParserOptions(options) ->
                     lineNo,{ current with Options = parseOptions current options} ::other
                 | Package(name,version,rest) ->
-                    let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest)
-
-                    lineNo, { current with Packages = current.Packages @ [package] }::other
+                    let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest) 
+                    if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
+                        failwithf "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
+                    
+                    lineNo, { current with Packages = current.Packages  @ [package] }::other
                 | SourceFile(origin, (owner,project, vr), path, authKey) ->
                     let remoteFile : UnresolvedSource = 
                         { Owner = owner
@@ -433,10 +435,10 @@ module DependenciesFileParser =
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
         | [] -> failwithf "Error in paket.dependencies line %d" lineNo
 
-    let parseDependenciesFile fileName lines =
+    let parseDependenciesFile fileName checkDuplicates lines =
         let groups = 
             lines
-            |> Array.fold (parseLine fileName) (0, [DependenciesGroup.New Constants.MainDependencyGroup])
+            |> Array.fold (parseLine fileName checkDuplicates) (0, [DependenciesGroup.New Constants.MainDependencyGroup])
             |> snd
             |> List.rev
             |> List.fold (fun m g ->

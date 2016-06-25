@@ -141,9 +141,9 @@ let configWithPassword = """source http://www.nuget.org/api/v2 username: "user" 
 nuget Example > 1.2.3
 nuget Example2 <= 1.2.3
 nuget Example3 < 2.2.3
-nuget Example3 == 2.2.3
-nuget Example3 !== 2.2.3
-nuget Example4 >= 1.2.3 < 1.5"""
+nuget Example4 == 2.2.3
+nuget Example5 !== 2.2.3
+nuget Example6 >= 1.2.3 < 1.5"""
 
 [<Test>]
 let ``should serialize config with password``() = 
@@ -158,9 +158,9 @@ let configWithEnvVarPassword = """source http://www.nuget.org/api/v2 username: "
 nuget Example > 1.2.3
 nuget Example2 <= 1.2.3
 nuget Example3 < 2.2.3
-nuget Example3 == 2.2.3
-nuget Example3 !== 2.2.3
-nuget Example4 >= 1.2.3 < 1.5"""
+nuget Example4 == 2.2.3
+nuget Example5 !== 2.2.3
+nuget Example6 >= 1.2.3 < 1.5"""
 
 [<Test>]
 let ``should serialize config with envrionment variable password``() = 

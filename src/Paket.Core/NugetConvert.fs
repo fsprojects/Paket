@@ -298,7 +298,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray
 
-            Paket.DependenciesFile(DependenciesFileParser.parseDependenciesFile dependenciesFileName newLines))
+            Paket.DependenciesFile(DependenciesFileParser.parseDependenciesFile dependenciesFileName false newLines))
 
     if File.Exists dependenciesFileName then read() else create()
     |> lift (fun d -> d.SimplifyFrameworkRestrictions())

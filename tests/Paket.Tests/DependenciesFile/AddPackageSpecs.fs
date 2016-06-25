@@ -256,7 +256,7 @@ let ``should add Microsoft.AspNet.WebApi package in correct position if package 
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
-nuget log4net
+nuget log3net
 
 source https://www.nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi
@@ -269,7 +269,7 @@ nuget log4net 1.2.10"""
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
-nuget log4net
+nuget log3net
 
 source https://www.nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi 5.2.3
@@ -284,7 +284,7 @@ let ``should pin Microsoft.AspNet.WebApi.Client package in correct position``() 
 
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
-nuget log4net
+nuget log3net
 
 source https://www.nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi
@@ -296,7 +296,7 @@ nuget log4net 1.2.10"""
 
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
-nuget log4net
+nuget log3net
 
 source https://www.nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi
@@ -314,7 +314,7 @@ let ``should add Microsoft.AspNet.WebApi package in correct position if package 
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
-nuget log4net
+nuget log3net
 
 source https://www.nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi 5.2.1
@@ -327,7 +327,7 @@ nuget log4net 1.2.10"""
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
-nuget log4net
+nuget log3net
 
 source https://www.nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi 5.2.1
@@ -354,7 +354,7 @@ nuget Microsoft.AspNet.WebApi 1.0.071.9432"""
 let ``should add Moq to second feed``() = 
     let config = """source http://internalfeed/NugetWebFeed/nuget
 
-nuget log4net
+nuget log3net
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
@@ -368,7 +368,7 @@ nuget Microsoft.AspNet.WebApi 5.2.1
     
     let expected = """source http://internalfeed/NugetWebFeed/nuget
 
-nuget log4net
+nuget log3net
 nuget Microsoft.AspNet.WebApi.Client 5.2.3
 nuget Microsoft.AspNet.WebApi.Core 5.2.3
 nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
