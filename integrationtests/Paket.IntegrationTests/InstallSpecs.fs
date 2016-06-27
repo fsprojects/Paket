@@ -511,15 +511,6 @@ let ``#1732 aliases ignore cases``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1734 ncrunch condition``() = 
-    let newLockFile = install "i001734-ncrunch-condition"
-    let newFile = Path.Combine(scenarioTempPath "i001734-ncrunch-condition","projectA","projectA.fsproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001734-ncrunch-condition","projectA","projectA.fsprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
 let ``#1746 hard should be softer``() =
     install "i001746-hard-legacy" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001746-hard-legacy","SilverlightClassLibrary1","SilverlightClassLibrary1.csproj")
