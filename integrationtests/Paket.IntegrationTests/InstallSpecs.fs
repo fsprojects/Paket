@@ -518,13 +518,3 @@ let ``#1746 hard should be softer``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
-
-
-[<Test>]
-let ``#1753 use net45 and not portable``() =
-    install "i001753-portablenet451" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001753-portablenet451","SilverlightClassLibrary1","SilverlightClassLibrary1.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001753-portablenet451","SilverlightClassLibrary1","SilverlightClassLibrary1.csprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
