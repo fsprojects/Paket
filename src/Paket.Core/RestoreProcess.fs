@@ -137,7 +137,7 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks) =
         let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
 
         if hasAnyChanges then 
-            failwithf "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
+            traceWarnfn "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
 
     let groups =
         match group with

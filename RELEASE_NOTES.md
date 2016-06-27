@@ -1,3 +1,6 @@
+#### 3.3.3 - 27.06.2016
+* USABILITY: Show out-of-sync warning message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750
+
 #### 3.3.2 - 25.06.2016
 * BUGFIX: Using network cache with invalid credentials should not fail restore - https://github.com/fsprojects/Paket/issues/1758
 
