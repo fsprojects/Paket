@@ -1,3 +1,6 @@
+#### 3.3.4 - 27.06.2016
+* BUGFIX: Fixed out-of-date check for remote files - https://github.com/fsprojects/Paket/issues/1760
+
 #### 3.3.3 - 27.06.2016
 * USABILITY: Show out-of-sync warning message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750
 

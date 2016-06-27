@@ -107,7 +107,7 @@ type RemoteFileChange =
     static member CreateUnresolvedVersion (unresolved:ModuleResolver.UnresolvedSource) : RemoteFileChange =
         { Owner = unresolved.Owner
           Project = unresolved.Project
-          Name = unresolved.Name
+          Name = unresolved.Name.TrimStart('/')
           Origin = unresolved.Origin
           Commit = 
             match unresolved.Version with
@@ -132,35 +132,39 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
         |> Seq.map (fun kv -> kv.Key)
         |> Seq.append (lockFile.Groups |> Seq.map (fun kv -> kv.Key))
 
+    let computeDifference (lockFileGroup:LockFileGroup) (dependenciesFileGroup:DependenciesGroup) =
+        let dependenciesFileRemoteFiles =
+            dependenciesFileGroup.RemoteFiles
+            |> List.map RemoteFileChange.CreateUnresolvedVersion
+            |> Set.ofList
+
+        let lockFileRemoteFiles =
+            lockFileGroup.RemoteFiles
+            |> List.map RemoteFileChange.CreateResolvedVersion
+            |> List.map (fun r -> 
+                match dependenciesFileRemoteFiles |> Seq.tryFind (fun d -> d.Name = r.Name) with
+                | Some d when d.Commit <> None -> r                
+                | _ -> { r with Commit = None })
+            |> Set.ofList
+
+        let u =
+            dependenciesFileRemoteFiles
+            |> Set.union lockFileRemoteFiles
+        let i =
+            dependenciesFileRemoteFiles
+            |> Set.intersect lockFileRemoteFiles
+
+        Set.difference u i
+
     groupNames
     |> Seq.map (fun groupName ->
             match dependenciesFile.Groups |> Map.tryFind groupName with
             | Some dependenciesFileGroup ->
                 match lockFile.Groups |> Map.tryFind groupName with
-                | Some lockFilegroup ->
-                    let lockFileRemoteFiles =
-                        lockFilegroup.RemoteFiles
-                        |> List.map RemoteFileChange.CreateResolvedVersion
-                        |> List.map (fun r -> if r.Commit = None then r else { r with Commit = Some "" })
-                        |> Set.ofList
-
-                    let dependenciesFileRemoteFiles =
-                        dependenciesFileGroup.RemoteFiles
-                        |> List.map RemoteFileChange.CreateUnresolvedVersion
-                        |> List.map (fun r -> if r.Commit = None then r else { r with Commit = Some "" })
-                        |> Set.ofList
-
-                    let u =
-                        dependenciesFileRemoteFiles
-                        |> Set.union lockFileRemoteFiles
-                    let i =
-                        dependenciesFileRemoteFiles
-                        |> Set.intersect lockFileRemoteFiles
-
-                    Set.difference u i
+                | Some lockFileGroup -> computeDifference lockFileGroup dependenciesFileGroup
                 | None -> 
                     // all added
-                    dependenciesFileGroup.RemoteFiles 
+                    dependenciesFileGroup.RemoteFiles
                     |> List.map RemoteFileChange.CreateUnresolvedVersion 
                     |> Set.ofList 
             | None -> 
