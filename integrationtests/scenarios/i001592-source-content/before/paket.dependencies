@@ -1,4 +1,0 @@
-source https://www.nuget.org/api/v2
-copy_content_to_output_dir: always
-
-nuget Microsoft.Orleans.Templates.Interfaces 1.1.3
