@@ -29,8 +29,7 @@ group Test
   nuget Moq
   nuget FSCheck
   
-  source http://ci.appveyor.com/nuget/nunit
-  nuget NUnit 3.3.0-CI-2857-issue-1593
-  nuget NUnit.Console 3.3.0-CI-2857-issue-1593
+  nuget NUnit
+  nuget NUnit.Console
 
   github forki/FsUnit FsUnit.fs
