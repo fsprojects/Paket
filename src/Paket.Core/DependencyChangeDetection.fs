@@ -3,6 +3,7 @@
 open Paket.Domain
 open Paket.Requirements
 open Paket.PackageResolver
+open Logging
 
 let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile,strict) =
     let allTransitives groupName = lockFile.GetTransitiveDependencies groupName
@@ -28,13 +29,16 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
         | Some group ->
             let lockFileGroup = lockFile.Groups |> Map.tryFind groupName 
             group.Packages
-            |> Seq.map (fun d -> d.Name,d)
-            |> Seq.filter (fun (name,pr) ->
+            |> Seq.map (fun d ->
+                d.Name, { d with Settings = group.Options.Settings + d.Settings })
+            |> Seq.filter (fun (name,dependenciesFilePackage) ->
                 match lockFileGroup with
                 | None -> true
                 | Some group ->
                     match group.Resolution.TryFind name with
-                    | Some p -> hasChanged groupName transitives pr p
+                    | Some lockFilePackage ->
+                        let p' = { lockFilePackage with Settings = group.Options.Settings + lockFilePackage.Settings }
+                        hasChanged groupName transitives dependenciesFilePackage p'
                     | _ -> true)
             |> Seq.map (fun (p,_) -> groupName,p)
             |> Set.ofSeq
@@ -45,13 +49,17 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
             | None -> Map.empty
             | Some group ->
                 group.Packages
-                |> Seq.map (fun d -> d.Name,d)
+                |> Seq.map (fun d -> d.Name,{ d with Settings = group.Options.Settings + d.Settings })
                 |> Map.ofSeq
 
-        [for t in lockFile.GetTopLevelDependencies(groupName) do
+        [for t in lockFile.GetTopLevelDependencies(groupName) do            
             let name = t.Key
             match directMap.TryFind name with
-            | Some pr -> if hasChanged groupName transitives pr t.Value then yield groupName, name // Modified
+            | Some pr ->
+                let t = t.Value
+                let t = { t with Settings = lockFile.GetGroup(groupName).Options.Settings + t.Settings }
+                if hasChanged groupName transitives pr t then 
+                    yield groupName, name // Modified
             | _ -> yield groupName, name // Removed
         ]
         |> List.map lockFile.GetAllNormalizedDependenciesOf
