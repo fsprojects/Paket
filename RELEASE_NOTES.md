@@ -1,14 +1,9 @@
-#### 3.3.6 - 28.06.2016
+#### 3.4.0-alpha001 - 28.06.2016
+* Using Argu 3 alpha channel
 * BUGFIX: Fixed out-of-date check for remote files - https://github.com/fsprojects/Paket/issues/1760, https://github.com/fsprojects/Paket/issues/1762, https://github.com/fsprojects/Paket/issues/1766
-
-#### 3.3.3 - 27.06.2016
-* USABILITY: Show out-of-sync warning message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750
-
-#### 3.3.2 - 25.06.2016
 * BUGFIX: Using network cache with invalid credentials should not fail restore - https://github.com/fsprojects/Paket/issues/1758
-
-#### 3.3.1 - 25.06.2016
 * BUGFIX: Make the copy task more robust if we can't parse target framework - https://github.com/fsprojects/Paket/issues/1756
+* USABILITY: Show out-of-sync warning message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750
 
 #### 3.3.0 - 25.06.2016
 * Paket fails on dependencies file that has same package twice in same group - https://github.com/fsprojects/Paket/issues/1757
