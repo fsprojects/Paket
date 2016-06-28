@@ -1,4 +1,5 @@
 source https://nuget.org/api/v2
+framework: >= net40
 cache ./nupkgs versions:current
 
 nuget Newtonsoft.Json redirects: force
