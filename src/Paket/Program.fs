@@ -37,11 +37,8 @@ let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
 
 let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command
     args =
-    let parser = ArgumentParser.Create<'T>()
-    let results =
-        parser.Parse
-            (inputs = args, raiseOnUsage = false, ignoreMissing = true,
-             errorHandler = ProcessExiter())
+    let parser = ArgumentParser.Create<'T>(errorHandler = ProcessExiter())
+    let results = parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true)
 
     let resultsValid = validateF (results)
     if results.IsUsageRequested || not resultsValid || !globalError <> None then
@@ -61,12 +58,12 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
         if not silent then
             tracefn "%s - ready." elapsedTime
 
-let processCommand<'T when 'T :> IArgParserTemplate> (commandF : ParseResults<'T> -> unit) =
+let processCommand<'T when 'T :> IArgParserTemplate> (commandF : ParseResult<'T> -> unit) =
     processWithValidation (fun _ -> true) commandF
 
 Logging.verbose <- v
 
-let add (results : ParseResults<_>) =
+let add (results : ParseResult<_>) =
     let packageName = results.GetResult <@ AddArgs.Nuget @>
     let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
     let force = results.Contains <@ AddArgs.Force @>
@@ -89,7 +86,7 @@ let add (results : ParseResults<_>) =
         let interactive = results.Contains <@ AddArgs.Interactive @>
         Dependencies.Locate().Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
-let validateConfig (results : ParseResults<_>) =
+let validateConfig (results : ParseResult<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
     let token = results.Contains <@ ConfigArgs.AddToken @>
     match credential, token with
@@ -97,7 +94,7 @@ let validateConfig (results : ParseResults<_>) =
     | _, true -> results.GetResults <@ ConfigArgs.AddToken @> |> List.isEmpty |> not
     | _ -> false
 
-let config (results : ParseResults<_>) =
+let config (results : ParseResult<_>) =
     let credentials = results.Contains <@ ConfigArgs.AddCredentials @>
     let token = results.Contains <@ ConfigArgs.AddToken @>
     match credentials, token with
@@ -113,36 +110,36 @@ let config (results : ParseResults<_>) =
       Dependencies.Locate().AddToken(source, token)
     | _ -> ()
 
-let validateAutoRestore (results : ParseResults<_>) =
+let validateAutoRestore (results : ParseResult<_>) =
     results.GetAllResults().Length = 1
 
-let autoRestore (results : ParseResults<_>) =
+let autoRestore (results : ParseResult<_>) =
     match results.GetAllResults() with
     | [On] -> Dependencies.Locate().TurnOnAutoRestore()
     | [Off] -> Dependencies.Locate().TurnOffAutoRestore()
     | _ -> failwith "expected only one argument"
 
-let convert (results : ParseResults<_>) =
+let convert (results : ParseResult<_>) =
     let force = results.Contains <@ ConvertFromNugetArgs.Force @>
     let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
     let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
     let credsMigrationMode = results.TryGetResult <@ ConvertFromNugetArgs.Creds_Migration @>
     Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
 
-let findRefs (results : ParseResults<_>) =
+let findRefs (results : ParseResult<_>) =
     let packages = results.GetResults <@ FindRefsArgs.Packages @>
     let group = defaultArg (results.TryGetResult <@ FindRefsArgs.Group @>) (Constants.MainDependencyGroup.ToString())
     packages |> List.map (fun p -> group,p)
     |> Dependencies.Locate().ShowReferencesFor
 
-let init (results : ParseResults<InitArgs>) =
+let init (results : ParseResult<InitArgs>) =
     Dependencies.Init()
     Dependencies.Locate().DownloadLatestBootstrapper()
 
-let clearCache (results : ParseResults<ClearCacheArgs>) =
+let clearCache (results : ParseResult<ClearCacheArgs>) =
     Dependencies.ClearCache()
 
-let install (results : ParseResults<_>) =
+let install (results : ParseResult<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
     let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
     let createNewBindingFiles = results.Contains <@ InstallArgs.CreateNewBindingFiles @>
@@ -157,12 +154,12 @@ let install (results : ParseResults<_>) =
 
     Dependencies.Locate().Install(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode, touchAffectedRefs)
 
-let outdated (results : ParseResults<_>) =
+let outdated (results : ParseResult<_>) =
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
     let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
     Dependencies.Locate().ShowOutdated(strict, includePrereleases)
 
-let remove (results : ParseResults<_>) =
+let remove (results : ParseResult<_>) =
     let packageName = results.GetResult <@ RemoveArgs.Nuget @>
     let force = results.Contains <@ RemoveArgs.Force @>
     let noInstall = results.Contains <@ RemoveArgs.No_Install @>
@@ -175,7 +172,7 @@ let remove (results : ParseResults<_>) =
         let interactive = results.Contains <@ RemoveArgs.Interactive @>
         Dependencies.Locate().Remove(group, packageName, force, interactive, noInstall |> not)
 
-let restore (results : ParseResults<_>) =
+let restore (results : ParseResult<_>) =
     let force = results.Contains <@ RestoreArgs.Force @>
     let files = results.GetResults <@ RestoreArgs.References_Files @>
     let group = results.TryGetResult <@ RestoreArgs.Group @>
@@ -185,11 +182,11 @@ let restore (results : ParseResults<_>) =
     if List.isEmpty files then Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks)
     else Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks)
 
-let simplify (results : ParseResults<_>) =
+let simplify (results : ParseResult<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
     Dependencies.Locate().Simplify(interactive)
 
-let update (results : ParseResults<_>) =
+let update (results : ParseResult<_>) =
     let force = results.Contains <@ UpdateArgs.Force @>
     let noInstall = results.Contains <@ UpdateArgs.No_Install @>
     let group = results.TryGetResult <@ UpdateArgs.Group @>
@@ -218,7 +215,7 @@ let update (results : ParseResults<_>) =
         | None ->
             Dependencies.Locate().Update(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
-let pack (results : ParseResults<_>) =
+let pack (results : ParseResult<_>) =
     let outputPath = results.GetResult <@ PackArgs.Output @>
     Dependencies.Locate()
                 .Pack(outputPath,
@@ -236,7 +233,7 @@ let pack (results : ParseResults<_>) =
                       includeReferencedProjects = results.Contains <@ PackArgs.IncludeReferencedProjects @>,
                       ?projectUrl = results.TryGetResult <@ PackArgs.ProjectUrl @>)
 
-let findPackages (results : ParseResults<_>) =
+let findPackages (results : ParseResult<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
     let sources  =
         match results.TryGetResult <@ FindPackagesArgs.Source @> with
@@ -260,7 +257,7 @@ let findPackages (results : ParseResults<_>) =
     | Some searchText -> searchAndPrint searchText
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
-let getInstalledPackages (results : ParseResults<_>) =
+let getInstalledPackages (results : ParseResult<_>) =
     let project = results.TryGetResult <@ ShowInstalledPackagesArgs.Project @>
     let showAll = results.Contains <@ ShowInstalledPackagesArgs.All @>
     let dependenciesFile = Dependencies.Locate()
@@ -276,16 +273,16 @@ let getInstalledPackages (results : ParseResults<_>) =
             if showAll then dependenciesFile.GetInstalledPackages(referencesFile)
             else dependenciesFile.GetDirectDependencies(referencesFile)
 
-let showInstalledPackages (results : ParseResults<_>) =
+let showInstalledPackages (results : ParseResult<_>) =
     for groupName,name,version in getInstalledPackages results do
         tracefn "%s %s - %s" groupName name version
 
-let showGroups (results : ParseResults<ShowGroupsArgs>) =
+let showGroups (results : ParseResult<ShowGroupsArgs>) =
     let dependenciesFile = Dependencies.Locate()
     for groupName in dependenciesFile.GetGroups() do
         tracefn "%s" groupName
 
-let findPackageVersions (results : ParseResults<_>) =
+let findPackageVersions (results : ParseResult<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
     let dependencies = Dependencies.Locate()
     let name = 
@@ -300,13 +297,13 @@ let findPackageVersions (results : ParseResults<_>) =
     for p in dependencies.FindPackageVersions(sources,name,maxResults) do
         tracefn "%s" p
 
-let push (results : ParseResults<_>) =
+let push (results : ParseResult<_>) =
     let fileName = results.GetResult <@ PushArgs.FileName @>
     Dependencies.Push(fileName, ?url = results.TryGetResult <@ PushArgs.Url @>,
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
-let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) =
+let generateIncludeScripts (results : ParseResult<GenerateIncludeScriptsArgs>) =
     
     let providedFrameworks = results.GetResults <@ GenerateIncludeScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateIncludeScriptsArgs.ScriptType @>
