@@ -1,9 +1,0 @@
-FRAMEWORK: NET452
-NUGET
-  remote: https://www.nuget.org/api/v2
-  specs:
-    boost (1.60.0)
-    boost_filesystem-vc140 (1.60.0)
-      boost (1.60.0.0)
-    boost_system-vc140 (1.60.0)
-      boost (1.60.0.0)

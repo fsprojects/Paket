@@ -314,15 +314,6 @@ let ``#1663 should install google apis``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
-   
-[<Test>]
-let ``#1523 should install native in mixed setting``() = 
-    install "i001523-mixed-native" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001523-mixed-native","TestPaket","TestPaket.vcxproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001523-mixed-native","TestPaket","TestPaket.vcxprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1523 should emit correct native in mixed setting``() = 
