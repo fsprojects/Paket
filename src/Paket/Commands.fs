@@ -318,9 +318,9 @@ with
   
 type Command =
     // global options
-    | [<AltCommandLine("-v")>]                          Verbose
+    | [<AltCommandLine("-v"); Inherit>]                 Verbose
     |                                                   Log_File of path:string
-    | [<AltCommandLine("-s")>]                          Silent
+    | [<AltCommandLine("-s"); Inherit>]                 Silent
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResult<AddArgs>
     | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResult<ClearCacheArgs>
