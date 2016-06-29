@@ -319,7 +319,7 @@ with
 type Command =
     // global options
     | [<AltCommandLine("-v"); Inherit>]                 Verbose
-    |                                                   Log_File of path:string
+    | [<Inherit>]                                       Log_File of path:string
     | [<AltCommandLine("-s"); Inherit>]                 Silent
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResult<AddArgs>
