@@ -44,12 +44,3 @@ type Cache =
             failwithf "Unknown package settings %s: %s" kv.Key kv.Value
 
         settings
-             
-    member this.IsAccessible =
-        try
-            let targetFolder = DirectoryInfo(this.Location)
-            if not targetFolder.Exists then
-                targetFolder.Create()
-            true
-        with
-        | _ -> false

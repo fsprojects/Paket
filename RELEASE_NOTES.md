@@ -1,5 +1,6 @@
-#### 3.4.0-alpha001 - 28.06.2016
+#### 3.4.0-alpha002 - 29.06.2016
 * Using Argu 3 alpha channel
+* BUGFIX: Added handling for cache not being accessible - https://github.com/fsprojects/Paket/pull/1764
 * BUGFIX: Fixed out-of-date check for remote files - https://github.com/fsprojects/Paket/issues/1760, https://github.com/fsprojects/Paket/issues/1762, https://github.com/fsprojects/Paket/issues/1766
 * BUGFIX: Using network cache with invalid credentials should not fail restore - https://github.com/fsprojects/Paket/issues/1758
 * BUGFIX: Make the copy task more robust if we can't parse target framework - https://github.com/fsprojects/Paket/issues/1756
