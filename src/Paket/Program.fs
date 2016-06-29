@@ -399,20 +399,20 @@ let generateIncludeScripts (results : ParseResult<GenerateIncludeScriptsArgs>) =
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
-    let paketHeader =
+    let paketVersion =
         let assembly = Assembly.GetExecutingAssembly()
         let fvi = FileVersionInfo.GetVersionInfo(assembly.Location)
-        sprintf "Paket version %s" fvi.FileVersion
+        fvi.FileVersion
 
     try
         let parser = ArgumentParser.Create<Command>(programName = "paket", 
-                                                    description = paketHeader, 
+                                                    helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
                                                     errorHandler = new PaketExiter())
 
         let results = parser.ParseCommandLine(raiseOnUsage = true)
         let silent = results.Contains <@ Silent @>
 
-        if not silent then tracen paketHeader
+        if not silent then tracefn "Paket version %s" paketVersion
 
         elif results.Contains <@ Verbose @> then
             Logging.verbose <- true
