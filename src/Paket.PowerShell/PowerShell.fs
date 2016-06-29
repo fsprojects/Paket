@@ -159,8 +159,8 @@ type FindRefsCmdlet() =
         async {
             let parser = ArgumentParser.Create<FindRefsArgs>()
             [
-                for p in x.NuGet do
-                    yield FindRefsArgs.Packages p
+                if x.NuGet.Length > 0 then
+                    yield FindRefsArgs.Packages (Array.toList x.NuGet)
             ]
             |> parser.CreateParseResultsOfList
             |> Program.findRefs
@@ -338,8 +338,9 @@ type RestoreCmdlet() =
             [
                 if x.Force.IsPresent then
                     yield RestoreArgs.Force
-                for rf in x.ReferencesFiles do
-                    yield RestoreArgs.References_Files rf
+
+                if x.ReferencesFiles.Length > 0 then
+                    yield RestoreArgs.References_Files (Array.toList x.ReferencesFiles)
             ]
             |> parser.CreateParseResultsOfList
             |> Program.restore

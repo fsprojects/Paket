@@ -6,7 +6,8 @@ open System.IO
 
 #if COMMANDS
 Paket.Commands.getAllCommands()
-|> Array.iter (fun command ->
+|> List.iter (fun command ->
+    let metadata = command.ParentInfo |> Option.get
     let additionalText = 
         let verboseOption = """
 
@@ -15,14 +16,13 @@ If you add the `-v` flag, then Paket will run in verbose mode and show detailed 
 With `--log-file [FileName]` you can trace the logged information into a file.
 
 """
-
-        let optFile = sprintf "../content/commands/%s.md" command.Name
+        let optFile = sprintf "../content/commands/%s.md" metadata.Name
         if File.Exists optFile
         then verboseOption + File.ReadAllText optFile
         else verboseOption
     // Work around bug tpetricek/FSharp.Formatting#321 (FSharp.Literate does not escape HTML entities in code blocks with unknown language)
     let cleanText (text : string) = text.Replace("[lang=batchfile]", "[lang=msh]").Replace("```batchfile", "```msh")
-    File.WriteAllText(sprintf "../content/paket-%s.md" command.Name, Paket.Commands.markdown command additionalText |> cleanText))
+    File.WriteAllText(sprintf "../content/paket-%s.md" metadata.Name, Paket.Commands.markdown command additionalText |> cleanText))
 #endif
 
 

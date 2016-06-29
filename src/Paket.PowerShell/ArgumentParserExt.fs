@@ -7,5 +7,5 @@ open Argu
 
 type ArgumentParser<'Args when 'Args :> IArgParserTemplate> with
     member parser.CreateParseResultsOfList(inputs : 'Args list) : ParseResult<'Args> =
-        let cliParams = parser.PrintCommandLine inputs // unparse inputs to cli form
+        let cliParams = parser.PrintCommandLineArguments inputs // unparse inputs to cli form
         parser.ParseCommandLine cliParams

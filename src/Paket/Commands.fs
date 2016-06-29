@@ -1,59 +1,9 @@
 module Paket.Commands
 
 open System
+open FSharp.Quotations
 
 open Argu
-
-type Command =
-    | [<First>][<CustomCommandLine("add")>]                      Add
-    | [<First>][<CustomCommandLine("clear-cache")>]              ClearCache
-    | [<First>][<CustomCommandLine("config")>]                   Config
-    | [<First>][<CustomCommandLine("convert-from-nuget")>]       ConvertFromNuget
-    | [<First>][<CustomCommandLine("find-refs")>]                FindRefs 
-    | [<First>][<CustomCommandLine("init")>]                     Init
-    | [<First>][<CustomCommandLine("auto-restore")>]             AutoRestore
-    | [<First>][<CustomCommandLine("install")>]                  Install
-    | [<First>][<CustomCommandLine("outdated")>]                 Outdated
-    | [<First>][<CustomCommandLine("remove")>]                   Remove
-    | [<First>][<CustomCommandLine("restore")>]                  Restore
-    | [<First>][<CustomCommandLine("simplify")>]                 Simplify
-    | [<First>][<CustomCommandLine("update")>]                   Update
-    | [<First>][<CustomCommandLine("find-packages")>]            FindPackages
-    | [<First>][<CustomCommandLine("find-package-versions")>]    FindPackageVersions
-    | [<First>][<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages
-    | [<First>][<CustomCommandLine("show-groups")>]              ShowGroups
-    | [<First>][<CustomCommandLine("pack")>]                     Pack
-    | [<First>][<CustomCommandLine("push")>]                     Push
-    | [<First>][<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts
-with
-    interface IArgParserTemplate with
-        member this.Usage =
-            match this with
-            | Add -> "Adds a new package to your paket.dependencies file."
-            | ClearCache -> "Clears the NuGet and git cache folders."
-            | Config -> "Allows to store global configuration values like NuGet credentials."
-            | ConvertFromNuget -> "Converts from using NuGet to Paket."
-            | FindRefs -> "Finds all project files that have the given NuGet packages installed."
-            | Init -> "Creates an empty paket.dependencies file in the working directory."
-            | AutoRestore -> "Enables or disables automatic Package Restore in Visual Studio during the build process."
-            | Install -> "Download the dependencies specified by the paket.dependencies or paket.lock file into the `packages/` directory and update projects."
-            | Outdated -> "Lists all dependencies that have newer versions available."
-            | Remove -> "Removes a package from your paket.dependencies file and all paket.references files."
-            | Restore -> "Download the dependencies specified by the paket.lock file into the `packages/` directory."
-            | Simplify -> "Simplifies your paket.dependencies file by removing transitive dependencies."
-            | Update -> "Update one or all dependencies to their latest version and update projects."
-            | FindPackages -> "Allows to search for packages."
-            | FindPackageVersions -> "Allows to search for package versions."
-            | ShowInstalledPackages -> "Shows all installed top-level packages."
-            | ShowGroups -> "Shows all groups."
-            | Pack -> "Packs all paket.template files within this repository."
-            | Push -> "Pushes the given `.nupkg` file."
-            | GenerateIncludeScripts -> "Generate include scripts for installed packages."
-    member this.Name =
-        let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
-        (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>)
-        |> Seq.head
-        :?> CustomCommandLineAttribute).Name
 
 type AddArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
@@ -119,7 +69,7 @@ with
 
 type FindRefsArgs =
     | [<CustomCommandLine("group")>] Group of string
-    | [<Rest>][<CustomCommandLine("nuget")>][<Mandatory>] Packages of string
+    | [<CustomCommandLine("nuget")>][<ExactlyOnce>] Packages of string list
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -208,7 +158,7 @@ type RestoreArgs =
     | [<CustomCommandLine("--touch-affected-refs")>] Touch_Affected_Refs
     | [<CustomCommandLine("--ignore-checks")>] Ignore_Checks
     | [<CustomCommandLine("group")>] Group of string
-    | [<Rest>] References_Files of string
+    | [<Unique>] References_Files of string list
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -365,23 +315,75 @@ with
         match this with
         | Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore. Can be provided multiple times."
         | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'. Can be provided multiple times."
-      
-
   
-let cmdLineSyntax (parser:ArgumentParser<_>) commandName =
-    "paket " + commandName + " " + parser.PrintCommandLineSyntax()
+type Command =
+    | [<CustomCommandLine("add")>]                      Add of ParseResult<AddArgs>
+    | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResult<ClearCacheArgs>
+    | [<CustomCommandLine("config")>]                   Config of ParseResult<ConfigArgs>
+    | [<CustomCommandLine("convert-from-nuget")>]       ConvertFromNuget of ParseResult<ConvertFromNugetArgs>
+    | [<CustomCommandLine("find-refs")>]                FindRefs of ParseResult<FindRefsArgs>
+    | [<CustomCommandLine("init")>]                     Init of ParseResult<InitArgs>
+    | [<CustomCommandLine("auto-restore")>]             AutoRestore of ParseResult<AutoRestoreArgs>
+    | [<CustomCommandLine("install")>]                  Install of ParseResult<InstallArgs>
+    | [<CustomCommandLine("outdated")>]                 Outdated of ParseResult<OutdatedArgs>
+    | [<CustomCommandLine("remove")>]                   Remove of ParseResult<RemoveArgs>
+    | [<CustomCommandLine("restore")>]                  Restore of ParseResult<RestoreArgs>
+    | [<CustomCommandLine("simplify")>]                 Simplify of ParseResult<SimplifyArgs>
+    | [<CustomCommandLine("update")>]                   Update of ParseResult<UpdateArgs>
+    | [<CustomCommandLine("find-packages")>]            FindPackages of ParseResult<FindPackagesArgs>
+    | [<CustomCommandLine("find-package-versions")>]    FindPackageVersions of ParseResult<FindPackageVersionsArgs>
+    | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResult<ShowInstalledPackagesArgs>
+    | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResult<ShowGroupsArgs>
+    | [<CustomCommandLine("pack")>]                     Pack of ParseResult<PackArgs>
+    | [<CustomCommandLine("push")>]                     Push of ParseResult<PushArgs>
+    | [<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResult<GenerateIncludeScriptsArgs>
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Add _ -> "Adds a new package to your paket.dependencies file."
+            | ClearCache _ -> "Clears the NuGet and git cache folders."
+            | Config _ -> "Allows to store global configuration values like NuGet credentials."
+            | ConvertFromNuget _ -> "Converts from using NuGet to Paket."
+            | FindRefs _ -> "Finds all project files that have the given NuGet packages installed."
+            | Init _ -> "Creates an empty paket.dependencies file in the working directory."
+            | AutoRestore _ -> "Enables or disables automatic Package Restore in Visual Studio during the build process."
+            | Install _ -> "Download the dependencies specified by the paket.dependencies or paket.lock file into the `packages/` directory and update projects."
+            | Outdated _ -> "Lists all dependencies that have newer versions available."
+            | Remove _ -> "Removes a package from your paket.dependencies file and all paket.references files."
+            | Restore _ -> "Download the dependencies specified by the paket.lock file into the `packages/` directory."
+            | Simplify _ -> "Simplifies your paket.dependencies file by removing transitive dependencies."
+            | Update _ -> "Update one or all dependencies to their latest version and update projects."
+            | FindPackages _ -> "Allows to search for packages."
+            | FindPackageVersions _ -> "Allows to search for package versions."
+            | ShowInstalledPackages _ -> "Shows all installed top-level packages."
+            | ShowGroups _ -> "Shows all groups."
+            | Pack _ -> "Packs all paket.template files within this repository."
+            | Push _ -> "Pushes the given `.nupkg` file."
+            | GenerateIncludeScripts _ -> "Generate include scripts for installed packages."
 
-let cmdLineUsageMessage (command : Command) parser =
-    System.Text.StringBuilder()
-        .Append("Paket ")
-        .AppendLine(command.Name)
-        .AppendLine()
-        .AppendLine((command :> IArgParserTemplate).Usage)
-        .AppendLine()
-        .Append(cmdLineSyntax parser command.Name)
-        .ToString()
+//    member this.Name =
+//        let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
+//        (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>)
+//        |> Seq.head
+//        :?> CustomCommandLineAttribute).Name    
 
-let markdown (command : Command) (additionalText : string) =
+let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
+  
+//let cmdLineSyntax (parser:ArgumentParser<_>) commandName =
+//    "paket " + commandName + " " + parser.PrintCommandLineSyntax()
+
+//let cmdLineUsageMessage (command : Command) parser =
+//    System.Text.StringBuilder()
+//        .Append("Paket ")
+//        .AppendLine(command.Name)
+//        .AppendLine()
+//        .AppendLine((command :> IArgParserTemplate).Usage)
+//        .AppendLine()
+//        .Append(cmdLineSyntax parser command.Name)
+//        .ToString()
+
+let markdown (subParser : ArgumentParser) (additionalText : string) =
     let (afterCommandText, afterOptionsText) =
         let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text) then text else text + Environment.NewLine + Environment.NewLine
         let cleanUp (text : string) = text.Replace("# [after-command]", "")
@@ -394,40 +396,17 @@ let markdown (command : Command) (additionalText : string) =
         else if afterOptionsIndex = -1 then additionalText |> cleanUp, ""
         else (additionalText.Substring(0, afterCommandIndex) |> cleanUp, additionalText.Substring(afterOptionsIndex) |> cleanUp)
 
+    let parentMetadata = subParser.ParentInfo |> Option.get
+
     let replace (pattern : string) (replacement : string) input =
         System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
 
-    let syntaxAndOptions (parser : ArgumentParser<_>) =
-        let options =
-            parser.Usage()
-            |> replace @"\s\t--help.*" ""
-            |> replace @"\t([-\w \[\]|\/\?<>\.]+):" (System.Environment.NewLine + @"  `$1`:")
+    let syntax = subParser.PrintCommandLineSyntax()
+    let options =
+        subParser.PrintUsage()
+        |> replace @"\s\t--help.*" ""
+        |> replace @"\t([-\w \[\]|\/\?<>\.]+):" (System.Environment.NewLine + @"  `$1`:")
 
-        let syntax = cmdLineSyntax parser command.Name
-        syntax, options
-
-    let syntax, options = 
-        match command with
-        | Add -> syntaxAndOptions (ArgumentParser.Create<AddArgs>())
-        | ClearCache -> syntaxAndOptions (ArgumentParser.Create<ClearCacheArgs>())
-        | Config -> syntaxAndOptions (ArgumentParser.Create<ConfigArgs>())
-        | ConvertFromNuget -> syntaxAndOptions (ArgumentParser.Create<ConvertFromNugetArgs>())
-        | FindRefs -> syntaxAndOptions (ArgumentParser.Create<FindRefsArgs>())
-        | Init -> syntaxAndOptions (ArgumentParser.Create<InitArgs>())
-        | AutoRestore -> syntaxAndOptions (ArgumentParser.Create<AutoRestoreArgs>())
-        | Install -> syntaxAndOptions (ArgumentParser.Create<InstallArgs>())
-        | Outdated -> syntaxAndOptions (ArgumentParser.Create<OutdatedArgs>())
-        | Remove -> syntaxAndOptions (ArgumentParser.Create<RemoveArgs>())
-        | Restore -> syntaxAndOptions (ArgumentParser.Create<RestoreArgs>())
-        | Simplify -> syntaxAndOptions (ArgumentParser.Create<SimplifyArgs>())
-        | Update -> syntaxAndOptions (ArgumentParser.Create<UpdateArgs>())
-        | FindPackages -> syntaxAndOptions (ArgumentParser.Create<FindPackagesArgs>())
-        | FindPackageVersions -> syntaxAndOptions (ArgumentParser.Create<FindPackageVersionsArgs>())
-        | ShowInstalledPackages -> syntaxAndOptions (ArgumentParser.Create<ShowInstalledPackagesArgs>())
-        | ShowGroups -> syntaxAndOptions (ArgumentParser.Create<ShowGroupsArgs>())
-        | Pack -> syntaxAndOptions (ArgumentParser.Create<PackArgs>())
-        | Push -> syntaxAndOptions (ArgumentParser.Create<PushArgs>())
-        | GenerateIncludeScripts -> syntaxAndOptions (ArgumentParser.Create<GenerateIncludeScriptsArgs>())
     let replaceLinks (text : string) =
         text
         |> replace "(?<=\s)paket.dependencies( file(s)?)?" "[`paket.dependencies`$1](dependencies-file.html)"
@@ -437,9 +416,9 @@ let markdown (command : Command) (additionalText : string) =
 
     System.Text.StringBuilder()
         .Append("# paket ")
-        .AppendLine(command.Name)
+        .AppendLine(parentMetadata.Name)
         .AppendLine()
-        .AppendLine((command :> IArgParserTemplate).Usage)
+        .AppendLine(parentMetadata.Description)
         .AppendLine()
         .AppendLine("    [lang=batchfile]")
         .Append("    ")
@@ -452,7 +431,4 @@ let markdown (command : Command) (additionalText : string) =
         .ToString()
     |> replaceLinks
 
-let getAllCommands () =
-    Microsoft.FSharp.Reflection.FSharpType.GetUnionCases(typeof<Command>)
-    |> Array.map (fun uci ->
-        Microsoft.FSharp.Reflection.FSharpValue.MakeUnion(uci, [||]) :?> Command)
+let getAllCommands () = commandParser.GetSubCommandParsers()

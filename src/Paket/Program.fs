@@ -48,10 +48,10 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
         elif not resultsValid then
             traceError "Command was:"
             traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
-            parser.Usage(Commands.cmdLineUsageMessage command parser) |> traceError
+            parser.PrintUsage((*Commands.cmdLineUsageMessage command parser*)) |> traceError
             Environment.ExitCode <- 1
         else
-            parser.Usage(Commands.cmdLineUsageMessage command parser) |> trace
+            parser.PrintUsage((*Commands.cmdLineUsageMessage command parser*)) |> trace
     else
         commandF results
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
@@ -127,7 +127,7 @@ let convert (results : ParseResult<_>) =
     Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
 
 let findRefs (results : ParseResult<_>) =
-    let packages = results.GetResults <@ FindRefsArgs.Packages @>
+    let packages = results.GetResult <@ FindRefsArgs.Packages @>
     let group = defaultArg (results.TryGetResult <@ FindRefsArgs.Group @>) (Constants.MainDependencyGroup.ToString())
     packages |> List.map (fun p -> group,p)
     |> Dependencies.Locate().ShowReferencesFor
@@ -174,7 +174,7 @@ let remove (results : ParseResult<_>) =
 
 let restore (results : ParseResult<_>) =
     let force = results.Contains <@ RestoreArgs.Force @>
-    let files = results.GetResults <@ RestoreArgs.References_Files @>
+    let files = results.GetResult (<@ RestoreArgs.References_Files @>, defaultValue = [])
     let group = results.TryGetResult <@ RestoreArgs.Group @>
     let installOnlyReferenced = results.Contains <@ RestoreArgs.Install_Only_Referenced @>
     let touchAffectedRefs = results.Contains <@ RestoreArgs.Touch_Affected_Refs @>
@@ -403,26 +403,26 @@ let main() =
         | [ command ] ->
             let handler =
                 match command with
-                | Add -> processCommand add
-                | ClearCache -> processCommand clearCache
-                | Config -> processWithValidation validateConfig config
-                | ConvertFromNuget -> processCommand convert
-                | FindRefs -> processCommand findRefs
-                | Init -> processCommand init
-                | AutoRestore -> processWithValidation validateAutoRestore autoRestore
-                | Install -> processCommand install
-                | Outdated -> processCommand outdated
-                | Remove -> processCommand remove
-                | Restore -> processCommand restore
-                | Simplify -> processCommand simplify
-                | Update -> processCommand update
-                | FindPackages -> processCommand findPackages
-                | FindPackageVersions -> processCommand findPackageVersions
-                | ShowInstalledPackages -> processCommand showInstalledPackages
-                | ShowGroups -> processCommand showGroups
-                | Pack -> processCommand pack
-                | Push -> processCommand push
-                | GenerateIncludeScripts -> processCommand generateIncludeScripts
+                | Add _ -> processCommand add
+                | ClearCache _ -> processCommand clearCache
+                | Config _ -> processWithValidation validateConfig config
+                | ConvertFromNuget _ -> processCommand convert
+                | FindRefs _ -> processCommand findRefs
+                | Init _ -> processCommand init
+                | AutoRestore _ -> processWithValidation validateAutoRestore autoRestore
+                | Install _ -> processCommand install
+                | Outdated _ -> processCommand outdated
+                | Remove _ -> processCommand remove
+                | Restore _ -> processCommand restore
+                | Simplify _ -> processCommand simplify
+                | Update _ -> processCommand update
+                | FindPackages _ -> processCommand findPackages
+                | FindPackageVersions _ -> processCommand findPackageVersions
+                | ShowInstalledPackages _ -> processCommand showInstalledPackages
+                | ShowGroups _ -> processCommand showGroups
+                | Pack _ -> processCommand pack
+                | Push _ -> processCommand push
+                | GenerateIncludeScripts _ -> processCommand generateIncludeScripts
 
             let args = args.[1..]
 
@@ -430,12 +430,12 @@ let main() =
             ()
         | [] when results.IsUsageRequested ->
             Environment.ExitCode <- 0
-            parser.Usage ("Help was requested:") |> trace
+            parser.PrintUsage ("Help was requested:") |> trace
         | [] ->
             Environment.ExitCode <- 1
             traceError "Command was:"
             traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
-            parser.Usage("available commands:") |> traceError
+            parser.PrintUsage("available commands:") |> traceError
         | _ -> failwith "expected only one command"
     with
     | exn when not (exn :? System.NullReferenceException) ->

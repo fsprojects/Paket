@@ -3,9 +3,9 @@
 Pushes the given `.nupkg` file.
 
     [lang=msh]
-    paket push fsi.exe url <string> file <string> [apikey <string>] [endpoint <string>] [--help]
+    paket push url <string> file <string> [apikey <string>] [endpoint <string>] [--help]
 
-### Options:USAGE: fsi.exe url <string> file <string> [apikey <string>] [endpoint <string>] [--help]
+### Options:USAGE: paket push url <string> file <string> [apikey <string>] [endpoint <string>] [--help]
 
 OPTIONS:
 
