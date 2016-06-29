@@ -8,11 +8,29 @@ open Domain
 open Releases
 open InstallProcess
 
-/// Activates the Visual Studio Nuget autorestore feature in all projects
+/// Deactivates the Visual Studio NuGet autorestore feature in all projects
+let TurnOffAutoRestore environment = 
+    let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
+    
+    trial {
+        let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
+        do! removeFile paketTargetsPath
+
+        environment.Projects
+        |> List.map fst
+        |> List.iter (fun project ->
+            project.RemoveImportForPaketTargets()
+            project.Save(false)
+        )
+    }
+
+
+/// Activates the Visual Studio NuGet autorestore feature in all projects
 let TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
 
     trial {
+        do! TurnOffAutoRestore environment
         do! downloadLatestBootstrapperAndTargets environment
         let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
 
@@ -24,20 +42,3 @@ let TurnOnAutoRestore environment =
             project.Save(false)
         )
     } 
-
-/// Deactivates the Visual Studio Nuget autorestore feature in all projects
-let TurnOffAutoRestore environment = 
-    let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
-    
-    trial {
-        let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
-        do! removeFile paketTargetsPath
-
-        environment.Projects
-        |> List.map fst
-        |> List.iter (fun project ->
-            let relativePath = createRelativePath project.FileName paketTargetsPath
-            project.RemoveImportForPaketTargets(relativePath)
-            project.Save(false)
-        )
-    }

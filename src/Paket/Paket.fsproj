@@ -51,8 +51,8 @@
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\paketkopie</StartWorkingDirectory>
+    <StartArguments>auto-restore on</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket.ImportTargets</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
