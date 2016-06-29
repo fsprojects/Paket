@@ -34,6 +34,14 @@ let inline getAttribute name (node:XmlNode) =
 let inline withAttributeValue attributeName valueText node =
     getAttribute attributeName node = Some valueText
 
+
+/// [omit]
+let inline withAttributeValueEndsWith attributeName valueText node =
+    match getAttribute attributeName node with
+    | Some text when text.EndsWith valueText -> true
+    | _ -> false
+
+
 /// [omit]
 let inline optGetAttribute name node = node |> Option.bind (getAttribute name)
 

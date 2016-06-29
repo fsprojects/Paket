@@ -1164,10 +1164,10 @@ module ProjectFile =
             let node = createNode "Import" project |> addAttribute "Project" relativeTargetsPath
             project.ProjectNode.AppendChild node |> ignore
 
-    let removeImportForPaketTargets relativeTargetsPath (project:ProjectFile) =
+    let removeImportForPaketTargets (project:ProjectFile) =
         project.Document
         |> getDescendants "Import"
-        |> List.tryFind (withAttributeValue "Project" relativeTargetsPath)
+        |> List.tryFind (withAttributeValueEndsWith "Project" Constants.TargetsFileName)
         |> Option.iter (fun n -> n.ParentNode.RemoveChild n |> ignore)
 
     let determineBuildAction fileName (project:ProjectFile) =
@@ -1302,7 +1302,7 @@ type ProjectFile with
     
     member this.AddImportForPaketTargets relativeTargetsPath = ProjectFile.addImportForPaketTargets relativeTargetsPath this
 
-    member this.RemoveImportForPaketTargets relativeTargetsPath =  ProjectFile.removeImportForPaketTargets relativeTargetsPath this
+    member this.RemoveImportForPaketTargets() =  ProjectFile.removeImportForPaketTargets this
 
     member this.DetermineBuildAction fileName = ProjectFile.determineBuildAction fileName this
 
