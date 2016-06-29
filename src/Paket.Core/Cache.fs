@@ -45,3 +45,11 @@ type Cache =
 
         settings
              
+    member this.IsAccessible =
+        try
+            let targetFolder = DirectoryInfo(this.Location)
+            if not targetFolder.Exists then
+                targetFolder.Create()
+            true
+        with
+        | _ -> false
