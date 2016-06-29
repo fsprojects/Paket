@@ -189,7 +189,7 @@ type FindPackagesCmdlet() =
                     yield FindPackagesArgs.Silent
             ]
             |> parser.CreateParseResultsOfList
-            |> Program.findPackages
+            |> Program.findPackages false
         } |> processWithLogging x
 
 [<Cmdlet("Paket", "FindPackageVersions")>]

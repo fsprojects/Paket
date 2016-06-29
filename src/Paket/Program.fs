@@ -16,52 +16,71 @@ open PackageSources
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
 
-let filterGlobalArgs args =
-    let error = ref None
-    let verbose = args |> Array.exists (fun x -> x = "--verbose" || x = "-v")
-    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.bind (fun i -> if args.Length - 1 > i then Some args.[i+1] else error := Some "--log-file was specifed, but no log file was given"; None)
+type PaketExiter() =
+    interface IExiter with
+        member __.Name = "paket exiter"
+        member __.Exit (msg,code) =
+            if code = ErrorCode.HelpText then 
+                tracen msg ; exit 0
+            else traceError msg ; exit 1
 
-    let rest =
-        match logFile with
-        | Some file -> args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
-        | None -> args |> Array.filter (fun a -> a <> "--log-file")
+//let filterGlobalArgs args =
+//    let error = ref None
+//    let verbose = args |> Array.exists (fun x -> x = "--verbose" || x = "-v")
+//    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.bind (fun i -> if args.Length - 1 > i then Some args.[i+1] else error := Some "--log-file was specifed, but no log file was given"; None)
+//
+//    let rest =
+//        match logFile with
+//        | Some file -> args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
+//        | None -> args |> Array.filter (fun a -> a <> "--log-file")
+//
+//    let rest =
+//        if verbose then rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
+//        else rest
+//
+//    error,verbose, logFile, rest
+//
+//let globalError,v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
+//let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
 
-    let rest =
-        if verbose then rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
-        else rest
+//let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command
+//    args =
+//    let parser = ArgumentParser.Create<'T>(errorHandler = ProcessExiter())
+//    let results = parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true)
+//
+//    let resultsValid = validateF (results)
+//    if results.IsUsageRequested || not resultsValid || !globalError <> None then
+//        if !globalError <> None then
+//            traceError (!globalError).Value
+//            Environment.ExitCode <- 1
+//        elif not resultsValid then
+//            traceError "Command was:"
+//            traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
+//            parser.PrintUsage((*Commands.cmdLineUsageMessage command parser*)) |> traceError
+//            Environment.ExitCode <- 1
+//        else
+//            parser.PrintUsage((*Commands.cmdLineUsageMessage command parser*)) |> trace
+//    else
+//        commandF results
+//        let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
+//        if not silent then
+//            tracefn "%s - ready." elapsedTime
+//
 
-    error,verbose, logFile, rest
-
-let globalError,v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
-let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
-
-let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command
-    args =
-    let parser = ArgumentParser.Create<'T>(errorHandler = ProcessExiter())
-    let results = parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true)
-
-    let resultsValid = validateF (results)
-    if results.IsUsageRequested || not resultsValid || !globalError <> None then
-        if !globalError <> None then
-            traceError (!globalError).Value
-            Environment.ExitCode <- 1
-        elif not resultsValid then
-            traceError "Command was:"
-            traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
-            parser.PrintUsage((*Commands.cmdLineUsageMessage command parser*)) |> traceError
-            Environment.ExitCode <- 1
-        else
-            parser.PrintUsage((*Commands.cmdLineUsageMessage command parser*)) |> trace
+let processWithValidation silent validateF commandF (result : ParseResult<'T>) =
+    if not <| validateF result then
+        traceError "Command was:"
+        traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
+        result.Parser.PrintUsage() |> traceError
+        Environment.ExitCode <- 1
     else
-        commandF results
+        commandF result
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
         if not silent then
             tracefn "%s - ready." elapsedTime
 
-let processCommand<'T when 'T :> IArgParserTemplate> (commandF : ParseResult<'T> -> unit) =
-    processWithValidation (fun _ -> true) commandF
-
-Logging.verbose <- v
+let processCommand silent commandF result =
+    processWithValidation silent (fun _ -> true) commandF result
 
 let add (results : ParseResult<_>) =
     let packageName = results.GetResult <@ AddArgs.Nuget @>
@@ -233,7 +252,7 @@ let pack (results : ParseResult<_>) =
                       includeReferencedProjects = results.Contains <@ PackArgs.IncludeReferencedProjects @>,
                       ?projectUrl = results.TryGetResult <@ PackArgs.ProjectUrl @>)
 
-let findPackages (results : ParseResult<_>) =
+let findPackages silent (results : ParseResult<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
     let sources  =
         match results.TryGetResult <@ FindPackagesArgs.Source @> with
@@ -380,63 +399,83 @@ let generateIncludeScripts (results : ParseResult<GenerateIncludeScriptsArgs>) =
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
-
-    if not silent then
+    let paketHeader =
         let assembly = Assembly.GetExecutingAssembly()
-        let fvi = FileVersionInfo.GetVersionInfo(assembly.Location);
-        tracefn "Paket version %s" fvi.FileVersion
-
-    use fileTrace =
-        match logFile with
-        | Some lf -> setLogFile lf
-        | None -> null
+        let fvi = FileVersionInfo.GetVersionInfo(assembly.Location)
+        sprintf "Paket version %s" fvi.FileVersion
 
     try
-        let parser = ArgumentParser.Create<Command>()
-        let results =
-            parser.Parse(inputs = args,
-                         ignoreMissing = true,
-                         ignoreUnrecognized = true,
-                         raiseOnUsage = false)
+        let parser = ArgumentParser.Create<Command>(programName = "paket", 
+                                                    description = paketHeader, 
+                                                    errorHandler = new PaketExiter())
 
-        match results.GetAllResults() with
-        | [ command ] ->
-            let handler =
-                match command with
-                | Add _ -> processCommand add
-                | ClearCache _ -> processCommand clearCache
-                | Config _ -> processWithValidation validateConfig config
-                | ConvertFromNuget _ -> processCommand convert
-                | FindRefs _ -> processCommand findRefs
-                | Init _ -> processCommand init
-                | AutoRestore _ -> processWithValidation validateAutoRestore autoRestore
-                | Install _ -> processCommand install
-                | Outdated _ -> processCommand outdated
-                | Remove _ -> processCommand remove
-                | Restore _ -> processCommand restore
-                | Simplify _ -> processCommand simplify
-                | Update _ -> processCommand update
-                | FindPackages _ -> processCommand findPackages
-                | FindPackageVersions _ -> processCommand findPackageVersions
-                | ShowInstalledPackages _ -> processCommand showInstalledPackages
-                | ShowGroups _ -> processCommand showGroups
-                | Pack _ -> processCommand pack
-                | Push _ -> processCommand push
-                | GenerateIncludeScripts _ -> processCommand generateIncludeScripts
+        let results = parser.ParseCommandLine(raiseOnUsage = true)
+        let silent = results.Contains <@ Silent @>
 
-            let args = args.[1..]
+        if not silent then tracen paketHeader
 
-            handler command args
-            ()
-        | [] when results.IsUsageRequested ->
-            Environment.ExitCode <- 0
-            parser.PrintUsage ("Help was requested:") |> trace
-        | [] ->
+        elif results.Contains <@ Verbose @> then
+            Logging.verbose <- true
+
+        use fileTrace =
+            match results.TryGetResult <@ Log_File @> with
+            | Some lf -> setLogFile lf
+            | None -> null
+
+//        let parser = ArgumentParser.Create<Command>()
+//        let results =
+//            parser.Parse(inputs = args,
+//                         ignoreMissing = true,
+//                         ignoreUnrecognized = true,
+//                         raiseOnUsage = false)
+//        match results.GetAllResults() with
+//        | [ command ] ->
+//            let handler =
+        match results.TryGetSubCommand() with
+        | None -> 
             Environment.ExitCode <- 1
             traceError "Command was:"
             traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
             parser.PrintUsage("available commands:") |> traceError
-        | _ -> failwith "expected only one command"
+
+        | Some sub ->
+            match sub with
+            | Add r -> processCommand silent add r
+            | ClearCache r -> processCommand silent clearCache r
+            | Config r -> processWithValidation silent validateConfig config r
+            | ConvertFromNuget r -> processCommand silent convert r
+            | FindRefs r -> processCommand silent findRefs r
+            | Init r -> processCommand silent init r
+            | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
+            | Install r -> processCommand silent install r
+            | Outdated r -> processCommand silent outdated r
+            | Remove r -> processCommand silent remove r
+            | Restore r -> processCommand silent restore r
+            | Simplify r -> processCommand silent simplify r
+            | Update r -> processCommand silent update r
+            | FindPackages r -> processCommand silent (findPackages silent) r
+            | FindPackageVersions r -> processCommand silent findPackageVersions r
+            | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
+            | ShowGroups r -> processCommand silent showGroups r
+            | Pack r -> processCommand silent pack r
+            | Push r -> processCommand silent push r
+            | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r
+            // global options; list here in order to maintain compiler warnings
+            // in case of new subcommands added
+            | Verbose
+            | Silent
+            | Log_File _ -> failwith "internal error: this code should never be reached."
+
+//            let args = args.[1..]
+//
+//            handler command args
+//            ()
+//        | [] when results.IsUsageRequested ->
+//            Environment.ExitCode <- 0
+//            parser.PrintUsage ("Help was requested:") |> trace
+//        | [] ->
+
+//        | _ -> failwith "expected only one command"
     with
     | exn when not (exn :? System.NullReferenceException) ->
         Environment.ExitCode <- 1

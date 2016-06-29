@@ -317,6 +317,11 @@ with
         | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'. Can be provided multiple times."
   
 type Command =
+    // global options
+    | [<AltCommandLine("-v")>]                          Verbose
+    |                                                   Log_File of path:string
+    | [<AltCommandLine("-s")>]                          Silent
+    // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResult<AddArgs>
     | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResult<ClearCacheArgs>
     | [<CustomCommandLine("config")>]                   Config of ParseResult<ConfigArgs>
@@ -361,6 +366,9 @@ with
             | Pack _ -> "Packs all paket.template files within this repository."
             | Push _ -> "Pushes the given `.nupkg` file."
             | GenerateIncludeScripts _ -> "Generate include scripts for installed packages."
+            | Log_File _ -> "Specify a log file for the paket process."
+            | Silent -> "Suppress console output for the paket process."
+            | Verbose -> "Enable verbose console output for the paket process."
 
 //    member this.Name =
 //        let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
