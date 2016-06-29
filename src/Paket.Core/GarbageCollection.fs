@@ -54,30 +54,34 @@ let deleteUnusedPackages root (lockFile:LockFile) =
 
 /// Removes older packages from the cache
 let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:SemVerInfo seq) =
-    let targetFolder = DirectoryInfo(cache.Location)
-    let cont =
-        try
-            if not targetFolder.Exists then
-                targetFolder.Create()
-            true
-        with
-        | exn -> 
-            traceWarnfn "Could not garbage collect cache: %s" exn.Message
-            false
+    if Cache.isInaccessible cache then
+        verbosefn "Cache %s is inaccessible, skipping" cache.Location
+    else
+        let targetFolder = DirectoryInfo(cache.Location)
+        let cont =
+            try
+                if not targetFolder.Exists then
+                    targetFolder.Create()
+                true
+            with
+            | exn -> 
+                traceWarnfn "Could not garbage collect cache: %s" exn.Message
+                Cache.setInaccessible cache
+                false
     
-    if cont then
-        match cache.CacheType with
-        | Some CacheType.CurrentVersion ->
-            let fileNames =
-                versions
-                |> Seq.map (fun v -> packageName.ToString() + "." + v.Normalize() + ".nupkg" |> normalizePath)
-                |> Set.ofSeq
+        if cont then
+            match cache.CacheType with
+            | Some CacheType.CurrentVersion ->
+                let fileNames =
+                    versions
+                    |> Seq.map (fun v -> packageName.ToString() + "." + v.Normalize() + ".nupkg" |> normalizePath)
+                    |> Set.ofSeq
 
-            targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
-            |> Seq.iter (fun fi ->            
-                if not <| fileNames.Contains(fi.Name |> normalizePath) then
-                    fi.Delete())
-        | _ -> ()
+                targetFolder.EnumerateFiles(packageName.ToString() + ".*.nupkg")
+                |> Seq.iter (fun fi ->            
+                    if not <| fileNames.Contains(fi.Name |> normalizePath) then
+                        fi.Delete())
+            | _ -> ()
 
 let cleanupCaches (dependenciesFile:DependenciesFile) (lockFile:LockFile) =
     let allCaches = dependenciesFile.Groups |> Seq.collect (fun kv -> kv.Value.Caches) |> Seq.toList
