@@ -480,17 +480,25 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
 
 /// Puts the package into the cache
 let CopyToCache(cache:Cache, fileName, force) =
-    let targetFolder = DirectoryInfo(cache.Location)
-    if not targetFolder.Exists then
-        targetFolder.Create()
+    try
+        if Cache.isInaccessible cache then
+            verbosefn "Cache %s is inaccessible, skipping" cache.Location
+        else
+            let targetFolder = DirectoryInfo(cache.Location)
+            if not targetFolder.Exists then
+                targetFolder.Create()
 
-    let fi = FileInfo(fileName)
-    let targetFile = FileInfo(Path.Combine(targetFolder.FullName, fi.Name))
+            let fi = FileInfo(fileName)
+            let targetFile = FileInfo(Path.Combine(targetFolder.FullName, fi.Name))
 
-    if not force && targetFile.Exists then
-        verbosefn "%s already in cache %s" fi.Name targetFolder.FullName
-    else
-        File.Copy(fileName, targetFile.FullName, force)
+            if not force && targetFile.Exists then
+                verbosefn "%s already in cache %s" fi.Name targetFolder.FullName
+            else
+                File.Copy(fileName, targetFile.FullName, force)
+    with
+    | _ ->
+        Cache.setInaccessible cache
+        reraise()
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async { 

@@ -44,3 +44,14 @@ type Cache =
             failwithf "Unknown package settings %s: %s" kv.Key kv.Value
 
         settings
+
+[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+module Cache =
+    let private lockObj = System.Object()
+    let mutable private inaccessibleCaches = Set.empty<Cache>
+    let setInaccessible cache =
+        lock lockObj (fun () ->
+            inaccessibleCaches <- inaccessibleCaches |> Set.add cache)
+    let isInaccessible cache =
+        lock lockObj (fun () ->
+            inaccessibleCaches |> Set.contains cache)
