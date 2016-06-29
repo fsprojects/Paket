@@ -178,7 +178,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
 
     match remoteFile.Origin, remoteFile.Name with
     | Origin.GitLink (RemoteGitOrigin cloneUrl), _
-    | Origin.GitLink (LocalGitOrigin  cloneUrl), _ ->
+    | Origin.GitLink (LocalGitOrigin cloneUrl), _ ->
         if not <| Utils.isMatchingPlatform remoteFile.OperatingSystemRestriction then () else
         let cloneUrl = cloneUrl.TrimEnd('/')
         
@@ -224,7 +224,6 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
             with 
             | exn -> failwithf "Could not run \"%s\".\r\nError: %s" tCommand exn.Message
     | Origin.GistLink, Constants.FullProjectSourceFileName ->
-        tracefn "Downloading %O to %s" remoteFile destination
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
 
@@ -242,8 +241,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
                 } 
             ) |> Async.Parallel
         task |> Async.RunSynchronously |> ignore
-    | Origin.GitHubLink, Constants.FullProjectSourceFileName ->  
-        tracefn "Downloading %O to %s" remoteFile destination
+    | Origin.GitHubLink, Constants.FullProjectSourceFileName -> 
         let fi = FileInfo(destination)
         let projectPath = fi.Directory.FullName
         let zipFile = Path.Combine(projectPath,sprintf "%s.zip" remoteFile.Commit)
@@ -256,17 +254,14 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let source = Path.Combine(projectPath, sprintf "%s-%s" remoteFile.Project remoteFile.Commit)
         DirectoryCopy(source,projectPath,true)
     | Origin.GistLink, _ -> 
-        tracefn "Downloading %O to %s" remoteFile destination
         let downloadUrl = rawGistFileUrl remoteFile.Owner remoteFile.Project remoteFile.Name
         let authentication = auth remoteFile.AuthKey downloadUrl
         return! downloadFromUrl(authentication, downloadUrl) destination
     | Origin.GitHubLink, _ ->
-        tracefn "Downloading %O to %s" remoteFile destination
         let url = rawFileUrl remoteFile.Owner remoteFile.Project remoteFile.Commit remoteFile.Name
         let authentication = auth remoteFile.AuthKey url
         return! downloadFromUrl(authentication, url) destination
     | Origin.HttpLink(origin), _ ->
-        tracefn "Downloading %O to %s" remoteFile destination
         let url = origin + remoteFile.Commit
         let authentication = auth remoteFile.AuthKey url
         match Path.GetExtension(destination).ToLowerInvariant() with

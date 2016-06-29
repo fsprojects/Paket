@@ -5,6 +5,7 @@
 * BUGFIX: Using network cache with invalid credentials should not fail restore - https://github.com/fsprojects/Paket/issues/1758
 * BUGFIX: Make the copy task more robust if we can't parse target framework - https://github.com/fsprojects/Paket/issues/1756
 * USABILITY: Show out-of-sync warning message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750
+* COSMETICS: Don't trace download of remote files twice
 
 #### 3.3.0 - 25.06.2016
 * Paket fails on dependencies file that has same package twice in same group - https://github.com/fsprojects/Paket/issues/1757
