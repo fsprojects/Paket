@@ -547,24 +547,55 @@ let inline (++) x y =
     | None -> y
     | _ -> x
 
-let parseKeyValuePairs (s:string) =
+let parseKeyValuePairs (s:string) : Dictionary<string,string> =
     let s = s.Trim()
     try
-        let parts = s.Split([|','|], StringSplitOptions.RemoveEmptyEntries)
-        let dict = Dictionary<_,_>()
+        let l = List<_>()
+        let add key value =
+            if String.IsNullOrWhiteSpace key |> not then
+                let x = key,value
+                l.Add x |> ignore
 
+        
+        let current = Text.StringBuilder()
+        let quoted = ref false
         let lastKey = ref ""
+        let lastValue = ref ""
+        let isKey = ref true
+        for pos in 0..s.Length - 1 do
+            let x = s.[pos]
+            let restHasKey() =             
+                let rest = s.Substring(pos + 1)
+                if String.IsNullOrEmpty(rest.Trim()) then true else
+                match rest.IndexOf ',' with
+                | -1 -> rest.Contains(":")
+                | p -> 
+                    let s = rest.Substring(0,p)
+                    s.Contains(":")
 
-        for p in parts do
-            if p.Contains ":" then
-                let innerParts = p.Split ':' |> Array.map String.trim
-                if innerParts.Length % 2 <> 0 then
-                    failwithf "\"%s\" can not be parsed as key/value pairs." p
-                dict.Add(innerParts.[0].ToLower(),innerParts.[1])
-                lastKey := innerParts.[0]
+            if x = '"' then
+                quoted := not !quoted
+            elif x = ',' && not !quoted && restHasKey() then
+                add !lastKey !lastValue
+                lastKey := ""
+                lastValue := ""
+                isKey := true
+            elif x = ':' && not !quoted then
+                if not !isKey then
+                    failwithf "invalid delimiter at position %d" pos
+                isKey := false
             else
-                dict.[!lastKey] <- dict.[!lastKey] + ", " + p
-        dict
+                if !isKey then
+                    lastKey := !lastKey + x.ToString()
+                else
+                    lastValue := !lastValue + x.ToString()
+                
+        add !lastKey !lastValue
+
+        let d = Dictionary<_,_>()
+        for k,v in l do
+            d.Add(k.Trim().ToLower(),v.Trim())
+        d
     with
     | exn -> 
         failwithf "Could not parse %s as key/value pairs.%s%s" s Environment.NewLine exn.Message

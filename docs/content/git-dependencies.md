@@ -48,6 +48,11 @@ If your referenced git repository contains a build script then Paket can execute
 
 This allows you to execute arbitrary commands after restore.
 
+NOTE: This functionality uses the .Net Process API, with UseShellExecute set to true.  This means that on Windows your command will execute in a cmd context. If your build is not a .bat file, you will need to fully qualify the command with the shell program to run as well, like this:
+    
+    [lang=paket]
+    git https://uri/to/repo.git master build: "powershell build.ps1", OS: windows
+
 ## Using Git repositories as NuGet source
 
 If you have NuGet packages inside a git repository you can easily use the repository as a NuGet source from the [`paket.dependencies` file](dependencies-file.html):

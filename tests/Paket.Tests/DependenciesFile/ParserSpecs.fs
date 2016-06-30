@@ -1328,18 +1328,3 @@ let ``should read config with caches``() =
     (main.Sources |> List.item 0) |> shouldEqual PackageSources.DefaultNuGetSource
     (main.Sources |> List.item 1).Url |> shouldEqual "./dependencies"
     (main.Sources |> List.item 2).Url |> shouldEqual "//hive/dependencies"
-
-let duplicateNuget = """
-source https://www.nuget.org/api/v2/
-
-nuget NuGet.CommandLine
-nuget NuGet.CommandLine framework: portable45-net45+win8
-"""
-
-[<Test>]
-let ``should fail on config with duplicate NuGet packahe``() = 
-    try
-        DependenciesFile.FromCode(duplicateNuget) |> ignore
-        failwith "expected error"
-    with
-    | exn when exn.Message.Contains "NuGet.CommandLine" -> ()
