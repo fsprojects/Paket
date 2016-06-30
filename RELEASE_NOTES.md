@@ -1,6 +1,7 @@
-#### 3.4.0-alpha004 - 29.06.2016
+#### 3.4.0-alpha005 - 30.06.2016
 * Using Argu 3 alpha channel
 * Inaccessible caches are excluded for the duration of running a command - https://github.com/fsprojects/Paket/pull/1770
+* BUGFIX: Allows to use colons in git build argument - https://github.com/fsprojects/Paket/issues/1773
 * BUGFIX: auto-restore on fixes old targets file references - https://github.com/fsprojects/Paket/issues/1768
 * BUGFIX: Added handling for cache not being accessible - https://github.com/fsprojects/Paket/pull/1764
 * BUGFIX: Fixed out-of-date check for remote files - https://github.com/fsprojects/Paket/issues/1760, https://github.com/fsprojects/Paket/issues/1762, https://github.com/fsprojects/Paket/issues/1766

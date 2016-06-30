@@ -9,43 +9,61 @@ type GitLinkOrigin =
 | RemoteGitOrigin of string
 | LocalGitOrigin  of string
 
-let extractUrlParts (url:string) =
+let extractUrlParts (gitConfig:string) =
     let isOperator operator = VersionRange.BasicOperators |> List.exists ((=) operator)
     let url,commit,options = 
-        match url.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> List.ofArray with
-        | urlPart::_ ->
-            let rest = url.Substring(urlPart.Length)
-            match rest.Replace(":"," : ").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> List.ofArray with
+        match gitConfig.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> List.ofArray with
+        | part::_ ->
+            let rest = gitConfig.Substring(part.Length)
+            let parts = 
+                [ let current = Text.StringBuilder()
+                  let quoted = ref false
+                  for x in rest do
+                    if x = '"' then
+                        quoted := not !quoted
+
+                    if (x = ':' || x = ' ') && not !quoted then
+                        yield current.ToString()
+                        if x = ':' then
+                            yield ":"
+                        current.Clear() |> ignore
+                    else
+                        current.Append x |> ignore
+                
+                  yield current.ToString()]
+                |> List.filter (String.IsNullOrWhiteSpace >> not)
+
+            match parts with
             | k::colon::_ when colon = ":" && (k.ToLower() = "build" || k.ToLower() = "os" || k.ToLower() = "packages")  -> 
-                urlPart,None,rest
+                part,None,rest
             | operator::version::operator2::version2::prerelease::options when 
                     isOperator operator && isOperator operator2 && 
                       not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages" || prerelease = ":") 
                -> 
-                let startPos = url.Substring(urlPart.Length).IndexOf(prerelease)
-                let options = url.Substring(urlPart.Length + startPos + prerelease.Length)
-                urlPart,Some(operator + " " + version + " " + operator2 + " " + version2 +  " " + prerelease),options
+                let startPos = gitConfig.Substring(part.Length).IndexOf(prerelease)
+                let options = gitConfig.Substring(part.Length + startPos + prerelease.Length)
+                part,Some(operator + " " + version + " " + operator2 + " " + version2 +  " " + prerelease),options
             | operator::version::prerelease::options when 
                     isOperator operator && not (isOperator prerelease) && 
                       not (prerelease.ToLower() = "build" || prerelease.ToLower() = "os" || prerelease.ToLower() = "packages" || prerelease = ":") 
                -> 
-                let startPos = url.Substring(urlPart.Length).IndexOf(prerelease)
-                let options = url.Substring(urlPart.Length + startPos + prerelease.Length)
-                urlPart,Some(operator + " " + version +  " " + prerelease),options
+                let startPos = gitConfig.Substring(part.Length).IndexOf(prerelease)
+                let options = gitConfig.Substring(part.Length + startPos + prerelease.Length)
+                part,Some(operator + " " + version +  " " + prerelease),options
             | operator::version::operator2::version2::options when isOperator operator && isOperator operator2 -> 
-                let startPos = url.Substring(urlPart.Length).IndexOf(version2)
-                let options = url.Substring(urlPart.Length + startPos + version2.Length)
-                urlPart,Some(operator + " " + version + " " + operator2 + " " + version2),options
+                let startPos = gitConfig.Substring(part.Length).IndexOf(version2)
+                let options = gitConfig.Substring(part.Length + startPos + version2.Length)
+                part,Some(operator + " " + version + " " + operator2 + " " + version2),options
             | operator::version::options when isOperator operator -> 
-                let startPos = url.Substring(urlPart.Length).IndexOf(version)
-                let options = url.Substring(urlPart.Length + startPos + version.Length)
-                urlPart,Some(operator + " " + version),options
+                let startPos = gitConfig.Substring(part.Length).IndexOf(version)
+                let options = gitConfig.Substring(part.Length + startPos + version.Length)
+                part,Some(operator + " " + version),options
             | commit::options -> 
-                let startPos = url.Substring(urlPart.Length).IndexOf(commit)
-                let options = url.Substring(urlPart.Length + startPos + commit.Length)
-                urlPart,Some commit,options
-            | _ -> url,None,""
-        | _ -> url,None,""
+                let startPos = gitConfig.Substring(part.Length).IndexOf(commit)
+                let options = gitConfig.Substring(part.Length + startPos + commit.Length)
+                part,Some commit,options
+            | _ -> gitConfig,None,""
+        | _ -> gitConfig,None,""
     
     let kvPairs = parseKeyValuePairs options
 
