@@ -24,49 +24,6 @@ type PaketExiter() =
                 tracen msg ; exit 0
             else traceError msg ; exit 1
 
-//let filterGlobalArgs args =
-//    let error = ref None
-//    let verbose = args |> Array.exists (fun x -> x = "--verbose" || x = "-v")
-//    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.bind (fun i -> if args.Length - 1 > i then Some args.[i+1] else error := Some "--log-file was specifed, but no log file was given"; None)
-//
-//    let rest =
-//        match logFile with
-//        | Some file -> args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
-//        | None -> args |> Array.filter (fun a -> a <> "--log-file")
-//
-//    let rest =
-//        if verbose then rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
-//        else rest
-//
-//    error,verbose, logFile, rest
-//
-//let globalError,v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
-//let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
-
-//let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command
-//    args =
-//    let parser = ArgumentParser.Create<'T>(errorHandler = ProcessExiter())
-//    let results = parser.Parse(inputs = args, raiseOnUsage = false, ignoreMissing = true)
-//
-//    let resultsValid = validateF (results)
-//    if results.IsUsageRequested || not resultsValid || !globalError <> None then
-//        if !globalError <> None then
-//            traceError (!globalError).Value
-//            Environment.ExitCode <- 1
-//        elif not resultsValid then
-//            traceError "Command was:"
-//            traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
-//            parser.PrintUsage((*Commands.cmdLineUsageMessage command parser*)) |> traceError
-//            Environment.ExitCode <- 1
-//        else
-//            parser.PrintUsage((*Commands.cmdLineUsageMessage command parser*)) |> trace
-//    else
-//        commandF results
-//        let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
-//        if not silent then
-//            tracefn "%s - ready." elapsedTime
-//
-
 let processWithValidation silent validateF commandF (result : ParseResult<'T>) =
     if not <| validateF result then
         traceError "Command was:"
@@ -422,60 +379,33 @@ let main() =
             | Some lf -> setLogFile lf
             | None -> null
 
-//        let parser = ArgumentParser.Create<Command>()
-//        let results =
-//            parser.Parse(inputs = args,
-//                         ignoreMissing = true,
-//                         ignoreUnrecognized = true,
-//                         raiseOnUsage = false)
-//        match results.GetAllResults() with
-//        | [ command ] ->
-//            let handler =
-        match results.TryGetSubCommand() with
-        | None -> 
-            Environment.ExitCode <- 1
-            traceError "Command was:"
-            traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
-            parser.PrintUsage("available commands:") |> traceError
+        match results.GetSubCommand() with
+        | Add r -> processCommand silent add r
+        | ClearCache r -> processCommand silent clearCache r
+        | Config r -> processWithValidation silent validateConfig config r
+        | ConvertFromNuget r -> processCommand silent convert r
+        | FindRefs r -> processCommand silent findRefs r
+        | Init r -> processCommand silent init r
+        | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
+        | Install r -> processCommand silent install r
+        | Outdated r -> processCommand silent outdated r
+        | Remove r -> processCommand silent remove r
+        | Restore r -> processCommand silent restore r
+        | Simplify r -> processCommand silent simplify r
+        | Update r -> processCommand silent update r
+        | FindPackages r -> processCommand silent (findPackages silent) r
+        | FindPackageVersions r -> processCommand silent findPackageVersions r
+        | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
+        | ShowGroups r -> processCommand silent showGroups r
+        | Pack r -> processCommand silent pack r
+        | Push r -> processCommand silent push r
+        | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r
+        // global options; list here in order to maintain compiler warnings
+        // in case of new subcommands added
+        | Verbose
+        | Silent
+        | Log_File _ -> failwith "internal error: this code should never be reached."
 
-        | Some sub ->
-            match sub with
-            | Add r -> processCommand silent add r
-            | ClearCache r -> processCommand silent clearCache r
-            | Config r -> processWithValidation silent validateConfig config r
-            | ConvertFromNuget r -> processCommand silent convert r
-            | FindRefs r -> processCommand silent findRefs r
-            | Init r -> processCommand silent init r
-            | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
-            | Install r -> processCommand silent install r
-            | Outdated r -> processCommand silent outdated r
-            | Remove r -> processCommand silent remove r
-            | Restore r -> processCommand silent restore r
-            | Simplify r -> processCommand silent simplify r
-            | Update r -> processCommand silent update r
-            | FindPackages r -> processCommand silent (findPackages silent) r
-            | FindPackageVersions r -> processCommand silent findPackageVersions r
-            | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
-            | ShowGroups r -> processCommand silent showGroups r
-            | Pack r -> processCommand silent pack r
-            | Push r -> processCommand silent push r
-            | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r
-            // global options; list here in order to maintain compiler warnings
-            // in case of new subcommands added
-            | Verbose
-            | Silent
-            | Log_File _ -> failwith "internal error: this code should never be reached."
-
-//            let args = args.[1..]
-//
-//            handler command args
-//            ()
-//        | [] when results.IsUsageRequested ->
-//            Environment.ExitCode <- 0
-//            parser.PrintUsage ("Help was requested:") |> trace
-//        | [] ->
-
-//        | _ -> failwith "expected only one command"
     with
     | exn when not (exn :? System.NullReferenceException) ->
         Environment.ExitCode <- 1

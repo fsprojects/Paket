@@ -214,7 +214,6 @@ type FindPackagesArgs =
     | [<CustomCommandLine("searchtext")>] SearchText of text:string
     | [<CustomCommandLine("source")>] Source of source_feed:string
     | [<CustomCommandLine("max")>] MaxResults of int
-    | [<AltCommandLine("-s")>] Silent
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -222,34 +221,30 @@ with
             | SearchText(_) -> "Search text of a Package."
             | Source(_) -> "Allows to specify the package source feed."
             | MaxResults(_) -> "Maximum number of results."
-            | Silent -> "Doesn't trace other output than the search result."
 
 type ShowInstalledPackagesArgs =
     | All
     | [<CustomCommandLine("project")>] Project of string
-    | [<AltCommandLine("-s")>] Silent
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | All -> "Shows all installed packages (incl. transitive dependencies)."
             | Project(_) -> "Show only packages that are installed in the given project."
-            | Silent -> "Doesn't trace other output than installed packages."
 
 type ShowGroupsArgs =
-    | [<AltCommandLine("-s")>] Silent
+    | [<Hidden; NoCommandLine>] PlaceHolder
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Silent -> "Doesn't trace other output than installed packages."
+            | PlaceHolder -> "Doesn't trace other output than installed packages."
 
 type FindPackageVersionsArgs =
     | [<CustomCommandLine("name"); Hidden>] Name of package_id:string
     | [<CustomCommandLine("nuget")>] NuGet of package_id:string
     | [<CustomCommandLine("source")>] Source of source_feed:string
     | [<CustomCommandLine("max")>] MaxResults of int
-    | [<AltCommandLine("-s")>] Silent
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -258,7 +253,6 @@ with
             | NuGet(_) -> "Name of the NuGet package."
             | Source(_) -> "Allows to specify the package source feed."
             | MaxResults(_) -> "Maximum number of results."
-            | Silent -> "Doesn't trace other output than the search result."
 
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of path:string
@@ -316,6 +310,7 @@ with
         | Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore. Can be provided multiple times."
         | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'. Can be provided multiple times."
   
+[<RequireSubcommand>]
 type Command =
     // global options
     | [<AltCommandLine("-v"); Inherit>]                 Verbose
@@ -368,28 +363,9 @@ with
             | GenerateIncludeScripts _ -> "Generate include scripts for installed packages."
             | Log_File _ -> "Specify a log file for the paket process."
             | Silent -> "Suppress console output for the paket process."
-            | Verbose -> "Enable verbose console output for the paket process."
-
-//    member this.Name =
-//        let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
-//        (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>)
-//        |> Seq.head
-//        :?> CustomCommandLineAttribute).Name    
+            | Verbose -> "Enable verbose console output for the paket process." 
 
 let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
-  
-//let cmdLineSyntax (parser:ArgumentParser<_>) commandName =
-//    "paket " + commandName + " " + parser.PrintCommandLineSyntax()
-
-//let cmdLineUsageMessage (command : Command) parser =
-//    System.Text.StringBuilder()
-//        .Append("Paket ")
-//        .AppendLine(command.Name)
-//        .AppendLine()
-//        .AppendLine((command :> IArgParserTemplate).Usage)
-//        .AppendLine()
-//        .Append(cmdLineSyntax parser command.Name)
-//        .ToString()
 
 let markdown (subParser : ArgumentParser) (additionalText : string) =
     let (afterCommandText, afterOptionsText) =

@@ -81,7 +81,7 @@ type Add() =
                 if x.NoInstall.IsPresent then
                     yield AddArgs.No_Install
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.add
         } |> processWithLogging x 
 
@@ -101,7 +101,7 @@ type AutoRestoreCmdlet() =
                 if x.Off.IsPresent then
                     yield AutoRestoreArgs.Off
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.autoRestore
         } |> processWithLogging x
 
@@ -118,7 +118,7 @@ type ConfigCmdlet() =
                 if String.IsNullOrEmpty x.AddCredentials = false then
                     yield ConfigArgs.AddCredentials x.AddCredentials
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.config
         } |> processWithLogging x
 
@@ -145,7 +145,7 @@ type ConvertFromNuGetCmdlet() =
                 if String.IsNullOrEmpty x.CredsMigration = false then
                     yield ConvertFromNugetArgs.Creds_Migration x.CredsMigration
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.convert
         } |> processWithLogging x
 
@@ -162,7 +162,7 @@ type FindRefsCmdlet() =
                 if x.NuGet.Length > 0 then
                     yield FindRefsArgs.Packages (Array.toList x.NuGet)
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.findRefs
         } |> processWithLogging x
 
@@ -185,11 +185,9 @@ type FindPackagesCmdlet() =
                     yield FindPackagesArgs.Source x.Source
                 if x.Max <> Int32.MinValue then
                     yield FindPackagesArgs.MaxResults x.Max
-                if x.Silent.IsPresent then
-                    yield FindPackagesArgs.Silent
             ]
-            |> parser.CreateParseResultsOfList
-            |> Program.findPackages false
+            |> parser.ToParseResult
+            |> Program.findPackages x.Silent.IsPresent
         } |> processWithLogging x
 
 [<Cmdlet("Paket", "FindPackageVersions")>]
@@ -211,10 +209,8 @@ type FindPackageVersionsCmdlet() =
                     yield FindPackageVersionsArgs.Source x.Source
                 if x.Max <> Int32.MinValue then
                     yield FindPackageVersionsArgs.MaxResults x.Max
-                if x.Silent.IsPresent then
-                    yield FindPackageVersionsArgs.Silent
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.findPackageVersions
         } |> processWithLogging x
 
@@ -226,7 +222,7 @@ type InitCmdlet() =
         async {
             let parser = ArgumentParser.Create<InitArgs>()
             List.empty
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.init
         } |> processWithLogging x
 
@@ -246,7 +242,7 @@ type InstallCmdlet() =
                 if x.Redirects.IsPresent then
                     yield InstallArgs.Redirects
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.install
         } |> processWithLogging x
 
@@ -266,7 +262,7 @@ type OutdatedCmdlet() =
                 if x.IncludePrereleases.IsPresent then
                     yield OutdatedArgs.Include_Prereleases             
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.outdated
         } |> processWithLogging x
 
@@ -292,7 +288,7 @@ type PushCmdlet() =
                 if String.IsNullOrEmpty x.Endpoint = false then
                     yield PushArgs.EndPoint x.Endpoint
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.push
         } |> processWithLogging x
 
@@ -321,7 +317,7 @@ type RemoveCmdlet() =
                 if x.NoInstall.IsPresent then
                     yield RemoveArgs.No_Install
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.remove
         } |> processWithLogging x
 
@@ -342,7 +338,7 @@ type RestoreCmdlet() =
                 if x.ReferencesFiles.Length > 0 then
                     yield RestoreArgs.References_Files (Array.toList x.ReferencesFiles)
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.restore
         } |> processWithLogging x
 
@@ -359,7 +355,7 @@ type SimplifyCmdlet() =
                 if x.Interactive.IsPresent then
                     yield SimplifyArgs.Interactive
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.simplify
         } |> processWithLogging x
 
@@ -381,10 +377,8 @@ type ShowInstalledPackagesCmdlet() =
                             yield ShowInstalledPackagesArgs.All
                         if String.IsNullOrEmpty x.Project = false then
                             yield ShowInstalledPackagesArgs.Project x.Project
-                        if x.Silent.IsPresent then
-                            yield ShowInstalledPackagesArgs.Silent
                     ]
-                    |> parser.CreateParseResultsOfList
+                    |> parser.ToParseResult
                     |> Program.getInstalledPackages
                 return packages
             }
@@ -421,6 +415,6 @@ type UpdateCmdlet() =
                 if x.Redirects.IsPresent then
                     yield UpdateArgs.Redirects
             ]
-            |> parser.CreateParseResultsOfList
+            |> parser.ToParseResult
             |> Program.update
         } |> processWithLogging x
