@@ -7,6 +7,7 @@ module DependenciesFileParser =
     open ModuleResolver
     open Domain
     open PackageSources
+    open Logging
 
     let private operators =
         VersionRange.BasicOperators
@@ -384,7 +385,7 @@ module DependenciesFileParser =
                 | Package(name,version,rest) ->
                     let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest) 
                     if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
-                        failwithf "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
+                        traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
                     
                     lineNo, { current with Packages = current.Packages  @ [package] }::other
                 | SourceFile(origin, (owner,project, vr), path, authKey) ->

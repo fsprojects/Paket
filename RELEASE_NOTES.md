@@ -1,5 +1,4 @@
-#### 3.4.0-alpha005 - 30.06.2016
-* Using Argu 3 alpha channel
+#### 3.4.0 - 30.06.2016
 * Inaccessible caches are excluded for the duration of running a command - https://github.com/fsprojects/Paket/pull/1770
 * BUGFIX: NuGet OData search is now case-insensitive - https://github.com/fsprojects/Paket/issues/1775
 * BUGFIX: Allows to use colons in git build argument - https://github.com/fsprojects/Paket/issues/1773
@@ -8,6 +7,7 @@
 * BUGFIX: Fixed out-of-date check for remote files - https://github.com/fsprojects/Paket/issues/1760, https://github.com/fsprojects/Paket/issues/1762, https://github.com/fsprojects/Paket/issues/1766
 * BUGFIX: Using network cache with invalid credentials should not fail restore - https://github.com/fsprojects/Paket/issues/1758
 * BUGFIX: Make the copy task more robust if we can't parse target framework - https://github.com/fsprojects/Paket/issues/1756
+* BUGFIX: Paket warns on dependencies file that has same package twice in same group - https://github.com/fsprojects/Paket/issues/1757
 * USABILITY: Show out-of-sync warning message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750
 * COSMETICS: Don't trace download of remote files twice
 
