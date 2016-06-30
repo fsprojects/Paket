@@ -60,12 +60,11 @@
 <p>Allows to store global configuration values like NuGet credentials.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket config fsi.exe [add-credentials &lt;string&gt;] [add-token &lt;Item<span class="n">1</span>&gt; &lt;Item<span class="n">2</span>&gt;] [--username &lt;string&gt;] [--password &lt;string&gt;] [--help]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket config [add-credentials &lt;string&gt;] [add-token &lt;string&gt; &lt;string&gt;] [--username &lt;string&gt;] [--password &lt;string&gt;]
 </code></pre></td></tr></table>
-<h3><a name="Options-USAGE-fsi-exe" class="anchor" href="#Options-USAGE-fsi-exe">Options:USAGE: fsi.exe [add-credentials <string>] [add-token <Item1> <Item2>] [--username <string>] [--password <string>] [--help]</a></h3>
-<p>OPTIONS:</p>
+<h3><a name="Options" class="anchor" href="#Options">Options:</a></h3>
 <p><code>add-credentials &lt;string&gt;</code>: Add credentials for the specified NuGet feed.</p>
-<p><code>add-token &lt;Item1&gt; &lt;Item2&gt;</code>: Add token for the specified source.</p>
+<p><code>add-token &lt;string&gt; &lt;string&gt;</code>: Add token for the specified source.</p>
 <p><code>--username &lt;string&gt;</code>: Provide a username (for scripting)</p>
 <p><code>--password &lt;string&gt;</code>: provide a password on the commandline (for scripting)</p>
 <p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>

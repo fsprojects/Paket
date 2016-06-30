@@ -60,10 +60,9 @@
 <p>Removes a package from your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> and all <a href="references-files.html"><code>paket.references</code> files</a>.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket remove fsi.exe nuget &lt;string&gt; [project &lt;string&gt;] [group &lt;string&gt;] [--force] [--interactive] [--no-install] [--help]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket remove nuget &lt;string&gt; [project &lt;string&gt;] [group &lt;string&gt;] [--force|-f] [--interactive|-i] [--no-install]
 </code></pre></td></tr></table>
-<h3><a name="Options-USAGE-fsi-exe-nuget-string" class="anchor" href="#Options-USAGE-fsi-exe-nuget-string">Options:USAGE: fsi.exe nuget <string> [project <string>] [group <string>] [--force] [--interactive] [--no-install] [--help]</a></h3>
-<p>OPTIONS:</p>
+<h3><a name="Options" class="anchor" href="#Options">Options:</a></h3>
 <p><code>nuget &lt;string&gt;</code>: NuGet package id.</p>
 <p><code>project &lt;string&gt;</code>: Allows to remove the package from a single project only.</p>
 <p><code>group &lt;string&gt;</code>: Removes the package from the given group. If omited the Main group is used.</p>

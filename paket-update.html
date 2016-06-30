@@ -60,10 +60,9 @@
 <p>Update one or all dependencies to their latest version and update projects.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket update fsi.exe [nuget &lt;string&gt;] [version &lt;string&gt;] [group &lt;string&gt;] [--force] [--redirects] [--createnewbindingfiles] [--clean-redirects] [--no-install] [--keep-major] [--keep-minor] [--keep-patch] [--<span class="k">filter</span>] [--touch-affected-refs] [--help]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket update [nuget &lt;string&gt;] [version &lt;string&gt;] [group &lt;string&gt;] [--force|-f] [--redirects] [--createnewbindingfiles] [--clean-redirects] [--no-install] [--keep-major] [--keep-minor] [--keep-patch] [--<span class="k">filter</span>] [--touch-affected-refs]
 </code></pre></td></tr></table>
-<h3><a name="Options-USAGE-fsi-exe" class="anchor" href="#Options-USAGE-fsi-exe">Options:USAGE: fsi.exe [nuget <string>] [version <string>] [group <string>] [--force] [--redirects] [--createnewbindingfiles] [--clean-redirects] [--no-install] [--keep-major] [--keep-minor] [--keep-patch] [--filter] [--touch-affected-refs] [--help]</a></h3>
-<p>OPTIONS:</p>
+<h3><a name="Options" class="anchor" href="#Options">Options:</a></h3>
 <p><code>nuget &lt;string&gt;</code>: NuGet package id.</p>
 <p><code>version &lt;string&gt;</code>: Allows to specify version of the package.</p>
 <p><code>group &lt;string&gt;</code>: Allows to specify the dependency group.</p>
@@ -89,7 +88,7 @@
 as explained under <a href="http://fsprojects.github.io/Paket/resolver.html">Package resolution algorithm</a>, and writes it to <a href="lock-file.html"><code>paket.lock</code></a>.
 It then proceeds to download the packages and to install them into the projects.</p>
 <p>Please see <a href="paket-install.html"><code>paket install</code></a> if you want to keep the current versions from your <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
-<h3><a name="Options" class="anchor" href="#Options">Options:</a></h3>
+<h3><a name="Options-1" class="anchor" href="#Options-1">Options:</a></h3>
 <p><code>--force [-f]</code>: Forces the download and reinstallation of all packages.</p>
 <p><code>--redirects</code>: Creates binding redirects for the NuGet packages.</p>
 <p><code>--no-install</code>: Skips paket install process afterward generation of <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
@@ -99,7 +98,7 @@ It then proceeds to download the packages and to install them into the projects.
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket update nuget PACKAGENAME [version VERSION] [group GROUPNAME] [--force|-f] [--redirects] [--no-install]
 </code></pre></td></tr></table>
-<h3><a name="Options-1" class="anchor" href="#Options-1">Options:</a></h3>
+<h3><a name="Options-2" class="anchor" href="#Options-2">Options:</a></h3>
 <p><code>nuget &lt;string&gt;</code>: Nuget package id</p>
 <p><code>version &lt;string&gt;</code>: Allows to specify version of the package.</p>
 <p><code>group &lt;string&gt;</code>: Allows to specify the group where the package is located. If omitted then Paket defaults to the Main group.</p>
@@ -113,7 +112,7 @@ It then proceeds to download the packages and to install them into the projects.
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket update group GROUPNAME [--force|-f] [--redirects] [--no-install]
 </code></pre></td></tr></table>
-<h3><a name="Options-2" class="anchor" href="#Options-2">Options:</a></h3>
+<h3><a name="Options-3" class="anchor" href="#Options-3">Options:</a></h3>
 <p><code>group &lt;string&gt;</code>: Group name</p>
 <p><code>--force [-f]</code>: Forces the download and reinstallation of all packages.</p>
 <p><code>--redirects</code>: Creates binding redirects for the NuGet packages.</p>

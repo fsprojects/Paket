@@ -60,10 +60,9 @@
 <p>Converts from using NuGet to Paket.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket convert-from-nuget fsi.exe [--force] [--no-install] [--no-auto-restore] [--creds-migration &lt;string&gt;] [--help]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket convert-from-nuget [--force|-f] [--no-install] [--no-auto-restore] [--creds-migration &lt;string&gt;]
 </code></pre></td></tr></table>
-<h3><a name="Options-USAGE-fsi-exe" class="anchor" href="#Options-USAGE-fsi-exe">Options:USAGE: fsi.exe [--force] [--no-install] [--no-auto-restore] [--creds-migration <string>] [--help]</a></h3>
-<p>OPTIONS:</p>
+<h3><a name="Options" class="anchor" href="#Options">Options:</a></h3>
 <p><code>--force [-f]</code>: Forces the conversion, even if <a href="dependencies-file.html"><code>paket.dependencies</code></a> or <a href="references-files.html"><code>paket.references</code> files</a> are present.</p>
 <p><code>--no-install</code>: Skips paket install process (patching of csproj, fsproj, ... files) after the generation of <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
 <p><code>--no-auto-restore</code>: Skips paket auto-restore process afterward generation of dependencies / references files.</p>
