@@ -3,7 +3,7 @@ framework: >= net40
 cache ./nupkgs versions:current
 
 nuget Newtonsoft.Json redirects: force
-nuget Argu prerelease
+nuget Argu
 nuget FSharp.Core redirects: force
 nuget Chessie
 nuget Mono.Cecil
