@@ -6,10 +6,10 @@ open FSharp.Quotations
 open Argu
 
 type AddArgs =
-    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
-    | [<CustomCommandLine("version")>] Version of string
-    | [<CustomCommandLine("project")>] Project of string
-    | [<CustomCommandLine("group")>] Group of string
+    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of package_id:string
+    | [<CustomCommandLine("version")>] Version of version:string
+    | [<CustomCommandLine("project")>] Project of name:string
+    | [<CustomCommandLine("group")>] Group of name:string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Redirects
@@ -57,7 +57,7 @@ type ConvertFromNugetArgs =
     | [<AltCommandLine("-f")>] Force
     | No_Install
     | No_Auto_Restore
-    | Creds_Migration of string
+    | Creds_Migration of mode:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -68,8 +68,8 @@ with
             | Creds_Migration(_) -> "Specify a mode for migrating NuGet source credentials. Possible values are [`encrypt`|`plaintext`|`selective`]. The default mode is `encrypt`."
 
 type FindRefsArgs =
-    | [<CustomCommandLine("group")>] Group of string
-    | [<CustomCommandLine("nuget")>][<ExactlyOnce>] Packages of string list
+    | [<CustomCommandLine("group")>] Group of name:string
+    | [<CustomCommandLine("nuget")>][<ExactlyOnce>] Packages of package_name:string list
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -128,9 +128,9 @@ with
             | Include_Prereleases -> "Includes prereleases."
 
 type RemoveArgs =
-    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of string
-    | [<CustomCommandLine("project")>] Project of string
-    | [<CustomCommandLine("group")>] Group of string
+    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of package_id:string
+    | [<CustomCommandLine("project")>] Project of name:string
+    | [<CustomCommandLine("group")>] Group of name:string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | No_Install
@@ -157,8 +157,8 @@ type RestoreArgs =
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
     | [<CustomCommandLine("--touch-affected-refs")>] Touch_Affected_Refs
     | [<CustomCommandLine("--ignore-checks")>] Ignore_Checks
-    | [<CustomCommandLine("group")>] Group of string
-    | [<Unique>] References_Files of string list
+    | [<CustomCommandLine("group")>] Group of name:string
+    | [<Unique>] References_Files of file_name:string list
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -179,9 +179,9 @@ with
             | Interactive -> "Asks to confirm to delete every transitive dependency from each of the files."
 
 type UpdateArgs =
-    | [<CustomCommandLine("nuget")>] Nuget of string
-    | [<CustomCommandLine("version")>] Version of string
-    | [<CustomCommandLine("group")>] Group of string
+    | [<CustomCommandLine("nuget")>] Nuget of package_id:string
+    | [<CustomCommandLine("version")>] Version of version:string
+    | [<CustomCommandLine("group")>] Group of name:string
     | [<AltCommandLine("-f")>] Force
     | Redirects
     | CreateNewBindingFiles
@@ -211,8 +211,8 @@ with
             | Touch_Affected_Refs -> "Touches project files referencing packages which are affected, to help incremental build tools detecting the change."
 
 type FindPackagesArgs =
-    | [<CustomCommandLine("searchtext")>] SearchText of string
-    | [<CustomCommandLine("source")>] Source of string
+    | [<CustomCommandLine("searchtext")>] SearchText of text:string
+    | [<CustomCommandLine("source")>] Source of source_feed:string
     | [<CustomCommandLine("max")>] MaxResults of int
     | [<AltCommandLine("-s")>] Silent
 with
@@ -245,9 +245,9 @@ with
             | Silent -> "Doesn't trace other output than installed packages."
 
 type FindPackageVersionsArgs =
-    | [<CustomCommandLine("name")>] [<Hidden>] Name of string
-    | [<CustomCommandLine("nuget")>] NuGet of string
-    | [<CustomCommandLine("source")>] Source of string
+    | [<CustomCommandLine("name"); Hidden>] Name of package_id:string
+    | [<CustomCommandLine("nuget")>] NuGet of package_id:string
+    | [<CustomCommandLine("source")>] Source of source_feed:string
     | [<CustomCommandLine("max")>] MaxResults of int
     | [<AltCommandLine("-s")>] Silent
 with
@@ -261,19 +261,19 @@ with
             | Silent -> "Doesn't trace other output than the search result."
 
 type PackArgs =
-    | [<CustomCommandLine("output")>][<Mandatory>] Output of string
-    | [<CustomCommandLine("buildconfig")>] BuildConfig of string
-    | [<CustomCommandLine("buildplatform")>] BuildPlatform of string
-    | [<CustomCommandLine("version")>] Version of string
-    | [<CustomCommandLine("templatefile")>] TemplateFile of string
-    | [<CustomCommandLine("exclude")>] ExcludedTemplate of string
+    | [<CustomCommandLine("output")>][<Mandatory>] Output of path:string
+    | [<CustomCommandLine("buildconfig")>] BuildConfig of config_name:string
+    | [<CustomCommandLine("buildplatform")>] BuildPlatform of target:string
+    | [<CustomCommandLine("version")>] Version of version:string
+    | [<CustomCommandLine("templatefile")>] TemplateFile of path:string
+    | [<CustomCommandLine("exclude")>] ExcludedTemplate of templateId:string
     | [<CustomCommandLine("specific-version")>] SpecificVersion of templateId:string * version:string
-    | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of string
+    | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of text:string
     | [<CustomCommandLine("lock-dependencies")>] LockDependencies
     | [<CustomCommandLine("minimum-from-lock-file")>] LockDependenciesToMinimum
     | [<CustomCommandLine("symbols")>] Symbols
     | [<CustomCommandLine("include-referenced-projects")>] IncludeReferencedProjects
-    | [<CustomCommandLine("project-url")>] ProjectUrl of string
+    | [<CustomCommandLine("project-url")>] ProjectUrl of url:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -293,10 +293,10 @@ with
             | ProjectUrl(_) -> "Url to the projects home page."
 
 type PushArgs =
-    | [<CustomCommandLine("url")>][<Mandatory>] Url of string
-    | [<CustomCommandLine("file")>][<Mandatory>] FileName of string
-    | [<CustomCommandLine("apikey")>] ApiKey of string
-    | [<CustomCommandLine("endpoint")>] EndPoint of string
+    | [<CustomCommandLine("url")>][<Mandatory>] Url of url:string
+    | [<CustomCommandLine("file")>][<Mandatory>] FileName of path:string
+    | [<CustomCommandLine("apikey")>] ApiKey of key:string
+    | [<CustomCommandLine("endpoint")>] EndPoint of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -307,8 +307,8 @@ with
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
 type GenerateIncludeScriptsArgs = 
-    | [<CustomCommandLine("framework")>] Framework of string
-    | [<CustomCommandLine("type")>] ScriptType of string
+    | [<CustomCommandLine("framework")>] Framework of target:string
+    | [<CustomCommandLine("type")>] ScriptType of id:string
 with
   interface IArgParserTemplate with
       member this.Usage = 
