@@ -3,12 +3,9 @@
 Pushes the given `.nupkg` file.
 
     [lang=msh]
-    paket push fsi.exe url <string> file <string> [apikey <string>] [endpoint <string>] [--help]
+    paket push url <string> file <string> [apikey <string>] [endpoint <string>]
 
-### Options:USAGE: fsi.exe url <string> file <string> [apikey <string>] [endpoint <string>] [--help]
-
-OPTIONS:
-
+### Options:
 
   `url <string>`: Url of the NuGet feed.
 
