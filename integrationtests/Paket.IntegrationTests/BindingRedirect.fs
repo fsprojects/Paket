@@ -366,3 +366,18 @@ let ``#1621 generates binding redirect when references project with another targ
     
     config |> shouldContainText ``NUnit``
     config |> shouldContainText ``NUnit correct version``
+
+[<Test>]
+let ``#1783 generates binding redirect when assembly with different version of main group``() =
+    let scenario = "i001783-different-versions"
+    install scenario |> ignore
+    let ``FSharp.Core`` = """<assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />"""
+    let ``Newtonsoft.Json`` = """<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
+    
+    let path = Path.Combine(scenarioTempPath scenario, "projectB")
+    let configPath = Path.Combine(path, "app.config")
+
+    let config = File.ReadAllText(configPath) |> normalizeLineEndings
+    
+    config |> shouldContainText ``FSharp.Core``
+    config |> shouldContainText ``Newtonsoft.Json``

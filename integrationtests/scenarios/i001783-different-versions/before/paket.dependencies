@@ -1,0 +1,14 @@
+source https://www.nuget.org/api/v2
+redirects: on
+framework: net45
+
+nuget Newtonsoft.Json.FSharp 3.2.2
+nuget Newtonsoft.Json ~> 7.0
+
+group B
+	source https://www.nuget.org/api/v2
+	redirects: on
+	framework: net45
+
+	nuget Newtonsoft.Json ~> 9.0
+	nuget Newtonsoft.Json.FSharp 3.2.2
