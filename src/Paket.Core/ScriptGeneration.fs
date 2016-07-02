@@ -162,7 +162,7 @@ module ScriptGeneration =
             let escape = 
               // /!\ /!\ /!\ TODO escape text /!\ /!\ /!\
               id
-            sprintf @"printfn ""%s\"" " (escape text)
+            sprintf @"printfn ""%s"" " (escape text)
     ]
 
     let text =
@@ -188,7 +188,7 @@ module ScriptGeneration =
             let escape = 
               // /!\ /!\ /!\ TODO escape text /!\ /!\ /!\
               id
-            sprintf @"System.Console.WriteLine(""%s\""); " (escape text)
+            sprintf @"System.Console.WriteLine(""%s""); " (escape text)
     ]
 
     let text =
