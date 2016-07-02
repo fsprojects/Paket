@@ -1,0 +1,123 @@
+{
+  "version": "3.15.4",
+  "buildOptions": {
+    "debugType": "portable",
+    "compilerName": "fsc",
+    "define": [
+      "DOTNETCORE"
+    ],
+    "emitEntryPoint": false,
+    "xmlDoc": true,
+    "compile": {
+      "includeFiles": [
+        "../../../paket-files/fsprojects/FSharp.TypeProviders.StarterPack/src/AssemblyReader.fs",
+        "../../../paket-files/fsharp/FAKE/src/app/FakeLib/Globbing/Globbing.fs",
+        "../Async.fs",
+        "../AssemblyInfo.fs",
+        "../CustomAssemblyInfo.fs",
+        "../Domain.fs",
+        "../Logging.fsi",
+        "../Logging.fs",
+        "../Constants.fs",
+        "../Utils.fs",
+        "../SemVer.fs",
+        "../VersionRange.fs",
+        "../Xml.fs",
+        "../GitCommandHelper.fs",
+        "../GitHandling.fs",
+        "../ConfigFile.fs",
+        "../Cache.fs",
+        "../Cultures.fs",
+        "../PackageSources.fs",
+        "../FrameworkHandling.fs",
+        "../PlatformMatching.fs",
+        "../Requirements.fs",
+        "../ModuleResolver.fs",
+        "../RemoteDownload.fs",
+        "../RemoteUpload.fs",
+        "../PackageResolver.fs",
+        "../Nuspec.fs",
+        "../InstallModel.fs",
+        "../ReferencesFile.fs",
+        "../SolutionFile.fs",
+        "../Nuget.fs",
+        "../NuGetV3.fs",
+        "../NuGetV2.fs",
+        "../DependenciesTypes.fs",
+        "../DependenciesFileParser.fs",
+        "../LockFile.fs",
+        "../TemplateFile.fs",
+        "../ProjectFile.fs",
+        "../DependenciesFile.fs",
+        "../LocalFile.fs",
+        "../DependencyChangeDetection.fs",
+        "../GarbageCollection.fs",
+        "../RestoreProcess.fs",
+        "../BindingRedirects.fs",
+        "../NupkgWriter.fs",
+        "../ProcessOptions.fs",
+        "../PackagesConfigFile.fs",
+        "../DependencyModel.fs",
+        "../InstallProcess.fs",
+        "../UpdateProcess.fs",
+        "../RemoveProcess.fs",
+        "../AddProcess.fs",
+        "../PackageMetaData.fs",
+        "../PackageProcess.fs",
+        "../Environment.fs",
+        "../Releases.fs",
+        "../Simplifier.fs",
+        "../VSIntegration.fs",
+        "../NugetConvert.fs",
+        "../FindOutdated.fs",
+        "../FindReferences.fs",
+        "../PublicAPI.fs",
+        "../ScriptGeneration.fs"
+      ]
+    }
+  },
+  "tools": {
+    "dotnet-compile-fsc": {
+      "version": "1.0.0-preview2-*",
+      "imports": "dnxcore50"
+    },
+    "dotnet-mergenupkg": {
+      "target": "package",
+      "version": "1.0.*"
+    }
+  },
+  "dependencies": {
+      "Newtonsoft.Json": "9.0.1",
+      "FSharp.Core": "4.0.1.7-alpha",
+      "Mono.Cecil": "0.10.0-beta1-v2",
+      "Chessie": "0.6.0"
+  },
+  "frameworks": {
+    "netstandard1.6": {
+      "buildOptions": {
+        "define": [
+          "NETSTANDARD1_5",
+          "NETSTANDARD1_6",
+          "USE_HTTP_CLIENT"
+        ]
+      },
+      "imports": [
+        "portable-net45+win8",
+        "dnxcore50"
+      ],
+      "dependencies": {
+        "System.Xml.XmlDocument": "4.0.1",
+        "System.Net.Requests": "4.0.11",
+        "System.Diagnostics.TraceSource": "4.0.0",
+        "System.Xml.XPath.XmlDocument": "4.0.1",
+        "System.Diagnostics.Process": "4.1.0",
+        "System.Xml.XDocument": "4.0.11",
+        "System.Xml.XPath.XDocument": "4.0.1",
+        "System.Security.Cryptography.ProtectedData": "4.0.0",
+        "System.Security.Cryptography.Algorithms": "4.2.0",
+        "System.Diagnostics.FileVersionInfo": "4.0.0",
+        "NETStandard.Library": "1.6.0"
+      }
+    }
+  }
+}

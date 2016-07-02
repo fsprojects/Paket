@@ -128,6 +128,13 @@ Target "CleanDocs" (fun _ ->
     CleanDirs ["docs/output"]
 )
 
+#load "paket-files/build/matthid/FAKE/src/app/Fake.DotNet.Cli/Dotnet.fs"
+open Fake.DotNet.Cli
+
+Target "InstallDotnetCore" (fun _ ->
+    DotnetCliInstall Preview2ToolingOptions
+)
+
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
@@ -136,6 +143,38 @@ Target "Build" (fun _ ->
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
+
+Target "DotnetRestore" (fun _ ->
+    // dotnet restore
+    !! "src/**/project.json"
+    |> Seq.iter(fun proj ->
+        // Fix version entered in project.json
+        let mutable found = false
+        File.ReadLines proj
+        |> Seq.toList
+        |> List.map (fun l ->
+          if (not found) && l.StartsWith("  \"version\": \"") && l.EndsWith("\",") then
+            found <- true
+            sprintf "  \"version\": \"%s\"," release.NugetVersion
+          else l)
+        |> fun lines -> File.WriteAllLines(proj, lines)
+
+        DotnetRestore id proj
+    )
+)
+
+Target "DotnetPackage" (fun _ ->
+    // dotnet pack
+    !! "src/**/project.json"
+    |> Seq.iter(fun proj ->
+        DotnetPack (fun c ->
+            { c with
+                Configuration = Release
+                OutputPath = Some (tempDir @@ "dotnetcore")
+            }) proj
+    )
+)
+
 
 // --------------------------------------------------------------------------------------
 // Build PowerShell project
@@ -266,6 +305,17 @@ Target "NuGet" (fun _ ->
             ToolPath = "bin/merged/paket.exe" 
             Version = release.NugetVersion
             ReleaseNotes = toLines release.Notes })
+)
+
+Target "MergeDotnetCoreIntoNuget" (fun _ ->
+    let nupkg = sprintf "./temp/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
+    let netcoreNupkg = sprintf "./temp/dotnetcore/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
+
+    Shell.Exec(
+      DotnetOptions.Default.DotnetCliPath, 
+      sprintf """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg,
+      "src/Paket.Core/Paket.Core/")
+    |> fun exitCode -> if exitCode <> 0 then failwithf "mergenupkg exited with exit code %d" exitCode
 )
 
 Target "PublishChocolatey" (fun _ ->
@@ -433,7 +483,10 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
+  =?> ("InstallDotnetCore", not <| hasBuildParam "DISABLE_NETCORE")
   ==> "Build"
+  =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
+  =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("BuildPowerShell", not isMono)
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
@@ -447,6 +500,7 @@ Target "All" DoNothing
   =?> ("MergePowerShell", not isMono)
   ==> "SignAssemblies"
   ==> "NuGet"
+  =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE")
   ==> "BuildPackage"
 
 "CleanDocs"

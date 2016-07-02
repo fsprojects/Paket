@@ -19,8 +19,10 @@ group Build
   nuget FAKE prerelease
   nuget FSharp.Formatting
   nuget ILRepack
-
+  
   github fsharp/FAKE modules/Octokit/Octokit.fsx
+  // Remove me once the netcore PR has been merged
+  github matthid/FAKE:coreclr src/app/Fake.DotNet.Cli/Dotnet.fs
 
 group Test
 

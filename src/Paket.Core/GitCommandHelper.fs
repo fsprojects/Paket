@@ -94,10 +94,14 @@ let tryFindFileOnPath (file : string) : string option =
 /// [omit]
 let appSettings (key : string) (fallbackValue : string) = 
     let value = 
-        let setting = 
+        let setting =
+#if NETSTANDARD1_6
+            null : string
+#else
             try 
                 System.Configuration.ConfigurationManager.AppSettings.[key]
             with exn -> ""
+#endif
         if not (String.IsNullOrWhiteSpace setting) then setting
         else fallbackValue
     value.Split([| ';' |], StringSplitOptions.RemoveEmptyEntries)

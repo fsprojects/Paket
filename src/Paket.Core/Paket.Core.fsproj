@@ -86,16 +86,15 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CustomAssemblyInfo.fs" />
     <Compile Include="Domain.fs" />
-    <Compile Include="Constants.fs" />
     <Compile Include="Logging.fsi" />
     <Compile Include="Logging.fs" />
+    <Compile Include="Constants.fs" />
     <Compile Include="Utils.fs" />
     <Compile Include="SemVer.fs" />
     <Compile Include="VersionRange.fs" />
     <Compile Include="Xml.fs" />
     <Compile Include="GitCommandHelper.fs" />
     <Compile Include="GitHandling.fs" />
-    <Compile Include="PlatformDetection.fs" />
     <Compile Include="ConfigFile.fs" />
     <Compile Include="Cache.fs" />
     <Compile Include="Cultures.fs" />

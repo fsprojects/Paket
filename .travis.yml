@@ -1,6 +1,29 @@
 language: csharp
 
-sudo: false  # use the new container-based Travis infrastructure 
+env:
+ - HOME=/home/travis APPDATA=/home/travis LocalAppData=/home/travis # DISABLE_NETCORE=true
+
+#sudo: false  # use the new container-based Travis infrastructure
+sudo: required
+dist: trusty # Ubuntu 14.04
+
+
+addons:
+  apt:
+    packages:
+      - libunwind8
+
+mono:
+  - latest
+
+before install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update               ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install openssl      ; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link --force openssl ; fi
+
+branches:
+  except:
+    - gh-pages
 
 script: 
   - ./build.sh RunIntegrationTests

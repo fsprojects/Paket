@@ -519,11 +519,20 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                 verbosefn "Downloading license for %O %O to %s" packageName version targetFileName
 
                 let request = HttpWebRequest.Create(Uri licenseUrl) :?> HttpWebRequest
-                request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+#if NETSTANDARD1_6
+                // Note: this code is not working on regular non-dotnetcore
+                // "This header must be modified with the appropriate property."
+                // But we don't have the UserAgent API available.
+                // We should just switch to HttpClient everywhere.
+                request.Headers.[HttpRequestHeader.UserAgent] <- "Paket"
+#else
                 request.UserAgent <- "Paket"
+                request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+                request.Timeout <- 3000
+#endif
+
                 request.UseDefaultCredentials <- true
                 request.Proxy <- Utils.getDefaultProxyFor licenseUrl
-                request.Timeout <- 3000
                 use! httpResponse = request.AsyncGetResponse()
 
                 use httpResponseStream = httpResponse.GetResponseStream()
@@ -888,8 +897,16 @@ let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName
                             Uri(Uri sourceUrl,  nugetPackage.DownloadLink)
 
                     let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
-                    request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+#if NETSTANDARD1_6
+                    // Note: this code is not working on regular non-dotnetcore
+                    // "This header must be modified with the appropriate property."
+                    // But we don't have the UserAgent API available.
+                    // We should just switch to HttpClient everywhere.
+                    request.Headers.[HttpRequestHeader.UserAgent] <- "Paket"
+#else
                     request.UserAgent <- "Paket"
+                    request.AutomaticDecompression <- DecompressionMethods.GZip ||| DecompressionMethods.Deflate
+#endif
 
                     if authenticated then
                         match source.Auth |> Option.map toBasicAuth with

@@ -175,8 +175,12 @@ type PackageSource =
         | Some path -> PackageSource.Parse(path)
         | _ ->
             match System.Uri.TryCreate(source, System.UriKind.Absolute) with
-            | true, uri -> 
+            | true, uri ->
+#if DOTNETCORE
+                if uri.Scheme = "file" then 
+#else
                 if uri.Scheme = System.Uri.UriSchemeFile then 
+#endif
                     LocalNuGet(source,None)
                 else 
                     if String.endsWithIgnoreCase "v3/index.json" source then

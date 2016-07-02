@@ -9,8 +9,13 @@ open System.Xml
 open System.Text
 open Paket
 open Paket.Logging
+open Paket.Constants
 open Chessie.ErrorHandling
 open Paket.Domain
+
+#if NETSTANDARD1_6
+open System.Net.Http
+#endif
 
 let acceptXml = "application/atom+xml,application/xml"
 let acceptJson = "application/atom+json,application/json"
@@ -52,10 +57,14 @@ let TimeSpanToReadableString(span:TimeSpan) =
     if String.IsNullOrEmpty formatted then "0 seconds" else formatted
 
 let GetHomeDirectory() =
+#if DOTNETCORE
+    Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+#else
     if  Environment.OSVersion.Platform = PlatformID.Unix || Environment.OSVersion.Platform = PlatformID.MacOSX then
         Environment.GetEnvironmentVariable "HOME"
     else
         Environment.ExpandEnvironmentVariables "%HOMEDRIVE%%HOMEPATH%"
+#endif
 
 type PathReference =
     | AbsolutePath of string
@@ -211,27 +220,61 @@ let ProgramFilesX86 =
 /// The system root environment variable. Typically "C:\Windows"
 let SystemRoot = Environment.GetEnvironmentVariable "SystemRoot"
 
+let isMonoRuntime =
+    not (Object.ReferenceEquals(Type.GetType "Mono.Runtime", null))
+
 /// Determines if the current system is an Unix system
-let isUnix = int Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128)
+let isUnix = 
+#if NETSTANDARD1_6
+    System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+        System.Runtime.InteropServices.OSPlatform.Linux) || 
+    System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+        System.Runtime.InteropServices.OSPlatform.OSX)
+#else
+    int Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128)
+#endif
 
 /// Determines if the current system is a MacOs system
 let isMacOS =
+#if NETSTANDARD1_6
+    System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+        System.Runtime.InteropServices.OSPlatform.OSX)
+#else
     (Environment.OSVersion.Platform = PlatformID.MacOSX) ||
         // osascript is the AppleScript interpreter on OS X
         File.Exists "/usr/bin/osascript"
+#endif
 
 /// Determines if the current system is a Linux system
-let isLinux = isUnix && not isMacOS
+let isLinux = 
+#if NETSTANDARD1_6
+    System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+        System.Runtime.InteropServices.OSPlatform.Linux)
+#else
+    isUnix && not isMacOS
+#endif
 
 /// Determines if the current system is a Windows system
 let isWindows =
+#if NETSTANDARD1_6
+    System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(
+        System.Runtime.InteropServices.OSPlatform.Windows)
+#else
     match Environment.OSVersion.Platform with
     | PlatformID.Win32NT | PlatformID.Win32S | PlatformID.Win32Windows | PlatformID.WinCE -> true
     | _ -> false
+#endif
+
 
 /// Determines if the current system is a mono system
 /// Todo: Detect mono on windows
-let isMono = isUnix
+[<Obsolete("use either isMonoRuntime or isUnix, this flag is always false when compiled for NETSTANDARD")>]
+let isMono = 
+#if NETSTANDARD1_6
+    false
+#else
+    isUnix
+#endif
 
 let monoPath =
     if isMacOS && File.Exists "/Library/Frameworks/Mono.framework/Commands/mono" then
@@ -279,6 +322,10 @@ let normalizeFeedUrl (source:string) =
     | url when url.EndsWith("/api/v3/index.json") -> url.Replace("/api/v3/index.json","")
     | source -> source
 
+#if NETSTANDARD1_6
+type WebProxy = IWebProxy
+#endif
+
 let envProxies () =
     let getEnvValue (name:string) =
         let v = Environment.GetEnvironmentVariable(name.ToUpperInvariant())
@@ -300,11 +347,15 @@ let envProxies () =
         if isNull envVarValue then None else
         match Uri.TryCreate(envVarValue, UriKind.Absolute) with
         | true, envUri ->
+#if NETSTANDARD1_6
+            raise <| System.NotImplementedException ("I don't know how WebProxy can should be replace in dotnetcore. Therefore this is currently not supported. Please implement me :)")
+#else
             let proxy = WebProxy (Uri (sprintf "http://%s:%d" envUri.Host envUri.Port))
             proxy.Credentials <- Option.toObj <| getCredentials envUri
             proxy.BypassProxyOnLocal <- true
             proxy.BypassList <- bypassList
             Some proxy
+#endif
         | _ -> None
 
     let addProxy (map:Map<string, WebProxy>) scheme =
@@ -322,22 +373,152 @@ let getDefaultProxyFor =
       (fun (url:string) ->
             let uri = Uri url
             let getDefault () =
+#if NETSTANDARD1_6
+                let result = WebRequest.DefaultWebProxy
+#else
                 let result = WebRequest.GetSystemWebProxy()
-                let address = result.GetProxy uri 
-
+#endif
+#if NETSTANDARD1_6
+                let proxy = result
+#else
+                let address = result.GetProxy uri
                 if address = uri then null else
                 let proxy = WebProxy address
-                proxy.Credentials <- CredentialCache.DefaultCredentials
                 proxy.BypassProxyOnLocal <- true
+#endif
+                proxy.Credentials <- CredentialCache.DefaultCredentials
                 proxy
 
             match calcEnvProxies.Force().TryFind uri.Scheme with
             | Some p -> if p.GetProxy uri <> uri then p else getDefault()
             | None -> getDefault())
 
+#if USE_HTTP_CLIENT
+type WebClient = HttpClient
+type HttpClient with
+    member x.DownloadFileTaskAsync (uri : Uri, filePath : string) =
+      async {
+        let! response = x.GetAsync(uri) |> Async.AwaitTask
+        use fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None)
+        do! response.Content.CopyToAsync(fileStream) |> Async.AwaitTask
+        fileStream.Flush()
+      } |> Async.StartAsTask
+    member x.DownloadFileTaskAsync (uri : string, filePath : string) = x.DownloadFileTaskAsync(Uri uri, filePath)
+    member x.DownloadFile (uri : string, filePath : string) =
+        x.DownloadFileTaskAsync(uri, filePath).GetAwaiter().GetResult()
+    member x.DownloadFile (uri : Uri, filePath : string) =
+        x.DownloadFileTaskAsync(uri, filePath).GetAwaiter().GetResult()
+    member x.DownloadStringTaskAsync (uri : Uri) =
+      async {
+        let! response = x.GetAsync(uri) |> Async.AwaitTask
+        let! result = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+        return result
+      } |> Async.StartAsTask
+    member x.DownloadStringTaskAsync (uri : string) = x.DownloadStringTaskAsync(Uri uri)
+    member x.DownloadString (uri : string) =
+        x.DownloadStringTaskAsync(uri).GetAwaiter().GetResult()
+    member x.DownloadString (uri : Uri) =
+        x.DownloadStringTaskAsync(uri).GetAwaiter().GetResult()
+
+    member x.DownloadDataTaskAsync(uri : Uri) =
+      async {
+        let! response = x.GetAsync(uri) |> Async.AwaitTask
+        let! result = response.Content.ReadAsByteArrayAsync() |> Async.AwaitTask
+        return result
+      } |> Async.StartAsTask
+    member x.DownloadDataTaskAsync (uri : string) = x.DownloadDataTaskAsync(Uri uri)
+    member x.DownloadData(uri : string) =
+        x.DownloadDataTaskAsync(uri).GetAwaiter().GetResult()
+    member x.DownloadData(uri : Uri) =
+        x.DownloadDataTaskAsync(uri).GetAwaiter().GetResult()
+
+    member x.UploadFileAsMultipart (url : Uri) filename =
+        let fileTemplate = 
+            "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n"
+        let boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", System.Globalization.CultureInfo.InvariantCulture)
+        let fileInfo = (new FileInfo(Path.GetFullPath(filename)))
+        let fileHeaderBytes = 
+            System.String.Format
+                (System.Globalization.CultureInfo.InvariantCulture, fileTemplate, boundary, "package", "package", "application/octet-stream") 
+            |> Encoding.UTF8.GetBytes
+        let newlineBytes = Environment.NewLine |> Encoding.UTF8.GetBytes
+        let trailerbytes = String.Format(System.Globalization.CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
+        x.DefaultRequestHeaders.Add("ContentType", "multipart/form-data; boundary=" + boundary)
+        use stream = new MemoryStream() // x.OpenWrite(url, "PUT")
+        stream.Write(fileHeaderBytes, 0, fileHeaderBytes.Length)
+        use fileStream = File.OpenRead fileInfo.FullName
+        fileStream.CopyTo(stream, (4 * 1024))
+        stream.Write(newlineBytes, 0, newlineBytes.Length)
+        stream.Write(trailerbytes, 0, trailerbytes.Length)
+        stream.Write(newlineBytes, 0, newlineBytes.Length)
+        stream.Position <- 0L
+        x.PutAsync(url, new StreamContent(stream)).GetAwaiter().GetResult()
+
+let internal addAcceptHeader (client:HttpClient) (contentType:string) =
+    for headerVal in contentType.Split([|','|], System.StringSplitOptions.RemoveEmptyEntries) do
+        client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(headerVal))
+let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string) =
+    client.DefaultRequestHeaders.Add(headerKey, headerVal)
+
+#else
+
+type System.Net.WebClient with
+    member x.UploadFileAsMultipart (url : Uri) filename = 
+        let fileTemplate = 
+            "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n"
+        let boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", System.Globalization.CultureInfo.InvariantCulture)
+        let fileInfo = (new FileInfo(Path.GetFullPath(filename)))
+        let fileHeaderBytes = 
+            System.String.Format
+                (System.Globalization.CultureInfo.InvariantCulture, fileTemplate, boundary, "package", "package", "application/octet-stream") 
+            |> Encoding.UTF8.GetBytes
+        let newlineBytes = Environment.NewLine |> Encoding.UTF8.GetBytes
+        let trailerbytes = String.Format(System.Globalization.CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
+        x.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary)
+        use stream = x.OpenWrite(url, "PUT")
+        stream.Write(fileHeaderBytes, 0, fileHeaderBytes.Length)
+        use fileStream = File.OpenRead fileInfo.FullName
+        fileStream.CopyTo(stream, (4 * 1024))
+        stream.Write(newlineBytes, 0, newlineBytes.Length)
+        stream.Write(trailerbytes, 0, trailerbytes.Length)
+        stream.Write(newlineBytes, 0, newlineBytes.Length) 
+        ()
+
+let internal addAcceptHeader (client:WebClient) contentType =
+    client.Headers.Add (HttpRequestHeader.Accept, contentType)
+let internal addHeader (client:WebClient) (headerKey:string) (headerVal:string) =
+    client.Headers.Add (headerKey, headerVal)
+#endif
+
 let inline createWebClient (url,auth:Auth option) =
+#if USE_HTTP_CLIENT
+    let handler =
+        new HttpClientHandler(
+            UseProxy = true,
+            Proxy = getDefaultProxyFor url)
+    let client = new HttpClient(handler)
+    match auth with
+    | None -> handler.UseDefaultCredentials <- true
+    | Some(Credentials(username, password)) -> 
+        // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
+        //this works ONLY if the server returns 401 first
+        //client DOES NOT send credentials on first request
+        //ONLY after a 401
+        //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
+
+        //so use THIS instead to send credentials RIGHT AWAY
+        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
+        client.DefaultRequestHeaders.Authorization <- 
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", credentials)
+    | Some(Token token) ->
+        client.DefaultRequestHeaders.Authorization <-
+            new System.Net.Http.Headers.AuthenticationHeaderValue("token", token)
+    client.DefaultRequestHeaders.Add("user-agent", "Paket")
+    handler.UseProxy <- true
+    client
+#else
     let client = new WebClient()
-    client.Headers.Add("user-agent", "Paket")
+    client.Headers.Add("User-Agent", "Paket")
     client.Proxy <- getDefaultProxyFor url
 
     let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
@@ -363,6 +544,7 @@ let inline createWebClient (url,auth:Auth option) =
     | None ->
         client.UseDefaultCredentials <- true
     client
+#endif
 
 
 #nowarn "40"
@@ -394,7 +576,8 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
         try
             use client = createWebClient(url,auth)
             if notNullOrEmpty contentType then
-                client.Headers.Add (HttpRequestHeader.Accept, contentType)
+                addAcceptHeader client contentType
+
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
@@ -407,10 +590,10 @@ let getXmlFromUrl (auth:Auth option, url : string) =
         try
             use client = createWebClient (url,auth)
             // mimic the headers sent from nuget client to odata/ endpoints
-            client.Headers.Add (HttpRequestHeader.Accept, "application/atom+xml, application/xml")
-            client.Headers.Add (HttpRequestHeader.AcceptCharset, "UTF-8")
-            client.Headers.Add ("DataServiceVersion", "1.0;NetFx")
-            client.Headers.Add ("MaxDataServiceVersion", "2.0;NetFx")
+            addAcceptHeader client "application/atom+xml, application/xml"
+            addHeader client "AcceptCharset" "UTF-8"
+            addHeader client "DataServiceVersion" "1.0;NetFx"
+            addHeader client "MaxDataServiceVersion" "2.0;NetFx"
             
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
@@ -427,9 +610,10 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             use client = createWebClient (url,auth)
             
             if notNullOrEmpty contentType then
-                client.Headers.Add(HttpRequestHeader.Accept, contentType)
-
+                addAcceptHeader client contentType
+#if !NETSTANDARD1_6
             client.Encoding <- Encoding.UTF8
+#endif
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             return Some raw
         with e ->

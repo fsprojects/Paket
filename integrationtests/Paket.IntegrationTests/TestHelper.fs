@@ -66,14 +66,14 @@ let paket command scenario =
     directPaket command scenario
 
 let update scenario =
-    paket "update -v" scenario |> ignore
+    paket "update" scenario |> ignore
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario =
-    paket "install -v" scenario |> ignore
+    paket "install" scenario |> ignore
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
-let restore scenario = paket "restore -v" scenario |> ignore
+let restore scenario = paket "restore" scenario |> ignore
 
 let updateShouldFindPackageConflict packageName scenario =
     try

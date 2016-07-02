@@ -119,7 +119,7 @@ let ``#1247 shouldn't load lockfile in full update``() =
 [<Test>]
 let ``#1247 should report lockfile in parse errror``() =
     try
-        paket "update -v --keep-minor" "i001247-lockfile-error" |> ignore
+        paket "update --keep-minor" "i001247-lockfile-error" |> ignore
 
         failwith "error was expected"
     with
