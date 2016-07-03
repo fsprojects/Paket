@@ -7,9 +7,11 @@ open FsUnit
 open System
 open System.Net
 open Domain
+open TestHelpers
 
 [<Test>]
 let ``should report blocked download``() =
+    ensureDir()
     let di = Path.Combine(Path.GetTempPath(),"PaketTests/Extract")
     if Directory.Exists di then
         Directory.Delete(di,true)

@@ -676,7 +676,7 @@ module ProjectFile =
             propertyNames,propertyGroup
 
         let conditions =
-            model.ReferenceFileFolders
+            model.GetReferenceFolders()
             |> List.choose (fun lib -> 
                 match lib with
                 | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> None  // TODO: Add reference to custom task instead
@@ -906,7 +906,7 @@ module ProjectFile =
             let importTargets = defaultArg installSettings.ImportTargets true
 
             let hasRunTimeStuff =
-                projectModel.ReferenceFileFolders
+                projectModel.LegacyReferenceFileFolders
                 |> Seq.collect (fun lib -> 
                     match lib with
                     | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> lib.Files.References

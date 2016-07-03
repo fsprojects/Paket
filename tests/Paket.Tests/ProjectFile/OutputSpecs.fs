@@ -5,29 +5,36 @@ open NUnit.Framework
 open FsUnit
 open System.Xml
 open System.Xml.Linq
+open TestHelpers
+
 
 [<Test>]
 let ``should detect lib output type for Project1 proj file``() =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project1.fsprojtest").Value.OutputType
     |> shouldEqual ProjectOutputType.Library
 
 [<Test>]
 let ``should detect exe output type for Project2 proj file``() =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.OutputType
     |> shouldEqual ProjectOutputType.Exe
 
 [<Test>]
 let ``should detect exe output type for Project3 proj file``() =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project3.fsprojtest").Value.OutputType
     |> shouldEqual ProjectOutputType.Exe
 
 [<Test>]
 let ``should detect target framework for Project1 proj file``() =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project1.fsprojtest").Value.GetTargetProfile()
     |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
 
 [<Test>]
 let ``should detect target framework for Project2 proj file``() =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetTargetProfile()
     |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)))
 
@@ -35,31 +42,37 @@ let ``should detect target framework for Project2 proj file``() =
 let ``should detect output path for proj file``
         ([<Values("Project1", "Project2", "Project3", "ProjectWithConditions")>] project)
         ([<Values("Debug", "Release")>] configuration) =
+    ensureDir ()
     ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s.fsprojtest" project).Value.GetOutputDirectory configuration ""
     |> shouldEqual (System.IO.Path.Combine(@"bin", configuration) |> normalizePath)
 
 [<Test>]
 let ``should detect framework profile for ProjectWithConditions file`` () =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/ProjectWithConditions.fsprojtest").Value.GetTargetProfile()
     |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4_6)))
 
 [<Test>]
 let ``should detect assembly name for Project1 proj file`` () =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project1.fsprojtest").Value.GetAssemblyName()
     |> shouldEqual ("Paket.Tests.dll")
 
 [<Test>]
 let ``should detect assembly name for Project2 proj file`` () =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetAssemblyName()
     |> shouldEqual ("Paket.Tests.exe")
 
 [<Test>]
 let ``should detect assembly name for Project3 proj file`` () =
+    ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project3.fsprojtest").Value.GetAssemblyName()
     |> shouldEqual ("Paket.Tests.Win.exe")
 
 [<Test>]
 let ``should maintain order when updating project file items`` () = 
+    ensureDir ()
     
     let projFile =  ProjectFile.TryLoad("./ProjectFile/TestData/MaintainsOrdering.fsprojtest").Value
     let fileItems = [
@@ -108,6 +121,7 @@ let ``should maintain order when updating project file items`` () =
 
 [<Test>]
 let ``should remove missing files that exist in the project`` () = 
+    ensureDir ()
     
     let projFile =  ProjectFile.TryLoad("./ProjectFile/TestData/MaintainsOrdering.fsprojtest").Value
     let fileItems = [

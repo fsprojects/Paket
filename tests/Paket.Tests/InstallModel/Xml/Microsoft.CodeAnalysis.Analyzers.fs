@@ -33,6 +33,7 @@ let expectedCs = """
 
 [<Test>]
 let ``should generate Xml for Microsoft.CodeAnalysis.Analyzers in CSharp project``() = 
+    ensureDir()
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
     let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,Map.empty,true,true,None)
@@ -53,6 +54,7 @@ let expectedVb = """
 
 [<Test>]
 let ``should generate Xml for RefactoringEssentials in VisualBasic project``() = 
+    ensureDir()
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")
     Assert.IsTrue(project.IsSome)
     let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model,Map.empty,true,true,None)
@@ -72,6 +74,7 @@ let expectedEmpty = """<ItemGroup xmlns="http://schemas.microsoft.com/developer/
 
 [<Test>]
 let ``should generate Xml for Microsoft.CodeAnalysis.Analyzers 1.0.0-rc2``() = 
+    ensureDir()
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
     let _,_,_,_,analyzerNodes = project.Value.GenerateXml(oldModel,Map.empty,true,true,None)
@@ -95,6 +98,7 @@ let projectAfter100Installed = """
 
 [<Test>]
 let ``can remove analyzer paket nodes``() = 
+    ensureDir()
     use stream = new MemoryStream(projectAfter100Installed |> Encoding.ASCII.GetBytes)
     let project = ProjectFile.LoadFromStream("Test.csproj", stream)
     

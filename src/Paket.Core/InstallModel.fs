@@ -116,7 +116,8 @@ type AnalyzerLib =
 type InstallModel = 
     { PackageName : PackageName
       PackageVersion : SemVerInfo
-      ReferenceFileFolders : LibFolder list
+      LegacyReferenceFileFolders : LibFolder list
+      NewReferenceFileFolders : LibFolder list
       TargetsFileFolders : LibFolder list
       Analyzers: AnalyzerLib list}
 
@@ -127,10 +128,19 @@ module InstallModel =
     let emptyModel packageName packageVersion = 
         { PackageName = packageName
           PackageVersion = packageVersion
-          ReferenceFileFolders = []
+          LegacyReferenceFileFolders = []
+          NewReferenceFileFolders = []
           TargetsFileFolders = [] 
           Analyzers = [] }
+    let getReferenceFolders (installModel: InstallModel) =
+        if installModel.NewReferenceFileFolders.IsEmpty then
+          installModel.LegacyReferenceFileFolders
+        else installModel.NewReferenceFileFolders
 
+    let extractRefFolder packageName (path:string) =
+        let path = path.Replace("\\", "/").ToLower()
+        Utils.extractPath ("ref", packageName, path)
+      
     let extractLibFolder packageName (path:string) =
         let path = path.Replace("\\", "/").ToLower()
         if path.Contains "runtimes" then
@@ -142,7 +152,8 @@ module InstallModel =
 
     let mapFolders mapfn (installModel:InstallModel) = 
         { installModel with 
-            ReferenceFileFolders = List.map mapfn installModel.ReferenceFileFolders
+            LegacyReferenceFileFolders = List.map mapfn installModel.LegacyReferenceFileFolders
+            NewReferenceFileFolders = List.map mapfn installModel.NewReferenceFileFolders
             TargetsFileFolders   = List.map mapfn installModel.TargetsFileFolders  }
     
     let mapFiles mapfn (installModel:InstallModel) = 
@@ -154,8 +165,13 @@ module InstallModel =
         | Some folder -> folder.Files.References |> Seq.choose choosefn
         | None -> Seq.empty
 
-    let getLibReferences (target : TargetProfile) (installModel:InstallModel) = 
-        getFileFolders target installModel.ReferenceFileFolders (function Reference.Library lib -> Some lib | _ -> None)
+    let getLibReferences (target : TargetProfile) installModel = 
+        let results =
+          getFileFolders target (getReferenceFolders installModel) (function Reference.Library lib -> Some lib | _ -> None)
+          |> Seq.cache
+        if results |> Seq.isEmpty then
+          getFileFolders target installModel.LegacyReferenceFileFolders (function Reference.Library lib -> Some lib | _ -> None)
+        else results
 
     let getTargetsFiles (target : TargetProfile) (installModel:InstallModel) = 
         getFileFolders target installModel.TargetsFileFolders 
@@ -164,13 +180,13 @@ module InstallModel =
     let getPlatformReferences frameworkIdentifier installModel = 
         getLibReferences (SinglePlatform frameworkIdentifier) installModel
 
-    let getFrameworkAssembliesLazy (installModel:InstallModel) = 
-        lazy ([ for lib in installModel.ReferenceFileFolders do
+    let getFrameworkAssembliesLazy installModel = 
+        lazy ([ for lib in getReferenceFolders installModel do
                     yield! lib.Files.GetFrameworkAssemblies()]
               |> Set.ofList)
 
-    let getLibReferencesLazy (installModel:InstallModel) = 
-        lazy ([ for lib in installModel.ReferenceFileFolders do
+    let getLibReferencesLazy installModel = 
+        lazy ([ for lib in getReferenceFolders installModel do
                     yield! lib.Files.References] 
               |> Set.ofList)
 
@@ -188,13 +204,15 @@ module InstallModel =
         else
             this
 
-    let calcLibFolders packageName libs =
+    let calcLibFoldersG extract packageName libs =
        libs 
-        |> List.choose (extractLibFolder  packageName)
+        |> List.choose (extract  packageName)
         |> List.distinct 
         |> PlatformMatching.getSupportedTargetProfiles 
         |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
         |> Seq.toList
+    let calcLibFolders = calcLibFoldersG extractLibFolder
+    let calcRefFolders = calcLibFoldersG extractRefFolder
 
     let addFileToFolder (path:LibFolder) (file:string) (folders:LibFolder list) (addfn: string -> InstallFiles -> InstallFiles) =
         folders 
@@ -202,7 +220,7 @@ module InstallModel =
             if p.Name <> path.Name then p else
             { p with Files = addfn file p.Files }) 
                 
-    let addPackageFile (path:LibFolder) (file:string) references (this:InstallModel) : InstallModel =
+    let private addPackageFile (path:LibFolder) (file:string) references (this:InstallModel) : InstallModel =
         let install = 
             match references with
             | NuspecReferences.All -> true
@@ -210,21 +228,34 @@ module InstallModel =
 
         if not install then this else
         { this with 
-            ReferenceFileFolders = addFileToFolder path file this.ReferenceFileFolders InstallFiles.addReference }
+            LegacyReferenceFileFolders = addFileToFolder path file this.LegacyReferenceFileFolders InstallFiles.addReference }
+    
+    let private addPackageRefFile (path:LibFolder) (file:string) references (this:InstallModel) : InstallModel =
+        let install = 
+            match references with
+            | NuspecReferences.All -> true
+            | NuspecReferences.Explicit list -> List.exists file.EndsWith list
 
+        if not install then this else
+        { this with 
+            NewReferenceFileFolders = addFileToFolder path file this.NewReferenceFileFolders InstallFiles.addReference }
 
     let addLibReferences libs references (installModel:InstallModel) : InstallModel =
         let libs = libs |> Seq.toList
         let libFolders = calcLibFolders installModel.PackageName libs
+        let refFolders = calcRefFolders installModel.PackageName libs
 
-        List.fold (fun (model:InstallModel) file ->
-            match extractLibFolder installModel.PackageName file with
-            | Some folderName ->
-                match List.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
-                | Some path -> addPackageFile path file references model
-                | _ -> model
-            | None -> model) { installModel with ReferenceFileFolders = libFolders } libs
-
+        let addItem extract addFunc getFolder initialState =
+          List.fold (fun (model:InstallModel) file ->
+              match extract installModel.PackageName file with
+              | Some folderName ->
+                  match List.tryFind (fun folder -> folder.Name = folderName) (getFolder model) with
+                  | Some path -> addFunc path file references model
+                  | _ -> model
+              | None -> model) initialState libs
+        
+        let newState = addItem extractLibFolder addPackageFile (fun i -> i.LegacyReferenceFileFolders) { installModel with LegacyReferenceFileFolders = libFolders }
+        addItem extractRefFolder addPackageRefFile (fun i -> i.NewReferenceFileFolders) { newState with NewReferenceFileFolders = refFolders }
 
     let addAnalyzerFiles (analyzerFiles:string seq) (installModel:InstallModel)  : InstallModel =
         let analyzerLibs =
@@ -265,9 +296,9 @@ module InstallModel =
                             |> List.exists (fun t -> t >= min && t < max && t.IsSameCategoryAs(min)))
         
         let model = 
-            if List.isEmpty installModel.ReferenceFileFolders then
+            if List.isEmpty installModel.LegacyReferenceFileFolders then
                 let folders = calcLibFolders installModel.PackageName ["lib/Default.dll"]
-                { installModel with ReferenceFileFolders = folders } 
+                { installModel with LegacyReferenceFileFolders = folders } 
             else
                 installModel
 
@@ -322,8 +353,13 @@ module InstallModel =
                 { folder with Targets = applyRestrictionsToTargets restrictions folder.Targets}
 
             { installModel with 
-                ReferenceFileFolders = 
-                    installModel.ReferenceFileFolders
+                LegacyReferenceFileFolders = 
+                    installModel.LegacyReferenceFileFolders
+                    |> List.map applRestriction
+                    |> List.filter (fun folder -> folder.Targets <> []) 
+
+                NewReferenceFileFolders = 
+                    installModel.NewReferenceFileFolders
                     |> List.map applRestriction
                     |> List.filter (fun folder -> folder.Targets <> []) 
 
@@ -372,6 +408,8 @@ type InstallModel with
 
     static member EmptyModel (packageName, packageVersion) = InstallModel.emptyModel packageName packageVersion
 
+    member this.GetReferenceFolders () = InstallModel.getReferenceFolders this
+
     member this.MapFolders mapfn = InstallModel.mapFolders mapfn this
 
     member this.MapFiles mapfn = InstallModel.mapFiles mapfn this
@@ -400,7 +438,7 @@ type InstallModel with
 
     member this.AddTargetsFiles targetsFiles = InstallModel.addTargetsFiles targetsFiles this
 
-    member this.AddPackageFile (path, file, references) = InstallModel.addPackageFile path file references this
+    //member this.AddPackageFile (path, file, references) = InstallModel.addPackageFile path file references this
     
     member this.AddFrameworkAssemblyReference reference = InstallModel.addFrameworkAssemblyReference this reference 
 

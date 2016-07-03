@@ -4,26 +4,31 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open System
+open TestHelpers
 
 [<Test>]
 let ``should detect no dependencies in empty proj file``() =
+    ensureDir()
     ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GetInterProjectDependencies()
     |> shouldBeEmpty
 
 [<Test>]
 let ``should detect Paket dependency in Project1 proj file``() =
+    ensureDir()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project1.fsprojtest").Value.GetInterProjectDependencies()
     |> List.map (fun p -> p.Name.Value)
     |> shouldEqual ["Paket"]
 
 [<Test>]
 let ``should detect Paket and Paket.Core dependency in Project2 proj file``() =
+    ensureDir()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetInterProjectDependencies()
     |> List.map (fun p -> p.Name.Value)
     |> shouldEqual ["Paket"; "Paket.Core"]
 
 [<Test>]
 let ``should detect path for dependencies in Project2 proj file``() =
+    ensureDir()
     let paths =
         ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetInterProjectDependencies()
         |> List.map (fun p -> p.Path)
@@ -33,6 +38,7 @@ let ``should detect path for dependencies in Project2 proj file``() =
 
 [<Test>]
 let ``should detect relative path for dependencies in Project2 proj file``() =
+    ensureDir()
     let paths =
         ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetInterProjectDependencies()
         |> List.map (fun p -> p.RelativePath)
@@ -42,6 +48,7 @@ let ``should detect relative path for dependencies in Project2 proj file``() =
 
 [<Test>]
 let ``should detect Guids for dependencies in Project2 proj file``() =
+    ensureDir()
     let p = ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value
     p.GetProjectGuid() |> shouldEqual (Guid.Parse "e789c72a-5cfd-436b-8ef1-61aa2852a89f")
     p.GetInterProjectDependencies()
@@ -51,6 +58,7 @@ let ``should detect Guids for dependencies in Project2 proj file``() =
 
 [<Test>]
 let ``should detect solution path for dependencies in Project4 proj file``() =
+    ensureDir()
     let paths =
         ProjectFile.TryLoad("./ProjectFile/TestData/Project4.fsprojtest").Value.GetInterProjectDependencies()
         |> List.map (fun p -> p.RelativePath)
@@ -60,6 +68,7 @@ let ``should detect solution path for dependencies in Project4 proj file``() =
 
 [<Test>]
 let ``should return None Guids for dependencies in Project5 proj file``() =
+    ensureDir()
     let proj = ProjectFile.TryLoad("./ProjectFile/TestData/Project5.fsprojtest")
     proj.Value.GetInterProjectDependencies()
     |> List.map (fun p -> p.GUID)
@@ -67,6 +76,7 @@ let ``should return None Guids for dependencies in Project5 proj file``() =
 
 [<Test>]
 let ``should return Name based on Include if not set for dependencies in Project5 proj file``() =
+    ensureDir()
     let proj = ProjectFile.TryLoad("./ProjectFile/TestData/Project5.fsprojtest")
     proj.Value.GetInterProjectDependencies()
     |> List.map (fun p -> p.Name)

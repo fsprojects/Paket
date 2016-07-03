@@ -5,69 +5,83 @@ open NUnit.Framework
 open FsUnit
 open Paket.Requirements
 open Domain
+open TestHelpers
 
 [<Test>]
 let ``can detect explicit references``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/FSharp.Data.nuspec").References
     |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.dll"])
 
 [<Test>]
 let ``can detect explicit in self made nuspec``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/FSharp.Data.Prerelease.nuspec").References
     |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.dll"])
 
 [<Test>]
 let ``can detect all references``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/Octokit.nuspec").References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``can detect all references for FsXaml``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/FsXaml.Wpf.nuspec").References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``can detect all references for ReadOnlyCollectionExtions``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``can detect developmentDependency is false for ReadOnlyCollectionExtions``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").IsDevelopmentDependency
     |> shouldEqual false
 
 [<Test>]
 let ``can detect developmentDependency for LiteGuard.Source``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/LiteGuard.Source.nuspec").IsDevelopmentDependency
     |> shouldEqual true
 
 [<Test>]
 let ``can detect all references for log4net``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/log4net.nuspec").References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``if nuspec is not found we assume all references``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/blablub.nuspec").References
     |> shouldEqual NuspecReferences.All
 
 [<Test>]
 let ``can detect explicit references for Fantomas``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/Fantomas.nuspec").References
     |> shouldEqual (NuspecReferences.Explicit ["FantomasLib.dll"])
 
 [<Test>]
 let ``can detect no framework assemblies for Fantomas``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/Fantomas.nuspec").FrameworkAssemblyReferences
     |> shouldEqual []
 
 [<Test>]
 let ``if nuspec is not found we assume no framework references``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/blablub.nuspec").FrameworkAssemblyReferences
     |> shouldEqual []
 
 [<Test>]
 let ``can detect framework assemblies for Microsoft.Net.Http``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/Microsoft.Net.Http.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Net.Http"
@@ -82,6 +96,7 @@ let ``can detect framework assemblies for Microsoft.Net.Http``() =
 
 [<Test>]
 let ``can detect deps assemblies for RazorEngine``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/RazorEngine.nuspec").Dependencies
     |> shouldEqual 
         [PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement("= 2.0.30506.0"), 
@@ -91,6 +106,7 @@ let ``can detect deps assemblies for RazorEngine``() =
 
 [<Test>]
 let ``can detect framework assemblies for FluentAssertions``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/FluentAssertions.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Xml"; FrameworkRestrictions = FrameworkRestrictionList [] }
@@ -98,6 +114,7 @@ let ``can detect framework assemblies for FluentAssertions``() =
 
 [<Test>]
 let ``can detect framework assemblies for SqlCLient``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Data"; FrameworkRestrictions = FrameworkRestrictionList [] }
@@ -105,22 +122,26 @@ let ``can detect framework assemblies for SqlCLient``() =
 
 [<Test>]
 let ``can detect license for SqlCLient``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").LicenseUrl
     |> shouldEqual "http://github.com/fsprojects/FSharp.Data.SqlClient/blob/master/LICENSE.md"
 
 [<Test>]
 let ``can detect dependencies for SqlCLient``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").Dependencies
     |> shouldEqual 
         [PackageName "Microsoft.SqlServer.Types",DependenciesFileParser.parseVersionRequirement(">= 11.0.0"), FrameworkRestrictionList []]
 
 [<Test>]
 let ``can detect reference files for SqlCLient``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec").References
     |> shouldEqual (NuspecReferences.Explicit ["FSharp.Data.SqlClient.dll"])
 
 [<Test>]
 let ``can detect framework assemblies for Octokit``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/Octokit.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Net.Http"
@@ -131,6 +152,7 @@ let ``can detect framework assemblies for Octokit``() =
 
 [<Test>]
 let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/FSharp.Data.SqlEnumProvider.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Data"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] }
@@ -138,21 +160,25 @@ let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() =
 
 [<Test>]
 let ``can detect empty framework assemblies for ReadOnlyCollectionExtensions``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").FrameworkAssemblyReferences
     |> shouldEqual [ ]
 
 [<Test>]
 let ``can detect empty dependencies for log4net``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/log4net.nuspec").Dependencies
     |> shouldEqual []
 
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/Fantomas.nuspec").Dependencies
     |> shouldEqual [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.57"), FrameworkRestrictionList []]
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/ReadOnlyCollectionExtensions.nuspec").Dependencies
     |> shouldEqual 
         [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
@@ -164,6 +190,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
 
 [<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNetCore.Antiforgery``() = 
+    ensureDir()
     let deps = Nuspec.Load("Nuspec/Microsoft.AspNetCore.Antiforgery.nuspec").Dependencies
 
     let v =
@@ -177,6 +204,7 @@ let ``can detect explicit dependencies for Microsoft.AspNetCore.Antiforgery``() 
 
 [<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNetCore.Mvc.ViewFeatures``() = 
+    ensureDir()
     let deps = Nuspec.Load("Nuspec/Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec").Dependencies
 
     let v =
@@ -189,7 +217,8 @@ let ``can detect explicit dependencies for Microsoft.AspNetCore.Mvc.ViewFeatures
             FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1)); FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_5))])
 
 [<Test>]
-let ``can detect framework assemblies for MathNet.Numerics``() = 
+let ``can detect framework assemblies for MathNet.Numerics``() =
+    ensureDir() 
     Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").FrameworkAssemblyReferences
     |> shouldEqual 
         [{ AssemblyName = "System.Numerics"
@@ -204,6 +233,7 @@ let ``can detect framework assemblies for MathNet.Numerics``() =
 
 [<Test>]
 let ``can detect dependencies for MathNet.Numerics``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/MathNet.Numerics.nuspec").Dependencies
     |> shouldEqual 
         [ PackageName "TaskParallelLibrary",
@@ -212,6 +242,7 @@ let ``can detect dependencies for MathNet.Numerics``() =
 
 [<Test>]
 let ``can detect dependencies for MathNet.Numerics.FSharp``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/MathNet.Numerics.FSharp.nuspec").Dependencies
     |> Seq.head
     |> shouldEqual 
@@ -220,6 +251,7 @@ let ``can detect dependencies for MathNet.Numerics.FSharp``() =
 
 [<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
+    ensureDir()
     Nuspec.Load("Nuspec/WindowsAzure.Storage.nuspec").Dependencies
     |> Seq.skip 1
     |> Seq.head
@@ -232,6 +264,7 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
 
 [<Test>]
 let ``can detect framework assemblies for Microsoft.Framework.Logging``() = 
+    ensureDir()
     let nuspec = Nuspec.Load("Nuspec/Microsoft.Framework.Logging.nuspec")
     nuspec.FrameworkAssemblyReferences.[0].AssemblyName |> shouldEqual "System.Collections.Concurrent"
     nuspec.FrameworkAssemblyReferences.[0].FrameworkRestrictions 
@@ -249,6 +282,7 @@ let ``can detect framework assemblies for Microsoft.Framework.Logging``() =
 
 [<Test>]
 let ``can detect explicit dependencies for FluentAssertions 4``() = 
+    ensureDir()
     let deps = Nuspec.Load("Nuspec/FluentAssertions4.nuspec").Dependencies |> List.toArray
 
     deps.[0]
@@ -261,6 +295,7 @@ let ``can detect explicit dependencies for FluentAssertions 4``() =
 
 [<Test>]
 let ``can detect explicit dependencies for EasyNetQ``() = 
+    ensureDir()
     let deps = Nuspec.Load("Nuspec/EasyNetQ.nuspec").Dependencies |> Seq.toArray
 
     deps.[0]

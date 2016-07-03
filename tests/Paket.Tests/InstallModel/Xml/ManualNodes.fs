@@ -5,9 +5,11 @@ open NUnit.Framework
 open FsUnit
 open Paket.Domain
 open Paket.Requirements
+open TestHelpers
 
 [<Test>]
 let ``should find custom nodes in doc``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -22,6 +24,7 @@ let ``should find custom nodes in doc``() =
 
 [<Test>]
 let ``should find custom Paket nodes in doc``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -37,6 +40,7 @@ let ``should find custom Paket nodes in doc``() =
 
 [<Test>]
 let ``should not find custom nodes if there are none``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -52,6 +56,7 @@ let ``should not find custom nodes if there are none``() =
 
 [<Test>]
 let ``should delete custom nodes if there are some``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 

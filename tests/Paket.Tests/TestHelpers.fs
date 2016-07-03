@@ -88,3 +88,5 @@ let normalizeXml(text:string) =
     stringWriter.GetStringBuilder().ToString()
 
 let toPath elems = System.IO.Path.Combine(elems |> Seq.toArray)
+
+let ensureDir () = System.Environment.CurrentDirectory <-  NUnit.Framework.TestContext.CurrentContext.TestDirectory

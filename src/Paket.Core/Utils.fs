@@ -185,6 +185,9 @@ let extractPath =
         else
             if infix = "runtimes" then
                 Some("runtimes" + getNative path)
+            elif infix = "ref" then
+                let libPart = path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1)
+                Some libPart         
             else
                 let nativePart = getNative path
                 let libPart = path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1)

@@ -21,6 +21,7 @@ let expectedCsharp = """
 
 [<Test>]
 let ``should generate Xml for codecracker.CSharp``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "codecracker.CSharp", SemVer.Parse "1.0.0-rc2", [],
               [],
@@ -41,6 +42,7 @@ let ``should generate Xml for codecracker.CSharp``() =
 
 [<Test>]
 let ``should generate Xml for codecracker.CSharp in VisualBasic project``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "codecracker.CSharp", SemVer.Parse "1.0.0-rc2", [],
               [],
@@ -71,6 +73,7 @@ let expectedVb = """
 
 [<Test>]
 let ``should generate Xml for codecracker.VisualBasic``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "codecracker.VisualBasic", SemVer.Parse "1.0.0-rc2", [],
               [],

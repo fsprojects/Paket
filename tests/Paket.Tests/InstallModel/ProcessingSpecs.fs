@@ -14,7 +14,7 @@ let ``should create empty model with net40, net45 ...``() =
     let model = emptymodel.AddReferences [ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] 
 
     let targets =
-        model.ReferenceFileFolders
+        model.LegacyReferenceFileFolders
         |> List.map (fun folder -> folder.Targets)
         |> List.concat
 
@@ -39,6 +39,45 @@ let ``should understand libuv in runtimes``() =
     let model = emptymodel.AddReferences [ @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"; ] 
 
     model.GetLibReferences(SinglePlatform (Runtimes("win7-x64"))) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
+
+[<Test>]
+let ``should understand reference folder``() = 
+    let model = 
+      emptymodel.AddReferences 
+        [ @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+          @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+          @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll" ] 
+
+    let refs = model.GetLibReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    
+    let refs = model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V3_5))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    
+    let refs = model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+    let model = 
+      emptymodel.AddReferences 
+        [ @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+          @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+          @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll" ] 
+
+    let refs = model.GetLibReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    
+    let refs = model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
 [<Test>]
 let ``should understand aot in runtimes``() = 
@@ -462,7 +501,7 @@ let ``should not install tools``() =
               @"..\FAKE\tools\FakeLib.dll" 
               @"..\FAKE\tools\Fake.SQL.dll" ])
 
-    model.ReferenceFileFolders
+    model.LegacyReferenceFileFolders
     |> Seq.forall (fun folder -> folder.Files.References.IsEmpty)
     |> shouldEqual true
 

@@ -11,6 +11,7 @@ open System.Text
 open System
 open Chessie.ErrorHandling
 open System.Xml
+open TestHelpers
 
 let parse fileName = 
     FileInfo(fileName)
@@ -20,6 +21,7 @@ let parse fileName =
 
 [<Test>]
 let ``can detect encrypted passwords in nuget.config``() = 
+    ensureDir()
     // encrypted password is machine-specific, thus cannot be hardcoded in test file and needs to be generated dynamically
     let encrypted = 
         ProtectedData.Protect(
@@ -49,6 +51,7 @@ let ``can detect encrypted passwords in nuget.config``() =
 
 [<Test>]
 let ``can detect cleartextpasswords in nuget.config``() = 
+    ensureDir()
     parse "NuGetConfig/ClearTextPasswordConfig.xml" 
     |> shouldEqual
         { PackageSources =
@@ -60,6 +63,7 @@ let ``can detect cleartextpasswords in nuget.config``() =
 
 [<Test>]
 let ``ignores disabled nuget feed`` () =
+    ensureDir()
     parse "NuGetConfig/ConfigWithDisabledFeed.xml"
     |> shouldEqual
         { PackageSources = 
@@ -76,6 +80,7 @@ let ``can parse config in XML node`` () =
 
 [<Test>]
 let ``ignores disabled nuget feed from upstream`` () =
+    ensureDir()
     let upstream = 
         { NugetConfig.Empty with
             PackageSources = 
