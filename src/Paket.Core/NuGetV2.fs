@@ -562,8 +562,11 @@ let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
 /// Finds all libraries in a nuget package.
 let GetLibFiles(targetFolder) =
     let libs = getFiles targetFolder "lib" "libraries"
+    let refs = getFiles targetFolder "ref" "libraries"
     let runtimeLibs = getFiles targetFolder "runtimes" "libraries"
-    Array.append libs runtimeLibs
+    refs
+    |> Array.append libs
+    |> Array.append runtimeLibs
 
 /// Finds all targets files in a nuget package.
 let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets files"
