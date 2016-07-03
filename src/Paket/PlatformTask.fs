@@ -104,7 +104,7 @@ type CopyRuntimeDependencies() =
                     | Some (package,projectModel) ->
 
                         let files =
-                            projectModel.ReferenceFileFolders
+                            projectModel.LegacyReferenceFileFolders
                             |> List.choose (fun lib -> 
                                 match lib with
                                 | x when (match x.Targets with | [SinglePlatform(Runtimes(x))] when currentRuntimes |> Set.contains x -> true | _ -> false) -> Some lib.Files
