@@ -216,13 +216,57 @@ module ScriptGeneration =
           None
       else
           Some (groupName.ToString())
+
+  let generateGroupScript
+    (deps          : Dependencies)
+    (getScriptFile : GroupName -> FileInfo)
+    (writeScript   : FileInfo -> ScriptPiece seq -> unit)
+    (framework     : FrameworkIdentifier)
+    =
+      let all =
+        seq {
+          for group, nuget, _ in deps.GetInstalledPackages() do
+            let model = deps.GetInstalledPackageModel(Some group, nuget)
+            let libs = model.GetLibReferences(framework) |> Seq.map FileInfo
+            let syslibs = model.GetFrameworkAssembliesLazy.Value
+            yield group, (libs, syslibs |> Set.toSeq)
+        }
+        |> Seq.groupBy fst
+        |> Seq.map (fun (group, items) -> group, items |> Seq.map snd)
+      
+      for group, libs in all do
+        let assemblies, frameworkLibs =
+          Seq.foldBack (fun (l,r) (pl, pr) -> Seq.concat [pl ; l], Seq.concat [pr ; r]) libs (Seq.empty, Seq.empty)
+          |> fun (l,r) -> Seq.distinct l, Seq.distinct r
+
+        let assemblies = 
+          let assemblyFilePerAssemblyDef = 
+            assemblies
+            |> Seq.map (fun f -> f.FullName |> AssemblyDefinition.ReadAssembly, f)
+            |> dict
+
+          assemblyFilePerAssemblyDef.Keys
+          |> Seq.toList
+          |> PackageAndAssemblyResolution.getDllOrder
+          |> Seq.map (assemblyFilePerAssemblyDef.TryGetValue >> snd)
+
+        let scriptFile = getScriptFile (GroupName group)
+        
+        [
+          for a in frameworkLibs do
+            yield ScriptPiece.ReferenceFrameworkAssembly a
+          for a in assemblies do
+            yield ScriptPiece.ReferenceAssemblyFile a
+          yield ScriptPiece.PrintStatement (sprintf "Loaded group %s" group)
+        ]
+        |> writeScript scriptFile
   
   /// Generate a include script from given order of packages,
   /// if a package is ordered before its dependencies this function 
   /// will throw.
   let generateScripts
       (scriptGenerator          : ScriptGenInput -> ScriptGenResult)
-      (writeScript              : FileInfo -> ScriptPiece list -> unit)
+      (writeScript              : FileInfo -> ScriptPiece seq -> unit)
       (getScriptFile            : GroupName -> PackageName -> FileInfo)
       (includeScriptsRootFolder : DirectoryInfo)
       (framework                : FrameworkIdentifier)
@@ -279,7 +323,8 @@ module ScriptGeneration =
       let packagesFolder = DirectoryInfo(Path.Combine(rootFolder.FullName, Constants.PackagesFolderName))
         
       let includeScriptsRootFolder = 
-          DirectoryInfo(Path.Combine((FileInfo dependenciesFile.DependenciesFile).Directory.FullName, Constants.PaketFilesFolderName, "include-scripts"))
+          Path.Combine((FileInfo dependenciesFile.DependenciesFile).Directory.FullName, Constants.PaketFilesFolderName, "include-scripts")
+          |> DirectoryInfo
 
       let getScriptFile groupName packageName =
         getScriptFile includeScriptsRootFolder framework groupName packageName extension
@@ -295,6 +340,13 @@ module ScriptGeneration =
           generateScripts scriptGenerator scriptWriter getScriptFile includeScriptsRootFolder framework dependenciesFile packagesOrGroupFolder groupName packages
       )
       |> ignore
+
+      let getGroupFile group = 
+        let folder = getScriptFolder includeScriptsRootFolder framework group
+        Path.Combine(folder.FullName, sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant()
+        |> FileInfo
+        
+      generateGroupScript dependenciesFile getGroupFile scriptWriter framework
 
   type ScriptType =
   | CSharp
