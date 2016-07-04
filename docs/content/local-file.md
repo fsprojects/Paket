@@ -47,7 +47,8 @@ Now when running `paket restore`, we get the following:
     [lang=bash]
     $ .paket\paket.exe restore
     Paket version 3.0.0.0
-    paket.local override: nuget Argu -> file:///c:\github\Argu feature_branch build:"build.cmd NuGet", Packages: /bin/
+    paket.local override: nuget Argu group main -> 
+        file:///c:\github\Argu feature_branch build:"build.cmd NuGet", Packages: /bin/
     Setting C:\github\Paket\paket-files\localfilesystem\Argu to b14ea1a00431335ca3b60d49573b3831cd2deeb4
     Running "C:\github\Paket\paket-files\localfilesystem\Argu\build.cmd NuGet"
     11 seconds - ready.
@@ -70,9 +71,6 @@ Each line in `paket.local` means one override - you can have multiple overrides 
     [lang=paket] 
     nuget Argu -> git file:///c:\github\Argu feature_branch build:"build.cmd NuGet", Packages: /bin/
     nuget Fake -> source c:\github\FAKE\bin
-    
-
-> Note: [groups](groups.html) are not supported yet. Override applies only to "Main" group.
 
 ### Git override
 
@@ -91,6 +89,17 @@ Format of git source is the same as used in `paket.dependencies` for specifying 
 The Format of the source is the same as in [path sources](nuget-dependencies.html#Path-sources).
 
 > Note: In case of source override, `paket restore` assumes the NuGet package **already exists** in   pointed directory - no build is going to be triggered.
+
+### Groups
+
+    [lang=paket]
+    // Argu is in Main group
+    nuget Argu -> git file:///c:\github\Argu feature_branch build:"build.cmd NuGet", Packages: /bin/
+    // Fake is in Build group
+    nuget Fake group Build -> source c:\github\FAKE\bin
+
+The [dependency group](groups.html) can be specified with ``group <GroupName>`` after ``nuget <PackageName>``.
+If not specified, the default group ("Main") is used.
 
 ### Comments
 

@@ -76,10 +76,10 @@ module LocalFile =
 
     let private warning x =
         match x with
-        | LocalSourceOverride (p,s) ->
-            sprintf "nuget %s -> %s" (p.ToString()) (s.ToString())
-        | LocalGitOverride   (p,s) ->
-            sprintf "nuget %s -> %s" (p.ToString()) s
+        | LocalSourceOverride (OverriddenPackage(p,g),s) ->
+            sprintf "nuget %s group %s -> %s" (p.ToString()) (g.ToString()) (s.ToString())
+        | LocalGitOverride   (OverriddenPackage(p,g),s) ->
+            sprintf "nuget %s group %s -> %s" (p.ToString()) (g.ToString()) s
         |> (+) "paket.local override: "
         |> Logging.traceWarn
         x
