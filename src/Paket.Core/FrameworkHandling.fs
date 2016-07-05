@@ -98,7 +98,8 @@ module KnownAliases =
          ".netportable", "portable"
          "netportable", "portable"
          "0.0", ""
-         ".", "" ]
+         ".", ""
+         " ", "" ]
         |> List.map (fun (p,r) -> p.ToLower(),r.ToLower())
 
 
