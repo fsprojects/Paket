@@ -317,26 +317,26 @@ type Command =
     | [<Inherit>]                                       Log_File of path:string
     | [<AltCommandLine("-s"); Inherit>]                 Silent
     // subcommands
-    | [<CustomCommandLine("add")>]                      Add of ParseResult<AddArgs>
-    | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResult<ClearCacheArgs>
-    | [<CustomCommandLine("config")>]                   Config of ParseResult<ConfigArgs>
-    | [<CustomCommandLine("convert-from-nuget")>]       ConvertFromNuget of ParseResult<ConvertFromNugetArgs>
-    | [<CustomCommandLine("find-refs")>]                FindRefs of ParseResult<FindRefsArgs>
-    | [<CustomCommandLine("init")>]                     Init of ParseResult<InitArgs>
-    | [<CustomCommandLine("auto-restore")>]             AutoRestore of ParseResult<AutoRestoreArgs>
-    | [<CustomCommandLine("install")>]                  Install of ParseResult<InstallArgs>
-    | [<CustomCommandLine("outdated")>]                 Outdated of ParseResult<OutdatedArgs>
-    | [<CustomCommandLine("remove")>]                   Remove of ParseResult<RemoveArgs>
-    | [<CustomCommandLine("restore")>]                  Restore of ParseResult<RestoreArgs>
-    | [<CustomCommandLine("simplify")>]                 Simplify of ParseResult<SimplifyArgs>
-    | [<CustomCommandLine("update")>]                   Update of ParseResult<UpdateArgs>
-    | [<CustomCommandLine("find-packages")>]            FindPackages of ParseResult<FindPackagesArgs>
-    | [<CustomCommandLine("find-package-versions")>]    FindPackageVersions of ParseResult<FindPackageVersionsArgs>
-    | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResult<ShowInstalledPackagesArgs>
-    | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResult<ShowGroupsArgs>
-    | [<CustomCommandLine("pack")>]                     Pack of ParseResult<PackArgs>
-    | [<CustomCommandLine("push")>]                     Push of ParseResult<PushArgs>
-    | [<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResult<GenerateIncludeScriptsArgs>
+    | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
+    | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResults<ClearCacheArgs>
+    | [<CustomCommandLine("config")>]                   Config of ParseResults<ConfigArgs>
+    | [<CustomCommandLine("convert-from-nuget")>]       ConvertFromNuget of ParseResults<ConvertFromNugetArgs>
+    | [<CustomCommandLine("find-refs")>]                FindRefs of ParseResults<FindRefsArgs>
+    | [<CustomCommandLine("init")>]                     Init of ParseResults<InitArgs>
+    | [<CustomCommandLine("auto-restore")>]             AutoRestore of ParseResults<AutoRestoreArgs>
+    | [<CustomCommandLine("install")>]                  Install of ParseResults<InstallArgs>
+    | [<CustomCommandLine("outdated")>]                 Outdated of ParseResults<OutdatedArgs>
+    | [<CustomCommandLine("remove")>]                   Remove of ParseResults<RemoveArgs>
+    | [<CustomCommandLine("restore")>]                  Restore of ParseResults<RestoreArgs>
+    | [<CustomCommandLine("simplify")>]                 Simplify of ParseResults<SimplifyArgs>
+    | [<CustomCommandLine("update")>]                   Update of ParseResults<UpdateArgs>
+    | [<CustomCommandLine("find-packages")>]            FindPackages of ParseResults<FindPackagesArgs>
+    | [<CustomCommandLine("find-package-versions")>]    FindPackageVersions of ParseResults<FindPackageVersionsArgs>
+    | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResults<ShowInstalledPackagesArgs>
+    | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResults<ShowGroupsArgs>
+    | [<CustomCommandLine("pack")>]                     Pack of ParseResults<PackArgs>
+    | [<CustomCommandLine("push")>]                     Push of ParseResults<PushArgs>
+    | [<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateIncludeScriptsArgs>
 with
     interface IArgParserTemplate with
         member this.Usage =
