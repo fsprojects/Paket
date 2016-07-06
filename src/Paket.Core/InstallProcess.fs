@@ -9,6 +9,7 @@ open Paket.BindingRedirects
 open Paket.ModuleResolver
 open Paket.PackageResolver
 open System.IO
+open System
 open System.Reflection
 open Paket.PackagesConfigFile
 open Paket.Requirements
@@ -174,18 +175,41 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
 /// CLR from loading same assemblies multiple times (results in exn), we use a static
 /// dictionary for caching assemblies, based on their filename.
 module private LoadAssembliesSafe =
+    type SimpleAssemblyLoader () = 
+        inherit MarshalByRefObject()
+            
+        member this.ReflectionOnlyLoadFrom library =
+            let assemblyAsBytes = File.ReadAllBytes library
+            let assembly = Assembly.ReflectionOnlyLoad assemblyAsBytes
+            assembly.GetName(), assembly.GetReferencedAssemblies()
 
     let loadedLibs = new Dictionary<_,_>()
+    let groupDomains = new Dictionary<string, AppDomain>()
 
-    let reflectionOnlyLoadFrom library = 
-        let key = FileInfo(library).FullName.ToLowerInvariant()
+    let private createLoaderInstance (domain: AppDomain)= 
+            domain.CreateInstanceAndUnwrap(typeof<SimpleAssemblyLoader>.Assembly.FullName, typeof<SimpleAssemblyLoader>.FullName) :?> SimpleAssemblyLoader
+
+    let reflectionOnlyLoadFrom library (group: GroupName) =
+        let groupName = group.GetCompareString()
+
+        let groupDomain = 
+            match groupDomains.TryGetValue groupName with
+             | (true, d) -> d
+             | _ -> 
+                let newDomain = AppDomain.CreateDomain(groupName)
+                groupDomains.[groupName] <- newDomain
+                newDomain
+        
+        let fileName = FileInfo(library).FullName.ToLowerInvariant()
+
+        let key = (groupName, fileName)
         match loadedLibs.TryGetValue key with
          | (true,v) -> v 
          | _ ->
-            let assemblyAsBytes = File.ReadAllBytes library
-            let v = Assembly.ReflectionOnlyLoad assemblyAsBytes
-            loadedLibs.[key] <- v
-            v
+            let loader = createLoaderInstance groupDomain
+            let assemblyName =  loader.ReflectionOnlyLoadFrom library
+            loadedLibs.[key] <- assemblyName
+            assemblyName
 
 let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionary<'key, 'value>) : 'value =
     let value: 'value ref = ref Unchecked.defaultof<_>
@@ -254,10 +278,10 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
                 librariesForPackage
                 |> Seq.choose(fun (library,redirects,profile) ->
                     try
-                        let assembly = LoadAssembliesSafe.reflectionOnlyLoadFrom library
-                        Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.GetReferencedAssemblies(), redirects, profile)
+                        let (assemblyName, assemblyReference) = LoadAssembliesSafe.reflectionOnlyLoadFrom library groupName
+                        Some (assemblyName, BindingRedirects.getPublicKeyToken assemblyName, assemblyReference, redirects, profile)
                     with _ -> None)
-                |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.GetName().Version)
+                |> Seq.sortBy(fun (assemblyName,_,_,_,_) -> assemblyName.Version)
                 |> Seq.toList
                 |> List.rev
                 |> function | head :: _ -> Some head | _ -> None)
@@ -267,24 +291,23 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
             profile = targetProfile
             && assemblies
             |> Seq.filter (fun (_,_,_,_,p) -> p <> profile)
-            |> Seq.map (fun (a,_,_,_,_) -> a.GetName())
+            |> Seq.map (fun (a,_,_,_,_) -> a)
             |> Seq.filter (fun a -> a.Name = assemblyName.Name)
             |> Seq.exists (fun a -> a.Version <> assemblyName.Version)
 
         assemblies
-        |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> token |> Option.map (fun token -> (assembly,token,refs,redirects,profile)))
+        |> Seq.choose (fun (assemblyName,token,refs,redirects,profile) -> token |> Option.map (fun token -> (assemblyName,token,refs,redirects,profile)))
         |> Seq.filter (fun (_,_,_,packageRedirects,_) -> defaultArg ((packageRedirects |> Option.map ((<>) Off)) ++ redirects) false)
-        |> Seq.filter (fun (assembly,_,_,redirects,profile) ->
-            let assemblyName = assembly.GetName() 
+        |> Seq.filter (fun (assemblyName,_,_,redirects,profile) ->
             redirects = Some Force
             || referencesDifferentProfiles assemblyName profile
             || assemblies
             |> Seq.collect (fun (_,_,refs,_,_) -> refs)
             |> Seq.filter (fun a -> assemblyName.Name = a.Name)
             |> Seq.exists (fun a -> assemblyName.Version > a.Version))
-        |> Seq.map(fun (assembly, token,_,_,_) ->
-            { BindingRedirect.AssemblyName = assembly.GetName().Name
-              Version = assembly.GetName().Version.ToString()
+        |> Seq.map(fun (assemblyName, token,_,_,_) ->
+            { BindingRedirect.AssemblyName = assemblyName.Name
+              Version = assemblyName.Version.ToString()
               PublicKeyToken = token
               Culture = None })
         |> Seq.sort

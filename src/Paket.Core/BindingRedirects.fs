@@ -183,8 +183,8 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
     |> Seq.iter applyBindingRedirects
 
 /// Calculates the short form of the public key token for use with binding redirects, if it exists.
-let getPublicKeyToken (assembly:Assembly) =
-    ("", assembly.GetName().GetPublicKeyToken())
+let getPublicKeyToken (assemblyName:AssemblyName) =
+    ("", assemblyName.GetPublicKeyToken())
     ||> Array.fold(fun state b -> state + b.ToString("X2"))
     |> function
     | "" -> None
