@@ -70,7 +70,7 @@ module ``Given an empty path`` =
 
     [<Test>]
     let ``it should be okay to use from a portable profile``() = 
-        getPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneApp "v8.1" ] "" |> shouldBeSmallerThan 1000
+        getPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneApp "v8.1" ] "" |> shouldBeSmallerThan 2000
 
 module ``Given a list of paths`` = 
     let paths = 
