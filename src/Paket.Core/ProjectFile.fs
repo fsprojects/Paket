@@ -620,7 +620,7 @@ module ProjectFile =
         let createItemGroup references = 
             let itemGroup = createNode "ItemGroup" project
                                 
-            for lib in references do
+            for lib in references |> Seq.sortBy (fun (r:Reference) -> r.Path) do
                 match lib with
                 | Reference.Library lib ->
                     let fi = FileInfo (normalizePath lib)
