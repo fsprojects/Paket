@@ -677,6 +677,7 @@ module ProjectFile =
 
         let conditions =
             model.GetReferenceFolders()
+            |> List.sortBy (fun lib -> lib.Name)
             |> List.choose (fun lib -> 
                 match lib with
                 | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> None  // TODO: Add reference to custom task instead
@@ -684,12 +685,11 @@ module ProjectFile =
                     match PlatformMatching.getCondition referenceCondition lib.Targets with
                     | "" -> None
                     | condition -> Some (condition,createItemGroup lib.Files.References))
-            |> List.sortBy fst
 
         let targetsFileConditions =
             model.TargetsFileFolders
+            |> List.sortBy (fun lib -> lib.Name)
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition lib.Targets,createPropertyGroup lib.Files.References)
-            |> List.sortBy fst
 
         let chooseNode =
             match conditions with
@@ -879,6 +879,7 @@ module ProjectFile =
         let packagesWithRuntimeDependencies = System.Collections.Generic.HashSet<_>()
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
+        |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.GetCompareString(), packName.GetCompareString())
         |> Seq.map (fun kv -> 
             deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
