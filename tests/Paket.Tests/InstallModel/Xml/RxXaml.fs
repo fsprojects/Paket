@@ -9,16 +9,7 @@ open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETCore'">
-    <ItemGroup>
-      <Reference Include="System.Reactive.Windows.Threading">
-        <HintPath>..\..\..\Rx-XAML\lib\windows8\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-    </ItemGroup>
-  </When>
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0')">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll</HintPath>
@@ -42,6 +33,15 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
+  <When Condition="($(TargetFrameworkIdentifier) == 'WindowsPhoneApp') Or ($(TargetFrameworkIdentifier) == '.NETStandard' And $(TargetFrameworkVersion) == 'v1.2') Or ($(TargetFrameworkProfile) == 'Profile32')">
+    <ItemGroup>
+      <Reference Include="System.Reactive.Windows.Threading">
+        <HintPath>..\..\..\Rx-XAML\lib\portable-win81+wpa81\System.Reactive.Windows.Threading.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == 'v5.0'">
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
@@ -50,6 +50,15 @@ let expected = """
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Windows">
+        <Paket>True</Paket>
+      </Reference>
+    </ItemGroup>
+  </When>
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETCore'">
+    <ItemGroup>
+      <Reference Include="System.Reactive.Windows.Threading">
+        <HintPath>..\..\..\Rx-XAML\lib\windows8\System.Reactive.Windows.Threading.dll</HintPath>
+        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -70,15 +79,6 @@ let expected = """
     <ItemGroup>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\windowsphone8\System.Reactive.Windows.Threading.dll</HintPath>
-        <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-    </ItemGroup>
-  </When>
-  <When Condition="($(TargetFrameworkIdentifier) == 'WindowsPhoneApp') Or ($(TargetFrameworkIdentifier) == '.NETStandard' And $(TargetFrameworkVersion) == 'v1.2') Or ($(TargetFrameworkProfile) == 'Profile32')">
-    <ItemGroup>
-      <Reference Include="System.Reactive.Windows.Threading">
-        <HintPath>..\..\..\Rx-XAML\lib\portable-win81+wpa81\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
