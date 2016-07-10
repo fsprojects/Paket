@@ -31,13 +31,13 @@ module ``Given a target platform`` =
 module ``Given a path`` = 
     [<Test>]
     let ``it should split it into the right platforms``() = 
-        extractPlatforms "net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4_Client
-                                                        Windows "v4.5" |]
+        extractPlatforms "net40+win8" |> shouldEqual [ DotNetFramework FrameworkVersion.V4_Client
+                                                       Windows "v4.5" ]
     
     [<Test>]
     let ``it should ignore 'portable-'``() = 
-        extractPlatforms "portable-net40+win8" |> shouldEqual [| DotNetFramework FrameworkVersion.V4_Client
-                                                                 Windows "v4.5" |]
+        extractPlatforms "portable-net40+win8" |> shouldEqual [ DotNetFramework FrameworkVersion.V4_Client
+                                                                Windows "v4.5" ]
     
     [<Test>]
     let ``it should return no penalty for a matching .NET framework``() = 

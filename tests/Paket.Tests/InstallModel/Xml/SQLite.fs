@@ -77,43 +77,6 @@ let expectedPropertyNodes = """
 <Import Project="..\..\..\System.Data.SQLite.Core\build\$(__paket__System_Data_SQLite_Core_targets).targets" Condition="Exists('..\..\..\System.Data.SQLite.Core\build\$(__paket__System_Data_SQLite_Core_targets).targets')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
-let ``best match for DotNet Standard 1.0``()=
-    Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"], SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
-    |> shouldEqual (None)
-
-
-[<Test>]
-let ``best match for DotNet Standard 1.1``()=
-    Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"], SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_1)))
-    |> shouldEqual (None)
-
-[<Test>]
-let ``best match for DotNet Standard 1.5``()=
-    Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"], SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_5)))
-    |> shouldEqual (None)
-
-[<Test>]
-let ``best match for net45``()=
-    Paket.PlatformMatching.findBestMatch 
-      (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"], 
-       SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
-    |> shouldEqual (Some ("netstandard11"))
-
-[<Test>]
-let ``best match for net451``()=
-    Paket.PlatformMatching.findBestMatch 
-      (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"], 
-       SinglePlatform(DotNetFramework(FrameworkVersion.V4_5_1)))
-    |> shouldEqual (Some ("netstandard12"))
-
-[<Test>]
-let ``best match for net463``()=
-    Paket.PlatformMatching.findBestMatch 
-      (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"], 
-       SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_3)))
-    |> shouldEqual (Some ("netstandard16"))
-
-[<Test>]
 let ``can get supported target profile``()=
     let profiles = PlatformMatching.getSupportedTargetProfiles  ["net20"; "net40"; "net45"; "net451"; "netstandard14" ]
     let folder = profiles |> Seq.item 2 
