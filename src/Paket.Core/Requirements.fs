@@ -443,29 +443,9 @@ let isTargetMatchingRestrictions =
                     | _ -> false)
 
 /// Get all targets that should be considered with the specified restrictions
-let rec applyRestrictionsToTargets (restrictions:FrameworkRestriction list) (targets: TargetProfile list) =
-    let filtered =
-        targets 
-        |> List.filter (fun t -> isTargetMatchingRestrictions(restrictions,t))
-
-    if filtered = [] then
-        match restrictions with
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_6_2))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_6_1))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_6_1))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_6))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_6))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5_3))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5_3))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5_2))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5_2))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5_1))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5_1))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1_1))] targets
-        | [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1_1))] -> applyRestrictionsToTargets [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1))] targets
-        | _ -> filtered
-    else
-        filtered
+let applyRestrictionsToTargets (restrictions:FrameworkRestriction list) (targets: TargetProfile list) =
+    targets 
+    |> List.filter (fun t -> isTargetMatchingRestrictions(restrictions,t))
 
 type ContentCopySettings =
 | Omit
