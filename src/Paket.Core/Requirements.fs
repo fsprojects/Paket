@@ -58,7 +58,7 @@ let parseRestrictions(text:string) =
 
         match FrameworkDetection.Extract(framework) with
         | None -> 
-                if PlatformMatching.extractPlatforms framework |> Array.isEmpty |> not then
+                if PlatformMatching.extractPlatforms framework |> List.isEmpty |> not then
                     yield FrameworkRestriction.Portable framework
         | Some x -> 
             if operatorSplit.[0] = ">=" then

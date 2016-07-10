@@ -9,7 +9,22 @@ let inline split (path : string) =
     path.Split('+')
     |> Array.map (fun s -> s.Replace("portable-", ""))
     
-let extractPlatforms = memoize (fun path  -> split path |> Array.choose FrameworkDetection.Extract)
+let extractPlatforms = memoize (fun path  -> split path |> Array.choose FrameworkDetection.Extract |> Array.toList)
+
+let knownInPortable =
+  KnownTargetProfiles.AllPortableProfiles 
+  |> List.collect snd
+  |> List.distinct
+
+let extractAndTryGetProfile = memoize (fun path ->
+    let platforms = extractPlatforms path
+    let filtered =
+      platforms
+      |> List.filter (fun p -> knownInPortable |> Seq.exists ((=) p))
+      |> List.sort
+
+    KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> (=) filtered)
+    |> Option.map PortableProfile)
 
 let getPlatformPenalty =
     let rec getPlatformPenalty alreadyChecked (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
@@ -40,9 +55,9 @@ let getPathPenalty =
             | _ -> 500 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
         else
             extractPlatforms path
-            |> Array.map (fun target -> getPlatformPenalty(platform,target))
-            |> Array.append [| MaxPenalty |]
-            |> Array.min)
+            |> List.map (fun target -> getPlatformPenalty(platform,target))
+            |> List.append [ MaxPenalty ]
+            |> List.min)
 
 // Checks wether a list of target platforms is supported by this path and with which penalty. 
 let getPenalty (requiredPlatforms:FrameworkIdentifier list) (path:string) =
@@ -88,6 +103,32 @@ let findBestMatch =
             |> List.map fst
             |> List.tryHead
 
+        let rec platformsSupport x ps =
+          if List.isEmpty ps then MaxPenalty
+          elif ps |> List.exists ((=) x) then 1
+          else
+            ps
+            |> List.collect (fun (p:FrameworkIdentifier) ->
+              KnownTargetProfiles.AllProfiles
+              |> List.choose (function
+                  | SinglePlatform f -> Some f
+                  | _ -> None)
+              |> List.filter (fun f -> f.SupportedPlatforms |> List.exists ((=) p)))
+            |> platformsSupport x
+            |> (+) 1
+
+        let findBestPortableMatch findPenalty (portableProfile:TargetProfile) paths =
+            paths
+            |> Seq.tryFind (fun p ->
+                  extractAndTryGetProfile p = Some portableProfile)
+            |> Option.map (fun p -> p, findPenalty)
+            //| Some p ->
+            //  Some ()
+            //| None ->
+            //  // Revert to regular search, but add penalty
+            //  findBestMatch(paths, portableProfile)
+            //  |> Option.map (fun m -> m, findPenalty + 100)
+
         match supported with
         | None ->
             // Fallback Portable Library
@@ -95,12 +136,15 @@ let findBestMatch =
             |> List.choose (fun p ->
                 match targetProfile with
                 | SinglePlatform x ->
-                    if p.ProfilesCompatibleWithPortableProfile |> List.exists ((=) x) then 
-                        findBestMatch(paths,p)
-                    else 
+                    match p.ProfilesCompatibleWithPortableProfile |> platformsSupport x with
+                    | pen when pen < MaxPenalty ->
+                        findBestPortableMatch pen p paths
+                    | _ -> 
                         None
                 | _ -> None)
-            |> List.sortBy (fun x -> (extractPlatforms x).Length) // prefer portable platform whith less platforms
+            |> List.distinct
+            |> List.sortBy (fun (x, pen) -> pen, (extractPlatforms x).Length) // prefer portable platform whith less platforms
+            |> List.map fst
             |> List.tryHead
         | path -> path
 
