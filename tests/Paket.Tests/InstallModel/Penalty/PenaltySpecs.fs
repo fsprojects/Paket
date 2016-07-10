@@ -110,3 +110,125 @@ module ``Given a list of paths`` =
                         yield! item.Value
                 }
             flattend |> shouldNotContain (KnownTargetProfiles.FindPortableProfile "Profile41")
+
+module ``General Penalty checks`` =
+  
+    [<Test>]
+    let ``prefer net20 over emtpy folder``()=
+        Paket.PlatformMatching.findBestMatch ([""; "net20"], SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_1)))
+        |> shouldEqual (Some "net20")
+
+    [<Test>]
+    let ``best match for DotNet Standard 1.0``()=
+        Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"], SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
+        |> shouldEqual (None)
+
+
+    [<Test>]
+    let ``best match for DotNet Standard 1.1``()=
+        Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"], SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_1)))
+        |> shouldEqual (None)
+
+    [<Test>]
+    let ``best match for DotNet Standard 1.5``()=
+        Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"], SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_5)))
+        |> shouldEqual (None)
+
+    [<Test>]
+    let ``best match for net45``()=
+        Paket.PlatformMatching.findBestMatch 
+          (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"], 
+           SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
+        |> shouldEqual (Some ("netstandard11"))
+
+
+    [<Test>]
+    let ``best match for netstandard in portable``()=
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-netcore451+wpa81"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_1)))
+        |> shouldEqual (None)
+
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-netcore451+wpa81"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_2)))
+        |> shouldEqual (Some ("portable-netcore451+wpa81"))
+    
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-netcore451+wpa81"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_3)))
+        |> shouldEqual (Some ("portable-netcore451+wpa81"))
+    
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-netcore451+wpa81"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_4)))
+        |> shouldEqual (Some ("portable-netcore451+wpa81"))
+    
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-netcore451+wpa81"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_5)))
+        |> shouldEqual (Some ("portable-netcore451+wpa81"))
+
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-netcore451+wpa81"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_6)))
+        |> shouldEqual (Some ("portable-netcore451+wpa81"))
+
+    [<Test>]
+    let ``best match for netstandard, netstandard is preferred``()=
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-win81+wpa81"; "netstandard1.3"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_2)))
+        |> shouldEqual (Some ("portable-win81+wpa81"))
+    
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-win81+wpa81"; "netstandard1.3"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_3)))
+        |> shouldEqual (Some ("netstandard1.3"))
+    
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-win81+wpa81"; "netstandard1.3"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_4)))
+        |> shouldEqual (Some ("netstandard1.3"))
+    
+    [<Test>]
+    let ``best match for netstandard, use possible.``()=
+        Paket.PlatformMatching.findBestMatch 
+          // Profile31 (supports netstandard1.0),  Profile32 (supports netstandard1.2)
+          (["portable-netcore451+wp81"; "portable-netcore451+wpa81"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
+        |> shouldEqual (Some "portable-netcore451+wp81")
+
+        Paket.PlatformMatching.findBestMatch 
+          // Profile31 (supports netstandard1.0),  Profile32 (supports netstandard1.2)
+          (["portable-netcore451+wp81"; "portable-netcore451+wpa81"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_2)))
+        |> shouldEqual (Some "portable-netcore451+wpa81")
+
+        Paket.PlatformMatching.findBestMatch 
+          // Profile31 (supports netstandard1.0),  Profile32 (supports netstandard1.2)
+          (["portable-netcore451+wp81"; "portable-netcore451+wpa81"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_4)))
+        |> shouldEqual (Some "portable-netcore451+wpa81")
+
+    [<Test>]
+    let ``make sure not all portable profiles match``()=
+        // Not all portable profiles have a match.
+        Paket.PlatformMatching.findBestMatch 
+          (["portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"], 
+           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
+        |> shouldEqual (None)
+
+    [<Test>]
+    let ``best match for net451``()=
+        Paket.PlatformMatching.findBestMatch 
+          (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"], 
+           SinglePlatform(DotNetFramework(FrameworkVersion.V4_5_1)))
+        |> shouldEqual (Some ("netstandard12"))
+
+    [<Test>]
+    let ``best match for net463``()=
+        Paket.PlatformMatching.findBestMatch 
+          (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"], 
+           SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_3)))
+        |> shouldEqual (Some ("netstandard16"))

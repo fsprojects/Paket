@@ -37,7 +37,7 @@ let getPathPenalty =
         if String.IsNullOrWhiteSpace path then
             match platform with
             | Native(_) -> MaxPenalty // an empty path is considered incompatible with native targets            
-            | _ -> 10 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
+            | _ -> 500 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
         else
             extractPlatforms path
             |> Array.map (fun target -> getPlatformPenalty(platform,target))

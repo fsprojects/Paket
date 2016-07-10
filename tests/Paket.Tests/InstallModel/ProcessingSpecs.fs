@@ -559,6 +559,70 @@ let ``should filter .NET 4.5 dlls for System.Net.Http 2.2.8``() =
     |> shouldEqual expected
 
 [<Test>]
+let ``should filter properly when portables are available``() = 
+    let model = 
+        InstallModel.CreateFromLibs
+            (PackageName "Newtonsoft.Json", SemVer.Parse "8.0.3", 
+             [ ], 
+             [ @"..\Newtonsoft.Json\lib\net20\Newtonsoft.Json.dll"
+               @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll"
+               @"..\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll"
+               @"..\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll"
+               @"..\Newtonsoft.Json\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll"
+               @"..\Newtonsoft.Json\lib\portable-net45+wp80+win8+wpa81+dnxcore50\Newtonsoft.Json.dll" ], [], [], Nuspec.All)
+    
+    let filteredModel =
+      model.ApplyFrameworkRestrictions ( [ FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5) ] )
+    
+
+    filteredModel.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
+    |> Seq.toList
+    |> shouldEqual [ @"..\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll" ]
+
+    filteredModel.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4)))
+    |> Seq.toList
+    |> shouldEqual [ ]
+
+[<Test>]
+let ``should keep net20 if nothing better is available``() = 
+    let model = 
+        InstallModel.CreateFromLibs
+            (PackageName "EPPlus", SemVer.Parse "4.0.5", 
+             [ ], 
+             [ @"..\EPPlus\lib\net20\EPPlus.dll" ], [], [], Nuspec.All)
+    
+    let filteredModel =
+      model.ApplyFrameworkRestrictions ( [ FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6_1) ] )
+
+    filteredModel.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_1)))
+    |> Seq.toList
+    |> shouldEqual [ @"..\EPPlus\lib\net20\EPPlus.dll" ]
+
+    filteredModel.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4)))
+    |> Seq.toList
+    |> shouldEqual [ ]
+
+[<Test>]
+let ``prefer net20 over empty folder``() = 
+    let model = 
+        InstallModel.CreateFromLibs
+            (PackageName "EPPlus", SemVer.Parse "4.0.5", 
+             [ ], 
+             [ @"..\EPPlus\lib\readme.txt"
+               @"..\EPPlus\lib\net20\EPPlus.dll" ], [], [], Nuspec.All)
+    
+    let filteredModel =
+      model.ApplyFrameworkRestrictions ( [ FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6_1) ] )
+
+    filteredModel.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_1)))
+    |> Seq.toList
+    |> shouldEqual [ @"..\EPPlus\lib\net20\EPPlus.dll" ]
+
+    filteredModel.GetLibReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4)))
+    |> Seq.toList
+    |> shouldEqual [ ]
+
+[<Test>]
 let ``should understand xamarinios``() = 
     let model = emptymodel.ApplyFrameworkRestrictions ([FrameworkRestriction.Exactly (XamariniOS)])
     let model = model.AddReferences [ @"..\FSharp.Core\lib\portable-net45+monoandroid10+monotouch10+xamarinios10\FSharp.Core.dll" ] 

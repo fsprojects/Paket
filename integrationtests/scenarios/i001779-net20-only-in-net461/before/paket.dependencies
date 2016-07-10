@@ -1,0 +1,3 @@
+framework: net461
+source https://www.nuget.org/api/v2/
+nuget EPPlus ~> 4.0.5
