@@ -1024,7 +1024,8 @@ module ProjectFile =
     let save forceTouch project =
         if Utils.normalizeXml project.Document <> project.OriginalText || not (File.Exists(project.FileName)) then
             verbosefn "Project %s changed" project.FileName
-            project.Document.Save(project.FileName)
+            use f = File.Open(project.FileName, FileMode.Create)
+            project.Document.Save(f)
         elif forceTouch then
             File.SetLastWriteTimeUtc(project.FileName, DateTime.UtcNow)
 

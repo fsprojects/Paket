@@ -158,7 +158,8 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
     use newContents = new StringReader(config.ToString())
     let newText = XDocument.Load(newContents, LoadOptions.None).ToString()
     if newText <> original then
-        config.Save(configFilePath, SaveOptions.DisableFormatting)
+        use f = File.Open(configFilePath, FileMode.Create)
+        config.Save(f, SaveOptions.DisableFormatting)
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects rootPath allKnownLibs bindingRedirects =
