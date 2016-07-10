@@ -393,107 +393,11 @@ type TargetProfile =
             |> List.reduce (@)
             |> (@) netstandard
             |> List.distinct
-    member this.NormalizedProfileList =
-        match this with
-        | SinglePlatform p -> [ p ]
-        | PortableProfile (_, p) -> p |> List.sort
-    (*
-    member this.NormalizedFolderName =
-        // from http://portablelibraryprofiles.apps.stephencleary.com/
-        // and https://docs.nuget.org/create/targetframeworks
-        // and https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Frameworks/DefaultPortableFrameworkMappings.cs
-        match this with
-        // sl50 -> sl5, net4 -> net40
-        // netcore45 -> win8, netcore451 -> win81
-        | SinglePlatform _ -> None
-        | PortableProfile(name, _) ->
-            match name with
-            | "Profile5" -> Some "portable-net40+win8"
-            | "Profile6" -> Some "portable-net403+win8"
-            | "Profile7" -> Some "portable-net45+win8"
-            | "Profile14" -> Some "portable-net40+sl5"
-            | "Profile19" -> Some "portable-net403+sl5"
-            | "Profile24" -> Some "portable-net45+sl5"
-            | "Profile31" -> Some "portable-win81+wp81"
-            | "Profile32" -> Some "portable-win81+wpa81"
-            | "Profile37" -> Some "portable-net40+sl5+win8"
-            | "Profile42" -> Some "portable-net403+sl5+win8"
-            | "Profile44" -> Some "portable-net451+win81"
-            | "Profile47" -> Some "portable-net45+sl5+win8"
-            | "Profile49" -> Some "portable-net45+wp8"
-            | "Profile78" -> Some "portable-net45+win8+wp8"
-            | "Profile84" -> Some "portable-wp81+wpa81" // rev!
-            | "Profile92" -> Some "portable-net40+win8+wpa81"
-            | "Profile102" -> Some "portable-net403+win8+wpa81"
-            | "Profile111" -> Some "portable-net45+win8+wpa81"
-            | "Profile136" -> Some "portable-net40+sl5+win8+wp8"
-            | "Profile147" -> Some "portable-net403+sl5+win8+wp8"
-            | "Profile151" -> Some "portable-net451+win81+wpa81"
-            | "Profile157" -> Some "portable-win81+wp81+wpa81"
-            | "Profile158" -> Some "portable-net45+sl5+win8+wp8"
-            | "Profile225" -> Some "portable-net40+sl5+win8+wpa81"
-            | "Profile240" -> Some "portable-net403+sl5+win8+wpa81"
-            | "Profile255" -> Some "portable-net45+sl5+win8+wpa81"
-            | "Profile259" -> Some "portable-net45+win8+wpa81+wp8"
-            | "Profile328" -> Some "portable-net40+sl5+win8+wpa81+wp8"
-            | "Profile336" -> Some "portable-net403+sl5+win8+wpa81+wp8"
-            | "Profile344" -> Some "portable-net45+sl5+win8+wpa81+wp8"
-            | _ -> None
-    member this.KnownPortableFolderNames =
-        // from http://portablelibraryprofiles.apps.stephencleary.com/
-        // and https://docs.nuget.org/create/targetframeworks
-        // and https://github.com/NuGet/NuGet.Client/blob/dev/src/NuGet.Core/NuGet.Frameworks/DefaultPortableFrameworkMappings.cs
-        match this with
-        | SinglePlatform _ -> [ ]
-        | PortableProfile(name, _) ->
-            let baseNames = 
-                match name with
-                | "Profile5" -> [ "portable-net4+netcore45" ]
-                | "Profile6" -> [ "portable-net403+netcore45" ]
-                | "Profile7" -> [ "portable-net45+netcore45" ]
-                | "Profile14" -> [ "portable-net4+sl50" ]
-                | "Profile19" -> [ "portable-net403+sl50" ]
-                | "Profile24" -> [ "portable-net45+sl50" ]
-                | "Profile31" -> [ "portable-netcore451+wp81" ]
-                | "Profile32" -> [ "portable-netcore451+wpa81" ]
-                | "Profile37" -> [ "portable-net4+sl50+netcore45" ]
-                | "Profile42" -> [ "portable-net403+sl50+netcore45" ]
-                | "Profile44" -> [ "portable-net451+netcore451" ]
-                | "Profile47" -> [ "portable-net45+sl50+netcore45" ]
-                | "Profile49" -> [ "portable-net45+wp8" ]
-                | "Profile78" -> [ "portable-net45+netcore45+wp8" ]
-                | "Profile84" -> [ "portable-wpa81+wp81" ]
-                | "Profile92" -> [ "portable-net4+netcore45+wpa81" ]
-                | "Profile102" -> [ "portable-net403+netcore45+wpa81" ]
-                | "Profile111" -> [ "portable-net45+netcore45+wpa81" ]
-                | "Profile136" -> [ "portable-net4+sl50+netcore45+wp8" ]
-                | "Profile147" -> [ "portable-net403+sl50+netcore45+wp8" ]
-                | "Profile151" -> [ "portable-net451+netcore451+wpa81" ]
-                | "Profile157" -> [ "portable-netcore451+wpa81+wp81" ]
-                | "Profile158" -> [ "portable-net45+sl50+netcore45+wp8" ]
-                | "Profile225" -> [ "portable-net4+sl50+netcore45+wpa81" ]
-                | "Profile240" -> [ "portable-net403+sl50+netcore45+wpa81" ]
-                | "Profile255" -> [ "portable-net45+sl50+netcore45+wpa81" ]
-                | "Profile259" -> [ "portable-net45+netcore45+wpa81+wp8" ]
-                | "Profile328" -> [ "portable-net4+sl50+netcore45+wpa81+wp8" ]
-                | "Profile336" -> [ "portable-net403+sl50+netcore45+wpa81+wp8" ]
-                | "Profile344" -> [ "portable-net45+sl50+netcore45+wpa81+wp8 " ]
-                | _ -> []
-            let monoSupportNames =
-                baseNames
-                |> List.choose (fun name ->
-                    if this.ProfilesCompatibleWithPortableProfile |> Seq.exists ((=) MonoAndroid) then
-                        Some (name + "+MonoAndroid1+MonoTouch1")
-                    else None)
-            this.ToString() ::
-            (monoSupportNames @ baseNames)
-            |> List.distinct
-        *)    
 
     override this.ToString() =
         match this with
         | SinglePlatform x -> x.ToString()
-        | PortableProfile(name,elements) ->
+        | PortableProfile(name,_) ->
             match name with
             | "Profile5" -> "portable-net4+netcore45+MonoAndroid1+MonoTouch1"
             | "Profile6" -> "portable-net403+netcore45+MonoAndroid1+MonoTouch1"

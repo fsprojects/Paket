@@ -23,7 +23,7 @@ let extractAndTryGetProfile = memoize (fun path ->
       |> List.filter (fun p -> knownInPortable |> Seq.exists ((=) p))
       |> List.sort
 
-    KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> (=) filtered)
+    KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> List.sort >> (=) filtered)
     |> Option.map PortableProfile)
 
 let getPlatformPenalty =
@@ -122,12 +122,6 @@ let findBestMatch =
             |> Seq.tryFind (fun p ->
                   extractAndTryGetProfile p = Some portableProfile)
             |> Option.map (fun p -> p, findPenalty)
-            //| Some p ->
-            //  Some ()
-            //| None ->
-            //  // Revert to regular search, but add penalty
-            //  findBestMatch(paths, portableProfile)
-            //  |> Option.map (fun m -> m, findPenalty + 100)
 
         match supported with
         | None ->
