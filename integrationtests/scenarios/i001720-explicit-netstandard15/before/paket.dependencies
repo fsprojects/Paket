@@ -1,4 +1,4 @@
 framework: netstandard15
 source https://www.nuget.org/api/v2
 
-nuget Newtonsoft.JSON 8.0.3
+nuget Newtonsoft.JSON 9.0.1
