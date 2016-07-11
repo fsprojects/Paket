@@ -1,7 +1,7 @@
 FRAMEWORK: >= NET40
 NUGET
   remote: https://www.nuget.org/api/v2
-    Argu (3.0)
+    Argu (3.1)
     Chessie (0.5.1)
       FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
