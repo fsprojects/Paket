@@ -106,11 +106,11 @@ let config (results : ParseResults<_>) =
       let source = args.Item 0
       let username, password = results.GetResult (<@ ConfigArgs.Username @>, ""), results.GetResult (<@ ConfigArgs.Password @>, "") 
             
-      Dependencies.Locate().AddCredentials(source, username, password)
+      Dependencies(".").AddCredentials(source, username, password)
     | _, true ->
       let args = results.GetResults <@ ConfigArgs.AddToken @>
       let source, token = args.Item 0
-      Dependencies.Locate().AddToken(source, token)
+      Dependencies(".").AddToken(source, token)
     | _ -> ()
 
 let validateAutoRestore (results : ParseResults<_>) =
