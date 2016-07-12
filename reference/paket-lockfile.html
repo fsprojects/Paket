@@ -75,10 +75,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '982', 982)" onmouseover="showTip(event, '982', 982)">
+          <code onmouseout="hideTip(event, '985', 985)" onmouseover="showTip(event, '985', 985)">
             new(fileName, groups)
           </code>
-          <div class="tip" id="982">
+          <div class="tip" id="985">
             <strong>Signature:</strong> (fileName:string * groups:Map&lt;GroupName,LockFileGroup&gt;) -&gt; LockFile<br />
                       </div>
         </td>
@@ -102,10 +102,28 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '983', 983)" onmouseover="showTip(event, '983', 983)">
+          <code onmouseout="hideTip(event, '986', 986)" onmouseover="showTip(event, '986', 986)">
+            CheckIfPackageExistsInAnyGroup(...)
+          </code>
+          <div class="tip" id="986">
+            <strong>Signature:</strong> packageName:PackageName -&gt; string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L505-505" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '987', 987)" onmouseover="showTip(event, '987', 987)">
             FileName
           </code>
-          <div class="tip" id="983">
+          <div class="tip" id="987">
             <strong>Signature:</strong> string<br />
                       </div>
         </td>
@@ -121,15 +139,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '984', 984)" onmouseover="showTip(event, '984', 984)">
+          <code onmouseout="hideTip(event, '988', 988)" onmouseover="showTip(event, '988', 988)">
             GetAllDependenciesOf(groupName, package)
           </code>
-          <div class="tip" id="984">
+          <div class="tip" id="988">
             <strong>Signature:</strong> (groupName:GroupName * package:PackageName) -&gt; HashSet&lt;PackageName&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L524-524" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L531-531" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -141,15 +159,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '985', 985)" onmouseover="showTip(event, '985', 985)">
+          <code onmouseout="hideTip(event, '989', 989)" onmouseover="showTip(event, '989', 989)">
             GetAllDependenciesOfSafe(...)
           </code>
-          <div class="tip" id="985">
+          <div class="tip" id="989">
             <strong>Signature:</strong> (groupName:GroupName * package:PackageName) -&gt; HashSet&lt;PackageName&gt; option<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L531-531" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L538-538" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -161,15 +179,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '986', 986)" onmouseover="showTip(event, '986', 986)">
+          <code onmouseout="hideTip(event, '990', 990)" onmouseover="showTip(event, '990', 990)">
             GetAllNormalizedDependenciesOf(...)
           </code>
-          <div class="tip" id="986">
+          <div class="tip" id="990">
             <strong>Signature:</strong> (groupName:GroupName * package:PackageName) -&gt; HashSet&lt;GroupName * PackageName&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L506-506" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L512-512" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -181,15 +199,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '987', 987)" onmouseover="showTip(event, '987', 987)">
+          <code onmouseout="hideTip(event, '991', 991)" onmouseover="showTip(event, '991', 991)">
             GetDependencyLookupTable()
           </code>
-          <div class="tip" id="987">
+          <div class="tip" id="991">
             <strong>Signature:</strong> unit -&gt; Map&lt;(GroupName * PackageName),Set&lt;PackageName&gt;&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L714-714" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L721-721" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -199,10 +217,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '988', 988)" onmouseover="showTip(event, '988', 988)">
+          <code onmouseout="hideTip(event, '992', 992)" onmouseover="showTip(event, '992', 992)">
             GetGroup(groupName)
           </code>
-          <div class="tip" id="988">
+          <div class="tip" id="992">
             <strong>Signature:</strong> groupName:GroupName -&gt; LockFileGroup<br />
                       </div>
         </td>
@@ -217,87 +235,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '989', 989)" onmouseover="showTip(event, '989', 989)">
+          <code onmouseout="hideTip(event, '993', 993)" onmouseover="showTip(event, '993', 993)">
             GetGroupedResolution()
           </code>
-          <div class="tip" id="989">
+          <div class="tip" id="993">
             <strong>Signature:</strong> unit -&gt; Map&lt;(GroupName * PackageName),ResolvedPackage&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L585-585" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '990', 990)" onmouseover="showTip(event, '990', 990)">
-            GetPackageHull(...)
-          </code>
-          <div class="tip" id="990">
-            <strong>Signature:</strong> (groupName:GroupName * referencesFile:ReferencesFile) -&gt; Dictionary&lt;(GroupName * PackageName),PackageInstallSettings&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L691-691" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '991', 991)" onmouseover="showTip(event, '991', 991)">
-            GetPackageHull(referencesFile)
-          </code>
-          <div class="tip" id="991">
-            <strong>Signature:</strong> referencesFile:ReferencesFile -&gt; Dictionary&lt;(GroupName * PackageName),PackageInstallSettings&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L647-647" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '992', 992)" onmouseover="showTip(event, '992', 992)">
-            GetPackageHullSafe(...)
-          </code>
-          <div class="tip" id="992">
-            <strong>Signature:</strong> (referencesFile:ReferencesFile * groupName:GroupName) -&gt; Result&lt;Set&lt;PackageName&gt;,DomainMessage&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L726-726" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '993', 993)" onmouseover="showTip(event, '993', 993)">
-            GetRemoteReferencedPackages(...)
-          </code>
-          <div class="tip" id="993">
-            <strong>Signature:</strong> (referencesFile:ReferencesFile * installGroup:InstallGroup) -&gt; PackageInstallSettings list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L680-680" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L592-592" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -308,14 +254,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '994', 994)" onmouseover="showTip(event, '994', 994)">
-            GetTopLevelDependencies(groupName)
+            GetPackageHull(...)
           </code>
           <div class="tip" id="994">
-            <strong>Signature:</strong> groupName:GroupName -&gt; Map&lt;PackageName,ResolvedPackage&gt;<br />
+            <strong>Signature:</strong> (groupName:GroupName * referencesFile:ReferencesFile) -&gt; Dictionary&lt;(GroupName * PackageName),PackageInstallSettings&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L576-576" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L698-698" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -326,14 +272,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '995', 995)" onmouseover="showTip(event, '995', 995)">
-            GetTransitiveDependencies(groupName)
+            GetPackageHull(referencesFile)
           </code>
           <div class="tip" id="995">
-            <strong>Signature:</strong> groupName:GroupName -&gt; Set&lt;PackageName&gt;<br />
+            <strong>Signature:</strong> referencesFile:ReferencesFile -&gt; Dictionary&lt;(GroupName * PackageName),PackageInstallSettings&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L554-554" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L654-654" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -344,9 +290,81 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '996', 996)" onmouseover="showTip(event, '996', 996)">
-            Groups
+            GetPackageHullSafe(...)
           </code>
           <div class="tip" id="996">
+            <strong>Signature:</strong> (referencesFile:ReferencesFile * groupName:GroupName) -&gt; Result&lt;Set&lt;PackageName&gt;,DomainMessage&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L733-733" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '997', 997)" onmouseover="showTip(event, '997', 997)">
+            GetRemoteReferencedPackages(...)
+          </code>
+          <div class="tip" id="997">
+            <strong>Signature:</strong> (referencesFile:ReferencesFile * installGroup:InstallGroup) -&gt; PackageInstallSettings list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L687-687" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '998', 998)" onmouseover="showTip(event, '998', 998)">
+            GetTopLevelDependencies(groupName)
+          </code>
+          <div class="tip" id="998">
+            <strong>Signature:</strong> groupName:GroupName -&gt; Map&lt;PackageName,ResolvedPackage&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L583-583" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '999', 999)" onmouseover="showTip(event, '999', 999)">
+            GetTransitiveDependencies(groupName)
+          </code>
+          <div class="tip" id="999">
+            <strong>Signature:</strong> groupName:GroupName -&gt; Set&lt;PackageName&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L561-561" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1000', 1000)" onmouseover="showTip(event, '1000', 1000)">
+            Groups
+          </code>
+          <div class="tip" id="1000">
             <strong>Signature:</strong> Map&lt;GroupName,LockFileGroup&gt;<br />
                       </div>
         </td>
@@ -362,15 +380,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '997', 997)" onmouseover="showTip(event, '997', 997)">
+          <code onmouseout="hideTip(event, '1001', 1001)" onmouseover="showTip(event, '1001', 1001)">
             IsDependencyOf(...)
           </code>
-          <div class="tip" id="997">
+          <div class="tip" id="1001">
             <strong>Signature:</strong> (dependentPackage:PackageName * package:(GroupName * PackageName)) -&gt; bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L592-592" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L599-599" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -382,15 +400,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '998', 998)" onmouseover="showTip(event, '998', 998)">
+          <code onmouseout="hideTip(event, '1002', 1002)" onmouseover="showTip(event, '1002', 1002)">
             Save()
           </code>
-          <div class="tip" id="998">
+          <div class="tip" id="1002">
             <strong>Signature:</strong> unit -&gt; bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L609-609" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L616-616" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -410,15 +428,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '999', 999)" onmouseover="showTip(event, '999', 999)">
+          <code onmouseout="hideTip(event, '1003', 1003)" onmouseover="showTip(event, '1003', 1003)">
             LoadFrom(lockFileName)
           </code>
-          <div class="tip" id="999">
+          <div class="tip" id="1003">
             <strong>Signature:</strong> lockFileName:string -&gt; LockFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L626-626" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L633-633" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -430,15 +448,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1000', 1000)" onmouseover="showTip(event, '1000', 1000)">
+          <code onmouseout="hideTip(event, '1004', 1004)" onmouseover="showTip(event, '1004', 1004)">
             Parse(lockFileName, lines)
           </code>
-          <div class="tip" id="1000">
+          <div class="tip" id="1004">
             <strong>Signature:</strong> (lockFileName:string * lines:string []) -&gt; LockFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L630-630" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LockFile.fs#L637-637" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
