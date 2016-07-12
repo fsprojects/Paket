@@ -219,7 +219,7 @@ type PackageSource =
         | NuGetV2 x -> n x.Url x.Authentication
         | NuGetV3 x -> n x.Url x.Authentication
         | LocalNuGet(path,_) -> 
-            if not <| File.Exists path then 
+            if not <| Directory.Exists path then 
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path
 
 let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStream
