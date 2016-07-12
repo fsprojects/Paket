@@ -1,10 +1,11 @@
-#### 3.5.0-alpha003 - 12.07.2016
+#### 3.5.0 - 12.07.2016
 * Support for .NET 4.6.3 and .NET Standard 1.6
 * Using Argu 3 
 * Support groups in paket.local - https://github.com/fsprojects/Paket/pull/1788
 * Paket config can be run from everywhere - https://github.com/fsprojects/Paket/pull/1781
 * BUGFIX: Install older frameworks if things don't work out - https://github.com/fsprojects/Paket/issues/1779
 * BUGFIX: Fixed detection of framework version with spaces - https://github.com/fsprojects/Paket/pull/1791
+* BUGFIX: Fixed error with local sources and run convert-from-nuget - https://github.com/fsprojects/Paket/pull/1795
  
 #### 3.4.0 - 30.06.2016
 * Inaccessible caches are excluded for the duration of running a command - https://github.com/fsprojects/Paket/pull/1770
