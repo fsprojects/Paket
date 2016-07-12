@@ -1,5 +1,6 @@
 #### 3.5.0-alpha002 - 12.07.2016
 * Support for .NET 4.6.3 and .NET Standard 1.6 
+* Paket config can be run from everywhere - https://github.com/fsprojects/Paket/pull/1781
 * BUGFIX: Install older frameworks if things don't work out - https://github.com/fsprojects/Paket/issues/1779
  
 #### 3.4.0 - 30.06.2016
