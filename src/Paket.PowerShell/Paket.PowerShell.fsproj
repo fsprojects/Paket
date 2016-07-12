@@ -64,7 +64,6 @@
   <Import Project="$(FSharpTargetsPath)" />
   <ItemGroup>
     <Compile Include="CmdletExt.fs" />
-    <Compile Include="ArgumentParserExt.fs" />
     <Compile Include="EventSink.fs" />
     <Compile Include="PowerShell.fs" />
     <None Include="init.ps1" />
