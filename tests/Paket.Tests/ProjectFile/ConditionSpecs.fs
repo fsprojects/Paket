@@ -67,6 +67,10 @@ let ``should detect net``() =
     FrameworkDetection.DetectFromPath(@"..\packages\RhinoMocks\lib\net\Rhino.Mocks.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V2))
 
 [<Test>]
+let ``should detect with spaces``() =
+    FrameworkDetection.DetectFromPath(@"..\packages\FSharpx.Core\lib\.NetFramework 3.5\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V3_5))
+
+[<Test>]
 let ``should detect 35, 40 and 45``() =
     FrameworkDetection.DetectFromPath(@"..\packages\FSharpx.Core\lib\35\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V3_5))
     FrameworkDetection.DetectFromPath(@"..\packages\FSharpx.Core\lib\40\FSharp.Core.dll")|> element |> shouldEqual (DotNetFramework(FrameworkVersion.V4_Client))
