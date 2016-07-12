@@ -1,7 +1,6 @@
 module Paket.Commands
 
 open System
-open FSharp.Quotations
 
 open Argu
 
