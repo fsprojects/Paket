@@ -238,3 +238,4 @@ module ``General Penalty checks`` =
           (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"], 
            SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_3)))
         |> shouldEqual (Some ("netstandard16"))
+
