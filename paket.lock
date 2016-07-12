@@ -42,7 +42,7 @@ NUGET
     FsCheck (2.5)
       FSharp.Core (>= 3.1.2.5)
     FSharp.Core (4.0.0.1)
-    Moq (4.5.10)
+    Moq (4.5.13)
       Castle.Core (>= 3.3.3) - framework: >= net45
     NUnit (3.4.1)
     NUnit.Console (3.4.1)
