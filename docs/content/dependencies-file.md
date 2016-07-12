@@ -49,7 +49,7 @@ Paket supports the following source types:
 
 ### Strict references
 
-Paket usually references all direct and transitive dependencies that are listed in your [`paket.references` files](references-files.md) to your project file.
+Paket usually references all direct and transitive dependencies that are listed in your [`paket.references` files](references-files.html) to your project file.
 In `strict` mode it will **only** reference *direct* dependencies.
 
     [lang=paket]
