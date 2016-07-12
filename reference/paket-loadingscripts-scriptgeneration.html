@@ -87,6 +87,12 @@
         </tr>
         <tr>
           <td class="type-name">
+            <a href="paket-loadingscripts-scriptgeneration-scriptpiece.html">ScriptPiece</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
             <a href="paket-loadingscripts-scriptgeneration-scripttype.html">ScriptType</a>
           </td>
           <td class="xmldoc"></td>
@@ -113,7 +119,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L122-122" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L127-127" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -133,7 +139,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L89-89" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L95-95" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -149,11 +155,11 @@
             generateScripts (...)
           </code>
           <div class="tip" id="474">
-            <strong>Signature:</strong> scriptGenerator:(ScriptGenInput -&gt; ScriptGenResult) -&gt; getScriptFile:(GroupName -&gt; PackageName -&gt; FileInfo) -&gt; includeScriptsRootFolder:DirectoryInfo -&gt; framework:FrameworkIdentifier -&gt; dependenciesFile:Dependencies -&gt; packagesOrGroupFolder:DirectoryInfo -&gt; groupName:GroupName -&gt; orderedPackages:ResolvedPackage list -&gt; unit<br />
+            <strong>Signature:</strong> scriptGenerator:(ScriptGenInput -&gt; ScriptGenResult) -&gt; writeScript:(FileInfo -&gt; ScriptPiece list -&gt; unit) -&gt; getScriptFile:(GroupName -&gt; PackageName -&gt; FileInfo) -&gt; includeScriptsRootFolder:DirectoryInfo -&gt; framework:FrameworkIdentifier -&gt; dependenciesFile:Dependencies -&gt; packagesOrGroupFolder:DirectoryInfo -&gt; groupName:GroupName -&gt; orderedPackages:ResolvedPackage list -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L167-167" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L223-223" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -175,7 +181,7 @@ will throw.</p>
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L256-256" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L313-313" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -189,11 +195,11 @@ will throw.</p>
             generateScriptsForRootFolderGeneric (...)
           </code>
           <div class="tip" id="476">
-            <strong>Signature:</strong> extension:string -&gt; scriptGenerator:(ScriptGenInput -&gt; ScriptGenResult) -&gt; framework:FrameworkIdentifier -&gt; rootFolder:DirectoryInfo -&gt; unit<br />
+            <strong>Signature:</strong> extension:string -&gt; scriptGenerator:(ScriptGenInput -&gt; ScriptGenResult) -&gt; scriptWriter:(FileInfo -&gt; ScriptPiece list -&gt; unit) -&gt; framework:FrameworkIdentifier -&gt; rootFolder:DirectoryInfo -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L210-210" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L267-267" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -214,7 +220,7 @@ if a package is ordered before its dependencies this function will throw.</p>
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L158-158" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L214-214" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -232,7 +238,7 @@ if a package is ordered before its dependencies this function will throw.</p>
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L144-144" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L200-200" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -250,7 +256,7 @@ if a package is ordered before its dependencies this function will throw.</p>
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L153-153" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L209-209" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -268,7 +274,43 @@ if a package is ordered before its dependencies this function will throw.</p>
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L147-147" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L203-203" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '481', 481)" onmouseover="showTip(event, '481', 481)">
+            writeCSharpScript scriptFile input
+          </code>
+          <div class="tip" id="481">
+            <strong>Signature:</strong> scriptFile:FileInfo -&gt; input:seq&lt;ScriptPiece&gt; -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L174-174" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '482', 482)" onmouseover="showTip(event, '482', 482)">
+            writeFSharpScript scriptFile input
+          </code>
+          <div class="tip" id="482">
+            <strong>Signature:</strong> scriptFile:FileInfo -&gt; input:seq&lt;ScriptPiece&gt; -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L148-148" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

@@ -105,10 +105,12 @@ Up until now, there was no convenient mechanism to do so, and e.g. we would manu
 <span class="l">4: </span>
 <span class="l">5: </span>
 <span class="l">6: </span>
+<span class="l">7: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="bash">$ .paket\paket.exe restore
 Paket version 3.0.0.0
-paket.local override: nuget Argu -&gt; file:///c:\github\Argu feature_branch build:"build.cmd NuGet", Packages: /bin/
+paket.local override: nuget Argu group main -&gt; 
+    file:///c:\github\Argu feature_branch build:"build.cmd NuGet", Packages: /bin/
 Setting C:\github\Paket\paket-files\localfilesystem\Argu to b14ea1a00431335ca3b60d49573b3831cd2deeb4
 Running "C:\github\Paket\paket-files\localfilesystem\Argu\build.cmd NuGet"
 11 seconds - ready.
@@ -132,9 +134,6 @@ This is to emphasize that we have a local override, and the build might not be r
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Argu -<span class="o">&gt;</span> <span class="k">git</span> file:///c:\github\Argu feature_branch build:<span class="s">"build.cmd NuGet"</span>, Packages: /bin/
 <span class="k">nuget</span> Fake -<span class="o">&gt;</span> <span class="k">source</span> c:\github\FAKE\bin
 </code></pre></td></tr></table>
-<blockquote>
-<p>Note: <a href="groups.html">groups</a> are not supported yet. Override applies only to "Main" group.</p>
-</blockquote>
 <h3><a name="Git-override" class="anchor" href="#Git-override">Git override</a></h3>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
@@ -153,6 +152,19 @@ This is to emphasize that we have a local override, and the build might not be r
 <blockquote>
 <p>Note: In case of source override, <code>paket restore</code> assumes the NuGet package <strong>already exists</strong> in   pointed directory - no build is going to be triggered.</p>
 </blockquote>
+<h3><a name="Groups" class="anchor" href="#Groups">Groups</a></h3>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// Argu is in Main group</span>
+<span class="k">nuget</span> Argu -<span class="o">&gt;</span> <span class="k">git</span> file:///c:\github\Argu feature_branch build:<span class="s">"build.cmd NuGet"</span>, Packages: /bin/
+<span class="c">// Fake is in Build group</span>
+<span class="k">nuget</span> Fake <span class="k">group</span> Build -<span class="o">&gt;</span> <span class="k">source</span> c:\github\FAKE\bin
+</code></pre></td></tr></table>
+<p>The <a href="groups.html">dependency group</a> can be specified with <code>group &lt;GroupName&gt;</code> after <code>nuget &lt;PackageName&gt;</code>.
+If not specified, the default group ("Main") is used.</p>
 <h3><a name="Comments" class="anchor" href="#Comments">Comments</a></h3>
 <p>All lines starting with with <code>//</code> or <code>#</code> are considered comments.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
