@@ -91,6 +91,17 @@ module ScriptGeneration =
   let private makeRelativePath (scriptFile: FileInfo) (libFile: FileInfo) =
     (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
 
+  let filterFSharpFrameworkReferences assemblies =
+    assemblies
+    |> Seq.filter (
+          function 
+          | "mscorlib" ->
+              // we never want to reference mscorlib directly (some nuget package state it as a dependency)
+              // reason is that having it referenced more than once fails in FSI
+              false 
+          | _ -> true    
+    )
+
   /// default implementation of F# include script generator
   let generateFSharpScript (input: ScriptGenInput) =
     let packageName = input.PackageName.GetCompareString()
@@ -101,15 +112,9 @@ module ScriptGeneration =
 
     let frameworkRefLines =
       input.FrameworkReferences
-      |> List.filter (
-          function 
-          | "mscorlib" ->
-              // we never want to reference mscorlib directly (some nuget package state it as a dependency)
-              // reason is that having it referenced more than once fails in FSI
-              false 
-          | _ -> true
-      )
-      |> List.map ReferenceFrameworkAssembly
+      |> filterFSharpFrameworkReferences
+      |> Seq.map ReferenceFrameworkAssembly
+      |> Seq.toList
 
     let dllLines =
       match packageName.ToLowerInvariant() with
@@ -190,11 +195,12 @@ module ScriptGeneration =
               id
             sprintf @"System.Console.WriteLine(""%s""); " (escape text)
     ]
-
+    
     let text =
       pieces
       |> String.concat ("\n")
     
+    scriptFile.Directory.Create()
     File.WriteAllText(scriptFile.FullName, text)
 
   let getIncludeScriptRootFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) = 
@@ -218,10 +224,11 @@ module ScriptGeneration =
           Some (groupName.ToString())
 
   let generateGroupScript
-    (deps          : Dependencies)
-    (getScriptFile : GroupName -> FileInfo)
-    (writeScript   : FileInfo -> ScriptPiece seq -> unit)
-    (framework     : FrameworkIdentifier)
+    (deps                      : Dependencies)
+    (getScriptFile             : GroupName -> FileInfo)
+    (writeScript               : FileInfo -> ScriptPiece seq -> unit)
+    (filterFrameworkAssemblies : string seq -> string seq)
+    (framework                 : FrameworkIdentifier)
     =
       let all =
         seq {
@@ -237,8 +244,8 @@ module ScriptGeneration =
       for group, libs in all do
         let assemblies, frameworkLibs =
           Seq.foldBack (fun (l,r) (pl, pr) -> Seq.concat [pl ; l], Seq.concat [pr ; r]) libs (Seq.empty, Seq.empty)
-          |> fun (l,r) -> Seq.distinct l, Seq.distinct r
-
+          |> fun (l,r) -> Seq.distinct l, Seq.distinct r |> filterFrameworkAssemblies
+        
         let assemblies = 
           let assemblyFilePerAssemblyDef = 
             assemblies
@@ -308,7 +315,7 @@ module ScriptGeneration =
 
   /// Generate a include scripts for all packages defined in paket.dependencies,
   /// if a package is ordered before its dependencies this function will throw.
-  let generateScriptsForRootFolderGeneric extension scriptGenerator scriptWriter (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
+  let generateScriptsForRootFolderGeneric extension scriptGenerator scriptWriter filterFrameworkLibs (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
       let dependenciesFile, lockFile =
           let deps = Paket.Dependencies.Locate(rootFolder.FullName)
           let lock =
@@ -327,10 +334,10 @@ module ScriptGeneration =
 
       let getScriptFile groupName packageName =
         getScriptFile includeScriptsRootFolder framework groupName packageName extension
+      
 
       dependencies
       |> Map.map (fun groupName packages ->
-          
           let packagesOrGroupFolder =
               match getGroupNameAsOption groupName with
               | None           -> packagesFolder
@@ -344,7 +351,7 @@ module ScriptGeneration =
         let folder = getScriptFolder includeScriptsRootFolder framework group
         FileInfo(Path.Combine(folder.FullName, sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant())
         
-      generateGroupScript dependenciesFile getGroupFile scriptWriter framework
+      generateGroupScript dependenciesFile getGroupFile scriptWriter filterFrameworkLibs framework
 
   type ScriptType =
   | CSharp
@@ -361,9 +368,9 @@ module ScriptGeneration =
         | _ -> None
 
   let generateScriptsForRootFolder scriptType =
-      let scriptGenerator, scriptWriter =
+      let scriptGenerator, scriptWriter, filterFrameworkLibs =
           match scriptType with
-          | CSharp -> generateCSharpScript, writeCSharpScript
-          | FSharp -> generateFSharpScript, writeFSharpScript
+          | CSharp -> generateCSharpScript, writeCSharpScript, id
+          | FSharp -> generateFSharpScript, writeFSharpScript, filterFSharpFrameworkReferences
 
-      generateScriptsForRootFolderGeneric scriptType.Extension scriptGenerator scriptWriter
+      generateScriptsForRootFolderGeneric scriptType.Extension scriptGenerator scriptWriter filterFrameworkLibs
