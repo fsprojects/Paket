@@ -1,3 +1,6 @@
+#### 3.4.1 - 12.07.2016
+* BUGFIX: Install older frameworks if things don't work out - https://github.com/fsprojects/Paket/issues/1779
+ 
 #### 3.4.0 - 30.06.2016
 * Inaccessible caches are excluded for the duration of running a command - https://github.com/fsprojects/Paket/pull/1770
 * BUGFIX: NuGet OData search is now case-insensitive - https://github.com/fsprojects/Paket/issues/1775

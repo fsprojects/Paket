@@ -169,10 +169,6 @@ module ``General Penalty checks`` =
            SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_5)))
         |> shouldEqual (Some ("portable-netcore451+wpa81"))
 
-        Paket.PlatformMatching.findBestMatch 
-          (["portable-netcore451+wpa81"], 
-           SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_6)))
-        |> shouldEqual (Some ("portable-netcore451+wpa81"))
 
     [<Test>]
     let ``best match for netstandard, netstandard is preferred``()=
@@ -225,10 +221,3 @@ module ``General Penalty checks`` =
           (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"], 
            SinglePlatform(DotNetFramework(FrameworkVersion.V4_5_1)))
         |> shouldEqual (Some ("netstandard12"))
-
-    [<Test>]
-    let ``best match for net463``()=
-        Paket.PlatformMatching.findBestMatch 
-          (["netstandard10"; "netstandard11"; "netstandard12"; "netstandard13"; "netstandard14"; "netstandard15"; "netstandard16"], 
-           SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_3)))
-        |> shouldEqual (Some ("netstandard16"))
