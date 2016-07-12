@@ -18,7 +18,8 @@ let Read fileName =
     let file = FileInfo fileName
     if file.Exists |> not then [] else
     let doc = XmlDocument()
-    doc.Load file.FullName
+    ( use f = File.OpenRead(file.FullName)
+      doc.Load f)
     
     [for node in doc.SelectNodes("//package") ->
         { Id = node.Attributes.["id"].Value

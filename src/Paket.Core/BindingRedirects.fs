@@ -67,10 +67,9 @@ let internal indentAssemblyBindings config =
     let sb = StringBuilder()
     let xmlWriterSettings = XmlWriterSettings()
     xmlWriterSettings.Indent <- true 
-    use writer = XmlWriter.Create(sb, xmlWriterSettings)
-    let tempAssemblyBindingNode = XElement.Parse(assemblyBinding.ToString())
-    tempAssemblyBindingNode.WriteTo writer
-    writer.Close()
+    ( use writer = XmlWriter.Create(sb, xmlWriterSettings)
+      let tempAssemblyBindingNode = XElement.Parse(assemblyBinding.ToString())
+      tempAssemblyBindingNode.WriteTo writer)
 
     let parent = assemblyBinding.Parent
     assemblyBinding.Remove()
@@ -184,8 +183,8 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
     |> Seq.iter applyBindingRedirects
 
 /// Calculates the short form of the public key token for use with binding redirects, if it exists.
-let getPublicKeyToken (assembly:Assembly) =
-    ("", assembly.GetName().GetPublicKeyToken())
+let getPublicKeyToken (assembly:Mono.Cecil.AssemblyDefinition) =
+    ("", assembly.Name.PublicKeyToken)
     ||> Array.fold(fun state b -> state + b.ToString("X2"))
     |> function
     | "" -> None

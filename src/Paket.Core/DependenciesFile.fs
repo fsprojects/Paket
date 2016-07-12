@@ -111,7 +111,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let getRestrictionList =
                 let projectFrameworks = lazy ( 
                     let lockFile = dependenciesFile.FindLockfile()
-                    let dir = (lockFile :> FileInfo).DirectoryName // wtf have to have the cast here so that the compiler doesn't coerce the lockFile to an obj
+                    let dir = (lockFile : FileInfo).DirectoryName // wtf have to have the cast here so that the compiler doesn't coerce the lockFile to an obj
                     let projects = ProjectFile.FindAllProjects dir
                     let frameworks = projects |> Array.choose ProjectFile.getTargetFramework |> Array.distinct
                     frameworks |> Array.map FrameworkRestriction.Exactly |> List.ofArray

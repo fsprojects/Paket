@@ -407,7 +407,7 @@ let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version
             if not <| File.Exists cachedHashFile then
                 use stream = File.OpenRead(fileName)
                 let packageSize = stream.Length
-                use hasher = new System.Security.Cryptography.SHA512CryptoServiceProvider() :> System.Security.Cryptography.HashAlgorithm
+                use hasher = System.Security.Cryptography.SHA512.Create() :> System.Security.Cryptography.HashAlgorithm
                 let packageHash = Convert.ToBase64String(hasher.ComputeHash(stream))
                 File.WriteAllText(cachedHashFile,packageHash)
 

@@ -133,7 +133,7 @@ let getFileEncoding path =
 /// [omit]
 let inline createRelativePath root path = 
     let basePath = 
-        if String.IsNullOrEmpty root then Environment.CurrentDirectory + string Path.DirectorySeparatorChar
+        if String.IsNullOrEmpty root then Directory.GetCurrentDirectory() + string Path.DirectorySeparatorChar
         else root
     
     let uri = Uri basePath
@@ -423,10 +423,17 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             client.Encoding <- Encoding.UTF8
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             return Some raw
-        with _ -> return None
+        with e ->
+            Logging.verbosefn "Error while retrieving '%s': %O" url e
+            return None
     }
 
-let readAnswer() = System.Console.ReadLine().Trim()
+let mutable autoAnswer = None
+let readAnswer() =
+    match autoAnswer with
+    | Some true -> "y"
+    | Some false -> "n"
+    | None -> System.Console.ReadLine().Trim()
 
 /// If the guard is true then a [Y]es / [N]o question will be ask.
 /// Until the user pressed y or n.
@@ -460,7 +467,7 @@ let RunInLockedAccessMode(rootFolder,action) =
     if Directory.Exists packagesFolder |> not then
         Directory.CreateDirectory packagesFolder |> ignore
 
-    let p = Process.GetCurrentProcess()
+    let p = System.Diagnostics.Process.GetCurrentProcess()
     let fileName = Path.Combine(packagesFolder,Constants.AccessLockFileName)
 
     // Checks the packagesFolder for a paket.locked file or waits until it get access to it.
@@ -470,7 +477,7 @@ let RunInLockedAccessMode(rootFolder,action) =
                 if File.Exists fileName then
                     let content = File.ReadAllText fileName
                     if content <> string p.Id then
-                        let currentProcess = Process.GetCurrentProcess()
+                        let currentProcess = System.Diagnostics.Process.GetCurrentProcess()
                         let hasRunningPaketProcess = 
                             Process.GetProcessesByName p.ProcessName
                             |> Array.filter (fun p -> p.Id <> currentProcess.Id)
@@ -603,13 +610,13 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
     | exn -> 
         failwithf "Could not parse %s as key/value pairs.%s%s" s Environment.NewLine exn.Message
 
-let downloadStringSync (url : string) (client : System.Net.WebClient) = 
+let downloadStringSync (url : string) (client : WebClient) = 
     try 
         client.DownloadString url |> ok
     with _ ->
         DownloadError url |> fail 
 
-let downloadFileSync (url : string) (fileName : string) (client : System.Net.WebClient) = 
+let downloadFileSync (url : string) (fileName : string) (client : WebClient) = 
     tracefn "Downloading file from %s to %s" url fileName
     try 
         client.DownloadFile(url, fileName) |> ok

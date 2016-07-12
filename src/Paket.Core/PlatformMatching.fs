@@ -222,15 +222,13 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
         let andString = 
             conditions
             |> List.map (fun (group,conditions) ->
-                match List.ofSeq conditions with
-                | [ _,"" ] -> group
-                | [ _,detail ] -> sprintf "%s And %s" group detail
+                match List.ofSeq (conditions |> Seq.map snd |> Set.ofSeq) with
+                | [ "" ] -> group
+                | [ detail ] -> sprintf "%s And %s" group detail
                 | [] -> "false"
                 | conditions ->
                     let detail =
                         conditions
-                        |> List.map snd
-                        |> Set.ofSeq
                         |> fun cs -> String.Join(" Or ",cs)
                     sprintf "%s And (%s)" group detail)
         

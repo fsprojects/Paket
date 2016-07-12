@@ -1068,7 +1068,7 @@ module ProjectFile =
                 if normalizedPath.Contains "$(SolutionDir)" then 
                     match getProperty "SolutionDir" project with
                     | Some slnDir -> normalizedPath.Replace("$(SolutionDir)",slnDir) 
-                    | None -> normalizedPath.Replace("$(SolutionDir)", Environment.CurrentDirectory + Path.DirectorySeparatorChar.ToString())
+                    | None -> normalizedPath.Replace("$(SolutionDir)", Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar.ToString())
                 else normalizedPath
 
             { Path =
@@ -1104,7 +1104,7 @@ module ProjectFile =
               |> List.tryFind (fun n -> 
                     match n |> getAttribute "Project" with
                     | Some p -> p.Equals("$(SolutionDir)\\.nuget\\nuget.targets", 
-                                         StringComparison.InvariantCultureIgnoreCase)
+                                         StringComparison.OrdinalIgnoreCase)
                     | None -> false)
               project.Document
               |> getDescendants "Target"

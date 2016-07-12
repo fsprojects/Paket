@@ -40,10 +40,9 @@ let toBasicAuth = function
 
 let tryParseWindowsStyleNetworkPath (path : string) =
     let trimmed = path.TrimStart()
-    match Environment.OSVersion.Platform with
-        | PlatformID.Unix | PlatformID.MacOSX when trimmed.StartsWith @"\\" ->
-            trimmed.Replace('\\', '/') |> sprintf "smb:%s" |> Some
-        | _  -> None
+    if (isUnix || isMacOS) && trimmed.StartsWith @"\\" then
+        trimmed.Replace('\\', '/') |> sprintf "smb:%s" |> Some
+    else None
 
 type NugetSource = 
     { Url : string

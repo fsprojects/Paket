@@ -169,24 +169,6 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
     |> Seq.concat
     |> Seq.toArray
 
-/// Since Assembly.ReflectionOnlyLoadFrom holds on to file handles indefintely, we use
-/// ReflectionOnlyLoad(bytes[]) instead. However, in order to prevent
-/// CLR from loading same assemblies multiple times (results in exn), we use a static
-/// dictionary for caching assemblies, based on their filename.
-module private LoadAssembliesSafe =
-
-    let loadedLibs = new Dictionary<_,_>()
-
-    let reflectionOnlyLoadFrom library = 
-        let key = FileInfo(library).FullName.ToLowerInvariant()
-        match loadedLibs.TryGetValue key with
-         | (true,v) -> v 
-         | _ ->
-            let assemblyAsBytes = File.ReadAllBytes library
-            let v = Assembly.ReflectionOnlyLoad assemblyAsBytes
-            loadedLibs.[key] <- v
-            v
-
 let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionary<'key, 'value>) : 'value =
     let value: 'value ref = ref Unchecked.defaultof<_>
     if d.TryGetValue(key, value) then !value
@@ -254,20 +236,20 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
                 librariesForPackage
                 |> Seq.choose(fun (library,redirects,profile) ->
                     try
-                        let assembly = LoadAssembliesSafe.reflectionOnlyLoadFrom library
-                        Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.GetReferencedAssemblies(), redirects, profile)
+                        let assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(library)
+                        Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.MainModule.AssemblyReferences, redirects, profile)
                     with _ -> None)
-                |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.GetName().Version)
+                |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.Name.Version)
                 |> Seq.toList
                 |> List.rev
                 |> function | head :: _ -> Some head | _ -> None)
             |> Seq.cache
 
-        let referencesDifferentProfiles (assemblyName : AssemblyName) profile =
+        let referencesDifferentProfiles (assemblyName : Mono.Cecil.AssemblyNameDefinition) profile =
             profile = targetProfile
             && assemblies
             |> Seq.filter (fun (_,_,_,_,p) -> p <> profile)
-            |> Seq.map (fun (a,_,_,_,_) -> a.GetName())
+            |> Seq.map (fun (a,_,_,_,_) -> a.Name)
             |> Seq.filter (fun a -> a.Name = assemblyName.Name)
             |> Seq.exists (fun a -> a.Version <> assemblyName.Version)
 
@@ -275,7 +257,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
         |> Seq.choose (fun (assembly,token,refs,redirects,profile) -> token |> Option.map (fun token -> (assembly,token,refs,redirects,profile)))
         |> Seq.filter (fun (_,_,_,packageRedirects,_) -> defaultArg ((packageRedirects |> Option.map ((<>) Off)) ++ redirects) false)
         |> Seq.filter (fun (assembly,_,_,redirects,profile) ->
-            let assemblyName = assembly.GetName() 
+            let assemblyName = assembly.Name 
             redirects = Some Force
             || referencesDifferentProfiles assemblyName profile
             || assemblies
@@ -283,8 +265,8 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
             |> Seq.filter (fun a -> assemblyName.Name = a.Name)
             |> Seq.exists (fun a -> assemblyName.Version > a.Version))
         |> Seq.map(fun (assembly, token,_,_,_) ->
-            { BindingRedirect.AssemblyName = assembly.GetName().Name
-              Version = assembly.GetName().Version.ToString()
+            { BindingRedirect.AssemblyName = assembly.Name.Name
+              Version = assembly.Name.Version.ToString()
               PublicKeyToken = token
               Culture = None })
         |> Seq.sort

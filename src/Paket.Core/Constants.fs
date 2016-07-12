@@ -34,7 +34,7 @@ let AppDataFolder       = Environment.GetFolderPath(Environment.SpecialFolder.Ap
 let PaketConfigFolder   = Path.Combine(AppDataFolder, "Paket")
 let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 
-let UserProfile = System.Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile)
+let UserProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
 let GitRepoCacheFolder = Path.Combine(UserProfile,".paket","git","db")
 
 

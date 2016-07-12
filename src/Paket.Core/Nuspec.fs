@@ -75,7 +75,8 @@ type Nuspec =
         else 
             let doc = new XmlDocument()
             try
-                doc.Load fi.FullName
+                use f = File.OpenRead(fi.FullName)
+                doc.Load f
             with
             | exn -> 
                 let text = File.ReadAllText(fi.FullName)  // work around mono bug https://github.com/fsprojects/Paket/issues/1189

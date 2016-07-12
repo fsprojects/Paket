@@ -19,7 +19,8 @@ let private getConfigNode (nodeName : string) =
         let doc = XmlDocument ()
         if File.Exists Constants.PaketConfigFile then 
             try 
-                doc.Load Constants.PaketConfigFile
+                use f = File.OpenRead(Constants.PaketConfigFile)
+                doc.Load f
                 ok doc.DocumentElement
             with _ -> fail ConfigFileParseError
         else
@@ -44,12 +45,15 @@ let private saveConfigNode (node : XmlNode) =
         do! saveFile Constants.PaketConfigFile (node.OwnerDocument.OuterXml)
     }
 
-let private cryptoServiceProvider = new RNGCryptoServiceProvider()
+
+let private fillRandomBytes =
+    let provider = RandomNumberGenerator.Create()
+    (fun (b:byte[]) -> provider.GetBytes(b))
 
 let private getRandomSalt() =
     let saltSize = 8
     let saltBytes = Array.create saltSize ( new Byte() )
-    cryptoServiceProvider.GetNonZeroBytes(saltBytes)
+    fillRandomBytes(saltBytes)
     saltBytes
 
 /// Encrypts a string with a user specific keys

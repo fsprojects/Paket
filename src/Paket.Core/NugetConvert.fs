@@ -80,7 +80,8 @@ type NugetConfig =
     static member GetConfigNode (file : FileInfo) =
         try 
             let doc = XmlDocument()
-            doc.Load(file.FullName)
+            ( use f = File.OpenRead file.FullName
+              doc.Load(f))
             (doc |> getNode "configuration").Value |> ok
         with _ -> 
             file

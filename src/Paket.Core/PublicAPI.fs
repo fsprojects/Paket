@@ -26,7 +26,7 @@ type Dependencies(dependenciesFileName: string) =
         Utils.emptyDir (DirectoryInfo Constants.GitRepoCacheFolder)
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
-    static member Locate(): Dependencies = Dependencies.Locate(Environment.CurrentDirectory)
+    static member Locate(): Dependencies = Dependencies.Locate(Directory.GetCurrentDirectory())
 
     /// Returns an instance of the paket.lock file.
     member this.GetLockFile() = 
@@ -58,7 +58,7 @@ type Dependencies(dependenciesFileName: string) =
         Dependencies(dependenciesFileName)
 
     /// Initialize paket.dependencies file in current directory
-    static member Init() = Dependencies.Init(Environment.CurrentDirectory)
+    static member Init() = Dependencies.Init(Directory.GetCurrentDirectory())
 
     /// Initialize paket.dependencies file in the given directory
     static member Init(directory) =
@@ -73,7 +73,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory) : unit =
-        let dir = defaultArg directory (DirectoryInfo(Environment.CurrentDirectory))
+        let dir = defaultArg directory (DirectoryInfo(Directory.GetCurrentDirectory()))
         let rootDirectory = dir
 
         Utils.RunInLockedAccessMode(
@@ -167,7 +167,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Creates a paket.dependencies file with the given text in the current directory and installs it.
     static member Install(dependencies, ?path: string, ?force, ?withBindingRedirects, ?cleanBindingRedirects, ?createNewBindingFiles, ?onlyReferenced, ?semVerUpdateMode, ?touchAffectedRefs) =
-        let path = defaultArg path Environment.CurrentDirectory
+        let path = defaultArg path (Directory.GetCurrentDirectory())
         let fileName = Path.Combine(path, Constants.DependenciesFileName)
         File.WriteAllText(fileName, dependencies)
         let dependencies = Dependencies.Locate(path)

@@ -275,7 +275,6 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         let entry = zipFile.CreateEntry(path)
         use stream = entry.Open()
         writerF stream
-        stream.Close()
 
     let addEntryFromFile path source =
         if entries.Contains(path) then () else
