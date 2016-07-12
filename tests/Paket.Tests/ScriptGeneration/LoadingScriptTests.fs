@@ -51,7 +51,7 @@ let scriptGenInputWithNoDendency = {
     IncludeScriptsRootFolder     = DirectoryInfo "b"
     DependentScripts             = List.empty
     FrameworkReferences          = List.empty
-    OrderedRelativeDllReferences = List.empty
+    OrderedDllReferences         = List.empty
 }
 
 [<Test>]

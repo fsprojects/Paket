@@ -67,6 +67,12 @@ module PackageAndAssemblyResolution =
 
 module ScriptGeneration =
   open PackageAndAssemblyResolution
+  
+  type ScriptPiece =
+  | ReferenceAssemblyFile      of FileInfo
+  | ReferenceFrameworkAssembly of string
+  | LoadScript                 of FileInfo
+  | PrintStatement             of string
 
   type ScriptGenInput = {
       PackageName                  : PackageName
@@ -75,12 +81,12 @@ module ScriptGeneration =
       IncludeScriptsRootFolder     : DirectoryInfo
       DependentScripts             : FileInfo list
       FrameworkReferences          : string list
-      OrderedRelativeDllReferences : string list
+      OrderedDllReferences : FileInfo list
   }
 
   type ScriptGenResult = 
   | DoNotGenerate
-  | Generate of lines : string list
+  | Generate of lines : ScriptPiece list
 
   let private makeRelativePath (scriptFile: FileInfo) (libFile: FileInfo) =
     (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
@@ -91,8 +97,7 @@ module ScriptGeneration =
 
     let depLines =
       input.DependentScripts
-      |> List.map (fun fi -> fi.Name)
-      |> List.map (sprintf """#load @"%s" """)
+      |> List.map LoadScript
 
     let frameworkRefLines =
       input.FrameworkReferences
@@ -104,19 +109,19 @@ module ScriptGeneration =
               false 
           | _ -> true
       )
-      |> List.map (sprintf """#r "%s" """)
+      |> List.map ReferenceFrameworkAssembly
 
     let dllLines =
       match packageName.ToLowerInvariant() with
       | "fsharp.core" -> []
       | _ -> 
-        input.OrderedRelativeDllReferences 
-        |> List.map (sprintf """#r "%s" """)
+        input.OrderedDllReferences 
+        |> List.map ReferenceAssemblyFile
 
     let lines = List.concat [depLines; frameworkRefLines; dllLines]
     match lines with
     | [] -> DoNotGenerate
-    | xs -> List.append xs [ sprintf "printfn \"%%s\" \"Loaded %s\"" packageName ] |> Generate
+    | xs -> List.append xs [ PrintStatement (sprintf "%s Loaded" packageName) ] |> Generate
 
   /// default implementation of C# include script generator
   let generateCSharpScript (input: ScriptGenInput) =
@@ -124,22 +129,73 @@ module ScriptGeneration =
 
     let depLines =
       input.DependentScripts
-      |> List.map (fun fi -> fi.Name)
-      |> List.map (sprintf """#load "%s" """)
+      |> List.map LoadScript
 
     let frameworkRefLines =
       input.FrameworkReferences
-      |> List.map (sprintf """#r "%s" """)
+      |> List.map ReferenceFrameworkAssembly
 
     let dllLines =
-      input.OrderedRelativeDllReferences
-      |> List.map (sprintf """#r "%s" """)
+      input.OrderedDllReferences
+      |> List.map ReferenceAssemblyFile
 
     let lines = List.concat [depLines; frameworkRefLines; dllLines]
 
     match lines with
     | [] -> DoNotGenerate
-    | xs -> List.append xs [ sprintf "System.Console.WriteLine(\"Loaded {0}\", \"%s\");" packageName ] |> Generate
+    | xs -> List.append xs [ PrintStatement (sprintf "%s Loaded" packageName) ] |> Generate
+
+  let writeFSharpScript scriptFile input =
+    let pieces = [
+      for piece in input do
+        yield
+          match piece with
+          | ReferenceAssemblyFile file ->
+            makeRelativePath scriptFile file
+            |> sprintf """#r "%s" """
+          | LoadScript script ->
+            makeRelativePath scriptFile script
+            |> sprintf """#load @"%s" """
+          | ReferenceFrameworkAssembly name ->
+            sprintf """#r "%s" """ name
+          | PrintStatement text -> 
+            let escape = 
+              // /!\ /!\ /!\ TODO escape text /!\ /!\ /!\
+              id
+            sprintf @"printfn ""%s"" " (escape text)
+    ]
+
+    let text =
+      pieces
+      |> String.concat ("\n")
+    
+    File.WriteAllText(scriptFile.FullName, text)
+    
+  let writeCSharpScript scriptFile input =
+    let pieces = [
+      for piece in input do
+        yield
+          match piece with
+          | ReferenceAssemblyFile file ->
+            makeRelativePath scriptFile file
+            |> sprintf """#r "%s" """
+          | LoadScript script ->
+            makeRelativePath scriptFile script
+            |> sprintf """#load "%s" """
+          | ReferenceFrameworkAssembly name ->
+            sprintf """#r "%s" """ name
+          | PrintStatement text -> 
+            let escape = 
+              // /!\ /!\ /!\ TODO escape text /!\ /!\ /!\
+              id
+            sprintf @"System.Console.WriteLine(""%s""); " (escape text)
+    ]
+
+    let text =
+      pieces
+      |> String.concat ("\n")
+    
+    File.WriteAllText(scriptFile.FullName, text)
 
   let getIncludeScriptRootFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) = 
       DirectoryInfo(Path.Combine(includeScriptsRootFolder.FullName, string framework))
@@ -166,6 +222,7 @@ module ScriptGeneration =
   /// will throw.
   let generateScripts
       (scriptGenerator          : ScriptGenInput -> ScriptGenResult)
+      (writeScript              : FileInfo -> ScriptPiece list -> unit)
       (getScriptFile            : GroupName -> PackageName -> FileInfo)
       (includeScriptsRootFolder : DirectoryInfo)
       (framework                : FrameworkIdentifier)
@@ -182,7 +239,7 @@ module ScriptGeneration =
           let groupName = getGroupNameAsOption groupName
           let dependencies = package.Dependencies |> Seq.map fst' |> Seq.choose knownIncludeScripts.TryFind |> List.ofSeq
           let installModel = dependenciesFile.GetInstalledPackageModel(groupName, package.Name.ToString())
-          let dllFiles = getDllsWithinPackage framework installModel |> List.map (makeRelativePath scriptFile)
+          let dllFiles = getDllsWithinPackage framework installModel
 
           let scriptInfo = {
             PackageName                  = installModel.PackageName
@@ -190,15 +247,15 @@ module ScriptGeneration =
             PackagesOrGroupFolder        = packagesOrGroupFolder
             IncludeScriptsRootFolder     = includeScriptsRootFolder
             FrameworkReferences          = getFrameworkReferencesWithinPackage installModel
-            OrderedRelativeDllReferences = dllFiles
+            OrderedDllReferences = dllFiles
             DependentScripts             = dependencies
           }
 
           match scriptGenerator scriptInfo with
           | DoNotGenerate -> knownIncludeScripts
-          | Generate lines -> 
+          | Generate pieces -> 
             scriptFile.Directory.Create()
-            File.WriteAllLines (scriptFile.FullName, lines)
+            writeScript scriptFile pieces
             knownIncludeScripts |> Map.add package.Name scriptFile
 
       ) Map.empty
@@ -207,7 +264,7 @@ module ScriptGeneration =
 
   /// Generate a include scripts for all packages defined in paket.dependencies,
   /// if a package is ordered before its dependencies this function will throw.
-  let generateScriptsForRootFolderGeneric extension scriptGenerator (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
+  let generateScriptsForRootFolderGeneric extension scriptGenerator scriptWriter (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
       let dependenciesFile, lockFile =
           let deps = Paket.Dependencies.Locate(rootFolder.FullName)
           let lock =
@@ -235,7 +292,7 @@ module ScriptGeneration =
               | None           -> packagesFolder
               | Some groupName -> DirectoryInfo(Path.Combine(packagesFolder.FullName, groupName))
 
-          generateScripts scriptGenerator getScriptFile includeScriptsRootFolder framework dependenciesFile packagesOrGroupFolder groupName packages
+          generateScripts scriptGenerator scriptWriter getScriptFile includeScriptsRootFolder framework dependenciesFile packagesOrGroupFolder groupName packages
       )
       |> ignore
 
@@ -254,9 +311,9 @@ module ScriptGeneration =
         | _ -> None
 
   let generateScriptsForRootFolder scriptType =
-      let scriptGenerator =
+      let scriptGenerator, scriptWriter =
           match scriptType with
-          | CSharp -> generateCSharpScript
-          | FSharp -> generateFSharpScript
+          | CSharp -> generateCSharpScript, writeCSharpScript
+          | FSharp -> generateFSharpScript, writeFSharpScript
 
-      generateScriptsForRootFolderGeneric scriptType.Extension scriptGenerator
+      generateScriptsForRootFolderGeneric scriptType.Extension scriptGenerator scriptWriter
