@@ -73,7 +73,7 @@ let ``framework specified``() =
   if not (Seq.isEmpty failures) then
     Assert.Fail (failures |> String.concat Environment.NewLine)
 
-[<Test;Category("scriptgen")>]
+[<Test; Category("scriptgen"); Ignore("group script is always generated")>]
 let ``don't generate scripts when no references are found``() = 
     (* The deps file for this scenario just includes FAKE, which has no lib or framework references, so no script should be generated for it. *)
     let scenario = "no-references"
