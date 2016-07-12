@@ -166,7 +166,9 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks) =
                 Constants.DependenciesFileName
         | Some depFileGroup ->
             let packages = Set.ofSeq packages
-            let overriden = Set.filter (LocalFile.overrides localFile) packages
+            let overriden = 
+                packages
+                |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
             restore(root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
             |> Async.RunSynchronously
             |> ignore
