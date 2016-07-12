@@ -215,7 +215,7 @@ let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, ne
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
     if not <| dependenciesFile.HasPackage(groupName, packageName) then
-        failwithf "Package %O was not found in paket.dependencies in group %O." packageName groupName
+        failwithf "Package %O was not found in paket.dependencies in group %O.%s" packageName groupName (dependenciesFile.CheckIfPackageExistsInAnyGroup packageName)
 
     let dependenciesFile =
         match newVersion with

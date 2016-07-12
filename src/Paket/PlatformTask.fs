@@ -100,7 +100,7 @@ type CopyRuntimeDependencies() =
 
                 for group,packageName in packagesToInstall do
                     match model |> Map.tryFind (group,packageName) with
-                    | None -> failwithf "Package %O %O was not found in the install model" group packageName
+                    | None -> failwithf "Package %O was not found in the install model in group %O.%s" group packageName (lockFile.CheckIfPackageExistsInAnyGroup packageName)
                     | Some (package,projectModel) ->
 
                         let files =

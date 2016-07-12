@@ -326,7 +326,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     let package = 
                         match model |> Map.tryFind (kv.Key, ps.Name) with
                         | Some (p,_) -> p
-                        | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %O." referenceFile.FileName ps.Name kv.Key
+                        | None -> failwithf "%s uses NuGet package %O, but it was not found in the paket.lock file in group %O.%s" referenceFile.FileName ps.Name kv.Key (lockFile.CheckIfPackageExistsInAnyGroup ps.Name)
 
                     let resolvedSettings = 
                         [package.Settings; group.Options.Settings] 

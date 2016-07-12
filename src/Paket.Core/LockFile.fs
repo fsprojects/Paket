@@ -502,6 +502,12 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         | Some g -> g
         | None -> failwithf "Group %O was not found in %s." groupName fileName
 
+    member this.CheckIfPackageExistsInAnyGroup (packageName:PackageName) =
+        match groups |> Seq.tryFind (fun g -> g.Value.Resolution.ContainsKey packageName) with
+        | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine PackageName group.Value.Name
+        | None -> ""
+        
+
     /// Gets all dependencies of the given package
     member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName) = 
         let group = groups.[groupName]
@@ -514,7 +520,8 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                     if not group.Options.Strict then
                         for d,_,_ in package.Dependencies do
                             addPackage d
-            | None -> failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O." identity groupName
+            | None ->
+                failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O.%s" identity groupName (this.CheckIfPackageExistsInAnyGroup package)
 
         addPackage package
 
@@ -525,7 +532,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         match this.GetAllDependenciesOfSafe(groupName,package) with
         | Some packages -> packages
         | None ->
-            failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O." package groupName
+            failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O.%s" package groupName (this.CheckIfPackageExistsInAnyGroup package)
 
     /// Gets all dependencies of the given package in the given group.
     member this.GetAllDependenciesOfSafe(groupName:GroupName,package) =

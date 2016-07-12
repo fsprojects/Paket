@@ -1,5 +1,6 @@
 #### 3.6.0 - 12.07.2016
 * Generate include script for each group - https://github.com/fsprojects/Paket/pull/1787
+* USABILITY: Improve error messages for dependency groups - https://github.com/fsprojects/Paket/pull/1797
 
 #### 3.5.0 - 12.07.2016
 * Support for .NET 4.6.3 and .NET Standard 1.6

@@ -227,7 +227,7 @@ module ScriptGeneration =
         seq {
           for group, nuget, _ in deps.GetInstalledPackages() do
             let model = deps.GetInstalledPackageModel(Some group, nuget)
-            let libs = model.GetLibReferences(framework) |> Seq.map FileInfo
+            let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f)
             let syslibs = model.GetFrameworkAssembliesLazy.Value
             yield group, (libs, syslibs |> Set.toSeq)
         }
@@ -242,7 +242,7 @@ module ScriptGeneration =
         let assemblies = 
           let assemblyFilePerAssemblyDef = 
             assemblies
-            |> Seq.map (fun f -> f.FullName |> AssemblyDefinition.ReadAssembly, f)
+            |> Seq.map (fun (f:FileInfo) -> AssemblyDefinition.ReadAssembly(f.FullName:string), f)
             |> dict
 
           assemblyFilePerAssemblyDef.Keys
@@ -323,8 +323,7 @@ module ScriptGeneration =
       let packagesFolder = DirectoryInfo(Path.Combine(rootFolder.FullName, Constants.PackagesFolderName))
         
       let includeScriptsRootFolder = 
-          Path.Combine((FileInfo dependenciesFile.DependenciesFile).Directory.FullName, Constants.PaketFilesFolderName, "include-scripts")
-          |> DirectoryInfo
+          DirectoryInfo(Path.Combine((FileInfo dependenciesFile.DependenciesFile).Directory.FullName, Constants.PaketFilesFolderName, "include-scripts"))
 
       let getScriptFile groupName packageName =
         getScriptFile includeScriptsRootFolder framework groupName packageName extension
@@ -343,8 +342,7 @@ module ScriptGeneration =
 
       let getGroupFile group = 
         let folder = getScriptFolder includeScriptsRootFolder framework group
-        Path.Combine(folder.FullName, sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant()
-        |> FileInfo
+        FileInfo(Path.Combine(folder.FullName, sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant())
         
       generateGroupScript dependenciesFile getGroupFile scriptWriter framework
 
