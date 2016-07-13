@@ -79,3 +79,12 @@ by using the `minimum-from-lock-file` parameter the dependencies of the generate
   [depfile]: dependencies-file.html
   [reffile]: references-files.html
   [templatefile]: template-files.html
+
+### Localized Packages
+
+When using a `.template` with `type project` any localized satellite dlls are included in the created packages.
+The following layout is created:
+```
+lib/net45/Foo.dll
+         /se/Foo.resources.dll
+```
