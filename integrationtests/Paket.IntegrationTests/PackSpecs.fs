@@ -351,7 +351,7 @@ let ``#1596 pack works for reflected definition assemblies``() =
     File.Delete(templatePath)
 
 [<Test>]
-let ``#1802 pack localized dll`` () =
+let ``#1806 pack localized dll`` () =
     let scenario = "i001802-pack-localized"
     let rootPath = scenarioTempPath scenario
     let outPath = Path.Combine(rootPath, "out")
