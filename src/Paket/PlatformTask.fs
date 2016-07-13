@@ -27,8 +27,8 @@ type CopyRuntimeDependencies() =
         and set(v) = projectsWithRuntimeLibs <- v
 
     member this.ProjectFile
-        with get() = outputPath
-        and set(v) = outputPath <- v
+        with get() = projectFile
+        and set(v) = projectFile <- v
 
     member this.TargetFramework
         with get() = targetFramework
