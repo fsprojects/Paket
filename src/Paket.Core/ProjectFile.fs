@@ -1347,7 +1347,7 @@ type ProjectFile with
 
     member this.FindReferencesFile() = this.FindCorrespondingFile Constants.ReferencesFile
 
-    member this.FindLocalizedLangaugeNames() =
+    member this.FindLocalizedLanguageNames() =
         let pattern = @"Properties\\Resources.(?<language>\w+(-\w+)?).resx"
         let includeattribute = "Include"
         this.ProjectNode

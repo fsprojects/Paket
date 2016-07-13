@@ -10,7 +10,9 @@ open TestHelpers
 [<Test>]
 let ``finds language names`` () =
     ensureDir ()
-    let actual = ProjectFile.TryLoad("./ProjectFile/TestData/LocalizedLib.csprojtest").Value.FindLocalizedLangaugeNames()
+    let actual = ProjectFile.TryLoad("./ProjectFile/TestData/LocalizedLib.csprojtest")
+                            .Value
+                            .FindLocalizedLanguageNames()
     let expected = 
         [
             "sv-FI"
@@ -21,6 +23,6 @@ let ``finds language names`` () =
 [<Test>]
 let ``returns empty when no localization`` () =
     ensureDir ()
-    let actual = ProjectFile.TryLoad("./ProjectFile/TestData/NewSilverlightClassLibrary.csprojtest").Value.FindLocalizedLangaugeNames()
+    let actual = ProjectFile.TryLoad("./ProjectFile/TestData/NewSilverlightClassLibrary.csprojtest").Value.FindLocalizedLanguageNames()
     CollectionAssert.IsEmpty(actual)
 

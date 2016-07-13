@@ -180,7 +180,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             let satelliteAssemblyName = project.GetAssemblyName() + ".resources.dll"
             let projectDir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
             let outputDir = Path.Combine(projectDir, project.GetOutputDirectory config platform)
-            for language in project.FindLocalizedLangaugeNames() do
+            for language in project.FindLocalizedLanguageNames() do
                 let path = Path.Combine(outputDir, language, satelliteAssemblyName)
                 if(File.Exists(path)) then
                     let satelliteTargetDir = Path.Combine(targetDir, language)
