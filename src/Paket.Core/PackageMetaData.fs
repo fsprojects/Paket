@@ -175,11 +175,23 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 |> Seq.toList 
             else 
                 [ project ]
-       
+      
+        for project in projects do
+            let satelliteAssemblyName = project.GetAssemblyName() + ".resources.dll"
+            let projectDir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
+            let outputDir = Path.Combine(projectDir, project.GetOutputDirectory config platform)
+            for language in project.FindLocalizedLangaugeNames() do
+                let path = Path.Combine(outputDir, language, satelliteAssemblyName)
+                if(File.Exists(path)) then
+                    let satelliteTargetDir = Path.Combine(targetDir, language)
+                    addFile path satelliteTargetDir template
+                else
+                    failwithf "Did not find satellite assembly for (%s) try building and running pack again." language 
+
         let assemblyNames = 
             projects
             |> List.map (fun proj -> proj.GetAssemblyName())
-       
+
         let additionalFiles = 
             assemblyNames
             |> Seq.collect (fun assemblyFileName -> 
