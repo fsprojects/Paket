@@ -1,3 +1,6 @@
+#### 3.6.1 - 13.07.2016
+* BUGFIX: Fixed incorrect CopyRuntimeDependencies.ProjectFile causing 'Could not find paket.dependencies' - https://github.com/fsprojects/Paket/pull/1802
+
 #### 3.6.0 - 12.07.2016
 * Generate include script for each group - https://github.com/fsprojects/Paket/pull/1787
 * USABILITY: Improve error messages for dependency groups - https://github.com/fsprojects/Paket/pull/1797
