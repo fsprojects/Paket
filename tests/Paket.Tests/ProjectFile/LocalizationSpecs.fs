@@ -1,0 +1,26 @@
+﻿module Paket.ProjectFile.LocalizationSpecs
+
+open Paket
+open NUnit.Framework
+open FsUnit
+open System.Xml
+open System.Xml.Linq
+open TestHelpers
+
+[<Test>]
+let ``finds language names`` () =
+    ensureDir ()
+    let actual = ProjectFile.TryLoad("./ProjectFile/TestData/LocalizedLib.csprojtest").Value.FindLocalizedLangaugeNames()
+    let expected = 
+        [
+            "sv-FI"
+            "sv"
+        ]
+    CollectionAssert.AreEqual(actual, expected)
+
+[<Test>]
+let ``returns empty when no localization`` () =
+    ensureDir ()
+    let actual = ProjectFile.TryLoad("./ProjectFile/TestData/NewSilverlightClassLibrary.csprojtest").Value.FindLocalizedLangaugeNames()
+    CollectionAssert.IsEmpty(actual)
+

@@ -4,9 +4,10 @@ open Paket
 open Paket.Domain
 open Paket.Logging
 open System
-open System.IO
-open System.Xml
 open System.Collections.Generic
+open System.IO
+open System.Text.RegularExpressions
+open System.Xml
 open Paket.Xml
 open Paket.Requirements
 
@@ -1345,6 +1346,18 @@ type ProjectFile with
     member this.FindCorrespondingFile (correspondingFile:string) = ProjectFile.FindCorrespondingFile(FileInfo this.FileName,correspondingFile)
 
     member this.FindReferencesFile() = this.FindCorrespondingFile Constants.ReferencesFile
+
+    member this.FindLocalizedLangaugeNames() =
+        let pattern = @"Properties\\Resources.(?<language>\w+(-\w+)?).resx"
+        let includeattribute = "Include"
+        this.ProjectNode
+        |> getDescendants "EmbeddedResource"
+        |> List.filter (fun n -> n |> hasAttribute includeattribute)
+        |> List.map (fun n -> n.Attributes.[includeattribute])
+        |> List.map (fun a -> a.Value)
+        |> List.map (fun a -> Regex.Match(a, pattern, RegexOptions.ExplicitCapture))
+        |> List.filter (fun m -> m.Success)
+        |> List.map (fun m -> m.Groups.["language"].Value)
 
     member this.HasPackageInstalled(groupName,package) =
         match this.FindReferencesFile() with
