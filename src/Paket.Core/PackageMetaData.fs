@@ -167,17 +167,20 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                     
                 deps, p :: files) ([], [])
     
-    // Add the assembly + pdb + dll from this project
+    // Add the assembly + {.dll, .pdb, .xml, /*/.resources.dll} from this project
     let templateWithOutput =
+        let projects =                 
+            if includeReferencedProjects then 
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates() 
+                |> Seq.toList 
+            else 
+                [ project ]
+       
+        let assemblyNames = 
+            projects
+            |> List.map (fun proj -> proj.GetAssemblyName())
+       
         let additionalFiles = 
-            let assemblyNames = 
-                if includeReferencedProjects then 
-                    project.GetAllInterProjectDependenciesWithoutProjectTemplates() 
-                    |> Seq.toList 
-                else 
-                    [ project ]
-                |> List.map (fun proj -> proj.GetAssemblyName())
-            
             assemblyNames
             |> Seq.collect (fun assemblyFileName -> 
                 let assemblyfi = FileInfo(assemblyFileName)
