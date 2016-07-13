@@ -175,18 +175,25 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 |> Seq.toList 
             else 
                 [ project ]
-        let mutable templateWithLocalized = template
-        for project in projects do
-            let satelliteAssemblyName = Path.GetFileNameWithoutExtension(project.GetAssemblyName()) + ".resources.dll"
-            let projectDir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
-            let outputDir = Path.Combine(projectDir, project.GetOutputDirectory config platform)
-            for language in project.FindLocalizedLanguageNames() do
-                let path = Path.Combine(outputDir, language, satelliteAssemblyName)
-                if File.Exists path then
-                    let satelliteTargetDir = Path.Combine(targetDir, language)
-                    templateWithLocalized <- addFile path satelliteTargetDir templateWithLocalized
-                else
-                    failwithf "Did not find satellite assembly for (%s) try building and running pack again." language 
+
+        let satelliteDlls =
+            seq {
+            for project in projects do
+                let satelliteAssemblyName = Path.GetFileNameWithoutExtension(project.GetAssemblyName()) + ".resources.dll"
+                let projectDir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
+                let outputDir = Path.Combine(projectDir, project.GetOutputDirectory config platform)
+                for language in project.FindLocalizedLanguageNames() do
+                    let fileName = Path.Combine(outputDir, language, satelliteAssemblyName)
+                    if File.Exists fileName then
+                        let satelliteTargetDir = Path.Combine(targetDir, language)
+                        yield (FileInfo(fileName), satelliteTargetDir)
+                    else
+                        failwithf "Did not find satellite assembly for (%s) try building and running pack again." language 
+            }
+
+        let template =
+            satelliteDlls 
+            |> Seq.fold (fun template dll -> addFile (fst dll).FullName (snd dll) template) template
 
         let assemblyNames = 
             projects
@@ -221,7 +228,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             |> Seq.toArray
 
         additionalFiles
-        |> Array.fold (fun template file -> addFile file.FullName targetDir templateWithLocalized) templateWithLocalized
+        |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
 
     let templateWithOutputAndExcludes =
         match template.Contents with
