@@ -167,39 +167,17 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                     
                 deps, p :: files) ([], [])
     
-    // Add the assembly + {.dll, .pdb, .xml, /*/.resources.dll} from this project
+    // Add the assembly + pdb + dll from this project
     let templateWithOutput =
-        let projects =                 
-            if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates() 
-                |> Seq.toList 
-            else 
-                [ project ]
-
-        let satelliteDlls =
-            seq {
-                for project in projects do
-                    let satelliteAssemblyName = Path.GetFileNameWithoutExtension(project.GetAssemblyName()) + ".resources.dll"
-                    let projectDir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
-                    let outputDir = Path.Combine(projectDir, project.GetOutputDirectory config platform)
-                    for language in project.FindLocalizedLanguageNames() do
-                        let fileName = Path.Combine(outputDir, language, satelliteAssemblyName)
-                        if File.Exists fileName then
-                            let satelliteTargetDir = Path.Combine(targetDir, language)
-                            yield (FileInfo fileName, satelliteTargetDir)
-                        else
-                            failwithf "Did not find satellite assembly for (%s) try building and running pack again." language 
-            }
-
-        let template =
-            satelliteDlls 
-            |> Seq.fold (fun template (dllFile, targetDir) -> addFile dllFile.FullName targetDir template) template
-
-        let assemblyNames = 
-            projects
-            |> List.map (fun proj -> proj.GetAssemblyName())
-
         let additionalFiles = 
+            let assemblyNames = 
+                if includeReferencedProjects then 
+                    project.GetAllInterProjectDependenciesWithoutProjectTemplates() 
+                    |> Seq.toList 
+                else 
+                    [ project ]
+                |> List.map (fun proj -> proj.GetAssemblyName())
+            
             assemblyNames
             |> Seq.collect (fun assemblyFileName -> 
                 let assemblyfi = FileInfo(assemblyFileName)

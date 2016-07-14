@@ -306,9 +306,6 @@
     <None Include="ProjectFile\TestData\WithWildcardCompileItems.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="ProjectFile\TestData\LocalizedLib.csprojtest">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
@@ -316,7 +313,6 @@
     <Compile Include="ProjectFile\FrameworkReferencesSpecs.fs" />
     <Compile Include="ProjectFile\OutputSpecs.fs" />
     <Compile Include="ProjectFile\ProjectLanguageSpecs.fs" />
-    <Compile Include="ProjectFile\LocalizationSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
