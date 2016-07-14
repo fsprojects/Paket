@@ -1,3 +1,6 @@
+#### 3.7.3 - 14.07.2016
+* PERFORMANCE: Do not scan node_modules path for project files - https://github.com/fsprojects/Paket/issues/1782
+
 #### 3.7.2 - 14.07.2016
 * Exposed license url in public namespace - https://github.com/fsprojects/Paket/pull/1811
 

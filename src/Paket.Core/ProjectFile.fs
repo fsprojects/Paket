@@ -1369,7 +1369,6 @@ type ProjectFile with
 
     /// Finds all project files
     static member FindAllProjects folder : ProjectFile [] =
-        let packagesPath = Path.Combine(folder,Constants.PackagesFolderName) |> normalizePath
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
         let findAllFiles (folder, pattern) = 
@@ -1379,8 +1378,9 @@ type ProjectFile with
                     di.GetDirectories()
                     |> Array.filter (fun di ->
                         try 
-                            let path = di.FullName |> normalizePath
-                            if path = packagesPath then false else
+                            let path = normalizePath di.FullName
+                            if di.Name = Constants.PackagesFolderName then false else
+                            if di.Name = "node_modules" then false else
                             if path = paketPath then false else
                             Path.Combine(path, Constants.DependenciesFileName) 
                             |> File.Exists 
@@ -1392,7 +1392,8 @@ type ProjectFile with
                 with
                 | _ -> Array.empty
 
-            search <| DirectoryInfo folder
+            DirectoryInfo folder
+            |> search
 
         findAllFiles(folder, "*proj*")
         |> Array.choose (fun f -> 
