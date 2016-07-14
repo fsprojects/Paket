@@ -1,3 +1,6 @@
+#### 3.7.2 - 14.07.2016
+* Exposed license url in public namespace - https://github.com/fsprojects/Paket/pull/1811
+
 #### 3.7.1 - 14.07.2016
 * REVERT: Paket automatically packs localized assemblies - https://github.com/fsprojects/Paket/pull/1807
 
