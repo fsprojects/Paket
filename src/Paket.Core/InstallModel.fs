@@ -1,5 +1,6 @@
 ﻿namespace Paket
 
+open System
 open System.IO
 open Paket.Domain
 open Paket.Requirements
@@ -119,7 +120,8 @@ type InstallModel =
       LegacyReferenceFileFolders : LibFolder list
       NewReferenceFileFolders : LibFolder list
       TargetsFileFolders : LibFolder list
-      Analyzers: AnalyzerLib list}
+      Analyzers: AnalyzerLib list
+      LicenseUrl: string option }
 
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -131,7 +133,9 @@ module InstallModel =
           LegacyReferenceFileFolders = []
           NewReferenceFileFolders = []
           TargetsFileFolders = [] 
-          Analyzers = [] }
+          Analyzers = []
+          LicenseUrl = None }
+
     let getReferenceFolders (installModel: InstallModel) =
         if installModel.NewReferenceFileFolders.IsEmpty then
           installModel.LegacyReferenceFileFolders
@@ -393,6 +397,10 @@ module InstallModel =
             }
         mapFiles mapfn this
 
+    let addLicense url (model: InstallModel) =
+        if String.IsNullOrWhiteSpace url then model 
+        else  { model with LicenseUrl = Some url }
+
     let createFromLibs packageName packageVersion frameworkRestrictions libs targetsFiles analyzerFiles (nuspec:Nuspec) = 
         emptyModel packageName packageVersion
         |> addLibReferences libs nuspec.References
@@ -402,6 +410,7 @@ module InstallModel =
         |> filterBlackList
         |> applyFrameworkRestrictions frameworkRestrictions
         |> removeIfCompletelyEmpty
+        |> addLicense nuspec.LicenseUrl
 
 
 type InstallModel with
