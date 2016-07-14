@@ -1,4 +1,5 @@
-#### 3.6.1 - 13.07.2016
+#### 3.7.0 - 13.07.2016
+* Paket automatically packs localized assemblies - https://github.com/fsprojects/Paket/pull/1807
 * BUGFIX: Fixed incorrect CopyRuntimeDependencies.ProjectFile causing 'Could not find paket.dependencies' - https://github.com/fsprojects/Paket/pull/1802
 
 #### 3.6.0 - 12.07.2016
