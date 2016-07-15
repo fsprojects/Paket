@@ -53,8 +53,8 @@ let ``simple dependencies generates expected scripts``() =
       "include.nunit.csx"
       "include.nunit.fsx"
   |]
-  if expectedFiles <> actualFiles then
-    Assert.Ignore("this doesn't work on linux for some reason to be figured out")
+  
+  Assert.AreEqual(expectedFiles,actualFiles)
 
 [<Test;Category("scriptgen")>]
 let ``framework specified``() = 
