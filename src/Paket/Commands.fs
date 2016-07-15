@@ -306,8 +306,8 @@ with
   interface IArgParserTemplate with
       member this.Usage = 
         match this with
-        | Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore. Can be provided multiple times."
-        | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'. Can be provided multiple times."
+        | Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore."
+        | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
   
 [<RequireSubcommand>]
 type Command =
@@ -359,7 +359,7 @@ with
             | ShowGroups _ -> "Shows all groups."
             | Pack _ -> "Packs all paket.template files within this repository."
             | Push _ -> "Pushes the given `.nupkg` file."
-            | GenerateIncludeScripts _ -> "Generate include scripts for installed packages."
+            | GenerateIncludeScripts _ -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive oder ScriptCS."
             | Log_File _ -> "Specify a log file for the paket process."
             | Silent -> "Suppress console output for the paket process."
             | Verbose -> "Enable verbose console output for the paket process." 
@@ -408,8 +408,7 @@ let markdown (subParser : ArgumentParser) (additionalText : string) =
         .AppendLine(syntax)
         .AppendLine()
         .Append(afterCommandText)
-        .Append("### Options:")
-        .AppendLine(options)
+        .Append(options)
         .Append(afterOptionsText)
         .ToString()
     |> replaceLinks

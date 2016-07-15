@@ -1,9 +1,5 @@
 ## Generating include scripts for all NuGet packages
 
-
-<blockquote>This feature is only available in Paket 3.0 prereleases.</blockquote>
-
-
 It is possible to generate include scripts for all registered NuGet packages defined in the [`paket.dependencies` file](dependencies-file.html).
 
     [lang=batchfile]

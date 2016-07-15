@@ -5,7 +5,7 @@ Pushes the given `.nupkg` file.
     [lang=msh]
     paket push [--help] url <url> file <path> [apikey <key>] [endpoint <path>]
 
-### Options:USAGE: paket push [--help] url <url> file <path> [apikey <key>] [endpoint <path>]
+USAGE: paket push [--help] url <url> file <path> [apikey <key>] [endpoint <path>]
 
 OPTIONS:
 
@@ -17,7 +17,6 @@ OPTIONS:
     --log-file <path>     Specify a log file for the paket process.
     --silent, -s          Suppress console output for the paket process.
     --help                display this list of options.
-
 If you add the `-v` flag, then Paket will run in verbose mode and show detailed information.
 
 With `--log-file [FileName]` you can trace the logged information into a file.
