@@ -344,7 +344,7 @@ let ``#1477 assembly redirects lock files``() =
     let scenario =  "i001474-restore-no-locks"
     prepare scenario
     let p = Paket.Dependencies.Locate (Path.Combine(scenarioTempPath scenario, "paket.dependencies"))
-    p.Install(true)
+    p.Install(false)
     p.Restore()
 
     try
