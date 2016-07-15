@@ -48,6 +48,8 @@ let ``simple dependencies generates expected scripts``() =
       "include.argu.fsx"
       "include.log4net.csx"
       "include.log4net.fsx"
+      "include.main.group.csx"
+      "include.main.group.fsx"
       "include.nunit.csx"
       "include.nunit.fsx"
   |]
