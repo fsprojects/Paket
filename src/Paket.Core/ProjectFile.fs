@@ -1062,23 +1062,32 @@ module ProjectFile =
         let forceGetInnerText node name =
             node |> getNode name |> Option.map (fun n -> n.InnerText)
 
-        [for node in project.Document |> getDescendants "ProjectReference" -> 
-            let path =
-                let normalizedPath = node.Attributes.["Include"].Value |> normalizePath 
+        [for node in project.Document |> getDescendants "ProjectReference" do
+            let getNormalizedPath incPath = 
+                let normalizedPath = incPath |> normalizePath 
                 if normalizedPath.Contains "$(SolutionDir)" then 
                     match getProperty "SolutionDir" project with
                     | Some slnDir -> normalizedPath.Replace("$(SolutionDir)",slnDir) 
                     | None -> normalizedPath.Replace("$(SolutionDir)", Directory.GetCurrentDirectory() + Path.DirectorySeparatorChar.ToString())
                 else normalizedPath
 
-            { Path =
-                if Path.IsPathRooted path then Path.GetFullPath path else 
-                let di = FileInfo(normalizePath project.FileName).Directory
-                Path.Combine(di.FullName,path) |> Path.GetFullPath
+            let optPath =
+                let incPath = getAttribute "Include" node
+                Option.map getNormalizedPath incPath
 
-              RelativePath = path.Replace("/","\\")
-              Name = forceGetName node "Name"
-              GUID = (forceGetInnerText node "Project") |> Option.map Guid.Parse }]
+            let makePathNode path =
+                { Path =
+                    if Path.IsPathRooted path then Path.GetFullPath path else 
+                    let di = FileInfo(normalizePath project.FileName).Directory
+                    Path.Combine(di.FullName,path) |> Path.GetFullPath
+
+                  RelativePath = path.Replace("/","\\")
+                  Name = forceGetName node "Name"
+                  GUID = (forceGetInnerText node "Project") |> Option.map Guid.Parse }
+
+            match optPath with
+            | Some path -> yield makePathNode path
+            | None -> () ]
 
     let replaceNuGetPackagesFile project =
         let noneAndContentNodes = 

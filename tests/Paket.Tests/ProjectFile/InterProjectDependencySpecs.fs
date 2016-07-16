@@ -20,6 +20,12 @@ let ``should detect Paket dependency in Project1 proj file``() =
     |> shouldEqual ["Paket"]
 
 [<Test>]
+let ``should ignore empty ProjectReference tag``() =
+    ensureDir()
+    ProjectFile.TryLoad("./ProjectFile/TestData/Project1.vcxprojtest").Value.GetInterProjectDependencies()
+    |> shouldBeEmpty
+
+[<Test>]
 let ``should detect Paket and Paket.Core dependency in Project2 proj file``() =
     ensureDir()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetInterProjectDependencies()
