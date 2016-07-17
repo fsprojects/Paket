@@ -352,7 +352,7 @@ let ``#1596 pack works for reflected definition assemblies``() =
 
 [<Test>]
 let ``#1806 pack localized dll`` () =
-    let scenario = "i001802-pack-localized"
+    let scenario = "i001806-pack-localized"
     let rootPath = scenarioTempPath scenario
     let outPath = Path.Combine(rootPath, "out")
     let package = Path.Combine(outPath, "LocalizedLib.1.0.0.0.nupkg")

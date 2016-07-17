@@ -186,14 +186,14 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                     let fileName = Path.Combine(outputDir, language, satelliteAssemblyName)
                     if File.Exists fileName then
                         let satelliteTargetDir = Path.Combine(targetDir, language)
-                        yield (FileInfo(fileName), satelliteTargetDir)
+                        yield (FileInfo fileName, satelliteTargetDir)
                     else
                         failwithf "Did not find satellite assembly for (%s) try building and running pack again." language 
             }
 
         let template =
             satelliteDlls 
-            |> Seq.fold (fun template dll -> addFile (fst dll).FullName (snd dll) template) template
+            |> Seq.fold (fun template (dllFile, targetDir) -> addFile dllFile.FullName targetDir template) template
 
         let assemblyNames = 
             projects
