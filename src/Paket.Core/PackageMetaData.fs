@@ -188,7 +188,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         let satelliteTargetDir = Path.Combine(targetDir, language)
                         yield (FileInfo fileName, satelliteTargetDir)
                     else
-                        failwithf "Did not find satellite assembly for (%s) try building and running pack again." language 
+                        traceWarnfn "Did not find satellite assembly for (%s) try building and running pack again." language 
             }
 
         let template =
