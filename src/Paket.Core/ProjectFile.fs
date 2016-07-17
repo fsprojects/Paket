@@ -1356,16 +1356,21 @@ type ProjectFile with
                 None
 
         let isLanguageName text =
-            (not (String.IsNullOrEmpty text)) &&
-            (CultureInfo.GetCultures CultureTypes.AllCultures
-            |> Array.Exists (fun c -> String.equalsIgnoreCase(c.Name text)))
+            if String.IsNullOrEmpty text then
+                false
+            else
+                CultureInfo.GetCultures CultureTypes.AllCultures
+                |> Array.exists (fun c -> String.equalsIgnoreCase c.Name text)
 
         let tryGetLanguage value = 
             let pattern = @"\.(?<language>\w+(-\w+)?)\.resx$"
             let m = Regex.Match(value, pattern, RegexOptions.ExplicitCapture)
-            if m.Success && 
-               isLanguageName m.Groups.["language"].Value then
-                Some m.Groups.["language"].Value
+            if m.Success then
+                let value = m.Groups.["language"].Value
+                if isLanguageName value then
+                    Some value
+                else
+                    None
             else
                 None
 
@@ -1373,6 +1378,8 @@ type ProjectFile with
         |> getDescendants "EmbeddedResource"
         |> List.choose (tryGetAttributeValue "Include")
         |> List.choose (tryGetLanguage)
+        |> List.distinct
+        |> List.sort
 
     member this.HasPackageInstalled(groupName,package) =
         match this.FindReferencesFile() with

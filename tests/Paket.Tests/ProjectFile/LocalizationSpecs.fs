@@ -15,8 +15,8 @@ let ``finds language names`` () =
                             .FindLocalizedLanguageNames()
     let expected = 
         [
-            "sv-FI"
             "sv"
+            "sv-FI"
         ]
     CollectionAssert.AreEqual(expected, actual)
 
