@@ -1354,18 +1354,17 @@ type ProjectFile with
                 Some node.Attributes.[name].Value
             else
                 None
-        let getAllLanguageNames = 
-            CultureInfo.GetCultures CultureTypes.AllCultures
-            |> Array.map (fun c -> c.Name)
-            |> Array.filter (String.IsNullOrEmpty >> not)
 
-        let allLanguageNames = HashSet<_>(getAllLanguageNames, StringComparer.OrdinalIgnoreCase)
+        let isLanguageName text =
+            (not (String.IsNullOrEmpty text)) &&
+            (CultureInfo.GetCultures CultureTypes.AllCultures
+            |> Array.Exists (fun c -> String.equalsIgnoreCase(c.Name text)))
 
         let tryGetLanguage value = 
-            let pattern = @"\.(?<language>\w+(-\w+)?)\.resx"
+            let pattern = @"\.(?<language>\w+(-\w+)?)\.resx$"
             let m = Regex.Match(value, pattern, RegexOptions.ExplicitCapture)
             if m.Success && 
-               allLanguageNames.Contains m.Groups.["language"].Value then
+               isLanguageName m.Groups.["language"].Value then
                 Some m.Groups.["language"].Value
             else
                 None
