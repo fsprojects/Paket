@@ -18,11 +18,13 @@ let ``finds language names`` () =
             "sv-FI"
             "sv"
         ]
-    CollectionAssert.AreEqual(actual, expected)
+    CollectionAssert.AreEqual(expected, actual)
 
 [<Test>]
 let ``returns empty when no localization`` () =
     ensureDir ()
-    let actual = ProjectFile.TryLoad("./ProjectFile/TestData/NewSilverlightClassLibrary.csprojtest").Value.FindLocalizedLanguageNames()
+    let actual = ProjectFile.TryLoad("./ProjectFile/TestData/NewSilverlightClassLibrary.csprojtest")
+                            .Value
+                            .FindLocalizedLanguageNames()
     CollectionAssert.IsEmpty(actual)
 
