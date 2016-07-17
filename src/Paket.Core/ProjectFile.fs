@@ -1357,15 +1357,15 @@ type ProjectFile with
         let getAllLanguageNames = 
             CultureInfo.GetCultures CultureTypes.AllCultures
             |> Array.map (fun c -> c.Name)
-            |> Array.filter (fun n -> not (String.IsNullOrEmpty n))
+            |> Array.filter (String.IsNullOrEmpty >> not)
 
-        let allLanguages = HashSet<_>(getAllLanguageNames, StringComparer.OrdinalIgnoreCase)
+        let allLanguageNames = HashSet<_>(getAllLanguageNames, StringComparer.OrdinalIgnoreCase)
 
         let tryGetLanguage value = 
             let pattern = @"\.(?<language>\w+(-\w+)?)\.resx"
             let m = Regex.Match(value, pattern, RegexOptions.ExplicitCapture)
             if m.Success && 
-               allLanguages.Contains m.Groups.["language"].Value then
+               allLanguageNames.Contains m.Groups.["language"].Value then
                 Some m.Groups.["language"].Value
             else
                 None
