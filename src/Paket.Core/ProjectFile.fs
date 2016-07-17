@@ -1360,7 +1360,7 @@ type ProjectFile with
             let m = Regex.Match(value, pattern, RegexOptions.ExplicitCapture)
             if m.Success then
                 let value = m.Groups.["language"].Value
-                if Culture.isLanguageName value then
+                if Cultures.isLanguageName value then
                     Some value
                 else
                     None

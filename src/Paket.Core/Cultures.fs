@@ -4,7 +4,7 @@ open System.Collections.Generic
 open System.Globalization
 
 [<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
-module Culture =
+module Cultures =
     let private allLanguageNames =
         let allLanguageNames = 
             CultureInfo.GetCultures CultureTypes.AllCultures
