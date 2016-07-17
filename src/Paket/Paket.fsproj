@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>pack -v output "C:\Git\ThirdParty\Paket\integrationtests\scenarios\i001806-pack-localized\temp\out</StartArguments>
-    <StartWorkingDirectory>C:\Git\ThirdParty\Paket\integrationtests\scenarios\i001806-pack-localized\before\</StartWorkingDirectory>
+    <StartArguments>pack -v output "C:\Git\ThirdParty\Paket\integrationtests\scenarios\i001816-pack-localized-happy-path\temp\out</StartArguments>
+    <StartWorkingDirectory>C:\Git\ThirdParty\Paket\integrationtests\scenarios\i001816-pack-localized-happy-path\before\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
