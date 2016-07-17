@@ -1355,19 +1355,12 @@ type ProjectFile with
             else
                 None
 
-        let isLanguageName text =
-            if String.IsNullOrEmpty text then
-                false
-            else
-                CultureInfo.GetCultures CultureTypes.AllCultures
-                |> Array.exists (fun c -> String.equalsIgnoreCase c.Name text)
-
         let tryGetLanguage value = 
             let pattern = @"\.(?<language>\w+(-\w+)?)\.resx$"
             let m = Regex.Match(value, pattern, RegexOptions.ExplicitCapture)
             if m.Success then
                 let value = m.Groups.["language"].Value
-                if isLanguageName value then
+                if Culture.isLanguageName value then
                     Some value
                 else
                     None
