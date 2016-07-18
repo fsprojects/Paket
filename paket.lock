@@ -1,7 +1,7 @@
 FRAMEWORK: >= NET40
 NUGET
   remote: https://www.nuget.org/api/v2
-    Argu (3.1)
+    Argu (3.2)
     Chessie (0.5.1)
       FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
@@ -9,13 +9,13 @@ NUGET
     Newtonsoft.Json (9.0.1) - redirects: force
 GITHUB
   remote: fsharp/FAKE
-    src/app/FakeLib/Globbing/Globbing.fs (c56456abac6b744c3bb95b217687db19fd19b367)
+    src/app/FakeLib/Globbing/Globbing.fs (40dd0ff66fc379474450f93fd1ba545f6cf6c121)
   remote: fsprojects/FSharp.TypeProviders.StarterPack
     src/AssemblyReader.fs (dfbca9b83fb70067e85abddcb8b89332aae4c28d)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.29.2)
+    FAKE (4.31.1)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
@@ -33,7 +33,7 @@ NUGET
       Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (c56456abac6b744c3bb95b217687db19fd19b367)
+    modules/Octokit/Octokit.fsx (40dd0ff66fc379474450f93fd1ba545f6cf6c121)
       Octokit (>= 0.20)
 GROUP Test
 NUGET

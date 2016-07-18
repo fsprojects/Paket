@@ -386,16 +386,9 @@ let markdown (subParser : ArgumentParser) (additionalText : string) =
 
     let syntax = subParser.PrintCommandLineSyntax()
     let options =
-        subParser.PrintUsage()
+        subParser.PrintUsage(hideSyntax=true)
         |> replace @"\s\t--help.*" ""
         |> replace @"\t([-\w \[\]|\/\?<>\.]+):" (System.Environment.NewLine + @"  `$1`:")
-
-    let replaceLinks (text : string) =
-        text
-        |> replace "(?<=\s)paket.dependencies( file(s)?)?" "[`paket.dependencies`$1](dependencies-file.html)"
-        |> replace "(?<=\s)paket.lock( file(s)?)?" "[`paket.lock`$1](lock-file.html)"
-        |> replace "(?<=\s)paket.template( file(s)?)?" "[`paket.template`$1](template-files.html)"
-        |> replace "(?<=\s)paket.references( file(s)?)?" "[`paket.references`$1](references-files.html)"
 
     System.Text.StringBuilder()
         .Append("# paket ")
@@ -411,6 +404,5 @@ let markdown (subParser : ArgumentParser) (additionalText : string) =
         .Append(options)
         .Append(afterOptionsText)
         .ToString()
-    |> replaceLinks
 
 let getAllCommands () = commandParser.GetSubCommandParsers()

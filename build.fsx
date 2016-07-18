@@ -323,6 +323,8 @@ let generateHelp' commands fail debug =
         else
             traceImportant "generating help documentation failed"
 
+    CleanDir "docs/output/commands"
+
 let generateHelp commands fail =
     generateHelp' commands fail false
 

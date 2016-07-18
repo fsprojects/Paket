@@ -5,8 +5,6 @@ Pushes the given `.nupkg` file.
     [lang=msh]
     paket push [--help] url <url> file <path> [apikey <key>] [endpoint <path>]
 
-USAGE: paket push [--help] url <url> file <path> [apikey <key>] [endpoint <path>]
-
 OPTIONS:
 
     url <url>             Url of the NuGet feed.
