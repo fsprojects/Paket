@@ -1,5 +1,8 @@
+#### 3.7.6 - 18.07.2016
+* BUGFIX: Fix possible null ref when processing a vcxproj file - https://github.com/fsprojects/Paket/issues/1814
+
 #### 3.7.5 - 18.07.2016
-* BUGFIX: Changing nuget uri from http to https in paket.dependencies don't causes error any more - https://github.com/fsprojects/Paket/issues/1820
+* BUGFIX: Changing NuGet uri from http to https in paket.dependencies don't causes error any more - https://github.com/fsprojects/Paket/issues/1820
 
 #### 3.7.4 - 18.07.2016
 * BUGFIX: Paket 'pack' should exclude 'project' template files correctly - https://github.com/fsprojects/Paket/issues/1818
