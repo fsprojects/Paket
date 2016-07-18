@@ -63,16 +63,19 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
             match package.Source with
             | NuGetV2 _ | NuGetV3 _ -> 
                 let source = 
+                    let normalizeFeedUrl s = (normalizeFeedUrl s).Replace("https://","http://")
                     let normalized = package.Source.Url |> normalizeFeedUrl
-                    sources 
+                    let source =
+                        sources 
                         |> List.tryPick (fun source -> 
                                 match source with
                                 | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some(source)
                                 | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some(source)
                                 | _ -> None)
-                    |> function
-                       | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file" package.Source.Url package.Name
-                       | Some s -> s 
+
+                    match source with
+                    | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
+                    | Some s -> s 
 
                 return! extractPackage caches package root source groupName v includeVersionInPath force
             | LocalNuGet(path,_) ->
