@@ -1,16 +1,13 @@
 {
   "version": "1.0.0-*",
   "buildOptions": {
-    "emitEntryPoint": true,
+    "emitEntryPoint": false,
     "compilerName": "fsc",
     "compile": {
       "includeFiles": [
         "Program.fs"
       ]
     }
-  },
-  "dependencies": {
-    "Microsoft.FSharp.Core.netcore": "1.0.0-alpha-160509"
   },
   "tools": {
     "dotnet-compile-fsc": {
@@ -23,12 +20,20 @@
     }
   },
   "frameworks": {
-    "netcoreapp1.0": {
+    "net46": {
       "dependencies": {
-        "Microsoft.NETCore.App": {
-          "type": "platform",
-          "version": "1.0.0"
-        }
+        "FSharp.Core": "4.0.0.1",
+      },
+      "frameworkAssemblies": {
+        "mscorlib": "",
+        "System": "",
+        "System.Core": ""
+      }
+    },
+    "netstandard1.6": {
+      "dependencies": {
+        "Microsoft.FSharp.Core.netcore": "1.0.0-alpha-160509",
+        "NETStandard.Library": "1.6.0"
       },
       "imports": [
         "portable-net45+win8",
