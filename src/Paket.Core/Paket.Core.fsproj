@@ -98,7 +98,7 @@
     <Compile Include="PlatformDetection.fs" />
     <Compile Include="ConfigFile.fs" />
     <Compile Include="Cache.fs" />
-    <Compile Include="Culture.fs" />
+    <Compile Include="Cultures.fs" />
     <Compile Include="PackageSources.fs" />
     <Compile Include="FrameworkHandling.fs" />
     <Compile Include="PlatformMatching.fs" />
