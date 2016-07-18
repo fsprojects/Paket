@@ -57,7 +57,7 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-simplify" class="anchor" href="#paket-simplify">paket simplify</a></h1>
-<p>Simplifies your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> by removing transitive dependencies.</p>
+<p>Simplifies your <a href="dependencies-file.html">paket.dependencies file</a> by removing transitive dependencies.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket simplify [--help] [--interactive]
@@ -79,7 +79,7 @@
 </table>
 <p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
-<p>Simplify will also affect <a href="references-files.html"><code>paket.references</code> files</a>, unless <a href="dependencies-file.html#Strict-references">strict</a> mode is used.</p>
+<p>Simplify will also affect <a href="references-files.html">paket.references files</a>, unless <a href="dependencies-file.html#Strict-references">strict</a> mode is used.</p>
 <blockquote>Important: `paket simplify` is a heuristic approach to dependency simplification. It often works very well, but there are rare cases where simplify can result in changes of the package resolution.</blockquote>
 <h2><a name="Sample" class="anchor" href="#Sample">Sample</a></h2>
 <p>When you install <code>Castle.Windsor</code> package in NuGet to a project, it will generate a following <code>packages.config</code> file in the project location:</p>
@@ -95,7 +95,7 @@
   <span class="k">&lt;</span><span class="i">package</span> <span class="o">id</span><span class="k">="Castle.Windsor"</span> <span class="o">version</span><span class="k">="3.3.0"</span> <span class="o">targetFramework</span><span class="k">="net451"</span> <span class="k">/&gt;</span>
 <span class="k">&lt;/</span><span class="i">packages</span><span class="k">&gt;</span>
 </code></pre></td></tr></table>
-<p>After converting to Paket with <a href="paket-convert-from-nuget.html"><code>paket convert-from-nuget command</code></a>, you should get a following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<p>After converting to Paket with <a href="paket-convert-from-nuget.html"><code>paket convert-from-nuget command</code></a>, you should get a following <a href="dependencies-file.html">paket.dependencies file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -106,7 +106,7 @@
 <span class="k">nuget</span> Castle.Core <span class="n">3.3.1</span>
 <span class="k">nuget</span> Castle.Windsor <span class="n">3.3.0</span>
 </code></pre></td></tr></table>
-<p>and the NuGet <code>packages.config</code> should be converted to following <a href="references-files.html"><code>paket.references</code> file</a>:</p>
+<p>and the NuGet <code>packages.config</code> should be converted to following <a href="references-files.html">paket.references file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
@@ -116,8 +116,8 @@
 </tr>
 </table>
 <p>As you have already probably guessed, the <code>Castle.Windsor</code> package happens to have a dependency on the <code>Castle.Core</code> package.
-Paket by default (without <a href="dependencies-file.html#Strict-references">strict</a> mode) adds references to all required dependencies of a package that you define for a specific project in <a href="references-files.html"><code>paket.references</code> file</a>.
-In other words, you still get the same result if you remove <code>Castle.Core</code> from your <a href="references-files.html"><code>paket.references</code> file</a>.
+Paket by default (without <a href="dependencies-file.html#Strict-references">strict</a> mode) adds references to all required dependencies of a package that you define for a specific project in <a href="references-files.html">paket.references file</a>.
+In other words, you still get the same result if you remove <code>Castle.Core</code> from your <a href="references-files.html">paket.references file</a>.
 And this is exactly what happens after executing <code>paket simplify</code> command:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -127,22 +127,22 @@ And this is exactly what happens after executing <code>paket simplify</code> com
 
 <span class="k">nuget</span> Castle.Windsor <span class="n">3.3.0</span>
 </code></pre></td></tr></table>
-<p>will be the content of your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>, and:</p>
+<p>will be the content of your <a href="dependencies-file.html">paket.dependencies file</a>, and:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">Castle</span><span class="o">.</span><span class="i">Windsor</span>
 </code></pre></td>
 </tr>
 </table>
-<p>will be the content of your <a href="references-files.html"><code>paket.references</code> file</a>.</p>
+<p>will be the content of your <a href="references-files.html">paket.references file</a>.</p>
 <p>Unless you are relying heavily on components from <code>Castle.Core</code>, you would not care about controlling the required version of <code>Castle.Core</code> package. Paket will do the job.</p>
 <p>The simplify command will help you maintain your direct dependencies.</p>
 <h2><a name="Interactive-mode" class="anchor" href="#Interactive-mode">Interactive mode</a></h2>
 <p>Sometimes, you may still want to have control over some of the transitive dependencies. In this case you can use the <code>--interactive</code> flag,
 which will ask you to confirm before deleting a dependency from a file.</p>
 <h2><a name="Notes-and-Warnings" class="anchor" href="#Notes-and-Warnings">Notes and Warnings</a></h2>
-<p>It is possible through the use of simplify to make unintended changes to your <a href="lock-file.html"><code>paket.lock</code> file</a> if a transitive dependency is removed and a subsequent install is run.  This can occur especially if the version specification that previously existed for the transitive dependency is different than the version specification that is automatically generated by paket based on the primary dependencies of your project.  An example may help illustrate the conditions where this could occur.</p>
-<p>Imagine a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> with the following contents:</p>
+<p>It is possible through the use of simplify to make unintended changes to your <a href="lock-file.html\>paket.lock file</a> if a transitive dependency is removed and a subsequent install is run.  This can occur especially if the version specification that previously existed for the transitive dependency is different than the version specification that is automatically generated by paket based on the primary dependencies of your project.  An example may help illustrate the conditions where this could occur.</p>
+<p>Imagine a <a href="dependencies-file.html">paket.dependencies file</a> with the following contents:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -153,7 +153,7 @@ which will ask you to confirm before deleting a dependency from a file.</p>
 <span class="k">nuget</span> Foo <span class="n">1.0.0</span>
 <span class="k">nuget</span> Bar <span class="n">1.0.0</span>
 </code></pre></td></tr></table>
-<p>Let us imagine that package Bar has a dependency on package Foo for any version from 1.0 through 2.0. The <a href="lock-file.html"><code>paket.lock</code> file</a> that results for this combination is:</p>
+<p>Let us imagine that package Bar has a dependency on package Foo for any version from 1.0 through 2.0. The <a href="lock-file.html\>paket.lock file</a> that results for this combination is:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -166,7 +166,7 @@ which will ask you to confirm before deleting a dependency from a file.</p>
     Bar (<span class="n">1.0.0</span>)
       Foo (<span class="o">&lt;=</span> <span class="n">2.0.0</span>)
 </code></pre></td></tr></table>
-<p>In this situation, if simplify is run, the Foo dependency will be removed, resulting in a <a href="dependencies-file.html"><code>paket.dependencies</code></a> of:</p>
+<p>In this situation, if simplify is run, the Foo dependency will be removed, resulting in a <a href="dependencies-file.html">paket.dependencies</a> of:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
