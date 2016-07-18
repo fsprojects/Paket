@@ -541,7 +541,9 @@ let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =
       |> Seq.toList
       |> Paket.LoadingScripts.PackageAndAssemblyResolution.getPackageOrderResolvedPackage
       |> Seq.collect (fun p ->
-        let installModel = paketDependencies.GetInstalledPackageModel(group, p.Name.ToString())
+        let installModel =
+          paketDependencies.GetInstalledPackageModel(group, p.Name.ToString())
+            .ApplyFrameworkRestrictions(Requirements.getRestrictionList p.Settings.FrameworkRestrictions)
         Paket.LoadingScripts.PackageAndAssemblyResolution.getDllsWithinPackage framework installModel)
       |> Seq.map (fun fi -> fi.FullName)
       |> Seq.filter (fun fi -> fi.EndsWith ("FSharp.Core.dll"))
