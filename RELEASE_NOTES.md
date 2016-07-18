@@ -1,20 +1,10 @@
-#### 3.7.6 - 18.07.2016
+#### 3.8.0 - 14.07.2016
+* Paket automatically packs localized assemblies - https://github.com/fsprojects/Paket/pull/1816
 * BUGFIX: Fix possible null ref when processing a vcxproj file - https://github.com/fsprojects/Paket/issues/1814
-
-#### 3.7.5 - 18.07.2016
 * BUGFIX: Changing NuGet uri from http to https in paket.dependencies don't causes error any more - https://github.com/fsprojects/Paket/issues/1820
-
-#### 3.7.4 - 18.07.2016
 * BUGFIX: Paket 'pack' should exclude 'project' template files correctly - https://github.com/fsprojects/Paket/issues/1818
-
-#### 3.7.3 - 14.07.2016
 * PERFORMANCE: Do not scan node_modules path for project files - https://github.com/fsprojects/Paket/issues/1782
-
-#### 3.7.2 - 14.07.2016
 * Exposed license url in public namespace - https://github.com/fsprojects/Paket/pull/1811
-
-#### 3.7.1 - 14.07.2016
-* REVERT: Paket automatically packs localized assemblies - https://github.com/fsprojects/Paket/pull/1807
 
 #### 3.7.0 - 14.07.2016
 * Paket automatically packs localized assemblies - https://github.com/fsprojects/Paket/pull/1807
