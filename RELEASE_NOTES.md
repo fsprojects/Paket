@@ -1,3 +1,6 @@
+#### 3.7.4 - 18.07.2016
+* BUGFIX: Paket 'pack' should exclude 'project' template files correctly - https://github.com/fsprojects/Paket/issues/1818
+
 #### 3.7.3 - 14.07.2016
 * PERFORMANCE: Do not scan node_modules path for project files - https://github.com/fsprojects/Paket/issues/1782
 

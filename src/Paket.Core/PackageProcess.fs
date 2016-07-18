@@ -105,6 +105,11 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
     let version = version |> Option.map SemVer.Parse
     let specificVersions = specificVersions |> Seq.map (fun (id : string,v) -> id, SemVer.Parse v) |> Map.ofSeq
 
+    let excludedTemplateIds =
+        match excludedTemplates with
+        | None -> Set.empty
+        | Some excluded -> set excluded
+
     let allTemplateFiles = 
         let hashSet = new HashSet<_>()
         match templateFile with
@@ -115,6 +120,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
         | None ->
             for template in TemplateFile.FindTemplateFiles workingDir do
                 hashSet.Add template |> ignore
+    
         hashSet
     
     // load up project files and grab meta data
@@ -129,6 +135,14 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                 match templateFile with
                 | CompleteTemplate _ -> false 
                 | IncompleteTemplate -> true)
+            |> Array.filter (fun (_,templateFile) -> 
+                match TemplateFile.tryGetId templateFile with
+                | Some id -> 
+                    if excludedTemplateIds.Contains id then
+                        allTemplateFiles.Remove(templateFile.FileName) |> ignore
+                        false
+                    else true
+                | _ -> true)
             |> Array.map (fun (projectFile,templateFile') ->
                 allTemplateFiles.Remove(templateFile'.FileName) |> ignore
 
@@ -177,11 +191,8 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
          |> Seq.toList
 
     let excludedTemplates =
-        match excludedTemplates with
-        | None -> allTemplates
-        | Some excluded -> 
-            let excluded = set excluded
-            allTemplates |> List.filter (fun t -> match t with CompleteTemplate(c,_) -> not (excluded.Contains c.Id) | _ -> true)
+        allTemplates 
+        |> List.filter (fun t -> match t with CompleteTemplate(c,_) -> not (excludedTemplateIds.Contains c.Id) | _ -> true)
     
     // set projectUrl
     let templatesWithProjectUrl = 
