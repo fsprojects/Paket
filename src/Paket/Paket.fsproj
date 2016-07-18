@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>install -v</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i001779-net20-only-in-net461\temp</StartWorkingDirectory>
+    <StartArguments>pack -v output "C:\Git\ThirdParty\Paket\integrationtests\scenarios\i001816-pack-localized-happy-path\temp\out</StartArguments>
+    <StartWorkingDirectory>C:\Git\ThirdParty\Paket\integrationtests\scenarios\i001816-pack-localized-happy-path\before\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

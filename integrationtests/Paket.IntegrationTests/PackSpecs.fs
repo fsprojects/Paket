@@ -349,3 +349,36 @@ let ``#1596 pack works for reflected definition assemblies``() =
     
     File.Exists(Path.Combine(outPath, "lib", "net45", "Project2.dll")) |> shouldEqual true
     File.Delete(templatePath)
+
+[<Test>]
+let ``#1816 pack localized happy path`` () =
+    let scenario = "i001816-pack-localized-happy-path"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "LocalizedLib.1.0.0.0.nupkg")
+    
+    paket ("pack -v output \"" + outPath + "\"") scenario |> ignore
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "net45", "LocalizedLib.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "sv", "LocalizedLib.resources.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "sv-FI", "LocalizedLib.resources.dll") |> checkFileExists
+
+    CleanDir rootPath
+
+[<Test>]
+let ``#1816 pack localized when satellite dll is missing`` () =
+    let scenario = "i001816-pack-localized-missing-dll"
+    let rootPath = scenarioTempPath scenario
+    let outPath = Path.Combine(rootPath, "out")
+    let package = Path.Combine(outPath, "LocalizedLib.1.0.0.0.nupkg")
+    
+    let result = paket ("pack -v output \"" + outPath + "\"") scenario
+    let expectedMessage = "Did not find satellite assembly for (sv) try building and running pack again."
+    StringAssert.Contains(expectedMessage, result)
+    ZipFile.ExtractToDirectory(package, outPath)
+
+    Path.Combine(outPath, "lib", "net45", "LocalizedLib.dll") |> checkFileExists
+    Path.Combine(outPath, "lib", "net45", "sv-FI", "LocalizedLib.resources.dll") |> checkFileExists
+
+    CleanDir rootPath
