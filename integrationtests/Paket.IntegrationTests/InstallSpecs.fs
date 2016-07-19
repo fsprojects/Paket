@@ -512,13 +512,13 @@ let ``#1779 net20 only in net461``() =
     
 [<Test>]
 let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =
-    let lockFile = install "i001815-multiple-fsharp-core-dotnetcore-references"
-    let newFile = Path.Combine(scenarioTempPath "i001815-multiple-fsharp-core-dotnetcore-references","OtherProject","testproject.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001815-multiple-fsharp-core-dotnetcore-references","OtherProject","testproject.csprojtemplate")
+    let lockFile = install "i001815-multiple-dnc-refs"
+    let newFile = Path.Combine(scenarioTempPath "i001815-multiple-dnc-refs","OtherProject","testproject.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001815-multiple-dnc-refs","OtherProject","testproject.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     
-    let paketDependencies = Paket.Dependencies(scenarioTempPath "i001815-multiple-fsharp-core-dotnetcore-references" @@ "paket.dependencies")
+    let paketDependencies = Paket.Dependencies(scenarioTempPath "i001815-multiple-dnc-refs" @@ "paket.dependencies")
     let group = None
     let groupStr = "Main"
     let groupName = Paket.Domain.GroupName (groupStr)
@@ -531,15 +531,19 @@ let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =
     let lockFile = paketDependencies.GetLockFile()
     let lockGroup = lockFile.GetGroup groupName
 
-    // Retrieve assemblies
-    let assemblies =
+    let allPackages = 
       lockGroup.Resolution
       |> Seq.map (fun kv -> 
         let packageName = kv.Key
         let package = kv.Value
         package)
       |> Seq.toList
-      |> Paket.LoadingScripts.PackageAndAssemblyResolution.getPackageOrderResolvedPackage
+
+    let orderedPackages = LoadingScripts.PackageAndAssemblyResolution.getPackageOrderResolvedPackage allPackages
+
+    // Retrieve assemblies
+    let assemblies =
+      orderedPackages
       |> Seq.collect (fun p ->
         let installModel =
           paketDependencies.GetInstalledPackageModel(group, p.Name.ToString())
@@ -548,5 +552,6 @@ let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =
       |> Seq.map (fun fi -> fi.FullName)
       |> Seq.filter (fun fi -> fi.EndsWith ("FSharp.Core.dll"))
       |> Seq.toList
-    assemblies |> shouldEqual [ scenarioTempPath "i001815-multiple-fsharp-core-dotnetcore-references" @@ "packages" @@ "Microsoft.FSharp.Core.netcore" @@ "lib" @@ "netstandard1.6" @@ "FSharp.Core.dll" ]
+
+    assemblies |> shouldEqual [ scenarioTempPath "i001815-multiple-dnc-refs" @@ "packages" @@ "Microsoft.FSharp.Core.netcore" @@ "lib" @@ "netstandard1.6" @@ "FSharp.Core.dll" ]
     s2 |> shouldEqual s1
