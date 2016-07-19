@@ -509,3 +509,44 @@ let ``#1779 net20 only in net461``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+    
+[<Test>]
+let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =
+    let lockFile = install "i001815-multiple-fsharp-core-dotnetcore-references"
+    let newFile = Path.Combine(scenarioTempPath "i001815-multiple-fsharp-core-dotnetcore-references","OtherProject","testproject.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001815-multiple-fsharp-core-dotnetcore-references","OtherProject","testproject.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    
+    let paketDependencies = Paket.Dependencies(scenarioTempPath "i001815-multiple-fsharp-core-dotnetcore-references" @@ "paket.dependencies")
+    let group = None
+    let groupStr = "Main"
+    let groupName = Paket.Domain.GroupName (groupStr)
+    let framework = Paket.FrameworkIdentifier.DotNetStandard (Paket.DotNetStandardVersion.V1_6)
+    let lockFilePath = Paket.DependenciesFile.FindLockfile paketDependencies.DependenciesFile
+
+    // Restore
+    paketDependencies.Restore(false, group, [], false, true)
+    |> ignore
+    let lockFile = paketDependencies.GetLockFile()
+    let lockGroup = lockFile.GetGroup groupName
+
+    // Retrieve assemblies
+    let assemblies =
+      lockGroup.Resolution
+      |> Seq.map (fun kv -> 
+        let packageName = kv.Key
+        let package = kv.Value
+        package)
+      |> Seq.toList
+      |> Paket.LoadingScripts.PackageAndAssemblyResolution.getPackageOrderResolvedPackage
+      |> Seq.collect (fun p ->
+        let installModel =
+          paketDependencies.GetInstalledPackageModel(group, p.Name.ToString())
+            .ApplyFrameworkRestrictions(Requirements.getRestrictionList p.Settings.FrameworkRestrictions)
+        Paket.LoadingScripts.PackageAndAssemblyResolution.getDllsWithinPackage framework installModel)
+      |> Seq.map (fun fi -> fi.FullName)
+      |> Seq.filter (fun fi -> fi.EndsWith ("FSharp.Core.dll"))
+      |> Seq.toList
+    assemblies |> shouldEqual [ scenarioTempPath "i001815-multiple-fsharp-core-dotnetcore-references" @@ "packages" @@ "Microsoft.FSharp.Core.netcore" @@ "lib" @@ "netstandard1.6" @@ "FSharp.Core.dll" ]
+    s2 |> shouldEqual s1
