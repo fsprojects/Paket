@@ -1,4 +1,0 @@
-FRAMEWORK: NET45
-NUGET
-  remote: https://www.nuget.org/api/v2
-    Newtonsoft.Json (8.0.3)
