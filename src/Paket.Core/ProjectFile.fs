@@ -877,7 +877,6 @@ module ProjectFile =
                 incr l
             !j,!k
 
-        let packagesWithRuntimeDependencies = System.Collections.Generic.HashSet<_>()
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.GetCompareString(), packName.GetCompareString())
@@ -906,18 +905,6 @@ module ProjectFile =
 
             let copyLocal = defaultArg installSettings.CopyLocal true
             let importTargets = defaultArg installSettings.ImportTargets true
-
-            let hasRunTimeStuff =
-                projectModel.LegacyReferenceFileFolders
-                |> Seq.collect (fun lib -> 
-                    match lib with
-                    | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> lib.Files.References
-                    | _ -> Set.empty)
-                |> Seq.isEmpty
-                |> not
-
-            if hasRunTimeStuff then
-                packagesWithRuntimeDependencies.Add(kv.Key) |> ignore
 
             generateXml projectModel installSettings.Aliases copyLocal importTargets installSettings.ReferenceCondition project)
         |> Seq.iter (fun (propsNodes,targetsNodes,chooseNode,propertyChooseNode, analyzersNode) ->
@@ -971,57 +958,6 @@ module ProjectFile =
                 project.ProjectNode.AppendChild analyzersNode |> ignore
             )
 
-        if Seq.isEmpty packagesWithRuntimeDependencies then () else
-
-        let j,k = findInsertSpot()
-        let toolPath = createRelativePath project.FileName (Path.Combine(rootPath, Constants.PaketFolderName, Constants.PaketFileName))
-        let usingTaskNode = 
-            createNode "UsingTask" project
-            |> addAttribute "TaskName" "CopyRuntimeDependencies"
-            |> addAttribute "AssemblyFile" toolPath
-
-        if k > 0 then
-            let pos = project.ProjectNode.ChildNodes.[k-1]
-            project.ProjectNode.InsertAfter(usingTaskNode,pos) |> ignore
-        else
-            project.ProjectNode.AppendChild(usingTaskNode) |> ignore
-
-        let allPackages =
-            packagesWithRuntimeDependencies 
-            |> Seq.map (fun (group,packageName) ->
-                if group = Constants.MainDependencyGroup then
-                   packageName.ToString()
-                else
-                   sprintf "%O#%O" group packageName)
-            |> Seq.sort
-            |> fun xs -> String.Join(";",xs)
-
-        let runtimeDependenciesNode = 
-            createNode "CopyRuntimeDependencies" project
-            |> addAttribute "OutputPath" "$(OutDir)"
-            |> addAttribute "TargetFramework" "$(TargetFrameworkIdentifier) - $(TargetFrameworkVersion)"
-            |> addAttribute "ProjectsWithRuntimeLibs" allPackages
-
-        let j = ref 0
-        let pos = ref None
-        while !j < project.ProjectNode.ChildNodes.Count && !pos = None do
-            let node = project.ProjectNode.ChildNodes.[!j]
-            let nodeText = node.OuterXml.ToString()
-            if String.startsWithIgnoreCase  "<target" nodeText && String.containsIgnoreCase "\"afterbuild\"" nodeText then
-                pos := Some node
-            incr j
-
-        match !pos with
-        | Some node -> node.AppendChild(runtimeDependenciesNode) |> ignore
-        | None ->
-            let afterBuildNode = 
-                createNode "Target" project
-                |> addAttribute "Name" "AfterBuild"
-                |> addAttribute "Condition" (sprintf "Exists('%s')" toolPath)
-
-            afterBuildNode.AppendChild(runtimeDependenciesNode) |> ignore
-            
-            project.ProjectNode.InsertAfter(afterBuildNode,usingTaskNode) |> ignore
 
     let save forceTouch project =
         if Utils.normalizeXml project.Document <> project.OriginalText || not (File.Exists(project.FileName)) then
