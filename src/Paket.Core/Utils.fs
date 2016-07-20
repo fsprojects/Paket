@@ -140,7 +140,7 @@ let inline createRelativePath root path =
     uri.MakeRelativeUri(Uri path).ToString().Replace("/", "\\").Replace("%20", " ")
 
 let getNative (path:string) =
-    if path.Contains "native" |> not && path.Contains "runtimes" |> not then "" else
+    if path.Contains "/native/" |> not && path.Contains "/runtimes/" |> not then "" else
     if path.Contains "/x86/debug" then "x86/debug" else
     if path.Contains "/x86/release" then "/x86/release" else
     if path.Contains "/arm/debug" then "/arm/debug" else
