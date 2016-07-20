@@ -84,6 +84,12 @@ It's also possible to provide login information for private NuGet feeds:
 </code></pre></td></tr></table>
 <p><code>%PRIVATE_FEED_USER%</code> and <code>%PRIVATE_FEED_PASS%</code> will be expanded with the contents of your <code>PRIVATE_FEED_USER</code> and <code>PRIVATE_FEED_PASS</code> environment variables.</p>
 <p>The <a href="lock-file.html"><code>paket.lock</code> file</a> will also reflect these settings.</p>
+<ul>
+<li>
+<em> </em><em>Note</em><em>:</em> In the case that a <code>paket.dependencies</code> file exists while running the <code>convert-from-nuget</code> command, the <code>PRIVATE_FEED_USER</code> and <code>PRIVATE_FEED_PASS</code>
+will <em>not</em> be expanded. Please see <a href="convert-from-nuget-tutorial.html">this document</a> for instructions on migrating credentials.
+</li>
+</ul>
 <h3><a name="Path-sources" class="anchor" href="#Path-sources">Path sources</a></h3>
 <p>Paket also supports file paths such as local directories or references to UNC shares:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
