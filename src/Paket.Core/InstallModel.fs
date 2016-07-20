@@ -210,11 +210,13 @@ module InstallModel =
 
     let calcLibFoldersG extract packageName libs =
        libs 
-        |> List.choose (extract  packageName)
+        |> List.choose (extract packageName)
         |> List.distinct 
+        |> List.sort 
         |> PlatformMatching.getSupportedTargetProfiles 
         |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
         |> Seq.toList
+
     let calcLibFolders = calcLibFoldersG extractLibFolder
     let calcRefFolders = calcLibFoldersG extractRefFolder
 

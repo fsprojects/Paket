@@ -88,6 +88,24 @@ let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
     else
         0
 
+let platformsSupport = 
+    let rec platformsSupport platform platforms = 
+        if List.isEmpty platforms then MaxPenalty
+        elif platforms |> List.exists ((=) platform) then 1
+        else 
+            platforms
+            |> List.collect (fun (p : FrameworkIdentifier) -> 
+                    KnownTargetProfiles.AllProfiles
+                    |> List.choose (function 
+                            | SinglePlatform f -> Some f
+                            | _ -> None)
+                    |> List.filter (fun f -> f.SupportedPlatforms |> List.exists ((=) p)))
+            |> platformsSupport platform
+            |> (+) 1
+
+    memoize (fun (platform,platforms) -> platformsSupport platform platforms)
+
+
 let findBestMatch = 
     let rec findBestMatch (paths : string list,targetProfile : TargetProfile) = 
         let requiredPlatforms = 
@@ -103,20 +121,6 @@ let findBestMatch =
             |> List.map fst
             |> List.tryHead
 
-        let rec platformsSupport x ps =
-          if List.isEmpty ps then MaxPenalty
-          elif ps |> List.exists ((=) x) then 1
-          else
-            ps
-            |> List.collect (fun (p:FrameworkIdentifier) ->
-              KnownTargetProfiles.AllProfiles
-              |> List.choose (function
-                  | SinglePlatform f -> Some f
-                  | _ -> None)
-              |> List.filter (fun f -> f.SupportedPlatforms |> List.exists ((=) p)))
-            |> platformsSupport x
-            |> (+) 1
-
         let findBestPortableMatch findPenalty (portableProfile:TargetProfile) paths =
             paths
             |> Seq.tryFind (fun p ->
@@ -130,7 +134,7 @@ let findBestMatch =
             |> List.choose (fun p ->
                 match targetProfile with
                 | SinglePlatform x ->
-                    match p.ProfilesCompatibleWithPortableProfile |> platformsSupport x with
+                    match platformsSupport(x,p.ProfilesCompatibleWithPortableProfile) with
                     | pen when pen < MaxPenalty ->
                         findBestPortableMatch pen p paths
                     | _ -> 

@@ -1,4 +1,7 @@
-#### 3.8.0 - 14.07.2016
+#### 3.8.1 - 20.07.2016
+* PERFORMANCE: Much faster computation of the InstallModel
+
+#### 3.8.0 - 18.07.2016
 * Paket automatically packs localized assemblies - https://github.com/fsprojects/Paket/pull/1816
 * BUGFIX: Fix possible null ref when processing a vcxproj file - https://github.com/fsprojects/Paket/issues/1814
 * BUGFIX: Changing NuGet uri from http to https in paket.dependencies don't causes error any more - https://github.com/fsprojects/Paket/issues/1820
