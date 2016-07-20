@@ -117,6 +117,7 @@
     <Compile Include="DependenciesTypes.fs" />
     <Compile Include="DependenciesFileParser.fs" />
     <Compile Include="LockFile.fs" />
+    <Compile Include="DepsJsonFile.fs" />
     <Compile Include="TemplateFile.fs" />
     <Compile Include="ProjectFile.fs" />
     <Compile Include="DependenciesFile.fs" />

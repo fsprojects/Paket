@@ -431,6 +431,12 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         processContentFiles root project usedPackages gitRemoteItems options
         project.Save forceTouch
         projectCache.[project.FileName] <- Some project
+       
+        let fi = FileInfo project.FileName
+        let depsFileName = fi.Name.Replace(fi.Extension,"") + ".deps.json"
+        DepsJsonFile.createFile lockFile model usedPackages 
+            (Path.Combine(fi.Directory.FullName, "obj" ,depsFileName))
+            (FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_6))
 
         let first = ref true
 

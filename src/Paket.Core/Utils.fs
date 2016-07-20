@@ -32,6 +32,11 @@ let internal memoize (f: 'a -> 'b) : 'a -> 'b =
             let y = f x
             cache.TryAdd(x,y) |> ignore
             y
+
+let internal makeHash (fileInfo : FileInfo) = 
+     use h = new System.Security.Cryptography.SHA512CryptoServiceProvider()
+     use stream = fileInfo.OpenRead()
+     h.ComputeHash(stream) |> Convert.ToBase64String
             
 
 type Auth = 
@@ -451,7 +456,9 @@ let askYesNo question =
     getAnswer()
 
 let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString()).TrimEnd(Path.DirectorySeparatorChar)
-let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
+let inline windowsPath (path:string) = (normalizePath path).Replace(Path.DirectorySeparatorChar, '\\')
+let inline unixPath (path:string) = (normalizePath path).Replace(Path.DirectorySeparatorChar, '/')
+
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
