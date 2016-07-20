@@ -35,6 +35,9 @@ If you don't want to check your username and password into source control, you c
 
 The [`paket.lock` file](lock-file.html) will also reflect these settings.
 
+* _ __Note__:_ In the case that a `paket.dependencies` file exists while running the `convert-from-nuget` command, the `PRIVATE_FEED_USER` and `PRIVATE_FEED_PASS`
+will *not* be expanded. Please see [this document](convert-from-nuget-tutorial.html) for instructions on migrating credentials.
+
 ### Path sources
 
 Paket also supports file paths such as local directories or references to UNC shares:
