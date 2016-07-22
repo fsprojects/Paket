@@ -206,7 +206,24 @@ module DependenciesFileParser =
     | Cache of Cache
 
     let private (|Remote|Package|Empty|ParserOptions|SourceFile|Git|Group|) (line:string) =
-        match line.Trim() with
+        let trimmed = line.Trim()
+
+        let removeComment (text:string) =
+            match text.IndexOf("//") with
+            | -1 ->
+                match text.IndexOf("#") with
+                | -1 -> text
+                | p -> 
+                    let f = text.Substring(0,p).Trim()
+                    printfn "%s" f
+                    f
+            | p -> 
+                let f = text.Substring(0,p).Trim()
+                printfn "%s" f
+                f
+            
+
+        match trimmed with
         | _ when String.IsNullOrWhiteSpace line -> Empty(line)
         | String.StartsWith "source" _ as trimmed -> Remote(RemoteParserOption.PackageSource(PackageSource.Parse(trimmed)))
         | String.StartsWith "cache" _ as trimmed -> Remote(RemoteParserOption.Cache(Cache.Parse(trimmed)))
@@ -222,13 +239,13 @@ module DependenciesFileParser =
             match parts with
             | name :: operator1 :: version1  :: operator2 :: version2 :: rest
                 when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> 
-                Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2, String.Join(" ",rest))
+                Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2, String.Join(" ",rest) |> removeComment)
             | name :: operator :: version  :: rest 
                 when List.exists ((=) operator) operators ->
-                Package(name,operator + " " + version, String.Join(" ",rest))
+                Package(name,operator + " " + version, String.Join(" ",rest) |> removeComment)
             | name :: version :: rest when isVersion version -> 
-                Package(name,version,String.Join(" ",rest))
-            | name :: rest -> Package(name,">= 0", String.Join(" ",rest))
+                Package(name,version,String.Join(" ",rest) |> removeComment)
+            | name :: rest -> Package(name,">= 0", String.Join(" ",rest) |> removeComment)
             | [name] -> Package(name,">= 0","")
             | _ -> failwithf "could not retrieve NuGet package from %s" trimmed
         | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict"))

@@ -49,6 +49,22 @@ let ``should read simple config``() =
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "FAKE"].Range |> shouldEqual (VersionRange.Exactly "1.1")
     cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "SignalR"].Range |> shouldEqual (VersionRange.Exactly "3.3.2")
 
+let configWithComment = """
+source "http://www.nuget.org/api/v2"
+
+nuget Castle.Windsor-log4net >= 3.2 prerelease # test
+"""
+
+[<Test>]
+let ``should read simple config with prerelease and comment``() = 
+    let cfg = DependenciesFile.FromCode(configWithComment)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
+
+    let packageDefinition = cfg.GetDependenciesInGroup(Constants.MainDependencyGroup).[PackageName "Castle.Windsor-log4net"]
+    packageDefinition.Range |> shouldEqual (VersionRange.AtLeast("3.2"))
+    packageDefinition.PreReleases |> shouldEqual (PreReleaseStatus.All)
+
+
 let config2 = """
 source "http://www.nuget.org/api/v2"
 

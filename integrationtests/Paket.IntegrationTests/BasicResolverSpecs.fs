@@ -74,7 +74,13 @@ let ``#220 should respect the == operator``() =
 let ``#263 should respect SemVer prereleases``() =
     let lockFile = update "i000263-semver-prereleases"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Ninject"].Version
-    |> shouldEqual (SemVer.Parse "3.2.3-unstable-001")
+    |> shouldEqual (SemVer.Parse "3.2.3-unstable-001")    
+
+[<Test>]
+let ``#263 should respect prereleases``() =
+    let lockFile = update "i000263-prereleases"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Ninject"].Version
+    |> shouldBeGreaterThan (SemVer.Parse "3.2.3-unstable-011")
 
 [<Test>]
 let ``#299 should restore package ending in lib``() =

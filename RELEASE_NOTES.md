@@ -1,3 +1,6 @@
+#### 3.9.1 - 22.07.2016
+* Respect comments in dependencies file
+
 #### 3.9.0 - 22.07.2016
 * Don't create runtime references for CoreClr anymore - new concept coming soon 
 * BUGFIX: Allow to install packages that have "native" in package name - https://github.com/fsprojects/Paket/issues/1829

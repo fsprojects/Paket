@@ -109,6 +109,7 @@ let private createAppConfigInDirectory folder =
 let private getProjectFilesInDirectory folder =
     Directory.GetFiles(folder, "*proj")
     |> Seq.filter (Path.GetExtension >> isDotNetProject)
+
 let private addConfigFileToProject project =
     project.ProjectNode
     |> Xml.getNodes "ItemGroup"
