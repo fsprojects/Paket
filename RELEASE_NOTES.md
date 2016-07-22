@@ -1,7 +1,6 @@
-#### 3.8.2 - 20.07.2016
+#### 3.9.0 - 22.07.2016
+* Don't create runtime references for CoreClr anymore - new concept coming soon 
 * BUGFIX: Allow to install packages that have "native" in package name - https://github.com/fsprojects/Paket/issues/1829
-
-#### 3.8.1 - 20.07.2016
 * PERFORMANCE: Much faster computation of the InstallModel
 
 #### 3.8.0 - 18.07.2016
