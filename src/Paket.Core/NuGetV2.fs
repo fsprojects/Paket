@@ -393,7 +393,7 @@ let rec private cleanup (dir : DirectoryInfo) =
 /// Extracts the given package to the user folder
 let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
-        let targetFolder = DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.ToString()))
+        let targetFolder = DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize()))
 
         if isExtracted targetFolder fileName |> not then
             Directory.CreateDirectory(targetFolder.FullName) |> ignore
