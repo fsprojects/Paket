@@ -59,7 +59,7 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                     failwithf 
                         "Incomplete mandatory metadata in template file %s (even including assembly attributes)%sTemplate: %A%sMissing: %s" 
                         templateFile.FileName 
-                        Environment.NewLine merged
+                        Environment.NewLine md 
                         Environment.NewLine missing
 
                 | Valid completeCore -> { templateFile with Contents = CompleteInfo(completeCore, mergedOpt) }

@@ -1,5 +1,5 @@
-#### 3.9.2 - 25.07.2016
-* BUGFIX: Don't allow empty string as description in template file - https://github.com/fsprojects/Paket/pull/1831
+#### 3.9.3 - 25.07.2016
+* REVERT: Don't allow empty string as description in template file - https://github.com/fsprojects/Paket/pull/1831
 
 #### 3.9.1 - 22.07.2016
 * Respect comments in dependencies file
