@@ -61,7 +61,7 @@ let getTitle attributes =
 
 let getDescription attributes = 
     attributes 
-    |> Seq.tryPick (function Description d -> Some d | _ -> None) 
+    |> Seq.tryPick (function Description d when notNullOrEmpty d -> Some d | _ -> None)
 
 let readAssembly fileName =
     traceVerbose <| sprintf "Loading assembly metadata for %s" fileName
