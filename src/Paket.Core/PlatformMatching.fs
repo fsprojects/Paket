@@ -167,6 +167,8 @@ let getTargetCondition (target:TargetProfile) =
     match target with
     | SinglePlatform(platform) -> 
         match platform with
+        | DotNetFramework(version) when version = FrameworkVersion.V4_Client ->
+            "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Client')" version
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNX(version) ->"$(TargetFrameworkIdentifier) == 'DNX'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNXCore(version) ->"$(TargetFrameworkIdentifier) == 'DNXCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
@@ -216,6 +218,8 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
             |> List.filter (function
                            | SinglePlatform(Native("", "")) -> false
                            | SinglePlatform(Runtimes(_)) -> false
+                           | SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)) -> 
+                                targets |> List.contains (SinglePlatform(DotNetFramework(FrameworkVersion.V4))) |> not
                            | _ -> true)
         |> List.map getTargetCondition
         |> List.filter (fun (_, v) -> v <> "false")
