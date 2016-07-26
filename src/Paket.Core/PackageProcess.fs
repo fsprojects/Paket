@@ -11,6 +11,16 @@ open Paket.PackageMetaData
 open Chessie.ErrorHandling
 open InstallProcess
 
+let private tryGenerateDescription packageId outputType =
+    match packageId with
+    | Some id when notNullOrEmpty id ->
+        let outputType =
+            match outputType with
+            | ProjectOutputType.Library -> "library"
+            | ProjectOutputType.Exe -> "program"
+        Some (sprintf "%s %s." id outputType)
+    | _ -> None
+
 let private merge buildConfig buildPlatform versionFromAssembly specificVersions (projectFile:ProjectFile) templateFile = 
     let withVersion =
         match versionFromAssembly with
@@ -44,7 +54,7 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                     { Id = md.Id
                       Version = md.Version ++ versionFromAssembly
                       Authors = md.Authors ++ getAuthors attribs
-                      Description = md.Description ++ getDescription attribs
+                      Description = md.Description ++ getDescription attribs ++ tryGenerateDescription md.Id projectFile.OutputType
                       Symbols = md.Symbols }
 
                 match merged with
