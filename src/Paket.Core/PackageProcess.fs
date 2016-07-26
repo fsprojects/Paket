@@ -56,12 +56,16 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                     | Some id -> traceWarnfn "No description was provided for package %A. Generating from ID and project output type." id
                     | _ -> ()
                     tryGenerateDescription packageId outputType
+                let execIfNone f opt =
+                    match opt with
+                    | None -> f ()
+                    | x -> x
 
                 let merged = 
                     { Id = md.Id
                       Version = md.Version ++ versionFromAssembly
                       Authors = md.Authors ++ getAuthors attribs
-                      Description = md.Description ++ getDescription attribs ++ tryGenerateDescription md.Id projectFile.OutputType
+                      Description = md.Description ++ getDescription attribs |> execIfNone (fun _ -> tryGenerateDescription md.Id projectFile.OutputType)
                       Symbols = md.Symbols }
 
                 match merged with
