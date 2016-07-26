@@ -63,7 +63,6 @@ let ``#1217 should replace packages.config files in project``() =
     let projectFile = ProjectFile.loadFromFile(Path.Combine(scenarioTempPath "i001217-convert-simple-project", "ClassLibrary1", "ClassLibrary1.csproj"))
     projectFile.Document.OuterXml.Contains("packages.config") |> shouldEqual false
     projectFile.Document.OuterXml.Contains("paket.references") |> shouldEqual true
-    
 
 [<Test>]
 let ``#1591 should convert denormalized versions``() = 

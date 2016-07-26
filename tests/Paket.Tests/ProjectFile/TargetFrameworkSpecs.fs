@@ -4,22 +4,35 @@ open Paket
 open NUnit.Framework
 open FsUnit
 
-[<Test>]
-let ``should detect TargetFramework in Project2 proj file``() =
-    ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetTargetProfile().ToString()
-    |> shouldEqual "net40"
+let TestData: obj[][] = 
+    [|
+        // project file name, 
+        //  expected TargetProfile 
+        //  expected TargetProfile.ToString
+        //  expected TargetFramework
+        [|"Project2.fsprojtest";
+            (SinglePlatform(DotNetFramework FrameworkVersion.V4_Client));
+            "net40";
+            (Some(DotNetFramework FrameworkVersion.V4_Client))|];
+        [|"Empty.fsprojtest";
+            (SinglePlatform(DotNetFramework FrameworkVersion.V4));
+            "net40-full";
+            (Some(DotNetFramework FrameworkVersion.V4))|];
+        [|"NewSilverlightClassLibrary.csprojtest";
+            (SinglePlatform(Silverlight("v5.0")));
+            "sl50";
+            (Some(Silverlight "v5.0"))|];
+        [|"FSharp.Core.Fluent-3.1.fsprojtest";
+            (PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneSilverlight "v8.0"; WindowsPhoneApp "v8.1" ]));
+            "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1";
+            (Some(DotNetFramework FrameworkVersion.V4_5))|];
+    |]
 
 [<Test>]
-let ``should detect net40 in empty proj file``() =
-    ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GetTargetProfile().ToString()
-    |> shouldEqual "net40-full"
+[<TestCaseSource("TestData")>]
+let ``should detect the correct framework on test projects`` projectFile expectedProfile expectedProfileString expectedTargetFramework =
+    let p = ProjectFile.TryLoad("./ProjectFile/TestData/" + projectFile).Value
+    p.GetTargetProfile() |> shouldEqual expectedProfile
+    p.GetTargetProfile().ToString() |> shouldEqual expectedProfileString
+    p.GetTargetFramework() |> shouldEqual expectedTargetFramework
 
-[<Test>]
-let ``should detect silverlight framework in new silverlight project2``() =
-    ProjectFile.TryLoad("./ProjectFile/TestData/NewSilverlightClassLibrary.csprojtest").Value.GetTargetProfile()
-    |> shouldEqual (SinglePlatform(Silverlight("v5.0")))
-
-[<Test>]
-let ``should detect portable profile``() =
-    ProjectFile.TryLoad("./ProjectFile/TestData/FSharp.Core.Fluent-3.1.fsprojtest").Value.GetTargetProfile()
-    |> shouldEqual (PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneSilverlight "v8.0"; WindowsPhoneApp "v8.1" ]))

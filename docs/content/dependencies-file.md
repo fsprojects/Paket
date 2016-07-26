@@ -41,6 +41,7 @@ Only direct dependencies should be listed and you can use the [`paket simplify` 
 Paket supports the following source types:
 
 * [NuGet](nuget-dependencies.html)
+* [Git](git-dependencies.html)
 * [GitHub and Gist](github-dependencies.html)
 * [HTTP](http-dependencies.html) (any single file from any site without version control)
 
@@ -182,7 +183,7 @@ The strategy can be either `min` or `max` with max being the default.
 
     nuget UnionArgParser ~> 0.7
 
-A `min` strategy means you get the *lowest matching version* of your transitive dependencies (i.e. NuGet-style). In constrast, a `max` strategy will get you the *highest matching version*.
+A `min` strategy means you get the *lowest matching version* of your transitive dependencies (i.e. NuGet-style). In contrast, a `max` strategy will get you the *highest matching version*.
 
 Note, however, that all direct dependencies will still get their *latest matching versions*, no matter the value of the `strategy` option.
 If you want to influence the resolution of direct dependencies then read about the [lowest_matching option](dependencies-file.html#Lowest_matching-option).
@@ -204,7 +205,7 @@ The `lowest_matching` option can be either `true` or `false` with false being th
 
     nuget UnionArgParser ~> 0.7
 
-A `lowest_matching: true` setting means you get the *lowest matching version* of your direct dependencies. In constrast, a `lowest_matching:false` will get you the *highest matching version*.
+A `lowest_matching: true` setting means you get the *lowest matching version* of your direct dependencies. In contrast, a `lowest_matching:false` will get you the *highest matching version*.
 
 Note, however, that all transitive dependencies will still get their *latest matching versions*, no matter the value of the `lowest_matching` option.
 If you want to influence the resolution of transitive dependencies then read about the [strategy option](dependencies-file.html#Strategy-option).

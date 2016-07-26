@@ -6,27 +6,26 @@ open FsUnit
 open Paket.PlatformMatching
 
 module ``Given a target platform`` = 
-    let getPlatformPenalty = getPlatformPenalty Set.empty
 
     [<Test>]
     let ``it should return no penalty for the same platform``() = 
-        getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5) (DotNetFramework FrameworkVersion.V4_5) 
+        getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5, DotNetFramework FrameworkVersion.V4_5) 
         |> shouldEqual 0
     
     [<Test>]
     let ``it should return the right penalty for a compatible platform``() = 
-        getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5) (DotNetFramework FrameworkVersion.V4) 
+        getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5, DotNetFramework FrameworkVersion.V4) 
         |> shouldEqual 1
     
     [<Test>]
     let ``it should return > 1000 for an incompatible platform``() = 
-        getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5) (Silverlight "v5.0")
+        getPlatformPenalty (DotNetFramework FrameworkVersion.V4_5, Silverlight "v5.0")
          |> shouldBeGreaterThan MaxPenalty
 
     [<Test>]
     let ``it should prefer .net proper``() = 
-        let p1 = getPlatformPenalty (DotNetFramework FrameworkVersion.V4_6_2) (DotNetFramework FrameworkVersion.V4_5_1)
-        let p2 = getPlatformPenalty (DotNetFramework FrameworkVersion.V4_6_2) (DotNetStandard DotNetStandardVersion.V1_5)
+        let p1 = getPlatformPenalty (DotNetFramework FrameworkVersion.V4_6_2, DotNetFramework FrameworkVersion.V4_5_1)
+        let p2 = getPlatformPenalty (DotNetFramework FrameworkVersion.V4_6_2, DotNetStandard DotNetStandardVersion.V1_5)
         p1 |> shouldBeSmallerThan p2
 
 module ``Given a path`` = 
@@ -81,19 +80,19 @@ module ``Given a list of paths`` =
     
     [<Test>]
     let ``it should find the best match for .NET 4.0``() = 
-        findBestMatch paths (SinglePlatform(DotNetFramework FrameworkVersion.V4)) |> shouldEqual (Some "net40")
+        findBestMatch (paths, SinglePlatform(DotNetFramework FrameworkVersion.V4)) |> shouldEqual (Some "net40")
     
     [<Test>]
     let ``it should find the best match for Silverlight 5``() = 
-        findBestMatch paths (SinglePlatform(Silverlight "v5.0")) |> shouldEqual (Some "sl5")
+        findBestMatch (paths, SinglePlatform(Silverlight "v5.0")) |> shouldEqual (Some "sl5")
     
     [<Test>]
     let ``it should find no match for Silverlight 4``() = 
-        findBestMatch paths (SinglePlatform(Silverlight "v4.0")) |> shouldEqual None
+        findBestMatch (paths, SinglePlatform(Silverlight "v4.0")) |> shouldEqual None
     
     [<Test>]
     let ``it should prefer (older) full .NET frameworks over portable class libraries``() = 
-        findBestMatch paths (SinglePlatform(DotNetFramework FrameworkVersion.V4_5)) |> shouldEqual (Some "net40")
+        findBestMatch (paths, SinglePlatform(DotNetFramework FrameworkVersion.V4_5)) |> shouldEqual (Some "net40")
     
     module ``when I get the supported target profiles`` = 
         let supportedTargetProfiles = getSupportedTargetProfiles paths

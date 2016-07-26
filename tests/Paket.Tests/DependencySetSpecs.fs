@@ -88,7 +88,6 @@ let ``filtered with empty should not remove netstandard``() =
     |> DependencySetFilter.filterByRestrictions (FrameworkRestrictionList [])
     |> shouldEqual set
 
-
 [<Test>]
 let ``filtered with concrete restriction should filter non-matching``() = 
     let original = 

@@ -131,14 +131,14 @@ module InstallModel =
           TargetsFileFolders = [] 
           Analyzers = [] }
 
-    let extractLibFolder (path:string) =
+    let extractLibFolder packageName (path:string) =
         let path = path.Replace("\\", "/").ToLower()
         if path.Contains "runtimes" then
-            Utils.extractPath ("runtimes", path)
+            Utils.extractPath ("runtimes", packageName, path)
         else
-            Utils.extractPath ("lib", path)
+            Utils.extractPath ("lib", packageName, path)
 
-    let extractBuildFolder path = Utils.extractPath ("build", path)
+    let extractBuildFolder packageName path = Utils.extractPath ("build", packageName, path)
 
     let mapFolders mapfn (installModel:InstallModel) = 
         { installModel with 
@@ -188,18 +188,19 @@ module InstallModel =
         else
             this
 
-    let calcLibFolders libs =
+    let calcLibFolders packageName libs =
        libs 
-        |> Seq.choose extractLibFolder 
-        |> Seq.distinct 
+        |> List.choose (extractLibFolder  packageName)
+        |> List.distinct 
         |> PlatformMatching.getSupportedTargetProfiles 
-        |> Seq.map (fun entry -> { Name = entry.Key; Targets = List.ofSeq entry.Value; Files = InstallFiles.empty })
+        |> Seq.map (fun entry -> { Name = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
         |> Seq.toList
 
     let addFileToFolder (path:LibFolder) (file:string) (folders:LibFolder list) (addfn: string -> InstallFiles -> InstallFiles) =
-            folders |> List.map (fun p -> 
-                if p.Name <> path.Name then p else
-                { p with Files = addfn file p.Files }) 
+        folders 
+        |> List.map (fun p -> 
+            if p.Name <> path.Name then p else
+            { p with Files = addfn file p.Files }) 
                 
     let addPackageFile (path:LibFolder) (file:string) references (this:InstallModel) : InstallModel =
         let install = 
@@ -212,13 +213,14 @@ module InstallModel =
             ReferenceFileFolders = addFileToFolder path file this.ReferenceFileFolders InstallFiles.addReference }
 
 
-    let addLibReferences (libs: string seq) references (installModel:InstallModel) : InstallModel =
-        let libFolders = calcLibFolders libs
+    let addLibReferences libs references (installModel:InstallModel) : InstallModel =
+        let libs = libs |> Seq.toList
+        let libFolders = calcLibFolders installModel.PackageName libs
 
-        Seq.fold (fun (model:InstallModel) file ->
-            match extractLibFolder file with
+        List.fold (fun (model:InstallModel) file ->
+            match extractLibFolder installModel.PackageName file with
             | Some folderName ->
-                match Seq.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
+                match List.tryFind (fun folder -> folder.Name = folderName) model.ReferenceFileFolders with
                 | Some path -> addPackageFile path file references model
                 | _ -> model
             | None -> model) { installModel with ReferenceFileFolders = libFolders } libs
@@ -229,6 +231,7 @@ module InstallModel =
             analyzerFiles
             |> Seq.map (fun file -> FileInfo file |> AnalyzerLib.FromFile)
             |> List.ofSeq
+
         { installModel with Analyzers = installModel.Analyzers @ analyzerLibs}
 
 
@@ -263,7 +266,7 @@ module InstallModel =
         
         let model = 
             if List.isEmpty installModel.ReferenceFileFolders then
-                let folders = calcLibFolders ["lib/Default.dll"]
+                let folders = calcLibFolders installModel.PackageName ["lib/Default.dll"]
                 { installModel with ReferenceFileFolders = folders } 
             else
                 installModel
@@ -275,12 +278,24 @@ module InstallModel =
                 folder)
 
     let addFrameworkAssemblyReferences references (installModel:InstallModel) : InstallModel = 
-        references |> Seq.fold (addFrameworkAssemblyReference) (installModel:InstallModel) 
+        references |> Seq.fold addFrameworkAssemblyReference (installModel:InstallModel) 
 
-    let filterBlackList  (installModel:InstallModel)  = 
+    let filterExcludes excludes (installModel:InstallModel) = 
+        let excluded e reference =
+            match reference with
+            | Reference.Library x -> x.Contains e
+            | Reference.TargetsFile x -> x.Contains e
+            | Reference.FrameworkAssemblyReference x -> x.Contains e
+
+        excludes
+        |> List.fold (fun (model:InstallModel) fileName ->
+                mapFiles (fun files -> { files with References = Set.filter (excluded fileName >> not) files.References }) model)
+                installModel
+
+    let filterBlackList (installModel:InstallModel) = 
 
         let includeReferences = function
-            | Reference.Library lib -> not (String.endsWithIgnoreCase ".dll" lib || String.endsWithIgnoreCase ".exe" lib )
+            | Reference.Library lib -> not (String.endsWithIgnoreCase ".dll" lib || String.endsWithIgnoreCase ".exe" lib || String.endsWithIgnoreCase ".so" lib || String.endsWithIgnoreCase ".dylib" lib )
             | Reference.TargetsFile targetsFile -> 
                 (not (String.endsWithIgnoreCase ".props" targetsFile|| String.endsWithIgnoreCase ".targets" targetsFile))
             | _ -> false
@@ -320,16 +335,16 @@ module InstallModel =
     let rec addTargetsFiles (targetsFiles:string list) (this:InstallModel) : InstallModel =
         let targetsFileFolders = 
             targetsFiles 
-            |> List.choose extractBuildFolder
+            |> List.choose (extractBuildFolder this.PackageName)
             |> List.distinct 
             |> PlatformMatching.getSupportedTargetProfiles 
             |> Seq.map (fun entry -> { Name = entry.Key; Targets = List.ofSeq entry.Value; Files = InstallFiles.empty })
             |> Seq.toList
 
-        Seq.fold (fun model file ->
-            match extractBuildFolder file with
+        List.fold (fun model file ->
+            match extractBuildFolder this.PackageName file with
             | Some folderName ->
-                match Seq.tryFind (fun folder -> folder.Name = folderName) model.TargetsFileFolders with
+                match List.tryFind (fun folder -> folder.Name = folderName) model.TargetsFileFolders with
                 | Some path -> addTargetsFile path file model
                 | _ -> model
             | None -> model) { this with TargetsFileFolders = targetsFileFolders } targetsFiles
@@ -392,6 +407,8 @@ type InstallModel with
     member this.AddFrameworkAssemblyReferences references = InstallModel.addFrameworkAssemblyReferences references this
      
     member this.FilterBlackList () = InstallModel.filterBlackList this
+
+    member this.FilterExcludes excludes = InstallModel.filterExcludes excludes this
 
     member this.FilterReferences(references) = InstallModel.filterReferences references this
 

@@ -1,16 +1,19 @@
 source https://nuget.org/api/v2
+cache ./nupkgs versions:current
 
 nuget Newtonsoft.Json redirects: force
 nuget Argu
 nuget FSharp.Core redirects: force
 nuget Chessie
+nuget Mono.Cecil
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
-github haraldsteinlechner/FSharp.Data src/CommonProviderImplementation/AssemblyReader.fs
+github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
 
 group Build
 
   source https://nuget.org/api/v2
+  cache ./nupkgs versions:current
   
   nuget FAKE prerelease
   nuget FSharp.Formatting
@@ -21,9 +24,13 @@ group Build
 group Test
 
   source https://nuget.org/api/v2
+  cache ./nupkgs versions:current
 
-  nuget NUnit.Runners
-  nuget NUnit ~> 3
   nuget Moq
   nuget FSCheck
+  
+  source http://ci.appveyor.com/nuget/nunit
+  nuget NUnit 3.3.0-CI-2857-issue-1593
+  nuget NUnit.Console 3.3.0-CI-2857-issue-1593
+
   github forki/FsUnit FsUnit.fs

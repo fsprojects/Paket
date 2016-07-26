@@ -88,19 +88,19 @@ If you omit the version constraint then Paket will assume `>= 0`:
 
 <blockquote>We consider a situation with 3 packages A, B and C.
 
-A and B are direct (or root level) dependencies, but both have a dependency on C. 
-A needs exactly C 1.0 and B wants version 1.1 of C. 
+A and B are direct (or root level) dependencies, but both have a dependency on C.
+A needs exactly C 1.0 and B wants version 1.1 of C.
 This is a version conflict and Paket will complain during resolution phase.
 
-If we specify C = 1.1 in the dependencies file then Paket still considers this as a version conflict with the version requirement in A. 
-By specifying C == 1.1 we overwrite all other requirements and paket will not complain about the conflict anymore.</blockquote>
+If we specify C = 1.1 in the dependencies file then Paket still considers this as a version conflict with the version requirement in A.
+By specifying C == 1.1 we overwrite all other requirements and Paket will not complain about the conflict anymore.</blockquote>
 
 If your transitive dependencies result in a version conflict you might want to instruct Paket to use a specific version. The `==` operator allows you to manually resolve the conflict:
 
     [lang=paket]
     nuget Example == 1.2.3 // take exactly this version
 
-<blockquote>Important: If you want to restrict the version to a specific version then use the <a href="nuget-dependencies.html#Pinned-version-constraint">= operator</a>. The == operator should only be used if you need to overwrite a dependency resultion due to a conflict.</blockquote>
+<blockquote>Important: If you want to restrict the version to a specific version then use the <a href="nuget-dependencies.html#Pinned-version-constraint">= operator</a>. The == operator should only be used if you need to overwrite a dependency resolution due to a conflict.</blockquote>
 
 #### Further version constraints
 
@@ -162,9 +162,9 @@ If want to allow newer backward-compatible versions but also need a specific fix
 
 The example above translates to `1.2.3 <= x < 2.0`.
 
-### PreReleases
+### Prereleases
 
-If you want to dependend on prereleases then Paket can assist you. In contrast to NuGet, Paket allows you to depend on different prerelease channels:
+If you want to depend on prereleases then Paket can assist you. In contrast to NuGet, Paket allows you to depend on different prerelease channels:
 
     [lang=paket]
     nuget Example >= 1.2.3 alpha      // at least 1.2.3 including alpha versions
@@ -187,7 +187,7 @@ If you need to be NuGet compatible and want to have the version no. in the packa
     [lang=paket]
     source https://nuget.org/api/v2
 
-    nuget xunit.runners.visualstudio >= 2.0 version_in_path: true
+    nuget xunit.runner.visualstudio >= 2.0 version_in_path: true
     nuget UnionArgParser ~> 0.7
 
 ### No content option
@@ -220,9 +220,9 @@ It's possible to influence the `CopyToOutputDirectory` property for content refe
     [lang=paket]
     source https://nuget.org/api/v2
 
-    nuget jQuery CopyToOutputDirectory: always
-	nuget Fody CopyToOutputDirectory: never
-	nuget ServiceStack.Swagger CopyToOutputDirectory: preserve-newest
+    nuget jQuery copy_content_to_output_dir: always
+	nuget Fody copy_content_to_output_dir: never
+	nuget ServiceStack.Swagger copy_content_to_output_dir: preserve-newest
 
 ### redirects settings
 
@@ -240,7 +240,7 @@ Redirects are created only if they are required. However, you can instruct Paket
 
     nuget FSharp.Core redirects: force
 
-In constract, you have the option to force Paket to not create a redirect:
+In contrast, you have the option to force Paket to not create a redirect:
 
     [lang=paket]
     source https://nuget.org/api/v2
@@ -274,7 +274,7 @@ To request Paket to override the resolver strategy for the transitive dependenci
     strategy: min
     source https://nuget.org/api/v2
 
-    nuget Example ~> 1.2 strategy:max
+    nuget Example ~> 1.2 strategy: max
 
 This effectively will get you the *latest matching versions* of `Example`'s dependencies.
 The following code is doing the same by using the `@` operator in your version constraint:
@@ -303,7 +303,7 @@ The following code is doing the same by using the `!` operator in your version c
 
     nuget Example !~> 1.2 // use "min" version resolution strategy
 
-The stragey setting and the corresponding `!` and `@` modifiers are applicable to all [version constraints](#Version-constraints):
+The strategy setting and the corresponding `!` and `@` modifiers are applicable to all [version constraints](#Version-constraints):
 
     [lang=paket]
     source https://nuget.org/api/v2
@@ -325,7 +325,7 @@ To request Paket to override the resolver strategy for a package, use the `lowes
     [lang=paket]
     source https://nuget.org/api/v2
 
-    nuget Example ~> 1.2 lowest_matching:true
+    nuget Example ~> 1.2 lowest_matching: true
 
 ### Specifying multiple targeting options
 

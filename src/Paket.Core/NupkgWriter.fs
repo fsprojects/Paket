@@ -71,7 +71,8 @@ let nuspecDoc (info:CompleteInfo) =
 
     let buildFrameworkReferencesNode libName =
         let element = XElement(ns + "frameworkAssembly")
-        element.SetAttributeValue(XName.Get "assemblyName", libName)
+        if String.IsNullOrEmpty libName then () else
+            element.SetAttributeValue(XName.Get "assemblyName", libName)
         element
 
     let buildFrameworkReferencesNode frameworkAssembliesList =
@@ -83,13 +84,15 @@ let nuspecDoc (info:CompleteInfo) =
     let buildDependencyNode (Id, requirement:VersionRequirement) =
         let dep = XElement(ns + "dependency")
         dep.SetAttributeValue(XName.Get "id", Id)
-        dep.SetAttributeValue(XName.Get "version", requirement.FormatInNuGetSyntax())
+        let version = requirement.FormatInNuGetSyntax()
+        if String.IsNullOrEmpty version then () else
+            dep.SetAttributeValue(XName.Get "version", version)
         dep
 
     let buildDependenciesNode excludedDependencies dependencyList =
-        if  List.isEmpty dependencyList then () else
+        if List.isEmpty dependencyList then () else
         let d = XElement(ns + "dependencies")
-        dependencyList 
+        dependencyList
         |> List.filter (fun d -> Set.contains (fst d) excludedDependencies |> not)
         |> List.iter (buildDependencyNode >> d.Add)
         metadataNode.Add d
@@ -150,10 +153,11 @@ let corePropsDoc (core : CompleteCoreInfo) =
         let node = XElement(ns + name)
         node.SetValue value
         root.Add node
-    !! dc "creator" core.Authors
+
+    !! dc "creator" (core.Authors |>  List.reduce (fun s1 s2 -> s1 + ", " + s2))
     !! dc "description" core.Description
     !! dc "identifier" core.Id
-    !! ns "version" core.Version
+    !! ns "version" core.Version.Value
     XElement(ns + "keywords") |> root.Add
     !! dc "title" core.Id
     !! ns "lastModifiedBy" "paket"
@@ -239,31 +243,31 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         let problemChars = ["@","~~at~~"; "+","~~plus~~"]
 
         let fakeEscapeProblemChars (source:string) =
-            problemChars 
-            |> List.fold (fun (escaped:string) (problem, fakeEscape) -> 
-                escaped.Replace(problem,fakeEscape)) source 
+            problemChars
+            |> List.fold (fun (escaped:string) (problem, fakeEscape) ->
+                escaped.Replace(problem,fakeEscape)) source
 
-        let unFakeEscapeProblemChars (source:string) = 
-            problemChars 
-            |> List.fold (fun (escaped:string) (problem, fakeEscape) -> 
-                escaped.Replace(fakeEscape, problem)) source 
+        let unFakeEscapeProblemChars (source:string) =
+            problemChars
+            |> List.fold (fun (escaped:string) (problem, fakeEscape) ->
+                escaped.Replace(fakeEscape, problem)) source
 
-        let escapeTarget (target:string) = 
-            let escapedTargetParts = 
-                target.Replace("\\", "/").Split('/') 
+        let escapeTarget (target:string) =
+            let escapedTargetParts =
+                target.Replace("\\", "/").Split('/')
                 |> Array.map Uri.EscapeDataString
             String.Join("/" ,escapedTargetParts)
 
-        let toUri (escapedTarget:string) = 
+        let toUri (escapedTarget:string) =
             let uri1 = Uri(escapedTarget, UriKind.Relative)
             let uri2 = Uri(uri1.GetComponents(UriComponents.SerializationInfoString, UriFormat.SafeUnescaped), UriKind.Relative)
             uri2.GetComponents(UriComponents.SerializationInfoString, UriFormat.UriEscaped)
 
         target
-        |> fakeEscapeProblemChars 
+        |> fakeEscapeProblemChars
         |> escapeTarget
         |> unFakeEscapeProblemChars
-        |> toUri 
+        |> toUri
 
     let addEntry path writerF =
         if entries.Contains(path) then () else
@@ -276,7 +280,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
     let addEntryFromFile path source =
         if entries.Contains(path) then () else
         entries.Add path |> ignore
-        
+
         zipFile.CreateEntryFromFile(source,path) |> ignore
 
     let ensureValidTargetName (target:string) =

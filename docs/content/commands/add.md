@@ -3,7 +3,7 @@
 It's also possible to add a package to a specified project only:
 
     [lang=batchfile]
-    $ paket add nuget PACKAGENAME [version VERSION] [project PROJECT] [--force] [--hard]
+    $ paket add nuget PACKAGENAME [version VERSION] [project PROJECT] [--force]
 
 See also [paket remove](paket-remove.html).
 

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -153,60 +153,60 @@
   <Choose>
     <When Condition="'$(Platform)'=='Win32'">
       <ItemGroup>
-        <Reference Include="boost_filesystem-vc140-mt-1_60">
+        <NativeReference Include="boost_filesystem-vc140-mt-1_60">
           <HintPath>..\packages\boost_filesystem-vc140\lib\native\address-model-32\lib\boost_filesystem-vc140-mt-1_60.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
-        </Reference>
-        <Reference Include="boost_filesystem-vc140-mt-gd-1_60">
+        </NativeReference>
+        <NativeReference Include="boost_filesystem-vc140-mt-gd-1_60">
           <HintPath>..\packages\boost_filesystem-vc140\lib\native\address-model-32\lib\boost_filesystem-vc140-mt-gd-1_60.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
-        </Reference>
+        </NativeReference>
       </ItemGroup>
     </When>
     <When Condition="'$(Platform)'=='x64'">
       <ItemGroup>
-        <Reference Include="boost_filesystem-vc140-mt-1_60">
+        <NativeReference Include="boost_filesystem-vc140-mt-1_60">
           <HintPath>..\packages\boost_filesystem-vc140\lib\native\address-model-64\lib\boost_filesystem-vc140-mt-1_60.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
-        </Reference>
-        <Reference Include="boost_filesystem-vc140-mt-gd-1_60">
+        </NativeReference>
+        <NativeReference Include="boost_filesystem-vc140-mt-gd-1_60">
           <HintPath>..\packages\boost_filesystem-vc140\lib\native\address-model-64\lib\boost_filesystem-vc140-mt-gd-1_60.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
-        </Reference>
+        </NativeReference>
       </ItemGroup>
     </When>
   </Choose>
   <Choose>
     <When Condition="'$(Platform)'=='Win32'">
       <ItemGroup>
-        <Reference Include="boost_system-vc140-mt-1_60">
+        <NativeReference Include="boost_system-vc140-mt-1_60">
           <HintPath>..\packages\boost_system-vc140\lib\native\address-model-32\lib\boost_system-vc140-mt-1_60.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
-        </Reference>
-        <Reference Include="boost_system-vc140-mt-gd-1_60">
+        </NativeReference>
+        <NativeReference Include="boost_system-vc140-mt-gd-1_60">
           <HintPath>..\packages\boost_system-vc140\lib\native\address-model-32\lib\boost_system-vc140-mt-gd-1_60.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
-        </Reference>
+        </NativeReference>
       </ItemGroup>
     </When>
     <When Condition="'$(Platform)'=='x64'">
       <ItemGroup>
-        <Reference Include="boost_system-vc140-mt-1_60">
+        <NativeReference Include="boost_system-vc140-mt-1_60">
           <HintPath>..\packages\boost_system-vc140\lib\native\address-model-64\lib\boost_system-vc140-mt-1_60.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
-        </Reference>
-        <Reference Include="boost_system-vc140-mt-gd-1_60">
+        </NativeReference>
+        <NativeReference Include="boost_system-vc140-mt-gd-1_60">
           <HintPath>..\packages\boost_system-vc140\lib\native\address-model-64\lib\boost_system-vc140-mt-gd-1_60.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
-        </Reference>
+        </NativeReference>
       </ItemGroup>
     </When>
   </Choose>

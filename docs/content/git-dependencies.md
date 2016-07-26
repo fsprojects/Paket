@@ -2,14 +2,12 @@
 
 Paket allows you to automatically manage the linking of files from any git repo.
 
-<blockquote>This feature is only available in Paket 3.0 prereleases.</blockquote>
-
 <blockquote>This feature assumes that you have <a href="https://git-scm.com/">git</a> installed.
-If you don't have git installed then Paket still allows you to <a href="github-dependencies.html">reference files from github</a>.</blockquote>
+If you don't have git installed then Paket still allows you to <a href="github-dependencies.html">reference files from GitHub</a>.</blockquote>
 
 ## Referencing a Git repository
 
-You can also reference a complete git repository by specifying the clone url in the [`paket.dependencies` file](dependencies-file.html):
+You can also reference a complete git repository by specifying the clone URL in the [`paket.dependencies` file](dependencies-file.html):
 
     [lang=paket]
     git https://github.com/fsprojects/Paket.git
@@ -42,13 +40,13 @@ You can read more about the version range details in the corresponding [NuGet re
 
 ## Running a build in git repositories
 
-If your referenced git repository contains a build script then Paket can execute this scipt after restore:
+If your referenced git repository contains a build script then Paket can execute this script after restore:
 
     [lang=paket]
-    git https://github.com/forki/nupkgtest.git master build:"build.cmd", OS:windows
-    git https://github.com/forki/nupkgtest.git master build:"build.sh", OS:mono
-    
-This allows you to excute arbitray commands after restore.
+    git https://github.com/forki/nupkgtest.git master build: "build.cmd", OS: windows
+    git https://github.com/forki/nupkgtest.git master build: "build.sh", OS: mono
+
+This allows you to execute arbitrary commands after restore.
 
 ## Using Git repositories as NuGet source
 
@@ -64,18 +62,16 @@ The generated [`paket.lock` file](lock-file.html) will look like this:
     [lang=paket]
     NUGET
       remote: paket-files/github.com/forki/nupkgtest/source
-      specs:
         Argu (1.1.3)
     GIT
       remote: https://github.com/forki/nupkgtest.git
-      specs:
          (05366e390e7552a569f3f328a0f3094249f3b93b)
 
 It's also possible to [run build scripts](git-dependencies.html#Running-a-build-in-git-repositories) to create the NuGet packages:
 
     [lang=paket]
-    git https://github.com/forki/nupkgtest.git master build:"build.cmd", Packages: /source/, OS:windows
-    git https://github.com/forki/nupkgtest.git master build:"build.sh", Packages: /source/, OS:mono
+    git https://github.com/forki/nupkgtest.git master build: "build.cmd", Packages: /source/, OS: windows
+    git https://github.com/forki/nupkgtest.git master build: "build.sh", Packages: /source/, OS: mono
 
     nuget Argu
 

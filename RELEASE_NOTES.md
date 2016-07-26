@@ -1,8 +1,89 @@
-#### 2.63.2 - 25.04.2016
-* Fix path issue on linux - https://github.com/fsprojects/Paket/pull/1644/files
+#### 3.2.2 - 24.06.2016
+* BUGFIX: Fixed out-of-date check for auto-detection of frameworks - https://github.com/fsprojects/Paket/issues/1750
 
-#### 2.63.1 - 22.04.2016
-* Don't pack template files in packages or paket-files
+#### 3.2.1 - 24.06.2016
+* Paket.SemVer.Parse is now in PublicAPI.fs - https://github.com/fsprojects/Paket/pull/1754
+
+#### 3.2.0 - 24.06.2016
+* Show out-of-sync error message if paket.lock is not matching paket.dependencies - https://github.com/fsprojects/Paket/issues/1750
+* BUGFIX: Dependency resolution for .NETFramework4.5 and .NETPortable0.0-wp8+netcore45+net45+wp81+wpa81 fixed - https://github.com/fsprojects/Paket/issues/1753
+* BUGFIX: Don't report warnings for packages that are not installed for current target framework - https://github.com/fsprojects/Paket/issues/1693
+* BUGFIX: Runtime deps are copied based on TargetFramework - https://github.com/fsprojects/Paket/issues/1751
+* BUGFIX: Do not take over control over manual nodes - https://github.com/fsprojects/Paket/issues/1746
+* BUGFIX: Better error message when log file is missing - https://github.com/fsprojects/Paket/issues/1743
+* BUGFIX: Create folder if needed during package extraction - https://github.com/fsprojects/Paket/issues/1741
+* BUGFIX: Simplify works with auto-detected target frameworks - https://github.com/fsprojects/Paket/pull/1740
+* BUGFIX: Make sure Guid in project reference is parsed well - https://github.com/fsprojects/Paket/pull/1738
+* BUGFIX: Added a username and password option scripting - https://github.com/fsprojects/Paket/pull/1736
+* BUGFIX: Trailing slash will be removed from credentials - https://github.com/fsprojects/Paket/pull/1735
+* COSMETICS: Add condition to AfterBuild target to unbreak nCrunch - https://github.com/fsprojects/Paket/pull/1734
+* BUGFIX: Ignore case in aliases dll names - https://github.com/fsprojects/Paket/pull/1733
+
+#### 3.1.0 - 16.06.2016
+* Paket pack doesn't allow empty string as authors and description metadata - https://github.com/fsprojects/Paket/pull/1728
+* Made Name and Guid in ProjectRefrence optional - https://github.com/fsprojects/Paket/issues/1729
+* BUGFIX: Prerelease version range are working with ~> again
+* BUGFIX: Filter empty When conditions - https://github.com/fsprojects/Paket/issues/1727
+* BUGFIX: Do not garbage collect packages with version in path
+
+#### 3.0.0 - 15.06.2016
+* Allow to reference git repositories - http://fsprojects.github.io/Paket/git-dependencies.html
+* Allow to run build commands on git repositories - http://fsprojects.github.io/Paket/git-dependencies.html#Running-a-build-in-git-repositories
+* Allow to use git repositories as NuGet source - http://fsprojects.github.io/Paket/git-dependencies.html#Using-Git-repositories-as-NuGet-source
+* Allow to override package sources in paket.local - http://fsprojects.github.io/Paket/local-file.html http://theimowski.com/blog/2016/05-19-paket-workflow-for-testing-new-nuget-package-before-release/index.html
+* NEW COMMAND: "paket generate-include-scripts" creates package include scripts for F# Interactive - http://fsprojects.github.io/Paket/paket-generate-include-scripts.html
+* Additional local caches - http://fsprojects.github.io/Paket/caches.html
+* Garbage collection in packages folder - https://github.com/fsprojects/Paket/pull/1491
+* Allows to exclude dll references from a NuGet package - http://fsprojects.github.io/Paket/references-files.html#Excluding-libraries
+* Allows to use aliases for libraries - http://fsprojects.github.io/Paket/references-files.html#Library-aliases
+* Create Choose nodes for .NET Standard
+* Remove command removes empty group when removing last dependency - https://github.com/fsprojects/Paket/pull/1706
+* New bootstrapper option --max-file-age - http://fsprojects.github.io/Paket/bootstrapper.html 
+* USABILITY: Removed "specs:" from paket.lock since it was copied from Bundler and had no meaning in Paket - https://github.com/fsprojects/Paket/pull/1608
+* BREAKING CHANGE: "lib", "runtimes" are not allowed as group names
+* BREAKING CHANGE: Removed --hard parameter from all commands. 
+    - Paket threads all commands as if --hard would have been set - https://github.com/fsprojects/Paket/pull/1567
+    - For the --hard use in the binding redirects there is a new parameter --clean-redirects - https://github.com/fsprojects/Paket/pull/1692 
+
+#### 2.66.10 - 15.06.2016
+* BUGFIX: Paket update failed on silverlight projects - https://github.com/fsprojects/Paket/pull/1719
+
+#### 2.66.9 - 03.06.2016
+* BUGFIX: Automatic prerelease expansion should not be done if explicit prereleases are requested - https://github.com/fsprojects/Paket/issues/1716 https://github.com/fsprojects/Paket/issues/1714
+
+#### 2.66.6 - 31.05.2016
+* BUGFIX: Groups with different sources should not resolve to wrong packages - https://github.com/fsprojects/Paket/issues/1711
+
+#### 2.66.5 - 30.05.2016
+* BUGFIX: Don't remove trailing zero if version is in package path - https://github.com/fsprojects/Paket/issues/1708
+
+#### 2.66.4 - 26.05.2016
+* BUGFIX: Optimization of local dependencies - https://github.com/fsprojects/Paket/issues/1703
+
+#### 2.66.3 - 24.05.2016
+* BUGFIX: Use utf-8 to download strings - https://github.com/fsprojects/Paket/pull/1702
+
+#### 2.66.2 - 23.05.2016
+* BUGFIX: Update with any of the --keep-major flag didn't honour content:none in paket.dependencies - https://github.com/fsprojects/Paket/issues/1701
+
+#### 2.66.0 - 23.05.2016
+* Package groups be excluded in a paket.template file - https://github.com/fsprojects/Paket/pull/1696
+* BUGFIX: Fallback from portable to net45 must be conversative - https://github.com/fsprojects/Paket/issues/1117
+
+#### 2.65.0 - 18.05.2016
+* BUGFIX: Fixed compatibility issues with nuget.org and myget - https://github.com/fsprojects/Paket/pull/1694
+* BUGFIX: DateTime in package should not be in the future
+* BUGFIX: Don't push non existing files - https://github.com/fsprojects/Paket/pull/1688
+* BUGFIX: Paket should imports build targets from packages in build dependency groups - https://github.com/fsprojects/Paket/pull/1674
+* BUGFIX: Framework resolution strategy for Google.Apis.Oauth2.v2 - https://github.com/fsprojects/Paket/issues/1663
+* BUGFIX: Blacklisting install.xdt and uninstall.xdt files - https://github.com/fsprojects/Paket/pull/1667
+
+#### 2.64.0 - 05.05.2016
+* Implemented support for NativeReference - https://github.com/fsprojects/Paket/issues/1658
+* Added monoandroid60 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1659
+* BUGFIX: Understand InterprojectDependencies without Name - https://github.com/fsprojects/Paket/issues/1657
+* BUGFIX: Fix path issue on linux - https://github.com/fsprojects/Paket/pull/1644/files
+* BUGFIX: Don't pack template files in packages or paket-files
 
 #### 2.63.0 - 22.04.2016
 * Added monoandroid43 to be matched as Some MonoAndroid - https://github.com/fsprojects/Paket/pull/1631

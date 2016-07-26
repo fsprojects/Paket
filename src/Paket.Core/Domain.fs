@@ -86,7 +86,10 @@ type GroupName =
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Function to convert a string into a group name
-let GroupName(name:string) = GroupName.GroupName(name.Trim(),name.ToLowerInvariant().Trim())
+let GroupName(name:string) = 
+  match name.ToLowerInvariant().Trim() with
+    | "lib" | "runtimes" -> invalidArg "name" (sprintf "It is not allowed to use '%s' as group name." name)
+    | id -> GroupName.GroupName(name.Trim(), id)
 
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo

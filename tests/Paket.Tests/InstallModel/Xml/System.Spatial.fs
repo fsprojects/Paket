@@ -9,19 +9,19 @@ open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2')">
+  <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v5.0')">
     <ItemGroup>
       <Reference Include="System.Spatial">
-        <HintPath>..\..\..\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
+        <HintPath>..\..\..\System.Spatial\lib\sl4\System.Spatial.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v5.0')">
+  <When Condition="($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v1.2' Or $(TargetFrameworkVersion) == 'v1.3' Or $(TargetFrameworkVersion) == 'v1.4' Or $(TargetFrameworkVersion) == 'v1.5')) Or ($(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2'))">
     <ItemGroup>
       <Reference Include="System.Spatial">
-        <HintPath>..\..\..\System.Spatial\lib\sl4\System.Spatial.dll</HintPath>
+        <HintPath>..\..\..\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
@@ -44,7 +44,7 @@ let ``should generate Xml for System.Spatial``() =
               @"..\System.Spatial\lib\sl4\zh-Hans\System.Spatial.resources.dll" 
             ],[],[],Nuspec.All)
     
-    let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,true,true,None)
-    chooseNode.OuterXml
-    |> normalizeXml
+    let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model,Map.empty,true,true,None)
+    let currentXML = chooseNode.OuterXml |> normalizeXml
+    currentXML
     |> shouldEqual (normalizeXml expected)

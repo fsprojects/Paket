@@ -5,31 +5,32 @@ open System
 open Argu
 
 type Command =
-    | [<First>][<CustomCommandLine("add")>]                     Add
-    | [<First>][<CustomCommandLine("clear-cache")>]             ClearCache
-    | [<First>][<CustomCommandLine("config")>]                  Config
-    | [<First>][<CustomCommandLine("convert-from-nuget")>]      ConvertFromNuget
-    | [<First>][<CustomCommandLine("find-refs")>]               FindRefs 
-    | [<First>][<CustomCommandLine("init")>]                    Init
-    | [<First>][<CustomCommandLine("auto-restore")>]            AutoRestore
-    | [<First>][<CustomCommandLine("install")>]                 Install
-    | [<First>][<CustomCommandLine("outdated")>]                Outdated
-    | [<First>][<CustomCommandLine("remove")>]                  Remove
-    | [<First>][<CustomCommandLine("restore")>]                 Restore
-    | [<First>][<CustomCommandLine("simplify")>]                Simplify
-    | [<First>][<CustomCommandLine("update")>]                  Update
-    | [<First>][<CustomCommandLine("find-packages")>]           FindPackages
-    | [<First>][<CustomCommandLine("find-package-versions")>]   FindPackageVersions
-    | [<First>][<CustomCommandLine("show-installed-packages")>] ShowInstalledPackages
-    | [<First>][<CustomCommandLine("show-groups")>]             ShowGroups
-    | [<First>][<CustomCommandLine("pack")>]                    Pack
-    | [<First>][<CustomCommandLine("push")>]                    Push
+    | [<First>][<CustomCommandLine("add")>]                      Add
+    | [<First>][<CustomCommandLine("clear-cache")>]              ClearCache
+    | [<First>][<CustomCommandLine("config")>]                   Config
+    | [<First>][<CustomCommandLine("convert-from-nuget")>]       ConvertFromNuget
+    | [<First>][<CustomCommandLine("find-refs")>]                FindRefs 
+    | [<First>][<CustomCommandLine("init")>]                     Init
+    | [<First>][<CustomCommandLine("auto-restore")>]             AutoRestore
+    | [<First>][<CustomCommandLine("install")>]                  Install
+    | [<First>][<CustomCommandLine("outdated")>]                 Outdated
+    | [<First>][<CustomCommandLine("remove")>]                   Remove
+    | [<First>][<CustomCommandLine("restore")>]                  Restore
+    | [<First>][<CustomCommandLine("simplify")>]                 Simplify
+    | [<First>][<CustomCommandLine("update")>]                   Update
+    | [<First>][<CustomCommandLine("find-packages")>]            FindPackages
+    | [<First>][<CustomCommandLine("find-package-versions")>]    FindPackageVersions
+    | [<First>][<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages
+    | [<First>][<CustomCommandLine("show-groups")>]              ShowGroups
+    | [<First>][<CustomCommandLine("pack")>]                     Pack
+    | [<First>][<CustomCommandLine("push")>]                     Push
+    | [<First>][<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Add -> "Adds a new package to your paket.dependencies file."
-            | ClearCache -> "Clears the NuGet cache folder."
+            | ClearCache -> "Clears the NuGet and git cache folders."
             | Config -> "Allows to store global configuration values like NuGet credentials."
             | ConvertFromNuget -> "Converts from using NuGet to Paket."
             | FindRefs -> "Finds all project files that have the given NuGet packages installed."
@@ -45,9 +46,9 @@ with
             | FindPackageVersions -> "Allows to search for package versions."
             | ShowInstalledPackages -> "Shows all installed top-level packages."
             | ShowGroups -> "Shows all groups."
-            | Pack -> "Packs all paket.template files within this repository"
+            | Pack -> "Packs all paket.template files within this repository."
             | Push -> "Pushes the given `.nupkg` file."
-
+            | GenerateIncludeScripts -> "Generate include scripts for installed packages."
     member this.Name =
         let uci,_ = Microsoft.FSharp.Reflection.FSharpValue.GetUnionFields(this, typeof<Command>)
         (uci.GetCustomAttributes(typeof<CustomCommandLineAttribute>)
@@ -61,9 +62,9 @@ type AddArgs =
     | [<CustomCommandLine("group")>] Group of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
-    | Hard
     | Redirects
     | CreateNewBindingFiles
+    | Clean_Redirects
     | No_Install
     | Keep_Major
     | Keep_Minor
@@ -79,9 +80,9 @@ with
             | Project(_) -> "Allows to add the package to a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to add the package to the projects's paket.references file."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
+            | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
@@ -91,12 +92,16 @@ with
 type ConfigArgs =
     | [<CustomCommandLine("add-credentials")>] AddCredentials of string
     | [<CustomCommandLine("add-token")>] AddToken of string * string
+    | Username of string
+    | Password of string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | AddCredentials(_) -> "Add credentials for the specified NuGet feed."
             | AddToken(_) -> "Add token for the specified source."
+            | Username(_) -> "Provide a username (for scripting)"
+            | Password(_) -> "provide a password on the commandline (for scripting)"
 
 type ConvertFromNugetArgs =
     | [<AltCommandLine("-f")>] Force
@@ -140,9 +145,9 @@ with
 
 type InstallArgs =
     | [<AltCommandLine("-f")>] Force
-    | Hard
     | Redirects
     | CreateNewBindingFiles
+    | Clean_Redirects
     | Keep_Major
     | Keep_Minor
     | Keep_Patch
@@ -153,9 +158,9 @@ with
         member this.Usage =
             match this with
             | Force -> "Forces the download and reinstallation of all packages."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
+            | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
@@ -178,7 +183,6 @@ type RemoveArgs =
     | [<CustomCommandLine("group")>] Group of string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
-    | Hard
     | No_Install
 with
     interface IArgParserTemplate with
@@ -189,7 +193,6 @@ with
             | Project(_) -> "Allows to remove the package from a single project only."
             | Force -> "Forces the download and reinstallation of all packages."
             | Interactive -> "Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
 
 
@@ -203,6 +206,7 @@ type RestoreArgs =
     | [<AltCommandLine("-f")>] Force
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
     | [<CustomCommandLine("--touch-affected-refs")>] Touch_Affected_Refs
+    | [<CustomCommandLine("--ignore-checks")>] Ignore_Checks
     | [<CustomCommandLine("group")>] Group of string
     | [<Rest>] References_Files of string
 with
@@ -213,6 +217,7 @@ with
             | Group(_) -> "Allows to restore a single group."
             | Install_Only_Referenced -> "Allows to restore packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
             | Touch_Affected_Refs -> "Touches project files referencing packages which are being restored, to help incremental build tools detecting the change."
+            | Ignore_Checks -> "Skips the test if paket.dependencies and paket.lock are in sync."
             | References_Files(_) -> "Allows to restore all packages from the given paket.references files. This implies --only-referenced."
 
 type SimplifyArgs =
@@ -228,9 +233,9 @@ type UpdateArgs =
     | [<CustomCommandLine("version")>] Version of string
     | [<CustomCommandLine("group")>] Group of string
     | [<AltCommandLine("-f")>] Force
-    | Hard
     | Redirects
     | CreateNewBindingFiles
+    | Clean_Redirects
     | No_Install
     | Keep_Major
     | Keep_Minor
@@ -245,9 +250,9 @@ with
             | Group(_) -> "Allows to specify the dependency group."
             | Version(_) -> "Allows to specify version of the package."
             | Force -> "Forces the download and reinstallation of all packages."
-            | Hard -> "Replaces package references within project files even if they are not yet adhering to the Paket's conventions (and hence considered manually managed)."
             | Redirects -> "Creates binding redirects for the NuGet packages."
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
+            | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
@@ -353,6 +358,18 @@ with
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
+type GenerateIncludeScriptsArgs = 
+    | [<CustomCommandLine("framework")>] Framework of string
+    | [<CustomCommandLine("type")>] ScriptType of string
+with
+  interface IArgParserTemplate with
+      member this.Usage = 
+        match this with
+        | Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore. Can be provided multiple times."
+        | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'. Can be provided multiple times."
+      
+
+  
 let cmdLineSyntax (parser:ArgumentParser<_>) commandName =
     "paket " + commandName + " " + parser.PrintCommandLineSyntax()
 
@@ -412,7 +429,7 @@ let markdown (command : Command) (additionalText : string) =
         | ShowGroups -> syntaxAndOptions (ArgumentParser.Create<ShowGroupsArgs>())
         | Pack -> syntaxAndOptions (ArgumentParser.Create<PackArgs>())
         | Push -> syntaxAndOptions (ArgumentParser.Create<PushArgs>())
-
+        | GenerateIncludeScripts -> syntaxAndOptions (ArgumentParser.Create<GenerateIncludeScriptsArgs>())
     let replaceLinks (text : string) =
         text
         |> replace "(?<=\s)paket.dependencies( file(s)?)?" "[`paket.dependencies`$1](dependencies-file.html)"

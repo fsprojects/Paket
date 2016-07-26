@@ -31,3 +31,23 @@ let ``#1018 update group legacy``() =
     |> shouldEqual (SemVer.Parse "2.6.1")
     lockFile.Groups.[GroupName "Legacy"].Resolution.[PackageName "Newtonsoft.Json"].Version
     |> shouldBeGreaterThan (SemVer.Parse "5.0.2")
+
+[<Test>]
+let ``#1711 update main group with correct source``() =
+    update "i001711-wrong-source" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001711-wrong-source","paket.lock"))
+    let p1 = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Test"]
+    p1.Version |> shouldEqual (SemVer.Parse "0.0.1")
+    p1.Source.Url |> shouldEqual "TestA"
+
+[<Test>]
+let ``#1711 update main group with correct source with multiple groups``() =
+    update "i001711-wrong-groupsource" |> ignore
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001711-wrong-groupsource","paket.lock"))
+    let p1 = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Test"]
+    p1.Version |> shouldEqual (SemVer.Parse "0.0.1")
+    p1.Source.Url |> shouldEqual "TestA"
+
+    let p2 = lockFile.Groups.[GroupName "Cumulus.1.0"].Resolution.[PackageName "Test"]
+    p2.Version |> shouldEqual (SemVer.Parse "0.0.1")
+    p2.Source.Url |> shouldEqual "TestB"

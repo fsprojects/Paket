@@ -9,6 +9,7 @@ open Paket.Logging
 open System.Collections.Generic
 open Paket.Requirements
 open Paket.Xml
+open InstallProcess
 
 let (|CompleteTemplate|IncompleteTemplate|) templateFile = 
     match templateFile with
@@ -48,8 +49,8 @@ let getVersion versionFromAssembly attributes =
 
 let getAuthors attributes = 
     attributes
-    |> Seq.tryPick (function Company a -> Some a | _ -> None)
-    |> Option.map (fun a -> 
+    |> Seq.tryPick (function Company a when notNullOrEmpty a -> Some a | _ -> None)
+    |> Option.map (fun a ->
             a.Split(',')
             |> Array.map (fun s -> s.Trim())
             |> List.ofArray)
@@ -67,8 +68,7 @@ let readAssembly fileName =
     let assemblyReader = 
         ProviderImplementation.AssemblyReader.ILModuleReaderAfterReadingAllBytes(
             fileName, 
-            ProviderImplementation.AssemblyReader.mkILGlobals ProviderImplementation.AssemblyReader.ecmaMscorlibScopeRef, 
-            true)
+            ProviderImplementation.AssemblyReader.mkILGlobals ProviderImplementation.AssemblyReader.EcmaMscorlibScopeRef)
    
     let versionFromAssembly = assemblyReader.ILModuleDef.ManifestOfAssembly.Version
     let id = assemblyReader.ILModuleDef.ManifestOfAssembly.Name
@@ -83,7 +83,7 @@ let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectFil
         |> normalizePath).FullName
     |> readAssembly
 
-let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.CacheValue) = 
+let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.ILModuleReader) = 
     [for inp in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do 
          match ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp with
          | [] -> ()
@@ -110,7 +110,17 @@ let addDependency (templateFile : TemplateFile) (dependency : PackageName * Vers
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with Dependencies = newDeps }) }
     | IncompleteTemplate -> 
-        failwith "You should only try to add dependencies to template files with complete metadata."
+        failwith (sprintf "You should only try to add dependencies to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
+
+let excludeDependency (templateFile : TemplateFile) (exclude : PackageName) = 
+    match templateFile with
+    | CompleteTemplate(core, opt) -> 
+        let newExcludes = 
+            opt.ExcludedDependencies |> Set.add exclude
+        { FileName = templateFile.FileName
+          Contents = CompleteInfo(core, { opt with ExcludedDependencies = newExcludes }) }
+    | IncompleteTemplate -> 
+        failwith (sprintf "You should only try to exclude dependencies to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
 let toFile config platform (p : ProjectFile) = 
     Path.Combine(Path.GetDirectoryName p.FileName, p.GetOutputDirectory config platform, p.GetAssemblyName())
@@ -121,7 +131,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
         { FileName = templateFile.FileName
           Contents = CompleteInfo(core, { opt with Files = (source,target) :: opt.Files }) }
     | IncompleteTemplate -> 
-        failwith "You should only try and add files to template files with complete metadata."
+        failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
 let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
     let targetDir = 
@@ -137,11 +147,14 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         | _ -> PreReleaseStatus.All
     
     let deps, files = 
-        let interProjectDeps = if includeReferencedProjects then project.GetAllInterProjectDependenciesWithoutProjectTemplates 
-                               else project.GetAllInterProjectDependenciesWithProjectTemplates 
+        let interProjectDeps = 
+            if includeReferencedProjects then 
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates()
+            else 
+                project.GetAllInterProjectDependenciesWithProjectTemplates()
+            |> Seq.toList
 
         interProjectDeps
-        |> Seq.toList
         |> List.filter (fun proj -> proj <> project)
         |> List.fold (fun (deps, files) p -> 
             match Map.tryFind p.FileName map with
@@ -158,37 +171,49 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
     let templateWithOutput =
         let additionalFiles = 
             let assemblyNames = 
-                if includeReferencedProjects then project.GetAllInterProjectDependenciesWithoutProjectTemplates |> Seq.toList else [ project ]
+                if includeReferencedProjects then 
+                    project.GetAllInterProjectDependenciesWithoutProjectTemplates() 
+                    |> Seq.toList 
+                else 
+                    [ project ]
                 |> List.map (fun proj -> proj.GetAssemblyName())
             
             assemblyNames
             |> Seq.collect (fun assemblyFileName -> 
-                                let assemblyfi = FileInfo(assemblyFileName)
-                                let name = Path.GetFileNameWithoutExtension assemblyfi.Name
+                let assemblyfi = FileInfo(assemblyFileName)
+                let name = Path.GetFileNameWithoutExtension assemblyfi.Name
 
-                                let projectdir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
-                                let path = Path.Combine(projectDir, project.GetOutputDirectory config platform)
-                                let files = Directory.GetFiles(path, name + ".*")
-                                files 
-                                |> Array.map (fun f -> FileInfo f)
-                                |> Array.filter (fun fi -> 
-                                                    let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
-                                                    let validExtensions = match template.Contents with
-                                                                          | CompleteInfo(core, optional) ->
-                                                                              if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                                                              else [".xml"; ".dll"; ".exe";]
-                                                                          | ProjectInfo(core, optional) ->
-                                                                              if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
-                                                                              else [".xml"; ".dll"; ".exe";]
-                                                    let isValidExtension = 
-                                                        validExtensions
-                                                        |> List.exists (String.equalsIgnoreCase fi.Extension)
-                                                    isSameFileName && isValidExtension)
-                           )
+                let projectdir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
+                let path = Path.Combine(projectDir, project.GetOutputDirectory config platform)
+
+                Directory.GetFiles(path, name + ".*")
+                |> Array.map (fun f -> FileInfo f)
+                |> Array.filter (fun fi -> 
+                                    let isSameFileName = (Path.GetFileNameWithoutExtension fi.Name) = name
+                                    let validExtensions = 
+                                        match template.Contents with
+                                        | CompleteInfo(core, optional) ->
+                                            if core.Symbols || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                            else [".xml"; ".dll"; ".exe";]
+                                        | ProjectInfo(core, optional) ->
+                                            if core.Symbols  || optional.IncludePdbs then [".xml"; ".dll"; ".exe"; ".pdb"; ".mdb"]
+                                            else [".xml"; ".dll"; ".exe";]
+                                    let isValidExtension = 
+                                        validExtensions
+                                        |> List.exists (String.equalsIgnoreCase fi.Extension)
+                                    isSameFileName && isValidExtension)
+                            )
             |> Seq.toArray
 
         additionalFiles
         |> Array.fold (fun template file -> addFile file.FullName targetDir template) template
+
+    let templateWithOutputAndExcludes =
+        match template.Contents with
+          | CompleteInfo(core, optional) -> optional.ExcludedGroups
+          | ProjectInfo(core, optional) -> optional.ExcludedGroups
+        |> Seq.collect dependenciesFile.GetDependenciesInGroup
+        |> Seq.fold (fun templatefile package -> excludeDependency templatefile package.Key) templateWithOutput
     
     // If project refs will also be packaged, add dependency
     let withDeps = 
@@ -203,7 +228,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                    | None -> failwithf "There was no version given for %s." templateFile.FileName
                | IncompleteTemplate -> 
                    failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
-        |> List.fold addDependency templateWithOutput
+        |> List.fold addDependency templateWithOutputAndExcludes
     
     // If project refs will not be packaged, add the assembly to the package
     let withDepsAndIncluded = 
@@ -215,8 +240,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         |> LockFile.LoadFrom
 
     let allReferences = 
-        let getPackages proj = 
-            match ProjectFile.FindReferencesFile (FileInfo proj.FileName) with
+        let getPackages (proj:ProjectFile) = 
+            match proj.FindReferencesFile () with
             | Some f -> 
                 let refFile = ReferencesFile.FromFile f
                 refFile.Groups
@@ -225,9 +250,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | None -> []
           
         [if includeReferencedProjects then
-            for proj in project.GetRecursiveInterProjectDependencies |> Seq.filter ((<>) project) do
-                let projFileInfo = FileInfo proj.FileName
-                match ProjectFile.FindTemplatesFile projFileInfo with
+            for proj in project.GetAllReferencedProjects() |> Seq.filter ((<>) project) do
+                match proj.FindTemplatesFile() with
                 | Some templateFileName when TemplateFile.IsProjectType templateFileName ->
                     match TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq).Contents with
                     | CompleteInfo(core, optional) ->
@@ -266,9 +290,9 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 | None -> true
                 | Some group ->
                     group.Packages |> List.exists (fun p -> p.Name = settings.Name) ||
-                      isDependencyOfAnyOtherDependency settings.Name |> not)
+                        isDependencyOfAnyOtherDependency settings.Name |> not)
         |> List.sortByDescending (fun (group, settings) -> settings.Name)
-
+    
     match refs with
     | [] -> withDepsAndIncluded
     | _ -> 

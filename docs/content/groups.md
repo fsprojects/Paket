@@ -41,25 +41,20 @@ After [`paket install`](paket-install.html) the generated [`paket.lock` file](lo
     [lang=paket]
     NUGET
       remote: https://nuget.org/api/v2
-      specs:
         FSharp.Core (4.0.0.1)
         Newtonsoft.Json (7.0.1)
         UnionArgParser (0.6.3)
     GITHUB
       remote: forki/FsUnit
-      specs:
         FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
       remote: fsharp/FAKE
-      specs:
         src/app/FakeLib/Globbing/Globbing.fs (991bea743c5d5e8eec0defc7338a89281ed3f51a)
       remote: fsprojects/Chessie
-      specs:
         src/Chessie/ErrorHandling.fs (1f23b1caeb1f87e750abc96a25109376771dd090)
 
     GROUP Build
     NUGET
       remote: https://nuget.org/api/v2
-      specs:
         FAKE (4.3.1)
         FSharp.Compiler.Service (1.4.0.1)
         FSharp.Formatting (2.10.0)
@@ -78,14 +73,12 @@ After [`paket install`](paket-install.html) the generated [`paket.lock` file](lo
           Microsoft.Net.Http
     GITHUB
       remote: fsharp/FAKE
-      specs:
         modules/Octokit/Octokit.fsx (991bea743c5d5e8eec0defc7338a89281ed3f51a)
           Octokit
 
     GROUP Test
     NUGET
       remote: https://nuget.org/api/v2
-      specs:
         NUnit (2.6.4)
         NUnit.Runners (2.6.4)
 
@@ -118,13 +111,11 @@ Every group will be resolved independently to the following [`paket.lock` file](
     [lang=paket]
     NUGET
       remote: https://nuget.org/api/v2
-      specs:
         Newtonsoft.Json (7.0.1)
 
     GROUP Legacy
     NUGET
       remote: https://nuget.org/api/v2
-      specs:
         Newtonsoft.Json (6.0.8)
 
 Paket is downloading both version. You will get `packages/Newtonsoft.Json` with version 7.0.1 and `packages/legacy/Newtonsoft.Json` with the 6.0.8 bits.

@@ -41,7 +41,7 @@
 * Features:
 	* View dependencies and referenced NuGet packages in the Solution window
 	* Execute Paket commands from the Solution window
-	* Syntax highlighting for all paket files
+	* Syntax highlighting for all Paket files
 	* Code completion whilst editing the paket.dependencies file
 	* Integrates with Xamarin Studio's unified search
 

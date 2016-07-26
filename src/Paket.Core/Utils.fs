@@ -21,15 +21,18 @@ let inline force (lz: 'a Lazy)  = lz.Force()
 let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
 let inline toLower str = (^a:(member ToLower:unit->string)str)
 
+let internal removeInvalidChars (str : string) = RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
+
 let internal memoize (f: 'a -> 'b) : 'a -> 'b =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, 'b>()
     fun (x: 'a) ->
         let value : 'b ref = ref Unchecked.defaultof<_>
         if cache.TryGetValue(x, value) then !value
         else
-            let value = f x
-            cache.[x] <- value
-            value
+            let y = f x
+            cache.TryAdd(x,y) |> ignore
+            y
+            
 
 type Auth = 
     | Credentials of Username : string * Password : string
@@ -152,10 +155,13 @@ let getNative (path:string) =
     if path.Contains "/debian-x64" then "/debian-x64" else
     if path.Contains "/aot" then "/aot" else
     if path.Contains "/osx" then "/osx" else
+    if path.Contains "/win" then "/win" else
+    if path.Contains "/linux" then "/linux" else
+    if path.Contains "/unix" then "/unix" else
     ""
 
 let extractPath =
-    memoize <| fun (infix, fileName : string) ->
+    memoize <| fun (infix, packageName:PackageName, fileName : string) ->
         let path = fileName.Replace("\\", "/").ToLower()
         let path = if path.StartsWith "lib/" then "/" + path else path
         let needle = sprintf "/%s/" infix
@@ -165,7 +171,11 @@ let extractPath =
         let packagesPos = path.LastIndexOf "packages/"
         let startPos =
             if packagesPos >= 0 then
-                path.IndexOf(needle,packagesPos) + 1
+                let packagenamePos = path.IndexOf(packageName.ToString().ToLower() + "/",packagesPos)
+                if packagenamePos >= 0 then
+                    path.IndexOf(needle,packagenamePos) + 1
+                else
+                    path.IndexOf(needle,packagesPos) + 1
             else
                 path.LastIndexOf(needle) + 1
         
@@ -180,6 +190,72 @@ let extractPath =
                 let libPart = path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1)
                 Some (libPart + nativePart)
 
+/// The path of the "Program Files" folder - might be x64 on x64 machine
+let ProgramFiles = Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles
+
+/// The path of Program Files (x86)
+/// It seems this covers all cases where PROCESSOR\_ARCHITECTURE may misreport and the case where the other variable 
+/// PROCESSOR\_ARCHITEW6432 can be null
+let ProgramFilesX86 = 
+    let wow64 = Environment.GetEnvironmentVariable "PROCESSOR_ARCHITEW6432"
+    let globalArch = Environment.GetEnvironmentVariable "PROCESSOR_ARCHITECTURE"
+    match wow64, globalArch with
+    | "AMD64", "AMD64" 
+    | null, "AMD64" 
+    | "x86", "AMD64" -> Environment.GetEnvironmentVariable "ProgramFiles(x86)"
+    | _ -> Environment.GetEnvironmentVariable "ProgramFiles"
+    |> fun detected -> if detected = null then @"C:\Program Files (x86)\" else detected
+
+/// The system root environment variable. Typically "C:\Windows"
+let SystemRoot = Environment.GetEnvironmentVariable "SystemRoot"
+
+/// Determines if the current system is an Unix system
+let isUnix = int Environment.OSVersion.Platform |> fun p -> (p = 4) || (p = 6) || (p = 128)
+
+/// Determines if the current system is a MacOs system
+let isMacOS =
+    (Environment.OSVersion.Platform = PlatformID.MacOSX) ||
+        // osascript is the AppleScript interpreter on OS X
+        File.Exists "/usr/bin/osascript"
+
+/// Determines if the current system is a Linux system
+let isLinux = isUnix && not isMacOS
+
+/// Determines if the current system is a Windows system
+let isWindows =
+    match Environment.OSVersion.Platform with
+    | PlatformID.Win32NT | PlatformID.Win32S | PlatformID.Win32Windows | PlatformID.WinCE -> true
+    | _ -> false
+
+/// Determines if the current system is a mono system
+/// Todo: Detect mono on windows
+let isMono = isUnix
+
+let monoPath =
+    if isMacOS && File.Exists "/Library/Frameworks/Mono.framework/Commands/mono" then
+        "/Library/Frameworks/Mono.framework/Commands/mono"
+    else
+        "mono"
+
+let isMatchingOperatingSystem (operatingSystemFilter : string option) =
+    let aliasesForOs =
+        match isMacOS, isUnix, isWindows with
+        | true, true, false -> [ "osx"; "mac" ]
+        | false, true, false -> [ "linux"; "unix"; "un*x" ]
+        | false, false, true -> [ "win"; "w7"; "w8"; "w10" ]
+        | _ -> []
+
+    match operatingSystemFilter with
+    | None -> true
+    | Some filter -> aliasesForOs |> List.exists (fun alias -> filter.ToLower().Contains(alias))
+
+let isMatchingPlatform (operatingSystemFilter : string option) =
+    match operatingSystemFilter with
+    | None -> true
+    | Some filter when filter = "mono" -> isMono
+    | Some filter when filter = "windows" -> not isMono
+    | _ -> isMatchingOperatingSystem operatingSystemFilter
+
 /// [omit]
 let inline normalizeXml (doc:XmlDocument) =
     use stringWriter = new StringWriter()
@@ -189,6 +265,17 @@ let inline normalizeXml (doc:XmlDocument) =
     doc.WriteTo xmlTextWriter
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder() |> string
+
+let normalizeFeedUrl (source:string) =
+    match source.TrimEnd([|'/'|]) with
+    | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream 
+    | "http://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream.Replace("https","http")
+    | "https://nuget.org/api/v2" -> Constants.DefaultNuGetStream
+    | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+    | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
+    | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
+    | url when url.EndsWith("/api/v3/index.json") -> url.Replace("/api/v3/index.json","")
+    | source -> source
 
 let envProxies () =
     let getEnvValue (name:string) =
@@ -228,30 +315,23 @@ let envProxies () =
 
 let calcEnvProxies = lazy (envProxies())
 
-let private proxies = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+let getDefaultProxyFor =
+    memoize
+      (fun (url:string) ->
+            let uri = Uri url
+            let getDefault () =
+                let result = WebRequest.GetSystemWebProxy()
+                let address = result.GetProxy uri 
 
-let getDefaultProxyFor url =
-    let uri = Uri url
-    let key = uri.Host,uri.Port,uri.Scheme
-    match proxies.TryGetValue key with
-    | true,proxy -> proxy
-    | _ ->
-        let getDefault () =
-            let result = WebRequest.GetSystemWebProxy()
-            let address = result.GetProxy uri 
+                if address = uri then null else
+                let proxy = WebProxy address
+                proxy.Credentials <- CredentialCache.DefaultCredentials
+                proxy.BypassProxyOnLocal <- true
+                proxy
 
-            if address = uri then null else
-            let proxy = WebProxy address
-            proxy.Credentials <- CredentialCache.DefaultCredentials
-            proxy.BypassProxyOnLocal <- true
-            proxy
-
-        let proxy =
             match calcEnvProxies.Force().TryFind uri.Scheme with
             | Some p -> if p.GetProxy uri <> uri then p else getDefault()
-            | None -> getDefault()
-        proxies.TryAdd(key,proxy) |> ignore
-        proxy
+            | None -> getDefault())
 
 let inline createWebClient (url,auth:Auth option) =
     let client = new WebClient()
@@ -337,6 +417,7 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             if notNullOrEmpty contentType then
                 client.Headers.Add(HttpRequestHeader.Accept, contentType)
 
+            client.Encoding <- Encoding.UTF8
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             return Some raw
         with _ -> return None
@@ -360,11 +441,11 @@ let askYesNo question =
     getAnswer()
 
 let inline normalizePath(path:string) = path.Replace("\\",Path.DirectorySeparatorChar.ToString()).Replace("/",Path.DirectorySeparatorChar.ToString()).TrimEnd(Path.DirectorySeparatorChar)
-
+let inline windowsPath (path:string) = path.Replace(Path.DirectorySeparatorChar, '\\')
 /// Gets all files with the given pattern
 let inline FindAllFiles(folder, pattern) = DirectoryInfo(folder).GetFiles(pattern, SearchOption.AllDirectories)
 
-let getTargetFolder root groupName (packageName:PackageName) (version:SemVerInfo) includeVersionInPath = 
+let getTargetFolder root groupName (packageName:PackageName) version includeVersionInPath = 
     let packageFolder = string packageName + if includeVersionInPath then "." + string version else ""
     if groupName = Constants.MainDependencyGroup then
         Path.Combine(root, Constants.PackagesFolderName, packageFolder)

@@ -133,19 +133,15 @@ let getSourceNodes (credentialsNode : XmlNode) source nodeType =
     |> Seq.filter (fun n -> n.Attributes.["source"].Value = source)
     |> Seq.toList
 
-let private sourceNodeCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 let private getCredentialsNode = lazy(getConfigNode "credentials" |> returnOrFail)
 
 /// Get the authentication from the authentication store for a specific source and validates against the url
-let GetAuthenticationForUrl (source : string) url =
+let GetAuthenticationForUrl =
+    memoize (fun (source : string, url) ->
     let sourceNodes =
-        let add = fun key ->
-            if File.Exists Constants.PaketConfigFile |> not then [] else
-            let credentialsNode = getCredentialsNode.Force()
-            getSourceNodes credentialsNode key "credential" @  getSourceNodes credentialsNode key "token"
-        let update = fun _key (existing : XmlElement list) -> existing
-
-        sourceNodeCache.AddOrUpdate(source, add, update)
+        if File.Exists Constants.PaketConfigFile |> not then [] else
+        let credentialsNode = getCredentialsNode.Force()
+        getSourceNodes credentialsNode source "credential" @ getSourceNodes credentialsNode source "token"
 
     match sourceNodes with
     | sourceNode :: _ ->
@@ -155,11 +151,11 @@ let GetAuthenticationForUrl (source : string) url =
         else 
             failwithf "Credentials from authentication store for %s are invalid" source
             None
-    | _ -> None
+    | _ -> None)
 
 /// Get the authentication from the authentication store for a specific source
 let GetAuthentication (source : string) =
-    GetAuthenticationForUrl source source
+    GetAuthenticationForUrl(source,source)
 
 let AddCredentials (source, username, password) = 
     trial { 
@@ -197,7 +193,7 @@ let AddToken (source, token) =
         | None -> () 
     }
 
-let askAndAddAuth (source : string) (username : string) = 
+let askAndAddAuth (source : string) (username : string) (password : string) = 
     let username =
         if username = "" then
             Console.Write "Username: "
@@ -205,5 +201,9 @@ let askAndAddAuth (source : string) (username : string) =
         else 
             username
 
-    let password = readPassword "Password: "
-    AddCredentials (source, username, password)
+    let password = 
+        if password = "" then
+            readPassword "Password: "
+        else
+            password
+    AddCredentials (source.TrimEnd [|'/'|], username, password)

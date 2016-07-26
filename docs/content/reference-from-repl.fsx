@@ -85,6 +85,11 @@ dependencies.GetDirectDependencies()
 // [fsi:  [("Main", "FSharp.Data", "2.1.0"); ("Main", "FSharp.Formatting", "2.4.36");]
 // [fsi:   ("Main", "FsUnit", "1.3.0.1")]]
 
+// list direct dependencies for the given package
+dependencies.GetDirectDependenciesForPackage("Main", "FSharp.Compiler.Service")
+// [fsi:val it : (string * string * string) list =]
+// [fsi:  ...]
+
 // list all usages of a package in Paket
 let paketDependencies = Dependencies.Locate(System.IO.Path.Combine(__SOURCE_DIRECTORY__,".."))
 // [fsi:found: D:\code\Paket\paket.dependencies]

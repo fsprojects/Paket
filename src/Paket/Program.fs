@@ -17,21 +17,22 @@ let private stopWatch = new Stopwatch()
 stopWatch.Start()
 
 let filterGlobalArgs args =
+    let error = ref None
     let verbose = args |> Array.exists (fun x -> x = "--verbose" || x = "-v")
-    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.map (fun i -> args.[i+1])
+    let logFile = args |> Array.tryFindIndex (fun x -> x = "--log-file") |> Option.bind (fun i -> if args.Length - 1 > i then Some args.[i+1] else error := Some "--log-file was specifed, but no log file was given"; None)
 
     let rest =
         match logFile with
         | Some file -> args |> Array.filter (fun a -> a <> "--log-file" && a <> file)
-        | None -> args
+        | None -> args |> Array.filter (fun a -> a <> "--log-file")
 
     let rest =
         if verbose then rest |> Array.filter (fun a -> a <> "-v" && a <> "--verbose")
         else rest
 
-    verbose, logFile, rest
+    error,verbose, logFile, rest
 
-let v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
+let globalError,v, logFile, args = filterGlobalArgs (Environment.GetCommandLineArgs().[1..])
 let silent = args |> Array.exists (fun a -> a = "-s" || a = "--silent")
 
 let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF command
@@ -43,8 +44,11 @@ let processWithValidation<'T when 'T :> IArgParserTemplate> validateF commandF c
              errorHandler = ProcessExiter())
 
     let resultsValid = validateF (results)
-    if results.IsUsageRequested || not resultsValid then
-        if not resultsValid then
+    if results.IsUsageRequested || not resultsValid || !globalError <> None then
+        if !globalError <> None then
+            traceError (!globalError).Value
+            Environment.ExitCode <- 1
+        elif not resultsValid then
             traceError "Command was:"
             traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
             parser.Usage(Commands.cmdLineUsageMessage command parser) |> traceError
@@ -66,9 +70,9 @@ let add (results : ParseResults<_>) =
     let packageName = results.GetResult <@ AddArgs.Nuget @>
     let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
     let force = results.Contains <@ AddArgs.Force @>
-    let hard = results.Contains <@ AddArgs.Hard @>
     let redirects = results.Contains <@ AddArgs.Redirects @>
     let createNewBindingFiles = results.Contains <@ AddArgs.CreateNewBindingFiles @>
+    let cleanBindingRedirects = results.Contains <@ AddArgs.Clean_Redirects @>
     let group = results.TryGetResult <@ AddArgs.Group @>
     let noInstall = results.Contains <@ AddArgs.No_Install @>
     let semVerUpdateMode =
@@ -80,10 +84,10 @@ let add (results : ParseResults<_>) =
 
     match results.TryGetResult <@ AddArgs.Project @> with
     | Some projectName ->
-        Dependencies.Locate().AddToProject(group, packageName, version, force, hard, redirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+        Dependencies.Locate().AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
     | None ->
         let interactive = results.Contains <@ AddArgs.Interactive @>
-        Dependencies.Locate().Add(group, packageName, version, force, hard, redirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+        Dependencies.Locate().Add(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, interactive, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
 let validateConfig (results : ParseResults<_>) =
     let credential = results.Contains <@ ConfigArgs.AddCredentials @>
@@ -100,12 +104,9 @@ let config (results : ParseResults<_>) =
     | true, _ -> 
       let args = results.GetResults <@ ConfigArgs.AddCredentials @>
       let source = args.Item 0
-      let username =
-          if(args.Length > 1) then
-              args.Item 1
-          else
-              ""
-      Dependencies.Locate().AddCredentials(source, username)
+      let username, password = results.GetResult (<@ ConfigArgs.Username @>, ""), results.GetResult (<@ ConfigArgs.Password @>, "") 
+            
+      Dependencies.Locate().AddCredentials(source, username, password)
     | _, true ->
       let args = results.GetResults <@ ConfigArgs.AddToken @>
       let source, token = args.Item 0
@@ -143,9 +144,9 @@ let clearCache (results : ParseResults<ClearCacheArgs>) =
 
 let install (results : ParseResults<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
-    let hard = results.Contains <@ InstallArgs.Hard @>
     let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
     let createNewBindingFiles = results.Contains <@ InstallArgs.CreateNewBindingFiles @>
+    let cleanBindingRedirects = results.Contains <@ InstallArgs.Clean_Redirects @>
     let installOnlyReferenced = results.Contains <@ InstallArgs.Install_Only_Referenced @>
     let semVerUpdateMode =
         if results.Contains <@ InstallArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
@@ -154,7 +155,7 @@ let install (results : ParseResults<_>) =
         SemVerUpdateMode.NoRestriction
     let touchAffectedRefs = results.Contains <@ InstallArgs.Touch_Affected_Refs @>
 
-    Dependencies.Locate().Install(force, hard, withBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode, touchAffectedRefs)
+    Dependencies.Locate().Install(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode, touchAffectedRefs)
 
 let outdated (results : ParseResults<_>) =
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
@@ -164,16 +165,15 @@ let outdated (results : ParseResults<_>) =
 let remove (results : ParseResults<_>) =
     let packageName = results.GetResult <@ RemoveArgs.Nuget @>
     let force = results.Contains <@ RemoveArgs.Force @>
-    let hard = results.Contains <@ RemoveArgs.Hard @>
     let noInstall = results.Contains <@ RemoveArgs.No_Install @>
     let group = results.TryGetResult <@ RemoveArgs.Group @>
     match results.TryGetResult <@ RemoveArgs.Project @> with
     | Some projectName ->
         Dependencies.Locate()
-                    .RemoveFromProject(group, packageName, force, hard, projectName, noInstall |> not)
+                    .RemoveFromProject(group, packageName, force, projectName, noInstall |> not)
     | None ->
         let interactive = results.Contains <@ RemoveArgs.Interactive @>
-        Dependencies.Locate().Remove(group, packageName, force, hard, interactive, noInstall |> not)
+        Dependencies.Locate().Remove(group, packageName, force, interactive, noInstall |> not)
 
 let restore (results : ParseResults<_>) =
     let force = results.Contains <@ RestoreArgs.Force @>
@@ -181,19 +181,20 @@ let restore (results : ParseResults<_>) =
     let group = results.TryGetResult <@ RestoreArgs.Group @>
     let installOnlyReferenced = results.Contains <@ RestoreArgs.Install_Only_Referenced @>
     let touchAffectedRefs = results.Contains <@ RestoreArgs.Touch_Affected_Refs @>
-    if List.isEmpty files then Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs)
-    else Dependencies.Locate().Restore(force, group, files, touchAffectedRefs)
+    let ignoreChecks = results.Contains <@ RestoreArgs.Ignore_Checks @>
+    if List.isEmpty files then Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks)
+    else Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks)
 
 let simplify (results : ParseResults<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
     Dependencies.Locate().Simplify(interactive)
 
 let update (results : ParseResults<_>) =
-    let hard = results.Contains <@ UpdateArgs.Hard @>
     let force = results.Contains <@ UpdateArgs.Force @>
     let noInstall = results.Contains <@ UpdateArgs.No_Install @>
     let group = results.TryGetResult <@ UpdateArgs.Group @>
     let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
+    let cleanBindingRedirects = results.Contains <@ UpdateArgs.Clean_Redirects @>
     let createNewBindingFiles = results.Contains <@ UpdateArgs.CreateNewBindingFiles @>
     let semVerUpdateMode =
         if results.Contains <@ UpdateArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
@@ -207,15 +208,15 @@ let update (results : ParseResults<_>) =
     | Some packageName ->
         let version = results.TryGetResult <@ UpdateArgs.Version @>
         if filter then
-            Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         else
-            Dependencies.Locate().UpdatePackage(group, packageName, version, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate().UpdatePackage(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
     | _ ->
         match group with
         | Some groupName -> 
-            Dependencies.Locate().UpdateGroup(groupName, force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate().UpdateGroup(groupName, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         | None ->
-            Dependencies.Locate().Update(force, hard, withBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
+            Dependencies.Locate().Update(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
 let pack (results : ParseResults<_>) =
     let outputPath = results.GetResult <@ PackArgs.Output @>
@@ -306,6 +307,81 @@ let push (results : ParseResults<_>) =
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
+let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) =
+    
+    let providedFrameworks = results.GetResults <@ GenerateIncludeScriptsArgs.Framework @>
+    let providedScriptTypes = results.GetResults <@ GenerateIncludeScriptsArgs.ScriptType @>
+    
+    let dependencies = 
+        Dependencies.Locate()
+        |> fun d -> DependenciesFile.ReadFromFile(d.DependenciesFile)
+        |> Paket.UpdateProcess.detectProjectFrameworksForDependenciesFile
+    
+    let rootFolder = DirectoryInfo(dependencies.RootPath)
+    
+    let frameworksForDependencyGroups = lazy (
+        dependencies.Groups
+            |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
+            |> Seq.map(function 
+                | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
+                | Paket.Requirements.FrameworkRestrictionList list ->
+                  list |> Seq.collect (
+                    function
+                    | Paket.Requirements.FrameworkRestriction.Exactly framework
+                    | Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
+                    | Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
+                    | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
+                  )
+              )
+            |> Seq.concat
+    )
+
+    let environmentFramework = lazy (
+        // HACK: resolve .net version based on environment
+        // list of match is incomplete / inaccurate
+        let version = Environment.Version
+        match version.Major, version.Minor, version.Build, version.Revision with
+        | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
+        | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
+        | _ -> DotNetFramework (FrameworkVersion.V4_5) // paket.exe is compiled for framework 4.5
+    )
+    let tupleMap f v = (v, f v)
+    let failOnMismatch toParse parsed f message =
+        if List.length toParse <> List.length parsed then
+            toParse
+            |> Seq.map (tupleMap f)
+            |> Seq.filter (snd >> Option.isNone)
+            |> Seq.map fst
+            |> String.concat ", "
+            |> sprintf "%s: %s. Cannot generate include scripts." message
+            |> failwith
+
+    let frameworksToGenerate =
+        let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract
+        
+        failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
+        
+        if targetFrameworkList |> Seq.isEmpty |> not then targetFrameworkList |> Seq.ofList
+        else if frameworksForDependencyGroups.Value |> Seq.isEmpty |> not then frameworksForDependencyGroups.Value 
+        else Seq.singleton environmentFramework.Value 
+    
+    let scriptTypesToGenerate = 
+      let parsedScriptTypes = providedScriptTypes |> List.choose Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate
+      
+      failOnMismatch providedScriptTypes parsedScriptTypes Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate "Unrecognized Script Type(s)"
+
+      match parsedScriptTypes with
+      | [] -> [Paket.LoadingScripts.ScriptGeneration.CSharp; Paket.LoadingScripts.ScriptGeneration.FSharp]
+      | xs -> xs
+
+    let workaround() = null |> ignore
+    for framework in frameworksToGenerate do
+        tracefn "generating scripts for framework %s" (framework.ToString())
+        workaround() // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
+        for scriptType in scriptTypesToGenerate do
+            Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
+    
+
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
 
@@ -350,6 +426,7 @@ let main() =
                 | ShowGroups -> processCommand showGroups
                 | Pack -> processCommand pack
                 | Push -> processCommand push
+                | GenerateIncludeScripts -> processCommand generateIncludeScripts
 
             let args = args.[1..]
 

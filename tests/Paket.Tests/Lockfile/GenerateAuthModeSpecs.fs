@@ -18,7 +18,6 @@ let graph = [
 
 let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Castle.Windsor-log4net (3.2)"""
 
 [<Test>]

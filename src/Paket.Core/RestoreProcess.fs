@@ -21,9 +21,15 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
     |> List.filter (fun ((group,package),resolved) -> NuGetV2.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
     |> List.map fst
 
-let private extractPackage package root source groupName version includeVersionInPath force =
+
+let CopyToCaches force caches fileName =
+    caches
+    |> Seq.iter (fun cache -> NuGetV2.CopyToCache(cache,fileName,force))
+
+let private extractPackage caches package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
-        let! folder = NuGetV2.DownloadPackage(root, source, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let! fileName,folder = NuGetV2.DownloadPackage(root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        CopyToCaches force caches fileName
         return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
@@ -42,47 +48,60 @@ let private extractPackage package root source groupName version includeVersionI
     }
 
 /// Downloads and extracts a package.
-let ExtractPackage(root, groupName, sources, force, package : ResolvedPackage) = 
+let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
     async { 
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
-        match package.Source with
-        | NuGetV2 _ | NuGetV3 _ -> 
-            let source = 
-                let normalized = package.Source.Url |> normalizeFeedUrl
-                sources 
-                    |> List.tryPick (fun source -> 
-                            match source with
-                            | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some(source)
-                            | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some(source)
-                            | _ -> None)
-                |> function
-                   | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file" package.Source.Url package.Name
-                   | Some s -> s 
+        let targetDir = getTargetFolder root groupName package.Name package.Version includeVersionInPath
+        let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
+        let force = if (localOverride || overridenFile.Exists) then true else force
+        let! result = async {
+            match package.Source with
+            | NuGetV2 _ | NuGetV3 _ -> 
+                let source = 
+                    let normalized = package.Source.Url |> normalizeFeedUrl
+                    sources 
+                        |> List.tryPick (fun source -> 
+                                match source with
+                                | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some(source)
+                                | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some(source)
+                                | _ -> None)
+                    |> function
+                       | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file" package.Source.Url package.Name
+                       | Some s -> s 
 
-            let! result = extractPackage package root source groupName v includeVersionInPath force 
-            return result
-        | LocalNuGet path ->
-            let path = Utils.normalizeLocalPath path
-            let di = Utils.getDirectoryInfo path root
-            let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
+                return! extractPackage caches package root source groupName v includeVersionInPath force
+            | LocalNuGet(path,_) ->
+                let path = Utils.normalizeLocalPath path
+                let di = Utils.getDirectoryInfo path root
+                let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
 
-            let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
-            return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+                CopyToCaches force caches nupkg.FullName
+
+                let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
+                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+        }
+
+        // manipulate overridenFile after package extraction
+        match localOverride, overridenFile.Exists with
+        | true , false -> overridenFile.Create().Dispose()
+        | false, true  -> overridenFile.Delete()
+        | true , true
+        | false, false -> ()
+
+        return result
     }
 
 /// Restores the given dependencies from the lock file.
-let internal restore(root, groupName, sources, force, lockFile:LockFile, packages:Set<PackageName>) = 
-    let sourceFileDownloads = 
-        async { RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles) } 
-
-    let packageDownloads = 
-        lockFile.Groups.[groupName].Resolution
-        |> Map.filter (fun name _ -> packages.Contains name)
-        |> Seq.map (fun kv -> ExtractPackage(root,groupName,sources,force,kv.Value))
-        |> Async.Parallel
-
-    Async.Parallel(sourceFileDownloads,packageDownloads) 
+let internal restore (root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
+    async { 
+        RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
+        let! _ = lockFile.Groups.[groupName].Resolution
+                 |> Map.filter (fun name _ -> packages.Contains name)
+                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
+                 |> Async.Parallel
+        return ()
+    }
 
 let internal computePackageHull groupName (lockFile : LockFile) (referencesFileNames : string seq) =
     referencesFileNames
@@ -91,16 +110,31 @@ let internal computePackageHull groupName (lockFile : LockFile) (referencesFileN
         |> Seq.map (fun p -> (snd p.Key)))
     |> Seq.concat
 
-let Restore(dependenciesFileName,force,group,referencesFileNames) = 
+let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
+    let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
 
     if not lockFileName.Exists then 
         failwithf "%s doesn't exist." lockFileName.FullName
 
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
-    let lockFile = LockFile.LoadFrom(lockFileName.FullName)
-   
+    let lockFile,localFile,hasLocalFile =
+        let lockFile = LockFile.LoadFrom(lockFileName.FullName)
+        if not localFileName.Exists then
+            lockFile,LocalFile.empty,false
+        else
+            let localFile =
+                LocalFile.readFile localFileName.FullName
+                |> Chessie.ErrorHandling.Trial.returnOrFail
+            LocalFile.overrideLockFile localFile lockFile,localFile,true
+
+    if not hasLocalFile && not ignoreChecks then
+        let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
+
+        if hasAnyChanges then 
+            failwithf "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
+
     let groups =
         match group with
         | None -> lockFile.Groups 
@@ -121,8 +155,16 @@ let Restore(dependenciesFileName,force,group,referencesFileNames) =
 
         match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
         | None ->
-            failwithf "The group %O was not found in the paket.lock file but not in the paket.dependencies file. Please run \"paket install\" again." kv.Value.Name
-        | Some depFileGroup ->        
-            restore(root, kv.Key, depFileGroup.Sources, force, lockFile,Set.ofSeq packages)
+            failwithf 
+                "The group %O was found in the %s file but not in the %s file. Please run \"paket install\" again." 
+                kv.Value
+                Constants.LockFileName
+                Constants.DependenciesFileName
+        | Some depFileGroup ->
+            let packages = Set.ofSeq packages
+            let overriden = Set.filter (LocalFile.overrides localFile) packages
+            restore(root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
             |> Async.RunSynchronously
             |> ignore
+
+    GarbageCollection.CleanUp(root, dependenciesFile, lockFile)

@@ -81,7 +81,7 @@ let ``#1195 should report broken app.config``() =
 
 [<Test>]
 let ``#1218 install hard should replace all assembly redirects with required only``() = 
-    paket "install --redirects --createnewbindingfiles --hard" "i001218-binding-redirect" |> ignore
+    paket "install --redirects --createnewbindingfiles --clean-redirects" "i001218-binding-redirect" |> ignore
 
     let path = Path.Combine(scenarioTempPath "i001218-binding-redirect")
     let config1Path = Path.Combine(path, "Project1", "app.config")
@@ -222,7 +222,7 @@ let ``#1218 install should replace paket's binding redirects with required only`
 
 [<Test>]
 let ``#1248 install should replace paket's binding redirects with required only and keep stable``() = 
-    paket "install --redirects --hard --createnewbindingfiles" "i001248-stable-redirect" |> ignore
+    paket "install --redirects --clean-redirects --createnewbindingfiles" "i001248-stable-redirect" |> ignore
 
     let originalConfig2Path = Path.Combine(originalScenarioPath "i001248-stable-redirect", "Project2", "app.config")
     
@@ -329,7 +329,7 @@ let ``#1544 redirects off``() =
 
 [<Test>]
 let ``#1574 redirects GAC``() = 
-    paket "install --hard"  "i001574-redirect-gac" |> ignore
+    paket "install --clean-redirects"  "i001574-redirect-gac" |> ignore
     let path = Path.Combine(scenarioTempPath "i001574-redirect-gac")
     let configPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config")
     let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config.expected")
@@ -344,7 +344,7 @@ let ``#1477 assembly redirects lock files``() =
     let scenario =  "i001474-restore-no-locks"
     prepare scenario
     let p = Paket.Dependencies.Locate (Path.Combine(scenarioTempPath scenario, "paket.dependencies"))
-    p.Install(true,true)
+    p.Install(true)
     p.Restore()
 
     try

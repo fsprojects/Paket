@@ -9,7 +9,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
         void SelfUpdate(string latestVersion);
     }
 
-    public interface ICachedDownloadStrategy : IDownloadStrategy
+    public interface IHaveEffectiveStrategy : IDownloadStrategy
     {
         IDownloadStrategy EffectiveStrategy { get; }
     }

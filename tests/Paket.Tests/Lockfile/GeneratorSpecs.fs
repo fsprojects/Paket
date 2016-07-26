@@ -32,7 +32,6 @@ let graph = [
 let ``should generate lock file for packages``() = 
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
       Castle.Windsor (>= 2.0)
@@ -59,7 +58,6 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 let ``should generate lock file with framework restrictions for packages``() = 
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Castle.Windsor (2.1) - framework: net35
     Castle.Windsor-log4net (3.3) - framework: net35
       Castle.Windsor (>= 2.0)
@@ -87,7 +85,6 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 let ``should generate lock file with no targets import for packages``() = 
     let expected = """NUGET
   remote: "D:\code\temp with space"
-  specs:
     Castle.Windsor (2.1) - import_targets: false, framework: net35
     Castle.Windsor-log4net (3.3) - import_targets: false, framework: net35
       Castle.Windsor (>= 2.0)
@@ -114,7 +111,6 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 let ``should generate lock file with no copy local for packages``() = 
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Castle.Windsor (2.1) - copy_local: false, import_targets: false, framework: net35
     Castle.Windsor-log4net (3.3) - copy_local: false, import_targets: false, framework: net35
       Castle.Windsor (>= 2.0)
@@ -141,7 +137,6 @@ nuget "Rx-Main" "~> 2.0" content: none, framework: >= net40 """
 let ``should generate lock file with disabled content for packages``() = 
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Castle.Windsor (2.1) - framework: net35
     Castle.Windsor-log4net (3.3) - framework: net35
       Castle.Windsor (>= 2.0)
@@ -159,11 +154,9 @@ let ``should generate lock file with disabled content for packages``() =
 
 let expectedWithGitHub = """GITHUB
   remote: owner/project1
-  specs:
     folder/file.fs (master)
     folder/file1.fs (commit1)
   remote: owner/project2
-  specs:
     folder/file.fs (commit2)
     folder/file3.fs (commit3) githubAuth"""
     
@@ -178,14 +171,18 @@ github "owner:project2:commit3" "folder/file3.fs" githubAuth """
     
     cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> List.map (fun f -> 
-        match f.Commit with
-        | Some commit ->  { Commit = commit
-                            Owner = f.Owner
-                            Origin = ModuleResolver.SingleSourceFileOrigin.GitHubLink
-                            Project = f.Project
-                            Dependencies = Set.empty
-                            Name = f.Name
-                            AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
+        match f.Version with
+        | VersionRestriction.Concrete commit -> 
+            { Commit = commit
+              Owner = f.Owner
+              Origin = ModuleResolver.Origin.GitHubLink
+              Project = f.Project
+              Command = None
+              OperatingSystemRestriction = None
+              PackagePath = None
+              Dependencies = Set.empty
+              Name = f.Name
+              AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
         | _ -> failwith "error")
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithGitHub)
@@ -203,7 +200,6 @@ let graph2 = [
 
 let expected2 = """NUGET
   remote: https://www.myget.org/F/ravendb3
-  specs:
     RavenDB.Client (3.0.3498-Unstable)"""
 
 [<Test>]
@@ -227,7 +223,6 @@ let graph3 = [
 
 let expected3 = """NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     GreaterThan.Package (2.1)
       Maximum.Package (<= 3.0)
     LessThan.Package (1.9)
@@ -243,21 +238,23 @@ let ``should generate other version ranges for packages``() =
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected3)
 
-let trivialResolve (f:ModuleResolver.UnresolvedSourceFile) =
+let trivialResolve (f:ModuleResolver.UnresolvedSource) =
     { Commit =
-        match f.Commit with
-        | Some(v) -> v
-        | None -> ""
+        match f.Version with
+        | VersionRestriction.Concrete(v) -> v
+        | _ -> ""
       Owner = f.Owner
       Origin = f.Origin
       Project = f.Project
       Dependencies = Set.empty
+      Command = None
+      OperatingSystemRestriction = None
+      PackagePath = None
       Name = f.Name
       AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
 
 let expectedWithHttp = """HTTP
   remote: http://www.fssnip.net
-  specs:
     test.fs (/raw/1M)"""
     
 [<Test>]
@@ -273,17 +270,14 @@ let ``should generate lock file for http source files``() =
 
 let expectedMultiple = """HTTP
   remote: http://www.fssnip.net
-  specs:
     myFile.fs (/raw/1M)
     myFile2.fs (/raw/32)
     myFile3.fs (/raw/15)
     myFile5.fs (/raw/34) httpAuth
 GIST
   remote: Thorium/1972308
-  specs:
     gistfile1.fs
   remote: Thorium/6088882
-  specs:
     FULLPROJECT"""
     
 [<Test>]
@@ -310,10 +304,8 @@ http http://www.fssnip.net/raw/15 myFile3.fs """
 
 let expectedForStanfordNLPdotNET = """HTTP
   remote: http://www.frijters.net
-  specs:
     ikvmbin-8.0.5449.0.zip (/ikvmbin-8.0.5449.0.zip)
   remote: http://nlp.stanford.edu
-  specs:
     stanford-corenlp-full-2014-10-31.zip (/software/stanford-corenlp-full-2014-10-31.zip)
     stanford-ner-2014-10-26.zip (/software/stanford-ner-2014-10-26.zip)
     stanford-parser-full-2014-10-31.zip (/software/stanford-parser-full-2014-10-31.zip)
@@ -337,7 +329,7 @@ http http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"""
     
     references.Length |> shouldEqual 6
 
-    references.[5].Origin |> shouldEqual (SingleSourceFileOrigin.HttpLink("http://nlp.stanford.edu"))
+    references.[5].Origin |> shouldEqual (Origin.HttpLink("http://nlp.stanford.edu"))
     references.[5].Commit |> shouldEqual ("/software/stanford-segmenter-2014-10-26.zip")  // That's strange
     references.[5].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"  
 
@@ -358,7 +350,6 @@ let ``should parse and regenerate http Stanford.NLP.NET project``() =
 let ``should generate lock file with second group``() = 
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Castle.Windsor (2.1) - copy_content_to_output_dir: preserve_newest
     Castle.Windsor-log4net (3.3) - framework: net35
       Castle.Windsor (>= 2.0)
@@ -376,7 +367,6 @@ COPY-CONTENT-TO-OUTPUT-DIR: ALWAYS
 CONDITION: LEGACY
 NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     FAKE (4.0)
 """
     let lockFile = LockFile.Parse("Test",toLines expected)

@@ -6,7 +6,7 @@ Paket comes with a command that helps to convert existing solution from NuGet's 
 If you want to use the command then:
 
   * Please start by making a **back-up of your repository**
-  * Download Paket and it's BootStrapper as described in the ["Getting started" tutorial](getting-started.html#Downloading-Paket-and-it-s-BootStrapper)
+  * Download Paket and it's bootstrapper as described in the ["Getting started" tutorial](getting-started.html#Downloading-Paket-and-it-s-BootStrapper)
   * Run the `convert-from-nuget` command:
 
 
@@ -19,9 +19,9 @@ You can read more about the details and specific parameters for `convert-from-nu
 
 Choose a folder to run the conversion from that is parent to **all** the projects to be converted.
 
-When using nuget package restore, the ``packages`` folder is alongside the solution. It is possible with a solution that the folder parent to ``packages`` is **not** also parent to all the projects in the solution.
+When using NuGet package restore, the ``packages`` folder is alongside the solution. It is possible with a solution that the folder parent to ``packages`` is **not** also parent to all the projects in the solution.
 
-A solution is in effect acting as a symlink but this indirection via the solution is not possible with paket because paket manages projects and not solutions. In the example below, it would not be possible to run the ``paket convert-from-nuget`` command from the ``Build`` folder but it would be from the root folder.
+A solution is in effect acting as a symlink but this indirection via the solution is not possible with Paket because Paket manages projects and not solutions. In the example below, it would not be possible to run the ``paket convert-from-nuget`` command from the ``Build`` folder but it would be from the root folder.
 
 <pre>
 +---Build
@@ -65,7 +65,7 @@ The `paket convert-from-nuget` command:
 1. Finds all `packages.config` files, generates a paket.dependencies file in the solution root and replaces each `packages.config` with an equivalent paket.references file. 
 2. If there is a solution-level `packages.config`, then it will be removed and its dependencies will be included into the paket.dependencies file.
 3. If you use NuGet Package Restore ([MSBuild-Integrated or Automatic Visual Studio Package Restore](http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore)), then the [`paket auto-restore`](paket-auto-restore.html) command will be invoked.
-4. Next (unless `--no-install` is specified), the [paket install](paket-install.html) process with the `--hard` flag will be executed. This will:
+4. Next (unless `--no-install` is specified), the [paket install](paket-install.html) process will be executed. This will:
 
   - analyze the dependencies.
   - generate a paket.lock file.

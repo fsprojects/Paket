@@ -69,7 +69,7 @@ let selectNextRequirement (xs: Set<PackageRequirement>) = Some(Seq.head xs,xs)
 /// Calls the NuGet API and retrieves all versions for a package
 let getAllVersionsFromNuget (x:PackageName) :SemVerInfo list = []
 
-/// Checks if the given version is in the specified verion range
+/// Checks if the given version is in the specified version range
 let isInRange (vr:VersionRequirement) (v:SemVerInfo) : bool = true
 
 // Calls the NuGet API and returns package details for the given package version

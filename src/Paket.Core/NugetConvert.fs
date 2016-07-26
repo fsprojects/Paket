@@ -12,6 +12,7 @@ open Paket.PackageSources
 open Paket.Requirements
 open Chessie.ErrorHandling
 open Paket.PackagesConfigFile
+open InstallProcess
 
 type CredsMigrationMode =
     | Encrypt
@@ -168,7 +169,7 @@ module NugetEnv =
                             |> lift (NugetConfig.OverrideConfig config)))
                         (ok NugetConfig.Empty)
 
-    let readNugetPackages(rootDirectory : DirectoryInfo) =
+    let readNuGetPackages(rootDirectory : DirectoryInfo) =
         let readSingle(file : FileInfo) = 
             try
                 { File = file
@@ -177,7 +178,9 @@ module NugetEnv =
                 |> ok 
             with _ -> fail (NugetPackagesConfigParseError file)
 
-        ProjectFile.FindAllProjects rootDirectory.FullName 
+        let projectFiles = ProjectFile.FindAllProjects rootDirectory.FullName
+
+        projectFiles
         |> Array.map (fun p -> p, Path.Combine(Path.GetDirectoryName(p.FileName), Constants.PackagesConfigFile))
         |> Array.filter (fun (p,packages) -> File.Exists packages)
         |> Array.map (fun (p,packages) -> readSingle(FileInfo(packages)) |> lift (fun packages -> (p,packages)))
@@ -188,7 +191,7 @@ module NugetEnv =
         let targets = FindAllFiles(rootDirectory.FullName, "nuget.targets") |> Array.tryHead
         let exe = FindAllFiles(rootDirectory.FullName, "nuget.exe") |> Array.tryHead
         let! config = readNugetConfig rootDirectory
-        let! packages = readNugetPackages rootDirectory
+        let! packages = readNuGetPackages rootDirectory
 
         return create rootDirectory configs targets exe config packages
     }
@@ -205,17 +208,18 @@ module ConvertResultR =
           PaketEnv = paketEnv
           SolutionFiles = solutionFiles }
 
-let createPackageRequirement (packageName, version, restrictions) dependenciesFileName = 
+let createPackageRequirement sources (packageName, version, restrictions) dependenciesFileName = 
      { Name = PackageName packageName
        VersionRequirement =
             if version = "" then
-                VersionRequirement(VersionRange.Minimum <| SemVer.Parse "0", PreReleaseStatus.No)
+                VersionRequirement(VersionRange.Minimum SemVer.Zero, PreReleaseStatus.No)
             else
                 VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
        ResolverStrategyForDirectDependencies = None
        ResolverStrategyForTransitives = None
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName
+       Sources = sources
        Graph = [] }
 
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
@@ -239,9 +243,9 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
 
     findWarnings (List.map (fun p -> p.Version) >> List.distinct >> List.map string) 
         "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
-    findWarnings (List.map (fun p -> p.TargetFramework) >> List.distinct >> List.choose (fun target -> target) >> List.map string) 
+    findWarnings (List.map (fun p -> p.TargetFramework) >> List.distinct >> List.choose id >> List.map string) 
         "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."
-    
+
     let latestVersions = 
         findDistinctPackages (List.map (fun p -> p.Version, p.TargetFramework) >> List.distinct)
         |> List.map (fun (name, versions) ->
@@ -258,7 +262,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         | _ -> latestVersions
 
     let read() =
-        let addPackages dependenciesFile = 
+        let addPackages dependenciesFile =
             packages
             |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = FrameworkRestrictionList restrictions})
             |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,version,installSettings) -> dependenciesFile.Add(groupName, packageName,version,installSettings)) dependenciesFile
@@ -286,10 +290,10 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         sources
         |> lift (fun sources -> 
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
-            let packageLines = 
+            let packageLines =
                 packages 
                 |> List.map (fun (name,v,restr) -> 
-                    let vr = createPackageRequirement (name, v, FrameworkRestrictionList restr) dependenciesFileName
+                    let vr = createPackageRequirement sources (name, v, FrameworkRestrictionList restr) dependenciesFileName
                     DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray
@@ -305,6 +309,13 @@ let convertPackagesConfigToReferencesFile projectFileName packagesConfig =
     packagesConfig.Packages
     |> List.map ((fun p -> p.Id) >> PackageName)
     |> List.fold (fun (r : ReferencesFile) packageName -> r.AddNuGetReference(Constants.MainDependencyGroup,packageName)) 
+                 referencesFile
+
+let convertDependenciesConfigToReferencesFile projectFileName dependencies =
+    let referencesFile = ProjectFile.FindOrCreateReferencesFile(FileInfo projectFileName)
+
+    dependencies
+    |> List.fold (fun (r : ReferencesFile) (packageName,_) -> r.AddNuGetReference(Constants.MainDependencyGroup,packageName)) 
                  referencesFile
 
 let convertProjects nugetEnv =
@@ -392,4 +403,4 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
     if installAfter then
         UpdateProcess.Update(
             result.PaketEnv.DependenciesFile.FileName,
-            { UpdaterOptions.Default with Common = { InstallerOptions.Default with Force = true; Hard = true; Redirects = true }})
+            { UpdaterOptions.Default with Common = { InstallerOptions.Default with Force = true; Redirects = true }})

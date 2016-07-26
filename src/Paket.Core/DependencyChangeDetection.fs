@@ -4,7 +4,7 @@ open Paket.Domain
 open Paket.Requirements
 open Paket.PackageResolver
 
-let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile) =
+let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile,strict) =
     let allTransitives groupName = lockFile.GetTransitiveDependencies groupName
     let hasChanged groupName transitives (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
         let settingsChanged() =
@@ -14,7 +14,13 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
                 else true
             else false
 
-        newRequirement.VersionRequirement.IsInRange originalPackage.Version |> not || settingsChanged()
+        let requirementOk =
+            if strict then
+                newRequirement.VersionRequirement.IsInRange originalPackage.Version
+            else
+                newRequirement.IncludingPrereleases().VersionRequirement.IsInRange originalPackage.Version
+
+        (not requirementOk) || settingsChanged()
 
     let added groupName transitives =
         match dependenciesFile.Groups |> Map.tryFind groupName with
@@ -71,7 +77,7 @@ type RemoteFileChange =
     { Owner : string
       Project : string
       Name : string
-      Origin : ModuleResolver.SingleSourceFileOrigin
+      Origin : ModuleResolver.Origin
       Commit : string option
       AuthKey : string option }
 
@@ -98,12 +104,17 @@ type RemoteFileChange =
           | :? RemoteFileChange as that -> RemoteFileChange.Compare(this,that)
           | _ -> invalidArg "that" "cannot compare value of different types"
 
-    static member CreateUnresolvedVersion (unresolved:ModuleResolver.UnresolvedSourceFile) : RemoteFileChange =
+    static member CreateUnresolvedVersion (unresolved:ModuleResolver.UnresolvedSource) : RemoteFileChange =
         { Owner = unresolved.Owner
           Project = unresolved.Project
           Name = unresolved.Name
           Origin = unresolved.Origin
-          Commit = unresolved.Commit
+          Commit = 
+            match unresolved.Version with
+            | ModuleResolver.VersionRestriction.NoVersionRestriction -> None
+            | ModuleResolver.VersionRestriction.Concrete x -> Some x
+            | ModuleResolver.VersionRestriction.VersionRequirement vr -> Some(vr.ToString())
+
           AuthKey = unresolved.AuthKey }
 
     static member CreateResolvedVersion (resolved:ModuleResolver.ResolvedSourceFile) : RemoteFileChange =
@@ -130,11 +141,13 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
                     let lockFileRemoteFiles =
                         lockFilegroup.RemoteFiles
                         |> List.map RemoteFileChange.CreateResolvedVersion
+                        |> List.map (fun r -> if r.Commit = None then r else { r with Commit = Some "" })
                         |> Set.ofList
 
                     let dependenciesFileRemoteFiles =
                         dependenciesFileGroup.RemoteFiles
                         |> List.map RemoteFileChange.CreateUnresolvedVersion
+                        |> List.map (fun r -> if r.Commit = None then r else { r with Commit = Some "" })
                         |> Set.ofList
 
                     let u =
@@ -170,3 +183,51 @@ let GetPreferredNuGetVersions (dependenciesFile:DependenciesFile,lockFile:LockFi
             | Some s -> kv.Key, (kv.Value.Version, s)
             | None -> kv.Key, (kv.Value.Version, kv.Value.Source))
     |> Map.ofSeq
+
+let GetChanges(dependenciesFile,lockFile,strict) =
+    let nuGetChanges = findNuGetChangesInDependenciesFile(dependenciesFile,lockFile,strict)
+    let nuGetChangesPerGroup =
+        nuGetChanges
+        |> Seq.groupBy fst
+        |> Map.ofSeq
+
+    let remoteFileChanges = findRemoteFileChangesInDependenciesFile(dependenciesFile,lockFile)
+    let remoteFileChangesPerGroup =
+        remoteFileChanges
+        |> Seq.groupBy fst
+        |> Map.ofSeq
+
+    let hasNuGetChanges groupName =
+        match nuGetChangesPerGroup |> Map.tryFind groupName with
+        | None -> false
+        | Some x -> Seq.isEmpty x |> not
+
+    let hasRemoteFileChanges groupName =
+        match remoteFileChangesPerGroup |> Map.tryFind groupName with
+        | None -> false
+        | Some x -> Seq.isEmpty x |> not
+
+    let hasChangedSettings groupName =
+        match dependenciesFile.Groups |> Map.tryFind groupName with
+        | None -> true
+        | Some dependenciesFileGroup -> 
+            match lockFile.Groups |> Map.tryFind groupName with
+            | None -> true
+            | Some lockFileGroup ->
+                let lockFileGroupOptions =
+                    if dependenciesFileGroup.Options.Settings.FrameworkRestrictions = AutoDetectFramework then
+                        { lockFileGroup.Options with Settings = { lockFileGroup.Options.Settings with FrameworkRestrictions = AutoDetectFramework } }
+                    else
+                        lockFileGroup.Options
+                dependenciesFileGroup.Options <> lockFileGroupOptions
+
+    let hasChanges groupName _ = 
+        hasChangedSettings groupName || hasNuGetChanges groupName || hasRemoteFileChanges groupName
+        
+    let hasAnyChanges =
+        dependenciesFile.Groups
+        |> Map.filter hasChanges
+        |> Map.isEmpty
+        |> not
+
+    hasAnyChanges,nuGetChanges,remoteFileChanges,hasChanges

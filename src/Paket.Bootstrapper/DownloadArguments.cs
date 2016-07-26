@@ -11,14 +11,16 @@ namespace Paket.Bootstrapper
         public string LatestVersion { get; set; }
         public bool IgnorePrerelease { get; set; }
         public bool IgnoreCache { get; set; }
+        public int? MaxFileAgeInMinutes { get; set; }
 
         public DownloadArguments()
         {
             IgnorePrerelease = true;
             LatestVersion = String.Empty;
+            MaxFileAgeInMinutes = null;
         }
 
-        public DownloadArguments(string latestVersion, bool ignorePrerelease, string folder, string target, bool doSelfUpdate, string nugetSource, bool ignoreCache)
+        public DownloadArguments(string latestVersion, bool ignorePrerelease, string folder, string target, bool doSelfUpdate, string nugetSource, bool ignoreCache, int? maxFileAgeInMinutes)
         {
             LatestVersion = latestVersion;
             IgnorePrerelease = ignorePrerelease;
@@ -27,6 +29,7 @@ namespace Paket.Bootstrapper
             DoSelfUpdate = doSelfUpdate;
             NugetSource = nugetSource;
             IgnoreCache = ignoreCache;
+            MaxFileAgeInMinutes = maxFileAgeInMinutes;
         }
     }
 }

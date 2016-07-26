@@ -1,0 +1,7 @@
+source https://www.nuget.org/api/v2
+
+framework: auto-detect
+
+nuget Microsoft.Owin.Host.SystemWeb
+nuget Owin
+nuget Microsoft.Owin

@@ -226,6 +226,15 @@ let ``#1427 won't install content when content:none``() =
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
     s2 |> shouldEqual s1 // we do not touch it
 
+[<Test>]
+let ``#1701 won't install content when content:none and --keep-major``() = 
+    let newLockFile = paket "update --keep-major" "i001701-keep-major"
+    let newFile = Path.Combine(scenarioTempPath "i001701-keep-major","TestPaket","TestPaket.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001701-keep-major","TestPaket","TestPaket.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1    
+
 
 [<Test>]
 let ``#1522 install content and copy to output dir``() = 
@@ -296,6 +305,15 @@ let ``#1505 should install conditionals``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1663 should install google apis``() = 
+    install "i001663-google-apis" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001663-google-apis","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001663-google-apis","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
    
 [<Test>]
 let ``#1523 should install native in mixed setting``() = 
@@ -343,12 +361,6 @@ let ``#1458 should not install conflicting deps from different groups``() =
     with
     | exn when exn.Message.Contains "Package Nancy is referenced in different versions" -> ()
 
-
-[<Test>]
-let ``#1442 warn if install finds no libs``() = 
-    let result = paket "install" "i001442-warn-if-empty"
-    result |> shouldContainText "contains libraries, but not for the selected TargetFramework"
-
 [<Test>]
 let ``#1442 should not warn on SonarLint``() = 
     let result = paket "install" "i001442-dont-warn"
@@ -368,10 +380,6 @@ let ``#1500 without install error``() =
     install "i001500-auto-detect" |> ignore
 
 [<Test>]
-let ``#1371 without download fail``() = 
-    paket "install -f"  "i001371-restore-error" |> ignore
-
-[<Test>]
 [<Ignore("")>]
 let ``#1507 allows to download remote dependencies``() =
     let scenario = "i001507-privateeye"
@@ -386,7 +394,7 @@ let ``#1552 install mvvmlightlibs again``() =
     let scenarioName = "i001552-install-mvvmlightlibs-again"
     let scenarioPath = scenarioTempPath scenarioName
 
-    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.lock")) |> normalizeLineEndings
+    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.locktemplate")) |> normalizeLineEndings
 
     let oldProjectFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
     let oldProjectFileText = File.ReadAllText oldProjectFile |> normalizeLineEndings
@@ -444,6 +452,88 @@ let ``#1592 install source content without CopyToOutputDirectory``() =
     let newLockFile = install "i001592-source-content"
     let newFile = Path.Combine(scenarioTempPath "i001592-source-content","xUnitTests","xUnitTests.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001592-source-content","xUnitTests","xUnitTests.expected.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1663 should import build targets``() =
+    install "i001663-build-targets" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001663-build-targets","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001663-build-targets","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1145 don't install excludes``() = 
+    let newLockFile = install "i001145-excludes"
+    let newFile = Path.Combine(scenarioTempPath "i001145-excludes","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001145-excludes","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#346 set aliases``() = 
+    let newLockFile = install "i000346-aliases"
+    let newFile = Path.Combine(scenarioTempPath "i000346-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i000346-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1720 install concrete net45``() = 
+    let newLockFile = install "i001720-explicit-net45"
+    let newFile = Path.Combine(scenarioTempPath "i001720-explicit-net45","projectA","projectA.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001720-explicit-net45","projectA","projectA.fsprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1720 install concrete netstandard15``() = 
+    let newLockFile = install "i001720-explicit-netstandard15"
+    let newFile = Path.Combine(scenarioTempPath "i001720-explicit-netstandard15","projectA","projectA.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001720-explicit-netstandard15","projectA","projectA.fsprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1732 aliases ignore cases``() = 
+    let newLockFile = install "i001732-lowercase-aliases"
+    let newFile = Path.Combine(scenarioTempPath "i001732-lowercase-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001732-lowercase-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1734 ncrunch condition``() = 
+    let newLockFile = install "i001734-ncrunch-condition"
+    let newFile = Path.Combine(scenarioTempPath "i001734-ncrunch-condition","projectA","projectA.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001734-ncrunch-condition","projectA","projectA.fsprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1746 hard should be softer``() =
+    install "i001746-hard-legacy" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001746-hard-legacy","SilverlightClassLibrary1","SilverlightClassLibrary1.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001746-hard-legacy","SilverlightClassLibrary1","SilverlightClassLibrary1.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+
+[<Test>]
+let ``#1753 use net45 and not portable``() =
+    install "i001753-portablenet451" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001753-portablenet451","SilverlightClassLibrary1","SilverlightClassLibrary1.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001753-portablenet451","SilverlightClassLibrary1","SilverlightClassLibrary1.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1

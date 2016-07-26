@@ -7,6 +7,7 @@ open NUnit.Framework
 open FsUnit
 open Paket.Domain
 open Paket.TestHelpers
+open Paket.InstallProcess
 
 let dummyDir = System.IO.DirectoryInfo("C:/")
 let dummyProjectFile = 

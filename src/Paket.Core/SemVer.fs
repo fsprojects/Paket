@@ -167,60 +167,63 @@ module SemVer =
     ///     parse "1.2.3-alpha2"   > parse "1.2.3-alpha"    // true
     ///     parse "1.2.3-alpha002" > parse "1.2.3-alpha1"   // true
     ///     parse "1.5.0-beta.2"   > parse "1.5.0-rc.1"     // false
-    let Parse(version : string) = 
-        try
+    let Parse = 
+        memoize <| fun (version : string) ->
+            try
 
-            /// sanity check to make sure that all of the integers in the string are positive.
-            /// because we use raw substrings with dashes this is very complex :(
-            version.Split([|'.'|]) |> Array.iter (fun s -> match Int32.TryParse s with | true, s when s < 0 -> failwith "no negatives!" | _ -> ignore ())
+                /// sanity check to make sure that all of the integers in the string are positive.
+                /// because we use raw substrings with dashes this is very complex :(
+                version.Split([|'.'|]) |> Array.iter (fun s -> match Int32.TryParse s with | true, s when s < 0 -> failwith "no negatives!" | _ -> ignore ())
 
-            if version.Contains("!") then 
-                failwithf "Invalid character found in %s" version
-            if version.Contains("..") then 
-                failwithf "Empty version part found in %s" version
+                if version.Contains("!") then 
+                    failwithf "Invalid character found in %s" version
+                if version.Contains("..") then 
+                    failwithf "Empty version part found in %s" version
         
-            let firstDash = version.IndexOf("-")
-            let plusIndex = version.IndexOf("+")
+                let firstDash = version.IndexOf("-")
+                let plusIndex = version.IndexOf("+")
 
-            let majorMinorPatch =
-                let firstSigil = if firstDash > 0 then firstDash else plusIndex
-                match firstSigil with
-                | -1 -> version
-                | n -> version.Substring(0, n)
+                let majorMinorPatch =
+                    let firstSigil = if firstDash > 0 then firstDash else plusIndex
+                    match firstSigil with
+                    | -1 -> version
+                    | n -> version.Substring(0, n)
 
-            let prerelease = 
-                match firstDash, plusIndex with
-                | -1, _ -> ""
-                | d, p when p = -1 -> version.Substring(d+1)
-                | d, p -> version.Substring(d+1, (version.Length - 1 - p) )
+                let prerelease = 
+                    match firstDash, plusIndex with
+                    | -1, _ -> ""
+                    | d, p when p = -1 -> version.Substring(d+1)
+                    | d, p -> version.Substring(d+1, (version.Length - 1 - p) )
             
-            /// there can only be one piece of build metadata, and it is signified by a + and then any number of dot-separated alpha-numeric groups.
-            /// this just greedily takes the whole remaining string :(
-            let buildmeta =
-                match plusIndex with
-                | -1 -> ""
-                | n when plusIndex = version.Length - 1 -> ""
-                | n -> version.Substring(plusIndex + 1)
+                /// there can only be one piece of build metadata, and it is signified by a + and then any number of dot-separated alpha-numeric groups.
+                /// this just greedily takes the whole remaining string :(
+                let buildmeta =
+                    match plusIndex with
+                    | -1 -> ""
+                    | n when plusIndex = version.Length - 1 -> ""
+                    | n -> version.Substring(plusIndex + 1)
         
-            let major, minor, patch, build =
-                match majorMinorPatch.Split([|'.'|]) with
-                | [|M; m; p; b|] -> uint32 M, uint32 m, uint32 p, b
-                | [|M; m; p; |] -> uint32 M, uint32 m, uint32 p, "0"
-                | [|M; m;|] -> uint32 M, uint32 m, 0u, "0"
-                | [|M;|] -> uint32 M, 0u, 0u, "0"
-                | _ -> 0u, 0u, 0u, "0"
+                let major, minor, patch, build =
+                    match majorMinorPatch.Split([|'.'|]) with
+                    | [|M; m; p; b|] -> uint32 M, uint32 m, uint32 p, b
+                    | [|M; m; p; |] -> uint32 M, uint32 m, uint32 p, "0"
+                    | [|M; m;|] -> uint32 M, uint32 m, 0u, "0"
+                    | [|M;|] -> uint32 M, 0u, 0u, "0"
+                    | _ -> 0u, 0u, 0u, "0"
 
-            { Major = major
-              Minor = minor
-              Patch = patch
-              Build = build
-              PreRelease = PreRelease.TryParse prerelease
-              BuildMetaData = buildmeta
-              Original = Some version }
+                { Major = major
+                  Minor = minor
+                  Patch = patch
+                  Build = build
+                  PreRelease = PreRelease.TryParse prerelease
+                  BuildMetaData = buildmeta
+                  Original = Some version }
 
-        with
-        | exn ->
-            failwithf "Can't parse \"%s\".%s%s" version Environment.NewLine exn.Message
+            with
+            | exn ->
+                failwithf "Can't parse \"%s\".%s%s" version Environment.NewLine exn.Message
+
+    let Zero = Parse "0"
 
     let SortVersions =
         Array.choose (fun v -> try Some(v,Parse v) with | _ -> None)

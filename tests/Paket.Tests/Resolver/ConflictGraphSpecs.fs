@@ -28,6 +28,7 @@ let defaultPackage =
     { Name = PackageName ""
       Parent = PackageRequirementSource.DependenciesFile ""
       Graph = []
+      Sources = []
       VersionRequirement = VersionRequirement(VersionRange.Exactly "1.0", PreReleaseStatus.No)
       Settings = InstallSettings.Default
       ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
@@ -37,8 +38,8 @@ let defaultPackage =
 let ``should analyze graph and report conflict``() = 
     match safeResolve graph [ "A", VersionRange.AtLeast "1.0" ] with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(_,_,stillOpen,_,_,_) ->
-        let conflicting = stillOpen |> Seq.head 
+    | Resolution.Conflict(step,_,_,_) ->
+        let conflicting = step.OpenRequirements |> Seq.head 
         conflicting.Name |> shouldEqual (PackageName "D")
         conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Exactly "1.6")
 
@@ -55,8 +56,8 @@ let graph2 =
 let ``should analyze graph2 and report conflict``() = 
     match safeResolve graph2 [ "A", VersionRange.AtLeast "1.0" ] with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(_,_,stillOpen,_,_,_) ->
-        let conflicting = stillOpen |> Seq.head 
+    | Resolution.Conflict(step,_,_,_) ->
+        let conflicting = step.OpenRequirements |> Seq.head 
         conflicting.Name |> shouldEqual (PackageName "D")
         conflicting.VersionRequirement.Range |> shouldEqual (VersionRange.Between("1.6", "1.7"))
 
@@ -92,8 +93,8 @@ let ``should override graph3 conflict to package C``() =
 
     match resolved with
     | Resolution.Ok _ -> failwith "we expected an error"
-    | Resolution.Conflict(_,_,stillOpen,_,_,_) ->
-        let conflicting = stillOpen |> Seq.head 
+    | Resolution.Conflict(step,_,_,_) ->
+        let conflicting = step.OpenRequirements |> Seq.head 
         conflicting.Name 
         |> shouldEqual (PackageName "C")
 
@@ -139,5 +140,58 @@ let graphWithServers = [
 [<Test>]
 let ``should resolve simple config with servers``() = 
     let cfg = DependenciesFile.FromCode(configWithServers)
+    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    getVersion resolved.[PackageName "My.Company.PackageC.Server"] |> shouldEqual "1.0.0-pre18038"
+
+let configWithServersWithRCRequirement = """
+source https://www.nuget.org/api/v2
+
+
+nuget My.Company.PackageA.Server rc
+nuget My.Company.PackageB.Server rc
+nuget My.Company.PackageC.Server rc"""
+
+[<Test>]
+let ``should resolve simple config with servers with RC requirement``() = 
+    let cfg = DependenciesFile.FromCode(configWithServersWithRCRequirement)
+    try
+        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> ignore
+        failwith "expected exception"
+    with
+    | exn when exn.Message.Contains " Could not resolve package My.Company.PackageA.Server" -> ()
+
+let configWithServersWithVersionRequirement = """
+source https://www.nuget.org/api/v2
+
+
+nuget My.Company.PackageA.Server > 0.1
+nuget My.Company.PackageB.Server > 0.1
+nuget My.Company.PackageC.Server > 0.1"""
+
+
+[<Test>]
+let ``should resolve simple config with servers with version requirement``() = 
+    let cfg = DependenciesFile.FromCode(configWithServersWithVersionRequirement)
+    try
+        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> ignore
+        failwith "expected exception"
+    with
+    | exn when exn.Message.Contains " Could not resolve package My.Company.PackageA.Server" -> ()
+
+
+let configWithServersWithoutVersionRequirement = """
+source https://www.nuget.org/api/v2
+
+
+nuget My.Company.PackageA.Server
+nuget My.Company.PackageB.Server
+nuget My.Company.PackageC.Server"""
+
+
+[<Test>]
+let ``should resolve simple config with servers without version requirement``() = 
+    let cfg = DependenciesFile.FromCode(configWithServersWithoutVersionRequirement)
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "My.Company.PackageC.Server"] |> shouldEqual "1.0.0-pre18038"

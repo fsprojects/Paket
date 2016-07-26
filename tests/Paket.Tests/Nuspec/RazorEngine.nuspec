@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>RazorEngine</id>
+    <version>3.7.3</version>
+    <title>RazorEngine</title>
+    <authors>Matthew Abbott, Ben Dornis, Matthias Dittrich</authors>
+    <owners>Matthew Abbott, Ben Dornis, Matthias Dittrich</owners>
+    <licenseUrl>https://github.com/Antaris/RazorEngine/blob/master/LICENSE.md</licenseUrl>
+    <projectUrl>https://github.com/Antaris/RazorEngine</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>RazorEngine - A Templating Engine based on the Razor parser.</description>
+    <summary>Simple templating using Razor syntax.</summary>
+    <releaseNotes>Template Run performance optimizations (https://github.com/Antaris/RazorEngine/pull/328)
+Update to Razor4-beta7 (https://github.com/Antaris/RazorEngine/pull/319)</releaseNotes>
+    <copyright>Copyright 2015</copyright>
+    <tags>C# razor template engine programming</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework4.0">
+        <dependency id="Microsoft.AspNet.Razor" version="[2.0.30506.0]" />
+      </group>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="Microsoft.AspNet.Razor" version="3.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>

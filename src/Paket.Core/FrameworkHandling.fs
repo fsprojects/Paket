@@ -247,12 +247,9 @@ type FrameworkIdentifier =
     member x.IsBetween(a,b) = x.IsAtLeast a && x.IsAtMost b
 
 module FrameworkDetection =
-    let private cache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
-
-    let Extract(path:string) =
-        match cache.TryGetValue path with
-        | true,x -> x
-        | _ ->
+    let Extract =
+        memoize 
+          (fun (path:string) ->
             let path = 
                 let sb = new Text.StringBuilder(path.ToLower())
                 for pattern,replacement in KnownAliases.Data do
@@ -261,6 +258,7 @@ module FrameworkDetection =
 
             let result = 
                 match path with
+                | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
                 | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
                 | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
                 | "net20" | "net2" | "net" | "net20-full" | "net20-client" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
@@ -275,7 +273,7 @@ module FrameworkDetection =
                 | "net46" -> Some (DotNetFramework FrameworkVersion.V4_6)
                 | "net461" -> Some (DotNetFramework FrameworkVersion.V4_6_1)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
-                | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50"-> Some MonoAndroid
+                | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50" | "monoandroid60" -> Some MonoAndroid
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
@@ -287,10 +285,6 @@ module FrameworkDetection =
                 | "native/arm/release" -> Some(Native("Release","arm"))
                 | "native/address-model-32" -> Some(Native("","Win32"))
                 | "native/address-model-64" -> Some(Native("","x64"))
-                | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
-                | "runtimes/win7-x86" -> Some(Runtimes("Win32"))
-                | "runtimes/win7-arm" -> Some(Runtimes("arm"))
-                | "runtimes/aot" -> Some(Runtimes("aot"))
                 | "native" -> Some(Native("",""))
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
@@ -313,9 +307,7 @@ module FrameworkDetection =
                 | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | _ -> None
-
-            cache.[path] <- result
-            result
+            result)
 
     let DetectFromPath(path : string) : FrameworkIdentifier option =
         let path = path.Replace("\\", "/").ToLower()
@@ -498,6 +490,8 @@ module KnownTargetProfiles =
         PortableProfile("Profile336", [ DotNetFramework FrameworkVersion.V4; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])
         PortableProfile("Profile344", [ DotNetFramework FrameworkVersion.V4_5; Silverlight "v5.0"; Windows "v4.5"; WindowsPhoneApp "v8.1"; WindowsPhoneSilverlight "v8.0" ])]
 
+    let AllDotNetStandardProfiles = DotNetStandardProfiles
+
     let AllNativeProfiles =
         [ Native("","")
           Native("","Win32")
@@ -515,9 +509,16 @@ module KnownTargetProfiles =
           Runtimes("win7-arm")
           Runtimes("debian-x64")
           Runtimes("aot")
+          Runtimes("win")
+          Runtimes("linux")
+          Runtimes("unix")
           Runtimes("osx") ]
 
-    let AllProfiles = (AllNativeProfiles |> List.map (fun p -> SinglePlatform p)) @ (AllRuntimes |> List.map (fun p -> SinglePlatform p)) @ AllDotNetProfiles
+    let AllProfiles = 
+        (AllNativeProfiles |> List.map (fun p -> SinglePlatform p)) @ 
+          (AllRuntimes |> List.map (fun p -> SinglePlatform p)) @
+          AllDotNetStandardProfiles @
+          AllDotNetProfiles
 
     let FindPortableProfile name =
         AllProfiles

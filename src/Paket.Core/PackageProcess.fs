@@ -9,8 +9,9 @@ open Paket.Logging
 open System.Collections.Generic
 open Paket.PackageMetaData
 open Chessie.ErrorHandling
+open InstallProcess
 
-let private merge buildConfig buildPlatform versionFromAssembly specificVersions projectFile templateFile = 
+let private merge buildConfig buildPlatform versionFromAssembly specificVersions (projectFile:ProjectFile) templateFile = 
     let withVersion =
         match versionFromAssembly with
         | None -> templateFile
@@ -52,7 +53,7 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                         [ if merged.Id = None then yield "Id"
                           if merged.Version = None then yield "Version"
                           if merged.Authors = None || merged.Authors = Some [] then yield "Authors"
-                          if merged.Description = None then yield "Description" ]
+                          if merged.Description = None || merged.Description = Some "" then yield "Description" ]
                         |> fun xs -> String.Join(", ",xs)
 
                     failwithf 
@@ -73,7 +74,7 @@ let private convertToNormal (symbols : bool) templateFile =
         let includePdbs = optional.IncludePdbs
         { templateFile with Contents = ProjectInfo(core, { optional with IncludePdbs = (if symbols then false else includePdbs) }) }
 
-let private convertToSymbols (projectFile: ProjectFile) (includeReferencedProjects: bool) templateFile =
+let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) templateFile =
     let sourceFiles =
         let getTarget compileItem =
             let projectName = Path.GetFileName(compileItem.BaseDir)
@@ -120,8 +121,8 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
     let projectTemplates = 
         let getAllProjectsFiles workingDir =
             ProjectFile.FindAllProjects workingDir
-            |> Array.choose (fun projectFile ->
-                match ProjectFile.FindTemplatesFile(FileInfo(projectFile.FileName)) with
+            |> Array.choose (fun (projectFile:ProjectFile) ->
+                match projectFile.FindTemplatesFile() with
                 | None -> None
                 | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions)))
             |> Array.filter (fun (_,templateFile) -> 
@@ -144,7 +145,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
 
     // add dependencies
     let allTemplates =
-        let optWithSymbols projectFile templateFile =
+        let optWithSymbols (projectFile:ProjectFile) templateFile =
             seq { yield (templateFile |> convertToNormal symbols); if symbols then yield templateFile |> convertToSymbols projectFile includeReferencedProjects }
 
         let convertRemainingTemplate fileName =
@@ -167,14 +168,11 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
         |> Map.toList
         |> Seq.collect(fun (_,(t, p)) -> 
             seq {
-                for template in t |> optWithSymbols p do 
+                for template in optWithSymbols p t do 
                     yield template, p
                 }
             )
-         |> Seq.map (fun (t, p) -> 
-                let deps = findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version specificVersions
-                deps
-            )
+         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version specificVersions)
          |> Seq.append remaining
          |> Seq.toList
 

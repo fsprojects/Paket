@@ -30,7 +30,6 @@ let graph = [
 
 let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-  specs:
     Castle.Windsor (2.1)
     Castle.Windsor-log4net (3.3)
       Castle.Windsor (>= 2.0)

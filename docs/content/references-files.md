@@ -29,21 +29,21 @@ For each MSBuild project alongside a `paket.references`, [`paket install`](paket
 
 The references injected into the MSBuild project reflect the complete set of rules specified within the package for each `lib` and `Content` item; each reference is `Condition`al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.
 
-Any [roslyn based analyzer](analyzers.html) present in the packages will also be installed in the project.
+Any [Roslyn based analyzer](analyzers.html) present in the packages will also be installed in the project.
 
 ## copy_local settings
 
 It's possible to influence the `Private` property for references in project files:
 
     [lang=paket]
-    Newtonsoft.Json copy_local:false
+    Newtonsoft.Json copy_local: false
 
 ## import_targets settings
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:
 
     [lang=paket]
-    Microsoft.Bcl.Build import_targets:false
+    Microsoft.Bcl.Build import_targets: false
 
 ## No content option
 
@@ -75,18 +75,41 @@ Redirects are created only if they are required. However, you can instruct Paket
     [lang=paket]
     FSharp.Core redirects: force
 
-In constract, you have the option to force Paket to not create a redirect:
+In contrast, you have the option to force Paket to not create a redirect:
 
     [lang=paket]
     FSharp.Core redirects: off
 
 Redirects settings in [references files](references-files.html#Redirects-settings) takes precedence over settings in [dependencies file](nuget-dependencies.html#redirects-settings).
 
+## Excluding libraries
+
+This option allows you to exclude libraries from being referenced in project files:
+
+    [lang=paket]
+	PackageA
+	  exclude A1.dll
+	  exclude A2.dll
+	Dapper
+	NUnit
+	  exclude nunit.framework.dll
+
+## Library aliases
+
+This option allows you to specify library aliases:
+
+    [lang=paket]
+	PackageA
+	  alias A1.dll Name2,Name3
+	  alias A2.dll MyAlias1
+	Dapper
+	NUnit
+
 ## File name conventions
 
 If Paket finds `paket.references` in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.
 
-If you have multiple MSBuild projects in a folder that require a non-homogenous set of references, you have two options:
+If you have multiple MSBuild projects in a folder that require a non-homogeneous set of references, you have two options:
 
 - Have a shared `paket.references` file that acts as a default for all except ones that require special treatment. For each special-case project, add a `<MSBuild project>.paket.references` file
 - Add a project-specific `<MSBuild project>.paket.references` file for each and every project that requires any references

@@ -93,7 +93,7 @@ let ``#1429 pack deps from template``() =
     paket ("pack -v output \"" + outPath + "\" templatefile " + templatePath) "i001429-pack-deps" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
     details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
@@ -109,7 +109,7 @@ let ``#1429 pack deps``() =
     paket ("pack -v output \"" + outPath + "\"") "i001429-pack-deps" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
     details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
@@ -125,7 +125,7 @@ let ``#1429 pack deps using minimum-from-lock-file``() =
     paket ("pack -v minimum-from-lock-file output \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
     details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
@@ -141,7 +141,7 @@ let ``#1429 pack deps without minimum-from-lock-file uses dependencies file rang
     paket ("pack -v output \"" + outPath + "\"") "i001429-pack-deps-minimum-from-lock" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
     details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
@@ -157,7 +157,7 @@ let ``#1429 pack deps without minimum-from-lock-file uses specifc dependencies f
     paket ("pack -v output \"" + outPath + "\"") "i001429-pack-deps-specific" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
     details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
@@ -173,7 +173,7 @@ let ``#1429 pack deps with minimum-from-lock-file uses specifc dependencies file
     paket ("pack -v minimum-from-lock-file  output \"" + outPath + "\"") "i001429-pack-deps-specific" |> ignore
 
     let details = 
-        NuGetV2.getDetailsFromLocalNuGetPackage outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
+        NuGetV2.getDetailsFromLocalNuGetPackage false outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
     details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
@@ -265,7 +265,7 @@ let ``#1506 allows to pack files without ending``() =
     File.Delete(templatePath)
 
 [<Test>]
-let ``#1514 invliad pack should give proper warning``() =
+let ``#1514 invalid pack should give proper warning``() =
     let scenario = "i001514-pack-error"
 
     let outPath = Path.Combine(scenarioTempPath scenario,"out")
