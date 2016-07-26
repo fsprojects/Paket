@@ -50,6 +50,13 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                     | Some _ as specificVersion -> specificVersion
                     | None -> getVersion versionFromAssembly attribs
 
+                // See discussion at https://github.com/fsprojects/Paket/pull/1831
+                let tryGenerateDescription packageId outputType =
+                    match packageId with
+                    | Some id -> traceWarnfn "No description was provided for package %A. Generating from ID and project output type." id
+                    | _ -> ()
+                    tryGenerateDescription packageId outputType
+
                 let merged = 
                     { Id = md.Id
                       Version = md.Version ++ versionFromAssembly
