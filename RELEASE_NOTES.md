@@ -1,4 +1,4 @@
-#### 3.9.2 - 25.07.2016
+#### 3.9.4 - 26.07.2016
 * BUGFIX: Don't allow empty string as description in template file - https://github.com/fsprojects/Paket/pull/1831
 
 #### 3.9.1 - 22.07.2016
