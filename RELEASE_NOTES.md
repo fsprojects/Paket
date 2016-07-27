@@ -1,4 +1,4 @@
-#### 3.9.5 - 26.07.2016
+#### 3.9.6 - 27.07.2016
 * BUGFIX: be careful with distinction between .NET 4.0 client and .NET 4.0 full profile - https://github.com/fsprojects/Paket/issues/1830
 
 #### 3.9.4 - 26.07.2016

@@ -189,7 +189,7 @@ let getTargetCondition (target:TargetProfile) =
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile bits), ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
-let getCondition (referenceCondition:string option) (targets : TargetProfile list) =
+let getCondition (referenceCondition:string option) (allTargets: TargetProfile list list) (targets : TargetProfile list) =
     let inline CheckIfFullyInGroup typeName matchF (processed,targets) =
         let fullyContained = 
             KnownTargetProfiles.AllDotNetProfiles 
@@ -210,7 +210,18 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
         |> CheckIfFullyInGroup "WindowsPhoneApp" (fun x -> match x with | SinglePlatform(WindowsPhoneApp(_)) -> true | _ -> false)
         |> CheckIfFullyInGroup "WindowsPhone" (fun x -> match x with | SinglePlatform(WindowsPhoneSilverlight(_)) -> true | _ -> false)
 
-    let conditions = 
+    let targets =
+        targets 
+        |> List.map (fun target ->
+            match target with
+            | SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)) ->
+                if allTargets |> List.exists (List.contains (SinglePlatform(DotNetFramework(FrameworkVersion.V4)))) |> not then
+                    SinglePlatform(DotNetFramework(FrameworkVersion.V4))
+                else
+                    target
+            | _ -> target)
+
+    let conditions =
         if targets = [ SinglePlatform(Native("", "")) ] then 
             targets
         else 
@@ -218,7 +229,7 @@ let getCondition (referenceCondition:string option) (targets : TargetProfile lis
             |> List.filter (function
                            | SinglePlatform(Native("", "")) -> false
                            | SinglePlatform(Runtimes(_)) -> false
-                           | SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)) -> 
+                           | SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)) ->
                                 targets |> List.contains (SinglePlatform(DotNetFramework(FrameworkVersion.V4))) |> not
                            | _ -> true)
         |> List.map getTargetCondition

@@ -676,6 +676,10 @@ module ProjectFile =
                     
             propertyNames,propertyGroup
 
+        let allTargets =
+            model.GetReferenceFolders()            
+            |> List.map (fun lib -> lib.Targets)
+
         let conditions =
             model.GetReferenceFolders()
             |> List.sortBy (fun lib -> lib.Name)
@@ -683,14 +687,14 @@ module ProjectFile =
                 match lib with
                 | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> None  // TODO: Add reference to custom task instead
                 | _ -> 
-                    match PlatformMatching.getCondition referenceCondition lib.Targets with
+                    match PlatformMatching.getCondition referenceCondition allTargets lib.Targets with
                     | "" -> None
                     | condition -> Some (condition,createItemGroup lib.Files.References))
 
         let targetsFileConditions =
             model.TargetsFileFolders
             |> List.sortBy (fun lib -> lib.Name)
-            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition lib.Targets,createPropertyGroup lib.Files.References)
+            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup lib.Files.References)
 
         let chooseNode =
             match conditions with

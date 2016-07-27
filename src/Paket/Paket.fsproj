@@ -31,7 +31,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>d:\code\Suave.Kestrel</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\TopshelfService</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
