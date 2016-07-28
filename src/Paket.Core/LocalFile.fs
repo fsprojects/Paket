@@ -70,7 +70,7 @@ module LocalFile =
         resolution
         |> Map.map (fun name original -> 
             if name = packageName then
-                { original with PackageResolver.ResolvedPackage.Source = source; PackageResolver.ResolvedPackage.Version = (if version <> null then SemVer.Parse(version) else original.Version)}
+                { original with PackageResolver.ResolvedPackage.Source = source; PackageResolver.ResolvedPackage.Version = (if version <> String.Empty then SemVer.Parse(version) else original.Version)}
             else
                 original)
 
