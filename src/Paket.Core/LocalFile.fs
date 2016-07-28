@@ -8,8 +8,8 @@ type OverriddenPackage =
     OverriddenPackage of packageName: PackageName * group: GroupName
 
 type LocalOverride =
-    | LocalSourceOverride of package: OverriddenPackage * devSource: PackageSource
-    | LocalGitOverride    of package: OverriddenPackage * gitSource: string
+    | LocalSourceOverride of package: OverriddenPackage * devSource: PackageSource * version: string
+    | LocalGitOverride    of package: OverriddenPackage * gitSource: string * version: string
 
 type LocalFile = LocalFile of devSourceOverrides: LocalOverride list
 
@@ -36,16 +36,16 @@ module LocalFile =
 
     let private parseLine = function
         | Regex 
-            "nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+(source[ ]+.*)" 
-            [package; _; group; source] ->
+            "^nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+(source[ ]+.*?)([ ]+version[ ]+(.*))?$" 
+            [package; _; group; source; _; version ] ->
             source
             |> Trial.Catch PackageSource.Parse
             |> Trial.mapFailure (fun _ -> [sprintf "Cannot parse source '%s'" source])
-            |> Trial.lift (fun s -> LocalSourceOverride (nameGroup(package, group), s))
+            |> Trial.lift (fun s -> LocalSourceOverride (nameGroup(package, group), s, version))
         | Regex 
-            "nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+git[ ]+(.*)"
-            [package; _; group; gitSource] ->
-            LocalGitOverride (nameGroup(package, group), gitSource)
+            "^nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+git[ ]+(.*?)([ ]+version[ ]+(.*))?$"
+            [package; _; group; gitSource; _; version] ->
+            LocalGitOverride (nameGroup(package, group), gitSource, version)
             |> Trial.ok
         | line ->
             Trial.fail (sprintf "Cannot parse line '%s'" line)
@@ -66,35 +66,35 @@ module LocalFile =
 
     let empty = LocalFile []
 
-    let private overrideResolution (packageName, source) resolution = 
+    let private overrideResolution (packageName, source, version) resolution = 
         resolution
         |> Map.map (fun name original -> 
             if name = packageName then
-                { original with PackageResolver.ResolvedPackage.Source = source }
+                { original with PackageResolver.ResolvedPackage.Source = source; PackageResolver.ResolvedPackage.Version = (if version <> null then SemVer.Parse(version) else original.Version)}
             else
                 original)
 
     let private warning x =
         match x with
-        | LocalSourceOverride (OverriddenPackage(p,g),s) ->
-            sprintf "nuget %s group %s -> %s" (p.ToString()) (g.ToString()) (s.ToString())
-        | LocalGitOverride   (OverriddenPackage(p,g),s) ->
-            sprintf "nuget %s group %s -> %s" (p.ToString()) (g.ToString()) s
+        | LocalSourceOverride (OverriddenPackage(p,g),s,version) ->
+            sprintf "nuget %s group %s -> %s (%s)" (p.ToString()) (g.ToString()) (s.ToString())(version)
+        | LocalGitOverride   (OverriddenPackage(p,g),s,version) ->
+            sprintf "nuget %s group %s -> %s (%s)" (p.ToString()) (g.ToString()) s (version)
         |> (+) "paket.local override: "
         |> Logging.traceWarn
         x
 
     let overrideDependency (lockFile: LockFile) = warning >> function
-        | LocalSourceOverride (OverriddenPackage(p,group),s) -> 
+        | LocalSourceOverride (OverriddenPackage(p,group),s,version) -> 
             let groups =
                 lockFile.Groups
                 |> Map.map (fun name g -> 
                     if name = group then 
-                        { g with Resolution = overrideResolution (p,s) g.Resolution }
+                        { g with Resolution = overrideResolution (p,s,version) g.Resolution }
                     else
                         g )
             LockFile(lockFile.FileName, groups)
-        | LocalGitOverride   (OverriddenPackage(p,group),s) ->
+        | LocalGitOverride   (OverriddenPackage(p,group),s, version) ->
             let owner,branch,project,cloneUrl,buildCommand,operatingSystemRestriction,packagePath = 
                 Git.Handling.extractUrlParts s
             let restriction = VersionRestriction.Concrete (defaultArg branch "master")
@@ -130,7 +130,7 @@ module LocalFile =
                 lockFile.Groups
                 |> Map.map (fun name g -> 
                     if name = group then
-                        { g with Resolution  = overrideResolution (p,source g.Name) g.Resolution
+                        { g with Resolution  = overrideResolution (p,source g.Name, version) g.Resolution
                                  RemoteFiles = remoteFile :: g.RemoteFiles } 
                     else
                         g)
@@ -141,6 +141,6 @@ module LocalFile =
 
     let overrides (LocalFile xs) (package, group) =
         xs 
-        |> List.exists (function | LocalSourceOverride (OverriddenPackage(p,g), _)
-                                 | LocalGitOverride    (OverriddenPackage(p,g), _) 
+        |> List.exists (function | LocalSourceOverride (OverriddenPackage(p,g), _, _)
+                                 | LocalGitOverride    (OverriddenPackage(p,g), _, _) 
                                    -> p = package && g = group)

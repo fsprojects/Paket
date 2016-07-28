@@ -20,14 +20,34 @@ let ``should parse single dev source override``() =
             LocalSourceOverride 
                 (OverriddenPackage(
                     PackageName "NUnit",
-                    GroupName "main"), 
-                 LocalNuGet ("./local_source", None)) 
+                    GroupName "main"),
+                 LocalNuGet ("./local_source", None), "") 
         ]
         |> Trial.ok
 
     let actual = LocalFile.parse (toLines contents |> Array.toList)
 
     actual |> shouldEqual expected
+
+[<Test>]
+let ``should parse single dev source override with custom version``() = 
+    let contents = """
+        nuget NUnit -> source ./local_source version 0.1.2
+        """
+    let expected = 
+        LocalFile [
+            LocalSourceOverride 
+                (OverriddenPackage(
+                    PackageName "NUnit",
+                    GroupName "main"),
+                 LocalNuGet ("./local_source", None), "0.1.2") 
+        ]
+        |> Trial.ok
+
+    let actual = LocalFile.parse (toLines contents |> Array.toList)
+
+    actual |> shouldEqual expected
+
 
 [<Test>]
 let ``should parse single dev source override in group``() = 
@@ -40,14 +60,13 @@ let ``should parse single dev source override in group``() =
                 (OverriddenPackage(
                     PackageName "NUnit",
                     GroupName "Build"), 
-                 LocalNuGet ("./local_source", None)) 
+                 LocalNuGet ("./local_source", None), "") 
         ]
         |> Trial.ok
 
     let actual = LocalFile.parse (toLines contents |> Array.toList)
 
     actual |> shouldEqual expected
-
 
 
 [<Test>]
