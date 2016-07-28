@@ -33,12 +33,12 @@ let TurnOnAutoRestore environment =
         do! downloadLatestBootstrapperAndTargets environment
         let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
 
-        // creating new projects after call to TurnOffAutoRestore to ensure they get saved.
-        let! projects = InstallProcess.findAllReferencesFiles(environment.RootDirectory.FullName)
-        projects
+        environment.Projects
         |> List.map fst
         |> List.iter (fun project ->
             let relativePath = createRelativePath project.FileName paketTargetsPath
+            // refreshing project as it can be dirty from call to TurnOffAutoRestore
+            let project = ProjectFile.LoadFromFile(project.FileName)
             project.AddImportForPaketTargets(relativePath)
             project.Save(false)
         )
