@@ -29,11 +29,13 @@ let TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
 
     trial {
-        // do! TurnOffAutoRestore environment
+        do! TurnOffAutoRestore environment
         do! downloadLatestBootstrapperAndTargets environment
         let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
 
-        environment.Projects
+        // creating new projects after call to TurnOffAutoRestore to ensure they get saved.
+        let! projects = InstallProcess.findAllReferencesFiles(environment.RootDirectory.FullName)
+        projects
         |> List.map fst
         |> List.iter (fun project ->
             let relativePath = createRelativePath project.FileName paketTargetsPath
