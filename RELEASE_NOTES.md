@@ -1,3 +1,6 @@
+#### 3.9.7 - 01.08.2016
+* BUGFIX: Allow "auto-restore on" to be done twice - https://github.com/fsprojects/Paket/issues/1836
+
 #### 3.9.6 - 27.07.2016
 * BUGFIX: be careful with distinction between .NET 4.0 client and .NET 4.0 full profile - https://github.com/fsprojects/Paket/issues/1830
 
