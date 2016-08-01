@@ -24,7 +24,6 @@ let TurnOffAutoRestore environment =
         )
     }
 
-
 /// Activates the Visual Studio NuGet autorestore feature in all projects
 let TurnOnAutoRestore environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
@@ -38,6 +37,8 @@ let TurnOnAutoRestore environment =
         |> List.map fst
         |> List.iter (fun project ->
             let relativePath = createRelativePath project.FileName paketTargetsPath
+            // refreshing project as it can be dirty from call to TurnOffAutoRestore
+            let project = ProjectFile.LoadFromFile(project.FileName)
             project.AddImportForPaketTargets(relativePath)
             project.Save(false)
         )
