@@ -84,7 +84,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L67-67" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L70-70" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -95,14 +95,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '152', 152)" onmouseover="showTip(event, '152', 152)">
-            overrideDependency lockFile
+            nameGroup (name, group)
           </code>
           <div class="tip" id="152">
-            <strong>Signature:</strong> lockFile:LockFile -&gt; LocalOverride -&gt; LockFile<br />
+            <strong>Signature:</strong> (name:string * group:string) -&gt; OverriddenPackage<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L87-87" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L30-30" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -113,14 +113,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '153', 153)" onmouseover="showTip(event, '153', 153)">
-            overrideLockFile arg1 lockFile
+            overrideDependency lockFile
           </code>
           <div class="tip" id="153">
-            <strong>Signature:</strong> LocalFile -&gt; lockFile:LockFile -&gt; LockFile<br />
+            <strong>Signature:</strong> lockFile:LockFile -&gt; LocalOverride -&gt; LockFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L139-139" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L94-94" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -131,14 +131,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '154', 154)" onmouseover="showTip(event, '154', 154)">
-            overrides arg1 (package, group)
+            overrideLockFile arg1 lockFile
           </code>
           <div class="tip" id="154">
-            <strong>Signature:</strong> LocalFile -&gt; (package:PackageName * group:GroupName) -&gt; bool<br />
+            <strong>Signature:</strong> LocalFile -&gt; lockFile:LockFile -&gt; LockFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L142-142" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L146-146" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -149,14 +149,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '155', 155)" onmouseover="showTip(event, '155', 155)">
-            parse 
+            overrides arg1 (package, group)
           </code>
           <div class="tip" id="155">
-            <strong>Signature:</strong> string list -&gt; Result&lt;LocalFile,string&gt;<br />
+            <strong>Signature:</strong> LocalFile -&gt; (package:PackageName * group:GroupName) -&gt; bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L53-53" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L149-149" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -167,14 +167,32 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '156', 156)" onmouseover="showTip(event, '156', 156)">
-            readFile 
+            parse 
           </code>
           <div class="tip" id="156">
+            <strong>Signature:</strong> string list -&gt; Result&lt;LocalFile,string&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L56-56" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '157', 157)" onmouseover="showTip(event, '157', 157)">
+            readFile 
+          </code>
+          <div class="tip" id="157">
             <strong>Signature:</strong> string -&gt; Result&lt;LocalFile,string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L62-62" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L65-65" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
