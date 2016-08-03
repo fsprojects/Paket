@@ -1,14 +1,9 @@
-#### 3.9.7 - 01.08.2016
+#### 3.10.0 - 03.08.2016
+* Allow to specify nupkg version for source override in paket.local file - https://github.com/fsprojects/Paket/issues/1803
 * BUGFIX: Allow "auto-restore on" to be done twice - https://github.com/fsprojects/Paket/issues/1836
-
-#### 3.9.6 - 27.07.2016
 * BUGFIX: be careful with distinction between .NET 4.0 client and .NET 4.0 full profile - https://github.com/fsprojects/Paket/issues/1830
-
-#### 3.9.4 - 26.07.2016
 * BUGFIX: Don't allow empty string as description in template file - https://github.com/fsprojects/Paket/pull/1831
-
-#### 3.9.1 - 22.07.2016
-* Respect comments in dependencies file
+* BUGFIX: Respect comments in dependencies file
 
 #### 3.9.0 - 22.07.2016
 * Don't create runtime references for CoreClr anymore - new concept coming soon 

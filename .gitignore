@@ -191,3 +191,4 @@ docs/tools/FSharp.Formatting.svclog
 docs/content/paket.exe
 TestResult.xml
 tests/Paket.Tests/NuGetConfig/PasswordConfig.xml
+paket.local
