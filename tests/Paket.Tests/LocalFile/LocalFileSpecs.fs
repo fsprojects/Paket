@@ -50,7 +50,7 @@ let ``should parse single dev source override in group``() =
 [<Test>]
 let ``should parse single dev source override with version``() = 
     let contents = """
-        nuget NUnit -> version 0.0.0 source ./local_source
+        nuget NUnit -> source ./local_source version 0.0.0
         """
     let expected = 
         LocalFile [

@@ -87,8 +87,7 @@ Format of git source is the same as used in `paket.dependencies` for specifying 
     nuget Fake -> source c:\github\FAKE\bin
     
     // Argu is searched in specific version
-    // The version has to be provided before source
-    nuget Argu -> version 0.0.0 source C:\github\Argu\bin
+    nuget Argu -> source C:\github\Argu\bin version 0.0.0
 
 The Format of the source is the same as in [path sources](nuget-dependencies.html#Path-sources).
 

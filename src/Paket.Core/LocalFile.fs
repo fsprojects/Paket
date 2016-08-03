@@ -38,8 +38,8 @@ module LocalFile =
 
     let private parseLine = function
         | Regex 
-            "nuget\s+(\w+)(\s+group\s+(\w+))?\s+->(\s+version\s+(.*))?\s+(source\s+.+)" 
-            [package; _; group; _; version; source] ->
+            "^nuget[ ]+(.*?)([ ]+group[ ]+(.*))?[ ]+->[ ]+(source[ ]+.*?)([ ]+version[ ]+(.*))?$" 
+            [package; _; group; source; _; version] ->
             let v = try SemVer.Parse version |> Some with _ -> None
             source
             |> Trial.Catch PackageSource.Parse
@@ -82,7 +82,7 @@ module LocalFile =
     let private warning x =
         match x with
         | LocalSourceOverride ({ Name = p; Group = g},s, Some v) ->
-            sprintf "nuget %s group %s -> version %s %s" (p.ToString()) (g.ToString()) (v.ToString()) (s.ToString())
+            sprintf "nuget %s group %s -> %s version %s" (p.ToString()) (g.ToString()) (s.ToString()) (v.ToString())
         | LocalSourceOverride ({ Name = p; Group = g},s, None) ->
             sprintf "nuget %s group %s -> %s" (p.ToString()) (g.ToString()) (s.ToString())
         | LocalGitOverride   ({ Name = p; Group = g},s) ->
