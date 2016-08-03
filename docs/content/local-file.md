@@ -85,10 +85,20 @@ Format of git source is the same as used in `paket.dependencies` for specifying 
 
     [lang=paket] 
     nuget Fake -> source c:\github\FAKE\bin
+    
+    // Argu is searched in specific version
+    // The version has to be provided before source
+    nuget Argu -> version 0.0.0 source C:\github\Argu\bin
 
 The Format of the source is the same as in [path sources](nuget-dependencies.html#Path-sources).
 
 > Note: In case of source override, `paket restore` assumes the NuGet package **already exists** in   pointed directory - no build is going to be triggered.
+
+### Nupkg version
+
+If you happen to have a nupkg in local path, but with a different version than in `paket.lock`, you can optionally specify version which should be used for this override.
+One use case might be when the package version is determined by your build server, and nupkgs created locally have zero version.
+This is currently supported only for [Source override](#Source-override). 
 
 ### Groups
 
