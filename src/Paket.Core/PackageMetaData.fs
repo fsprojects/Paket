@@ -133,7 +133,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
     let targetDir = 
         match project.OutputType with
         | ProjectOutputType.Exe -> "tools/"
@@ -245,7 +245,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                | CompleteTemplate(core, opt) -> 
                    match core.Version with
                    | Some v -> 
-                       let versionConstraint = if not lockDependencies then Minimum v else Specific v
+                       let versionConstraint = if lockDependencies || pinProjectReferences then Specific v else Minimum v
                        PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
                    | None -> failwithf "There was no version given for %s." templateFile.FileName
                | IncompleteTemplate -> 

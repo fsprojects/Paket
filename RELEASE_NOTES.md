@@ -1,3 +1,6 @@
+#### 3.11.0 - 04.08.2016
+* Allow Pack to pin only project references - https://github.com/fsprojects/Paket/issues/1649
+
 #### 3.10.0 - 03.08.2016
 * Allow to specify nupkg version for source override in paket.local file - https://github.com/fsprojects/Paket/issues/1803
 * BUGFIX: Allow "auto-restore on" to be done twice - https://github.com/fsprojects/Paket/issues/1836
