@@ -1,3 +1,6 @@
+#### 3.11.1 - 05.08.2016
+* BUGFIX: Update with any of the --keep-?? flags didn't honour redirects:on in paket.dependencies - https://github.com/fsprojects/Paket/issues/1844
+
 #### 3.11.0 - 04.08.2016
 * Allow Pack to pin only project references - https://github.com/fsprojects/Paket/issues/1649
 
