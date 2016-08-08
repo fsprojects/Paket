@@ -43,7 +43,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             if (!IsOlderThanMaxFileAge())
             {
-                ConsoleImpl.WriteDebug("Don't looking for new version, as last version is not older tha {0} minutes", _maxFileAgeOfPaketExeInMinutes);
+                ConsoleImpl.WriteDebug("Don't look for new version, as last version is not older than {0} minutes", _maxFileAgeOfPaketExeInMinutes);
                 return targetVersion;
             }
             
