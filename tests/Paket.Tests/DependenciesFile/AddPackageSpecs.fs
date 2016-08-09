@@ -168,7 +168,7 @@ nuget SignalR = 3.3.2"""
 let ``should update packages with new version``() = 
     let config = """source https://www.nuget.org/api/v2
 
-nuget FAKE 1.1
+nuget FAKE >= 1.1
 """
 
     let cfg = DependenciesFile.FromCode(config).UpdatePackageVersion(Constants.MainDependencyGroup, PackageName "FAKE","1.2")
@@ -180,6 +180,23 @@ nuget FAKE 1.2
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+
+[<Test>]
+let ``should not update packages with new version if out of bounds``() = 
+    let config = """source https://www.nuget.org/api/v2
+
+nuget FAKE 1.1
+"""
+
+    try
+        DependenciesFile.FromCode(config).UpdatePackageVersion(Constants.MainDependencyGroup, PackageName "FAKE","1.2")
+        |> ignore
+
+        failwith "expected error"
+     with
+     | exn when exn.Message.Contains "doesn't match the version requirement" -> ()
+
 
 [<Test>]
 let ``should update packages with nuget package resolution strategy``() = 

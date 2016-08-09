@@ -426,6 +426,13 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let name = packageName.GetCompareString()
                     if isPackageLine name l then 
                         let p = this.GetPackage(groupName,packageName)
+                        match vr.VersionRequirement.Range with
+                        | Specific _ ->
+                            let v = SemVer.Parse version
+                            if not <| p.VersionRequirement.IsInRange v then
+                                failwithf "Version %O doesn't match the version requirement %O for package %O that was specified in paket.dependencies" v p.VersionRequirement packageName
+                        | _ -> ()
+
                         DependenciesFileSerializer.packageString packageName vr.VersionRequirement vr.ResolverStrategy p.Settings
                     else l)
 

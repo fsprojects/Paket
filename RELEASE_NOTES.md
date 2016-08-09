@@ -1,3 +1,6 @@
+#### 3.11.2 - 09.08.2016
+* BUGFIX: Selective paket update doesn't ignore paket.dependencies rules anymore - https://github.com/fsprojects/Paket/issues/1841
+
 #### 3.11.1 - 05.08.2016
 * BUGFIX: Update with any of the --keep-?? flags didn't honour redirects:on in paket.dependencies - https://github.com/fsprojects/Paket/issues/1844
 
