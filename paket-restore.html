@@ -60,13 +60,8 @@
 <p>Download the dependencies specified by the paket.lock file into the <code>packages/</code> directory.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket restore [--help] [--force]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket restore [--help] [--force]&lt;br /&gt;[--only-referenced]&lt;br /&gt;[--touch-affected-refs]&lt;br /&gt;[--ignore-checks]&lt;br /&gt;              [group &lt;name&gt;]&lt;br /&gt;[--references-files [&lt;file name&gt;...]]&lt;br /&gt;
 </code></pre></td></tr></table>
-<p>[--only-referenced]
-[--touch-affected-refs]
-[--ignore-checks]
-[group <name>]
-[--references-files [<file name>...]]</p>
 <p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <p><code>paket restore</code> fails with an error if the paket.lock file does not exist.
