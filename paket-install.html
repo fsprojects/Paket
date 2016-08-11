@@ -72,42 +72,37 @@ Paket will update the paket.lock file to make it match paket.dependencies again.
 new versions of dependencies that have been modified in paket.dependencies,
 and use the version from paket.lock for all other dependencies.</p>
 <p>OPTIONS:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp">   <span class="o">--</span><span class="i">force</span>, <span class="o">-</span><span class="i">f</span>           <span class="i">Forces</span> <span class="i">the</span> <span class="i">download</span> <span class="k">and</span> <span class="i">reinstallation</span> <span class="k">of</span> <span class="i">all</span> <span class="i">packages</span><span class="o">.</span>
    <span class="o">--</span><span class="i">redirects</span>           <span class="i">Creates</span> <span class="i">binding</span> <span class="i">redirects</span> <span class="k">for</span> <span class="i">the</span> <span class="i">NuGet</span> <span class="i">packages</span><span class="o">.</span>
    <span class="o">--</span><span class="i">createnewbindingfiles</span>
                          <span class="i">Creates</span> <span class="i">binding</span> <span class="i">redirect</span> <span class="i">files</span> <span class="k">if</span> <span class="i">needed</span><span class="o">.</span>
    <span class="o">--</span><span class="i">clean</span><span class="o">-</span><span class="i">redirects</span>     <span class="i">Removes</span> <span class="i">all</span> <span class="i">binding</span> <span class="i">redirects</span> <span class="i">that</span> <span class="i">are</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">not</span> <span class="i">specified</span> <span class="i">by</span> <span class="i">Paket</span><span class="o">.</span>
-   <span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">major</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">major</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span> <span class="i">packages</span><span class="o">.</span>
-   <span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">minor</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span onmouseout="hideTip(event, 'fs1', 3)" onmouseover="showTip(event, 'fs1', 3)" class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">minor</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span> <span class="i">packages</span><span class="o">.</span>
-   <span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">patch</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span onmouseout="hideTip(event, 'fs1', 4)" onmouseover="showTip(event, 'fs1', 4)" class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">patch</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span> <span class="i">packages</span><span class="o">.</span>
-   <span class="o">--</span><span class="i">only</span><span class="o">-</span><span class="i">referenced</span>     <span class="i">Only</span> <span class="i">install</span> <span class="i">packages</span> <span class="i">that</span> <span class="i">are</span> <span class="i">referenced</span> <span class="k">in</span> <span class="i">paket</span><span class="o">.</span><span class="i">references</span> <span class="i">files</span>, <span class="i">instead</span> <span class="k">of</span> <span class="i">all</span> <span class="i">packages</span> <span class="k">in</span> <span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span><span class="o">.</span>
-   <span class="o">--</span><span class="i">touch</span><span class="o">-</span><span class="i">affected</span><span class="o">-</span><span class="i">refs</span> <span class="i">Touches</span> <span class="i">project</span> <span class="i">files</span> <span class="i">referencing</span> <span class="i">packages</span> <span class="i">which</span> <span class="i">are</span> <span class="i">affected</span>, <span class="k">to</span> <span class="i">help</span> <span class="i">incremental</span> <span class="i">build</span> <span class="i">tools</span> <span class="i">detecting</span> <span class="i">the</span> <span class="i">change</span><span class="o">.</span>
-   <span class="o">--</span><span class="i">verbose</span>, <span class="o">-</span><span class="i">v</span>         <span class="i">Enable</span> <span class="i">verbose</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-   <span class="o">--</span><span onmouseout="hideTip(event, 'fs2', 5)" onmouseover="showTip(event, 'fs2', 5)" class="i">log</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">a</span> <span onmouseout="hideTip(event, 'fs2', 6)" onmouseover="showTip(event, 'fs2', 6)" class="i">log</span> <span class="i">file</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-   <span class="o">--</span><span class="i">silent</span>, <span class="o">-</span><span class="i">s</span>          <span class="i">Suppress</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-   <span class="o">--</span><span class="i">help</span>                <span class="i">display</span> <span class="i">this</span> <span onmouseout="hideTip(event, 'fs3', 7)" onmouseover="showTip(event, 'fs3', 7)" class="i">list</span> <span class="k">of</span> <span class="i">options</span><span class="o">.</span>
+   <span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">major</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">major</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span>
 </code></pre></td>
 </tr>
 </table>
+<p>packages.
+--keep-minor          Allows only updates that are not changing the minor version of the NuGet
+packages.
+--keep-patch          Allows only updates that are not changing the patch version of the NuGet
+packages.
+--only-referenced     Only install packages that are referenced in paket.references files,
+instead of all packages in paket.dependencies.
+--touch-affected-refs Touches project files referencing packages which are affected, to help
+incremental build tools detecting the change.
+--verbose, -v         Enable verbose console output for the paket process.
+--log-file <path>     Specify a log file for the paket process.
+--silent, -s          Suppress console output for the paket process.
+--help                display this list of options.</p>
 
 <div class="tip" id="fs1">val not : value:bool -&gt; bool<br /><br />Full name: Microsoft.FSharp.Core.Operators.not</div>
-<div class="tip" id="fs2">val log : value:&#39;T -&gt; &#39;T (requires member Log)<br /><br />Full name: Microsoft.FSharp.Core.Operators.log</div>
-<div class="tip" id="fs3">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
 
         </div>
         <div class="span3">
