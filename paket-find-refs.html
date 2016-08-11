@@ -62,24 +62,28 @@
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket find-refs [--help] [group &lt;name&gt;] nuget [&lt;package name&gt;...]
 </code></pre></td></tr></table>
-<p>OPTIONS:
-<code>$1</code>:
-<code>$1</code>:    group <name>          Allows to
-<code>$1</code>:specify a group. If omited the Main
-<code>$1</code>:group is used.
-<code>$1</code>:    nuget [<package name>...]
-<code>$1</code>:                          List of
-<code>$1</code>:packages.
-<code>$1</code>:    --verbose, -v         Enable
-<code>$1</code>:verbose console output for the paket
-<code>$1</code>:process.
-<code>$1</code>:    --log-file <path>     Specify a log
-<code>$1</code>:file for the paket process.
-<code>$1</code>:    --silent, -s          Suppress
-<code>$1</code>:console output for the paket process.
-<code>$1</code>:    --help                display this
-<code>$1</code>:list of options.
-<code>$1</code>:If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
+<p>OPTIONS:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">group</span> <span class="o">&lt;</span><span class="i">name</span><span class="o">&gt;</span>          <span class="i">Allows</span> <span class="k">to</span>
+</code></pre></td>
+</tr>
+</table>
+<p>specify a group. If omited the Main
+group is used.
+nuget [<package name>...]
+List of
+packages.
+--verbose, -v         Enable
+verbose console output for the paket
+process.
+--log-file <path>     Specify a log
+file for the paket process.
+--silent, -s          Suppress
+console output for the paket process.
+--help                display this
+list of options.
+If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <h2><a name="Sample" class="anchor" href="#Sample">Sample</a></h2>
 <p><em>.src/Paket/paket.references</em> contains:</p>

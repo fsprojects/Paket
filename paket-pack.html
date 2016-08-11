@@ -68,68 +68,72 @@
        [releaseNotes &lt;text&gt;] [lock-dependencies] [minimum-from-lock-file] [pin-project-references]
        [symbols] [include-referenced-projects] [project-url &lt;url&gt;]
 </code></pre></td></tr></table>
-<p>OPTIONS:
-<code>$1</code>:
-<code>$1</code>:    output <path>         Output
-<code>$1</code>:directory to put .nupkg files.
-<code>$1</code>:    buildconfig <config name>
-<code>$1</code>:                          Optionally
-<code>$1</code>:specify build configuration that should
-<code>$1</code>:be packaged (defaults to Release).
-<code>$1</code>:    buildplatform <target>
-<code>$1</code>:                          Optionally
-<code>$1</code>:specify build platform that should be
-<code>$1</code>:packaged (if not provided or empty,
-<code>$1</code>:checks all known platform targets).
-<code>$1</code>:    version <version>     Specify
-<code>$1</code>:version of the package.
-<code>$1</code>:    templatefile <path>   Allows to
-<code>$1</code>:specify a single template file.
-<code>$1</code>:    exclude <templateId>  Exclude
-<code>$1</code>:template file by id.
-<code>$1</code>:    specific-version <templateId>
-<code>$1</code>:<version>
-<code>$1</code>:                          Specifies a
-<code>$1</code>:version number for template with given
-<code>$1</code>:id.
-<code>$1</code>:    releaseNotes <text>   Specify
-<code>$1</code>:relase notes for the package.
-<code>$1</code>:    lock-dependencies     Get the
-<code>$1</code>:version requirements from paket.lock
-<code>$1</code>:instead of paket.dependencies.
-<code>$1</code>:    minimum-from-lock-file
-<code>$1</code>:                          Get the
-<code>$1</code>:version requirements from paket.lock
-<code>$1</code>:instead of paket.dependencies, and add
-<code>$1</code>:them as a minimum version.
-<code>$1</code>:<code>lock-dependencies</code> will over-ride this
-<code>$1</code>:option.
-<code>$1</code>:    pin-project-references
-<code>$1</code>:                          Pin
-<code>$1</code>:dependencies generated from project
-<code>$1</code>:references (=) instead of using minimum
-<code>$1</code>:(&gt;=) for version specification.  If
-<code>$1</code>:<code>lock-dependencies</code> is specified,
-<code>$1</code>:project references will be pinned even
-<code>$1</code>:if this option is not specified.
-<code>$1</code>:    symbols               Build
-<code>$1</code>:symbol/source packages in addition to
-<code>$1</code>:library/content packages.
-<code>$1</code>:    include-referenced-projects
-<code>$1</code>:                          Include
-<code>$1</code>:symbol/source from referenced projects.
-<code>$1</code>:    project-url <url>     Url to the
-<code>$1</code>:projects home page.
-<code>$1</code>:    --verbose, -v         Enable
-<code>$1</code>:verbose console output for the paket
-<code>$1</code>:process.
-<code>$1</code>:    --log-file <path>     Specify a log
-<code>$1</code>:file for the paket process.
-<code>$1</code>:    --silent, -s          Suppress
-<code>$1</code>:console output for the paket process.
-<code>$1</code>:    --help                display this
-<code>$1</code>:list of options.
-<code>$1</code>:If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
+<p>OPTIONS:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">output</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>         <span class="i">Output</span>
+</code></pre></td>
+</tr>
+</table>
+<p>directory to put .nupkg files.
+buildconfig <config name>
+Optionally
+specify build configuration that should
+be packaged (defaults to Release).
+buildplatform <target>
+Optionally
+specify build platform that should be
+packaged (if not provided or empty,
+checks all known platform targets).
+version <version>     Specify
+version of the package.
+templatefile <path>   Allows to
+specify a single template file.
+exclude <templateId>  Exclude
+template file by id.
+specific-version <templateId>
+<version>
+Specifies a
+version number for template with given
+id.
+releaseNotes <text>   Specify
+relase notes for the package.
+lock-dependencies     Get the
+version requirements from paket.lock
+instead of paket.dependencies.
+minimum-from-lock-file
+Get the
+version requirements from paket.lock
+instead of paket.dependencies, and add
+them as a minimum version.
+<code>lock-dependencies</code> will over-ride this
+option.
+pin-project-references
+Pin
+dependencies generated from project
+references (=) instead of using minimum
+(&gt;=) for version specification.  If
+<code>lock-dependencies</code> is specified,
+project references will be pinned even
+if this option is not specified.
+symbols               Build
+symbol/source packages in addition to
+library/content packages.
+include-referenced-projects
+Include
+symbol/source from referenced projects.
+project-url <url>     Url to the
+projects home page.
+--verbose, -v         Enable
+verbose console output for the paket
+process.
+--log-file <path>     Specify a log
+file for the paket process.
+--silent, -s          Suppress
+console output for the paket process.
+--help                display this
+list of options.
+If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <h2><a name="Creating-NuGet-Packages" class="anchor" href="#Creating-NuGet-Packages">Creating NuGet-Packages</a></h2>
 <p>Consider the following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's root:</p>

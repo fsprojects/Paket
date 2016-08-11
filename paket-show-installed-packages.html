@@ -62,24 +62,28 @@
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket show-installed-packages [--help] [--all] [project &lt;string&gt;]
 </code></pre></td></tr></table>
-<p>OPTIONS:
-<code>$1</code>:
-<code>$1</code>:    --all                 Shows all
-<code>$1</code>:installed packages (incl. transitive
-<code>$1</code>:dependencies).
-<code>$1</code>:    project <string>      Show only
-<code>$1</code>:packages that are installed in the
-<code>$1</code>:given project.
-<code>$1</code>:    --verbose, -v         Enable
-<code>$1</code>:verbose console output for the paket
-<code>$1</code>:process.
-<code>$1</code>:    --log-file <path>     Specify a log
-<code>$1</code>:file for the paket process.
-<code>$1</code>:    --silent, -s          Suppress
-<code>$1</code>:console output for the paket process.
-<code>$1</code>:    --help                display this
-<code>$1</code>:list of options.
-<code>$1</code>:If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
+<p>OPTIONS:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">--</span><span class="i">all</span>                 <span class="i">Shows</span> <span class="i">all</span>
+</code></pre></td>
+</tr>
+</table>
+<p>installed packages (incl. transitive
+dependencies).
+project <string>      Show only
+packages that are installed in the
+given project.
+--verbose, -v         Enable
+verbose console output for the paket
+process.
+--log-file <path>     Specify a log
+file for the paket process.
+--silent, -s          Suppress
+console output for the paket process.
+--help                display this
+list of options.
+If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <h2><a name="Sample" class="anchor" href="#Sample">Sample</a></h2>
 <p>Running the command:</p>

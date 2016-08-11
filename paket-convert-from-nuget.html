@@ -62,35 +62,39 @@
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket convert-from-nuget [--help] [--force] [--no-install] [--no-auto-restore] [--creds-migration &lt;mode&gt;]
 </code></pre></td></tr></table>
-<p>OPTIONS:
-<code>$1</code>:
-<code>$1</code>:    --force, -f           Forces the
-<code>$1</code>:conversion, even if paket.dependencies
-<code>$1</code>:or paket.references files are present.
-<code>$1</code>:    --no-install          Skips the
-<code>$1</code>:paket install process (patching of
-<code>$1</code>:csproj, fsproj, ... files) after the
-<code>$1</code>:generation of the paket.lock file.
-<code>$1</code>:    --no-auto-restore     Skips paket
-<code>$1</code>:auto-restore process afterward
-<code>$1</code>:generation of dependencies / references
-<code>$1</code>:files.
-<code>$1</code>:    --creds-migration <mode>
-<code>$1</code>:                          Specify a
-<code>$1</code>:mode for migrating NuGet source
-<code>$1</code>:credentials. Possible values are
-<code>$1</code>:[<code>encrypt</code>|<code>plaintext</code>|<code>selective</code>].
-<code>$1</code>:The default mode is <code>encrypt</code>.
-<code>$1</code>:    --verbose, -v         Enable
-<code>$1</code>:verbose console output for the paket
-<code>$1</code>:process.
-<code>$1</code>:    --log-file <path>     Specify a log
-<code>$1</code>:file for the paket process.
-<code>$1</code>:    --silent, -s          Suppress
-<code>$1</code>:console output for the paket process.
-<code>$1</code>:    --help                display this
-<code>$1</code>:list of options.
-<code>$1</code>:If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
+<p>OPTIONS:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">--</span><span class="i">force</span>, <span class="o">-</span><span class="i">f</span>           <span class="i">Forces</span> <span class="i">the</span>
+</code></pre></td>
+</tr>
+</table>
+<p>conversion, even if paket.dependencies
+or paket.references files are present.
+--no-install          Skips the
+paket install process (patching of
+csproj, fsproj, ... files) after the
+generation of the paket.lock file.
+--no-auto-restore     Skips paket
+auto-restore process afterward
+generation of dependencies / references
+files.
+--creds-migration <mode>
+Specify a
+mode for migrating NuGet source
+credentials. Possible values are
+[<code>encrypt</code>|<code>plaintext</code>|<code>selective</code>].
+The default mode is <code>encrypt</code>.
+--verbose, -v         Enable
+verbose console output for the paket
+process.
+--log-file <path>     Specify a log
+file for the paket process.
+--silent, -s          Suppress
+console output for the paket process.
+--help                display this
+list of options.
+If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <p>More details about the conversion process can be found in the <a href="convert-from-nuget-tutorial.html">"Convert from NuGet" tutorial</a>.</p>
 

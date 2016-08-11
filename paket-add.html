@@ -66,60 +66,64 @@
       [--interactive] [--redirects] [--createnewbindingfiles] [--clean-redirects] [--no-install]
       [--keep-major] [--keep-minor] [--keep-patch] [--touch-affected-refs]
 </code></pre></td></tr></table>
-<p>OPTIONS:
-<code>$1</code>:
-<code>$1</code>:    nuget <package id>    NuGet package
-<code>$1</code>:id.
-<code>$1</code>:    version <version>     Allows to
-<code>$1</code>:specify version of the package.
-<code>$1</code>:    project <name>        Allows to add
-<code>$1</code>:the package to a single project only.
-<code>$1</code>:    group <name>          Add the
-<code>$1</code>:package to the given group. If omited
-<code>$1</code>:the Main group is used.
-<code>$1</code>:    --force, -f           Forces the
-<code>$1</code>:download and reinstallation of all
-<code>$1</code>:packages.
-<code>$1</code>:    --interactive, -i     Asks the user
-<code>$1</code>:for every project if he or she wants to
-<code>$1</code>:add the package to the projects's
-<code>$1</code>:paket.references file.
-<code>$1</code>:    --redirects           Creates
-<code>$1</code>:binding redirects for the NuGet
-<code>$1</code>:packages.
-<code>$1</code>:    --createnewbindingfiles
-<code>$1</code>:                          Creates
-<code>$1</code>:binding redirect files if needed.
-<code>$1</code>:    --clean-redirects     Removes all
-<code>$1</code>:binding redirects that are not
-<code>$1</code>:specified by Paket.
-<code>$1</code>:    --no-install          Skips paket
-<code>$1</code>:install process (patching of csproj,
-<code>$1</code>:fsproj, ... files) after the generation
-<code>$1</code>:of paket.lock file.
-<code>$1</code>:    --keep-major          Allows only
-<code>$1</code>:updates that are not changing the major
-<code>$1</code>:version of the NuGet packages.
-<code>$1</code>:    --keep-minor          Allows only
-<code>$1</code>:updates that are not changing the minor
-<code>$1</code>:version of the NuGet packages.
-<code>$1</code>:    --keep-patch          Allows only
-<code>$1</code>:updates that are not changing the patch
-<code>$1</code>:version of the NuGet packages.
-<code>$1</code>:    --touch-affected-refs Touches
-<code>$1</code>:project files referencing packages
-<code>$1</code>:which are affected, to help incremental
-<code>$1</code>:build tools detecting the change.
-<code>$1</code>:    --verbose, -v         Enable
-<code>$1</code>:verbose console output for the paket
-<code>$1</code>:process.
-<code>$1</code>:    --log-file <path>     Specify a log
-<code>$1</code>:file for the paket process.
-<code>$1</code>:    --silent, -s          Suppress
-<code>$1</code>:console output for the paket process.
-<code>$1</code>:    --help                display this
-<code>$1</code>:list of options.
-<code>$1</code>:If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
+<p>OPTIONS:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">nuget</span> <span class="o">&lt;</span><span class="i">package</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">id</span><span class="o">&gt;</span>    <span class="i">NuGet</span> <span class="i">package</span>
+</code></pre></td>
+</tr>
+</table>
+<p>id.
+version <version>     Allows to
+specify version of the package.
+project <name>        Allows to add
+the package to a single project only.
+group <name>          Add the
+package to the given group. If omited
+the Main group is used.
+--force, -f           Forces the
+download and reinstallation of all
+packages.
+--interactive, -i     Asks the user
+for every project if he or she wants to
+add the package to the projects's
+paket.references file.
+--redirects           Creates
+binding redirects for the NuGet
+packages.
+--createnewbindingfiles
+Creates
+binding redirect files if needed.
+--clean-redirects     Removes all
+binding redirects that are not
+specified by Paket.
+--no-install          Skips paket
+install process (patching of csproj,
+fsproj, ... files) after the generation
+of paket.lock file.
+--keep-major          Allows only
+updates that are not changing the major
+version of the NuGet packages.
+--keep-minor          Allows only
+updates that are not changing the minor
+version of the NuGet packages.
+--keep-patch          Allows only
+updates that are not changing the patch
+version of the NuGet packages.
+--touch-affected-refs Touches
+project files referencing packages
+which are affected, to help incremental
+build tools detecting the change.
+--verbose, -v         Enable
+verbose console output for the paket
+process.
+--log-file <path>     Specify a log
+file for the paket process.
+--silent, -s          Suppress
+console output for the paket process.
+--help                display this
+list of options.
+If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <h2><a name="Adding-to-a-single-project" class="anchor" href="#Adding-to-a-single-project">Adding to a single project</a></h2>
 <p>It's also possible to add a package to a specified project only:</p>
@@ -152,6 +156,7 @@
 <span class="k">nuget</span> xunit
 </code></pre></td></tr></table>
 
+<div class="tip" id="fs1">val id : x:&#39;T -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.id</div>
 
         </div>
         <div class="span3">

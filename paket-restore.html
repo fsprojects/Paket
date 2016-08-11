@@ -68,39 +68,42 @@
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <p><code>paket restore</code> fails with an error if the paket.lock file does not exist.
 No packages are downloaded in that case. Please see <code>paket install</code> and <code>paket update</code> to learn how to create the paket.lock file.</p>
-<p>OPTIONS:
-<code>$1</code>:
-<code>$1</code>:    --force, -f           Forces the
-<code>$1</code>:download of all packages.
-<code>$1</code>:    --only-referenced     Allows to
-<code>$1</code>:restore packages that are referenced in
-<code>$1</code>:paket.references files, instead of all
-<code>$1</code>:packages in paket.dependencies.
-<code>$1</code>:    --touch-affected-refs Touches
-<code>$1</code>:project files referencing packages
-<code>$1</code>:which are being restored, to help
-<code>$1</code>:incremental build tools detecting the
-<code>$1</code>:change.
-<code>$1</code>:    --ignore-checks       Skips the
-<code>$1</code>:test if paket.dependencies and
-<code>$1</code>:paket.lock are in sync.
-<code>$1</code>:    group <name>          Allows to
-<code>$1</code>:restore a single group.
-<code>$1</code>:    --references-files [<file name>...]
-<code>$1</code>:                          Allows to
-<code>$1</code>:restore all packages from the given
-<code>$1</code>:paket.references files. This implies
-<code>$1</code>:--only-referenced.
-<code>$1</code>:    --verbose, -v         Enable
-<code>$1</code>:verbose console output for the paket
-<code>$1</code>:process.
-<code>$1</code>:    --log-file <path>     Specify a log
-<code>$1</code>:file for the paket process.
-<code>$1</code>:    --silent, -s          Suppress
-<code>$1</code>:console output for the paket process.
-<code>$1</code>:    --help                display this
-<code>$1</code>:list of options.
-<code>$1</code>:</p>
+<p>OPTIONS:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">--</span><span class="i">force</span>, <span class="o">-</span><span class="i">f</span>           <span class="i">Forces</span> <span class="i">the</span>
+</code></pre></td>
+</tr>
+</table>
+<p>download of all packages.
+--only-referenced     Allows to
+restore packages that are referenced in
+paket.references files, instead of all
+packages in paket.dependencies.
+--touch-affected-refs Touches
+project files referencing packages
+which are being restored, to help
+incremental build tools detecting the
+change.
+--ignore-checks       Skips the
+test if paket.dependencies and
+paket.lock are in sync.
+group <name>          Allows to
+restore a single group.
+--references-files [<file name>...]
+Allows to
+restore all packages from the given
+paket.references files. This implies
+--only-referenced.
+--verbose, -v         Enable
+verbose console output for the paket
+process.
+--log-file <path>     Specify a log
+file for the paket process.
+--silent, -s          Suppress
+console output for the paket process.
+--help                display this
+list of options.</p>
 
 
         </div>

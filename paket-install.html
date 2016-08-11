@@ -71,47 +71,50 @@ Paket will update the paket.lock file to make it match paket.dependencies again.
 <p>Unlike <a href="paket-update.html"><code>paket update</code></a>, <a href="paket-install.html"><code>paket install</code></a> will only look for
 new versions of dependencies that have been modified in paket.dependencies,
 and use the version from paket.lock for all other dependencies.</p>
-<p>OPTIONS:
-<code>$1</code>:
-<code>$1</code>:    --force, -f           Forces the
-<code>$1</code>:download and reinstallation of all
-<code>$1</code>:packages.
-<code>$1</code>:    --redirects           Creates
-<code>$1</code>:binding redirects for the NuGet
-<code>$1</code>:packages.
-<code>$1</code>:    --createnewbindingfiles
-<code>$1</code>:                          Creates
-<code>$1</code>:binding redirect files if needed.
-<code>$1</code>:    --clean-redirects     Removes all
-<code>$1</code>:binding redirects that are not
-<code>$1</code>:specified by Paket.
-<code>$1</code>:    --keep-major          Allows only
-<code>$1</code>:updates that are not changing the major
-<code>$1</code>:version of the NuGet packages.
-<code>$1</code>:    --keep-minor          Allows only
-<code>$1</code>:updates that are not changing the minor
-<code>$1</code>:version of the NuGet packages.
-<code>$1</code>:    --keep-patch          Allows only
-<code>$1</code>:updates that are not changing the patch
-<code>$1</code>:version of the NuGet packages.
-<code>$1</code>:    --only-referenced     Only install
-<code>$1</code>:packages that are referenced in
-<code>$1</code>:paket.references files, instead of all
-<code>$1</code>:packages in paket.dependencies.
-<code>$1</code>:    --touch-affected-refs Touches
-<code>$1</code>:project files referencing packages
-<code>$1</code>:which are affected, to help incremental
-<code>$1</code>:build tools detecting the change.
-<code>$1</code>:    --verbose, -v         Enable
-<code>$1</code>:verbose console output for the paket
-<code>$1</code>:process.
-<code>$1</code>:    --log-file <path>     Specify a log
-<code>$1</code>:file for the paket process.
-<code>$1</code>:    --silent, -s          Suppress
-<code>$1</code>:console output for the paket process.
-<code>$1</code>:    --help                display this
-<code>$1</code>:list of options.
-<code>$1</code>:</p>
+<p>OPTIONS:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">--</span><span class="i">force</span>, <span class="o">-</span><span class="i">f</span>           <span class="i">Forces</span> <span class="i">the</span>
+</code></pre></td>
+</tr>
+</table>
+<p>download and reinstallation of all
+packages.
+--redirects           Creates
+binding redirects for the NuGet
+packages.
+--createnewbindingfiles
+Creates
+binding redirect files if needed.
+--clean-redirects     Removes all
+binding redirects that are not
+specified by Paket.
+--keep-major          Allows only
+updates that are not changing the major
+version of the NuGet packages.
+--keep-minor          Allows only
+updates that are not changing the minor
+version of the NuGet packages.
+--keep-patch          Allows only
+updates that are not changing the patch
+version of the NuGet packages.
+--only-referenced     Only install
+packages that are referenced in
+paket.references files, instead of all
+packages in paket.dependencies.
+--touch-affected-refs Touches
+project files referencing packages
+which are affected, to help incremental
+build tools detecting the change.
+--verbose, -v         Enable
+verbose console output for the paket
+process.
+--log-file <path>     Specify a log
+file for the paket process.
+--silent, -s          Suppress
+console output for the paket process.
+--help                display this
+list of options.</p>
 
 
         </div>
