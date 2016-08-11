@@ -59,53 +59,67 @@
 <h1><a name="paket-add" class="anchor" href="#paket-add">paket add</a></h1>
 <p>Adds a new package to your paket.dependencies file.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket add [--help] nuget &lt;package id&gt;&lt;br /&gt;[version &lt;version&gt;] [project &lt;name&gt;]&lt;br /&gt;[group &lt;name&gt;] [--force]&lt;br /&gt;          [--interactive] [--redirects]&lt;br /&gt;[--createnewbindingfiles]&lt;br /&gt;[--clean-redirects] [--no-install]&lt;br /&gt;          [--keep-major] [--keep-minor]&lt;br /&gt;[--keep-patch] [--touch-affected-refs]&lt;br /&gt;
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket add [--help] nuget &lt;package id&gt; [version &lt;version&gt;] [project &lt;name&gt;] [group &lt;name&gt;] [--force]
+      [--interactive] [--redirects] [--createnewbindingfiles] [--clean-redirects] [--no-install]
+      [--keep-major] [--keep-minor] [--keep-patch] [--touch-affected-refs]
 </code></pre></td></tr></table>
-<p>OPTIONS:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-<span class="l">15: </span>
-<span class="l">16: </span>
-<span class="l">17: </span>
-<span class="l">18: </span>
-<span class="l">19: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">nuget</span> <span class="o">&lt;</span><span class="i">package</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">id</span><span class="o">&gt;</span>    <span class="i">NuGet</span> <span class="i">package</span> <span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="i">id</span><span class="o">.</span>
-<span class="i">version</span> <span class="o">&lt;</span><span class="i">version</span><span class="o">&gt;</span>     <span class="i">Allows</span> <span class="k">to</span> <span class="i">specify</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">package</span><span class="o">.</span>
-<span class="i">project</span> <span class="o">&lt;</span><span class="i">name</span><span class="o">&gt;</span>        <span class="i">Allows</span> <span class="k">to</span> <span class="i">add</span> <span class="i">the</span> <span class="i">package</span> <span class="k">to</span> <span class="i">a</span> <span onmouseout="hideTip(event, 'fs2', 3)" onmouseover="showTip(event, 'fs2', 3)" class="i">single</span> <span class="i">project</span> <span class="i">only</span><span class="o">.</span>
-<span class="i">group</span> <span class="o">&lt;</span><span class="i">name</span><span class="o">&gt;</span>          <span class="i">Add</span> <span class="i">the</span> <span class="i">package</span> <span class="k">to</span> <span class="i">the</span> <span class="i">given</span> <span class="i">group</span><span class="o">.</span> <span class="i">If</span> <span class="i">omited</span> <span class="i">the</span> <span class="i">Main</span> <span class="i">group</span> <span class="i">is</span> <span class="i">used</span><span class="o">.</span>
-<span class="o">--</span><span class="i">force</span>, <span class="o">-</span><span class="i">f</span>           <span class="i">Forces</span> <span class="i">the</span> <span class="i">download</span> <span class="k">and</span> <span class="i">reinstallation</span> <span class="k">of</span> <span class="i">all</span> <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">interactive</span>, <span class="o">-</span><span class="i">i</span>     <span class="i">Asks</span> <span class="i">the</span> <span class="i">user</span> <span class="k">for</span> <span class="i">every</span> <span class="i">project</span> <span class="k">if</span> <span class="i">he</span> <span class="k">or</span> <span class="i">she</span> <span class="i">wants</span> <span class="k">to</span> <span class="i">add</span> <span class="i">the</span> <span class="i">package</span> <span class="k">to</span> <span class="i">the</span> <span class="i">projects&#39;s</span> <span class="i">paket</span><span class="o">.</span><span class="i">references</span> <span class="i">file</span><span class="o">.</span>
-<span class="o">--</span><span class="i">redirects</span>           <span class="i">Creates</span> <span class="i">binding</span> <span class="i">redirects</span> <span class="k">for</span> <span class="i">the</span> <span class="i">NuGet</span> <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">createnewbindingfiles</span>
-                      <span class="i">Creates</span> <span class="i">binding</span> <span class="i">redirect</span> <span class="i">files</span> <span class="k">if</span> <span class="i">needed</span><span class="o">.</span>
-<span class="o">--</span><span class="i">clean</span><span class="o">-</span><span class="i">redirects</span>     <span class="i">Removes</span> <span class="i">all</span> <span class="i">binding</span> <span class="i">redirects</span> <span class="i">that</span> <span class="i">are</span> <span onmouseout="hideTip(event, 'fs3', 4)" onmouseover="showTip(event, 'fs3', 4)" class="i">not</span> <span class="i">specified</span> <span class="i">by</span> <span class="i">Paket</span><span class="o">.</span>
-<span class="o">--</span><span class="i">no</span><span class="o">-</span><span class="i">install</span>          <span class="i">Skips</span> <span class="i">paket</span> <span class="i">install</span> <span class="i">process</span> (<span class="i">patching</span> <span class="k">of</span> <span class="i">csproj</span>, <span class="i">fsproj</span>, <span class="o">..</span><span class="o">.</span> <span class="i">files</span>) <span class="i">after</span> <span class="i">the</span> <span class="i">generation</span> <span class="k">of</span> <span class="i">paket</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 5)" onmouseover="showTip(event, 'fs4', 5)" class="i">lock</span> <span class="i">file</span><span class="o">.</span>
-<span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">major</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span onmouseout="hideTip(event, 'fs3', 6)" onmouseover="showTip(event, 'fs3', 6)" class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">major</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span> <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">minor</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span onmouseout="hideTip(event, 'fs3', 7)" onmouseover="showTip(event, 'fs3', 7)" class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">minor</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span> <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">patch</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span onmouseout="hideTip(event, 'fs3', 8)" onmouseover="showTip(event, 'fs3', 8)" class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">patch</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span> <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">touch</span><span class="o">-</span><span class="i">affected</span><span class="o">-</span><span class="i">refs</span> <span class="i">Touches</span> <span class="i">project</span> <span class="i">files</span> <span class="i">referencing</span> <span class="i">packages</span> <span class="i">which</span> <span class="i">are</span> <span class="i">affected</span>, <span class="k">to</span> <span class="i">help</span> <span class="i">incremental</span> <span class="i">build</span> <span class="i">tools</span> <span class="i">detecting</span> <span class="i">the</span> <span class="i">change</span><span class="o">.</span>
-<span class="o">--</span><span class="i">verbose</span>, <span class="o">-</span><span class="i">v</span>         <span class="i">Enable</span> <span class="i">verbose</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span onmouseout="hideTip(event, 'fs5', 9)" onmouseover="showTip(event, 'fs5', 9)" class="i">log</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">a</span> <span onmouseout="hideTip(event, 'fs5', 10)" onmouseover="showTip(event, 'fs5', 10)" class="i">log</span> <span class="i">file</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">silent</span>, <span class="o">-</span><span class="i">s</span>          <span class="i">Suppress</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">help</span>                <span class="i">display</span> <span class="i">this</span> <span onmouseout="hideTip(event, 'fs6', 11)" onmouseover="showTip(event, 'fs6', 11)" class="i">list</span> <span class="k">of</span> <span class="i">options</span><span class="o">.</span>
-</code></pre></td>
-</tr>
-</table>
-<p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
+<p>OPTIONS:
+<code>$1</code>:
+<code>$1</code>:    nuget <package id>    NuGet package
+<code>$1</code>:id.
+<code>$1</code>:    version <version>     Allows to
+<code>$1</code>:specify version of the package.
+<code>$1</code>:    project <name>        Allows to add
+<code>$1</code>:the package to a single project only.
+<code>$1</code>:    group <name>          Add the
+<code>$1</code>:package to the given group. If omited
+<code>$1</code>:the Main group is used.
+<code>$1</code>:    --force, -f           Forces the
+<code>$1</code>:download and reinstallation of all
+<code>$1</code>:packages.
+<code>$1</code>:    --interactive, -i     Asks the user
+<code>$1</code>:for every project if he or she wants to
+<code>$1</code>:add the package to the projects's
+<code>$1</code>:paket.references file.
+<code>$1</code>:    --redirects           Creates
+<code>$1</code>:binding redirects for the NuGet
+<code>$1</code>:packages.
+<code>$1</code>:    --createnewbindingfiles
+<code>$1</code>:                          Creates
+<code>$1</code>:binding redirect files if needed.
+<code>$1</code>:    --clean-redirects     Removes all
+<code>$1</code>:binding redirects that are not
+<code>$1</code>:specified by Paket.
+<code>$1</code>:    --no-install          Skips paket
+<code>$1</code>:install process (patching of csproj,
+<code>$1</code>:fsproj, ... files) after the generation
+<code>$1</code>:of paket.lock file.
+<code>$1</code>:    --keep-major          Allows only
+<code>$1</code>:updates that are not changing the major
+<code>$1</code>:version of the NuGet packages.
+<code>$1</code>:    --keep-minor          Allows only
+<code>$1</code>:updates that are not changing the minor
+<code>$1</code>:version of the NuGet packages.
+<code>$1</code>:    --keep-patch          Allows only
+<code>$1</code>:updates that are not changing the patch
+<code>$1</code>:version of the NuGet packages.
+<code>$1</code>:    --touch-affected-refs Touches
+<code>$1</code>:project files referencing packages
+<code>$1</code>:which are affected, to help incremental
+<code>$1</code>:build tools detecting the change.
+<code>$1</code>:    --verbose, -v         Enable
+<code>$1</code>:verbose console output for the paket
+<code>$1</code>:process.
+<code>$1</code>:    --log-file <path>     Specify a log
+<code>$1</code>:file for the paket process.
+<code>$1</code>:    --silent, -s          Suppress
+<code>$1</code>:console output for the paket process.
+<code>$1</code>:    --help                display this
+<code>$1</code>:list of options.
+<code>$1</code>:If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <h2><a name="Adding-to-a-single-project" class="anchor" href="#Adding-to-a-single-project">Adding to a single project</a></h2>
 <p>It's also possible to add a package to a specified project only:</p>
@@ -138,12 +152,6 @@
 <span class="k">nuget</span> xunit
 </code></pre></td></tr></table>
 
-<div class="tip" id="fs1">val id : x:&#39;T -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.id</div>
-<div class="tip" id="fs2">Multiple items<br />val single : value:&#39;T -&gt; single (requires member op_Explicit)<br /><br />Full name: Microsoft.FSharp.Core.ExtraTopLevelOperators.single<br /><br />--------------------<br />type single = System.Single<br /><br />Full name: Microsoft.FSharp.Core.single</div>
-<div class="tip" id="fs3">val not : value:bool -&gt; bool<br /><br />Full name: Microsoft.FSharp.Core.Operators.not</div>
-<div class="tip" id="fs4">val lock : lockObject:&#39;Lock -&gt; action:(unit -&gt; &#39;T) -&gt; &#39;T (requires reference type)<br /><br />Full name: Microsoft.FSharp.Core.Operators.lock</div>
-<div class="tip" id="fs5">val log : value:&#39;T -&gt; &#39;T (requires member Log)<br /><br />Full name: Microsoft.FSharp.Core.Operators.log</div>
-<div class="tip" id="fs6">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
 
         </div>
         <div class="span3">

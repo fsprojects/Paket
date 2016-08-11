@@ -60,38 +60,40 @@
 <p>Converts from using NuGet to Paket.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket convert-from-nuget [--help]&lt;br /&gt;[--force] [--no-install]&lt;br /&gt;[--no-auto-restore] [--creds-migration&lt;br /&gt;&lt;mode&gt;]&lt;br /&gt;
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket convert-from-nuget [--help] [--force] [--no-install] [--no-auto-restore] [--creds-migration &lt;mode&gt;]
 </code></pre></td></tr></table>
-<p>OPTIONS:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-<span class="l">7: </span>
-<span class="l">8: </span>
-<span class="l">9: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">--</span><span class="i">force</span>, <span class="o">-</span><span class="i">f</span>           <span class="i">Forces</span> <span class="i">the</span> <span class="i">conversion</span>, <span class="i">even</span> <span class="k">if</span> <span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span> <span class="k">or</span> <span class="i">paket</span><span class="o">.</span><span class="i">references</span> <span class="i">files</span> <span class="i">are</span> <span class="i">present</span><span class="o">.</span>
-<span class="o">--</span><span class="i">no</span><span class="o">-</span><span class="i">install</span>          <span class="i">Skips</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">install</span> <span class="i">process</span> (<span class="i">patching</span> <span class="k">of</span> <span class="i">csproj</span>, <span class="i">fsproj</span>, <span class="o">..</span><span class="o">.</span> <span class="i">files</span>) <span class="i">after</span> <span class="i">the</span> <span class="i">generation</span> <span class="k">of</span> <span class="i">the</span> <span class="i">paket</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">lock</span> <span class="i">file</span><span class="o">.</span>
-<span class="o">--</span><span class="i">no</span><span class="o">-</span><span class="i">auto</span><span class="o">-</span><span class="i">restore</span>     <span class="i">Skips</span> <span class="i">paket</span> <span class="i">auto</span><span class="o">-</span><span class="i">restore</span> <span class="i">process</span> <span class="i">afterward</span> <span class="i">generation</span> <span class="k">of</span> <span class="i">dependencies</span> <span class="o">/</span> <span class="i">references</span> <span class="i">files</span><span class="o">.</span>
-<span class="o">--</span><span class="i">creds</span><span class="o">-</span><span class="i">migration</span> <span class="o">&lt;</span><span class="i">mode</span><span class="o">&gt;</span>
-                      <span class="i">Specify</span> <span class="i">a</span> <span class="i">mode</span> <span class="k">for</span> <span class="i">migrating</span> <span class="i">NuGet</span> <span class="i">source</span> <span class="i">credentials</span><span class="o">.</span> <span class="i">Possible</span> <span class="i">values</span> <span class="i">are</span> [<span class="k">`</span><span class="i">encrypt</span><span class="k">`</span>|<span class="k">`</span><span class="i">plaintext</span><span class="k">`</span>|<span class="k">`</span><span class="i">selective</span><span class="k">`</span>]<span class="o">.</span> <span class="i">The</span> <span class="k">default</span> <span class="i">mode</span> <span class="i">is</span> <span class="k">`</span><span class="i">encrypt</span><span class="k">`</span><span class="o">.</span>
-<span class="o">--</span><span class="i">verbose</span>, <span class="o">-</span><span class="i">v</span>         <span class="i">Enable</span> <span class="i">verbose</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">log</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">a</span> <span onmouseout="hideTip(event, 'fs2', 3)" onmouseover="showTip(event, 'fs2', 3)" class="i">log</span> <span class="i">file</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">silent</span>, <span class="o">-</span><span class="i">s</span>          <span class="i">Suppress</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">help</span>                <span class="i">display</span> <span class="i">this</span> <span onmouseout="hideTip(event, 'fs3', 4)" onmouseover="showTip(event, 'fs3', 4)" class="i">list</span> <span class="k">of</span> <span class="i">options</span><span class="o">.</span>
-</code></pre></td>
-</tr>
-</table>
-<p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
+<p>OPTIONS:
+<code>$1</code>:
+<code>$1</code>:    --force, -f           Forces the
+<code>$1</code>:conversion, even if paket.dependencies
+<code>$1</code>:or paket.references files are present.
+<code>$1</code>:    --no-install          Skips the
+<code>$1</code>:paket install process (patching of
+<code>$1</code>:csproj, fsproj, ... files) after the
+<code>$1</code>:generation of the paket.lock file.
+<code>$1</code>:    --no-auto-restore     Skips paket
+<code>$1</code>:auto-restore process afterward
+<code>$1</code>:generation of dependencies / references
+<code>$1</code>:files.
+<code>$1</code>:    --creds-migration <mode>
+<code>$1</code>:                          Specify a
+<code>$1</code>:mode for migrating NuGet source
+<code>$1</code>:credentials. Possible values are
+<code>$1</code>:[<code>encrypt</code>|<code>plaintext</code>|<code>selective</code>].
+<code>$1</code>:The default mode is <code>encrypt</code>.
+<code>$1</code>:    --verbose, -v         Enable
+<code>$1</code>:verbose console output for the paket
+<code>$1</code>:process.
+<code>$1</code>:    --log-file <path>     Specify a log
+<code>$1</code>:file for the paket process.
+<code>$1</code>:    --silent, -s          Suppress
+<code>$1</code>:console output for the paket process.
+<code>$1</code>:    --help                display this
+<code>$1</code>:list of options.
+<code>$1</code>:If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <p>More details about the conversion process can be found in the <a href="convert-from-nuget-tutorial.html">"Convert from NuGet" tutorial</a>.</p>
 
-<div class="tip" id="fs1">val lock : lockObject:&#39;Lock -&gt; action:(unit -&gt; &#39;T) -&gt; &#39;T (requires reference type)<br /><br />Full name: Microsoft.FSharp.Core.Operators.lock</div>
-<div class="tip" id="fs2">val log : value:&#39;T -&gt; &#39;T (requires member Log)<br /><br />Full name: Microsoft.FSharp.Core.Operators.log</div>
-<div class="tip" id="fs3">type &#39;T list = List&lt;&#39;T&gt;<br /><br />Full name: Microsoft.FSharp.Collections.list&lt;_&gt;</div>
 
         </div>
         <div class="span3">
