@@ -59,11 +59,14 @@
 <h1><a name="paket-install" class="anchor" href="#paket-install">paket install</a></h1>
 <p>Download the dependencies specified by the paket.dependencies or paket.lock file into the <code>packages/</code> directory and update projects.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket install [--help] [--force] [--redirects] [--createnewbindingfiles] [--clean-redirects] [--keep-major]
-          [--keep-minor] [--keep-patch] [--only-referenced] [--touch-affected-refs]
+<td class="snippet"><pre class="fssnip highlighted"><code lang="msh">paket install [--help] [--force]
 </code></pre></td></tr></table>
+<p>[--redirects] [--createnewbindingfiles]
+[--clean-redirects] [--keep-major]
+[--keep-minor]
+[--keep-patch] [--only-referenced]
+[--touch-affected-refs]</p>
 <p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 <p>If the paket.dependencies file has been changed since the last update of the paket.lock file (e.g. added dependencies or changed version requirements),
