@@ -401,7 +401,8 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
         | exn -> 
             traceWarnfn "Could not enable auto restore%sMessage: %s" Environment.NewLine exn.Message
 
-    if installAfter then
-        UpdateProcess.Update(
-            result.PaketEnv.DependenciesFile.FileName,
-            { UpdaterOptions.Default with Common = { InstallerOptions.Default with Force = true; Redirects = true }})
+    UpdateProcess.Update(
+        result.PaketEnv.DependenciesFile.FileName, 
+        { UpdaterOptions.Default with 
+                Common = { InstallerOptions.Default with Force = true; Redirects = true }
+                NoInstall = not installAfter })

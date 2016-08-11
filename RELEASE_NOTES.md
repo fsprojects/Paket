@@ -1,3 +1,6 @@
+#### 3.11.3 - 11.08.2016
+* BUGFIX: Run resolver after convert
+
 #### 3.11.2 - 09.08.2016
 * BUGFIX: Selective paket update doesn't ignore paket.dependencies rules anymore - https://github.com/fsprojects/Paket/issues/1841
 
