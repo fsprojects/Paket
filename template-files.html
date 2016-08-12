@@ -224,6 +224,14 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <li>the output assembly of the matching project (in the correct lib directory if a library, or tools if an exe)</li>
 <li>the output assemblies of any project references which do not have a matching template file</li>
 </ul>
+<h4><a name="Referenced-projects" class="anchor" href="#Referenced-projects">Referenced projects</a></h4>
+<p>With the include-referenced-projects switch you can tell Paket to pack referenced projects into the package.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">include</span><span class="o">-</span><span class="i">referenced</span><span class="o">-</span><span class="i">projects</span> <span class="k">true</span>
+</code></pre></td>
+</tr>
+</table>
 <h4><a name="References" class="anchor" href="#References">References</a></h4>
 <p>A references block looks like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
