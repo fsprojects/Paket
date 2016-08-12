@@ -95,13 +95,13 @@ let private convertToNormal (symbols : bool) templateFile =
         let includePdbs = optional.IncludePdbs
         { templateFile with Contents = ProjectInfo(core, { optional with IncludePdbs = (if symbols then false else includePdbs) }) }
 
-let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) templateFile =
+let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) (templateFile:TemplateFile) =
     let sourceFiles =
         let getTarget compileItem =
             let projectName = Path.GetFileName(compileItem.BaseDir)
             Path.Combine("src", projectName, compileItem.DestinationPath)
 
-        projectFile.GetCompileItems(includeReferencedProjects)
+        projectFile.GetCompileItems(includeReferencedProjects || templateFile.IncludeReferencedProjects)
         |> Seq.map (fun c -> c.SourceFile, getTarget c)
         |> Seq.toList
 
@@ -181,7 +181,10 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
     // add dependencies
     let allTemplates =
         let optWithSymbols (projectFile:ProjectFile) templateFile =
-            seq { yield (templateFile |> convertToNormal symbols); if symbols then yield templateFile |> convertToSymbols projectFile includeReferencedProjects }
+            seq { 
+                yield (templateFile |> convertToNormal symbols)
+                if symbols then 
+                    yield templateFile |> convertToSymbols projectFile includeReferencedProjects }
 
         let convertRemainingTemplate fileName =
             let templateFile = TemplateFile.Load(fileName,lockFile,version,specificVersions)

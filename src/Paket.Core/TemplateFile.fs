@@ -137,7 +137,9 @@ type OptionalPackagingInfo =
       FrameworkAssemblyReferences : string list
       Files : (string * string) list
       FilesExcluded : string list 
-      IncludePdbs : bool}
+      IncludePdbs : bool 
+      IncludeReferencedProjects : bool
+      }
     static member Epmty : OptionalPackagingInfo =
         { Title = None
           Owners = []
@@ -158,7 +160,8 @@ type OptionalPackagingInfo =
           FrameworkAssemblyReferences = []
           Files = []
           FilesExcluded = [] 
-          IncludePdbs = false}
+          IncludeReferencedProjects = false
+          IncludePdbs = false }
 
 type CompleteInfo = CompleteCoreInfo * OptionalPackagingInfo
 
@@ -169,6 +172,12 @@ type TemplateFileContents =
 type TemplateFile =
     { FileName : string
       Contents : TemplateFileContents }
+
+    with
+        member x.IncludeReferencedProjects = 
+            match x.Contents with
+            | CompleteInfo(_,c) -> c.IncludeReferencedProjects
+            | ProjectInfo (_,c) ->  c.IncludeReferencedProjects
 
 [<CompilationRepresentationAttribute(CompilationRepresentationFlags.ModuleSuffix)>]
 module internal TemplateFile =
@@ -377,6 +386,11 @@ module internal TemplateFile =
             | Some x when String.equalsIgnoreCase x "true" -> true
             | _ -> false
 
+        let includeReferencedProjects = 
+            match get "include-referenced-projects" with
+            | Some x when String.equalsIgnoreCase x "true" -> true
+            | _ -> false
+
         { Title = get "title"
           Owners = owners
           ReleaseNotes = get "releaseNotes"
@@ -395,7 +409,8 @@ module internal TemplateFile =
           References = getReferences map
           FrameworkAssemblyReferences = getFrameworkReferences map
           Files = getFiles map
-          FilesExcluded = getFileExcludes map 
+          FilesExcluded = getFileExcludes map
+          IncludeReferencedProjects = includeReferencedProjects 
           IncludePdbs = includePdbs }
 
     let Parse(file,lockFile,currentVersion,specificVersions,contentStream : Stream) =

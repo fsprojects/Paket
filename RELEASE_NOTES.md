@@ -1,3 +1,6 @@
+#### 3.13.0 - 12.08.2016
+* Allow to pack referenced projects by setting paket.template switch - https://github.com/fsprojects/Paket/issues/1851
+
 #### 3.12.0 - 12.08.2016
 * BUGFIX: Paket doesn't add duplicate references to framework assemblies anymore - https://github.com/fsprojects/Paket/issues/1333
 * BUGFIX: Run resolver after convert

@@ -130,6 +130,12 @@ In a project template, the files included will be:
 * the output assembly of the matching project (in the correct lib directory if a library, or tools if an exe)
 * the output assemblies of any project references which do not have a matching template file
 
+#### Referenced projects
+
+With the include-referenced-projects switch you can tell Paket to pack referenced projects into the package.
+
+    include-referenced-projects true
+
 #### References
 
 A references block looks like this:
