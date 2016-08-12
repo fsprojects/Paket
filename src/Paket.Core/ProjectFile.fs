@@ -611,17 +611,17 @@ module ProjectFile =
         |> List.sortBy(fun lib -> lib.Path)
         |> createAnalyzersNode
 
-    let generateXml (model:InstallModel) (aliases:Map<string,string>) (copyLocal:bool) (importTargets:bool) (referenceCondition:string option) (project:ProjectFile) =
+    let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool) (importTargets:bool) (referenceCondition:string option) (project:ProjectFile) =
         let references = 
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
             |> Set.ofList
 
         let model = model.FilterReferences references
-        let createItemGroup references = 
+        let createItemGroup (targets:TargetProfile list) references = 
             let itemGroup = createNode "ItemGroup" project
                                 
-            for lib in references |> Seq.sortBy (fun (r:Reference) -> r.Path) do
+            for lib in references do
                 match lib with
                 | Reference.Library lib ->
                     let fi = FileInfo (normalizePath lib)
@@ -682,14 +682,40 @@ module ProjectFile =
 
         let conditions =
             model.GetReferenceFolders()
-            |> List.sortBy (fun lib -> lib.Name)
-            |> List.choose (fun lib -> 
-                match lib with
-                | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> None  // TODO: Add reference to custom task instead
+            |> List.sortBy (fun libFolder -> libFolder.Name)
+            |> List.collect (fun libFolder -> 
+                match libFolder with
+                | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> []  // TODO: Add reference to custom task instead
                 | _ -> 
-                    match PlatformMatching.getCondition referenceCondition allTargets lib.Targets with
-                    | "" -> None
-                    | condition -> Some (condition,createItemGroup lib.Files.References))
+                    match PlatformMatching.getCondition referenceCondition allTargets libFolder.Targets with
+                    | "" -> []
+                    | condition -> 
+                        let references = libFolder.Files.References |> Seq.sortBy (fun (r:Reference) -> r.Path) |> Seq.toList
+                        let assemblyTargets = ref libFolder.Targets
+                        for lib in references do
+                            match lib with
+                            | Reference.FrameworkAssemblyReference frameworkAssembly ->
+                                for t in libFolder.Targets do
+                                    if not <| usedFrameworkLibs.Add(t,frameworkAssembly) then
+                                        assemblyTargets := List.filter ((<>) t) !assemblyTargets
+                            | _ -> ()
+
+                        if !assemblyTargets = libFolder.Targets then
+                            [condition,createItemGroup libFolder.Targets references]
+                        else
+                            let frameworkAssemblies,rest = 
+                                references
+                                |> List.partition (fun lib -> 
+                                    match lib with
+                                    | Reference.FrameworkAssemblyReference frameworkAssembly -> true
+                                    | _ -> false)
+
+                            match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
+                            | "" -> [condition,createItemGroup libFolder.Targets rest]
+                            | condition -> 
+                                [condition,createItemGroup !assemblyTargets frameworkAssemblies
+                                 condition,createItemGroup libFolder.Targets rest]
+                        )
 
         let targetsFileConditions =
             model.TargetsFileFolders
@@ -881,6 +907,8 @@ module ProjectFile =
                 incr l
             !j,!k
 
+        let usedFrameworkLibs = HashSet<TargetProfile*string>()
+
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.GetCompareString(), packName.GetCompareString())
@@ -910,7 +938,7 @@ module ProjectFile =
             let copyLocal = defaultArg installSettings.CopyLocal true
             let importTargets = defaultArg installSettings.ImportTargets true
 
-            generateXml projectModel installSettings.Aliases copyLocal importTargets installSettings.ReferenceCondition project)
+            generateXml projectModel usedFrameworkLibs installSettings.Aliases copyLocal importTargets installSettings.ReferenceCondition project)
         |> Seq.iter (fun (propsNodes,targetsNodes,chooseNode,propertyChooseNode, analyzersNode) ->
 
             let i = ref (project.ProjectNode.ChildNodes.Count-1)
@@ -1222,7 +1250,7 @@ type ProjectFile with
 
     member this.DeleteCustomModelNodes(model:InstallModel) = ProjectFile.deleteCustomModelNodes model this
 
-    member this.GenerateXml(model, aliases, copyLocal, importTargets, referenceCondition) = ProjectFile.generateXml model aliases copyLocal importTargets referenceCondition this
+    member this.GenerateXml(model, usedFrameworkLibs:HashSet<TargetProfile*string>, aliases, copyLocal, importTargets, referenceCondition) = ProjectFile.generateXml model usedFrameworkLibs aliases copyLocal importTargets referenceCondition this
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 

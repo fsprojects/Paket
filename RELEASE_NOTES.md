@@ -1,10 +1,7 @@
-#### 3.11.3 - 11.08.2016
+#### 3.12.0 - 12.08.2016
+* BUGFIX: Paket doesn't add duplicate references to framework assemblies anymore - https://github.com/fsprojects/Paket/issues/1333
 * BUGFIX: Run resolver after convert
-
-#### 3.11.2 - 09.08.2016
 * BUGFIX: Selective paket update doesn't ignore paket.dependencies rules anymore - https://github.com/fsprojects/Paket/issues/1841
-
-#### 3.11.1 - 05.08.2016
 * BUGFIX: Update with any of the --keep-?? flags didn't honour redirects:on in paket.dependencies - https://github.com/fsprojects/Paket/issues/1844
 
 #### 3.11.0 - 04.08.2016

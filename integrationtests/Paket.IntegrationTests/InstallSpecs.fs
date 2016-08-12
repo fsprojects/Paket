@@ -491,6 +491,15 @@ let ``#1746 hard should be softer``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1333 should install framework refs only once``() =
+    install "i001333-dup-refs" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001333-dup-refs","ConsoleApplication1","ConsoleApplication1.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001333-dup-refs","ConsoleApplication1","ConsoleApplication1.fsprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
     
 [<Test>]
 let ``#1779 net20 only in net461``() =
