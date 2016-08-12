@@ -405,11 +405,7 @@ let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version
 
             let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not <| File.Exists cachedHashFile then
-                use stream = File.OpenRead(fileName)
-                let packageSize = stream.Length
-                use hasher = System.Security.Cryptography.SHA512.Create() :> System.Security.Cryptography.HashAlgorithm
-                let packageHash = Convert.ToBase64String(hasher.ComputeHash(stream))
-                File.WriteAllText(cachedHashFile,packageHash)
+                File.WriteAllText(cachedHashFile,Utils.makeHash fi)
 
             File.Copy(cachedHashFile,targetPackageFileName + ".sha512")
             cleanup targetFolder
@@ -428,6 +424,9 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
             try
                 fixArchive fileName
                 ZipFile.ExtractToDirectory(fileName, targetFolder)
+                let fi = FileInfo(fileName)
+                let hashFile = Path.Combine(targetFolder,fi.Name + ".sha512")
+                File.WriteAllText(hashFile,Utils.makeHash fi)
             with
             | exn ->
 

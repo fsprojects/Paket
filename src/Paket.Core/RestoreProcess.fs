@@ -58,7 +58,7 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
         let targetDir = getTargetFolder root groupName package.Name package.Version includeVersionInPath
         let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
-        let force = if (localOverride || overridenFile.Exists) then true else force
+        let force = if localOverride || overridenFile.Exists then true else force
         let! result = async {
             match package.Source with
             | NuGetV2 _ | NuGetV3 _ -> 

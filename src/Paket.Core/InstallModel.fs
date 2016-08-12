@@ -173,8 +173,9 @@ module InstallModel =
         let results =
           getFileFolders target (getReferenceFolders installModel) (function Reference.Library lib -> Some lib | _ -> None)
           |> Seq.cache
+
         if results |> Seq.isEmpty then
-          getFileFolders target installModel.LegacyReferenceFileFolders (function Reference.Library lib -> Some lib | _ -> None)
+            getFileFolders target installModel.LegacyReferenceFileFolders (function Reference.Library lib -> Some lib | _ -> None)
         else results
 
     let getTargetsFiles (target : TargetProfile) (installModel:InstallModel) = 
