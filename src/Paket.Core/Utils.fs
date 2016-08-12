@@ -26,13 +26,7 @@ let internal removeInvalidChars (str : string) = RegularExpressions.Regex.Replac
 let internal memoize (f: 'a -> 'b) : 'a -> 'b =
     let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, 'b>()
     fun (x: 'a) ->
-        let value : 'b ref = ref Unchecked.defaultof<_>
-        if cache.TryGetValue(x, value) then !value
-        else
-            let y = f x
-            cache.TryAdd(x,y) |> ignore
-            y
-            
+        cache.GetOrAdd(x, f)
 
 type Auth = 
     | Credentials of Username : string * Password : string
