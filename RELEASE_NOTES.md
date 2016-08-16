@@ -1,3 +1,6 @@
+#### 3.13.1 - 16.08.2016
+* BUGFIX: Use ConcurrentDictionary correctly - https://github.com/fsprojects/Paket/pull/1853
+
 #### 3.13.0 - 12.08.2016
 * Allow to pack referenced projects by setting paket.template switch - https://github.com/fsprojects/Paket/issues/1851
 
