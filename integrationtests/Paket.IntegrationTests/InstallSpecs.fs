@@ -501,6 +501,22 @@ let ``#1333 should install framework refs only once``() =
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
     
+
+[<Test>]
+let ``#1854 net20 only in net461``() =
+    install "i001854-submodules" |> ignore
+    let newFile = Path.Combine(scenarioTempPath "i001854-submodules","TopLevel","Project1.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001854-submodules","TopLevel","Project1.fsprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+    let newFile = Path.Combine(scenarioTempPath "i001854-submodules","SubModule","SubLevel","Project1.fsproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001854-submodules","SubModule","SubLevel","Project1.fsprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
 [<Test>]
 let ``#1779 net20 only in net461``() =
     install "i001779-net20-only-in-net461" |> ignore
