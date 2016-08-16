@@ -136,7 +136,7 @@ It's possible to influence the `Private` property for references via the `copy_l
 
 ### Redirects option
 
-This option tells paket to create [Assembly Binding Redirects](https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx) for all referenced libraries.
+This option tells paket to create [Assembly Binding Redirects](https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx) for all referenced libraries. Paket will only create and manage binding redirects in **existing `App.config` files**, it will not create a new `App.config` file for you.
 
     [lang=paket]
     redirects: on
