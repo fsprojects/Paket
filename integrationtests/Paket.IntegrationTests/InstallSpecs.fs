@@ -502,7 +502,7 @@ let ``#1333 should install framework refs only once``() =
     s2 |> shouldEqual s1
     
 [<Test>]
-let ``#1854 net20 only in net461``() =
+let ``#1854 install only in corresponding folder``() =
     install "i001854-submodules" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001854-submodules","TopLevel","Project1.fsproj")
     let oldFile = Path.Combine(originalScenarioPath "i001854-submodules","TopLevel","Project1.fsprojtemplate")
