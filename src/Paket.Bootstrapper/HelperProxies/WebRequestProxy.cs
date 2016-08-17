@@ -33,18 +33,5 @@ namespace Paket.Bootstrapper.HelperProxies
             BootstrapperHelper.PrepareWebClient(Client, url);
             Client.DownloadFile(url, targetLocation);
         }
-
-        public void DownloadFile(string url, Stream stream, int bufferSize)
-        {
-            var request = BootstrapperHelper.PrepareWebRequest(url);
-
-            using (var httpResponse = (HttpWebResponse)request.GetResponse())
-            {
-                using (var responseStream = httpResponse.GetResponseStream())
-                {
-                    responseStream.CopyTo(stream, bufferSize);
-                }
-            }
-        }
     }
 }
