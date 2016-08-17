@@ -8,8 +8,6 @@ namespace Paket.Bootstrapper.DownloadStrategies
 {
     public class GitHubDownloadStrategy : IDownloadStrategy
     {
-        private const int HttpBufferSize = 4096;
-
         public static class Constants
         {
             public const string PaketReleasesLatestUrl = "https://github.com/fsprojects/Paket/releases/latest";
@@ -78,10 +76,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             ConsoleImpl.WriteDebug("Starting download from {0}", url);
 
             var tmpFile = BootstrapperHelper.GetTempFile("paket");
-            using (var fileStream = FileProxy.Create(tmpFile))
-            {
-                WebRequestProxy.DownloadFile(url, fileStream, HttpBufferSize);
-            }
+            WebRequestProxy.DownloadFile(url, tmpFile);
 
             FileProxy.Copy(tmpFile, target, true);
             FileProxy.Delete(tmpFile);
@@ -103,11 +98,8 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             string renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             string tmpDownloadPath = BootstrapperHelper.GetTempFile("newBootstrapper");
+            WebRequestProxy.DownloadFile(url, tmpDownloadPath);
 
-            using (var toStream = FileProxy.Create(tmpDownloadPath))
-            {
-                WebRequestProxy.DownloadFile(url, toStream, HttpBufferSize);
-            }
             try
             {
                 FileProxy.FileMove(exePath, renamedPath);
