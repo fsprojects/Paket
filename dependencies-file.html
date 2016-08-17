@@ -224,7 +224,7 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 <span class="k">nuget</span> Newtonsoft.Json
 </code></pre></td></tr></table>
 <h3><a name="Redirects-option" class="anchor" href="#Redirects-option">Redirects option</a></h3>
-<p>This option tells paket to create <a href="https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx">Assembly Binding Redirects</a> for all referenced libraries.</p>
+<p>This option tells paket to create <a href="https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx">Assembly Binding Redirects</a> for all referenced libraries. This option only instructs Paket to create and manage binding redirects in <strong>existing <code>App.config</code> files</strong>, it will not create a new <code>App.config</code> file for you. However you can create <code>App.config</code> files by adding the <code>--createnewbindingfiles</code> flag to <a href="commands/install.html"><code>paket install</code></a></p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
