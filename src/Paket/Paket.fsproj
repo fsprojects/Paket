@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001854-submodules\temp</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>D:\code\suaveondocker</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

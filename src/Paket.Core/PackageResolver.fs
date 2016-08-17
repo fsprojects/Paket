@@ -489,7 +489,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                         | Some exploredPackage ->
                             hasUnlisted := exploredPackage.Unlisted || !hasUnlisted
                             if exploredPackage.Unlisted && not !useUnlisted then
-                                ()
+                                tracefn "     unlisted"
                             else
                                 let nextStep =
                                     { Relax = currentStep.Relax
