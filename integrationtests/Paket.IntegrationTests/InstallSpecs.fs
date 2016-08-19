@@ -570,3 +570,10 @@ let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =
 
     assemblies |> shouldEqual [ scenarioTempPath "i001815-multiple-dnc-refs" @@ "packages" @@ "Microsoft.FSharp.Core.netcore" @@ "lib" @@ "netstandard1.6" @@ "FSharp.Core.dll" ]
     s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1860 faulty condition was generated`` () =
+    let scenario = "i001860-condition-attribute"
+    install scenario |> ignore
+    let fsprojFile = (scenarioTempPath scenario) </> "Library1" </> "Library1.fsproj" |> File.ReadAllText
+    Assert.IsFalse (fsprojFile.Contains(" And ()"))
