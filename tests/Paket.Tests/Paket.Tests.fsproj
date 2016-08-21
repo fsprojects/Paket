@@ -320,6 +320,7 @@
     <Compile Include="ProjectFile\OutputSpecs.fs" />
     <Compile Include="ProjectFile\ProjectLanguageSpecs.fs" />
     <Compile Include="ProjectFile\LocalizationSpecs.fs" />
+    <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />

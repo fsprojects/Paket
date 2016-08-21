@@ -6,6 +6,7 @@ open Paket.Logging
 open System
 open System.Collections.Generic
 open System.IO
+open System.Text
 open System.Text.RegularExpressions
 open System.Xml
 open Paket.Xml
@@ -182,6 +183,12 @@ module ProjectFile =
         let fileInfo = FileInfo (normalizePath fileName)
         use stream = fileInfo.OpenRead()
         loadFromStream fileInfo.FullName stream
+
+    let loadFromString (fullName:string) (text:string) =
+        use stream =
+            let bytes = text |> Encoding.UTF8.GetBytes
+            new MemoryStream (bytes)
+        loadFromStream fullName stream
 
     let tryLoad(fileName:string) =
         try
@@ -1097,6 +1104,20 @@ module ProjectFile =
                 if not parent.HasChildNodes then 
                     parent.ParentNode.RemoveChild parent |> ignore)
 
+    let removeNuGetPackageImportStamp project =
+        let toDelete =
+            project.Document 
+            |> getDescendants "PropertyGroup" 
+            |> List.collect (getDescendants "NuGetPackageImportStamp")
+        
+        toDelete
+        |> List.iter 
+            (fun node -> 
+                let parent = node.ParentNode
+                node.ParentNode.RemoveChild node |> ignore
+                if not parent.HasChildNodes then 
+                    parent.ParentNode.RemoveChild parent |> ignore)
+
     let removeImportAndTargetEntries (packages : list<string * SemVerInfo> ) (project:ProjectFile) =
         let toDelete = 
             project.Document 
@@ -1268,6 +1289,8 @@ type ProjectFile with
 
     member this.RemoveNuGetTargetsEntries () =  ProjectFile.removeNuGetTargetsEntries this
 
+    member this.RemoveNuGetPackageImportStamp () =  ProjectFile.removeNuGetPackageImportStamp this
+
     member this.RemoveImportAndTargetEntries (packages : list<string * SemVerInfo> ) =  ProjectFile.removeImportAndTargetEntries packages this
 
     member this.OutputType =  ProjectFile.outputType this
@@ -1295,6 +1318,8 @@ type ProjectFile with
     static member LoadFromStream(fullName:string, stream:Stream) = ProjectFile.loadFromStream fullName stream 
 
     static member LoadFromFile(fileName:string) =  ProjectFile.loadFromFile fileName
+
+    static member LoadFromString(fullName:string, text:string) = ProjectFile.loadFromString fullName text
 
     static member TryLoad(fileName:string) = ProjectFile.tryLoad fileName
 
