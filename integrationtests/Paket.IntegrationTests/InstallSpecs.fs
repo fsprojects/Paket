@@ -582,7 +582,7 @@ let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =
 
 [<Test>]
 let ``#1860 faulty condition was generated`` () =
-    let scenario = "i001860-condition-attribute"
+    let scenario = "i001860-condition"
     install scenario |> ignore
     let fsprojFile = (scenarioTempPath scenario) </> "Library1" </> "Library1.fsproj" |> File.ReadAllText
     Assert.IsFalse (fsprojFile.Contains(" And ()"))
