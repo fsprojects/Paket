@@ -34,14 +34,20 @@ let AppDataFolder       = Environment.GetFolderPath(Environment.SpecialFolder.Ap
 let PaketConfigFolder   = Path.Combine(AppDataFolder, "Paket")
 let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 
-let UserProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
-let GitRepoCacheFolder = Path.Combine(UserProfile,".paket","git","db")
+let LocalRootForTempData =
+    let userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) 
+    if String.IsNullOrWhiteSpace userProfile then
+        Environment.GetFolderPath(System.Environment.SpecialFolder.LocalApplicationData)
+    else
+        userProfile
+
+let GitRepoCacheFolder = Path.Combine(LocalRootForTempData,".paket","git","db")
 
 let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
 let UserNuGetPackagesFolder = 
     let path = Environment.GetEnvironmentVariable(GlobalPackagesFolderEnvironmentKey)
     if String.IsNullOrEmpty path then
-        Path.Combine(UserProfile,".nuget","packages")
+        Path.Combine(LocalRootForTempData,".nuget","packages")
     else
         path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
 
