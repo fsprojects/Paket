@@ -1,4 +1,4 @@
-#### 3.14.2 - 22.08.2016
+#### 3.14.3 - 22.08.2016
 * BUGFIX: Fixed octokit parsing - https://github.com/fsprojects/Paket/issues/1867
 
 #### 3.14.1 - 22.08.2016
