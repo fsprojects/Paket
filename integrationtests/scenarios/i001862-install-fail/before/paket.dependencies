@@ -1,0 +1,5 @@
+source https://www.nuget.org/api/v2
+
+github Ionide/ionide-vscode-helpers Fable.Import.VSCode.fs
+github Ionide/ionide-vscode-helpers Helpers.fs
+github Ionide/ionide-vscode-helpers Fable.Import.Axios.fs

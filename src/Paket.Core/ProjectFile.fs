@@ -464,7 +464,7 @@ module ProjectFile =
 
     let updateFileItems (fileItems:FileItem list) (project:ProjectFile) = 
         let newItemGroups = 
-            let firstItemGroup = project.ProjectNode |> getNodes "ItemGroup" |> List.tryHead
+            let firstItemGroup = project.ProjectNode |> getNodes "ItemGroup" |> List.filter (fun n -> List.isEmpty (getNodes "Reference" n)) |> List.tryHead
             match firstItemGroup with
             | None ->
                 [BuildAction.Content, createNode "ItemGroup" project
