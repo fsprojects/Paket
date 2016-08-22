@@ -1,5 +1,8 @@
+#### 3.14.2 - 22.08.2016
+* BUGFIX: Fixed octokit parsing - https://github.com/fsprojects/Paket/issues/1867
+
 #### 3.14.1 - 22.08.2016
-* BUGFIX: Fulty conditions were generated when using condition attributes - https://github.com/fsprojects/Paket/issues/1860
+* BUGFIX: Faulty conditions were generated when using condition attributes - https://github.com/fsprojects/Paket/issues/1860
 
 #### 3.14.0 - 22.08.2016
 * Show message when a package version is not installed because it is unlisted

@@ -393,7 +393,7 @@ module LockFileParser =
                             { currentGroup with
                                     SourceFiles = 
                                         { currentFile with
-                                                    Dependencies = Set.add (PackageName name, VersionRequirement.AllReleases) currentFile.Dependencies
+                                                    Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version) currentFile.Dependencies
                                                 } :: rest }  ::otherGroups
                         | [] -> failwithf "cannot set a dependency to %s %s- no remote file has been specified." name v
                 | SourceFile(origin, details) ->

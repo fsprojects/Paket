@@ -37,7 +37,6 @@ let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 let UserProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
 let GitRepoCacheFolder = Path.Combine(UserProfile,".paket","git","db")
 
-
 let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
 let UserNuGetPackagesFolder = 
     let path = Environment.GetEnvironmentVariable(GlobalPackagesFolderEnvironmentKey)
