@@ -1,3 +1,6 @@
+#### 3.14.4 - 22.08.2016
+* BUGFIX: Fallback to LocalApplicationData if we don't have UserProfile avaulable - https://github.com/fsprojects/Paket/issues/1863
+
 #### 3.14.3 - 22.08.2016
 * BUGFIX: Fixed octokit parsing - https://github.com/fsprojects/Paket/issues/1867
 
