@@ -1,7 +1,6 @@
-#### 3.13.3 - 17.08.2016
+#### 3.14.0 - 22.08.2016
 * Show message when a package version is not installed because it is unlisted
-
-#### 3.13.2 - 17.08.2016
+* BUGFIX: Bootstrapper had issues with partial download - https://github.com/fsprojects/Paket/pull/1859
 * BUGFIX: Use ConcurrentDictionary correctly - https://github.com/fsprojects/Paket/pull/1853
 
 #### 3.13.0 - 12.08.2016
