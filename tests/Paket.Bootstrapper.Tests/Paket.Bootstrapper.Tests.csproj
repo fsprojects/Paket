@@ -171,10 +171,5 @@
       <Private>True</Private>
       <Paket>True</Paket>
     </Reference>
-    <Reference Include="nunit.engine">
-      <HintPath>..\..\packages\test\NUnit3TestAdapter.3.4.1\lib\nunit.engine.dll</HintPath>
-      <Private>True</Private>
-      <Paket>True</Paket>
-    </Reference>
   </ItemGroup>
 </Project>
