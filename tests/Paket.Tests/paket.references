@@ -3,6 +3,5 @@ Chessie
 
 group Test
   NUnit
-  NUnit3TestAdapter
   FsCheck
   File:FsUnit.fs .

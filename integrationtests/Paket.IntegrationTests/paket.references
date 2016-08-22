@@ -4,7 +4,6 @@ Newtonsoft.Json
 
 group Test
   NUnit
-  NUnit3TestAdapter
   File:FsUnit.fs .
 
 group Build

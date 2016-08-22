@@ -32,6 +32,5 @@ group Test
   
   nuget NUnit
   nuget NUnit.Console
-  nuget NUnit3TestAdapter version_in_path: true
 
   github forki/FsUnit FsUnit.fs
