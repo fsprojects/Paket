@@ -689,7 +689,7 @@ module ProjectFile =
                 | _ -> 
                     match PlatformMatching.getCondition referenceCondition allTargets libFolder.Targets with
                     | "" -> []
-                    | condition -> 
+                    | condition ->
                         let references = libFolder.Files.References |> Seq.sortBy (fun (r:Reference) -> r.Path) |> Seq.toList
                         let assemblyTargets = ref libFolder.Targets
                         for lib in references do

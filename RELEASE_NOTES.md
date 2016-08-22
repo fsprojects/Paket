@@ -1,3 +1,6 @@
+#### 3.14.1 - 22.08.2016
+* BUGFIX: Fulty conditions were generated when using condition attributes - https://github.com/fsprojects/Paket/issues/1860
+
 #### 3.14.0 - 22.08.2016
 * Show message when a package version is not installed because it is unlisted
 * BUGFIX: Bootstrapper had issues with partial download - https://github.com/fsprojects/Paket/pull/1859
