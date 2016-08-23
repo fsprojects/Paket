@@ -368,15 +368,22 @@ let IsPackageVersionExtracted(root, groupName, packageName:PackageName, version:
 // cleanup folder structure
 let rec private cleanup (dir : DirectoryInfo) =
     for sub in dir.GetDirectories() do
-        let newName = Uri.UnescapeDataString(sub.FullName)
-        if sub.FullName <> newName && not (Directory.Exists newName) then
-            Directory.Move(sub.FullName, newName)
+        let newName = Uri.UnescapeDataString(sub.FullName).Replace("%2B","+")
+        let di = DirectoryInfo newName
+        if sub.FullName <> newName && not di.Exists then
+            if not di.Parent.Exists then
+                di.Parent.Create()
+            try
+                Directory.Move(sub.FullName, newName)
+            with
+            | exn -> failwithf "Could not move %s to %s%sMessage: %s" sub.FullName newName Environment.NewLine exn.Message
+                
             cleanup (DirectoryInfo newName)
         else
             cleanup sub
-    for file in dir.GetFiles() do
 
-        let newName = Uri.UnescapeDataString(file.Name)
+    for file in dir.GetFiles() do
+        let newName = Uri.UnescapeDataString(file.Name).Replace("%2B","+")
         if newName.Contains "..\\" || newName.Contains "../" then
           failwithf "Relative paths are not supported. Please tell the package author to fix the package to not use relative paths. The invalid file was '%s'" file.FullName
         if newName.Contains "\\" || newName.Contains "/" then

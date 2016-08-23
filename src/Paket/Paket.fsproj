@@ -53,8 +53,8 @@
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001862-install-fail\temp</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket.VisualStudio</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
