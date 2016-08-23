@@ -298,8 +298,8 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                 exploredPackages.Add(key,explored)
                 Some explored
             with
-            | _ ->
-                traceWarnfn "    Package not available."
+            | exn ->
+                traceWarnfn "    Package not available.%s      Message: %s" Environment.NewLine exn.Message
                 None
 
     let getCompatibleVersions(currentStep:ResolverStep,currentRequirement:PackageRequirement) =

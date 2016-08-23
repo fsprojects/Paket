@@ -1,3 +1,6 @@
+#### 3.15.4 - 23.08.2016
+* Add better tracing - https://github.com/fsprojects/Paket/issues/1871
+
 #### 3.15.3 - 23.08.2016
 * Skip invalid meta-data in cpp projects - https://github.com/fsprojects/Paket/issues/1870
 
