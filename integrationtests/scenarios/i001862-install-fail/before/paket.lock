@@ -1,5 +1,0 @@
-NUGET
-  remote: https://www.nuget.org/api/v2
-  specs:
-    FAKE (4.38.1)
-    FSharp.Core (4.0.0.1)

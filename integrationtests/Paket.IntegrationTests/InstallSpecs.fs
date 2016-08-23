@@ -526,16 +526,6 @@ let ``#1779 net20 only in net461``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1862 install in correct group``() = 
-    let newLockFile = install "i001862-install-fail"
-    let newFile = Path.Combine(scenarioTempPath "i001862-install-fail","pfiles","pfiles.fsproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001862-install-fail","pfiles","pfiles.fsproj.expected")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-
-[<Test>]
 let ``#1871 should install suave``() = 
     install "i001871-suave" |> ignore
     
