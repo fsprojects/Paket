@@ -533,6 +533,11 @@ let ``#1862 install in correct group``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
+
+
+[<Test>]
+let ``#1871 should install suave``() = 
+    install "i001871-suave" |> ignore
     
 [<Test>]
 let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =

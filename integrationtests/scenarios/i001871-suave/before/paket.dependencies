@@ -1,0 +1,7 @@
+source http://www.nuget.org/api/v2
+framework >= net45
+
+group Main
+source http://www.nuget.org/api/v2
+
+nuget Suave >= 1.0.0
