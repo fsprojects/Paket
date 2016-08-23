@@ -76,11 +76,10 @@ let readAssembly fileName =
 
 
 let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectFile) = 
-    FileInfo(
-        Path.Combine
-            (Path.GetDirectoryName projectFile.FileName, projectFile.GetOutputDirectory buildConfig buildPlatform, 
-                projectFile.GetAssemblyName()) 
-        |> normalizePath).FullName
+    let root = Path.GetDirectoryName projectFile.FileName
+    let subFolder = projectFile.GetOutputDirectory buildConfig buildPlatform
+    let assemblyName = projectFile.GetAssemblyName()
+    FileInfo(Path.Combine(root, subFolder, assemblyName) |> normalizePath).FullName
     |> readAssembly
 
 let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.ILModuleReader) = 

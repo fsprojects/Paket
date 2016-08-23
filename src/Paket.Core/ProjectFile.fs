@@ -1154,7 +1154,8 @@ module ProjectFile =
                 | "Exe"    -> ProjectOutputType.Exe
                 | "WinExe" -> ProjectOutputType.Exe
                 | _        -> ProjectOutputType.Library }
-        |> Seq.head
+        |> Seq.tryHead
+        |> function None -> ProjectOutputType.Library | Some x -> x
     
     let addImportForPaketTargets relativeTargetsPath (project:ProjectFile) =
         match project.Document 
@@ -1204,7 +1205,8 @@ module ProjectFile =
                     fi.Name.Replace(fi.Extension,"")
                 else assemblyName
 
-        sprintf "%s.%s" assemblyName (outputType project |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe")
+        let ending = outputType project |> function ProjectOutputType.Library -> "dll" | ProjectOutputType.Exe -> "exe"
+        sprintf "%s.%s" assemblyName ending
 
     let getOutputDirectory buildConfiguration buildPlatform (project:ProjectFile) =
         let platforms =
