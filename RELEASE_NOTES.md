@@ -1,3 +1,6 @@
+#### 3.15.3 - 23.08.2016
+* Skip invalid meta-data in cpp projects - https://github.com/fsprojects/Paket/issues/1870
+
 #### 3.15.2 - 23.08.2016
 * Use .dll as default during pack - https://github.com/fsprojects/Paket/issues/1870
 

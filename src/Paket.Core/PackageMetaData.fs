@@ -83,10 +83,18 @@ let readAssemblyFromProjFile buildConfig buildPlatform (projectFile : ProjectFil
     |> readAssembly
 
 let loadAssemblyAttributes (assemblyReader:ProviderImplementation.AssemblyReader.ILModuleReader) = 
-    [for inp in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do 
-         match ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp with
-         | [] -> ()
-         | args -> yield (inp.Method.EnclosingType.BasicQualifiedName, Seq.head [ for (_,arg) in args -> if isNull arg then "" else arg.ToString()]) ]
+    let getMetaData inp = 
+        try
+            ProviderImplementation.AssemblyReader.decodeILCustomAttribData assemblyReader.ILGlobals inp
+        with
+        | _ -> []
+
+    [for inp in assemblyReader.ILModuleDef.ManifestOfAssembly.CustomAttrs.Elements do
+        match getMetaData inp with
+        | [] -> ()
+        | args -> 
+            let all = args |> Seq.map (fun (_,arg) -> if isNull arg then "" else arg.ToString())
+            yield (inp.Method.EnclosingType.BasicQualifiedName, Seq.head all)]
 
 
 let (|Valid|Invalid|) md = 
