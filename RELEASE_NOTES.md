@@ -1,10 +1,7 @@
-#### 3.14.4 - 22.08.2016
+#### 3.15.0 - 23.08.2016
+* When converting from Nuget Paket removes NuGetPackageImportStamp - https://github.com/fsprojects/Paket/pull/1865
 * BUGFIX: Fallback to LocalApplicationData if we don't have UserProfile avaulable - https://github.com/fsprojects/Paket/issues/1863
-
-#### 3.14.3 - 22.08.2016
 * BUGFIX: Fixed octokit parsing - https://github.com/fsprojects/Paket/issues/1867
-
-#### 3.14.1 - 22.08.2016
 * BUGFIX: Faulty conditions were generated when using condition attributes - https://github.com/fsprojects/Paket/issues/1860
 
 #### 3.14.0 - 22.08.2016
