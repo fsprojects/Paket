@@ -1208,14 +1208,15 @@ module ProjectFile =
 
     let getOutputDirectory buildConfiguration buildPlatform (project:ProjectFile) =
         let platforms =
-            if not <| String.IsNullOrWhiteSpace buildPlatform
-            then [buildPlatform]
+            if not <| String.IsNullOrWhiteSpace buildPlatform then 
+                [buildPlatform]
             else
                 [
                     "AnyCPU";
                     "AnyCPU32BitPreferred";
                     "x86";
                     "x64";
+                    "Win32";
                     "ARM";
                     "Itanium";
                 ]
@@ -1223,18 +1224,18 @@ module ProjectFile =
         let rec tryNextPlat platforms attempted =
             match platforms with
             | [] ->
-                if String.IsNullOrWhiteSpace(buildPlatform)
-                then
+                if String.IsNullOrWhiteSpace(buildPlatform) then
                     failwithf "Unable to find %s output path node in file %s for any known platforms" buildConfiguration project.FileName
                 else
                     failwithf "Unable to find %s output path node in file %s targeting the %s platform" buildConfiguration project.FileName buildPlatform
             | x::xs ->
                 let startingData = Map.ofList [("Configuration", buildConfiguration); ("Platform", x)]
-                getPropertyWithDefaults "OutputPath" startingData project
+                [getPropertyWithDefaults "OutputPath" startingData project; getPropertyWithDefaults "OutDir" startingData project]
+                |> List.choose id
                 |> function
-                    | None -> tryNextPlat xs (x::attempted)
-                    | Some s ->
-                        if String.IsNullOrWhiteSpace(buildPlatform) then
+                    | [] -> tryNextPlat xs (x::attempted)
+                    | s :: _ ->
+                        if String.IsNullOrWhiteSpace buildPlatform then
                             let tested = String.Join(", ", Array.ofList attempted)
                             traceWarnfn "No platform specified; found output path node for the %s platform after failing to find one for the following: %s" x tested
                         s.TrimEnd [|'\\'|] |> normalizePath
