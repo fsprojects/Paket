@@ -166,6 +166,9 @@ use (see <a href="paket-config.html"><code>paket config</code></a>).</p>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">github</span> fsharp/private src/myprivate/file.fs githubAuthKey
 </code></pre></td></tr></table>
+<h2><a name="Using-a-GitHub-auth-key-from-environment-variable" class="anchor" href="#Using-a-GitHub-auth-key-from-environment-variable">Using a GitHub auth key from environment variable</a></h2>
+<p>Paket will use a GitHub token from a enviroment variable <code>PAKET_GITHUB_API_TOKEN</code>.
+This will allow you to access private repos and to work around the GitHub API limit on public repos.</p>
 <h2><a name="Gist" class="anchor" href="#Gist">Gist</a></h2>
 <p>Gist works the same way. You can fetch single files or multi-file-gists as well:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
