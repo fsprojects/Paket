@@ -332,9 +332,14 @@ let getDefaultProxyFor =
 
 let inline createWebClient (url,auth:Auth option) =
     let client = new WebClient()
+    client.Headers.Add("user-agent", "Paket")
+    client.Proxy <- getDefaultProxyFor url
+
+    let githubToken =
+        Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
+
     match auth with
-    | None -> client.UseDefaultCredentials <- true
-    | Some(Credentials(username, password)) -> 
+    | Some (Credentials(username, password)) ->
         // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
         //this works ONLY if the server returns 401 first
         //client DOES NOT send credentials on first request
@@ -344,9 +349,16 @@ let inline createWebClient (url,auth:Auth option) =
         //so use THIS instead to send credentials RIGHT AWAY
         let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
-    | Some(Token token) -> client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
-    client.Headers.Add("user-agent", "Paket")
-    client.Proxy <- getDefaultProxyFor url
+
+    // having this match above lets explicitly configured tokens override environment variables
+    | Some (Token token) ->
+        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
+
+    | None when githubToken <> null ->
+        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" githubToken
+
+    | None ->
+        client.UseDefaultCredentials <- true
     client
 
 
