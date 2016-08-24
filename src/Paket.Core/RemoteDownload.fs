@@ -15,9 +15,9 @@ let private githubCache = System.Collections.Concurrent.ConcurrentDictionary<_, 
 
 let private lookupDocument (auth,url : string)  = async {
     let key = auth,url
-    let fetch = githubCache.GetOrAdd(key, fun key ->
+    let fetch = githubCache.GetOrAdd(key, fun (aut,ur) ->
         let threadfix = lazy(
-            safeGetFromUrl(auth, url, null)
+            safeGetFromUrl(aut, ur, null)
             |> Async.StartAsTask |> box)
         threadfix.Force() |> unbox)
     return! fetch |> Async.AwaitTask
