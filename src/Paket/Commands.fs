@@ -311,12 +311,12 @@ with
         | Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore."
         | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
   
-[<RequireSubcommand>]
 type Command =
     // global options
     | [<AltCommandLine("-v"); Inherit>]                 Verbose
     | [<Inherit>]                                       Log_File of path:string
     | [<AltCommandLine("-s"); Inherit>]                 Silent
+    | [<Inherit>]                                       Version
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
     | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResults<ClearCacheArgs>
@@ -365,6 +365,7 @@ with
             | Log_File _ -> "Specify a log file for the paket process."
             | Silent -> "Suppress console output for the paket process."
             | Verbose -> "Enable verbose console output for the paket process." 
+            | Version -> "Display the version." 
 
 let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
 

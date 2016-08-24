@@ -375,37 +375,41 @@ let main() =
         elif results.Contains <@ Verbose @> then
             Logging.verbose <- true
 
-        use fileTrace =
-            match results.TryGetResult <@ Log_File @> with
-            | Some lf -> setLogFile lf
-            | None -> null
+        let version = results.Contains <@ Version @> 
+        if not version then            
 
-        match results.GetSubCommand() with
-        | Add r -> processCommand silent add r
-        | ClearCache r -> processCommand silent clearCache r
-        | Config r -> processWithValidation silent validateConfig config r
-        | ConvertFromNuget r -> processCommand silent convert r
-        | FindRefs r -> processCommand silent findRefs r
-        | Init r -> processCommand silent init r
-        | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
-        | Install r -> processCommand silent install r
-        | Outdated r -> processCommand silent outdated r
-        | Remove r -> processCommand silent remove r
-        | Restore r -> processCommand silent restore r
-        | Simplify r -> processCommand silent simplify r
-        | Update r -> processCommand silent update r
-        | FindPackages r -> processCommand silent (findPackages silent) r
-        | FindPackageVersions r -> processCommand silent findPackageVersions r
-        | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
-        | ShowGroups r -> processCommand silent showGroups r
-        | Pack r -> processCommand silent pack r
-        | Push r -> processCommand silent push r
-        | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r
-        // global options; list here in order to maintain compiler warnings
-        // in case of new subcommands added
-        | Verbose
-        | Silent
-        | Log_File _ -> failwith "internal error: this code should never be reached."
+            use fileTrace =
+                match results.TryGetResult <@ Log_File @> with
+                | Some lf -> setLogFile lf
+                | None -> null
+
+            match results.GetSubCommand() with
+            | Add r -> processCommand silent add r
+            | ClearCache r -> processCommand silent clearCache r
+            | Config r -> processWithValidation silent validateConfig config r
+            | ConvertFromNuget r -> processCommand silent convert r
+            | FindRefs r -> processCommand silent findRefs r
+            | Init r -> processCommand silent init r
+            | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
+            | Install r -> processCommand silent install r
+            | Outdated r -> processCommand silent outdated r
+            | Remove r -> processCommand silent remove r
+            | Restore r -> processCommand silent restore r
+            | Simplify r -> processCommand silent simplify r
+            | Update r -> processCommand silent update r
+            | FindPackages r -> processCommand silent (findPackages silent) r
+            | FindPackageVersions r -> processCommand silent findPackageVersions r
+            | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
+            | ShowGroups r -> processCommand silent showGroups r
+            | Pack r -> processCommand silent pack r
+            | Push r -> processCommand silent push r
+            | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r            
+            // global options; list here in order to maintain compiler warnings
+            // in case of new subcommands added
+            | Verbose
+            | Silent
+            | Version
+            | Log_File _ -> failwith "internal error: this code should never be reached."
 
     with
     | exn when not (exn :? System.NullReferenceException) ->
