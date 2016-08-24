@@ -1,5 +1,5 @@
 #### 3.16.0 - 24.08.2016
-* Allow to use PAKET_GITHUB_API_TOKEN from environment variable for github dependencies - http://fsprojects.github.io/Paket/github-dependencies.html#Using-a-GitHub-auth-key-from-environment-variable
+* Allow to use github access token from environment variable for github dependencies - http://fsprojects.github.io/Paket/github-dependencies.html#Using-a-GitHub-auth-key-from-environment-variable
 * BUGFIX: Look for OutDir in .vcxproj - https://github.com/fsprojects/Paket/issues/1870
 * USABILITY: Skip invalid meta-data in cpp projects - https://github.com/fsprojects/Paket/issues/1870
 * USABILITY: Add better tracing during resolve - https://github.com/fsprojects/Paket/issues/1871
