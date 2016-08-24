@@ -121,6 +121,43 @@ NUGET
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
 
+[<Test>]
+let ``should generate lowest_matching true lock file``() = 
+    let config = """
+    lowest_matching true
+    source "http://www.nuget.org/api/v2"
+
+    nuget "Microsoft.SqlServer.Types"
+    """
+
+    let expected = """LOWEST_MATCHING: TRUE
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Microsoft.SqlServer.Types (1.0)"""
+
+    let cfg = DependenciesFile.FromCode(config)
+    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should generate lowest_matching false lock file``() = 
+    let config = """
+    lowest_matching false
+    source "http://www.nuget.org/api/v2"
+
+    nuget "Microsoft.SqlServer.Types"
+    """
+
+    let expected = """LOWEST_MATCHING: FALSE
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Microsoft.SqlServer.Types (1.0)"""
+
+    let cfg = DependenciesFile.FromCode(config)
+    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+    |> shouldEqual (normalizeLineEndings expected)
 
 
 [<Test>]
