@@ -110,6 +110,11 @@ use (see [`paket config`](paket-config.html)).
     [lang=paket]
     github fsharp/private src/myprivate/file.fs githubAuthKey
 
+## Using a GitHub auth key from environment variable
+
+Paket will use a GitHub token from a enviroment variable `PAKET_GITHUB_API_TOKEN`.
+This will allow you to access private repos and to work around the GitHub API limit on public repos.
+
 ## Gist
 
 Gist works the same way. You can fetch single files or multi-file-gists as well:

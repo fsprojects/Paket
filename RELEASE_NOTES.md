@@ -1,14 +1,9 @@
-#### 3.15.4 - 23.08.2016
-* Add better tracing - https://github.com/fsprojects/Paket/issues/1871
-
-#### 3.15.3 - 23.08.2016
-* Skip invalid meta-data in cpp projects - https://github.com/fsprojects/Paket/issues/1870
-
-#### 3.15.2 - 23.08.2016
-* Use .dll as default during pack - https://github.com/fsprojects/Paket/issues/1870
-
-#### 3.15.1 - 23.08.2016
-* Look for OutDir in .vcxproj - https://github.com/fsprojects/Paket/issues/1870
+#### 3.16.0 - 24.08.2016
+* Allow to use PAKET_GITHUB_API_TOKEN from environment variable for github dependencies - http://fsprojects.github.io/Paket/github-dependencies.html#Using-a-GitHub-auth-key-from-environment-variable
+* BUGFIX: Look for OutDir in .vcxproj - https://github.com/fsprojects/Paket/issues/1870
+* USABILITY: Skip invalid meta-data in cpp projects - https://github.com/fsprojects/Paket/issues/1870
+* USABILITY: Add better tracing during resolve - https://github.com/fsprojects/Paket/issues/1871
+* USABILITY: Use .dll as default during pack - https://github.com/fsprojects/Paket/issues/1870
 
 #### 3.15.0 - 23.08.2016
 * When converting from Nuget Paket removes NuGetPackageImportStamp - https://github.com/fsprojects/Paket/pull/1865

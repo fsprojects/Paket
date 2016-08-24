@@ -335,8 +335,7 @@ let inline createWebClient (url,auth:Auth option) =
     client.Headers.Add("user-agent", "Paket")
     client.Proxy <- getDefaultProxyFor url
 
-    let githubToken =
-        Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
+    let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
 
     match auth with
     | Some (Credentials(username, password)) ->
@@ -349,12 +348,11 @@ let inline createWebClient (url,auth:Auth option) =
         //so use THIS instead to send credentials RIGHT AWAY
         let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
-
-    // having this match above lets explicitly configured tokens override environment variables
+    
     | Some (Token token) ->
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
 
-    | None when githubToken <> null ->
+    | None when not (isNull githubToken) ->
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" githubToken
 
     | None ->
