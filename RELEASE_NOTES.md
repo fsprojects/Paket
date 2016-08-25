@@ -1,4 +1,5 @@
-#### 3.17.0-alpha001 - 25.08.2016
+#### 3.17.0-alpha002 - 25.08.2016
+* Remove warning that notified about missing libs (too many false positives)
 * BUGFIX: Resolving .net standard depedencies for net46 - https://github.com/fsprojects/Paket/issues/1883
 
 #### 3.16.3 - 25.08.2016

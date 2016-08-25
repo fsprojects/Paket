@@ -353,17 +353,6 @@ let ``#1458 should not install conflicting deps from different groups``() =
     | exn when exn.Message.Contains "Package Nancy is referenced in different versions" -> ()
 
 [<Test>]
-let ``#1442 should not warn on SonarLint``() = 
-    let result = paket "install" "i001442-dont-warn"
-    result |> shouldNotContainText "contains libraries, but not for the selected TargetFramework"
-
-[<Test>]
-let ``#1442 should warn on Rx-WinRT``() = 
-    let result = paket "install" "i001442-warn-Rx"
-    result |> shouldContainText "contains libraries, but not for the selected TargetFramework"
-
-
-[<Test>]
 [<Ignore("")>]
 let ``#1507 allows to download remote dependencies``() =
     let scenario = "i001507-privateeye"
