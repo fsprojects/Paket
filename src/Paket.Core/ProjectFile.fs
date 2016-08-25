@@ -887,7 +887,9 @@ module ProjectFile =
     let updateReferences
             rootPath
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
-            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) (project:ProjectFile) =
+            (directPackages : Map<GroupName*PackageName,_*InstallSettings>) 
+            (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) 
+            (project:ProjectFile) =
         removePaketNodes project
 
 
@@ -930,6 +932,20 @@ module ProjectFile =
                     .ApplyFrameworkRestrictions(restrictionList)
                     .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
+            
+            if directPackages.ContainsKey kv.Key then
+                match getTargetFramework project with 
+                | Some targetFramework ->
+                    if isTargetMatchingRestrictions(restrictionList,SinglePlatform targetFramework) then
+                        if projectModel.GetLibReferences targetFramework |> Seq.isEmpty then
+                            let libReferences = 
+                                projectModel.GetLibReferencesLazy |> force
+                                |> Seq.filter (fun l -> match l with | Reference.Library _ -> true | _ -> false)
+
+                            if not (Seq.isEmpty libReferences) then
+                                traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
+                                    (snd kv.Key) targetFramework project.FileName
+                | _ -> ()
 
             let copyLocal = defaultArg installSettings.CopyLocal true
             let importTargets = defaultArg installSettings.ImportTargets true
@@ -1267,7 +1283,7 @@ type ProjectFile with
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
-    member this.UpdateReferences (root, completeModel, usedPackages) = ProjectFile.updateReferences root completeModel usedPackages this
+    member this.UpdateReferences (root, completeModel, directDependencies, usedPackages) = ProjectFile.updateReferences root completeModel directDependencies usedPackages this
 
     member this.Save(forceTouch) = ProjectFile.save forceTouch this
 

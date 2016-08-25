@@ -313,7 +313,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
     for project, referenceFile in projectsAndReferences do
         verbosefn "Installing to %s" project.FileName
-        let usedPackages =
+        let directDependencies =
             referenceFile.Groups
             |> Seq.map (fun kv ->
                 lockFile.GetRemoteReferencedPackages(referenceFile,kv.Value) @ kv.Value.NugetPackages
@@ -336,12 +336,12 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Map.ofSeq
 
         let usedPackages =
-            let d = ref usedPackages
+            let d = ref directDependencies
 
             /// we want to treat the settings from the references file through the computation so that it can be used as the base that 
             /// the other settings modify. In this way we ensure that references files can override the dependencies file, which in turn overrides the lockfile.
             let usedPackageDependencies = 
-                usedPackages 
+                directDependencies 
                 |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
                 |> Seq.choose (fun (groupName,(_,parentSettings), dep) -> 
                     let group = 
@@ -375,7 +375,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     dict.Add(packageName,v)
                     true)
 
-        project.UpdateReferences(root, model, usedPackages)
+        project.UpdateReferences(root, model, directDependencies, usedPackages)
     
         Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
         |> updatePackagesConfigFile usedPackages 
