@@ -82,15 +82,15 @@ with
     interface IArgParserTemplate with
         member __.Usage = ""
 
+type AutoRestoreFlags = On | Off
+
 type AutoRestoreArgs =
-    | [<First>][<CustomCommandLine("on")>] On
-    | [<First>][<CustomCommandLine("off")>] Off
+    | [<MainCommand; Mandatory>] Flags of AutoRestoreFlags
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | On -> "Turns auto restore on."
-            | Off -> "Turns auto restore off."
+            | Flags _ -> "enables or disables auto restore for the repo."
 
 type InstallArgs =
     | [<AltCommandLine("-f")>] Force

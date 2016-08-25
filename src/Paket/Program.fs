@@ -90,10 +90,9 @@ let validateAutoRestore (results : ParseResults<_>) =
     results.GetAllResults().Length = 1
 
 let autoRestore (results : ParseResults<_>) =
-    match results.GetAllResults() with
-    | [On] -> Dependencies.Locate().TurnOnAutoRestore()
-    | [Off] -> Dependencies.Locate().TurnOffAutoRestore()
-    | _ -> failwith "expected only one argument"
+    match results.GetResult <@ Flags @> with
+    | On -> Dependencies.Locate().TurnOnAutoRestore()
+    | Off -> Dependencies.Locate().TurnOffAutoRestore()
 
 let convert (results : ParseResults<_>) =
     let force = results.Contains <@ ConvertFromNugetArgs.Force @>
