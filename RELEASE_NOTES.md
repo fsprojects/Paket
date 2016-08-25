@@ -1,3 +1,6 @@
+#### 3.16.2 - 25.08.2016
+* BUGFIX: Fixed lowest_matching constraint - https://github.com/fsprojects/Paket/pull/1882
+
 #### 3.16.1 - 25.08.2016
 * Allow printing of version number through command-line option - https://github.com/fsprojects/Paket/pull/1878
 * BUGFIX: Async cache fix in multi-thread-environment for GitHub downloads - https://github.com/fsprojects/Paket/pull/1880
