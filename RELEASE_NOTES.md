@@ -1,3 +1,7 @@
+#### 3.16.1 - 25.08.2016
+* Allow printing of version number through command-line option - https://github.com/fsprojects/Paket/pull/1878
+* BUGFIX: Async cache fix in multi-thread-environment for GitHub downloads - https://github.com/fsprojects/Paket/pull/1880
+
 #### 3.16.0 - 24.08.2016
 * Allow to use github access token from environment variable for github dependencies - http://fsprojects.github.io/Paket/github-dependencies.html#Using-a-GitHub-auth-key-from-environment-variable
 * BUGFIX: Look for OutDir in .vcxproj - https://github.com/fsprojects/Paket/issues/1870
