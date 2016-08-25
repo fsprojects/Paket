@@ -1,8 +1,0 @@
-framework: auto-detect
-redirects: on
-
-source https://www.myget.org/F/paket-framework-problem-repro/api/v3/index.json
-source https://api.nuget.org/v3/index.json
-
-nuget DependsOnAutofac
-nuget Autofac

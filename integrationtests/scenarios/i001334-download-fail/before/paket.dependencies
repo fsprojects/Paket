@@ -1,3 +1,0 @@
-source https://nuget.org/api/v2
-
-nuget CassandraCsharpDriver 3.0.0

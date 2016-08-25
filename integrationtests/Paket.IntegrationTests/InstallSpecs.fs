@@ -362,13 +362,6 @@ let ``#1442 should warn on Rx-WinRT``() =
     let result = paket "install" "i001442-warn-Rx"
     result |> shouldContainText "contains libraries, but not for the selected TargetFramework"
 
-[<Test>]
-let ``#1334 without download fail``() = 
-    install "i001334-download-fail" |> ignore
-
-[<Test>]
-let ``#1500 without install error``() = 
-    install "i001500-auto-detect" |> ignore
 
 [<Test>]
 [<Ignore("")>]
