@@ -20,7 +20,7 @@ type PaketExiter() =
     interface IExiter with
         member __.Name = "paket exiter"
         member __.Exit (msg,code) =
-            if code = ErrorCode.HelpText then 
+            if code = ErrorCode.HelpText then
                 tracen msg ; exit 0
             else traceError msg ; exit 1
 
@@ -74,11 +74,11 @@ let config (results : ParseResults<_>) =
     let credentials = results.Contains <@ ConfigArgs.AddCredentials @>
     let token = results.Contains <@ ConfigArgs.AddToken @>
     match credentials, token with
-    | true, _ -> 
+    | true, _ ->
       let args = results.GetResults <@ ConfigArgs.AddCredentials @>
       let source = args.Item 0
-      let username, password = results.GetResult (<@ ConfigArgs.Username @>, ""), results.GetResult (<@ ConfigArgs.Password @>, "") 
-            
+      let username, password = results.GetResult (<@ ConfigArgs.Username @>, ""), results.GetResult (<@ ConfigArgs.Password @>, "")
+
       Dependencies(".").AddCredentials(source, username, password)
     | _, true ->
       let args = results.GetResults <@ ConfigArgs.AddToken @>
@@ -186,7 +186,7 @@ let update (results : ParseResults<_>) =
             Dependencies.Locate().UpdatePackage(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
     | _ ->
         match group with
-        | Some groupName -> 
+        | Some groupName ->
             Dependencies.Locate().UpdateGroup(groupName, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         | None ->
             Dependencies.Locate().Update(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
@@ -215,7 +215,7 @@ let findPackages silent (results : ParseResults<_>) =
     let sources  =
         match results.TryGetResult <@ FindPackagesArgs.Source @> with
         | Some source -> [PackageSource.NuGetV2Source source]
-        | _ -> PackageSources.DefaultNuGetSource :: 
+        | _ -> PackageSources.DefaultNuGetSource ::
                 (Dependencies.Locate().GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)
 
     let searchAndPrint searchText =
@@ -262,7 +262,7 @@ let showGroups (results : ParseResults<ShowGroupsArgs>) =
 let findPackageVersions (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
     let dependencies = Dependencies.Locate()
-    let name = 
+    let name =
         match results.TryGetResult <@ FindPackageVersionsArgs.NuGet @> with
         | Some name -> name
         | None -> results.GetResult <@ FindPackageVersionsArgs.Name @>
@@ -281,21 +281,21 @@ let push (results : ParseResults<_>) =
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
 let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) =
-    
+
     let providedFrameworks = results.GetResults <@ GenerateIncludeScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateIncludeScriptsArgs.ScriptType @>
-    
-    let dependencies = 
+
+    let dependencies =
         Dependencies.Locate()
         |> fun d -> DependenciesFile.ReadFromFile(d.DependenciesFile)
         |> Paket.UpdateProcess.detectProjectFrameworksForDependenciesFile
-    
+
     let rootFolder = DirectoryInfo(dependencies.RootPath)
-    
+
     let frameworksForDependencyGroups = lazy (
         dependencies.Groups
             |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
-            |> Seq.map(function 
+            |> Seq.map(function
                 | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
                 | Paket.Requirements.FrameworkRestrictionList list ->
                   list |> Seq.collect (
@@ -331,16 +331,16 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
 
     let frameworksToGenerate =
         let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract
-        
+
         failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
-        
+
         if targetFrameworkList |> Seq.isEmpty |> not then targetFrameworkList |> Seq.ofList
-        else if frameworksForDependencyGroups.Value |> Seq.isEmpty |> not then frameworksForDependencyGroups.Value 
-        else Seq.singleton environmentFramework.Value 
-    
-    let scriptTypesToGenerate = 
+        else if frameworksForDependencyGroups.Value |> Seq.isEmpty |> not then frameworksForDependencyGroups.Value
+        else Seq.singleton environmentFramework.Value
+
+    let scriptTypesToGenerate =
       let parsedScriptTypes = providedScriptTypes |> List.choose Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate
-      
+
       failOnMismatch providedScriptTypes parsedScriptTypes Paket.LoadingScripts.ScriptGeneration.ScriptType.TryCreate "Unrecognized Script Type(s)"
 
       match parsedScriptTypes with
@@ -353,7 +353,7 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
         workaround() // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
         for scriptType in scriptTypesToGenerate do
             Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
-    
+
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
@@ -363,7 +363,7 @@ let main() =
         fvi.FileVersion
 
     try
-        let parser = ArgumentParser.Create<Command>(programName = "paket", 
+        let parser = ArgumentParser.Create<Command>(programName = "paket",
                                                     helpTextMessage = sprintf "Paket version %s%sHelp was requested:" paketVersion Environment.NewLine,
                                                     errorHandler = new PaketExiter())
 
@@ -372,7 +372,7 @@ let main() =
 
         if not silent then tracefn "Paket version %s" paketVersion
 
-        elif results.Contains <@ Verbose @> then
+        if results.Contains <@ Verbose @> then
             Logging.verbose <- true
 
         use fileTrace =
