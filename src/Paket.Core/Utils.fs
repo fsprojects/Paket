@@ -28,6 +28,11 @@ let internal memoize (f: 'a -> 'b) : 'a -> 'b =
     fun (x: 'a) ->
         cache.GetOrAdd(x, f)
 
+let internal memoizeAsync f =
+    let cache = System.Collections.Concurrent.ConcurrentDictionary<'a, System.Threading.Tasks.Task<'b>>()
+    fun (x: 'a) -> // task.Result serialization to sync after done.
+        cache.GetOrAdd(x, fun x -> f(x) |> Async.StartAsTask) |> Async.AwaitTask
+
 type Auth = 
     | Credentials of Username : string * Password : string
     | Token of string

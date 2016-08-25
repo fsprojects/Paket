@@ -11,17 +11,11 @@ open Paket.Domain
 open Paket.Git.CommandHelper
 open Paket.Git.Handling
 
-let private githubCache = System.Collections.Concurrent.ConcurrentDictionary<_, _>()
 
-let private lookupDocument (auth,url : string)  = async {
-    let key = auth,url
-    match githubCache.TryGetValue key with
-    | true, document -> return document
-    | _ ->
-        let! document = safeGetFromUrl(auth, url, null)
-        githubCache.TryAdd(key, document) |> ignore
-        return document
-    }
+let private safeGetFromUrlCached = memoizeAsync <| safeGetFromUrl
+
+let private lookupDocument (auth,url : string)  = 
+    safeGetFromUrlCached(auth,url,null)
 
 let private auth key url = 
     key
