@@ -356,7 +356,11 @@ module ProjectFile =
 
                 let result =
                     match comp with
-                    | "==" | "!=" -> doComp left right
+                    | "==" | "!=" ->
+                        let eq = left.Equals(right, StringComparison.InvariantCultureIgnoreCase)
+                        if comp = "=="
+                        then eq
+                        else not eq
                     | _ ->
                         match System.Int64.TryParse left, System.Int64.TryParse right with
                         | (true, l), (true, r) -> doComp l r
