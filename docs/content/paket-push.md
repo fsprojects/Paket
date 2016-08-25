@@ -14,6 +14,7 @@ OPTIONS:
     --verbose, -v         Enable verbose console output for the paket process.
     --log-file <path>     Specify a log file for the paket process.
     --silent, -s          Suppress console output for the paket process.
+    --version             Display the version.
     --help                display this list of options.
 If you add the `-v` flag, then Paket will run in verbose mode and show detailed information.
 
