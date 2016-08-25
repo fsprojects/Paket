@@ -357,7 +357,7 @@ module ProjectFile =
                 let result =
                     match comp with
                     | "==" | "!=" ->
-                        let eq = left.Equals(right, StringComparison.InvariantCultureIgnoreCase)
+                        let eq = left.Equals(right, StringComparison.OrdinalIgnoreCase)
                         if comp = "=="
                         then eq
                         else not eq
