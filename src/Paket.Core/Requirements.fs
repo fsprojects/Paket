@@ -323,7 +323,7 @@ let optimizeDependencies packages =
 
                     yield name,versionRequirement,others @ restrictions]
 
-    let hasDotNetFramework =
+    let hasDotNetFrameworkOrStandard =
         newRestictions
         |> List.exists (fun (_,_,rs) ->
             rs
@@ -334,9 +334,45 @@ let optimizeDependencies packages =
                             | FrameworkRestriction.AtLeast(DotNetStandard(_)) -> true
                             | _ -> false))
 
-    if not hasDotNetFramework then 
+    if not hasDotNetFrameworkOrStandard then 
         newRestictions 
     else
+        let hasDotNetFramework =
+            newRestictions
+            |> List.exists (fun (_,_,rs) ->
+                rs
+                |> List.exists (function
+                                | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true
+                                | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true
+                                | _ -> false))
+
+        let newRestictions =
+            if hasDotNetFramework then 
+                newRestictions 
+            else
+                newRestictions
+                |> List.map (fun (name,vr,rs) ->
+                    let newRs = 
+                        rs
+                        |> List.collect (function
+                            | FrameworkRestriction.Exactly(DotNetStandard(r)) -> 
+                                let compatible = 
+                                    KnownTargetProfiles.DotNetFrameworkIdentifiers
+                                    |> List.filter (fun p -> p.IsCompatible(DotNetStandard r))
+                                    |> List.map (fun p -> FrameworkRestriction.Exactly p)
+                                FrameworkRestriction.AtLeast(DotNetStandard(r)) :: compatible
+                            | FrameworkRestriction.AtLeast(DotNetStandard(r)) -> 
+                                let compatible = 
+                                    KnownTargetProfiles.DotNetFrameworkIdentifiers
+                                    |> List.filter (fun p -> p.IsCompatible(DotNetStandard r))
+                                    |> List.map (fun p -> FrameworkRestriction.AtLeast p)
+                                FrameworkRestriction.AtLeast(DotNetStandard(r)) :: compatible
+                            | r -> [r])
+                        |> optimizeRestrictions
+
+                    name,vr,newRs)
+                    
+
         newRestictions
         |> List.map (fun (p,v,rs) ->
             let filtered =
@@ -351,6 +387,8 @@ let optimizeDependencies packages =
                         FrameworkRestriction.Portable newPortable
                     | _ -> r)
             p,v,filtered)
+
+
     |> List.map (fun (a,b,c) -> a,b, FrameworkRestrictionList c)
 
 let private combineSameCategoryOrPortableRestrictions x y =

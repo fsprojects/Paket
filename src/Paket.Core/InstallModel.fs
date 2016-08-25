@@ -372,7 +372,7 @@ module InstallModel =
                 TargetsFileFolders = 
                     installModel.TargetsFileFolders
                     |> List.map applRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])                     }
+                    |> List.filter (fun folder -> folder.Targets <> [])  }
 
     let rec addTargetsFiles (targetsFiles:string list) (this:InstallModel) : InstallModel =
         let targetsFileFolders = 

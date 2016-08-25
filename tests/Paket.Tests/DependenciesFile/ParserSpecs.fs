@@ -1347,12 +1347,12 @@ let ``should read config with caches``() =
 
 [<Test>]
 let ``async cache should work``() =
-    let mutable x = 0
+    let x = ref 0
     let someSlowFunc mykey = async { 
         Console.WriteLine "Simulated downloading..."
         do! Async.Sleep 400
         Console.WriteLine "Simulated downloading Done."
-        x <- x + 1 // Side effect!
+        x := !x + 1 // Side effect!
         return "" }
     let memFunc = memoizeAsync <| someSlowFunc
     async {
@@ -1372,5 +1372,5 @@ let ``async cache should work``() =
         do! [|1 .. 30|] |> Seq.map(fun _ -> (memFunc "a")) 
             |> Async.Parallel |> Async.Ignore
     } |> Async.RunSynchronously
-    x |> shouldEqual 1
+    !x |> shouldEqual 1
 

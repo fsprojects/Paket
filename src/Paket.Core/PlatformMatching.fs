@@ -123,8 +123,7 @@ let findBestMatch =
 
         let findBestPortableMatch findPenalty (portableProfile:TargetProfile) paths =
             paths
-            |> Seq.tryFind (fun p ->
-                  extractAndTryGetProfile p = Some portableProfile)
+            |> Seq.tryFind (fun p -> extractAndTryGetProfile p = Some portableProfile)
             |> Option.map (fun p -> p, findPenalty)
 
         match supported with

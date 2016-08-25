@@ -1,3 +1,6 @@
+#### 3.17.0-alpha001 - 25.08.2016
+* BUGFIX: Resolving .net standard depedencies for net46 - https://github.com/fsprojects/Paket/issues/1883
+
 #### 3.16.3 - 25.08.2016
 * BUGFIX: Don't remove non-duplicate framework dependencies - https://github.com/fsprojects/Paket/pull/1888
 

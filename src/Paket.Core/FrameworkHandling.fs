@@ -450,9 +450,13 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_6_2
         FrameworkVersion.V4_6_3]
 
-    let DotNetFrameworkProfiles =
+    let DotNetFrameworkIdentifiers =
        DotNetFrameworkVersions
-       |> List.map (DotNetFramework >> SinglePlatform)
+       |> List.map DotNetFramework
+
+    let DotNetFrameworkProfiles =
+       DotNetFrameworkIdentifiers
+       |> List.map SinglePlatform
 
     let DotNetStandardVersions =
        [DotNetStandardVersion.V1_0

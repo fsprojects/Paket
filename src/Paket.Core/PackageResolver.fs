@@ -185,11 +185,12 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
             |> filterRestrictions globalFrameworkRestrictions
             |> fun xs -> if xs = FrameworkRestrictionList [] then exploredPackage.Settings.FrameworkRestrictions else xs
 
-        { dependency with Name = n
-                          VersionRequirement = v
-                          Parent = Package(dependency.Name, versionToExplore, exploredPackage.Source)
-                          Graph = [dependency] @ dependency.Graph
-                          Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
+        { dependency with 
+            Name = n
+            VersionRequirement = v
+            Parent = Package(dependency.Name, versionToExplore, exploredPackage.Source)
+            Graph = [dependency] @ dependency.Graph
+            Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
     |> Set.filter (fun d ->
         resolverStep.ClosedRequirements
         |> Seq.exists (fun x ->
@@ -258,8 +259,13 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
         match exploredPackages.TryGetValue key with
         | true,package -> 
             let newRestrictions = 
-                if List.isEmpty (globalFrameworkRestrictions |> getRestrictionList) && (List.isEmpty (package.Settings.FrameworkRestrictions |> getRestrictionList) || List.isEmpty (dependency.Settings.FrameworkRestrictions |> getRestrictionList)) then [] else
-                optimizeRestrictions ((package.Settings.FrameworkRestrictions  |> getRestrictionList) @ (dependency.Settings.FrameworkRestrictions |> getRestrictionList) @ (globalFrameworkRestrictions |> getRestrictionList))
+                if List.isEmpty (globalFrameworkRestrictions |> getRestrictionList) && (List.isEmpty (package.Settings.FrameworkRestrictions |> getRestrictionList) || List.isEmpty (dependency.Settings.FrameworkRestrictions |> getRestrictionList)) then 
+                    [] 
+                else
+                    let packageSettings = package.Settings.FrameworkRestrictions |> getRestrictionList
+                    let dependencySettings = dependency.Settings.FrameworkRestrictions |> getRestrictionList
+                    let globalSettings = globalFrameworkRestrictions|> getRestrictionList
+                    optimizeRestrictions (packageSettings @ dependencySettings @ globalSettings)
             
             let package = { package with Settings = { package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions } }
             exploredPackages.[key] <- package
