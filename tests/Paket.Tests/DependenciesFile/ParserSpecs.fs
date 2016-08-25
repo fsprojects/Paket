@@ -1359,6 +1359,8 @@ let ``async cache should work``() =
         do! memFunc "a" |> Async.Ignore
         do! memFunc "a" |> Async.Ignore
         do! memFunc "a" |> Async.Ignore
+        do! [|1 .. 30|] |> Seq.map(fun _ -> (memFunc "a")) 
+            |> Async.Parallel |> Async.Ignore
         for i = 1 to 30 do
             Async.Start( memFunc "a" |> Async.Ignore )
             Async.Start( memFunc "a" |> Async.Ignore )
@@ -1367,6 +1369,8 @@ let ``async cache should work``() =
         do! memFunc "a" |> Async.Ignore
         for i = 1 to 30 do
             Async.Start( memFunc "a" |> Async.Ignore )
+        do! [|1 .. 30|] |> Seq.map(fun _ -> (memFunc "a")) 
+            |> Async.Parallel |> Async.Ignore
     } |> Async.RunSynchronously
     x |> shouldEqual 1
 
