@@ -1,3 +1,6 @@
+#### 3.16.3 - 25.08.2016
+* BUGFIX: Don't remove non-duplicate framework dependencies - https://github.com/fsprojects/Paket/pull/1888
+
 #### 3.16.2 - 25.08.2016
 * BUGFIX: Fixed lowest_matching constraint - https://github.com/fsprojects/Paket/pull/1882
 

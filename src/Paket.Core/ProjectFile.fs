@@ -699,12 +699,14 @@ module ProjectFile =
                     | condition ->
                         let references = libFolder.Files.References |> Seq.sortBy (fun (r:Reference) -> r.Path) |> Seq.toList
                         let assemblyTargets = ref libFolder.Targets
+                        let duplicates = HashSet<_>()
                         for lib in references do
                             match lib with
                             | Reference.FrameworkAssemblyReference frameworkAssembly ->
                                 for t in libFolder.Targets do
                                     if not <| usedFrameworkLibs.Add(t,frameworkAssembly) then
                                         assemblyTargets := List.filter ((<>) t) !assemblyTargets
+                                        duplicates.Add lib |> ignore
                             | _ -> ()
 
                         if !assemblyTargets = libFolder.Targets then
@@ -714,7 +716,7 @@ module ProjectFile =
                                 references
                                 |> List.partition (fun lib -> 
                                     match lib with
-                                    | Reference.FrameworkAssemblyReference frameworkAssembly -> true
+                                    | Reference.FrameworkAssemblyReference frameworkAssembly -> duplicates.Contains lib
                                     | _ -> false)
 
                             match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
