@@ -31,6 +31,10 @@ module LockFileSerializer =
         | Some ResolverStrategy.Min -> yield "STRATEGY: MIN"
         | Some ResolverStrategy.Max -> yield "STRATEGY: MAX"
         | None -> ()
+        match options.ResolverStrategyForDirectDependencies with
+        | Some ResolverStrategy.Min -> yield "LOWEST_MATCHING: TRUE"
+        | Some ResolverStrategy.Max -> yield "LOWEST_MATCHING: FALSE"
+        | None -> () 
         match options.Settings.CopyLocal with
         | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
         | None -> ()
@@ -215,7 +219,8 @@ module LockFileParser =
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | Redirects of bool option
     | ReferenceCondition of string
-    | ResolverStrategy of ResolverStrategy option
+    | DirectDependenciesResolverStrategy of ResolverStrategy option
+    | TransitiveDependenciesResolverStrategy of ResolverStrategy option
     | Command of string
     | PackagePath of string
     | OperatingSystemRestriction of string
@@ -267,7 +272,15 @@ module LockFileParser =
                 | "max" -> Some ResolverStrategy.Max
                 | _ -> None
 
-            InstallOption(ResolverStrategy(setting))
+            InstallOption(TransitiveDependenciesResolverStrategy(setting))
+        | _, String.StartsWith "LOWEST_MATCHING:" trimmed -> 
+            let setting =
+                match trimmed.Trim().ToLowerInvariant() with
+                | "true" -> Some ResolverStrategy.Min
+                | "false" -> Some ResolverStrategy.Max
+                | _ -> None
+
+            InstallOption(DirectDependenciesResolverStrategy(setting))
         | _, String.StartsWith "build: " trimmed ->
             InstallOption(Command trimmed)
         | _, String.StartsWith "path: " trimmed ->
@@ -311,7 +324,8 @@ module LockFileParser =
         | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
         | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
-        | ResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
+        | DirectDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForDirectDependencies = strategy }
+        | TransitiveDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
         | _ -> failwithf "Unknown option %A" option
 
     let Parse(lockFileLines) =
