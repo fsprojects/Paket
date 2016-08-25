@@ -97,9 +97,9 @@ type AutoRestoreCmdlet() =
             let parser = ArgumentParser.Create<AutoRestoreArgs>()
             [
                 if x.On.IsPresent then
-                    yield AutoRestoreArgs.On
+                    yield Flags(AutoRestoreFlags.On)
                 if x.Off.IsPresent then
-                    yield AutoRestoreArgs.Off
+                    yield Flags(AutoRestoreFlags.Off)
             ]
             |> parser.ToParseResults
             |> Program.autoRestore
