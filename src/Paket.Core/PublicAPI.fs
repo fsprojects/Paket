@@ -465,7 +465,8 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.choose (fun source -> 
             match source with 
             | NuGetV2 s ->
-                match NuGetV3.getSearchAPI(s.Authentication,s.Url) with
+                let res = NuGetV3.getSearchAPI(s.Authentication,s.Url) |> Async.AwaitTask |> Async.RunSynchronously
+                match res with
                 | Some _ -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
                 | None ->  Some(NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
             | NuGetV3 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))

@@ -11,6 +11,7 @@ open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
 open Paket.Requirements
+open Paket.Logging
 
 /// [omit]
 type JSONResource = 
@@ -27,10 +28,10 @@ type JSONRootData =
     { Resources : JSONResource [] }
 
 /// [omit]
-let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+let private searchDict = new System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
 
 /// [omit]
-let private allVersionsDict = new System.Collections.Concurrent.ConcurrentDictionary<_,_>()
+let private allVersionsDict = new System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
 
 /// Calculates the NuGet v3 URL from a NuGet v2 URL.
 let calculateNuGet3Path(nugetUrl:string) = 
@@ -59,37 +60,38 @@ let calculateNuGet2Path(nugetUrl:string) =
 
 /// [omit]
 let getSearchAPI(auth,nugetUrl) = 
-    match searchDict.TryGetValue nugetUrl with
-    | true,v -> v
-    | _ ->
-        try 
+    searchDict.GetOrAdd(nugetUrl, fun nugetUrl ->
+        async {
             match calculateNuGet3Path nugetUrl with
-            | None -> None
+            | None -> return None
             | Some v3Path -> 
                 let source = { Url = v3Path; Authentication = auth }
-                Some (PackageSources.getNuGetV3Resource source AutoComplete |> Async.RunSynchronously)
-        with
-        | _ -> None
-        |> fun result -> 
-            searchDict.[nugetUrl] <- result
-            result
+                let! v3res = PackageSources.getNuGetV3Resource source AutoComplete |> Async.Catch
+                return 
+                    match v3res with
+                    | Choice1Of2 s -> Some s
+                    | Choice2Of2 ex -> 
+                        if verbose then traceWarnfn "getAllVersionsAPI: %s" (ex.ToString())
+                        None
+        } |> Async.StartAsTask)
 
 /// [omit]
 let getAllVersionsAPI(auth,nugetUrl) = 
-    match allVersionsDict.TryGetValue nugetUrl with
-    | true,v -> v
-    | _ ->
-        try
+    allVersionsDict.GetOrAdd(nugetUrl, fun nugetUrl ->
+        async {
             match calculateNuGet3Path nugetUrl with
-            | None -> None
+            | None -> return None
             | Some v3Path ->
                 let source = { Url = v3Path; Authentication = auth }
-                Some (PackageSources.getNuGetV3Resource source AllVersionsAPI |> Async.RunSynchronously)
-        with
-        | _ -> None
-        |> fun result -> 
-            allVersionsDict.[nugetUrl] <- result
-            result
+                let! v3res = PackageSources.getNuGetV3Resource source AllVersionsAPI |> Async.Catch
+                return
+                    match v3res with
+                    | Choice1Of2 s -> Some s
+                    | Choice2Of2 ex -> 
+                        if verbose then traceWarnfn "getAllVersionsAPI: %s" (ex.ToString())
+                        None
+        } |> Async.StartAsTask)
+
 
 /// [omit]
 let extractAutoCompleteVersions(response:string) =
@@ -153,7 +155,8 @@ let extractPackages(response:string) =
     JsonConvert.DeserializeObject<JSONVersionData>(response).Data
 
 let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
-    match getSearchAPI(auth,nugetURL) with
+    let! apiRes = getSearchAPI(auth,nugetURL) |> Async.AwaitTask
+    match apiRes with
     | Some url -> 
         let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
         let! response = safeGetFromUrl(auth |> Option.map toBasicAuth,query,acceptJson)
