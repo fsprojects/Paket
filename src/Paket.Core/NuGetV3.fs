@@ -71,7 +71,7 @@ let getSearchAPI(auth,nugetUrl) =
                     match v3res with
                     | Choice1Of2 s -> Some s
                     | Choice2Of2 ex -> 
-                        if verbose then traceWarnfn "getAllVersionsAPI: %s" (ex.ToString())
+                        if verbose then traceWarnfn "getSearchAPI: %s" (ex.ToString())
                         None
         } |> Async.StartAsTask)
 
