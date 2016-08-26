@@ -1,4 +1,4 @@
-#### 3.17.0-alpha003 - 25.08.2016
+#### 3.17.0-alpha004 - 25.08.2016
 * Notified about missing libs will only be shown on direct packages (too many false positives)
 * BUGFIX: Resolving .net standard depedencies for net46 - https://github.com/fsprojects/Paket/issues/1883
 

@@ -303,7 +303,7 @@ let ``can detect explicit dependencies for EasyNetQ``() =
         (PackageName "RabbitMQ.Client",
           DependenciesFileParser.parseVersionRequirement(">= 3.5.7"),
           FrameworkRestrictionList [])
-
+   
     deps.[1]
     |> shouldEqual 
         (PackageName "Microsoft.Bcl",

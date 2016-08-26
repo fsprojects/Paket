@@ -181,6 +181,13 @@ let rec optimizeRestrictions restrictions =
                                         
         if restrictions = newRestrictions then sorting newRestrictions else optimizeRestrictions newRestrictions
 
+let hasDotNetFramework =
+    List.exists (fun (_,_,rs) ->
+        rs
+        |> List.exists (function
+                        | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true
+                        | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true
+                        | _ -> false))
 
 let optimizeDependencies packages =
     let grouped = packages |> List.groupBy (fun (n,v,_) -> n,v)
@@ -262,28 +269,33 @@ let optimizeDependencies packages =
                 if hasEmpty && hasAll then
                     yield name,versionRequirement,[]
                 else
-                    let plain' = 
+                    let sorted = 
                         group 
                         |> List.map (fun (_,_,res) -> res) 
                         |> List.concat
                         |> List.distinct
                         |> List.sort
 
-                    let localMaxDotNetRestriction = findMaxDotNetRestriction plain'
-                    let localMaxStandardRestriction = findMaxStandardRestriction plain'
+                    let localMaxDotNetRestriction = findMaxDotNetRestriction sorted
+                    let localMaxStandardRestriction = findMaxStandardRestriction sorted
                     let globalMax = defaultArg globalMax localMaxDotNetRestriction
                     let globalStandardMax = defaultArg globalStandardMax localMaxStandardRestriction
 
                     let plain =
-                        match plain' with
-                        | [] ->
-                            let globalMin = defaultArg globalMin localMaxDotNetRestriction
+                        match sorted with
+                        | [] ->                            
                             let globalStandardMin = defaultArg globalStandardMin localMaxDotNetRestriction
-
+                            
                             let frameworks =
-                                KnownTargetProfiles.DotNetFrameworkVersions 
-                                |> List.filter (fun fw -> DotNetFramework(fw) < globalMin)
-                                |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetFramework(fw)))
+                                match globalMin with
+                                | Some globalMin ->
+                                    KnownTargetProfiles.DotNetFrameworkVersions 
+                                    |> List.filter (fun fw -> DotNetFramework(fw) < globalMin)
+                                    |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetFramework(fw)))
+                                | _ ->
+                                    KnownTargetProfiles.DotNetFrameworkVersions                                     
+                                    |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetFramework(fw)))
+
                             let standards =
                                 KnownTargetProfiles.DotNetStandardVersions 
                                 |> List.filter (fun fw -> DotNetStandard(fw) < globalStandardMin)
@@ -291,7 +303,7 @@ let optimizeDependencies packages =
 
                             frameworks @ standards
 
-                        | _ -> plain'
+                        | _ -> sorted
 
                     let dotnetRestrictions,others = 
                         plain
@@ -337,17 +349,8 @@ let optimizeDependencies packages =
     if not hasDotNetFrameworkOrStandard then 
         newRestictions 
     else
-        let hasDotNetFramework =
-            newRestictions
-            |> List.exists (fun (_,_,rs) ->
-                rs
-                |> List.exists (function
-                                | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true
-                                | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true
-                                | _ -> false))
-
         let newRestictions =
-            if hasDotNetFramework then 
+            if hasDotNetFramework newRestictions then 
                 newRestictions 
             else
                 newRestictions

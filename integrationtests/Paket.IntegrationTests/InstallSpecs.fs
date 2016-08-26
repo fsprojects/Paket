@@ -8,6 +8,7 @@ open System
 open System.IO
 open System.Diagnostics
 open Paket
+open Paket.Domain
 
 [<Test>]
 let ``#1135 should keep lockfile stable when using framework restrictions``() = 
@@ -521,6 +522,12 @@ let ``#1779 net20 only in net461``() =
 [<Test>]
 let ``#1871 should install suave``() = 
     install "i001871-suave" |> ignore
+
+[<Test>]
+let ``#1883 install FSharp.Core from Chessie``() = 
+    let newLockFile = install "i001883-chessie"
+    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "FSharp.Core"].Version |> shouldEqual (SemVer.Parse "4.0.0.1")
+
     
 [<Test>]
 let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =
