@@ -9,12 +9,27 @@ open FsUnit
 open System
 open System.IO
 
+let scenarios = System.Collections.Generic.List<_>()
+
 let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
 let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp")
 let originalScenarioPath scenario = Path.Combine(integrationTestPath,scenario,"before")
 
+let cleanup scenario =
+    let scenarioPath = scenarioTempPath scenario
+    CleanDir scenarioPath
+
+let cleanupAllScenarios() =
+    for scenario in scenarios do
+        cleanup scenario
+    scenarios.Clear()
+
 let prepare scenario =
+    if scenarios.Count > 10 then
+        cleanupAllScenarios()
+
+    scenarios.Add scenario
     let originalScenarioPath = originalScenarioPath scenario
     let scenarioPath = scenarioTempPath scenario
     CleanDir scenarioPath
