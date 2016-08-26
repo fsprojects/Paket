@@ -532,7 +532,7 @@ let ``#1883 install FSharp.Core from Chessie``() =
 [<Test>]
 let ``#1883 should not install .NET Standard``() = 
     let newLockFile = install "i001883-machine"
-    newLockFile.Groups.[GroupName "main"].Resolution |> Map.containsKey (PackageName "System.Reflection") |> shouldEqual false
+    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "System.Reflection"].Version |> shouldEqual (SemVer.Parse "4.1")
 
     
 [<Test>]

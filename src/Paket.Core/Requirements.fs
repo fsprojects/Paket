@@ -350,7 +350,7 @@ let optimizeDependencies originalDependencies =
         newRestictions 
     else
         let newRestictions =
-            if hasDotNetFramework originalDependencies then 
+            if hasDotNetFramework newRestictions then 
                 newRestictions 
             else
                 newRestictions
