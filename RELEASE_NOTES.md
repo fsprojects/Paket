@@ -1,3 +1,6 @@
+#### 3.16.4 - 29.08.2016
+* BUGFIX: Change project file condition handling to be case-insensitive - https://github.com/fsprojects/Paket/pull/1890
+
 #### 3.16.3 - 25.08.2016
 * BUGFIX: Don't remove non-duplicate framework dependencies - https://github.com/fsprojects/Paket/pull/1888
 
