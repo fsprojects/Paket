@@ -528,6 +528,12 @@ let ``#1883 install FSharp.Core from Chessie``() =
     let newLockFile = install "i001883-chessie"
     newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "FSharp.Core"].Version |> shouldEqual (SemVer.Parse "4.0.0.1")
 
+
+[<Test>]
+let ``#1883 should not install .NET Standard``() = 
+    let newLockFile = install "i001883-machine"
+    newLockFile.Groups.[GroupName "main"].Resolution |> Map.containsKey (PackageName "System.Reflection") |> shouldEqual false
+
     
 [<Test>]
 let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =

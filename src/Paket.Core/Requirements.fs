@@ -189,11 +189,11 @@ let hasDotNetFramework =
                         | FrameworkRestriction.AtLeast(DotNetFramework(_)) -> true
                         | _ -> false))
 
-let optimizeDependencies packages =
-    let grouped = packages |> List.groupBy (fun (n,v,_) -> n,v)
+let optimizeDependencies originalDependencies =
+    let grouped = originalDependencies |> List.groupBy (fun (n,v,_) -> n,v)
 
     let expanded =
-        [for (n,vr,r:FrameworkRestriction list) in packages do
+        [for (n,vr,r:FrameworkRestriction list) in originalDependencies do
             for r' in r do
                 yield n,vr,r']
         |> List.groupBy (fun (_,_,r) -> r)
@@ -235,18 +235,18 @@ let optimizeDependencies packages =
         |> Option.map fst
 
     let emptyRestrictions =
-        [for (n,vr,r:FrameworkRestriction list) in packages do
+        [for (n,vr,r:FrameworkRestriction list) in originalDependencies do
             if r = [] then
                 yield n,vr]
         |> Set.ofList
 
     let allRestrictions =
-        [for (n,vr,r:FrameworkRestriction list) in packages do
+        [for (n,vr,r:FrameworkRestriction list) in originalDependencies do
             yield r]
         |> Set.ofList
 
     let restrictionsPerPackage =
-        packages
+        originalDependencies
         |> List.groupBy (fun (n,vr,r) -> n,vr)
         |> List.map (fun ((n,vr),rs) ->
             n,vr,
@@ -350,7 +350,7 @@ let optimizeDependencies packages =
         newRestictions 
     else
         let newRestictions =
-            if hasDotNetFramework newRestictions then 
+            if hasDotNetFramework originalDependencies then 
                 newRestictions 
             else
                 newRestictions
