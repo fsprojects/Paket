@@ -762,7 +762,8 @@ let GetVersions force root (sources, packageName:PackageName) =
                                       if not (String.containsIgnoreCase "teamcity" source.Url || String.containsIgnoreCase"feedservice.svc" source.Url  ) then
                                         yield getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
 
-                                match NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) with
+                                let apiV3 = NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) |> Async.AwaitTask
+                                match apiV3 |> Async.RunSynchronously with
                                 | None -> v2Feeds
                                 | Some v3Url -> (getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, v3Url, packageName)) :: v2Feeds
                        | NuGetV3 source ->
