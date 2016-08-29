@@ -301,12 +301,10 @@ let ``#1458 should install non conflicting deps from different groups only once`
 [<Test>]
 let ``#1505 should install conditionals``() = 
     install "i001505-conditionals" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let newFile = Path.Combine(scenarioTempPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj.expected")
     let oldFile = Path.Combine(originalScenarioPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    tracefn "%s" s1
-    tracefn "%s" s2
     s2 |> shouldEqual s1
 
 [<Test>]
