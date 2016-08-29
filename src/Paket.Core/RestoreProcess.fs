@@ -28,7 +28,9 @@ let CopyToCaches force caches fileName =
         try
             NuGetV2.CopyToCache(cache,fileName,force)
         with
-        | exn -> traceWarnfn "Could not copy %s to cache %s" fileName cache.Location)
+        | exn ->
+            if verbose then
+                traceWarnfn "Could not copy %s to cache %s" fileName cache.Location)
 
 let private extractPackage caches package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
