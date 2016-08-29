@@ -36,13 +36,28 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
 
 let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
-    let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
     let targetFolder = getTargetFolder root groupName packageName version includeVersionInPath
     let direct = DirectoryInfo targetFolder
     if direct.Exists then 
         direct 
     else
         let lowerName = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
+        let di =
+            if groupName = Constants.MainDependencyGroup then
+                DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
+            else
+                let groupName = groupName.GetCompareString()
+                let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, groupName))
+                if di.Exists then di else
+
+                match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase groupName subDir.FullName) with
+                | Some x -> x
+                | None ->
+                    traceWarnfn "The following directories exists:" 
+                    di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+
+                    failwithf "Group directory for group %s was not found." groupName
+
         match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
         | Some x -> x
         | None ->

@@ -1,6 +1,7 @@
-#### 3.17.0-alpha011 - 29.08.2016
+#### 3.17.0-alpha012 - 29.08.2016
 * Added Add MonoAndroid44 moniker - https://github.com/fsprojects/Paket/pull/1897
 * Notified about missing libs will only be shown on direct packages (too many false positives)
+* BUGFIX: Scan group folder for packages
 * BUGFIX: Better NuGet V3 API and async caching - https://github.com/fsprojects/Paket/pull/1892
 * BUGFIX: Resolving .net standard depedencies for net46 - https://github.com/fsprojects/Paket/issues/1883
 * BUGFIX: Change project file condition handling to be case-insensitive - https://github.com/fsprojects/Paket/pull/1890
