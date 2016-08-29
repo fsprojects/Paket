@@ -39,6 +39,15 @@
   <PropertyGroup>
     <SignAssembly>False</SignAssembly>
   </PropertyGroup>
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.6')">
+      <PropertyGroup>
+        <__paket__MultiTarget_props>MultiTarget</__paket__MultiTarget_props>
+        <__paket__MultiTarget_targets>MultiTarget</__paket__MultiTarget_targets>
+      </PropertyGroup>
+    </When>
+  </Choose>
+  <Import Project="..\..\packages\MultiTarget\build\$(__paket__MultiTarget_props).props" Condition="Exists('..\..\packages\MultiTarget\build\$(__paket__MultiTarget_props).props')" Label="Paket" />
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -69,15 +78,6 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.6')">
-      <PropertyGroup>
-        <__paket__MultiTarget_props>MultiTarget</__paket__MultiTarget_props>
-        <__paket__MultiTarget_targets>MultiTarget</__paket__MultiTarget_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
-  <Import Project="..\..\packages\MultiTarget\build\$(__paket__MultiTarget_props).props" Condition="Exists('..\..\packages\MultiTarget\build\$(__paket__MultiTarget_props).props')" Label="Paket" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
