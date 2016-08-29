@@ -1,4 +1,5 @@
 #### 3.17.0-alpha009 - 26.08.2016
+* Added Add MonoAndroid44 moniker - https://github.com/fsprojects/Paket/pull/1897
 * Notified about missing libs will only be shown on direct packages (too many false positives)
 * BUGFIX: Better NuGet V3 API and async caching - https://github.com/fsprojects/Paket/pull/1892
 * BUGFIX: Resolving .net standard depedencies for net46 - https://github.com/fsprojects/Paket/issues/1883
