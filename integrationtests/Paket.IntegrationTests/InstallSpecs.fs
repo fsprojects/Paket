@@ -305,6 +305,8 @@ let ``#1505 should install conditionals``() =
     let oldFile = Path.Combine(originalScenarioPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    tracefn "%s" s1
+    tracefn "%s" s2
     s2 |> shouldEqual s1
 
 [<Test>]
