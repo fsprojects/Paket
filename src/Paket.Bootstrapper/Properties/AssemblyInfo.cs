@@ -6,10 +6,10 @@ using System.Reflection;
 [assembly: AssemblyDescriptionAttribute("A dependency manager for .NET with support for NuGet packages and git repositories.")]
 [assembly: AssemblyVersionAttribute("3.17.0")]
 [assembly: AssemblyFileVersionAttribute("3.17.0")]
-[assembly: AssemblyInformationalVersionAttribute("3.17.0-alpha012")]
+[assembly: AssemblyInformationalVersionAttribute("3.17.0-alpha013")]
 namespace System {
     internal static class AssemblyVersionInformation {
         internal const string Version = "3.17.0";
-        internal const string InformationalVersion = "3.17.0-alpha012";
+        internal const string InformationalVersion = "3.17.0-alpha013";
     }
 }

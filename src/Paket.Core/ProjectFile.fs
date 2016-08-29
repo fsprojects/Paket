@@ -641,10 +641,14 @@ module ProjectFile =
                         |> Map.tryPick (fun dll alias -> if fi.Name.Equals(dll, StringComparison.OrdinalIgnoreCase) then Some(alias) else None)
                     
                     let relativePath = createRelativePath project.FileName fi.FullName
+                    let privateSettings = 
+                        if relativePath.Contains @"\ref\" then "False"
+                        elif copyLocal then "True" else "False"
+
                     if relativePath.Contains @"\native\" then createNode "NativeReference" project else createNode "Reference" project
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
                     |> addChild (createNodeSet "HintPath" relativePath project)
-                    |> addChild (createNodeSet "Private" (if copyLocal then "True" else "False") project)
+                    |> addChild (createNodeSet "Private" privateSettings project)
                     |> addChild (createNodeSet "Paket" "True" project)
                     |> fun n ->
                         match aliases with
