@@ -36,14 +36,20 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
 
 let findPackageFolder root (groupName,packageName) (version,settings) =
     let includeVersionInPath = defaultArg settings.IncludeVersionInPath false
-    let lowerName = (packageName.ToString() + if includeVersionInPath then "." + version.ToString() else "").ToLower()
     let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
     let targetFolder = getTargetFolder root groupName packageName version includeVersionInPath
     let direct = DirectoryInfo targetFolder
-    if direct.Exists then direct else
-    match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
-    | Some x -> x
-    | None -> failwithf "Package directory for package %O was not found." packageName
+    if direct.Exists then 
+        direct 
+    else
+        let lowerName = packageName.ToString() + if includeVersionInPath then "." + version.ToString() else ""
+        match di.GetDirectories() |> Seq.tryFind (fun subDir -> String.endsWithIgnoreCase lowerName subDir.FullName) with
+        | Some x -> x
+        | None ->
+            traceWarnfn "The following directories exists:" 
+            di.GetDirectories() |> Seq.iter (fun d -> traceWarnfn "  %s" d.FullName)
+
+            failwithf "Package directory for package %O was not found." packageName
 
 
 let contentFileBlackList : list<(FileInfo -> bool)> = [
