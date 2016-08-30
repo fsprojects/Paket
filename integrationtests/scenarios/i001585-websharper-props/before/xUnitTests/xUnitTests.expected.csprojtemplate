@@ -30,13 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Choose>
-    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5'">
-      <PropertyGroup>
-        <__paket__WebSharper_targets>WebSharper</__paket__WebSharper_targets>
-      </PropertyGroup>
-    </When>
-  </Choose>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -63,6 +56,13 @@
     </Otherwise>
   </Choose>
   <Import Project="$(FSharpTargetsPath)" />
+  <Choose>
+    <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5'">
+      <PropertyGroup>
+        <__paket__WebSharper_targets>WebSharper</__paket__WebSharper_targets>
+      </PropertyGroup>
+    </When>
+  </Choose>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
