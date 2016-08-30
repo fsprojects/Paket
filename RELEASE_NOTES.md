@@ -1,3 +1,6 @@
+#### 3.17.2 - 30.08.2016
+* BUGFIX: Fix deduplication condition
+
 #### 3.17.1 - 30.08.2016
 * Revert fix for #1898
 

@@ -729,8 +729,8 @@ module ProjectFile =
 
                             match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
                             | "" -> [condition,createItemGroup libFolder.Targets rest]
-                            | condition -> 
-                                [condition,createItemGroup !assemblyTargets frameworkAssemblies
+                            | lowerCondition ->
+                                [lowerCondition,createItemGroup !assemblyTargets frameworkAssemblies
                                  condition,createItemGroup libFolder.Targets rest]
                         )
 
@@ -750,6 +750,11 @@ module ProjectFile =
 
                 conditions
                 |> List.map (fun (condition,itemGroup) ->
+                    let condition = 
+                        match condition with
+                        | "$(TargetFrameworkIdentifier) == 'true'" -> "true"
+                        | _ -> condition
+
                     let whenNode = 
                         createNode "When" project
                         |> addAttribute "Condition" condition 
