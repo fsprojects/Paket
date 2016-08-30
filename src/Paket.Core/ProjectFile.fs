@@ -907,32 +907,22 @@ module ProjectFile =
                 incr j
 
             let k = ref !j
-            let go = ref true
-            while !k < project.ProjectNode.ChildNodes.Count && !go do
-                let text = project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()
-                if String.startsWithIgnoreCase  "<PropertyGroup" text ||
-                     (String.startsWithIgnoreCase  "<import" text &&
-                      not (String.containsIgnoreCase "label" text &&
-                           String.containsIgnoreCase "paket" text))
-                then
-                    go := true
-                    incr k
-                else
-                    go := false
+            while !k < project.ProjectNode.ChildNodes.Count &&
+                (String.startsWithIgnoreCase  "<PropertyGroup" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) ||
+                 (String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
+                  not (String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
+                       String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString())))) do
+                incr k
 
             let l = ref !k
-            let go = ref true
             while !l < project.ProjectNode.ChildNodes.Count do
                 let node = project.ProjectNode.ChildNodes.[!l].OuterXml.ToString()
-                if !go && String.startsWithIgnoreCase  "<import" node && 
+                if String.startsWithIgnoreCase  "<import" node && 
                    (String.containsIgnoreCase "microsoft.csharp.targets" node || 
                      String.containsIgnoreCase "microsoft.fsharp.targets" node ||
                      String.containsIgnoreCase "fsharptargetspath" node)
                 then
                     k := !l + 1
-                else
-                    go := false
-
                 incr l
             !j,!k
 

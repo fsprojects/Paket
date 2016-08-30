@@ -1,3 +1,6 @@
+#### 3.17.1 - 30.08.2016
+* Revert fix for #1898
+
 #### 3.17.0 - 29.08.2016
 * Added Add MonoAndroid44 moniker - https://github.com/fsprojects/Paket/pull/1897
 * Notified about missing libs will only be shown on direct packages (too many false positives)
