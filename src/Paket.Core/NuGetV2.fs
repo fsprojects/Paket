@@ -56,7 +56,7 @@ let rec private followODataLink auth url =
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
     async {
         try
-            let url = sprintf "%s/Packages?$filter=toLower(Id) eq '%s'" nugetURL (package.GetCompareString())
+            let url = sprintf "%s/Packages?$filter=tolower(Id) eq '%s'" nugetURL (package.GetCompareString())
             verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
             let! result = followODataLink auth url
             return Some result
