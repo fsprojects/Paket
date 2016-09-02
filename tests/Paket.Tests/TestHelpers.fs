@@ -9,11 +9,34 @@ open System.Xml
 open System.IO
 open Paket.Domain
 
-let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources groupName (package:PackageName) (version:SemVerInfo) = 
+type GraphDependency = string * VersionRequirement * FrameworkRestrictions
+
+type DependencyGraph = list<string * string * (GraphDependency) list>
+
+let OfSimpleGraph (g:seq<string * string * (string * VersionRequirement) list>) : DependencyGraph =
+  g
+  |> Seq.map (fun (x, y, (rqs)) ->
+    x, y, rqs |> List.map (fun (a,b) -> (a, b, FrameworkRestrictionList [])))
+  |> Seq.toList
+
+let OfGraphWithRestriction (g:seq<string * string * (string * VersionRequirement * FrameworkRestrictions) list>) : DependencyGraph =
+  g
+  |> Seq.map (fun (x, y, (rqs)) ->
+    x, y, rqs |> List.map (fun (a,b,c) -> (a, b, c)))
+  |> Seq.toList
+
+let GraphOfNuspecs (g:seq<string>) : DependencyGraph =
+  g
+  |> Seq.map (fun nuspecText ->
+    let nspec = Nuspec.Load("in-memory", nuspecText)
+    nspec.OfficialName, nspec.Version, nspec.Dependencies |> List.map (fun (a,b,c) -> a.GetCompareString(), b, c))
+  |> Seq.toList
+
+let PackageDetailsFromGraph (graph : DependencyGraph) sources groupName (package:PackageName) (version:SemVerInfo) = 
     let name,dependencies = 
         graph
         |> Seq.filter (fun (p, v, _) -> (PackageName p) = package && SemVer.Parse v = version)
-        |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y) -> PackageName x,y,FrameworkRestrictionList []))
+        |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y,z) -> PackageName x,y,z))
         |> Seq.head
 
     { Name = name
@@ -23,7 +46,7 @@ let PackageDetailsFromGraph (graph : seq<string * string * (string * VersionRequ
       Unlisted = false
       DirectDependencies = Set.ofList dependencies }
 
-let VersionsFromGraph (graph : seq<string * string * (string * VersionRequirement) list>) sources resolverStrategy groupName packageName = 
+let VersionsFromGraph (graph : DependencyGraph) sources resolverStrategy groupName packageName = 
     let versions =
         graph
         |> Seq.filter (fun (p, _, _) -> (PackageName p) = packageName)
@@ -35,7 +58,7 @@ let VersionsFromGraph (graph : seq<string * string * (string * VersionRequiremen
     | ResolverStrategy.Max -> List.sortDescending versions
     | ResolverStrategy.Min -> List.sort versions
 
-let VersionsFromGraphAsSeq (graph : seq<string * string * (string * VersionRequirement) list>) sources resolverStrategy groupName packageName = 
+let VersionsFromGraphAsSeq (graph : DependencyGraph) sources resolverStrategy groupName packageName = 
    VersionsFromGraph graph sources resolverStrategy groupName packageName
    |> Seq.ofList
 

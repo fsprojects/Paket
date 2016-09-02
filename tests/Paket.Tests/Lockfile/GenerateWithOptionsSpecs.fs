@@ -171,11 +171,12 @@ nuget NLog framework: net40
 nuget NLog.Contrib
 """
 
-    let graph = [
+    let graph =
+      OfSimpleGraph [
         "NLog","1.0.0",[]
         "NLog","1.0.1",[]
         "NLog.Contrib","1.0.0",["NLog",DependenciesFileParser.parseVersionRequirement ">= 1.0.1"]
-    ]
+      ]
 
     
     let expected = """FRAMEWORK: >= NET40

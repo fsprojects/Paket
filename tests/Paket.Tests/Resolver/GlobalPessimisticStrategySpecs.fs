@@ -11,11 +11,12 @@ let resolve graph updateMode (cfg : DependenciesFile) =
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
     cfg.Resolve(true,noSha1,VersionsFromGraphAsSeq graph,PackageDetailsFromGraph graph,groups,updateMode).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
 
-let graph = [
+let graph = 
+  OfSimpleGraph [
     "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "Castle.Windsor","3.3.0",[]
-]
+  ]
 
 let config1 = """
 strategy min
@@ -66,7 +67,8 @@ let ``should resolve simple config3``() =
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 
-let graph2 = [
+let graph2 = 
+  OfSimpleGraph [
     "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
@@ -81,7 +83,7 @@ let graph2 = [
     "Castle.Core","3.2.2",[]
     "Castle.Core","3.3.0",[]
     "Castle.Core","3.3.1",[]
-]
+  ]
 
 let config4 = """
 strategy min

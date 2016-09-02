@@ -129,4 +129,5 @@ let resolve (g:PackageGraph) (deps:(PackageName*VersionRequirement) list) =
     let g = 
         g
         |> List.map (fun (p,v,deps) -> p.ToString(),v.ToString(),deps |> List.map (fun (d,vr) -> d.ToString(),vr))
+        |> OfSimpleGraph
     safeResolve g deps    

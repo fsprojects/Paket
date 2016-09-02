@@ -63,6 +63,7 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
                [],
                { References = NuspecReferences.All
                  OfficialName = "Microsoft.Net.Http"
+                 Version = "2.2.8"
                  Dependencies = []
                  LicenseUrl = ""
                  IsDevelopmentDependency = false

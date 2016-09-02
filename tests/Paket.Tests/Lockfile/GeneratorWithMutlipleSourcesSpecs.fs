@@ -14,7 +14,8 @@ nuget "Castle.Windsor-log4net" "~> 3.2"
 nuget "Rx-Main" "~> 2.0"
 """
 
-let graph = [
+let graph =
+  OfSimpleGraph [
     "Castle.Windsor-log4net","3.2",[]
     "Castle.Windsor-log4net","3.3",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "2.0",PreReleaseStatus.No);"log4net",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "Castle.Windsor","2.0",[]
@@ -26,7 +27,7 @@ let graph = [
     "log4net","1.1",["log",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "log","1.0",[]
     "log","1.2",[]
-]
+  ]
 
 let expected = """NUGET
   remote: http://www.nuget.org/api/v2

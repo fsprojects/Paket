@@ -13,7 +13,8 @@ source "http://www.nuget.org/api/v2"
 nuget "Castle.Windsor-log4net" "~> 3.2"
 nuget "Rx-Main" "~> 2.0" """
 
-let graph = [
+let graph = 
+  OfSimpleGraph [
     "Castle.Windsor-log4net","3.2",[]
     "Castle.Windsor-log4net","3.3",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "2.0",PreReleaseStatus.No);"log4net",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "Castle.Windsor","2.0",[]
@@ -26,7 +27,7 @@ let graph = [
     "log","1.0",[]
     "log","1.2",[]
     "FAKE","4.0",[]
-]
+  ]
 
 [<Test>]
 let ``should generate lock file for packages``() = 
@@ -214,12 +215,13 @@ source "http://www.nuget.org/api/v2"
 
 nuget "OtherVersionRanges.Package" "~> 1.0" """
 
-let graph3 = [
+let graph3 =
+  OfSimpleGraph [
     "OtherVersionRanges.Package","1.0", ["LessThan.Package", VersionRequirement(VersionRange.LessThan(SemVer.Parse "2.0"), PreReleaseStatus.No)]
     "LessThan.Package","1.9",["GreaterThan.Package", VersionRequirement(VersionRange.GreaterThan(SemVer.Parse "2.0"), PreReleaseStatus.No)]
     "GreaterThan.Package","2.1",["Maximum.Package", VersionRequirement(VersionRange.Maximum(SemVer.Parse "3.0"), PreReleaseStatus.No)]
     "Maximum.Package","2.9",[]
-]
+  ]
 
 let expected3 = """NUGET
   remote: http://www.nuget.org/api/v2
