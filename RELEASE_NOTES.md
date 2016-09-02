@@ -1,3 +1,6 @@
+#### 3.17.3 - 02.09.2016
+* BUGFIX: Fixed toLower > tolower for odata url parameter  - https://github.com/fsprojects/Paket/pull/1906
+
 #### 3.17.2 - 30.08.2016
 * BUGFIX: Fix deduplication condition
 
