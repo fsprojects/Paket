@@ -181,8 +181,9 @@ let rec optimizeRestrictions restrictions =
                                         
         if restrictions = newRestrictions then sorting newRestrictions else optimizeRestrictions newRestrictions
 
-let hasDotNetFramework =
+let hasDotNetFrameworkOrAnyCase =
     List.exists (fun (_,_,rs) ->
+        rs = [] ||
         rs
         |> List.exists (function
                         | FrameworkRestriction.Exactly(DotNetFramework(_)) -> true
@@ -350,7 +351,7 @@ let optimizeDependencies originalDependencies =
         newRestictions 
     else
         let newRestictions =
-            if hasDotNetFramework newRestictions then 
+            if hasDotNetFrameworkOrAnyCase originalDependencies then 
                 newRestictions 
             else
                 newRestictions

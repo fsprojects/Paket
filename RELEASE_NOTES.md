@@ -1,10 +1,7 @@
-#### 3.17.3 - 02.09.2016
+#### 3.18.0 - 02.09.2016
+* BUGFIX: Fixed issues around .NET Standard resolution
 * BUGFIX: Fixed toLower > tolower for odata url parameter  - https://github.com/fsprojects/Paket/pull/1906
-
-#### 3.17.2 - 30.08.2016
 * BUGFIX: Fix deduplication condition
-
-#### 3.17.1 - 30.08.2016
 * Revert fix for #1898
 
 #### 3.17.0 - 29.08.2016
