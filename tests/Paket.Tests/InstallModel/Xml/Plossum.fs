@@ -31,6 +31,6 @@ let ``should generate Xml for Plossum``() =
               Nuspec.All)
     
     let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,true,true,None)
-    chooseNode.OuterXml
+    chooseNode.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

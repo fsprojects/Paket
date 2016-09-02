@@ -718,7 +718,7 @@ module ProjectFile =
                             | _ -> ()
 
                         if !assemblyTargets = libFolder.Targets then
-                            [condition,createItemGroup libFolder.Targets references]
+                            [condition,createItemGroup libFolder.Targets references,false]
                         else
                             let frameworkAssemblies,rest = 
                                 references
@@ -728,10 +728,10 @@ module ProjectFile =
                                     | _ -> false)
 
                             match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
-                            | "" -> [condition,createItemGroup libFolder.Targets rest]
+                            | "" -> [condition,createItemGroup libFolder.Targets rest,false]
                             | lowerCondition ->
-                                [lowerCondition,createItemGroup !assemblyTargets frameworkAssemblies
-                                 condition,createItemGroup libFolder.Targets rest]
+                                [lowerCondition,createItemGroup !assemblyTargets frameworkAssemblies,true
+                                 condition,createItemGroup libFolder.Targets rest,false]
                         )
 
         let targetsFileConditions =
@@ -739,17 +739,19 @@ module ProjectFile =
             |> List.sortBy (fun lib -> lib.Name)
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup lib.Files.References)
 
-        let chooseNode =
+        let chooseNodes =
             match conditions with
-            |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup] -> itemGroup
-            |  ["true",itemGroup] -> itemGroup
+            |  ["$(TargetFrameworkIdentifier) == 'true'",itemGroup,_] -> [itemGroup]
+            |  ["true",itemGroup,_] -> [itemGroup]
             |  _ ->
                 let chooseNode = createNode "Choose" project
+                let chooseNode2 = createNode "Choose" project
 
                 let containsReferences = ref false
+                let containsReferences2 = ref false
 
                 conditions
-                |> List.map (fun (condition,itemGroup) ->
+                |> List.map (fun (condition,itemGroup,ownNode) ->
                     let condition = 
                         match condition with
                         | "$(TargetFrameworkIdentifier) == 'true'" -> "true"
@@ -761,11 +763,23 @@ module ProjectFile =
                
                     if not itemGroup.IsEmpty then
                         whenNode.AppendChild itemGroup |> ignore
-                        containsReferences := true
-                    whenNode)
-                |> List.iter (fun node -> chooseNode.AppendChild node |> ignore)
+                        if ownNode then
+                            containsReferences2 := true
+                        else
+                            containsReferences := true
+                    whenNode,ownNode)
+                |> List.iter (fun (node,ownNode) -> 
+                    if ownNode then
+                        chooseNode2.AppendChild node |> ignore
+                    else
+                        chooseNode.AppendChild node |> ignore
+                    )
                                 
-                if !containsReferences then chooseNode else createNode "Choose" project
+                match !containsReferences,!containsReferences2 with
+                | true,true -> [chooseNode2; chooseNode] 
+                | true,false -> [chooseNode] 
+                | false,true -> [chooseNode2]
+                | false,false -> [createNode "Choose" project]
 
         let propertyNames,propertyChooseNode =
             match targetsFileConditions with
@@ -831,7 +845,7 @@ module ProjectFile =
         
         let analyzersNode = generateAnalyzersXml model project
 
-        propsNodes,targetsNodes,chooseNode,propertyChooseNode,analyzersNode
+        propsNodes,targetsNodes,chooseNodes,propertyChooseNode,analyzersNode
 
     let removePaketNodes (project:ProjectFile) = 
         deletePaketNodes "Analyzer" project
@@ -964,55 +978,55 @@ module ProjectFile =
             let importTargets = defaultArg installSettings.ImportTargets true
 
             generateXml projectModel usedFrameworkLibs installSettings.Aliases copyLocal importTargets installSettings.ReferenceCondition project)
-        |> Seq.iter (fun (propsNodes,targetsNodes,chooseNode,propertyChooseNode, analyzersNode) ->
-
-            let i = ref (project.ProjectNode.ChildNodes.Count-1)
-            while 
-              !i >= 0 && 
-                (String.startsWithIgnoreCase "<import" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  && 
-                 String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  &&
-                 String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) )  do
-                decr i
+        |> Seq.iter (fun (propsNodes,targetsNodes,chooseNodes,propertyChooseNode, analyzersNode) ->
+            for chooseNode in chooseNodes do
+                let i = ref (project.ProjectNode.ChildNodes.Count-1)
+                while 
+                  !i >= 0 && 
+                    (String.startsWithIgnoreCase "<import" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  && 
+                     String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString())  &&
+                     String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!i].OuterXml.ToString()) )  do
+                    decr i
             
-            if !i <= 0 then
-                if chooseNode.ChildNodes.Count > 0 then
-                    project.ProjectNode.AppendChild chooseNode |> ignore
-            else
-                let node = project.ProjectNode.ChildNodes.[!i]
-                if chooseNode.ChildNodes.Count > 0 then
-                    project.ProjectNode.InsertAfter(chooseNode,node) |> ignore
-
-            let j,k = findInsertSpot()
-
-            let addProps() =
-                if j = 0 then
-                    propsNodes
-                    |> Seq.iter (project.ProjectNode.PrependChild >> ignore)
+                if !i <= 0 then
+                    if chooseNode.ChildNodes.Count > 0 then
+                        project.ProjectNode.AppendChild chooseNode |> ignore
                 else
-                    propsNodes
-                    |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,project.ProjectNode.ChildNodes.[j-1]) |> ignore)
+                    let node = project.ProjectNode.ChildNodes.[!i]
+                    if chooseNode.ChildNodes.Count > 0 then
+                        project.ProjectNode.InsertAfter(chooseNode,node) |> ignore
+
+                let j,k = findInsertSpot()
+
+                let addProps() =
+                    if j = 0 then
+                        propsNodes
+                        |> Seq.iter (project.ProjectNode.PrependChild >> ignore)
+                    else
+                        propsNodes
+                        |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,project.ProjectNode.ChildNodes.[j-1]) |> ignore)
             
-            if propertyChooseNode.ChildNodes.Count > 0 then
-                if k = 0 then
-                    project.ProjectNode.AppendChild propertyChooseNode |> ignore
+                if propertyChooseNode.ChildNodes.Count > 0 then
+                    if k = 0 then
+                        project.ProjectNode.AppendChild propertyChooseNode |> ignore
 
-                    propsNodes
-                    |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
-                else
-                    let node = project.ProjectNode.ChildNodes.[k-1]
+                        propsNodes
+                        |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
+                    else
+                        let node = project.ProjectNode.ChildNodes.[k-1]
                     
-                    propsNodes
-                    |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,node) |> ignore)
+                        propsNodes
+                        |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,node) |> ignore)
 
-                    project.ProjectNode.InsertAfter(propertyChooseNode,node) |> ignore
-            else
-               addProps()
+                        project.ProjectNode.InsertAfter(propertyChooseNode,node) |> ignore
+                else
+                   addProps()
 
-            targetsNodes
-            |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
+                targetsNodes
+                |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
 
-            if analyzersNode.ChildNodes.Count > 0 then
-                project.ProjectNode.AppendChild analyzersNode |> ignore
+                if analyzersNode.ChildNodes.Count > 0 then
+                    project.ProjectNode.AppendChild analyzersNode |> ignore
             )
 
 
