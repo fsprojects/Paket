@@ -103,6 +103,24 @@ let graph2 =
   </metadata>
 </package>"""
   ]
+     
+let graph3 = 
+  GraphOfNuspecs [
+    """<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Exceptionless</id>
+    <version>4.0.1902</version>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5" />
+      <group targetFramework=".NETStandard1.2">
+        <dependency id="MyNetStandardDummy" version="[1.6.0, )" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
+    """
+  ]
 
 
 [<Test>]
