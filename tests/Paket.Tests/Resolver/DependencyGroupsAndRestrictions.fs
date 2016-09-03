@@ -103,37 +103,6 @@ let graph2 =
   </metadata>
 </package>"""
   ]
-  
-[<Test>][<Ignore("Currently failing")>]
-let ``should prefer netstandard1.3 dependency over all frameworks``() = 
-    let config = """
-source http://www.nuget.org/api/v2
-framework net46
-
-nuget Chessie_test"""
-    let resolved =
-        DependenciesFile.FromCode(config)
-        |> resolve graph2 UpdateMode.UpdateAll
-    getVersion resolved.[PackageName "FSharp.Core"] |> shouldEqual "4.0.1.7-alpha"
-
-     
-let graph3 = 
-  GraphOfNuspecs [
-    """<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
-  <metadata>
-    <id>Exceptionless</id>
-    <version>4.0.1902</version>
-    <dependencies>
-      <group targetFramework=".NETFramework4.5" />
-      <group targetFramework=".NETStandard1.2">
-        <dependency id="MyNetStandardDummy" version="[1.6.0, )" />
-      </group>
-    </dependencies>
-  </metadata>
-</package>
-    """
-  ]
 
 
 [<Test>]
