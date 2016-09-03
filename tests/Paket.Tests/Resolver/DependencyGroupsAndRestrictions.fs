@@ -64,45 +64,6 @@ nuget Chessie"""
         DependenciesFile.FromCode(config)
         |> resolve graph1 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "FSharp.Core"] |> shouldEqual "4.0.0.1"
-
-   
-let graph2 = 
-  GraphOfNuspecs [
-    """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
-  <metadata>
-    <id>Chessie_test</id>
-    <version>0.6.0</version>
-    <dependencies>
-      <group>
-        <dependency id="FSharp.Core"></dependency>
-      </group>
-      <group targetFramework=".NETStandard1.3">
-        <dependency id="FSharp.Core" version="[4.0.1.7-alpha, )"></dependency>
-      </group>
-    </dependencies>
-  </metadata>
-</package>
-    """
-    """<?xml version="1.0"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-  <metadata>
-    <id>FSharp.Core</id>
-    <version>4.0.0.1</version>
-  </metadata>
-</package>
-    """
-    """<?xml version="1.0" encoding="utf-8"?>
-<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
-  <metadata>
-    <id>FSharp.Core</id>
-    <version>4.0.1.7-alpha</version>
-    <dependencies>
-      <group targetFramework=".NETStandard1.6"></group>
-    </dependencies>
-  </metadata>
-</package>"""
-  ]
      
 let graph3 = 
   GraphOfNuspecs [
