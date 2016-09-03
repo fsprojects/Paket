@@ -12,6 +12,12 @@ type Cache =
     { Location : string
       CacheType : CacheType option }
 
+    member this.BaseOnRoot root = 
+        if Path.IsPathRooted this.Location && not(String.IsNullOrWhiteSpace root) then 
+            this 
+        else 
+            { this with Location = Path.Combine(root,this.Location) |> normalizePath }
+
     static member Parse(line : string) =
         let sourceRegex = Regex("cache[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
         let parts = line.Split ' '

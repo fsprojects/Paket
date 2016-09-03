@@ -1,3 +1,6 @@
+#### 3.18.1 - 03.09.2016
+* BUGFIX: Fixed invalid Cache Folder when Current Directory is different - https://github.com/fsprojects/Paket/issues/1910
+
 #### 3.18.0 - 02.09.2016
 * BUGFIX: Fixed issues around .NET Standard resolution
 * BUGFIX: Fixed toLower > tolower for odata url parameter  - https://github.com/fsprojects/Paket/pull/1906

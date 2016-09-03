@@ -393,7 +393,13 @@ module DependenciesFileParser =
                 | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::current::other
                 | Empty(_) -> lineNo, current::other
                 | Remote(RemoteParserOption.PackageSource newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
-                | Remote(RemoteParserOption.Cache newCache) -> 
+                | Remote(RemoteParserOption.Cache newCache) ->                    
+                    let newCache =
+                        if String.IsNullOrWhiteSpace fileName then
+                            newCache
+                        else
+                            let fi = FileInfo fileName
+                            newCache.BaseOnRoot(fi.Directory.FullName)
                     let caches = current.Caches @ [newCache] |> List.distinct
                     let sources = current.Sources @ [LocalNuGet(newCache.Location,Some newCache)] |> List.distinct
                     lineNo, { current with Caches = caches; Sources = sources }::other
