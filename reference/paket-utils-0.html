@@ -128,7 +128,7 @@
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L564-564" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L567-567" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -309,14 +309,14 @@ Until the user pressed y or n.</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '377', 377)" onmouseover="showTip(event, '377', 377)">
-            downloadFileSync url fileName client
+            dirSeparator 
           </code>
           <div class="tip" id="377">
-            <strong>Signature:</strong> url:string -&gt; fileName:string -&gt; client:WebClient -&gt; Result&lt;unit,DomainMessage&gt;<br />
+            <strong>Signature:</strong> string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L628-628" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L463-463" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -327,14 +327,14 @@ Until the user pressed y or n.</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '378', 378)" onmouseover="showTip(event, '378', 378)">
-            downloadStringSync url client
+            downloadFileSync url fileName client
           </code>
           <div class="tip" id="378">
-            <strong>Signature:</strong> url:string -&gt; client:WebClient -&gt; Result&lt;string,DomainMessage&gt;<br />
+            <strong>Signature:</strong> url:string -&gt; fileName:string -&gt; client:WebClient -&gt; Result&lt;unit,DomainMessage&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L622-622" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L631-631" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -345,9 +345,27 @@ Until the user pressed y or n.</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '379', 379)" onmouseover="showTip(event, '379', 379)">
-            emptyDir dirInfo
+            downloadStringSync url client
           </code>
           <div class="tip" id="379">
+            <strong>Signature:</strong> url:string -&gt; client:WebClient -&gt; Result&lt;string,DomainMessage&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L625-625" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '380', 380)" onmouseover="showTip(event, '380', 380)">
+            emptyDir dirInfo
+          </code>
+          <div class="tip" id="380">
             <strong>Signature:</strong> dirInfo:DirectoryInfo -&gt; unit<br />
                       </div>
         </td>
@@ -362,10 +380,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '380', 380)" onmouseover="showTip(event, '380', 380)">
+          <code onmouseout="hideTip(event, '381', 381)" onmouseover="showTip(event, '381', 381)">
             endsWith text x
           </code>
-          <div class="tip" id="380">
+          <div class="tip" id="381">
             <strong>Signature:</strong> text:string -&gt; x:^a -&gt; bool<br />
                           <strong>Type parameters:</strong> ^a          </div>
         </td>
@@ -380,10 +398,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '381', 381)" onmouseover="showTip(event, '381', 381)">
+          <code onmouseout="hideTip(event, '382', 382)" onmouseover="showTip(event, '382', 382)">
             envProxies ()
           </code>
-          <div class="tip" id="381">
+          <div class="tip" id="382">
             <strong>Signature:</strong> unit -&gt; Map&lt;string,WebProxy&gt;<br />
                       </div>
         </td>
@@ -398,10 +416,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '382', 382)" onmouseover="showTip(event, '382', 382)">
+          <code onmouseout="hideTip(event, '383', 383)" onmouseover="showTip(event, '383', 383)">
             extractPath 
           </code>
-          <div class="tip" id="382">
+          <div class="tip" id="383">
             <strong>Signature:</strong> string * PackageName * string -&gt; string option<br />
                       </div>
         </td>
@@ -416,15 +434,15 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '383', 383)" onmouseover="showTip(event, '383', 383)">
+          <code onmouseout="hideTip(event, '384', 384)" onmouseover="showTip(event, '384', 384)">
             FindAllFiles (folder, pattern)
           </code>
-          <div class="tip" id="383">
+          <div class="tip" id="384">
             <strong>Signature:</strong> (folder:string * pattern:string) -&gt; FileInfo []<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L465-465" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L468-468" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -436,10 +454,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '384', 384)" onmouseover="showTip(event, '384', 384)">
+          <code onmouseout="hideTip(event, '385', 385)" onmouseover="showTip(event, '385', 385)">
             force lz
           </code>
-          <div class="tip" id="384">
+          <div class="tip" id="385">
             <strong>Signature:</strong> lz:Lazy&lt;&#39;a&gt; -&gt; &#39;a<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
@@ -454,10 +472,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '385', 385)" onmouseover="showTip(event, '385', 385)">
+          <code onmouseout="hideTip(event, '386', 386)" onmouseover="showTip(event, '386', 386)">
             getDefaultProxyFor 
           </code>
-          <div class="tip" id="385">
+          <div class="tip" id="386">
             <strong>Signature:</strong> string -&gt; WebProxy<br />
                       </div>
         </td>
@@ -472,10 +490,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '386', 386)" onmouseover="showTip(event, '386', 386)">
+          <code onmouseout="hideTip(event, '387', 387)" onmouseover="showTip(event, '387', 387)">
             getDirectoryInfo pathInfo root
           </code>
-          <div class="tip" id="386">
+          <div class="tip" id="387">
             <strong>Signature:</strong> pathInfo:PathReference -&gt; root:string -&gt; DirectoryInfo<br />
                       </div>
         </td>
@@ -490,10 +508,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '387', 387)" onmouseover="showTip(event, '387', 387)">
+          <code onmouseout="hideTip(event, '388', 388)" onmouseover="showTip(event, '388', 388)">
             getFileEncoding path
           </code>
-          <div class="tip" id="387">
+          <div class="tip" id="388">
             <strong>Signature:</strong> path:string -&gt; Encoding<br />
                       </div>
         </td>
@@ -508,10 +526,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '388', 388)" onmouseover="showTip(event, '388', 388)">
+          <code onmouseout="hideTip(event, '389', 389)" onmouseover="showTip(event, '389', 389)">
             GetHomeDirectory ()
           </code>
-          <div class="tip" id="388">
+          <div class="tip" id="389">
             <strong>Signature:</strong> unit -&gt; string<br />
                       </div>
         </td>
@@ -526,10 +544,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '389', 389)" onmouseover="showTip(event, '389', 389)">
+          <code onmouseout="hideTip(event, '390', 390)" onmouseover="showTip(event, '390', 390)">
             getNative path
           </code>
-          <div class="tip" id="389">
+          <div class="tip" id="390">
             <strong>Signature:</strong> path:string -&gt; string<br />
                       </div>
         </td>
@@ -544,15 +562,15 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '390', 390)" onmouseover="showTip(event, '390', 390)">
+          <code onmouseout="hideTip(event, '391', 391)" onmouseover="showTip(event, '391', 391)">
             getTargetFolder (...)
           </code>
-          <div class="tip" id="390">
+          <div class="tip" id="391">
             <strong>Signature:</strong> root:string -&gt; groupName:GroupName -&gt; packageName:PackageName -&gt; version:obj -&gt; includeVersionInPath:bool -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L467-467" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L470-470" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -562,10 +580,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '391', 391)" onmouseover="showTip(event, '391', 391)">
+          <code onmouseout="hideTip(event, '392', 392)" onmouseover="showTip(event, '392', 392)">
             getXmlFromUrl (auth, url)
           </code>
-          <div class="tip" id="391">
+          <div class="tip" id="392">
             <strong>Signature:</strong> (auth:Auth option * url:string) -&gt; Async&lt;string&gt;<br />
                       </div>
         </td>
@@ -580,10 +598,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '392', 392)" onmouseover="showTip(event, '392', 392)">
+          <code onmouseout="hideTip(event, '393', 393)" onmouseover="showTip(event, '393', 393)">
             innerText exn
           </code>
-          <div class="tip" id="392">
+          <div class="tip" id="393">
             <strong>Signature:</strong> exn:Exception -&gt; string<br />
                       </div>
         </td>
@@ -598,10 +616,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '393', 393)" onmouseover="showTip(event, '393', 393)">
+          <code onmouseout="hideTip(event, '394', 394)" onmouseover="showTip(event, '394', 394)">
             isLinux 
           </code>
-          <div class="tip" id="393">
+          <div class="tip" id="394">
             <strong>Signature:</strong> bool<br />
                       </div>
         </td>
@@ -618,10 +636,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '394', 394)" onmouseover="showTip(event, '394', 394)">
+          <code onmouseout="hideTip(event, '395', 395)" onmouseover="showTip(event, '395', 395)">
             isMacOS 
           </code>
-          <div class="tip" id="394">
+          <div class="tip" id="395">
             <strong>Signature:</strong> bool<br />
                       </div>
         </td>
@@ -638,10 +656,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '395', 395)" onmouseover="showTip(event, '395', 395)">
+          <code onmouseout="hideTip(event, '396', 396)" onmouseover="showTip(event, '396', 396)">
             isMatchingOperatingSystem (...)
           </code>
-          <div class="tip" id="395">
+          <div class="tip" id="396">
             <strong>Signature:</strong> operatingSystemFilter:string option -&gt; bool<br />
                       </div>
         </td>
@@ -656,10 +674,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '396', 396)" onmouseover="showTip(event, '396', 396)">
+          <code onmouseout="hideTip(event, '397', 397)" onmouseover="showTip(event, '397', 397)">
             isMatchingPlatform operatingSystemFilter
           </code>
-          <div class="tip" id="396">
+          <div class="tip" id="397">
             <strong>Signature:</strong> operatingSystemFilter:string option -&gt; bool<br />
                       </div>
         </td>
@@ -674,10 +692,10 @@ Until the user pressed y or n.</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '397', 397)" onmouseover="showTip(event, '397', 397)">
+          <code onmouseout="hideTip(event, '398', 398)" onmouseover="showTip(event, '398', 398)">
             isMono 
           </code>
-          <div class="tip" id="397">
+          <div class="tip" id="398">
             <strong>Signature:</strong> bool<br />
                       </div>
         </td>
@@ -695,10 +713,10 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '398', 398)" onmouseover="showTip(event, '398', 398)">
+          <code onmouseout="hideTip(event, '399', 399)" onmouseover="showTip(event, '399', 399)">
             isUnix 
           </code>
-          <div class="tip" id="398">
+          <div class="tip" id="399">
             <strong>Signature:</strong> bool<br />
                       </div>
         </td>
@@ -715,10 +733,10 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '399', 399)" onmouseover="showTip(event, '399', 399)">
+          <code onmouseout="hideTip(event, '400', 400)" onmouseover="showTip(event, '400', 400)">
             isWindows 
           </code>
-          <div class="tip" id="399">
+          <div class="tip" id="400">
             <strong>Signature:</strong> bool<br />
                       </div>
         </td>
@@ -735,10 +753,10 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '400', 400)" onmouseover="showTip(event, '400', 400)">
+          <code onmouseout="hideTip(event, '401', 401)" onmouseover="showTip(event, '401', 401)">
             monoPath 
           </code>
-          <div class="tip" id="400">
+          <div class="tip" id="401">
             <strong>Signature:</strong> string<br />
                       </div>
         </td>
@@ -753,10 +771,10 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '401', 401)" onmouseover="showTip(event, '401', 401)">
+          <code onmouseout="hideTip(event, '402', 402)" onmouseover="showTip(event, '402', 402)">
             normalizeFeedUrl source
           </code>
-          <div class="tip" id="401">
+          <div class="tip" id="402">
             <strong>Signature:</strong> source:string -&gt; string<br />
                       </div>
         </td>
@@ -771,15 +789,15 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '402', 402)" onmouseover="showTip(event, '402', 402)">
+          <code onmouseout="hideTip(event, '403', 403)" onmouseover="showTip(event, '403', 403)">
             normalizeLineEndings text
           </code>
-          <div class="tip" id="402">
+          <div class="tip" id="403">
             <strong>Signature:</strong> text:string -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L651-651" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L654-654" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -789,10 +807,10 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '403', 403)" onmouseover="showTip(event, '403', 403)">
+          <code onmouseout="hideTip(event, '404', 404)" onmouseover="showTip(event, '404', 404)">
             normalizeLocalPath path
           </code>
-          <div class="tip" id="403">
+          <div class="tip" id="404">
             <strong>Signature:</strong> path:string -&gt; PathReference<br />
                       </div>
         </td>
@@ -807,15 +825,15 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '404', 404)" onmouseover="showTip(event, '404', 404)">
+          <code onmouseout="hideTip(event, '405', 405)" onmouseover="showTip(event, '405', 405)">
             normalizePath path
           </code>
-          <div class="tip" id="404">
+          <div class="tip" id="405">
             <strong>Signature:</strong> path:string -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L462-462" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L465-465" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -825,10 +843,10 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '405', 405)" onmouseover="showTip(event, '405', 405)">
+          <code onmouseout="hideTip(event, '406', 406)" onmouseover="showTip(event, '406', 406)">
             notNullOrEmpty 
           </code>
-          <div class="tip" id="405">
+          <div class="tip" id="406">
             <strong>Signature:</strong> string -&gt; bool<br />
                       </div>
         </td>
@@ -843,15 +861,15 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '406', 406)" onmouseover="showTip(event, '406', 406)">
+          <code onmouseout="hideTip(event, '407', 407)" onmouseover="showTip(event, '407', 407)">
             parseKeyValuePairs s
           </code>
-          <div class="tip" id="406">
+          <div class="tip" id="407">
             <strong>Signature:</strong> s:string -&gt; Dictionary&lt;string,string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L569-569" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L572-572" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -861,10 +879,10 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '407', 407)" onmouseover="showTip(event, '407', 407)">
+          <code onmouseout="hideTip(event, '408', 408)" onmouseover="showTip(event, '408', 408)">
             ProgramFiles 
           </code>
-          <div class="tip" id="407">
+          <div class="tip" id="408">
             <strong>Signature:</strong> string<br />
                       </div>
         </td>
@@ -881,10 +899,10 @@ Todo: Detect mono on windows</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '408', 408)" onmouseover="showTip(event, '408', 408)">
+          <code onmouseout="hideTip(event, '409', 409)" onmouseover="showTip(event, '409', 409)">
             ProgramFilesX86 
           </code>
-          <div class="tip" id="408">
+          <div class="tip" id="409">
             <strong>Signature:</strong> string<br />
                       </div>
         </td>
@@ -903,10 +921,10 @@ PROCESSOR_ARCHITEW6432 can be null</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '409', 409)" onmouseover="showTip(event, '409', 409)">
+          <code onmouseout="hideTip(event, '410', 410)" onmouseover="showTip(event, '410', 410)">
             readAnswer ()
           </code>
-          <div class="tip" id="409">
+          <div class="tip" id="410">
             <strong>Signature:</strong> unit -&gt; string<br />
                       </div>
         </td>
@@ -921,33 +939,15 @@ PROCESSOR_ARCHITEW6432 can be null</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '410', 410)" onmouseover="showTip(event, '410', 410)">
+          <code onmouseout="hideTip(event, '411', 411)" onmouseover="showTip(event, '411', 411)">
             removeFile fileName
           </code>
-          <div class="tip" id="410">
+          <div class="tip" id="411">
             <strong>Signature:</strong> fileName:string -&gt; Result&lt;unit,DomainMessage&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L642-642" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '411', 411)" onmouseover="showTip(event, '411', 411)">
-            RunInLockedAccessMode (...)
-          </code>
-          <div class="tip" id="411">
-            <strong>Signature:</strong> (rootFolder:string * action:(unit -&gt; &#39;c)) -&gt; &#39;c<br />
-                          <strong>Type parameters:</strong> 'c          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L474-474" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L645-645" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -958,14 +958,14 @@ PROCESSOR_ARCHITEW6432 can be null</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '412', 412)" onmouseover="showTip(event, '412', 412)">
-            saveFile fileName contents
+            RunInLockedAccessMode (...)
           </code>
           <div class="tip" id="412">
-            <strong>Signature:</strong> fileName:string -&gt; contents:string -&gt; Result&lt;unit,DomainMessage&gt;<br />
-                      </div>
+            <strong>Signature:</strong> (rootFolder:string * action:(unit -&gt; &#39;c)) -&gt; &#39;c<br />
+                          <strong>Type parameters:</strong> 'c          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L635-635" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L477-477" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -976,9 +976,27 @@ PROCESSOR_ARCHITEW6432 can be null</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '413', 413)" onmouseover="showTip(event, '413', 413)">
-            SystemRoot 
+            saveFile fileName contents
           </code>
           <div class="tip" id="413">
+            <strong>Signature:</strong> fileName:string -&gt; contents:string -&gt; Result&lt;unit,DomainMessage&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L638-638" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '414', 414)" onmouseover="showTip(event, '414', 414)">
+            SystemRoot 
+          </code>
+          <div class="tip" id="414">
             <strong>Signature:</strong> string<br />
                       </div>
         </td>
@@ -995,10 +1013,10 @@ PROCESSOR_ARCHITEW6432 can be null</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '414', 414)" onmouseover="showTip(event, '414', 414)">
+          <code onmouseout="hideTip(event, '415', 415)" onmouseover="showTip(event, '415', 415)">
             TimeSpanToReadableString span
           </code>
-          <div class="tip" id="414">
+          <div class="tip" id="415">
             <strong>Signature:</strong> span:TimeSpan -&gt; string<br />
                       </div>
         </td>
@@ -1013,10 +1031,10 @@ PROCESSOR_ARCHITEW6432 can be null</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '415', 415)" onmouseover="showTip(event, '415', 415)">
+          <code onmouseout="hideTip(event, '416', 416)" onmouseover="showTip(event, '416', 416)">
             toLower str
           </code>
-          <div class="tip" id="415">
+          <div class="tip" id="416">
             <strong>Signature:</strong> str:^a -&gt; string<br />
                           <strong>Type parameters:</strong> ^a          </div>
         </td>
@@ -1031,15 +1049,15 @@ PROCESSOR_ARCHITEW6432 can be null</p>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '416', 416)" onmouseover="showTip(event, '416', 416)">
+          <code onmouseout="hideTip(event, '417', 417)" onmouseover="showTip(event, '417', 417)">
             windowsPath path
           </code>
-          <div class="tip" id="416">
+          <div class="tip" id="417">
             <strong>Signature:</strong> path:string -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L463-463" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L466-466" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
