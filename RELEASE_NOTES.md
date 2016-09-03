@@ -1,3 +1,6 @@
+#### 3.18.2 - 03.09.2016
+* BUGFIX: Allow to overwrite copy_local settings for ref files
+
 #### 3.18.1 - 03.09.2016
 * BUGFIX: Fixed invalid Cache Folder when Current Directory is different - https://github.com/fsprojects/Paket/issues/1910
 

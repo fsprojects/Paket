@@ -622,7 +622,7 @@ module ProjectFile =
         |> List.sortBy(fun lib -> lib.Path)
         |> createAnalyzersNode
 
-    let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool) (importTargets:bool) (referenceCondition:string option) (project:ProjectFile) =
+    let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool option) (importTargets:bool) (referenceCondition:string option) (project:ProjectFile) =
         let references = 
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -642,8 +642,10 @@ module ProjectFile =
                     
                     let relativePath = createRelativePath project.FileName fi.FullName
                     let privateSettings = 
-                        if relativePath.Contains @"\ref\" then "False"
-                        elif copyLocal then "True" else "False"
+                        match copyLocal with
+                        | Some true -> "True" 
+                        | Some false -> "False"
+                        | None -> if relativePath.Contains @"\ref\" then "False" else "True"
 
                     if relativePath.Contains @"\native\" then createNode "NativeReference" project else createNode "Reference" project
                     |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
@@ -974,10 +976,9 @@ module ProjectFile =
                                     (snd kv.Key) targetFramework project.FileName
                 | _ -> ()
 
-            let copyLocal = defaultArg installSettings.CopyLocal true
             let importTargets = defaultArg installSettings.ImportTargets true
 
-            generateXml projectModel usedFrameworkLibs installSettings.Aliases copyLocal importTargets installSettings.ReferenceCondition project)
+            generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal importTargets installSettings.ReferenceCondition project)
         |> Seq.iter (fun (propsNodes,targetsNodes,chooseNodes,propertyChooseNode, analyzersNode) ->
             for chooseNode in chooseNodes do
                 let i = ref (project.ProjectNode.ChildNodes.Count-1)

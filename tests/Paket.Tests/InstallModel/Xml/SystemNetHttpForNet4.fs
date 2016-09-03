@@ -69,7 +69,7 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
               [],
               Nuspec.All)
 
-    let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,true,true,None) 
+    let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None) 
     let currentXML = chooseNode.Head.OuterXml |> normalizeXml
     currentXML
     |> shouldEqual (normalizeXml expected)
