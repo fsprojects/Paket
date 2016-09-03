@@ -102,6 +102,7 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                [],
                { References = NuspecReferences.All
                  OfficialName = "Reactive Extensions - XAML Support Library"
+                 Version = "2.2.4"
                  Dependencies = []
                  LicenseUrl = ""
                  IsDevelopmentDependency = false

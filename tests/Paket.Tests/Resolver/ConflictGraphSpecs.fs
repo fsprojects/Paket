@@ -23,6 +23,7 @@ let graph =
       "D", "1.6", []
       "E", "4.3", []
       "F", "1.2", [] ]
+    |> OfSimpleGraph
 
 let defaultPackage = 
     { Name = PackageName ""
@@ -51,6 +52,7 @@ let graph2 =
       "C", "2.4", [ "D", VersionRequirement(VersionRange.Between("1.6", "1.7"),PreReleaseStatus.No) ]
       "D", "1.4", []
       "D", "1.6", [] ]
+    |> OfSimpleGraph
 
 [<Test>]
 let ``should analyze graph2 and report conflict``() = 
@@ -83,6 +85,7 @@ let graph3 =
       "B", "1.1", []
       "C", "1.0", []
       "C", "2.0", [] ]
+    |> OfSimpleGraph
 
 [<Test>]
 let ``should override graph3 conflict to package C``() = 
@@ -105,14 +108,15 @@ nuget Service 1.1.31.2
 nuget Service.Contracts 1.1.31.2
 """
 
-let graphWithServices = [
+let graphWithServices = 
+  OfSimpleGraph [
     "Service","1.1.31.2",["Service.Core",VersionRequirement(VersionRange.AtLeast "1.1.31.2",PreReleaseStatus.No)]
     "Service","1.1.47",["Service.Core",VersionRequirement(VersionRange.AtLeast "1.1.47",PreReleaseStatus.No)]
     "Service.Core","1.1.31.2",["Service.Contracts",VersionRequirement(VersionRange.AtLeast "1.1.31.2",PreReleaseStatus.No)]
     "Service.Core","1.1.47",["Service.Contracts",VersionRequirement(VersionRange.AtLeast "1.1.47",PreReleaseStatus.No)]
     "Service.Contracts","1.1.31.2",[]
     "Service.Contracts","1.1.47",[]
-]
+  ]
 
 [<Test>]
 let ``should resolve simple config with services``() = 
@@ -131,11 +135,12 @@ nuget My.Company.PackageA.Server prerelease
 nuget My.Company.PackageB.Server prerelease
 nuget My.Company.PackageC.Server prerelease"""
 
-let graphWithServers = [
+let graphWithServers =
+  OfSimpleGraph [
     "My.Company.PackageA.Server","1.0.0-pre18038",["My.Company.PackageC.Server",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "My.Company.PackageB.Server","1.0.0-pre18038",["My.Company.PackageC.Server",VersionRequirement(VersionRange.AtLeast "1.0",PreReleaseStatus.No)]
     "My.Company.PackageC.Server","1.0.0-pre18038",[]
-]
+  ]
 
 [<Test>]
 let ``should resolve simple config with servers``() = 

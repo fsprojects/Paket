@@ -238,6 +238,7 @@
     <Compile Include="Resolver\StrategySpecs.fs" />
     <Compile Include="Resolver\PropertyTestGenerators.fs" />
     <Compile Include="Resolver\PropertyTests.fs" />
+    <Compile Include="Resolver\DependencyGroupsAndRestrictions.fs" />
     <Compile Include="Lockfile\GeneratorSpecs.fs" />
     <Compile Include="Lockfile\GenerateWithOptionsSpecs.fs" />
     <Compile Include="Lockfile\GenerateAuthModeSpecs.fs" />

@@ -40,6 +40,7 @@ let graph =
       "log4net", "2.0.0", []
       "Newtonsoft.Json", "7.0.1", []
       "Newtonsoft.Json", "6.0.8", [] ]
+    |> OfSimpleGraph
 
 let getLockFile lockFileData = LockFile.Parse("",toLines lockFileData)
 let lockFile = lockFileData |> getLockFile
@@ -408,6 +409,7 @@ let graph2 =
       "log4net", "1.2.10", []
       "log4net", "1.2.11", []
       "log4net", "2.0.3", [] ]
+    |> OfSimpleGraph
       
 let lockFileData2 = """NUGET
   remote: http://www.nuget.org/api/v2
@@ -490,9 +492,11 @@ let ``SelectiveUpdate updates package that conflicts with a transitive dependenc
 
 let graph3 = 
     graph2 @
-    [ "Ninject.Extensions.Interception", "2.2.1.2", [ "Ninject", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
-      "Ninject.Extensions.Interception", "2.2.1.3", [ "Ninject", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
-      "Ninject.Extensions.Interception", "3.2.0", [ "Ninject", VersionRequirement(VersionRange.Between("3.2.0.0","3.3.0.0"),PreReleaseStatus.No) ] ]
+    ([ "Ninject.Extensions.Interception", "2.2.1.2", [ "Ninject", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
+       "Ninject.Extensions.Interception", "2.2.1.3", [ "Ninject", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
+       "Ninject.Extensions.Interception", "3.2.0", [ "Ninject", VersionRequirement(VersionRange.Between("3.2.0.0","3.3.0.0"),PreReleaseStatus.No) ] ]
+     |> OfSimpleGraph)
+
       
 let lockFileData3 = """NUGET
   remote: http://www.nuget.org/api/v2
@@ -611,9 +615,10 @@ let ``SelectiveUpdate updates package that conflicts with a deep transitive depe
     
 let graph4 =
     graph2 @
-      [ "Ninject.Extensions.Logging.Log4net.Deep", "2.2.0.4", [ "Ninject.Extensions.Logging.Log4net", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
+     ([ "Ninject.Extensions.Logging.Log4net.Deep", "2.2.0.4", [ "Ninject.Extensions.Logging.Log4net", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
         "Ninject.Extensions.Logging.Log4net.Deep", "2.2.0.5", [ "Ninject.Extensions.Logging.Log4net", VersionRequirement(VersionRange.Between("2.2.0.0","2.3.0.0"),PreReleaseStatus.No) ]
         "Ninject.Extensions.Logging.Log4net.Deep", "3.2.3", [ "Ninject.Extensions.Logging.Log4net", VersionRequirement(VersionRange.Between("3.2.0.0","3.3.0.0"),PreReleaseStatus.No) ] ]
+      |> OfSimpleGraph)
 
 let lockFileData4 = """NUGET
   remote: http://www.nuget.org/api/v2
@@ -667,6 +672,7 @@ let graph5 =
         "Ninject", "0.0.2-alpha001", []
         "Ninject", "0.0.3-alpha001", []
         "Ninject", "0.0.4-alpha001", [] ]
+      |> OfSimpleGraph
 
 let lockFileData5 = """NUGET
   remote: http://www.nuget.org/api/v2
@@ -973,6 +979,7 @@ let graph7 =
       "APackage", "4.0.0", ["Newtonsoft.Json", VersionRequirement(VersionRange.AtLeast "7.0.0",PreReleaseStatus.No)]
       "Newtonsoft.Json", "7.0.1", []
       "Newtonsoft.Json", "6.0.8", [] ]
+    |> OfSimpleGraph
 
 [<Test>]
 let ``SelectiveUpdate updates package that has a new dependent package that also is a direct dependency``() = 

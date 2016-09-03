@@ -6,11 +6,12 @@ open FsUnit
 open TestHelpers
 open Paket.Domain
 
-let graph = [
+let graph = 
+  OfSimpleGraph [
     "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",[]
     "Castle.Windsor","3.3.0",[]
-]
+  ]
 
 let config1 = """
 source "http://www.nuget.org/api/v2"
@@ -69,7 +70,8 @@ let ``should resolve simple config with strategy``() =
     getVersion resolved.[PackageName "Nancy.Bootstrappers.Windsor"] |> shouldEqual "0.23"
 
 
-let graph2 = [
+let graph2 =
+  OfSimpleGraph [
     "Nancy.Bootstrappers.Windsor","0.23",["Castle.Windsor",VersionRequirement(VersionRange.AtLeast "3.2.1",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.0",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
     "Castle.Windsor","3.2.1",["Castle.Core",VersionRequirement(VersionRange.AtLeast "3.2.0",PreReleaseStatus.No)]
@@ -84,7 +86,7 @@ let graph2 = [
     "Castle.Core","3.2.2",[]
     "Castle.Core","3.3.0",[]
     "Castle.Core","3.3.1",[]
-]
+  ]
 
 let config4 = """
 source http://www.nuget.org/api/v2
