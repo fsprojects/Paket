@@ -3,47 +3,48 @@ NUGET
   remote: https://www.nuget.org/api/v2
     Argu (3.2)
     Chessie (0.6)
+      FSharp.Core
     FSharp.Core (4.0.0.1) - redirects: force
-    Mono.Cecil (0.9.6.3)
+    Mono.Cecil (0.9.6.4)
     Newtonsoft.Json (9.0.1) - redirects: force
 GITHUB
   remote: fsharp/FAKE
-    src/app/FakeLib/Globbing/Globbing.fs (7f9fe8f546f6adec66febeec31e50821b60814d6)
+    src/app/FakeLib/Globbing/Globbing.fs (e5870cb85f9b500246e02c6daa94e5131dad7a6e)
   remote: fsprojects/FSharp.TypeProviders.StarterPack
-    src/AssemblyReader.fs (dfbca9b83fb70067e85abddcb8b89332aae4c28d)
+    src/AssemblyReader.fs (1d13aac8510fe20e417ff7083d616f7494156e93)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.31.1)
+    FAKE (4.39)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
       FSharpVSPowerTools.Core (>= 2.3 < 2.4)
     FSharpVSPowerTools.Core (2.3)
       FSharp.Compiler.Service (>= 2.0.0.3)
-    ILRepack (2.0.10)
+    ILRepack (2.0.11)
     Microsoft.Bcl (1.1.10) - framework: net10, net11, net20, net30, net35, net40, net40-full
       Microsoft.Bcl.Build (>= 1.0.14)
     Microsoft.Bcl.Build (1.0.21) - import_targets: false, framework: net10, net11, net20, net30, net35, net40, net40-full
     Microsoft.Net.Http (2.2.29) - framework: net10, net11, net20, net30, net35, net40, net40-full
       Microsoft.Bcl (>= 1.1.10)
       Microsoft.Bcl.Build (>= 1.0.14)
-    Octokit (0.20)
+    Octokit (0.22)
       Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
 GITHUB
   remote: fsharp/FAKE
     modules/Octokit/Octokit.fsx (e5870cb85f9b500246e02c6daa94e5131dad7a6e)
       Octokit (>= 0.20)
   remote: matthid/FAKE
-    src/app/Fake.DotNet.Cli/Dotnet.fs (6b68807031ff9c58cf47f572c79604639090d004)
+    src/app/Fake.DotNet.Cli/Dotnet.fs (d63c462d835b89de23a804a31cd8a62777eb6c9e)
 GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2
     Castle.Core (3.3.3) - framework: >= net45
-    FsCheck (2.5)
+    FsCheck (2.6)
       FSharp.Core (>= 3.1.2.5)
     FSharp.Core (4.0.0.1)
-    Moq (4.5.16)
+    Moq (4.5.21)
       Castle.Core (>= 3.3.3) - framework: >= net45
     NUnit (3.4.1)
     NUnit.Console (3.4.1)
