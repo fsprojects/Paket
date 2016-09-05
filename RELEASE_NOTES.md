@@ -1,3 +1,6 @@
+#### 3.19.1 - 04.09.2016
+* BUGFIX: Push correct Paket.Core - https://github.com/fsprojects/Paket/pull/1911
+
 #### 3.19.0 - 04.09.2016
 * NEW Dotnetcore build for Paket.Core - https://github.com/fsprojects/Paket/pull/1785
 * BUGFIX: Allow to overwrite copy_local settings for ref files
