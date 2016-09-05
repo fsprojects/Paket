@@ -344,6 +344,9 @@ Target "PublishNuGet" (fun _ ->
         !! (tempDir </> "*bootstrapper*")
         |> Seq.iter File.Delete
 
+    !! (tempDir </> "dotnetcore" </> "*.nupkg")
+    |> Seq.iter File.Delete
+
     Paket.Push (fun p -> 
         { p with 
             ToolPath = "bin/merged/paket.exe"
