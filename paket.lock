@@ -9,9 +9,9 @@ NUGET
     Newtonsoft.Json (9.0.1) - redirects: force
 GITHUB
   remote: fsharp/FAKE
-    src/app/FakeLib/Globbing/Globbing.fs (e5870cb85f9b500246e02c6daa94e5131dad7a6e)
+    src/app/FakeLib/Globbing/Globbing.fs (73589a85a5e30a2c78d61efccdd3446a99483142)
   remote: fsprojects/FSharp.TypeProviders.StarterPack
-    src/AssemblyReader.fs (1d13aac8510fe20e417ff7083d616f7494156e93)
+    src/AssemblyReader.fs (dbbfb58d1238bf21c84c455451501c7f31ae95e1)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
@@ -33,10 +33,10 @@ NUGET
       Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (e5870cb85f9b500246e02c6daa94e5131dad7a6e)
+    modules/Octokit/Octokit.fsx (73589a85a5e30a2c78d61efccdd3446a99483142)
       Octokit (>= 0.20)
   remote: matthid/FAKE
-    src/app/Fake.DotNet.Cli/Dotnet.fs (d63c462d835b89de23a804a31cd8a62777eb6c9e)
+    src/app/Fake.DotNet.Cli/Dotnet.fs (8c3af7c67fae11c673a10817ebbf8598130e731a)
 GROUP Test
 NUGET
   remote: https://www.nuget.org/api/v2
