@@ -16,4 +16,5 @@ branches:
     - gh-pages
 
 script: 
+  - which dotnet
   - ./build.sh RunIntegrationTests
