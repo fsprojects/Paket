@@ -131,10 +131,6 @@ Target "CleanDocs" (fun _ ->
 #load "paket-files/build/matthid/FAKE/src/app/Fake.DotNet.Cli/Dotnet.fs"
 open Fake.DotNet.Cli
 
-Target "InstallDotnetCore" (fun _ ->
-    DotnetCliInstall Preview2ToolingOptions
-)
-
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
@@ -486,7 +482,6 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
-  =?> ("InstallDotnetCore", not <| hasBuildParam "DISABLE_NETCORE")
   ==> "Build"
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
