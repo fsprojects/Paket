@@ -140,7 +140,10 @@ Target "Build" (fun _ ->
     |> ignore
 )
 
-let dotnetExePath = environVarOrDefault "DOTNET_PATH" "unknown_dotnet_path_set_DOTNET_PATH_env_var"
+let dotnetExePath =
+    match tryFindFileOnPath (if isWindows then "dotnet.exe" else "dotnet") with
+    | Some p -> p
+    | None -> ""
 
 Target "DotnetRestore" (fun _ ->
     // dotnet restore
@@ -158,9 +161,9 @@ Target "DotnetRestore" (fun _ ->
         |> fun lines -> File.WriteAllLines(proj, lines)
 
         DotnetRestore (fun c ->
-             { c with
-                 Common = { c.Common with DotnetCliPath = dotnetExePath }
-             }) proj
+            { c with
+                Common = { c.Common with DotnetCliPath = dotnetExePath }
+            }) proj
     )
 )
 
@@ -170,6 +173,7 @@ Target "DotnetPackage" (fun _ ->
     |> Seq.iter(fun proj ->
         DotnetPack (fun c ->
             { c with
+                Common = { c.Common with DotnetCliPath = dotnetExePath }
                 Configuration = Release
                 OutputPath = Some (tempDir @@ "dotnetcore")
             }) proj
@@ -313,7 +317,7 @@ Target "MergeDotnetCoreIntoNuget" (fun _ ->
     let netcoreNupkg = sprintf "./temp/dotnetcore/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
 
     Shell.Exec(
-      DotnetOptions.Default.DotnetCliPath, 
+      dotnetExePath, 
       sprintf """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg,
       "src/Paket.Core/Paket.Core/")
     |> fun exitCode -> if exitCode <> 0 then failwithf "mergenupkg exited with exit code %d" exitCode
