@@ -868,12 +868,16 @@ type ILAssemblyManifest =
         x.Version |> Option.iter (fun v -> asmName.Version <- v)
 #if NETSTANDARD1_6
         asmName.CultureName <- System.Globalization.CultureInfo.InvariantCulture.Name
-#elif DOTNETCORE
+#else
+#if DOTNETCORE
         asmName.CultureName <- System.Globalization.CultureInfo.InvariantCulture.Name
-#elif NETSTANDARD
+#else
+#if NETSTANDARD
         asmName.CultureName <- System.Globalization.CultureInfo.InvariantCulture.Name
 #else
         asmName.CultureInfo <- System.Globalization.CultureInfo.InvariantCulture
+#endif
+#endif
 #endif
         asmName
     override x.ToString() = "manifest " + x.Name
