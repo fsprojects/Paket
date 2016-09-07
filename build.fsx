@@ -149,14 +149,14 @@ Target "DotnetRestore" (fun _ ->
     !! "src/**/project.json"
     |> Seq.iter(fun proj ->
         // Fix version entered in project.json
-        let mutable found = false
+        let found = ref false
         File.ReadLines proj
         |> Seq.toList
         |> List.map (fun l ->
-          if (not found) && l.StartsWith("  \"version\": \"") && l.EndsWith("\",") then
-            found <- true
-            sprintf "  \"version\": \"%s\"," release.NugetVersion
-          else l)
+              if (not !found) && l.StartsWith("  \"version\": \"") && l.EndsWith("\",") then
+                found := true
+                sprintf "  \"version\": \"%s\"," release.NugetVersion
+              else l)
         |> fun lines -> File.WriteAllLines(proj, lines)
 
         DotnetRestore id proj
