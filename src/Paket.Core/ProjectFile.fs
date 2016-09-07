@@ -707,6 +707,12 @@ module ProjectFile =
                     match PlatformMatching.getCondition referenceCondition allTargets libFolder.Targets with
                     | "" -> []
                     | condition ->
+                        let condition = 
+                            match condition with
+                            | "$(TargetFrameworkIdentifier) == 'true'" -> "true"
+                            | _ -> condition
+
+
                         let references = libFolder.Files.References |> Seq.sortBy (fun (r:Reference) -> r.Path) |> Seq.toList
                         let assemblyTargets = ref libFolder.Targets
                         let duplicates = HashSet<_>()
