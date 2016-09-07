@@ -13,7 +13,7 @@ open Domain
 let fakeUrl = "http://doesntmatter"
 
 let parse fileName =
-    parseODataDetails(fakeUrl,PackageName "package",SemVer.Parse "0",File.ReadAllText fileName)
+    parseODataDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",File.ReadAllText fileName)
 
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
