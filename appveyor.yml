@@ -1,6 +1,7 @@
 init:
   - git config --global core.autocrlf input
 build_script:
+  - where dotnet
   - cmd: build.cmd RunIntegrationTests
 test: off
 version: 0.0.1.{build}
