@@ -17,4 +17,6 @@ branches:
 
 script: 
   - which dotnet
+  - export DOTNET_PATH="$(which dotnet)"
+  - echo $DOTNET_PATH
   - ./build.sh RunIntegrationTests

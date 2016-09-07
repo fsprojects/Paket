@@ -140,6 +140,8 @@ Target "Build" (fun _ ->
     |> ignore
 )
 
+let dotnetExePath = environVarOrDefault "DOTNET_PATH" "unknown_dotnet_path_set_DOTNET_PATH_env_var"
+
 Target "DotnetRestore" (fun _ ->
     // dotnet restore
     !! "src/**/project.json"
@@ -155,7 +157,10 @@ Target "DotnetRestore" (fun _ ->
               else l)
         |> fun lines -> File.WriteAllLines(proj, lines)
 
-        DotnetRestore id proj
+        DotnetRestore (fun c ->
+             { c with
+                 Common = { c.Common with DotnetCliPath = dotnetExePath }
+             }) proj
     )
 )
 
