@@ -53,7 +53,7 @@ type NuGetPackageCache =
 
     static member CurrentCacheVersion = "2.7"
 
-let inline normalizeUrl(url:string) = url.Replace("https","http").Replace("www.","")
+let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")
 
 let getCacheFileName nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let h = nugetURL |> normalizeUrl |> hash |> abs

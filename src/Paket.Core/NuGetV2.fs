@@ -118,9 +118,12 @@ let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, r
     }
 
 
-let parseODataDetails(nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
+let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
     let doc = XmlDocument()
-    doc.LoadXml raw
+    try
+        doc.LoadXml raw
+    with
+    | _ -> failwithf "Could not parse response from %s as OData.%sData:%s%s" url Environment.NewLine Environment.NewLine raw
 
     let entry =
         match (doc |> getNode "feed" |> optGetNode "entry" ) ++ (doc |> getNode "entry") with
@@ -226,7 +229,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                 tracefn "Response from %s:" url
                 tracefn ""
                 tracefn "%s" raw
-            return parseODataDetails(nugetURL,packageName,version,raw)
+            return parseODataDetails(url,nugetURL,packageName,version,raw)
         with _ ->
             let url = sprintf "%s/Packages?$filter=(Id eq '%O') and (Version eq '%O')" nugetURL packageName version
             let! raw = getFromUrl(auth,url,acceptXml)
@@ -234,7 +237,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                 tracefn "Response from %s:" url
                 tracefn ""
                 tracefn "%s" raw
-            return parseODataDetails(nugetURL,packageName,version,raw)
+            return parseODataDetails(url,nugetURL,packageName,version,raw)
     }
 
 /// Gets package details from NuGet via OData
@@ -259,7 +262,7 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                 tracefn "Response from %s:" url
                 tracefn ""
                 tracefn "%s" raw
-            return parseODataDetails(nugetURL,packageName,version,raw)
+            return parseODataDetails(url,nugetURL,packageName,version,raw)
     }
 
 let getDetailsFromNuGet force auth nugetURL packageName version =
@@ -268,8 +271,7 @@ let getDetailsFromNuGet force auth nugetURL packageName version =
         nugetURL
         packageName
         version
-        (fun () ->
-            getDetailsFromNuGetViaOData auth nugetURL packageName version)
+        (fun () -> getDetailsFromNuGetViaOData auth nugetURL packageName version)
 
 
 let fixDatesInArchive fileName =
@@ -878,14 +880,12 @@ let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName
             elif not force && getFromCache caches then
                 ()
             else
-                if authenticated then
-                    tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
-                    verbosefn "  to %s" targetFileName
-
                 // discover the link on the fly
-                let nugetPackage = GetPackageDetails root force [source] groupName packageName version
+                let downloadUrl = ref ""
                 try
-                    let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
+                    if authenticated then
+                        tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
+                    let nugetPackage = GetPackageDetails root force [source] groupName packageName version
 
                     let downloadUri =
                         if Uri.IsWellFormedUriString(nugetPackage.DownloadLink, UriKind.Absolute) then
@@ -894,7 +894,15 @@ let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName
                             let sourceUrl =
                                 if nugetPackage.Source.Url.EndsWith("/") then nugetPackage.Source.Url
                                 else nugetPackage.Source.Url + "/"
-                            Uri(Uri sourceUrl,  nugetPackage.DownloadLink)
+                            Uri(Uri sourceUrl, nugetPackage.DownloadLink)
+
+                    downloadUrl := downloadUri.ToString()
+
+                    if authenticated && verbose then
+                        tracefn "  from %O" !downloadUrl
+                        tracefn "  to %s" targetFileName
+
+                    let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
                     let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
 #if NETSTANDARD1_6
@@ -957,7 +965,8 @@ let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName
                       | Some(Credentials(_)) -> true
                       | _ -> false)
                         -> do! download false
-                | exn -> failwithf "Could not download %O %O from %s.%s    %s" packageName version nugetPackage.DownloadLink Environment.NewLine exn.Message }
+                | exn when String.IsNullOrWhiteSpace !downloadUrl -> failwithf "Could not download %O %O.%s    %s" packageName version Environment.NewLine exn.Message 
+                | exn -> failwithf "Could not download %O %O from %s.%s    %s" packageName version !downloadUrl Environment.NewLine exn.Message }
 
     async {
         do! download true
