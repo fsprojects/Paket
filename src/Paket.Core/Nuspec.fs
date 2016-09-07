@@ -31,11 +31,14 @@ module internal NuSpecParserHelper =
 
         let parent = node.ParentNode 
         match parent.Name, parent |> getAttribute "targetFramework" with
-        | n , Some framework 
-            when String.equalsIgnoreCase n "group" -> 
-            match FrameworkDetection.Extract framework with
-            | Some x -> Some(name,version,[FrameworkRestriction.Exactly x])
-            | None -> None
+        | n , Some framework when String.equalsIgnoreCase n "group" -> 
+            let framework = framework.Replace(".NETPortable0.0","portable")
+            if String.startsWithIgnoreCase "portable" framework then
+                Some(name,version,[FrameworkRestriction.Portable framework])
+            else 
+                match FrameworkDetection.Extract framework with
+                | Some x -> Some(name,version,[FrameworkRestriction.Exactly x])
+                | None -> None
         | _ -> Some(name,version,[])
 
     let getAssemblyRefs node =
@@ -115,9 +118,12 @@ type Nuspec =
                 |  _ -> [n,v,r])
             |> Seq.toList
 
-        let referenced =
+        let depsTags =
             doc 
             |> getDescendants "dependency"
+
+        let referenced =
+            depsTags
             |> List.choose (NuSpecParserHelper.getDependency fileName)
             |> List.append frameworks
 
