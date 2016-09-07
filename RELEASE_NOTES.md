@@ -1,3 +1,6 @@
+#### 3.19.2 - 07.09.2016
+* BUGFIX: Try to resolve download issue
+
 #### 3.19.1 - 04.09.2016
 * BUGFIX: Push correct Paket.Core - https://github.com/fsprojects/Paket/pull/1911
 

@@ -611,7 +611,8 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
-#if !NETSTANDARD1_6
+#if NETSTANDARD1_6
+#else
             client.Encoding <- Encoding.UTF8
 #endif
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
