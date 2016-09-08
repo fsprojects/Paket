@@ -6,20 +6,10 @@ env:
 #sudo: false  # use the new container-based Travis infrastructure
 sudo: required
 dist: trusty # Ubuntu 14.04
-
-
-addons:
-  apt:
-    packages:
-      - libunwind8
+dotnet: 1.0.0-preview2-003121
 
 mono:
   - latest
-
-before install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew update               ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install openssl      ; fi
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew link --force openssl ; fi
 
 branches:
   except:

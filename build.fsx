@@ -131,10 +131,6 @@ Target "CleanDocs" (fun _ ->
 #load "paket-files/build/matthid/FAKE/src/app/Fake.DotNet.Cli/Dotnet.fs"
 open Fake.DotNet.Cli
 
-Target "InstallDotnetCore" (fun _ ->
-    DotnetCliInstall Preview2ToolingOptions
-)
-
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
@@ -143,6 +139,11 @@ Target "Build" (fun _ ->
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
+
+let dotnetExePath =
+    match tryFindFileOnPath (if isWindows then "dotnet.exe" else "dotnet") with
+    | Some p -> p
+    | None -> ""
 
 Target "DotnetRestore" (fun _ ->
     // dotnet restore
@@ -159,7 +160,10 @@ Target "DotnetRestore" (fun _ ->
               else l)
         |> fun lines -> File.WriteAllLines(proj, lines)
 
-        DotnetRestore id proj
+        DotnetRestore (fun c ->
+            { c with
+                Common = { c.Common with DotnetCliPath = dotnetExePath }
+            }) proj
     )
 )
 
@@ -169,6 +173,7 @@ Target "DotnetPackage" (fun _ ->
     |> Seq.iter(fun proj ->
         DotnetPack (fun c ->
             { c with
+                Common = { c.Common with DotnetCliPath = dotnetExePath }
                 Configuration = Release
                 OutputPath = Some (tempDir @@ "dotnetcore")
             }) proj
@@ -312,7 +317,7 @@ Target "MergeDotnetCoreIntoNuget" (fun _ ->
     let netcoreNupkg = sprintf "./temp/dotnetcore/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
 
     Shell.Exec(
-      DotnetOptions.Default.DotnetCliPath, 
+      dotnetExePath, 
       sprintf """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg,
       "src/Paket.Core/Paket.Core/")
     |> fun exitCode -> if exitCode <> 0 then failwithf "mergenupkg exited with exit code %d" exitCode
@@ -486,7 +491,6 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
-  =?> ("InstallDotnetCore", not <| hasBuildParam "DISABLE_NETCORE")
   ==> "Build"
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
