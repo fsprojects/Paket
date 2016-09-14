@@ -240,7 +240,7 @@ let Write (core : CompleteCoreInfo) optional workingDir outputDir =
         //
         // Ref: https://msdn.microsoft.com/en-us/library/system.uri.escapedatastring(v=vs.110).aspx#Anchor_2
         //      http://tools.ietf.org/html/rfc2396#section-2
-        let problemChars = ["@","~~at~~"; "+","~~plus~~"]
+        let problemChars = ["@","~~at~~"; "+","~~plus~~"; "%","~~percent~~"]
 
         let fakeEscapeProblemChars (source:string) =
             problemChars

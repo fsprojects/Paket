@@ -1,3 +1,6 @@
+#### 3.19.4 - 14.09.2016
+* BUGFIX: Fix double space encoding during pack - https://github.com/fsprojects/Paket/issues/1837
+
 #### 3.19.3 - 07.09.2016
 * BUGFIX: Try to resolve "$(TargetFrameworkIdentifier) == 'true'" issue
 
