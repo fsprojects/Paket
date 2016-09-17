@@ -75,3 +75,15 @@ let ``#1591 should convert denormalized versions``() =
 
     let depsFile = File.ReadAllText(Path.Combine(scenarioTempPath "i001591-convert-denormalized","paket.dependencies"))
     depsFile.Contains "6.1.0" |> shouldEqual true
+
+[<Test>]
+let ``#1922 should remove references to moved analyzers``() =
+    let scenario = "i001922-convert-nuget-with-analyzers"
+    paket "convert-from-nuget" scenario |> ignore
+    let projectFile = ProjectFile.loadFromFile(Path.Combine(scenarioTempPath scenario, "ConvertFromNugetWithAnalyzers", "ConvertFromNugetWithAnalyzers.csproj"))
+    projectFile.Document.OuterXml.Contains("<Analyzer Include=\"..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\Newtonsoft.Json.dll\" />") |> shouldEqual false
+    projectFile.Document.OuterXml.Contains("<Analyzer Include=\"..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll\" />") |> shouldEqual false
+    projectFile.Document.OuterXml.Contains("<Analyzer Include=\"..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll\" />") |> shouldEqual false
+    projectFile.Document.OuterXml.Contains("<Analyzer Include=\"..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\Newtonsoft.Json.dll\" />") |> shouldEqual true
+    projectFile.Document.OuterXml.Contains("<Analyzer Include=\"..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll\" />") |> shouldEqual true
+    projectFile.Document.OuterXml.Contains("<Analyzer Include=\"..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\StyleCop.Analyzers.dll\" />") |> shouldEqual true
