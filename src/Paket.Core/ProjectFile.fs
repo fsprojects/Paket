@@ -1186,7 +1186,30 @@ module ProjectFile =
                     if deleteTarget then
                         sibling.ParentNode.RemoveChild sibling |> ignore
                 | _ -> ())
+    
+    let removeNugetAnalysers (packages : list<string*SemVerInfo>) (project : ProjectFile) : unit = 
+        let packageIds = packages |> List.map (fun (id,version) -> sprintf "%s.%O" id version)
+        let pathContainsString (searchString :string) = packageIds |> List.exists (fun id -> searchString.Contains(id))
 
+        let isAnalyserFromNuget (node : XmlNode) =
+                defaultArg 
+                    (node |> getAttribute "Include" |> Option.map pathContainsString)
+                    false
+                
+        let toDelete = 
+                project.Document
+                |> getDescendants "Analyzer"
+                |>  List.filter isAnalyserFromNuget
+
+        toDelete
+        |> List.iter
+            (fun node ->
+                tracefn "Removing 'Analyzer' entry from %s for project %s" 
+                    (node |> getAttribute "Include" |> Option.get)
+                    project.FileName 
+
+                node.ParentNode.RemoveChild node |> ignore)
+                        
     let outputType (project:ProjectFile) =
         seq {for outputType in project.Document |> getDescendants "OutputType" ->
                 match outputType.InnerText with
@@ -1308,6 +1331,8 @@ type ProjectFile with
     member this.DeletePaketNodes name = ProjectFile.deletePaketNodes name this
     
     member this.UpdateFileItems(fileItems : FileItem list) = ProjectFile.updateFileItems fileItems this
+
+    member this.RemoveNugetAnalysers(packages : list<string*SemVerInfo>) = ProjectFile.removeNugetAnalysers packages this
 
     member this.GetCustomModelNodes(model:InstallModel) = ProjectFile.getCustomModelNodes model this
 
