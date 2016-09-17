@@ -320,10 +320,12 @@ let convertDependenciesConfigToReferencesFile projectFileName dependencies =
                  referencesFile
 
 let convertProjects nugetEnv =
-    [for project,packagesConfig in nugetEnv.NuGetProjectFiles do 
+    [for project,packagesConfig in nugetEnv.NuGetProjectFiles do
+        let packagesAndIds = packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version)
         project.ReplaceNuGetPackagesFile()
         project.RemoveNuGetTargetsEntries()
-        project.RemoveImportAndTargetEntries(packagesConfig.Packages |> List.map (fun p -> p.Id, p.Version))
+        project.RemoveNugetAnalysers(packagesAndIds)
+        project.RemoveImportAndTargetEntries(packagesAndIds)
         project.RemoveNuGetPackageImportStamp()
         yield project, convertPackagesConfigToReferencesFile project.FileName packagesConfig]
 
