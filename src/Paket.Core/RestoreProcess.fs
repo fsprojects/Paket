@@ -139,10 +139,13 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks) =
             LocalFile.overrideLockFile localFile lockFile,localFile,true
 
     if not hasLocalFile && not ignoreChecks then
-        let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
+        try
+            let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
 
-        if hasAnyChanges then 
-            traceWarnfn "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
+            if hasAnyChanges then 
+                traceWarnfn "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
+        with
+        | _ -> ()
 
     let groups =
         match group with
