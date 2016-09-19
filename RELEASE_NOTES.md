@@ -1,3 +1,6 @@
+#### 3.19.6 - 19.09.2016
+* BUGFIX: Convert from nuget with analyzers - https://github.com/fsprojects/Paket/pull/1922
+
 #### 3.19.5 - 19.09.2016
 * BUGFIX: Don't fail on restore - https://github.com/fsprojects/Paket/pull/1923
 
