@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\suaveondocker</StartWorkingDirectory>
+    <StartArguments>convert-from-nuget</StartArguments>
+    <StartWorkingDirectory>C:\Git\Third Party\Paket\integrationtests\scenarios\i001922-convert-nuget-with-analyzers\before\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
