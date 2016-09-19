@@ -1,3 +1,6 @@
+#### 3.19.5 - 19.09.2016
+* BUGFIX: Don't fail on restore - https://github.com/fsprojects/Paket/pull/1923
+
 #### 3.19.4 - 14.09.2016
 * BUGFIX: Fix double space encoding during pack - https://github.com/fsprojects/Paket/issues/1837
 
