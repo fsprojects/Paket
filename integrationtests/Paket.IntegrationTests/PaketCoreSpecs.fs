@@ -63,3 +63,12 @@ let ``#1259 install via script``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001259-install-script","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Suave"].Version
     |> shouldBeGreaterThan (SemVer.Parse "0.33.0")
+
+
+[<Test>]
+let ``#1928 reference via script with casing``() = 
+    install "i001928-casing" |> ignore
+
+    let dependenciesFile = Dependencies.Locate(Path.Combine(scenarioTempPath "i001928-casing"))
+    let model = dependenciesFile.GetInstalledPackageModel(None, "paket.core")
+    model.GetReferenceFolders() |> Seq.length |> shouldBeGreaterThan 0
