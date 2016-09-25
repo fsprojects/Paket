@@ -1,3 +1,6 @@
+#### 3.19.7 - 25.09.2016
+* BUGFIX: Calling `Paket.Dependencies.GetInstalledPackageModel` with wrong casing on mono failed - https://github.com/fsprojects/Paket/issues/1928
+
 #### 3.19.6 - 19.09.2016
 * BUGFIX: Convert from nuget with analyzers - https://github.com/fsprojects/Paket/pull/1922
 
