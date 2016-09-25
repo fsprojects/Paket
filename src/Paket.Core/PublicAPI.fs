@@ -359,18 +359,19 @@ type Dependencies(dependenciesFileName: string) =
         match this.GetInstalledVersion(groupName,packageName) with
         | None -> failwithf "Package %s is not installed" packageName
         | Some version ->
+            let packageName = PackageName packageName
             let groupName = 
                 match groupName with
                 | None -> Constants.MainDependencyGroup
                 | Some name -> GroupName name
 
             let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString()
-            let folder = DirectoryInfo(sprintf "%s/packages%s/%s" this.RootPath groupFolder packageName)
-            let nuspec = FileInfo(sprintf "%s/packages%s/%s/%s.nuspec" this.RootPath groupFolder packageName packageName)
+            let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
+            let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
             let nuspec = Nuspec.Load nuspec.FullName
             let files = NuGetV2.GetLibFiles(folder.FullName)
             let files = files |> Array.map (fun fi -> fi.FullName)
-            InstallModel.CreateFromLibs(PackageName packageName, SemVer.Parse version, [], files, [], [], nuspec)
+            InstallModel.CreateFromLibs(packageName, SemVer.Parse version, [], files, [], [], nuspec)
 
     /// Returns all libraries for the given package and framework.
     member this.GetLibraries(packageName,frameworkIdentifier:FrameworkIdentifier) =
