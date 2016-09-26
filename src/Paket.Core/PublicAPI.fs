@@ -356,22 +356,27 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Returns an InstallModel for the given package.
     member this.GetInstalledPackageModel(groupName,packageName) =
-        match this.GetInstalledVersion(groupName,packageName) with
-        | None -> failwithf "Package %s is not installed" packageName
-        | Some version ->
-            let packageName = PackageName packageName
-            let groupName = 
-                match groupName with
-                | None -> Constants.MainDependencyGroup
-                | Some name -> GroupName name
+    
+        let packageName = PackageName packageName
+        let groupName = 
+            match groupName with
+            | None -> Constants.MainDependencyGroup
+            | Some name -> GroupName name
 
-            let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString()
-            let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
-            let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
-            let nuspec = Nuspec.Load nuspec.FullName
-            let files = NuGetV2.GetLibFiles(folder.FullName)
-            let files = files |> Array.map (fun fi -> fi.FullName)
-            InstallModel.CreateFromLibs(packageName, SemVer.Parse version, [], files, [], [], nuspec)
+        match this.GetLockFile().Groups |> Map.tryFind groupName with
+        | None -> failwithf "Group %O can't be found in paket.lock." groupName
+        | Some group ->
+            match group.Resolution.TryFind(packageName) with
+            | None -> failwithf "Package %O is not installed in group %O." packageName groupName
+            | Some resolvedPackage ->
+                let packageName = resolvedPackage.Name
+                let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString()
+                let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
+                let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
+                let nuspec = Nuspec.Load nuspec.FullName
+                let files = NuGetV2.GetLibFiles(folder.FullName)
+                let files = files |> Array.map (fun fi -> fi.FullName)
+                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
 
     /// Returns all libraries for the given package and framework.
     member this.GetLibraries(packageName,frameworkIdentifier:FrameworkIdentifier) =
