@@ -197,6 +197,11 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
             match r with
             | [ FrameworkRestriction.Portable p ] ->
                 [yield n,v,r
+                 for s in KnownTargetProfiles.portableStandards p do
+                    let s = FrameworkRestriction.Exactly(DotNetStandard s)
+                    if packages |> Array.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s)) |> not then
+                        yield n,v,[s]
+                                       
                  if not <| Array.exists isMatch packages then
                      for p in p.Split([|'+'; '-'|]) do
                         match FrameworkDetection.Extract p with

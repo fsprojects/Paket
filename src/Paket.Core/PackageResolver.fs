@@ -169,10 +169,33 @@ type Resolution =
 let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,(versionToExplore,_),dependency,resolverStep:ResolverStep) =
     let dependenciesByName =
         // there are packages which define multiple dependencies to the same package
-        // we just take the latest one - see #567
-        let hashSet = new HashSet<_>()
+        // we compress these here - see #567
+        let dict = Dictionary<_,_>()
         exploredPackage.Dependencies
-        |> Set.filter (fun (name,_,_) -> hashSet.Add name)
+        |> Set.iter (fun ((name,v,r) as dep) -> 
+            match dict.TryGetValue name with
+            | true,(_,v2,r2) ->
+                match v,v2 with
+                | VersionRequirement(ra1,p1),VersionRequirement(ra2,p2) when p1 = p2 ->                    
+                    let newRestrictions = 
+                        match r with
+                        | FrameworkRestrictionList r ->
+                            match r2 with
+                            | FrameworkRestrictionList r2 ->
+                                FrameworkRestrictionList (r @ r2)
+                            | AutoDetectFramework -> FrameworkRestrictionList r
+                        | AutoDetectFramework -> r
+
+                    if ra1.IsIncludedIn ra2 then
+                        dict.[name] <- (name,v,newRestrictions)
+                    elif ra2.IsIncludedIn ra1 then
+                        dict.[name] <- (name,v2,newRestrictions)
+                    else dict.[name] <- dep
+                | _ ->  dict.[name] <- dep
+            | _ -> dict.Add(name,dep))
+        dict
+        |> Seq.map (fun kv -> kv.Value)
+        |> Set.ofSeq
 
     let rest = 
         resolverStep.OpenRequirements
@@ -259,7 +282,10 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
         match exploredPackages.TryGetValue key with
         | true,package -> 
             let newRestrictions = 
-                if List.isEmpty (globalFrameworkRestrictions |> getRestrictionList) && (List.isEmpty (package.Settings.FrameworkRestrictions |> getRestrictionList) || List.isEmpty (dependency.Settings.FrameworkRestrictions |> getRestrictionList)) then 
+                if List.isEmpty (globalFrameworkRestrictions |> getRestrictionList) && 
+                     (List.isEmpty (package.Settings.FrameworkRestrictions |> getRestrictionList) || 
+                      List.isEmpty (dependency.Settings.FrameworkRestrictions |> getRestrictionList)) 
+                then 
                     [] 
                 else
                     let packageSettings = package.Settings.FrameworkRestrictions |> getRestrictionList

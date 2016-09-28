@@ -494,6 +494,22 @@ module KnownTargetProfiles =
         SinglePlatform(WindowsPhoneSilverlight "v8.0")
         SinglePlatform(WindowsPhoneSilverlight "v8.1")]
 
+    let portableStandards p =
+        match p with
+        | "portable-net45+win8" -> [DotNetStandardVersion.V1_1]
+        | "portable-win81+wp81" -> [DotNetStandardVersion.V1_0]
+        | "portable-win81+wpa81" -> [DotNetStandardVersion.V1_2]
+        | "portable-net451+win81" -> [DotNetStandardVersion.V1_2]
+        | "portable-net45+wp8" -> [DotNetStandardVersion.V1_0]
+        | "portable-net45+win8+wp8" -> [DotNetStandardVersion.V1_0]
+        | "portable-wp81+wpa81" -> [DotNetStandardVersion.V1_0]
+        | "portable-net45+win8+wpa81" -> [DotNetStandardVersion.V1_1]
+        | "portable-net451+win81+wpa81" -> [DotNetStandardVersion.V1_2]
+        | "portable-win81+wp81+wpa81" -> [DotNetStandardVersion.V1_0]
+        | "portable-net45+win8+wpa81+wp8" -> [DotNetStandardVersion.V1_0]
+        | 
+        | _ -> []
+
     let AllPortableProfiles =
        [("Profile2", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0"; Windows "v4.5"; WindowsPhoneSilverlight "v7.0" ])
         ("Profile3", [ DotNetFramework FrameworkVersion.V4; Silverlight "v4.0" ])
