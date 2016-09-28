@@ -507,7 +507,6 @@ module KnownTargetProfiles =
         | "portable-net451+win81+wpa81" -> [DotNetStandardVersion.V1_2]
         | "portable-win81+wp81+wpa81" -> [DotNetStandardVersion.V1_0]
         | "portable-net45+win8+wpa81+wp8" -> [DotNetStandardVersion.V1_0]
-        | 
         | _ -> []
 
     let AllPortableProfiles =
