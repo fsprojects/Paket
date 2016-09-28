@@ -1,3 +1,6 @@
+#### 3.19.9 - 28.09.2016
+* BUGFIX: Fix dependency compression issue - https://github.com/fsprojects/Paket/issues/1929
+
 #### 3.19.8 - 26.09.2016
 * BUGFIX: Calling `Paket.Dependencies.GetInstalledPackageModel` with wrong casing on mono failed - https://github.com/fsprojects/Paket/issues/1928
 
