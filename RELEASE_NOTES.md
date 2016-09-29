@@ -1,4 +1,4 @@
-#### 3.20.1 - 29.09.2016
+#### 3.20.2 - 29.09.2016
 * BUGFIX: Fix dependency compression issue - https://github.com/fsprojects/Paket/issues/1929
 
 #### 3.19.8 - 26.09.2016
