@@ -183,7 +183,7 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
         |> Array.map split
 
-    let packages' =
+    let expandedPackages =
         let isMatch (n',v',r') =
             r'
             |> List.exists (fun r ->
@@ -197,12 +197,14 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
             match r with
             | [ FrameworkRestriction.Portable p ] ->
                 [yield n,v,r
-                 for s in KnownTargetProfiles.portableStandards p do
-                    let s = FrameworkRestriction.Exactly(DotNetStandard s)
-                    if packages |> Array.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s)) |> not then
-                        yield n,v,[s]
-                                       
-                 if not <| Array.exists isMatch packages then
+                 let standardAliases = KnownTargetProfiles.portableStandards p
+                 for alias in standardAliases do
+                    let s = FrameworkRestriction.Exactly(DotNetStandard alias)
+                    let s2 = FrameworkRestriction.AtLeast(DotNetStandard alias)
+                    if packages |> Array.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s || r = s2)) |> not then
+                        yield n,v,[s2]
+                   
+                 if standardAliases = [] && not <| Array.exists isMatch packages then
                      for p in p.Split([|'+'; '-'|]) do
                         match FrameworkDetection.Extract p with
                         | Some(DotNetFramework _ as r) ->
@@ -213,7 +215,7 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
             |  _ -> [n,v,r])
         |> Seq.toList
 
-    let dependencies = Requirements.optimizeDependencies packages'
+    let dependencies = Requirements.optimizeDependencies expandedPackages
 
     { PackageName = officialName
       DownloadUrl = downloadLink

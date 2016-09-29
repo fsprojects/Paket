@@ -107,12 +107,14 @@ type Nuspec =
                 match r with
                 | [ FrameworkRestriction.Portable p ] -> 
                     [ yield n,v,r
-                      for s in KnownTargetProfiles.portableStandards p do
-                         let s = FrameworkRestriction.Exactly(DotNetStandard s)
-                         if frameworks |> List.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s)) |> not then
-                             yield n,v,[s]
+                      let standardAliases = KnownTargetProfiles.portableStandards p
+                      for alias in standardAliases do
+                         let s = FrameworkRestriction.Exactly(DotNetStandard alias)
+                         let s2 = FrameworkRestriction.AtLeast(DotNetStandard alias)
+                         if frameworks |> List.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s || r = s2)) |> not then
+                             yield n,v,[s2]
 
-                      if not <| List.exists isMatch frameworks then
+                      if standardAliases = [] && not <| List.exists isMatch frameworks then
                           for p in p.Split([|'+'; '-'|]) do
                             match FrameworkDetection.Extract p with
                             | Some(DotNetFramework _ as r) ->
