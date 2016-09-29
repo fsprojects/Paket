@@ -72,3 +72,14 @@ let ``#1928 reference via script with casing``() =
     let dependenciesFile = Dependencies.Locate(Path.Combine(scenarioTempPath "i001928-casing"))
     let model = dependenciesFile.GetInstalledPackageModel(None, "paket.core")
     model.GetReferenceFolders() |> Seq.length |> shouldBeGreaterThan 0
+
+[<Test>]
+let ``#1918 uncached deps``() = 
+    install "i001918-core" |> ignore
+
+    let deps = """source https://nuget.org/api/v2
+    nuget Http.fs"""
+
+    paket "clear-cache" "i001918-core" |> ignore
+    let dependencies = Paket.Dependencies.Locate(scenarioTempPath "i001918-core")
+    dependencies.Install(false)
