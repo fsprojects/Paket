@@ -208,7 +208,30 @@ module ProjectFile =
 
     open System.Text
 
+    let getReservedProperties (projectFile:ProjectFile) =
+        let projectFileInfo = FileInfo projectFile.FileName
+        let directoryNoRoot = Regex.Replace(projectFileInfo.FullName, "^.:\\\\?", "")
+        [
+            // Project file properties
+            "MSBuildProjectDirectory", projectFileInfo.DirectoryName
+            "MSBuildProjectDirectoryNoRoot", directoryNoRoot
+            "MSBuildProjectExtension", projectFileInfo.Extension
+            "MSBuildProjectFile", projectFileInfo.Name
+            "MSBuildProjectFullPath", projectFileInfo.FullName
+            "MSBuildProjectName", Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
+            
+            // This file properties (Potentially an Imported file)
+            "MSBuildThisFileDirectory", projectFileInfo.DirectoryName + (string Path.DirectorySeparatorChar)
+            "MSBuildThisFileDirectoryNoRoot", directoryNoRoot + (string Path.DirectorySeparatorChar)
+            "MSBuildThisFileExtension", projectFileInfo.Extension
+            "MSBuildThisFile", projectFileInfo.Name
+            "MSBuildThisFileFullPath", projectFileInfo.FullName
+            "MSBuildThisFileName", Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
+            
+        ] |> Map.ofList
+
     let getPropertyWithDefaults propertyName defaultProperties (projectFile:ProjectFile) =
+        let defaultProperties = Map.fold (fun s k v -> Map.add k v s) defaultProperties (getReservedProperties projectFile)
 
         let processPlaceholders (data : Map<string, string>) text =
             
