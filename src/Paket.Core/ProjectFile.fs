@@ -230,8 +230,12 @@ module ProjectFile =
             
         ] |> Map.ofList
 
+    /// Append two maps with the properties of the second replacing properties of the first
+    let private appendMap first second =
+        Map.fold (fun state key value -> Map.add key value state) first second
+
     let getPropertyWithDefaults propertyName defaultProperties (projectFile:ProjectFile) =
-        let defaultProperties = Map.fold (fun s k v -> Map.add k v s) defaultProperties (getReservedProperties projectFile)
+        let defaultProperties = appendMap defaultProperties (getReservedProperties projectFile)
 
         let processPlaceholders (data : Map<string, string>) text =
             
