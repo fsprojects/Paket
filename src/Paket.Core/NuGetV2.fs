@@ -259,7 +259,10 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
             let! raw =
                 match response with
                 | Some(r) -> async { return r }
-                | _  when  String.containsIgnoreCase "myget.org" nugetURL || String.containsIgnoreCase "nuget.org" nugetURL ->
+                | _  when  
+                       String.containsIgnoreCase "myget.org" nugetURL || 
+                       String.containsIgnoreCase "nuget.org" nugetURL || 
+                       String.containsIgnoreCase "visualstudio.com" nugetURL ->
                     failwithf "Could not get package details for %O from %s" packageName nugetURL
                 | _ ->
                     let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
@@ -612,7 +615,7 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
         return Some(source,result)  }
 
     let tryV3 source nugetSource = async {
-        if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") then
+        if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") || nugetSource.Url.Contains("visualstudio.com") then
             match NuGetV3.calculateNuGet2Path nugetSource.Url with
             | Some url ->
                 let! result =
@@ -771,7 +774,7 @@ let GetVersions force root (sources, packageName:PackageName) =
                        match nugetSource with
                        | NuGetV2 source ->
                             let auth = source.Authentication |> Option.map toBasicAuth
-                            if not force && (String.containsIgnoreCase "nuget.org" source.Url || String.containsIgnoreCase "myget.org" source.Url) then
+                            if not force && (String.containsIgnoreCase "nuget.org" source.Url || String.containsIgnoreCase "myget.org" source.Url || String.containsIgnoreCase "visualstudio.com" source.Url) then
                                 [getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
                             else
                                 let v2Feeds =

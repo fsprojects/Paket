@@ -1,22 +1,13 @@
+#### 3.21.0 - 04.10.2016
+* BUGFIX: Make VisualStudio.com nuget feed behave like nuget.org - https://github.com/fsprojects/Paket/issues/1798
+
 #### 3.20.2 - 29.09.2016
 * BUGFIX: Fix dependency compression issue - https://github.com/fsprojects/Paket/issues/1929
-
-#### 3.19.8 - 26.09.2016
 * BUGFIX: Calling `Paket.Dependencies.GetInstalledPackageModel` with wrong casing on mono failed - https://github.com/fsprojects/Paket/issues/1928
-
-#### 3.19.6 - 19.09.2016
 * BUGFIX: Convert from nuget with analyzers - https://github.com/fsprojects/Paket/pull/1922
-
-#### 3.19.5 - 19.09.2016
 * BUGFIX: Don't fail on restore - https://github.com/fsprojects/Paket/pull/1923
-
-#### 3.19.4 - 14.09.2016
 * BUGFIX: Fix double space encoding during pack - https://github.com/fsprojects/Paket/issues/1837
-
-#### 3.19.3 - 07.09.2016
 * BUGFIX: Try to resolve "$(TargetFrameworkIdentifier) == 'true'" issue
-
-#### 3.19.1 - 04.09.2016
 * BUGFIX: Push correct Paket.Core - https://github.com/fsprojects/Paket/pull/1911
 
 #### 3.19.0 - 04.09.2016
