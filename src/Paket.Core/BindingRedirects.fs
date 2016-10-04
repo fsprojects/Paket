@@ -49,7 +49,9 @@ let internal setRedirect (doc:XDocument) bindingRedirect =
                 assemblyBinding.Add(dependentAssembly)
                 dependentAssembly
                 
-    let newRedirect = createElementWithNs "bindingRedirect" [ "oldVersion", "0.0.0.0-999.999.999.999"
+    // According to MSDN (https://msdn.microsoft.com/en-us/library/eftw1fys(v=vs.110).aspx),
+    // "The format of an assembly version number is major.minor.build.revision. Valid values for each part of this version number are 0 to 65535"
+    let newRedirect = createElementWithNs "bindingRedirect" [ "oldVersion", "0.0.0.0-65535.65535.65535.65535"
                                                               "newVersion", bindingRedirect.Version ]
 
     match tryGetElementWithNs "Paket" dependentAssembly with

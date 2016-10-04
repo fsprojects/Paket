@@ -50,7 +50,7 @@ let private containsDescendents count ns elementName (doc:XDocument) =
     Assert.AreEqual(count, doc.Descendants(XName.Get(elementName, ns)) |> Seq.length)
 let private containsSingleDescendent = containsDescendents 1 ""
 let private containsSingleDescendentWithNs = containsDescendents 1 bindingNs
-let private createBindingRedirectXml culture assembly version publicKey = sprintf "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n  <Paket>True</Paket>\r\n  <assemblyIdentity name=\"%s\" publicKeyToken=\"%s\" culture=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-999.999.999.999\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly publicKey culture version
+let private createBindingRedirectXml culture assembly version publicKey = sprintf "<dependentAssembly xmlns=\"urn:schemas-microsoft-com:asm.v1\">\r\n  <Paket>True</Paket>\r\n  <assemblyIdentity name=\"%s\" publicKeyToken=\"%s\" culture=\"%s\" />\r\n  <bindingRedirect oldVersion=\"0.0.0.0-65535.65535.65535.65535\" newVersion=\"%s\" />\r\n</dependentAssembly>" assembly publicKey culture version
 let private xNameForNs name = XName.Get(name, bindingNs)
 
 let sampleDocWithNoIndentation() = sprintf """<?xml version="1.0" encoding="utf-8"?>
@@ -155,7 +155,7 @@ let ``redirects got properly indented for readability in empty sample docs``() =
   <dependentAssembly>
     <Paket>True</Paket>
     <assemblyIdentity name="Assembly" publicKeyToken="PUBLIC_KEY" culture="neutral" />
-    <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="1.0.0" />
+    <bindingRedirect oldVersion="0.0.0.0-65535.65535.65535.65535" newVersion="1.0.0" />
   </dependentAssembly>
 </assemblyBinding></runtime></configuration>"""
 
@@ -193,7 +193,7 @@ let ``redirects got properly indented for readability in sample doc with runtime
   <dependentAssembly>
     <Paket>True</Paket>
     <assemblyIdentity name="Assembly" publicKeyToken="PUBLIC_KEY" culture="neutral" />
-    <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="1.0.0" />
+    <bindingRedirect oldVersion="0.0.0.0-65535.65535.65535.65535" newVersion="1.0.0" />
   </dependentAssembly>
 </assemblyBinding></runtime>
 </configuration>"""
@@ -231,7 +231,7 @@ let ``redirects got properly indented for readability in real world sample docs`
   <dependentAssembly>
     <Paket>True</Paket>
     <assemblyIdentity name="Assembly" publicKeyToken="PUBLIC_KEY" culture="neutral" />
-    <bindingRedirect oldVersion="0.0.0.0-999.999.999.999" newVersion="1.0.0" />
+    <bindingRedirect oldVersion="0.0.0.0-65535.65535.65535.65535" newVersion="1.0.0" />
   </dependentAssembly>
 </assemblyBinding></runtime></configuration>"""
 
