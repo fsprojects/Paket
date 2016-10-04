@@ -1,4 +1,5 @@
 #### 3.21.0 - 04.10.2016
+* Added MsBuild reserved properties - https://github.com/fsprojects/Paket/pull/1934
 * BUGFIX: Make VisualStudio.com nuget feed behave like nuget.org - https://github.com/fsprojects/Paket/issues/1798
 * BUGFIX: Generate binding redirect that covers entire range of possible assembly versions - https://github.com/fsprojects/Paket/pull/1932
 * COSMETICS: Paket shows context for missing references - https://github.com/fsprojects/Paket/issues/1936
