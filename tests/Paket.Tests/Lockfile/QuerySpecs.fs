@@ -6,6 +6,10 @@ open FsUnit
 open TestHelpers
 open Paket.Domain
 
+
+let isDependencyOf(lockFile:LockFile,dependentPackage,(group,package)) =
+    lockFile.GetAllDependenciesOf((group,package,"test")).Contains dependentPackage
+
 let data = """NUGET
   remote: https://www.nuget.org/api/v2
   specs:
@@ -31,20 +35,20 @@ let lockFile = LockFile.Parse("Test",toLines data)
 
 [<Test>]
 let ``should detect itself as dependency``() = 
-    lockFile.IsDependencyOf(PackageName "Rx-Core",(Constants.MainDependencyGroup,PackageName "Rx-Core"))
+    isDependencyOf(lockFile,PackageName "Rx-Core",(Constants.MainDependencyGroup,PackageName "Rx-Core"))
     |> shouldEqual true
 
 [<Test>]
 let ``should detect direct dependencies``() = 
-    lockFile.IsDependencyOf(PackageName "Rx-Core",(Constants.MainDependencyGroup,PackageName "Rx-Main"))
+    isDependencyOf(lockFile,PackageName "Rx-Core",(Constants.MainDependencyGroup,PackageName "Rx-Main"))
     |> shouldEqual true
 
 [<Test>]
 let ``should detect transitive dependencies``() = 
-    lockFile.IsDependencyOf(PackageName "log",(Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"))
+    isDependencyOf(lockFile,PackageName "log",(Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"))
     |> shouldEqual true
     
 [<Test>]
 let ``should detect when packages are unrelated``() = 
-    lockFile.IsDependencyOf(PackageName "log",(Constants.MainDependencyGroup,PackageName "Rx-Core"))
+    isDependencyOf(lockFile,PackageName "log",(Constants.MainDependencyGroup,PackageName "Rx-Core"))
     |> shouldEqual false

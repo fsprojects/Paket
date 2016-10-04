@@ -53,8 +53,8 @@
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
-    <StartArguments>update -f</StartArguments>
-    <StartWorkingDirectory>D:\temp\Repo\Repo\Repo</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001270-net461\before</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

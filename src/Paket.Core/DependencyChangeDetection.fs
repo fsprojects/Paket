@@ -62,7 +62,7 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
                     yield groupName, name // Modified
             | _ -> yield groupName, name // Removed
         ]
-        |> List.map lockFile.GetAllNormalizedDependenciesOf
+        |> List.map (fun (g,p) -> lockFile.GetAllNormalizedDependenciesOf(g,p,lockFile.FileName))
         |> Seq.concat
         |> Set.ofSeq
 

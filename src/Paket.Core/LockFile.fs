@@ -523,7 +523,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         
 
     /// Gets all dependencies of the given package
-    member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName) = 
+    member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName,context) = 
         let group = groups.[groupName]
         let usedPackages = HashSet<_>()
 
@@ -535,18 +535,18 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                         for d,_,_ in package.Dependencies do
                             addPackage d
             | None ->
-                failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O.%s" identity groupName (this.CheckIfPackageExistsInAnyGroup package)
+                failwithf "Package %O was referenced in %s, but it was not found in the paket.lock file in group %O.%s" identity context groupName (this.CheckIfPackageExistsInAnyGroup package)
 
         addPackage package
 
         usedPackages
 
     /// Gets all dependencies of the given package
-    member this.GetAllDependenciesOf(groupName,package) =
+    member this.GetAllDependenciesOf(groupName,package,context) =
         match this.GetAllDependenciesOfSafe(groupName,package) with
         | Some packages -> packages
         | None ->
-            failwithf "Package %O was referenced, but it was not found in the paket.lock file in group %O.%s" package groupName (this.CheckIfPackageExistsInAnyGroup package)
+            failwithf "Package %O was referenced in %s, but it was not found in the paket.lock file in group %O.%s" package context groupName (this.CheckIfPackageExistsInAnyGroup package)
 
     /// Gets all dependencies of the given package in the given group.
     member this.GetAllDependenciesOfSafe(groupName:GroupName,package) =
@@ -609,10 +609,6 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         |> Seq.concat
         |> Map.ofSeq
 
-    /// Checks if the first package is a dependency of the second package
-    member this.IsDependencyOf(dependentPackage,package) =
-        this.GetAllDependenciesOf(package).Contains dependentPackage
-    
     override __.ToString() =
         String.Join
             (Environment.NewLine,
@@ -690,7 +686,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             g.Value.NugetPackages
             |> List.iter (fun package -> 
                 try
-                    for d in this.GetAllDependenciesOf(g.Key,package.Name) do
+                    for d in this.GetAllDependenciesOf(g.Key,package.Name,referencesFile.FileName) do
                         let k = g.Key,d
                         if usedPackages.ContainsKey k |> not then
                             usedPackages.Add(k,package)
@@ -723,7 +719,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             g.NugetPackages
             |> List.iter (fun package -> 
                 try
-                    for d in this.GetAllDependenciesOf(groupName,package.Name) do
+                    for d in this.GetAllDependenciesOf(groupName,package.Name,referencesFile.FileName) do
                         let k = groupName,d
                         if usedPackages.ContainsKey k |> not then
                             usedPackages.Add(k,package)
@@ -738,7 +734,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                 kv.Value.Resolution
                 |> Seq.map (fun kv' -> 
                                 (kv.Key,kv'.Key),
-                                this.GetAllDependenciesOf(kv.Key,kv'.Value.Name)
+                                this.GetAllDependenciesOf(kv.Key,kv'.Value.Name,this.FileName)
                                 |> Set.ofSeq
                                 |> Set.remove kv'.Value.Name))
         |> Seq.concat

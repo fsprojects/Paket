@@ -224,7 +224,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
                 referenceFile.Groups
                 |> Seq.filter (fun g -> g.Key = groupName)
                 |> Seq.collect (fun g -> g.Value.NugetPackages |> List.map (fun p -> (groupName,p.Name)))
-                |> Seq.collect findDependencies
+                |> Seq.collect(fun (g,p) -> findDependencies(g,p,projectFile.FileName))
                 |> Seq.map (fun x -> x, projectFile.GetTargetProfile()))
             |> Set.ofSeq
         | None -> Set.empty
@@ -483,7 +483,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 options.CleanBindingRedirects
                 (FileInfo project.FileName).Directory.FullName 
                 g.Key 
-                lockFile.GetAllDependenciesOf 
+                lockFile.GetAllDependenciesOf
                 allKnownLibs
                 projectCache
             first := false

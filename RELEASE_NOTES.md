@@ -1,6 +1,7 @@
 #### 3.21.0 - 04.10.2016
 * BUGFIX: Make VisualStudio.com nuget feed behave like nuget.org - https://github.com/fsprojects/Paket/issues/1798
 * BUGFIX: Generate binding redirect that covers entire range of possible assembly versions - https://github.com/fsprojects/Paket/pull/1932
+* COSMETICS: Paket shows context for missing references - https://github.com/fsprojects/Paket/issues/1936
 
 #### 3.20.2 - 29.09.2016
 * BUGFIX: Fix dependency compression issue - https://github.com/fsprojects/Paket/issues/1929
