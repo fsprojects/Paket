@@ -1,3 +1,6 @@
+#### 3.21.2 - 05.10.2016
+* BUGFIX: Swapped parameters of FindVersionsForPackage
+
 #### 3.21.1 - 05.10.2016
 * BUGFIX: Transforming wildcard syntax to regex, which is used by WebProxy for NoProxy bypassing - https://github.com/fsprojects/Paket/pull/1939
 
