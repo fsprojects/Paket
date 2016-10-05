@@ -144,9 +144,9 @@ let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName)
     }
 
 /// Uses the NuGet v3 service to retrieve all package versions for the given package.
-let FindVersionsForPackage(auth, nugetURL, package) =
+let FindVersionsForPackage(nugetURL, auth, package) =
     async {
-        let! raw = findVersionsForPackage(auth, nugetURL, package)
+        let! raw = findVersionsForPackage(nugetURL, auth, package)
         match raw with 
         | Some versions -> return versions
         | None -> return [||]
