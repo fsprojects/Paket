@@ -1,3 +1,6 @@
+#### 3.21.1 - 05.10.2016
+* BUGFIX: Work around dependencies issue in VSTS - https://github.com/fsprojects/Paket/issues/1798
+
 #### 3.21.0 - 04.10.2016
 * Added MsBuild reserved properties - https://github.com/fsprojects/Paket/pull/1934
 * BUGFIX: Make VisualStudio.com nuget feed behave like nuget.org - https://github.com/fsprojects/Paket/issues/1798

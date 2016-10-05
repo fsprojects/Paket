@@ -249,10 +249,8 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
 
 /// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
-    async {
-        try
-            return! getDetailsFromNuGetViaODataFast auth nugetURL packageName version
-        with _ ->
+    let queryPackagesProtocol() = 
+        async {
             let url = sprintf "%s/Packages(Id='%O',Version='%O')" nugetURL packageName version
             let! response = safeGetFromUrl(auth,url,acceptXml)
 
@@ -260,9 +258,9 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                 match response with
                 | Some(r) -> async { return r }
                 | _  when  
-                       String.containsIgnoreCase "myget.org" nugetURL || 
-                       String.containsIgnoreCase "nuget.org" nugetURL || 
-                       String.containsIgnoreCase "visualstudio.com" nugetURL ->
+                        String.containsIgnoreCase "myget.org" nugetURL || 
+                        String.containsIgnoreCase "nuget.org" nugetURL || 
+                        String.containsIgnoreCase "visualstudio.com" nugetURL ->
                     failwithf "Could not get package details for %O from %s" packageName nugetURL
                 | _ ->
                     let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
@@ -272,7 +270,18 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                 tracefn "Response from %s:" url
                 tracefn ""
                 tracefn "%s" raw
-            return parseODataDetails(url,nugetURL,packageName,version,raw)
+            return parseODataDetails(url,nugetURL,packageName,version,raw) }
+
+    async {
+        try
+            let! result = getDetailsFromNuGetViaODataFast auth nugetURL packageName version
+            if String.containsIgnoreCase "visualstudio.com" nugetURL && result.Dependencies.IsEmpty then
+                // TODO: There is a bug in VSTS, so we can't trust this protocol. Remvoe when VSTS is fixed
+                return! queryPackagesProtocol()
+            else
+                return result
+        with _ -> return! queryPackagesProtocol()
+
     }
 
 let getDetailsFromNuGet force auth nugetURL packageName version =
