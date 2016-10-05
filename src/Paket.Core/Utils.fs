@@ -332,7 +332,9 @@ let envProxies () =
         // under mono, env vars are case sensitive
         if isNull v then Environment.GetEnvironmentVariable(name.ToLowerInvariant()) else v
     let bypassList =
-        let noproxy = getEnvValue "NO_PROXY"
+        let noproxyString = getEnvValue "NO_PROXY"
+        let noproxy = if not (String.IsNullOrEmpty (noproxyString)) then System.Text.RegularExpressions.Regex.Escape(noproxyString).Replace(@"*", ".*")  else noproxyString
+        
         if String.IsNullOrEmpty noproxy then [||] else
         noproxy.Split([| ',' |], StringSplitOptions.RemoveEmptyEntries)
     let getCredentials (uri:Uri) =

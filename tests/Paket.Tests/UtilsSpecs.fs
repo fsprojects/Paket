@@ -222,8 +222,23 @@ let ``get http env proxy with bypass list``() =
     p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
     p.BypassProxyOnLocal |> shouldEqual true
     p.BypassList.Length |> shouldEqual 2
-    p.BypassList.[0] |> shouldEqual ".local"
+    p.BypassList.[0] |> shouldEqual "\\.local"
     p.BypassList.[1] |> shouldEqual "localhost"
+    p.Credentials |> shouldEqual null
+
+[<Test>]
+let ``get http env proxy with bypass list containing wildcards``() =
+    use v = new DisposableEnvVar("http_proxy", "http://proxy.local:8080")
+    use w = new DisposableEnvVar("no_proxy", ".local,localhost,*.asdf.com")
+    let pOpt = envProxies().TryFind "http"
+    Option.isSome pOpt |> shouldEqual true
+    let p = Option.get pOpt
+    p.Address |> shouldEqual (new Uri("http://proxy.local:8080"))
+    p.BypassProxyOnLocal |> shouldEqual true
+    p.BypassList.Length |> shouldEqual 3
+    p.BypassList.[0] |> shouldEqual "\\.local"
+    p.BypassList.[1] |> shouldEqual "localhost"
+    p.BypassList.[2] |> shouldEqual "\\.*\\.asdf\\.com"
     p.Credentials |> shouldEqual null
 
 [<Test>]
