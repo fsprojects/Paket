@@ -492,7 +492,7 @@ let internal addHeader (client:WebClient) (headerKey:string) (headerVal:string) 
     client.Headers.Add (headerKey, headerVal)
 #endif
 
-let inline createWebClient (url,auth:Auth option) =
+let createWebClient (url,auth:Auth option) =
 #if USE_HTTP_CLIENT
     let handler =
         new HttpClientHandler(
@@ -536,6 +536,7 @@ let inline createWebClient (url,auth:Auth option) =
         //so use THIS instead to send credentials RIGHT AWAY
         let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
+        client.Credentials <- new NetworkCredential(username,password)
     
     | Some (Token token) ->
         client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token

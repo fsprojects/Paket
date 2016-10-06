@@ -1,3 +1,6 @@
+#### 3.21.3 - 06.10.2016
+* BUGFIX: Set network credentials - https://github.com/fsprojects/Paket/issues/1941
+
 #### 3.21.2 - 05.10.2016
 * BUGFIX: Swapped parameters of FindVersionsForPackage
 
