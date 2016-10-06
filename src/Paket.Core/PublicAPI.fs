@@ -379,9 +379,9 @@ type Dependencies(dependenciesFileName: string) =
                 InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
 
     /// Returns all libraries for the given package and framework.
-    member this.GetLibraries(packageName,frameworkIdentifier:FrameworkIdentifier) =
+    member this.GetLibraries(groupName,packageName,frameworkIdentifier:FrameworkIdentifier) =
         this
-          .GetInstalledPackageModel(packageName)
+          .GetInstalledPackageModel(groupName,packageName)
           .GetLibReferences(frameworkIdentifier)
 
     /// Returns the installed versions of all direct dependencies which are referenced in the references file.

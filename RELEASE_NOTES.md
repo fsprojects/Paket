@@ -1,3 +1,6 @@
+#### 3.21.4 - 06.10.2016
+* BUGFIX: Fix public API
+
 #### 3.21.3 - 06.10.2016
 * BUGFIX: Set network credentials - https://github.com/fsprojects/Paket/issues/1941
 
