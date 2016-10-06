@@ -42,12 +42,16 @@ module PackageAndAssemblyResolution =
         |> Map.ofSeq
 
     let getDllOrder (dllFiles : AssemblyDefinition list) =
-      // we ignore all unknown references as they are most likely resolved on package level
-      let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
-      getPackageOrderGeneric
-        (fun (p:AssemblyDefinition) -> p.FullName)
-        (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter (known.Contains))
-        dllFiles
+      // this check saves looking at assembly metadata when we know this is not needed
+      if List.length dllFiles = 1 then
+          dllFiles 
+      else
+          // we ignore all unknown references as they are most likely resolved on package level
+          let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
+          getPackageOrderGeneric
+            (fun (p:AssemblyDefinition) -> p.FullName)
+            (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter (known.Contains))
+            dllFiles
 
     let getDllsWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
       let dllFiles =
