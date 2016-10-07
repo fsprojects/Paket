@@ -171,3 +171,23 @@ let ``mscorlib excluded from f# script`` () =
         )
 
     Assert.False hasFilesWithMsCorlib
+
+
+[<Test; Category("scriptgen")>]
+let ``fsharp.core excluded from f# script`` () =
+    let scenario = "fsharpcore"
+    paket "install" scenario |> ignore
+
+    directPaket "generate-include-scripts framework net46" scenario |> ignore
+
+    let scriptRootDir = scriptRoot scenario
+    let hasFilesWithFsharpCore =
+        scriptRootDir.GetFiles("*.fsx", SearchOption.AllDirectories) 
+        |> Seq.exists (fun f -> 
+            f.FullName 
+            |> File.ReadAllText 
+            |> String.containsIgnoreCase "fsharp.core.dll"
+        )
+
+    Assert.False hasFilesWithFsharpCore
+
