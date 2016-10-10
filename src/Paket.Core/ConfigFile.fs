@@ -129,7 +129,12 @@ let checkCredentials(url, cred) =
     try 
         client.DownloadData (Uri url) |> ignore
         true
-    with _ -> false
+    with _ ->
+        try
+            let folderUrl = sprintf "%s/" url
+            client.DownloadData (Uri folderUrl) |> ignore
+            true
+        with _ -> false
 
 let getSourceNodes (credentialsNode : XmlNode) source nodeType = 
     sprintf "//%s" nodeType |> credentialsNode.SelectNodes
