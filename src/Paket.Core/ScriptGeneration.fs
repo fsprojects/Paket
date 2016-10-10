@@ -90,6 +90,11 @@ module ScriptGeneration =
 
   let private makeRelativePath (scriptFile: FileInfo) (libFile: FileInfo) =
     (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
+  
+  let shouldExcludeNugetForFSharpScript nuget =
+    match nuget with
+    | "FSharp.Core" -> true
+    | _ -> false
 
   let filterFSharpFrameworkReferences assemblies =
     assemblies
@@ -228,15 +233,17 @@ module ScriptGeneration =
     (getScriptFile             : GroupName -> FileInfo)
     (writeScript               : FileInfo -> ScriptPiece seq -> unit)
     (filterFrameworkAssemblies : string seq -> string seq)
+    (filterNuget               : string -> bool)
     (framework                 : FrameworkIdentifier)
     =
       let all =
         seq {
           for group, nuget, _ in deps.GetInstalledPackages() do
-            let model = deps.GetInstalledPackageModel(Some group, nuget)
-            let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f)
-            let syslibs = model.GetFrameworkAssembliesLazy.Value
-            yield group, (libs, syslibs |> Set.toSeq)
+            if not (filterNuget nuget) then
+              let model = deps.GetInstalledPackageModel(Some group, nuget)
+              let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f)
+              let syslibs = model.GetFrameworkAssembliesLazy.Value
+              yield group, (libs, syslibs |> Set.toSeq)
         }
         |> Seq.groupBy fst
         |> Seq.map (fun (group, items) -> group, items |> Seq.map snd)
@@ -315,7 +322,7 @@ module ScriptGeneration =
 
   /// Generate a include scripts for all packages defined in paket.dependencies,
   /// if a package is ordered before its dependencies this function will throw.
-  let generateScriptsForRootFolderGeneric extension scriptGenerator scriptWriter filterFrameworkLibs (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
+  let generateScriptsForRootFolderGeneric extension scriptGenerator scriptWriter filterFrameworkLibs filterNuget (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
       let dependenciesFile, lockFile =
           let deps = Paket.Dependencies.Locate(rootFolder.FullName)
           let lock =
@@ -351,7 +358,7 @@ module ScriptGeneration =
         let folder = getScriptFolder includeScriptsRootFolder framework group
         FileInfo(Path.Combine(folder.FullName, sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant())
         
-      generateGroupScript dependenciesFile getGroupFile scriptWriter filterFrameworkLibs framework
+      generateGroupScript dependenciesFile getGroupFile scriptWriter filterFrameworkLibs filterNuget framework
 
   type ScriptType =
   | CSharp
@@ -368,9 +375,9 @@ module ScriptGeneration =
         | _ -> None
 
   let generateScriptsForRootFolder scriptType =
-      let scriptGenerator, scriptWriter, filterFrameworkLibs =
+      let scriptGenerator, scriptWriter, filterFrameworkLibs, shouldExcludeNuget =
           match scriptType with
-          | CSharp -> generateCSharpScript, writeCSharpScript, id
-          | FSharp -> generateFSharpScript, writeFSharpScript, filterFSharpFrameworkReferences
+          | CSharp -> generateCSharpScript, writeCSharpScript, id, (fun _ -> false)
+          | FSharp -> generateFSharpScript, writeFSharpScript, filterFSharpFrameworkReferences, shouldExcludeNugetForFSharpScript
 
-      generateScriptsForRootFolderGeneric scriptType.Extension scriptGenerator scriptWriter filterFrameworkLibs
+      generateScriptsForRootFolderGeneric scriptType.Extension scriptGenerator scriptWriter filterFrameworkLibs shouldExcludeNuget
