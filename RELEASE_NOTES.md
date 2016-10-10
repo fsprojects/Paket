@@ -1,26 +1,13 @@
-#### 3.21.7 - 10.10.2016
+#### 3.22.0 - 10.10.2016
 * BUGFIX: generate-include-scripts: don't check dll order when it can be skipped - https://github.com/fsprojects/Paket/pull/1945
-
-#### 3.21.6 - 10.10.2016
 * BUGFIX: generate-include-script doesn't not #r FSharp.Core.dll anymore - https://github.com/fsprojects/Paket/pull/1946
-
-#### 3.21.5 - 10.10.2016
 * BUGFIX: Paket failed to get packages from feed with credentials - https://github.com/fsprojects/Paket/pull/1947
-
-#### 3.21.4 - 06.10.2016
 * BUGFIX: Fix public API
-
-#### 3.21.3 - 06.10.2016
 * BUGFIX: Set network credentials - https://github.com/fsprojects/Paket/issues/1941
-
-#### 3.21.2 - 05.10.2016
 * BUGFIX: Swapped parameters of FindVersionsForPackage
-
-#### 3.21.1 - 05.10.2016
 * BUGFIX: Transforming wildcard syntax to regex, which is used by WebProxy for NoProxy bypassing - https://github.com/fsprojects/Paket/pull/1939
-
-#### 3.21.1 - 05.10.2016
 * BUGFIX: Work around dependencies issue in VSTS - https://github.com/fsprojects/Paket/issues/1798
+* COSMETICS: XML paket.config is now beautified - https://github.com/fsprojects/Paket/pull/1954
 
 #### 3.21.0 - 04.10.2016
 * Added MsBuild reserved properties - https://github.com/fsprojects/Paket/pull/1934
