@@ -42,7 +42,7 @@ let private getConfigNode (nodeName : string) =
 let private saveConfigNode (node : XmlNode) =
     trial {
         do! createDir Constants.PaketConfigFolder
-        do! saveFile Constants.PaketConfigFile (node.OwnerDocument.OuterXml)
+        do! saveFile Constants.PaketConfigFile (normalizeXml node.OwnerDocument)
     }
 
 
