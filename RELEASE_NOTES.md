@@ -1,3 +1,6 @@
+#### 3.21.6 - 10.10.2016
+* BUGFIX: generate-include-script doesn't not #r FSharp.Core.dll anymore - https://github.com/fsprojects/Paket/pull/1946
+
 #### 3.21.5 - 10.10.2016
 * BUGFIX: Paket failed to get packages from feed with credentials - https://github.com/fsprojects/Paket/pull/1947
 
