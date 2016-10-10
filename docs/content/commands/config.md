@@ -28,3 +28,11 @@ The configuration file can be found at:
 	let AppDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)
 	let PaketConfigFolder = Path.Combine(AppDataFolder, "Paket")
 	let PaketConfigFile = Path.Combine(PaketConfigFolder, "paket.config")
+
+## Examples
+
+### Adding a NuGet API key
+
+```batchfile
+paket config add-token "https://www.nuget.org" 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a
+```
