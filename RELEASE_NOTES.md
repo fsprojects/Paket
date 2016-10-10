@@ -1,3 +1,6 @@
+#### 3.21.7 - 10.10.2016
+* BUGFIX: generate-include-scripts: don't check dll order when it can be skipped - https://github.com/fsprojects/Paket/pull/1945
+
 #### 3.21.6 - 10.10.2016
 * BUGFIX: generate-include-script doesn't not #r FSharp.Core.dll anymore - https://github.com/fsprojects/Paket/pull/1946
 
