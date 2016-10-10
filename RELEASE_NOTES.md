@@ -1,3 +1,6 @@
+#### 3.23.1 - 10.10.2016
+* REVERT: Support long paths for NTFS - https://github.com/fsprojects/Paket/pull/1944
+
 #### 3.23.0 - 10.10.2016
 * BUGFIX: Support long paths for NTFS - https://github.com/fsprojects/Paket/pull/1944
 
