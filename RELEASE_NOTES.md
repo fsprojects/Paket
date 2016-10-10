@@ -1,3 +1,6 @@
+#### 3.23.0 - 10.10.2016
+* BUGFIX: Support long paths for NTFS - https://github.com/fsprojects/Paket/pull/1944
+
 #### 3.22.0 - 10.10.2016
 * BUGFIX: generate-include-scripts: don't check dll order when it can be skipped - https://github.com/fsprojects/Paket/pull/1945
 * BUGFIX: generate-include-script doesn't not #r FSharp.Core.dll anymore - https://github.com/fsprojects/Paket/pull/1946
