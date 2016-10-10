@@ -1,3 +1,6 @@
+#### 3.21.5 - 10.10.2016
+* BUGFIX: Paket failed to get packages from feed with credentials - https://github.com/fsprojects/Paket/pull/1947
+
 #### 3.21.4 - 06.10.2016
 * BUGFIX: Fix public API
 
