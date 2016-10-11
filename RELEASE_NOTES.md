@@ -1,3 +1,6 @@
+#### 3.23.2 - 11.10.2016
+* USABILITY: Specify Chessie version - https://github.com/fsprojects/Paket/issues/1958
+
 #### 3.23.1 - 10.10.2016
 * REVERT: Support long paths for NTFS - https://github.com/fsprojects/Paket/pull/1944
 

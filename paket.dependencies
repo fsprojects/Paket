@@ -5,7 +5,7 @@ cache ./nupkgs versions:current
 nuget Newtonsoft.Json redirects: force
 nuget Argu ~> 3.1
 nuget FSharp.Core redirects: force
-nuget Chessie
+nuget Chessie >= 0.6
 nuget Mono.Cecil
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
