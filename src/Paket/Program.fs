@@ -357,9 +357,9 @@ let why (results: ParseResults<WhyArgs>) =
     let name = results.GetResult <@ WhyArgs.NuGet @>
     let packageName = Domain.PackageName name
     let groupName = 
-        match results.TryGetResult <@ WhyArgs.Group @> with
-        | Some group -> Domain.GroupName group
-        | None -> Constants.MainDependencyGroup
+        defaultArg 
+            (results.TryGetResult <@ WhyArgs.Group @> |> Option.map Domain.GroupName) 
+            Constants.MainDependencyGroup
     let lockFile = Dependencies.Locate().GetLockFile()
     let group = lockFile.GetGroup(groupName)
 
@@ -376,8 +376,24 @@ let why (results: ParseResults<WhyArgs>) =
         | [] ->
             traceErrorfn "NuGet '%s' was not found in %s" name Constants.LockFileName
     else
-        tracefn "Why oh why NuGet '%s' in group %A?" name groupName
-    
+        let isTopLevel =
+            lockFile.GetTopLevelDependencies groupName
+            |> Map.exists (fun key _ -> key = packageName)
+        if isTopLevel then
+            tracefn "NuGet %s is in %s group because it's defined as a top-level dependency"  name (groupName.ToString()) 
+        else
+            let xs =
+                group.Resolution
+                |> Seq.filter (fun pair -> pair.Value.Dependencies
+                                        |> Seq.exists (fun (name,_,_) -> name = packageName))
+                |> Seq.map (fun pair -> pair.Key.ToString())
+                |> Seq.toList
+            
+            tracefn "NuGet %s is in %s group because it's a dependency of those packages: %A"
+                    name 
+                    (groupName.ToString())
+                    xs
+
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let paketVersion =
