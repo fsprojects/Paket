@@ -313,11 +313,13 @@ with
   
 type WhyArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] NuGet of package_id:string
+    | [<CustomCommandLine("group")>] Group of name:string
 with
   interface IArgParserTemplate with
       member this.Usage = 
         match this with
         | NuGet _ -> "Name of the NuGet package."
+        | Group _ -> "Allows to specify the dependency group."
 
 type Command =
     // global options
