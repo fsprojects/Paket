@@ -353,12 +353,30 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
         for scriptType in scriptTypesToGenerate do
             Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
 
-let why (results: ParseResults<WhyArgs>) = 
-    match results.TryGetResult <@ WhyArgs.NuGet @> with
-    | Some x -> 
-        tracefn "Why oh why NuGet '%s'?" x
-    | None -> 
-        results.Parser.PrintUsage() |> traceError
+let why (results: ParseResults<WhyArgs>) =
+    let name = results.GetResult <@ WhyArgs.NuGet @>
+    let packageName = Domain.PackageName name
+    let groupName = 
+        match results.TryGetResult <@ WhyArgs.Group @> with
+        | Some group -> Domain.GroupName group
+        | None -> Constants.MainDependencyGroup
+    let lockFile = Dependencies.Locate().GetLockFile()
+    let group = lockFile.GetGroup(groupName)
+
+    if not <| group.Resolution.ContainsKey packageName then
+        match lockFile.Groups |> Seq.filter (fun g -> g.Value.Resolution.ContainsKey packageName) |> Seq.toList with
+        | _ :: _ as otherGroups ->
+            traceWarnfn 
+                "NuGet %s was not found in %s group. However it was found in following groups: %A. Specify correct group." 
+                name
+                (groupName.ToString())
+                (otherGroups |> List.map (fun pair -> pair.Key.ToString()))
+
+            results.Parser.PrintUsage() |> traceWarn
+        | [] ->
+            traceErrorfn "NuGet '%s' was not found in %s" name Constants.LockFileName
+    else
+        tracefn "Why oh why NuGet '%s' in group %A?" name groupName
     
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
