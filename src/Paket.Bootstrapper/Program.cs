@@ -14,11 +14,19 @@ namespace Paket.Bootstrapper
 {
     static class Program
     {
+        static bool GetIsMagicMode()
+        {
+            var fileName = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
+            return string.Equals(fileName, "paket.exe", StringComparison.OrdinalIgnoreCase);
+        }
+
         static void Main(string[] args)
         {
             Console.CancelKeyPress += CancelKeyPressed;
 
-            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings, Environment.GetEnvironmentVariables());
+            var magicMode = GetIsMagicMode();
+            magicMode = true;
+            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings, Environment.GetEnvironmentVariables(), magicMode);
             if (options.ShowHelp)
             {
                 ConsoleImpl.WriteDebug(BootstrapperHelper.HelpText);
@@ -42,7 +50,7 @@ namespace Paket.Bootstrapper
             }
         }
 
-        private static void CancelKeyPressed(object sender, ConsoleCancelEventArgs e)
+        private static void CancelKeyPressed(object o, ConsoleCancelEventArgs eventArgs)
         {
             Console.WriteLine("Bootstrapper cancelled");
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);

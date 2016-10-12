@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Paket.Bootstrapper
 {
@@ -7,6 +8,8 @@ namespace Paket.Bootstrapper
         public BootstrapperOptions()
         {
             DownloadArguments = new DownloadArguments();
+            RunArgs = Enumerable.Empty<string>();
+            UnprocessedCommandArgs = Enumerable.Empty<string>();
         }
 
         public DownloadArguments DownloadArguments { get; set; }
