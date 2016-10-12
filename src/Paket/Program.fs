@@ -353,10 +353,13 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
         for scriptType in scriptTypesToGenerate do
             Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
 
-let why _ = 
-    tracefn "Why oh why!!!"
-    ()
-
+let why (results: ParseResults<WhyArgs>) = 
+    match results.TryGetResult <@ WhyArgs.NuGet @> with
+    | Some x -> 
+        tracefn "Why oh why NuGet '%s'?" x
+    | None -> 
+        results.Parser.PrintUsage() |> traceError
+    
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let paketVersion =

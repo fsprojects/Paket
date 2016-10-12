@@ -312,7 +312,7 @@ with
         | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
   
 type WhyArgs =
-    | [<CustomCommandLine("nuget")>] NuGet of package_id:string
+    | [<CustomCommandLine("nuget")>][<Mandatory>] NuGet of package_id:string
 with
   interface IArgParserTemplate with
       member this.Usage = 
