@@ -21,6 +21,7 @@ namespace Paket.Bootstrapper
             public const string Silent = "-s";
             public const string IgnoreCache = "-f";
             public const string MaxFileAge = "--max-file-age=";
+            public const string Run = "--run";
         }
         public static class AppSettingKeys
         {
@@ -38,6 +39,14 @@ namespace Paket.Bootstrapper
             var options = new BootstrapperOptions();
 
             var commandArgs = arguments.ToList();
+
+            var runIndex = commandArgs.IndexOf(CommandArgs.Run);
+            if (runIndex != -1)
+            {
+                options.Run = true;
+                options.RunArgs = commandArgs.GetRange(runIndex + 1, commandArgs.Count - runIndex - 1);
+                commandArgs.RemoveRange(runIndex, commandArgs.Count - runIndex);
+            }
 
             if (commandArgs.Contains(CommandArgs.PreferNuget) || appSettings.GetKey(AppSettingKeys.PreferNugetAppSettingsKey).ToLowerSafe() == "true")
             {

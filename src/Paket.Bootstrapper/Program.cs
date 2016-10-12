@@ -14,7 +14,6 @@ namespace Paket.Bootstrapper
 {
     static class Program
     {
-
         static void Main(string[] args)
         {
             Console.CancelKeyPress += CancelKeyPressed;
@@ -31,7 +30,16 @@ namespace Paket.Bootstrapper
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
 
-            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, new FileProxy());
+            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, new FileProxy(), () => OnSuccessfulDownload(options));
+        }
+
+        static void OnSuccessfulDownload(BootstrapperOptions options)
+        {
+            if (options.Run && File.Exists(options.DownloadArguments.Target))
+            {
+                var exitCode = ProcessRunner.Run(options.DownloadArguments.Target, options.RunArgs);
+                Environment.Exit(exitCode);
+            }
         }
 
         private static void CancelKeyPressed(object sender, ConsoleCancelEventArgs e)
@@ -50,7 +58,7 @@ namespace Paket.Bootstrapper
             Environment.Exit(exitCode);
         }
 
-        public static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, IFileProxy fileProxy)
+        public static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, IFileProxy fileProxy, Action onSuccess)
         {
             Action<Exception> handleException = exception =>
             {
@@ -104,6 +112,8 @@ namespace Paket.Bootstrapper
                         ConsoleImpl.WriteDebug("Paket.exe {0} is up to date.", localVersion);
                     }
                 }
+
+                onSuccess();
             }
             catch (WebException exn)
             {
@@ -114,7 +124,7 @@ namespace Paket.Bootstrapper
                     {
                         var fallbackStrategy = downloadStrategy.FallbackStrategy;
                         ConsoleImpl.WriteDebug("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
-                        StartPaketBootstrapping(fallbackStrategy, dlArgs, fileProxy);
+                        StartPaketBootstrapping(fallbackStrategy, dlArgs, fileProxy, onSuccess);
                         shouldHandleException = !File.Exists(dlArgs.Target);
                     }
                 }

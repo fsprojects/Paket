@@ -43,6 +43,7 @@
     <Compile Include="ArgumentParser.cs" />
     <Compile Include="BootstrapperHelper.cs" />
     <Compile Include="BootstrapperOptions.cs" />
+    <Compile Include="ProcessArguments.cs" />
     <Compile Include="DownloadStrategies\CacheDownloadStrategy.cs" />
     <Compile Include="HelperProxies\IWebRequestProxy.cs" />
     <Compile Include="HelperProxies\WebRequestProxy.cs" />
@@ -56,6 +57,7 @@
     <Compile Include="HelperProxies\IFileProxy.cs" />
     <Compile Include="DownloadStrategies\NugetDownloadStrategy.cs" />
     <Compile Include="ConsoleImpl.cs" />
+    <Compile Include="ProcessRunner.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SemVer.cs" />

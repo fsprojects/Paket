@@ -15,6 +15,8 @@ namespace Paket.Bootstrapper
         public bool ForceNuget { get; set; }
         public bool PreferNuget { get; set; }
         public bool ShowHelp { get; set; }
+        public bool Run { get; set; }
+        public IEnumerable<string> RunArgs { get; set; }
         public IEnumerable<string> UnprocessedCommandArgs { get; set; }
     }
 }
