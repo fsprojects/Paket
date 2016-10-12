@@ -353,6 +353,9 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
         for scriptType in scriptTypesToGenerate do
             Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
 
+let why _ = 
+    tracefn "Why oh why!!!"
+    ()
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
@@ -404,7 +407,8 @@ let main() =
             | ShowGroups r -> processCommand silent showGroups r
             | Pack r -> processCommand silent pack r
             | Push r -> processCommand silent push r
-            | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r            
+            | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r
+            | Why r -> processCommand silent why r
             // global options; list here in order to maintain compiler warnings
             // in case of new subcommands added
             | Verbose
