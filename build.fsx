@@ -5,534 +5,134 @@
 #r @"packages/build/FAKE/tools/FakeLib.dll"
 
 open Fake
-open Fake.Git
-open Fake.AssemblyInfoFile
-open Fake.ReleaseNotesHelper
-open Fake.UserInputHelper
 open System
 open System.IO
-open Fake.Testing.NUnit3
 
-// --------------------------------------------------------------------------------------
-// START TODO: Provide project-specific details below
-// --------------------------------------------------------------------------------------
-
-// Information about the project are used
-//  - for version and project name in generated AssemblyInfo file
-//  - by the generated NuGet package
-//  - to run tests and to publish documentation on GitHub gh-pages
-//  - for documentation, you also need to edit info in "docs/tools/generate.fsx"
-
-// The name of the project
-// (used by attributes in AssemblyInfo, name of a NuGet package and directory in 'src')
-let project = "Paket"
-
-// Short summary of the project
-// (used as description in AssemblyInfo and as a short summary for NuGet package)
-let summary = "A dependency manager for .NET with support for NuGet packages and git repositories."
-
-// Longer description of the project
-// (used as a description for NuGet package; line breaks are automatically cleaned up)
-let description = "A dependency manager for .NET with support for NuGet packages and git repositories."
-
-// List of author names (for NuGet package)
-let authors = [ "Paket team" ]
-
-// Tags for your project (for NuGet package)
-let tags = "nuget, bundler, F#"
-
-// File system information
-let solutionFile  = "Paket.sln"
-let solutionFilePowerShell = "Paket.PowerShell.sln"
-
-// Pattern specifying assemblies to be tested using NUnit
-let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
-let integrationTestAssemblies = "integrationtests/**/bin/Release/*Tests*.dll"
-
-// Git configuration (used for publishing documentation in gh-pages branch)
-// The profile where the project is posted
-let gitOwner = "fsprojects"
-let gitHome = "https://github.com/" + gitOwner
-
-// The name of the project on GitHub
-let gitName = "Paket"
-
-// The url for the raw files hosted
-let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
-
-// --------------------------------------------------------------------------------------
-// END TODO: The rest of the file includes standard build steps
-// --------------------------------------------------------------------------------------
-
-let buildDir = "bin"
-let tempDir = "temp"
-let buildMergedDir = buildDir @@ "merged"
-let buildMergedDirPS = buildDir @@ "Paket.PowerShell"
-
-Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
-// Read additional information from the release notes document
-let releaseNotesData = 
-    File.ReadAllLines "RELEASE_NOTES.md"
-    |> parseAllReleaseNotes
-
-let release = List.head releaseNotesData
-
-let stable = 
-    match releaseNotesData |> List.tryFind (fun r -> r.NugetVersion.Contains("-") |> not) with
-    | Some stable -> stable
-    | _ -> release
-
-let genFSAssemblyInfo (projectPath) =
-    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
-    let folderName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(projectPath))
-    let basePath = "src" @@ folderName
-    let fileName = basePath @@ "AssemblyInfo.fs"
-    CreateFSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Company (authors |> String.concat ", ")
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion
-        Attribute.InformationalVersion release.NugetVersion ]
-
-let genCSAssemblyInfo (projectPath) =
-    let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
-    let folderName = System.IO.Path.GetDirectoryName(projectPath)
-    let basePath = folderName @@ "Properties"
-    let fileName = basePath @@ "AssemblyInfo.cs"
-    CreateCSharpAssemblyInfo fileName
-      [ Attribute.Title (projectName)
-        Attribute.Product project
-        Attribute.Description summary
-        Attribute.Version release.AssemblyVersion
-        Attribute.FileVersion release.AssemblyVersion
-        Attribute.InformationalVersion release.NugetVersion ]
-
-// Generate assembly info files with the right version & up-to-date information
-Target "AssemblyInfo" (fun _ ->
-    let fsProjs =  !! "src/**/*.fsproj"
-    let csProjs = !! "src/**/*.csproj"
-    fsProjs |> Seq.iter genFSAssemblyInfo
-    csProjs |> Seq.iter genCSAssemblyInfo
-)
-
-// --------------------------------------------------------------------------------------
-// Clean build results
-
-Target "Clean" (fun _ ->
-    CleanDirs [buildDir; tempDir]
-)
-
-Target "CleanDocs" (fun _ ->
-    CleanDirs ["docs/output"]
-)
-
-#load "paket-files/build/matthid/FAKE/src/app/Fake.DotNet.Cli/Dotnet.fs"
-open Fake.DotNet.Cli
-
-// --------------------------------------------------------------------------------------
-// Build library & test project
-
-Target "Build" (fun _ ->
-    !! solutionFile
-    |> MSBuildRelease "" "Rebuild"
-    |> ignore
-)
-
-let dotnetExePath =
-    match tryFindFileOnPath (if isWindows then "dotnet.exe" else "dotnet") with
-    | Some p -> p
-    | None -> ""
-
-Target "DotnetRestore" (fun _ ->
-    // dotnet restore
-    !! "src/**/project.json"
-    |> Seq.iter(fun proj ->
-        // Fix version entered in project.json
-        let found = ref false
-        File.ReadLines proj
-        |> Seq.toList
-        |> List.map (fun l ->
-              if (not !found) && l.StartsWith("  \"version\": \"") && l.EndsWith("\",") then
-                found := true
-                sprintf "  \"version\": \"%s\"," release.NugetVersion
-              else l)
-        |> fun lines -> File.WriteAllLines(proj, lines)
-
-        DotnetRestore (fun c ->
-            { c with
-                Common = { c.Common with DotnetCliPath = dotnetExePath }
-            }) proj
-    )
-)
-
-Target "DotnetPackage" (fun _ ->
-    // dotnet pack
-    !! "src/**/project.json"
-    |> Seq.iter(fun proj ->
-        DotnetPack (fun c ->
-            { c with
-                Common = { c.Common with DotnetCliPath = dotnetExePath }
-                Configuration = Release
-                OutputPath = Some (tempDir @@ "dotnetcore")
-            }) proj
-    )
-)
-
-
-// --------------------------------------------------------------------------------------
-// Build PowerShell project
-
-Target "BuildPowerShell" (fun _ ->
-    if File.Exists "src/Paket.PowerShell/System.Management.Automation.dll" = false then
-        let result =
-            ExecProcess (fun info ->
-                info.FileName <- Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe")
-                info.Arguments <- "-executionpolicy bypass -noprofile -file src/Paket.PowerShell/System.Management.Automation.ps1") System.TimeSpan.MaxValue
-        if result <> 0 then failwithf "Error copying System.Management.Automation.dll"
-
-    !! solutionFilePowerShell
-    |> MSBuildRelease "" "Rebuild"
-    |> ignore
-)
-
-// --------------------------------------------------------------------------------------
-// Run the unit tests using test runner
-
-Target "RunTests" (fun _ ->
-    !! testAssemblies
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            WorkingDir = "tests/Paket.Tests"
-            TimeOut = TimeSpan.FromMinutes 20. })
-)
-
-Target "QuickTest" (fun _ ->
-
-    !! "src\Paket.Core\Paket.Core.fsproj"
-    |> MSBuildRelease "" "Rebuild"
-    |> ignore
-
-    !! testAssemblies
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            WorkingDir = "tests/Paket.Tests"
-            TimeOut = TimeSpan.FromMinutes 20. })
-)
-
-
-Target "RunIntegrationTests" (fun _ ->
-    !! integrationTestAssemblies
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            WorkingDir = "tests/Paket.Tests"
-            TimeOut = TimeSpan.FromMinutes 40. })
-)
-
-
-// --------------------------------------------------------------------------------------
-// Build a NuGet package
-
-let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Mono.Cecil.dll"]
-
-Target "MergePaketTool" (fun _ ->
-    CreateDir buildMergedDir
-
-    let toPack =
-        mergeLibs
-        |> List.map (fun l -> buildDir @@ l)
-        |> separated " "
-
-    let result =
-        ExecProcess (fun info ->
-            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "paket.exe") toPack
-            ) (TimeSpan.FromMinutes 5.)
-
-    if result <> 0 then failwithf "Error during ILRepack execution."
-)
-
-Target "MergePowerShell" (fun _ ->
-    CreateDir buildMergedDirPS
-
-    let toPack =
-        mergeLibs @ ["Paket.PowerShell.dll"]
-        |> List.map (fun l -> buildDir @@ l)
-        |> separated " "
-
-    let result =
-        ExecProcess (fun info ->
-            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/verbose /lib:%s /out:%s %s" buildDir (buildMergedDirPS @@ "Paket.PowerShell.dll") toPack
-            ) (TimeSpan.FromMinutes 5.)
-
-    if result <> 0 then failwithf "Error during ILRepack execution."
-
-    // copy psd1 & set version
-    CopyFile (buildMergedDirPS @@ "ArgumentTabCompletion.ps1") "src/Paket.PowerShell/ArgumentTabCompletion.ps1"
-    let psd1 = buildMergedDirPS @@ "Paket.PowerShell.psd1"
-    CopyFile psd1 "src/Paket.PowerShell/Paket.PowerShell.psd1"
-    use psd = File.AppendText psd1
-    psd.WriteLine ""
-    psd.WriteLine (sprintf "ModuleVersion = '%s'" release.AssemblyVersion)
-    psd.WriteLine "}"
-)
-
-Target "SignAssemblies" (fun _ ->
-    let pfx = "code-sign.pfx"
-    if not <| fileExists pfx then
-        traceImportant (sprintf "%s not found, skipped signing assemblies" pfx)
-    else
-
-    let filesToSign = 
-        !! "bin/**/*.exe"
-        ++ "bin/**/Paket.Core.dll"
-
-    filesToSign
-        |> Seq.iter (fun executable ->
-            let signtool = currentDirectory @@ "tools" @@ "SignTool" @@ "signtool.exe"
-            let args = sprintf "sign /f %s /t http://timestamp.comodoca.com/authenticode %s" pfx executable
-            let result =
-                ExecProcess (fun info ->
-                    info.FileName <- signtool
-                    info.Arguments <- args) System.TimeSpan.MaxValue
-            if result <> 0 then failwithf "Error during signing %s with %s" executable pfx)
-)
-
-Target "NuGet" (fun _ ->    
-    !! "integrationtests/**/paket.template" |> Seq.iter DeleteFile
-    Paket.Pack (fun p -> 
-        { p with 
-            ToolPath = "bin/merged/paket.exe" 
-            Version = release.NugetVersion
-            ReleaseNotes = toLines release.Notes })
-)
-
-Target "MergeDotnetCoreIntoNuget" (fun _ ->
-    let nupkg = sprintf "./temp/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
-    let netcoreNupkg = sprintf "./temp/dotnetcore/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
-
-    Shell.Exec(
-      dotnetExePath, 
-      sprintf """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg,
-      "src/Paket.Core/Paket.Core/")
-    |> fun exitCode -> if exitCode <> 0 then failwithf "mergenupkg exited with exit code %d" exitCode
-)
-
-Target "PublishChocolatey" (fun _ ->
-    let chocoDir = tempDir </> "Choco"
-    let files = !! (tempDir </> "*PowerShell*")
-    if isMono then
-        files
-        |> Seq.iter File.Delete
-    else
-        CleanDir chocoDir
-        files
-        |> CopyTo chocoDir
-
-        Paket.Push (fun p -> 
-            { p with 
-                ToolPath = "bin/merged/paket.exe"
-                PublishUrl = "https://chocolatey.org/"
-                ApiKey = getBuildParam "ChocoKey"
-                WorkingDir = chocoDir })
-
-        CleanDir chocoDir
-)
-
-Target "PublishNuGet" (fun _ ->
-    if hasBuildParam "PublishBootstrapper" |> not then
-        !! (tempDir </> "*bootstrapper*")
-        |> Seq.iter File.Delete
-
-    !! (tempDir </> "dotnetcore" </> "*.nupkg")
-    |> Seq.iter File.Delete
-
-    Paket.Push (fun p -> 
-        { p with 
-            ToolPath = "bin/merged/paket.exe"
-            WorkingDir = tempDir }) 
-)
-
-
-// --------------------------------------------------------------------------------------
-// Generate the documentation
-
-Target "GenerateReferenceDocs" (fun _ ->
-    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:REFERENCE"] [] then
-      failwith "generating reference documentation failed"
-)
-
-let generateHelp' commands fail debug =
-    let args =
-        [ if not debug then yield "--define:RELEASE"
-          if commands then yield "--define:COMMANDS"
-          yield "--define:HELP"]
-
-    if executeFSIWithArgs "docs/tools" "generate.fsx" args [] then
-        traceImportant "Help generated"
-    else
-        if fail then
-            failwith "generating help documentation failed"
-        else
-            traceImportant "generating help documentation failed"
-
-    CleanDir "docs/output/commands"
-
-let generateHelp commands fail =
-    generateHelp' commands fail false
-
-Target "GenerateHelp" (fun _ ->
-    DeleteFile "docs/content/release-notes.md"
-    CopyFile "docs/content/" "RELEASE_NOTES.md"
-    Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
-
-    DeleteFile "docs/content/license.md"
-    CopyFile "docs/content/" "LICENSE.txt"
-    Rename "docs/content/license.md" "docs/content/LICENSE.txt"
-
-    CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.sigdata"
-    CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.optdata"
-
-    generateHelp true true
-)
-
-Target "GenerateHelpDebug" (fun _ ->
-    DeleteFile "docs/content/release-notes.md"
-    CopyFile "docs/content/" "RELEASE_NOTES.md"
-    Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
-
-    DeleteFile "docs/content/license.md"
-    CopyFile "docs/content/" "LICENSE.txt"
-    Rename "docs/content/license.md" "docs/content/LICENSE.txt"
-
-    generateHelp' true true true
-)
-
-Target "KeepRunning" (fun _ ->    
-    use watcher = !! "docs/content/**/*.*" |> WatchChanges (fun changes ->
-         generateHelp false false
-    )
-
-    traceImportant "Waiting for help edits. Press any key to stop."
-
-    System.Console.ReadKey() |> ignore
-
-    watcher.Dispose()
-)
-
-Target "GenerateDocs" DoNothing
-
-// --------------------------------------------------------------------------------------
-// Release Scripts
-
-Target "ReleaseDocs" (fun _ ->
-    let tempDocsDir = "temp/gh-pages"
-    CleanDir tempDocsDir
-    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
-
-    Git.CommandHelper.runSimpleGitCommand tempDocsDir "rm . -f -r" |> ignore
-    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"    
+open System.Threading
+
+/// Helper that can be used for writing CPS-style code that resumes
+/// on the same thread where the operation was started.
+let synchronize f = 
+    let ctx = System.Threading.SynchronizationContext.Current
+    f (fun g -> 
+        let nctx = System.Threading.SynchronizationContext.Current
+        if ctx <> null && ctx <> nctx then ctx.Post((fun _ -> g()), null)
+        else g())
+
+type Microsoft.FSharp.Control.Async with
+    /// Behaves like AwaitObservable, but calls the specified guarding function
+    /// after a subscriber is registered with the observable.
+    static member GuardedAwaitObservable (ev1 : IObservable<'T1>) guardFunction = 
+        let removeObj : IDisposable option ref = ref None
+        let removeLock = new obj()
+        let setRemover r = lock removeLock (fun () -> removeObj := Some r)
+        
+        let remove() = 
+            lock removeLock (fun () -> 
+                match !removeObj with
+                | Some d -> 
+                    removeObj := None
+                    d.Dispose()
+                | None -> ())
+        synchronize (fun f -> 
+            let workflow = 
+                Async.FromContinuations((fun (cont, econt, ccont) -> 
+                    let rec finish cont value = 
+                        remove()
+                        f (fun () -> cont value)
+                    setRemover <| ev1.Subscribe({ new IObserver<_> with
+                                                      member x.OnNext(v) = finish cont v
+                                                      member x.OnError(e) = finish econt e
+                                                      member x.OnCompleted() = 
+                                                          let msg = 
+                                                              "Cancelling the workflow, because the Observable awaited using AwaitObservable has completed."
+                                                          finish ccont (new System.OperationCanceledException(msg)) })
+                    guardFunction()))
+            async { 
+                let! cToken = Async.CancellationToken
+                let token : CancellationToken = cToken
+                use registration = token.Register(fun () -> remove())
+                return! workflow
+            })
+
+
+let private formatArgs args = 
+    let delimit (str : string) = 
+        if isLetterOrDigit (str.Chars(str.Length - 1)) then str + " "
+        else str
+    args
+    |> Seq.map (fun (k, v) -> delimit k + quoteIfNeeded v)
+    |> separated " "
+
+open System.Diagnostics
+
+/// Execute an external program asynchronously and return the exit code,
+/// logging output and error messages to FAKE output. You can compose the result
+/// with Async.Parallel to run multiple external programs at once, but be
+/// sure that none of them depend on the output of another.
+let asyncShellExec (args : ExecParams) = 
+    async { 
+        if isNullOrEmpty args.Program then invalidArg "args" "You must specify a program to run!"
+        let commandLine = args.CommandLine + " " + formatArgs args.Args
+        let info = 
+            ProcessStartInfo
+                (args.Program, UseShellExecute = false, 
+                 RedirectStandardError = true, RedirectStandardOutput = true, RedirectStandardInput = true,
+                 WindowStyle = ProcessWindowStyle.Hidden, WorkingDirectory = args.WorkingDirectory, 
+                 Arguments = commandLine)
+        use proc = new Process(StartInfo = info)
+        proc.ErrorDataReceived.Add(fun e -> 
+            if e.Data <> null then traceError e.Data)
+        proc.OutputDataReceived.Add(fun e -> 
+            if e.Data <> null then log e.Data)
+        start proc
+        proc.BeginOutputReadLine()
+        proc.BeginErrorReadLine()
+        proc.StandardInput.Close()
+        // attaches handler to Exited event, enables raising events, then awaits event
+        // the event gets triggered even if process has already finished
+        let! _ = Async.GuardedAwaitObservable proc.Exited (fun _ -> proc.EnableRaisingEvents <- true)
+        return proc.ExitCode
+    }
+
+/// Execute an external program and return the exit code.
+/// [omit]
+let shellExec args = args |> asyncShellExec |> Async.RunSynchronously
+
+/// Allows to exec shell operations synchronously and asynchronously.
+type Shell() = 
     
-    File.WriteAllText("temp/gh-pages/latest",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" release.NugetVersion)
-    File.WriteAllText("temp/gh-pages/stable",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" stable.NugetVersion)
-
-    StageAll tempDocsDir
-    Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
-    Branches.push tempDocsDir
-)
-
-#load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
-open Octokit
-
-Target "ReleaseGitHub" (fun _ ->
-    let user =
-        match getBuildParam "github-user" with
-        | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserInput "Username: "
-    let pw =
-        match getBuildParam "github-pw" with
-        | s when not (String.IsNullOrWhiteSpace s) -> s
-        | _ -> getUserPassword "Password: "
-    let remote =
-        Git.CommandHelper.getGitResult "" "remote -v"
-        |> Seq.filter (fun (s: string) -> s.EndsWith("(push)"))
-        |> Seq.tryFind (fun (s: string) -> s.Contains(gitOwner + "/" + gitName))
-        |> function None -> gitHome + "/" + gitName | Some (s: string) -> s.Split().[0]
-
-    StageAll ""
-    Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
-    Branches.pushBranch "" remote (Information.getBranchName "")
-
-    Branches.tag "" release.NugetVersion
-    Branches.pushTag "" remote release.NugetVersion
+    static member private GetParams(cmd, ?args, ?dir) = 
+        let args = defaultArg args ""
+        let dir = defaultArg dir (Directory.GetCurrentDirectory())
+        { WorkingDirectory = dir
+          Program = cmd
+          CommandLine = args
+          Args = [] }
     
-    // release on github
-    createClient user pw
-    |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes 
-    |> uploadFile "./bin/merged/paket.exe"
-    |> uploadFile "./bin/paket.bootstrapper.exe"
-    |> uploadFile ".paket/paket.targets"
-    |> releaseDraft
-    |> Async.RunSynchronously
-)
+    /// Runs the given process, waits for it's completion and returns the exit code.
+    /// ## Parameters
+    ///
+    ///  - `cmd` - The command which should be run in elavated context.
+    ///  - `args` - The process arguments (optional).
+    ///  - `directory` - The working directory (optional).
+    static member Exec(cmd, ?args, ?dir) = shellExec (Shell.GetParams(cmd, ?args = args, ?dir = dir))
+    
+    /// Runs the given process asynchronously.
+    /// ## Parameters
+    ///
+    ///  - `cmd` - The command which should be run in elavated context.
+    ///  - `args` - The process arguments (optional).
+    ///  - `directory` - The working directory (optional).
+    static member AsyncExec(cmd, ?args, ?dir) = asyncShellExec (Shell.GetParams(cmd, ?args = args, ?dir = dir))
 
-Target "Release" DoNothing
-Target "BuildPackage" DoNothing
+let Exec command args =
+    let result = Shell.Exec(command, args)
+    if result <> 0 then failwithf "%s exited with error %d" command result
 
-// --------------------------------------------------------------------------------------
-// Run all targets by default. Invoke 'build <Target>' to override
-
-Target "All" DoNothing
-
-"Clean"
-  ==> "AssemblyInfo"
-  ==> "Build"
-  =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
-  =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
-  =?> ("BuildPowerShell", not isMono)
-  ==> "RunTests"
-  =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
-  =?> ("GenerateDocs",isLocalBuild && not isMono)
-  ==> "All"
-  =?> ("ReleaseDocs",isLocalBuild && not isMono)
-
-"All"
-  =?> ("RunIntegrationTests", not <| hasBuildParam "SkipIntegrationTests")
-  ==> "MergePaketTool"
-  =?> ("MergePowerShell", not isMono)
-  ==> "SignAssemblies"
-  ==> "NuGet"
-  =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE")
-  ==> "BuildPackage"
-
-"CleanDocs"
-  ==> "GenerateHelp"
-  ==> "GenerateReferenceDocs"
-  ==> "GenerateDocs"
-
-"CleanDocs"
-  ==> "GenerateHelpDebug"
-
-"GenerateHelp"
-  ==> "KeepRunning"
-
-"BuildPackage"
-  ==> "PublishChocolatey"
-  ==> "PublishNuGet"
-
-"PublishNuGet"
-  ==> "ReleaseGitHub"
-  ==> "Release"
-
-"ReleaseGitHub"
-  ?=> "ReleaseDocs"
-
-"ReleaseDocs"
-  ==> "Release"
-
-RunTargetOrDefault "All"
+let ExecutePlistBuddy key value path =
+    Exec "/usr/libexec/PlistBuddy" ("-c 'Set :" + key + " " + value + "' " + path)
+    
+ExecutePlistBuddy "CFBundleIdentifier" "test1" "Some/Info.plist"
+// Remove the next line, and we're good to go.
+ExecutePlistBuddy "CFBundleDisplayName" "test2" "Some/Info.plist"

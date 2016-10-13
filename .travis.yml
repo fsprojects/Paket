@@ -1,19 +1,5 @@
 language: csharp
-
-env:
- - HOME=/home/travis APPDATA=/home/travis LocalAppData=/home/travis # DISABLE_NETCORE=true
-
-#sudo: false  # use the new container-based Travis infrastructure
-sudo: required
-dist: trusty # Ubuntu 14.04
-dotnet: 1.0.0-preview2-003121
-
-mono:
-  - latest
-
-branches:
-  except:
-    - gh-pages
-
+ 
+os: osx
 script: 
-  - ./build.sh RunIntegrationTests
+  - ./build.sh failing-test
