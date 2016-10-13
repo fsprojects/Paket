@@ -141,6 +141,7 @@
     <Compile Include="NugetConvert.fs" />
     <Compile Include="FindOutdated.fs" />
     <Compile Include="FindReferences.fs" />
+    <Compile Include="Why.fs" />
     <Compile Include="PublicAPI.fs" />
     <Compile Include="ScriptGeneration.fs" />
     <None Include="paket.template" />
