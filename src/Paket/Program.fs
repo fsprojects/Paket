@@ -354,16 +354,14 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
             Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
 
 let why (results: ParseResults<WhyArgs>) =
-    let name = results.GetResult <@ WhyArgs.NuGet @>
-    let packageName = Domain.PackageName name
+    let packageName = results.GetResult <@ WhyArgs.NuGet @> |> Domain.PackageName
     let groupName = 
         defaultArg 
             (results.TryGetResult <@ WhyArgs.Group @> |> Option.map Domain.GroupName) 
             Constants.MainDependencyGroup
     let lockFile = Dependencies.Locate().GetLockFile()
-    let group = lockFile.GetGroup(groupName)
 
-    Why.ohWhy(name, packageName, lockFile, groupName, group, results.Parser.PrintUsage())
+    Why.ohWhy(packageName, lockFile, groupName, results.Parser.PrintUsage())
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
