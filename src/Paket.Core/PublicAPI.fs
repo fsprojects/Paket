@@ -241,32 +241,32 @@ type Dependencies(dependenciesFileName: string) =
                                                       NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
-    member this.Restore(ignoreChecks): unit = this.Restore(false,None,[],false,ignoreChecks)
+    member this.Restore(ignoreChecks): unit = this.Restore(false,None,[],false,ignoreChecks,false)
 
     /// Restores all dependencies.
-    member this.Restore(): unit = this.Restore(false,None,[],false,false)
+    member this.Restore(): unit = this.Restore(false,None,[],false,false,false)
 
     /// Restores the given paket.references files.
-    member this.Restore(group: string option, files: string list, ignoreChecks): unit = this.Restore(false, group, files, false, ignoreChecks)
+    member this.Restore(group: string option, files: string list, ignoreChecks): unit = this.Restore(false, group, files, false, ignoreChecks,false)
 
     /// Restores the given paket.references files.
-    member this.Restore(group: string option, files: string list): unit = this.Restore(false, group, files, false, false)
+    member this.Restore(group: string option, files: string list): unit = this.Restore(false, group, files, false, false,false)
 
     /// Restores the given paket.references files.
-    member this.Restore(force: bool, group: string option, files: string list, touchAffectedRefs: bool, ignoreChecks) : unit =
+    member this.Restore(force: bool, group: string option, files: string list, touchAffectedRefs: bool, ignoreChecks, failOnFailedChecks) : unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () ->
                 if touchAffectedRefs then
                     let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
                     this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-                RestoreProcess.Restore(dependenciesFileName,force,Option.map GroupName group,files,ignoreChecks))
+                RestoreProcess.Restore(dependenciesFileName,force,Option.map GroupName group,files,ignoreChecks, failOnFailedChecks))
 
     /// Restores packages for all available paket.references files
     /// (or all packages if onlyReferenced is false)
-    member this.Restore(force: bool, group: string option, onlyReferenced: bool, touchAffectedRefs: bool, ignoreChecks): unit =
+    member this.Restore(force: bool, group: string option, onlyReferenced: bool, touchAffectedRefs: bool, ignoreChecks, failOnFailedChecks): unit =
         if not onlyReferenced then 
-            this.Restore(force,group,[],touchAffectedRefs,ignoreChecks) 
+            this.Restore(force,group,[],touchAffectedRefs,ignoreChecks,failOnFailedChecks) 
         else
             let referencesFiles =
                 this.RootPath
@@ -275,7 +275,7 @@ type Dependencies(dependenciesFileName: string) =
             if Array.isEmpty referencesFiles then
                 traceWarnfn "No paket.references files found for which packages could be installed."
             else 
-                this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs, ignoreChecks)
+                this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs, ignoreChecks,  failOnFailedChecks)
 
     /// Lists outdated packages.
     member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =

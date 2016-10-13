@@ -154,8 +154,9 @@ let restore (results : ParseResults<_>) =
     let installOnlyReferenced = results.Contains <@ RestoreArgs.Install_Only_Referenced @>
     let touchAffectedRefs = results.Contains <@ RestoreArgs.Touch_Affected_Refs @>
     let ignoreChecks = results.Contains <@ RestoreArgs.Ignore_Checks @>
-    if List.isEmpty files then Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks)
-    else Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks)
+    let failOnFailedChecks = results.Contains <@ RestoreArgs.Fail_On_Failed_Checks @>
+    if List.isEmpty files then Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnFailedChecks)
+    else Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnFailedChecks)
 
 let simplify (results : ParseResults<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>
