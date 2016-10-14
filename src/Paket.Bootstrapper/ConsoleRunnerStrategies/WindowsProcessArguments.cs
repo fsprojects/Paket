@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic;
 using System.Text;
 
-namespace Paket.Bootstrapper
+namespace Paket.Bootstrapper.ConsoleRunnerStrategies
 {
-    static class ProcessArguments
+    static class WindowsProcessArguments
     {
-        static StringBuilder Escape(StringBuilder builder, string arg)
+        static void AppendEscaped(StringBuilder builder, string arg)
         {
             var needQuote = arg.Contains(" ") || arg.Contains("\t");
             if (needQuote)
@@ -57,15 +56,20 @@ namespace Paket.Bootstrapper
             {
                 builder.Append('"');
             }
-
-            return builder;
         }
 
         public static string ToString(IEnumerable<string> args)
         {
-            return 
-                args.Aggregate(new StringBuilder(), Escape)
-                .ToString();
+            var builder = new StringBuilder();
+            foreach (var arg in args)
+            {
+                if (builder.Length != 0)
+                {
+                    builder.Append(' ');
+                }
+                AppendEscaped(builder, arg);
+            }
+            return builder.ToString();
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Paket.Bootstrapper.ConsoleRunnerStrategies;
 using Paket.Bootstrapper.DownloadStrategies;
 using Paket.Bootstrapper.HelperProxies;
 
@@ -14,6 +15,8 @@ namespace Paket.Bootstrapper
 {
     static class Program
     {
+        private static readonly ConsoleRunner ConsoleRunner = new ConsoleRunner();
+
         static bool GetIsMagicMode()
         {
             var fileName = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
@@ -25,13 +28,19 @@ namespace Paket.Bootstrapper
             Console.CancelKeyPress += CancelKeyPressed;
 
             var magicMode = GetIsMagicMode();
-            magicMode = true;
-            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings, Environment.GetEnvironmentVariables(), magicMode);
+            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
+                Environment.GetEnvironmentVariables(), magicMode);
             if (options.ShowHelp)
             {
                 ConsoleImpl.WriteDebug(BootstrapperHelper.HelpText);
                 return;
             }
+            if (options.Run && !ConsoleRunner.IsSupported)
+            {
+                ConsoleImpl.WriteError("The current platform isn't supported by --run");
+                return;
+            }
+
             ConsoleImpl.IsSilent = options.Silent;
             if (options.UnprocessedCommandArgs.Any())
                 ConsoleImpl.WriteInfo("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
@@ -45,8 +54,7 @@ namespace Paket.Bootstrapper
         {
             if (options.Run && File.Exists(options.DownloadArguments.Target))
             {
-                var exitCode = ProcessRunner.Run(options.DownloadArguments.Target, options.RunArgs);
-                Environment.Exit(exitCode);
+                ConsoleRunner.RunAndExit(options.DownloadArguments.Target, options.RunArgs);
             }
         }
 
