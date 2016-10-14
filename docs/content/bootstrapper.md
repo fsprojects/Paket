@@ -75,3 +75,9 @@ Would do the same thing as :
 ```batch
 paket.bootstrapper.exe -s --max-file-age=720 --run add nuget FAKE
 ```
+
+Even while renamed as `paket.exe` the bootstraper parameters can still be specified if `--run` is present:
+
+```batch
+paket.exe --force-nuget --run add nuget FAKE
+```
