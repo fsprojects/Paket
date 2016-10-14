@@ -353,7 +353,7 @@ namespace Paket.Bootstrapper.Tests
                     "-s",
                     "--help",
                     "foo"
-                }, null, null, false);
+                }, null, null, true);
             
             //assert
             Assert.That(result.Run, Is.True);
