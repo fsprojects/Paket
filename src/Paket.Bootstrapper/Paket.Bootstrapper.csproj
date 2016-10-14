@@ -39,7 +39,8 @@
     </Win32Resource>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>Bootstrapper.ico</ApplicationIcon>
+    <ApplicationIcon>
+    </ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -80,9 +81,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.template" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Bootstrapper.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
