@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using static Paket.Bootstrapper.ConsoleRunnerStrategies.UnixPInvoke;
 
 namespace Paket.Bootstrapper.ConsoleRunnerStrategies
 {
@@ -19,14 +20,32 @@ namespace Paket.Bootstrapper.ConsoleRunnerStrategies
         public void RunAndExit(string program, IEnumerable<string> arguments)
         {
             var finalArguments = new[] {"mono", program}.Concat(arguments).ToArray();
-            UnixPInvoke.execvp("mono", finalArguments);
 
-            // execv replaces the current process, so if any code execute it mean that it failed
-            // The only way to not get killed would be to fork() before, but it's completly unsafe
-            // under mono. Luckily starting paket.exe is always the last thing we do so we're ok with
-            // not continuing execution.
-            throw new InvalidOperationException(
-                $"Running under mono failed for '{program}'. errno = {Marshal.GetLastWin32Error()}");
+            var childPid = fork();
+            if (childPid == 0)
+            {
+                execvp("mono", finalArguments);
+                _exit(0);
+            }
+
+            int status;
+            if (waitpid(childPid, out status, 0) != -1)
+            {
+                if (WIFEXITED(status))
+                {
+                    Environment.Exit(WEXITSTATUS(status));
+                }
+                else
+                {
+                    throw new InvalidOperationException(
+                        $"Running under mono failed for '{program}'. errno = {Marshal.GetLastWin32Error()}");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    $"Unknown error while running '{program}'. errno = {Marshal.GetLastWin32Error()}");
+            }
         }
     }
 }

@@ -33,5 +33,18 @@ namespace Paket.Bootstrapper.ConsoleRunnerStrategies
         [DllImport ("libc", SetLastError=true)]
         public static extern int execvp (
             string path, string[] argv);
+
+		[DllImport ("libc", SetLastError=true)]
+		public static extern int fork ();
+
+		[DllImport ("libc", SetLastError=true)]
+		public static extern int waitpid (int pid, out int status, int options);
+
+		[DllImport ("libc", SetLastError=true)]
+		public static extern int _exit (int status);
+
+        public static int WEXITSTATUS(int status) => (status & 0xff00) >> 8;
+        public static int WTERMSIG(int status) => status & 0x7f;
+        public static bool WIFEXITED(int status) => WTERMSIG(status) == 0;
     }
 }
