@@ -78,7 +78,7 @@ namespace Paket.Bootstrapper
         {
             Action<Exception> handleException = exception =>
             {
-                if (!File.Exists(dlArgs.Target))
+                if (!fileProxy.Exists(dlArgs.Target))
                     Environment.ExitCode = 1;
                 ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
             };
@@ -134,14 +134,14 @@ namespace Paket.Bootstrapper
             catch (WebException exn)
             {
                 var shouldHandleException = true;
-                if (!File.Exists(dlArgs.Target))
+                if (!fileProxy.Exists(dlArgs.Target))
                 {
                     if (downloadStrategy.FallbackStrategy != null)
                     {
                         var fallbackStrategy = downloadStrategy.FallbackStrategy;
                         ConsoleImpl.WriteDebug("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
                         StartPaketBootstrapping(fallbackStrategy, dlArgs, fileProxy, onSuccess);
-                        shouldHandleException = !File.Exists(dlArgs.Target);
+                        shouldHandleException = !fileProxy.Exists(dlArgs.Target);
                     }
                 }
                 if (shouldHandleException)

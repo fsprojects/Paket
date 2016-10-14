@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 
 namespace Paket.Bootstrapper.Tests
 {
@@ -44,6 +44,8 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.DownloadArguments.Target, Does.EndWith("paket.exe"));
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
             Assert.That(result.ShowHelp, Is.False);
+            Assert.That(result.Run, Is.False);
+            Assert.That(result.RunArgs, Is.Empty);
 
             var knownProps = new[] { "DownloadArguments.MaxFileAgeInMinutes", "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Silent", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp", "Run", "RunArgs" };
             var allProperties = GetAllProperties(result);
@@ -283,5 +285,58 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
         }
 
+        [Test]
+        public void Run()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.Run }, null, null, false);
+
+            //assert
+            Assert.That(result.Run, Is.True);
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
+
+        [Test]
+        public void Run_WithArgs()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(
+                new[]
+                {
+                    ArgumentParser.CommandArgs.MaxFileAge + "10",
+                    ArgumentParser.CommandArgs.Run,
+                    "-s",
+                    "--help",
+                    "foo"
+                }, null, null, false);
+            
+            //assert
+            Assert.That(result.Run, Is.True);
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(10));
+            Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
+
+        [Test]
+        public void Magic()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] {"-s", "--help", "foo"}, null, null, true);
+
+            //assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Silent, Is.True);
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+            Assert.That(result.Run, Is.True);
+            Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(720));
+            Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.GetTempPath()).And.EndsWith(".exe"));
+        }
     }
 }

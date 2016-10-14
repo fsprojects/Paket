@@ -197,5 +197,36 @@ namespace Paket.Bootstrapper.Tests
             mockFallbackStrategy.Verify(x => x.DownloadVersion("1.2", dlArgs.Target));
         }
         
+        [Test]
+        public void OnSuccess_CalledWhenOk()
+        {
+            //arrange
+            int successCount = 0;
+            Action onSuccess = () => successCount++;
+            dlArgs.LatestVersion = "1.5";
+
+            //act
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, onSuccess);
+
+            //assert
+            Assert.That(successCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void OnSuccess_NeverCalledWhenFail()
+        {
+            //arrange
+            int successCount = 0;
+            Action onSuccess = () => successCount++;
+            dlArgs.LatestVersion = "1.5";
+            mockFileProxy.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
+            mockDownloadStrategy.Setup(x => x.DownloadVersion("1.5", "paket.exe")).Throws(new WebException());
+
+            //act
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, onSuccess);
+
+            //assert
+            Assert.That(successCount, Is.EqualTo(0));
+        }
     }
 }
