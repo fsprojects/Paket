@@ -20,14 +20,14 @@ namespace Paket.Bootstrapper.ConsoleRunnerStrategies
             runner = Runners.FirstOrDefault(r => r.IsSupported);
         }
 
-        public void RunAndExit(string program, IEnumerable<string> arguments)
+        public int Run(string program, IEnumerable<string> arguments)
         {
             if (runner == null)
             {
                 throw new InvalidOperationException("No supported runner found");
             }
 
-            runner.RunAndExit(program, arguments);
+            return runner.Run(program, arguments);
         }
     }
 }

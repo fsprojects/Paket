@@ -5,6 +5,6 @@ namespace Paket.Bootstrapper.ConsoleRunnerStrategies
     interface IConsoleRunner
     {
         bool IsSupported { get; }
-        void RunAndExit(string program, IEnumerable<string> arguments);
+        int Run(string program, IEnumerable<string> arguments);
     }
 }

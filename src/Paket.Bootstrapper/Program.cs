@@ -54,7 +54,9 @@ namespace Paket.Bootstrapper
         {
             if (options.Run && File.Exists(options.DownloadArguments.Target))
             {
-                ConsoleRunner.RunAndExit(options.DownloadArguments.Target, options.RunArgs);
+                Console.CancelKeyPress -= CancelKeyPressed;
+                var exitCode = ConsoleRunner.Run(options.DownloadArguments.Target, options.RunArgs);
+                Environment.Exit(exitCode);
             }
         }
 

@@ -31,8 +31,7 @@ namespace Paket.Bootstrapper.ConsoleRunnerStrategies
     class UnixPInvoke
     {
         [DllImport ("libc", SetLastError=true)]
-        public static extern int execvp (
-            string path, string[] argv);
+        public static extern unsafe int execvp (byte* path, byte** argv);
 
 		[DllImport ("libc", SetLastError=true)]
 		public static extern int fork ();
