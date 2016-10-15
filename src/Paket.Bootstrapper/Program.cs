@@ -55,8 +55,15 @@ namespace Paket.Bootstrapper
             if (options.Run && File.Exists(options.DownloadArguments.Target))
             {
                 Console.CancelKeyPress -= CancelKeyPressed;
-                var exitCode = ConsoleRunner.Run(options.DownloadArguments.Target, options.RunArgs);
-                Environment.Exit(exitCode);
+                try
+                {
+                    var exitCode = ConsoleRunner.Run(options.DownloadArguments.Target, options.RunArgs);
+                    Environment.Exit(exitCode);
+                }
+                catch (Exception e)
+                {
+                    ConsoleImpl.WriteError("Running paket failed with: {0}", e.Message);
+                }
             }
         }
 
