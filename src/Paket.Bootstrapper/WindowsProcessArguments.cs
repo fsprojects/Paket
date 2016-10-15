@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Paket.Bootstrapper.ConsoleRunnerStrategies
+namespace Paket.Bootstrapper
 {
     static class WindowsProcessArguments
     {

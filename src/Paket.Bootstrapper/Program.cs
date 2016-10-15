@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Paket.Bootstrapper.ConsoleRunnerStrategies;
 using Paket.Bootstrapper.DownloadStrategies;
 using Paket.Bootstrapper.HelperProxies;
 
@@ -35,11 +35,6 @@ namespace Paket.Bootstrapper
                 ConsoleImpl.WriteDebug(BootstrapperHelper.HelpText);
                 return;
             }
-            if (options.Run && !ConsoleRunner.IsSupported)
-            {
-                ConsoleImpl.WriteError("The current platform isn't supported by --run");
-                return;
-            }
 
             ConsoleImpl.IsSilent = options.Silent;
             if (options.UnprocessedCommandArgs.Any())
@@ -50,7 +45,7 @@ namespace Paket.Bootstrapper
             StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, new FileProxy(), () => OnSuccessfulDownload(options));
         }
 
-        static void OnSuccessfulDownload(BootstrapperOptions options)
+        private static void OnSuccessfulDownload(BootstrapperOptions options)
         {
             if (options.Run && File.Exists(options.DownloadArguments.Target))
             {
@@ -62,7 +57,7 @@ namespace Paket.Bootstrapper
                 }
                 catch (Exception e)
                 {
-                    ConsoleImpl.WriteError("Running paket failed with: {0}", e.Message);
+                    ConsoleImpl.WriteError("Running paket failed with: {0}", e);
                 }
             }
         }

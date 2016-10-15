@@ -22,7 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -32,7 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <Win32Resource>
@@ -53,13 +53,8 @@
     <Compile Include="ArgumentParser.cs" />
     <Compile Include="BootstrapperHelper.cs" />
     <Compile Include="BootstrapperOptions.cs" />
-    <Compile Include="ConsoleRunnerStrategies\ConsoleRunner.cs" />
-    <Compile Include="ConsoleRunnerStrategies\IConsoleRunner.cs" />
-    <Compile Include="ConsoleRunnerStrategies\UnixMonoConsoleRunner.cs" />
-    <Compile Include="ConsoleRunnerStrategies\UnixPInvoke.cs" />
-    <Compile Include="ConsoleRunnerStrategies\WindowsConsoleRunner.cs" />
-    <Compile Include="ConsoleRunnerStrategies\WindowsPInvoke.cs" />
-    <Compile Include="ConsoleRunnerStrategies\WindowsProcessArguments.cs" />
+    <Compile Include="ConsoleRunner.cs" />
+    <Compile Include="WindowsProcessArguments.cs" />
     <Compile Include="DownloadStrategies\CacheDownloadStrategy.cs" />
     <Compile Include="HelperProxies\IWebRequestProxy.cs" />
     <Compile Include="HelperProxies\WebRequestProxy.cs" />
