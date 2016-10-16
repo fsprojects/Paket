@@ -367,7 +367,7 @@ let convertR rootDirectory force credsMigrationMode = trial {
     return! createResult(rootDirectory, nugetEnv, credsMigrationMode)
 }
 
-let replaceNuGetWithPaket initAutoRestore installAfter result = 
+let replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper result = 
     let remove (fi : FileInfo) = 
         tracefn "Removing %s" fi.FullName
         fi.Delete()
@@ -399,7 +399,7 @@ let replaceNuGetWithPaket initAutoRestore installAfter result =
     
     if initAutoRestore && (autoVSPackageRestore || result.NuGetEnv.NuGetTargets.IsSome) then
         try
-            VSIntegration.TurnOnAutoRestore result.PaketEnv |> returnOrFail
+            VSIntegration.TurnOnAutoRestore fromBootstrapper result.PaketEnv |> returnOrFail
         with
         | exn -> 
             traceWarnfn "Could not enable auto restore%sMessage: %s" Environment.NewLine exn.Message

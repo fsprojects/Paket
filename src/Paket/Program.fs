@@ -94,12 +94,12 @@ let autoRestore (results : ParseResults<_>) =
     | On -> Dependencies.Locate().TurnOnAutoRestore()
     | Off -> Dependencies.Locate().TurnOffAutoRestore()
 
-let convert (results : ParseResults<_>) =
+let convert (fromBootstrapper:bool) (results : ParseResults<_>) =
     let force = results.Contains <@ ConvertFromNugetArgs.Force @>
     let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
     let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
     let credsMigrationMode = results.TryGetResult <@ ConvertFromNugetArgs.Creds_Migration @>
-    Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode)
+    Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode, fromBootstrapper=fromBootstrapper)
 
 let findRefs (results : ParseResults<_>) =
     let packages = results.GetResult <@ FindRefsArgs.Packages @>
@@ -107,9 +107,9 @@ let findRefs (results : ParseResults<_>) =
     packages |> List.map (fun p -> group,p)
     |> Dependencies.Locate().ShowReferencesFor
 
-let init (results : ParseResults<InitArgs>) =
+let init (fromBootstrapper:bool) (results : ParseResults<InitArgs>) =
     Dependencies.Init()
-    Dependencies.Locate().DownloadLatestBootstrapper()
+    Dependencies.Locate().DownloadLatestBootstrapper(fromBootstrapper)
 
 let clearCache (results : ParseResults<ClearCacheArgs>) =
     Dependencies.ClearCache()
@@ -374,6 +374,8 @@ let main() =
         if results.Contains <@ Verbose @> then
             Logging.verbose <- true
 
+        let fromBootstrapper = results.Contains <@ From_Bootstrapper @>
+
         let version = results.Contains <@ Version @> 
         if not version then            
 
@@ -386,9 +388,9 @@ let main() =
             | Add r -> processCommand silent add r
             | ClearCache r -> processCommand silent clearCache r
             | Config r -> processWithValidation silent validateConfig config r
-            | ConvertFromNuget r -> processCommand silent convert r
+            | ConvertFromNuget r -> processCommand silent (convert fromBootstrapper) r
             | FindRefs r -> processCommand silent findRefs r
-            | Init r -> processCommand silent init r
+            | Init r -> processCommand silent (init fromBootstrapper) r
             | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
             | Install r -> processCommand silent install r
             | Outdated r -> processCommand silent outdated r

@@ -317,6 +317,7 @@ type Command =
     | [<Inherit>]                                       Log_File of path:string
     | [<AltCommandLine("-s"); Inherit>]                 Silent
     | [<Inherit>]                                       Version
+    | [<Inherit;Hidden>]                                From_Bootstrapper
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
     | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResults<ClearCacheArgs>
@@ -366,6 +367,7 @@ with
             | Silent -> "Suppress console output for the paket process."
             | Verbose -> "Enable verbose console output for the paket process." 
             | Version -> "Display the version." 
+            | From_Bootstrapper -> "Call comming from the '--run' feature of the bootstrapper." 
 
 let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
 
