@@ -360,8 +360,10 @@ let why (results: ParseResults<WhyArgs>) =
             (results.TryGetResult <@ WhyArgs.Group @> |> Option.map Domain.GroupName) 
             Constants.MainDependencyGroup
     let lockFile = Dependencies.Locate().GetLockFile()
+    let options = 
+        { Why.WhyOptions.AllPaths = results.Contains <@ WhyArgs.AllPaths @> }
 
-    Why.ohWhy(packageName, lockFile, groupName, results.Parser.PrintUsage())
+    Why.ohWhy(packageName, lockFile, groupName, results.Parser.PrintUsage(), options)
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
