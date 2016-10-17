@@ -314,12 +314,14 @@ with
 type WhyArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] NuGet of package_id:string
     | [<CustomCommandLine("group")>] Group of name:string
+    | AllPaths
 with
   interface IArgParserTemplate with
       member this.Usage = 
         match this with
         | NuGet _ -> "Name of the NuGet package."
         | Group _ -> "Allows to specify the dependency group."
+        | AllPaths -> "Display all paths found from a top level dependency"
 
 type Command =
     // global options

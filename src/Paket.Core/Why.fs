@@ -1,5 +1,7 @@
 module Paket.Why
 
+open System
+
 open Paket.Domain
 open Paket.Logging
 
@@ -24,18 +26,27 @@ let depGraph (res : PackageResolver.PackageResolution) : AdjGraph<Domain.Package
                                        |> Set.map (fun (p,_,_) -> p) 
                                        |> Set.toList))
 
-let prettyPrintPath path = 
+type WhyOptions = 
+    { AllPaths : bool }
+
+let prettyFormatPath path = 
     path 
     |> List.mapi 
         (fun i v -> 
-            sprintf "%s%s%s%s"
+            sprintf "%s-> %s%s"
                     (String.replicate i "  ")
-                    (if i > 0 then "-> " else "")
                     v
-                    (if i = 0 then " (top-level dependency)" else ""))
-    |> List.iter tracen
+                    (if i = 0 then sprintf " (%s)" Constants.DependenciesFileName else ""))
+    |> String.concat Environment.NewLine
 
-let ohWhy (packageName, lockFile : LockFile, groupName, usage) =
+let prettyPrintPath (path: PackageName list) =
+    path
+    |> List.map (sprintf "%O")
+    |> prettyFormatPath
+    |> tracen
+    tracen ""
+
+let ohWhy (packageName, lockFile : LockFile, groupName, usage, options) =
     let group = lockFile.GetGroup(groupName)
     if not <| group.Resolution.ContainsKey packageName then
         match lockFile.Groups |> Seq.filter (fun g -> g.Value.Resolution.ContainsKey packageName) |> Seq.toList with
@@ -57,27 +68,28 @@ let ohWhy (packageName, lockFile : LockFile, groupName, usage) =
             |> Seq.map (fun pair -> pair.Key)
             |> Seq.toList
             |> List.collect (fun p -> paths p packageName g)
-        tracefn "Dependency graphs for %O" packageName
-        tracefn ""
-        for path in topLevelPaths do
-            path 
-            |> List.map (sprintf "%O")
-            |> prettyPrintPath
-            tracefn ""
-        //let isTopLevel =
-        //    lockFile.GetTopLevelDependencies groupName
-        //    |> Map.exists (fun key _ -> key = packageName)
-        //if isTopLevel then
-        //    tracefn "NuGet %O is in %s group because it's defined as a top-level dependency" packageName (groupName.ToString()) 
-        //else
-        //    let xs =
-        //        group.Resolution
-        //        |> Seq.filter (fun pair -> pair.Value.Dependencies
-        //                                |> Seq.exists (fun (name,_,_) -> name = packageName))
-        //        |> Seq.map (fun pair -> pair.Key.ToString())
-        //        |> Seq.toList
-        //    
-        //    tracefn "NuGet %O is in %s group because it's a dependency of those packages: %A"
-        //            packageName
-        //            (groupName.ToString())
-        //            xs
+            |> List.groupBy (List.item 0)
+
+        tracefn "Dependency paths for %O in group %s:" packageName (groupName.ToString())
+        tracen ""
+
+        for (top, paths) in topLevelPaths do
+            match paths |> List.sortBy List.length with
+            | shortest :: rest ->
+                prettyPrintPath shortest
+
+                match rest, options.AllPaths with
+                | _ :: _, false ->
+                    tracefn 
+                        "... and %d path%s more starting at %O. To display all paths use --allpaths flag" 
+                        rest.Length 
+                        (if rest.Length > 1 then "s" else "") 
+                        top
+                    tracen ""
+                | _ :: _, true ->
+                    List.iter prettyPrintPath rest
+                | [], _ ->
+                    ()
+
+            | [] ->
+                failwith "impossible"
