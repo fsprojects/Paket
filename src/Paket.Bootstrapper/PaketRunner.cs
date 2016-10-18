@@ -7,7 +7,7 @@ namespace Paket.Bootstrapper
 {
     class PaketRunner
     {
-        static readonly Version VersionWithFromBootstrapper = new Version("3.23.2");
+        static readonly Version VersionWithFromBootstrapper = new Version("3.23.3");
 
         static IEnumerable<string> SetBootstrapperArgument(string program, IEnumerable<string> arguments)
         {
