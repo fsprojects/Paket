@@ -29,24 +29,31 @@ let depGraph (res : PackageResolver.PackageResolution) : AdjGraph<Domain.Package
 type WhyOptions = 
     { AllPaths : bool }
 
-let prettyFormatPath path = 
+type WhyPath = list<PackageName * bool>
+
+let prettyFormatPath (path: WhyPath) = 
     path 
-    |> List.mapi 
-        (fun i v -> 
-            sprintf "%s-> %s%s"
+    |> List.mapi
+        (fun i (name, isDirect) -> 
+            sprintf "%s-> %O%s"
                     (String.replicate i "  ")
-                    v
-                    (if i = 0 then sprintf " (%s)" Constants.DependenciesFileName else ""))
+                    name
+                    (if isDirect then sprintf " (%s)" Constants.DependenciesFileName else ""))
     |> String.concat Environment.NewLine
 
-let prettyPrintPath (path: PackageName list) =
+let prettyPrintPath (path: WhyPath) =
     path
-    |> List.map (sprintf "%O")
     |> prettyFormatPath
     |> tracen
     tracen ""
 
-let ohWhy (packageName, lockFile : LockFile, groupName, usage, options) =
+let ohWhy (packageName, 
+           directDeps : Set<PackageName>, 
+           lockFile : LockFile, 
+           groupName, 
+           usage, 
+           options) =
+
     let group = lockFile.GetGroup(groupName)
     if not <| group.Resolution.ContainsKey packageName then
         match lockFile.Groups |> Seq.filter (fun g -> g.Value.Resolution.ContainsKey packageName) |> Seq.toList with
@@ -68,12 +75,13 @@ let ohWhy (packageName, lockFile : LockFile, groupName, usage, options) =
             |> Seq.map (fun pair -> pair.Key)
             |> Seq.toList
             |> List.collect (fun p -> paths p packageName g)
+            |> List.map (List.map (fun name -> name, Set.contains name directDeps))
             |> List.groupBy (List.item 0)
 
         tracefn "Dependency paths for %O in group %s:" packageName (groupName.ToString())
         tracen ""
 
-        for (top, paths) in topLevelPaths do
+        for ((top,_), paths) in topLevelPaths do
             match paths |> List.sortBy List.length with
             | shortest :: rest ->
                 prettyPrintPath shortest

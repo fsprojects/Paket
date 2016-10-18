@@ -359,11 +359,18 @@ let why (results: ParseResults<WhyArgs>) =
         defaultArg 
             (results.TryGetResult <@ WhyArgs.Group @> |> Option.map Domain.GroupName) 
             Constants.MainDependencyGroup
-    let lockFile = Dependencies.Locate().GetLockFile()
+    let dependencies = Dependencies.Locate()
+    let lockFile = dependencies.GetLockFile()
+    let directDeps = 
+        dependencies
+            .GetDependenciesFile()
+            .GetDependenciesInGroup(groupName)
+            |> Seq.map (fun pair -> pair.Key)
+            |> Set.ofSeq
     let options = 
         { Why.WhyOptions.AllPaths = results.Contains <@ WhyArgs.AllPaths @> }
 
-    Why.ohWhy(packageName, lockFile, groupName, results.Parser.PrintUsage(), options)
+    Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
