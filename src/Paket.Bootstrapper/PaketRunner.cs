@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace Paket.Bootstrapper
 {
-    class ConsoleRunner
+    class PaketRunner
     {
         static readonly Version VersionWithFromBootstrapper = new Version("3.23.2");
 

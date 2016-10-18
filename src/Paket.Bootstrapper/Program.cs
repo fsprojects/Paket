@@ -15,7 +15,7 @@ namespace Paket.Bootstrapper
 {
     static class Program
     {
-        private static readonly ConsoleRunner ConsoleRunner = new ConsoleRunner();
+        private static readonly PaketRunner ConsoleRunner = new PaketRunner();
 
         static bool GetIsMagicMode()
         {
@@ -52,7 +52,7 @@ namespace Paket.Bootstrapper
                 Console.CancelKeyPress -= CancelKeyPressed;
                 try
                 {
-                    var exitCode = ConsoleRunner.Run(options.DownloadArguments.Target, options.RunArgs);
+                    var exitCode = PaketRunner.Run(options.DownloadArguments.Target, options.RunArgs);
                     Environment.Exit(exitCode);
                 }
                 catch (Exception e)
