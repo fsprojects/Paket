@@ -57,6 +57,14 @@ After that completes execute the install, to install Paket as a command line uti
 
 Please use the [Installation per repository](installation.html#Installation-per-repository) option.
 
+You may also use the PowerShell installation script.
+
+    ./Install-Paket.ps1 -Path .
+
+And for system-wide installation use the `-AddToPath` switch.
+
+    ./Install-Paket.ps1 -Path . -AddToPath
+
 ### Post Installation
 
 Once the basic installation is complete on your operating system of choice it is often very useful to add some tools to your IDE/Text Editor of choice. Here's some of the options that are available.
