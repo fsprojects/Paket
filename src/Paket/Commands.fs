@@ -361,7 +361,7 @@ with
             | ShowGroups _ -> "Shows all groups."
             | Pack _ -> "Packs all paket.template files within this repository."
             | Push _ -> "Pushes the given `.nupkg` file."
-            | GenerateIncludeScripts _ -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive oder ScriptCS."
+            | GenerateIncludeScripts _ -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
             | Log_File _ -> "Specify a log file for the paket process."
             | Silent -> "Suppress console output for the paket process."
             | Verbose -> "Enable verbose console output for the paket process." 
