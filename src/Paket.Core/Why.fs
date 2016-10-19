@@ -31,6 +31,52 @@ type WhyOptions =
 
 type WhyPath = list<PackageName * bool>
 
+type DependencyChain = Set<PackageName>
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module DependencyChain =
+    let format (chain : DependencyChain) =
+        chain
+        |> Seq.mapi (fun i name -> sprintf "%s-> %O" (String.replicate i "  ") name)
+        |> String.concat Environment.NewLine
+
+    let formatMany chains =
+        chains
+        |> Seq.map format
+        |> String.concat (String.replicate 2 Environment.NewLine)
+
+// In context of FAKE project dependencies
+type Reason =
+// e.g. Argu - specified in paket.dependencies, is not a dependency of any other package
+| TopLevel
+// e.g. Microsoft.AspNet.Razor - specified in paket.dependencies, but also a dependency of other package(s)
+| Direct of DependencyChain list
+// e.g. Microsoft.AspNet.Mvc - not specified in paket.dependencies, a dependency of other package(s)
+| Transient of DependencyChain list
+
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module Reason =
+    let format = function
+    | TopLevel -> 
+        sprintf "direct (%s) and top-level dependency" 
+                Constants.DependenciesFileName
+    | Direct chains -> 
+        sprintf "direct (%s) dependency. It's a part of following build chains: %s"
+                Constants.DependenciesFileName
+                (DependencyChain.formatMany chains)
+    | Transient chains -> 
+        sprintf "transient dependency. It's a part of following dependency chains: %s"
+                (DependencyChain.formatMany chains)
+
+    let infer (name : PackageName, 
+               groupName : GroupName,
+               directDeps : Set<PackageName>, 
+               lockFile : LockFile) =
+        if Set.contains name directDeps then 
+            TopLevel
+        else
+            TopLevel
+
 let prettyFormatPath (path: WhyPath) = 
     path 
     |> List.mapi
