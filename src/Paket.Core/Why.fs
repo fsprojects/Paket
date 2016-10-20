@@ -5,6 +5,8 @@ open System
 open Paket.Domain
 open Paket.Logging
 
+open Chessie.ErrorHandling
+
 type AdjGraph<'a> = list<'a * list<'a>>
 
 let adj n (g: AdjGraph<_>) =
@@ -29,9 +31,7 @@ let depGraph (res : PackageResolver.PackageResolution) : AdjGraph<Domain.Package
 type WhyOptions = 
     { AllPaths : bool }
 
-type WhyPath = list<PackageName * bool>
-
-type DependencyChain = Set<PackageName>
+type DependencyChain = List<PackageName>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module DependencyChain =
@@ -54,44 +54,57 @@ type Reason =
 // e.g. Microsoft.AspNet.Mvc - not specified in paket.dependencies, a dependency of other package(s)
 | Transient of DependencyChain list
 
+type InferError =
+| NuGetNotInLockFile
+| NuGetNotInGroup of groupsHavingNuGet : GroupName list
+
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Reason =
     let format = function
     | TopLevel -> 
-        sprintf "direct (%s) and top-level dependency" 
+        sprintf "direct (%s) and top-level dependency." 
                 Constants.DependenciesFileName
     | Direct chains -> 
-        sprintf "direct (%s) dependency. It's a part of following build chains: %s"
+        sprintf "direct (%s) dependency."
                 Constants.DependenciesFileName
-                (DependencyChain.formatMany chains)
     | Transient chains -> 
-        sprintf "transient dependency. It's a part of following dependency chains: %s"
-                (DependencyChain.formatMany chains)
+        sprintf "transient dependency."
 
-    let infer (name : PackageName, 
+    let infer (packageName : PackageName, 
                groupName : GroupName,
                directDeps : Set<PackageName>, 
-               lockFile : LockFile) =
-        if Set.contains name directDeps then 
-            TopLevel
+               lockFile : LockFile) :
+               Result<Reason, InferError> =
+        let group = lockFile.GetGroup groupName
+        if not <| group.Resolution.ContainsKey packageName then
+            let otherGroups =
+                lockFile.Groups 
+                |> Seq.filter (fun pair -> pair.Value.Resolution.ContainsKey packageName) 
+                |> Seq.map (fun pair -> pair.Key)
+                |> Seq.toList
+            if List.isEmpty otherGroups then
+                Result.Bad [NuGetNotInLockFile]
+            else
+                Result.Bad [NuGetNotInGroup otherGroups]
         else
-            TopLevel
-
-let prettyFormatPath (path: WhyPath) = 
-    path 
-    |> List.mapi
-        (fun i (name, isDirect) -> 
-            sprintf "%s-> %O%s"
-                    (String.replicate i "  ")
-                    name
-                    (if isDirect then sprintf " (%s)" Constants.DependenciesFileName else ""))
-    |> String.concat Environment.NewLine
-
-let prettyPrintPath (path: WhyPath) =
-    path
-    |> prettyFormatPath
-    |> tracen
-    tracen ""
+            let graph = depGraph group.Resolution
+            let topLevelDeps = 
+                lockFile.GetTopLevelDependencies groupName
+                |> Seq.map (fun pair -> pair.Key)
+                |> Set.ofSeq
+            let chains = 
+                topLevelDeps
+                |> Set.toList
+                |> List.collect (fun p -> paths p packageName graph)
+            match Set.contains packageName directDeps, Set.contains packageName topLevelDeps with
+            | true, true ->
+                Result.Succeed TopLevel
+            | true, false ->
+                Result.Succeed (Direct chains)
+            | false, false ->
+                Result.Succeed (Transient chains)
+            | false, true ->
+                failwith "impossible"
 
 let ohWhy (packageName, 
            directDeps : Set<PackageName>, 
@@ -100,50 +113,45 @@ let ohWhy (packageName,
            usage, 
            options) =
 
-    let group = lockFile.GetGroup(groupName)
-    if not <| group.Resolution.ContainsKey packageName then
-        match lockFile.Groups |> Seq.filter (fun g -> g.Value.Resolution.ContainsKey packageName) |> Seq.toList with
-        | _ :: _ as otherGroups ->
-            traceWarnfn 
-                "NuGet %O was not found in %s group. However it was found in following groups: %A. Specify correct group." 
-                packageName
-                (groupName.ToString())
-                (otherGroups |> List.map (fun pair -> pair.Key.ToString()))
+    match Reason.infer(packageName, groupName, directDeps, lockFile) with
+    | Result.Bad [NuGetNotInLockFile] ->
+        traceErrorfn "NuGet %O was not found in %s" packageName Constants.LockFileName
+    | Result.Bad [NuGetNotInGroup otherGroups] ->
+        traceWarnfn 
+            "NuGet %O was not found in %s group. However it was found in following groups: %A. Specify correct group." 
+            packageName
+            (groupName.ToString())
+            (otherGroups |> List.map (fun pair -> pair.ToString()))
 
-            usage |> traceWarn
-        | [] ->
-            traceErrorfn "NuGet %O was not found in %s" packageName Constants.LockFileName
-    else
-        let g = depGraph group.Resolution
-        let topLevel = lockFile.GetTopLevelDependencies groupName
-        let topLevelPaths = 
-            topLevel
-            |> Seq.map (fun pair -> pair.Key)
-            |> Seq.toList
-            |> List.collect (fun p -> paths p packageName g)
-            |> List.map (List.map (fun name -> name, Set.contains name directDeps))
-            |> List.groupBy (List.item 0)
+        usage |> traceWarn
+    | Result.Ok (reason, []) ->
+        reason
+        |> Reason.format
+        |> sprintf "NuGet %O is a %s" packageName
+        |> tracen
 
-        tracefn "Dependency paths for %O in group %s:" packageName (groupName.ToString())
-        tracen ""
-
-        for ((top,_), paths) in topLevelPaths do
-            match paths |> List.sortBy List.length with
-            | shortest :: rest ->
-                prettyPrintPath shortest
-
-                match rest, options.AllPaths with
-                | _ :: _, false ->
+        match reason with
+        | TopLevel -> ()
+        | Direct chains
+        | Transient chains ->
+            tracefn "It's a part of following dependency chains:"
+            tracen ""
+            for (top, chains) in chains |> List.groupBy (Seq.item 0) do
+                match chains |> List.sortBy Seq.length, options.AllPaths with
+                | shortest :: [], false ->
+                    DependencyChain.format shortest |> tracen
+                | shortest :: rest, false ->
+                    DependencyChain.format shortest |> tracen
+                    tracen ""
                     tracefn 
                         "... and %d path%s more starting at %O. To display all paths use --allpaths flag" 
                         rest.Length 
                         (if rest.Length > 1 then "s" else "") 
                         top
-                    tracen ""
-                | _ :: _, true ->
-                    List.iter prettyPrintPath rest
-                | [], _ ->
-                    ()
-
-            | [] ->
-                failwith "impossible"
+                | all, true ->
+                    DependencyChain.formatMany all |> tracen
+                | _ ->
+                    failwith "impossible"
+                tracen ""
+    | _ ->
+        failwith "impossible"
