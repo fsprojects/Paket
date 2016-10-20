@@ -253,14 +253,14 @@ type Dependencies(dependenciesFileName: string) =
     member this.Restore(group: string option, files: string list): unit = this.Restore(false, group, files, false, false,false)
 
     /// Restores the given paket.references files.
-    member this.Restore(force: bool, group: string option, files: string list, touchAffectedRefs: bool, ignoreChecks, failOnFailedChecks) : unit =
+    member this.Restore(force: bool, group: string option, files: string list, touchAffectedRefs: bool, ignoreChecks, failOnChecks) : unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () ->
                 if touchAffectedRefs then
                     let packagesToTouch = RestoreProcess.FindPackagesNotExtractedYet(dependenciesFileName)
                     this.Process (FindReferences.TouchReferencesOfPackages packagesToTouch)
-                RestoreProcess.Restore(dependenciesFileName,force,Option.map GroupName group,files,ignoreChecks, failOnFailedChecks))
+                RestoreProcess.Restore(dependenciesFileName,force,Option.map GroupName group,files,ignoreChecks, failOnChecks))
 
     /// Restores packages for all available paket.references files
     /// (or all packages if onlyReferenced is false)
