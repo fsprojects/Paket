@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Moq;
 using NUnit.Framework;
 using Paket.Bootstrapper.DownloadStrategies;
@@ -13,6 +14,7 @@ namespace Paket.Bootstrapper.Tests
         private Mock<IDownloadStrategy> mockDownloadStrategy;
         private Mock<IFileProxy> mockFileProxy;
 
+        private static Action DoNothing = () => { };
 
         [SetUp]
         public void Setup()
@@ -30,7 +32,7 @@ namespace Paket.Bootstrapper.Tests
             mockDownloadStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Returns("1.1");
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -45,7 +47,7 @@ namespace Paket.Bootstrapper.Tests
             mockFileProxy.Setup(x => x.GetLocalFileVersion("paket.exe")).Returns("1.0").Verifiable();
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -60,7 +62,7 @@ namespace Paket.Bootstrapper.Tests
             mockFileProxy.Setup(x => x.GetLocalFileVersion("paket.exe")).Returns("1.4").Verifiable();
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -75,7 +77,7 @@ namespace Paket.Bootstrapper.Tests
             mockDownloadStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Returns("1.0");
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -90,7 +92,7 @@ namespace Paket.Bootstrapper.Tests
             mockDownloadStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Returns("1.0");
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -106,7 +108,7 @@ namespace Paket.Bootstrapper.Tests
             mockDownloadStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Returns("1.1-alpha");
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -122,7 +124,7 @@ namespace Paket.Bootstrapper.Tests
             mockDownloadStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Returns("1.1");
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -139,7 +141,7 @@ namespace Paket.Bootstrapper.Tests
             mockDownloadStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Returns("1.1-alpha");
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -156,7 +158,7 @@ namespace Paket.Bootstrapper.Tests
             mockDownloadStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Returns("1.1-alpha");
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -171,7 +173,7 @@ namespace Paket.Bootstrapper.Tests
             mockDownloadStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Throws(new WebException());
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
@@ -188,12 +190,43 @@ namespace Paket.Bootstrapper.Tests
             mockFallbackStrategy.Setup(x => x.GetLatestVersion(dlArgs.IgnorePrerelease)).Returns("1.2");
 
             //act
-            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object);
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, DoNothing);
 
             //assert
             mockFileProxy.Verify();
             mockFallbackStrategy.Verify(x => x.DownloadVersion("1.2", dlArgs.Target));
         }
         
+        [Test]
+        public void OnSuccess_CalledWhenOk()
+        {
+            //arrange
+            int successCount = 0;
+            Action onSuccess = () => successCount++;
+            dlArgs.LatestVersion = "1.5";
+
+            //act
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, onSuccess);
+
+            //assert
+            Assert.That(successCount, Is.EqualTo(1));
+        }
+
+        [Test]
+        public void OnSuccess_NeverCalledWhenFail()
+        {
+            //arrange
+            int successCount = 0;
+            Action onSuccess = () => successCount++;
+            dlArgs.LatestVersion = "1.5";
+            mockFileProxy.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
+            mockDownloadStrategy.Setup(x => x.DownloadVersion("1.5", "paket.exe")).Throws(new WebException());
+
+            //act
+            Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, onSuccess);
+
+            //assert
+            Assert.That(successCount, Is.EqualTo(0));
+        }
     }
 }

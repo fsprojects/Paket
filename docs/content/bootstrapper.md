@@ -9,7 +9,7 @@ Cached paket.exe versions are removed when the NuGet cache folder is [cleared](p
     [lang=batchfile]
     $ paket.bootstrapper.exe [prerelease|version] [--prefer-nuget] [--self] [-s] [-f]
 
-Options:
+## Options
 
   `prerelease`: Downloads the latest paket.exe from github.com and includes prerelease versions.
 
@@ -29,10 +29,55 @@ Options:
 
   `-f`: Forces the bootstrapper to ignore any cached paket.exe versions and go directly to github.com or nuget.org based on other flags.
 
+  `--run`: Once downloaded run `paket.exe`. All arguments following this one are ignored and passed directly to `paket.exe`.
+
   `--help`: Shows a help page with all possible options.
 
-Environment Variables:
+## Application settings
+
+If present the paket.boostraper.exe.config file can be used to set AppSettings. When an option is passed on the command line the corresponding application setting is ignored.
+
+Example file :
+
+```xml
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <appSettings>
+    <add key="PreferNuget" value="True"/>
+    <add key="ForceNuget" value="True"/>
+    <add key="PaketVersion" value="1.5"/>
+  </appSettings>
+</configuration>
+```
+
+  `PreferNuget`: Same as `--prefer-nuget` option. Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails
+
+  `ForceNuget`: Same as `--force-nuget` option. Downloads paket.exe from nuget.org instead of github.com, but does *not* use github.com as a fallback.
+
+  `PaketVersion`: Same as `version` option. Downloads the given version of paket.exe from github.com.
+
+## Environment Variables
 
   `PAKET.VERSION`: The requested version can also be set using this environment variable. Above options take precedence over the environment variable
 
+## Magic mode
 
+When `paket.bootstrapper.exe` is renamed `paket.exe` the real `paket.exe` is downloaded to a temporary location and executed with all arguments passed directly.
+
+Some default arguments are also used for the bootstrapper to feel more like if it didn't exists.
+
+```batch
+paket.exe add nuget FAKE
+```
+
+Would do the same thing as :
+
+```batch
+paket.bootstrapper.exe -s --max-file-age=720 --run add nuget FAKE
+```
+
+Even while renamed as `paket.exe` the bootstraper parameters can still be specified if `--run` is present:
+
+```batch
+paket.exe --force-nuget --run add nuget FAKE
+```

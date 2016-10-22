@@ -5,6 +5,8 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Paket.Bootstrapper
 {
@@ -21,6 +23,7 @@ namespace Paket.Bootstrapper
             public const string Silent = "-s";
             public const string IgnoreCache = "-f";
             public const string MaxFileAge = "--max-file-age=";
+            public const string Run = "--run";
         }
         public static class AppSettingKeys
         {
@@ -33,18 +36,38 @@ namespace Paket.Bootstrapper
             public const string PaketVersionEnv = "PAKET.VERSION";
         }
 
-        public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables)
+        public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, bool magicMode)
         {
             var options = new BootstrapperOptions();
 
             var commandArgs = arguments.ToList();
 
-            if (commandArgs.Contains(CommandArgs.PreferNuget) || appSettings.GetKey(AppSettingKeys.PreferNugetAppSettingsKey).ToLowerSafe() == "true")
+            ApplyAppSettings(appSettings, options);
+
+            var runIndex = commandArgs.IndexOf(CommandArgs.Run);
+            if (magicMode && runIndex == -1)
+            {
+                options.Silent = true;
+                options.Run = true;
+                options.RunArgs = commandArgs;
+                EvaluateDownloadOptions(options.DownloadArguments, new string[0], appSettings, envVariables, true);
+                options.DownloadArguments.MaxFileAgeInMinutes = 60*12;
+                return options;
+            }
+
+            if (runIndex != -1)
+            {
+                options.Run = true;
+                options.RunArgs = commandArgs.GetRange(runIndex + 1, commandArgs.Count - runIndex - 1);
+                commandArgs.RemoveRange(runIndex, commandArgs.Count - runIndex);
+            }
+
+            if (commandArgs.Contains(CommandArgs.PreferNuget))
             {
                 options.PreferNuget = true;
                 commandArgs.Remove(CommandArgs.PreferNuget);
             }
-            if (commandArgs.Contains(CommandArgs.ForceNuget) || appSettings.GetKey(AppSettingKeys.ForceNugetAppSettingsKey).ToLowerSafe() == "true")
+            if (commandArgs.Contains(CommandArgs.ForceNuget))
             {
                 options.ForceNuget = true;
                 commandArgs.Remove(CommandArgs.ForceNuget);
@@ -60,16 +83,44 @@ namespace Paket.Bootstrapper
                 commandArgs.Remove(CommandArgs.Help);
             }
 
-            commandArgs = EvaluateDownloadOptions(options.DownloadArguments, commandArgs, appSettings, envVariables).ToList();
+            commandArgs = EvaluateDownloadOptions(options.DownloadArguments, commandArgs, appSettings, envVariables, magicMode).ToList();
 
             options.UnprocessedCommandArgs = commandArgs;
             return options;
         }
 
-        private static IEnumerable<string> EvaluateDownloadOptions(DownloadArguments downloadArguments, IEnumerable<string> args, NameValueCollection appSettings, IDictionary envVariables)
+        private static void ApplyAppSettings(NameValueCollection appSettings, BootstrapperOptions options)
+        {
+            if (appSettings.GetKey(AppSettingKeys.PreferNugetAppSettingsKey).ToLowerSafe() == "true")
+            {
+                options.PreferNuget = true;
+            }
+            if (appSettings.GetKey(AppSettingKeys.ForceNugetAppSettingsKey).ToLowerSafe() == "true")
+            {
+                options.ForceNuget = true;
+            }
+        }
+
+        static string GetHash(string input)
+        {
+            using (var hash = SHA256.Create())
+            {
+                return string.Concat(hash.ComputeHash(Encoding.UTF8.GetBytes(input)).Select(b => b.ToString("X2")));
+            }
+        }
+
+        static string GetMagicModeTarget()
+        {
+            var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+            var targetName = $"paket_{GetHash(assemblyLocation)}.exe";
+
+            return Path.Combine(Path.GetTempPath(), targetName);
+        }
+
+        private static IEnumerable<string> EvaluateDownloadOptions(DownloadArguments downloadArguments, IEnumerable<string> args, NameValueCollection appSettings, IDictionary envVariables, bool magicMode)
         {
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var target = Path.Combine(folder, "paket.exe");
+            var target = magicMode ? GetMagicModeTarget() : Path.Combine(folder, "paket.exe");
             string nugetSource = null;
 
             var latestVersion = appSettings.GetKey(AppSettingKeys.PaketVersionAppSettingsKey) ?? envVariables.GetKey(EnvArgs.PaketVersionEnv) ?? String.Empty;
@@ -132,7 +183,7 @@ namespace Paket.Bootstrapper
             downloadArguments.NugetSource = nugetSource;
             downloadArguments.DoSelfUpdate = doSelfUpdate;
             downloadArguments.Target = target;
-            downloadArguments.Folder = folder;
+            downloadArguments.Folder = Path.GetDirectoryName(target);
             downloadArguments.MaxFileAgeInMinutes = maxFileAgeInMinutes;
             return commandArgs;
         }
