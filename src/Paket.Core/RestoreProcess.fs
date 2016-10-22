@@ -119,14 +119,12 @@ let internal computePackageHull groupName (lockFile : LockFile) (referencesFileN
         |> Seq.map (fun p -> (snd p.Key)))
     |> Seq.concat
 
-let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks) = 
+let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks,failOnChecks) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
-
     if not lockFileName.Exists then 
         failwithf "%s doesn't exist." lockFileName.FullName
-
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
     let lockFile,localFile,hasLocalFile =
         let lockFile = LockFile.LoadFrom(lockFileName.FullName)
@@ -139,13 +137,12 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks) =
             LocalFile.overrideLockFile localFile lockFile,localFile,true
 
     if not hasLocalFile && not ignoreChecks then
-        try
-            let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
+        let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
 
-            if hasAnyChanges then 
-                traceWarnfn "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
-        with
-        | _ -> ()
+        let checkResponse = if failOnChecks then failwithf else traceWarnfn
+        if hasAnyChanges then 
+            checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
+
 
     let groups =
         match group with

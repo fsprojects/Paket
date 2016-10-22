@@ -549,7 +549,7 @@ let ``#1815 duplicate fsharp core reference when using netstandard1.6``() =
     let lockFilePath = Paket.DependenciesFile.FindLockfile paketDependencies.DependenciesFile
 
     // Restore
-    paketDependencies.Restore(false, group, [], false, true)
+    paketDependencies.Restore(false, group, [], false, true, false)
     |> ignore
     let lockFile = paketDependencies.GetLockFile()
     let lockGroup = lockFile.GetGroup groupName
