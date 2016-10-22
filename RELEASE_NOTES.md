@@ -1,4 +1,6 @@
 #### 3.24.0-alpha001 - 22.10.2016
+* New Command: paket why - https://github.com/fsprojects/Paket/pull/1960
+* USABILITY: Bootstraper magic mode & run - https://github.com/fsprojects/Paket/pull/1961
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
 #### 3.23.2 - 11.10.2016

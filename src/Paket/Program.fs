@@ -354,6 +354,24 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
         for scriptType in scriptTypesToGenerate do
             Paket.LoadingScripts.ScriptGeneration.generateScriptsForRootFolder scriptType framework rootFolder
 
+let why (results: ParseResults<WhyArgs>) =
+    let packageName = results.GetResult <@ WhyArgs.NuGet @> |> Domain.PackageName
+    let groupName = 
+        defaultArg 
+            (results.TryGetResult <@ WhyArgs.Group @> |> Option.map Domain.GroupName) 
+            Constants.MainDependencyGroup
+    let dependencies = Dependencies.Locate()
+    let lockFile = dependencies.GetLockFile()
+    let directDeps = 
+        dependencies
+            .GetDependenciesFile()
+            .GetDependenciesInGroup(groupName)
+            |> Seq.map (fun pair -> pair.Key)
+            |> Set.ofSeq
+    let options = 
+        { Why.WhyOptions.AllPaths = results.Contains <@ WhyArgs.AllPaths @> }
+
+    Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
@@ -405,7 +423,8 @@ let main() =
             | ShowGroups r -> processCommand silent showGroups r
             | Pack r -> processCommand silent pack r
             | Push r -> processCommand silent push r
-            | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r            
+            | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r
+            | Why r -> processCommand silent why r
             // global options; list here in order to maintain compiler warnings
             // in case of new subcommands added
             | Verbose
