@@ -64,7 +64,7 @@
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="batchfile">$ paket.bootstrapper.exe [prerelease|version] [--prefer-nuget] [--self] [-s] [-f]
 </code></pre></td></tr></table>
-<p>Options:</p>
+<h2><a name="Options" class="anchor" href="#Options">Options</a></h2>
 <p><code>prerelease</code>: Downloads the latest paket.exe from github.com and includes prerelease versions.</p>
 <p><code>version</code>: Downloads the given version of paket.exe from github.com.</p>
 <p><code>--prefer-nuget</code>: Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails</p>
@@ -74,9 +74,51 @@
 <p><code>--self</code>: Self updating the paket.bootstrapper.exe. When this option is used the download of paket.exe will be skipped. (Can be combined with <code>--prefer-nuget</code>)</p>
 <p><code>-s</code>: If this flag is set the bootstrapper will not perform any output.</p>
 <p><code>-f</code>: Forces the bootstrapper to ignore any cached paket.exe versions and go directly to github.com or nuget.org based on other flags.</p>
+<p><code>--run</code>: Once downloaded run <code>paket.exe</code>. All arguments following this one are ignored and passed directly to <code>paket.exe</code>.</p>
 <p><code>--help</code>: Shows a help page with all possible options.</p>
-<p>Environment Variables:</p>
+<h2><a name="Application-settings" class="anchor" href="#Application-settings">Application settings</a></h2>
+<p>If present the paket.boostraper.exe.config file can be used to set AppSettings. When an option is passed on the command line the corresponding application setting is ignored.</p>
+<p>Example file :</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="xml"><span class="prep">&lt;?</span>xml version=<span class="s">"1.0"</span> encoding=<span class="s">"utf-8"</span> <span class="prep">?&gt;</span>
+<span class="k">&lt;</span><span class="i">configuration</span><span class="k">&gt;</span>
+  <span class="k">&lt;</span><span class="i">appSettings</span><span class="k">&gt;</span>
+    <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="PreferNuget"</span> <span class="o">value</span><span class="k">="True"</span><span class="k">/&gt;</span>
+    <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="ForceNuget"</span> <span class="o">value</span><span class="k">="True"</span><span class="k">/&gt;</span>
+    <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="PaketVersion"</span> <span class="o">value</span><span class="k">="1.5"</span><span class="k">/&gt;</span>
+  <span class="k">&lt;/</span><span class="i">appSettings</span><span class="k">&gt;</span>
+<span class="k">&lt;/</span><span class="i">configuration</span><span class="k">&gt;</span>
+</code></pre></td></tr></table>
+<p><code>PreferNuget</code>: Same as <code>--prefer-nuget</code> option. Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails</p>
+<p><code>ForceNuget</code>: Same as <code>--force-nuget</code> option. Downloads paket.exe from nuget.org instead of github.com, but does <em>not</em> use github.com as a fallback.</p>
+<p><code>PaketVersion</code>: Same as <code>version</code> option. Downloads the given version of paket.exe from github.com.</p>
+<h2><a name="Environment-Variables" class="anchor" href="#Environment-Variables">Environment Variables</a></h2>
 <p><code>PAKET.VERSION</code>: The requested version can also be set using this environment variable. Above options take precedence over the environment variable</p>
+<h2><a name="Magic-mode" class="anchor" href="#Magic-mode">Magic mode</a></h2>
+<p>When <code>paket.bootstrapper.exe</code> is renamed <code>paket.exe</code> the real <code>paket.exe</code> is downloaded to a temporary location and executed with all arguments passed directly.</p>
+<p>Some default arguments are also used for the bootstrapper to feel more like if it didn't exists.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="batch">paket.exe add nuget FAKE
+</code></pre></td></tr></table>
+<p>Would do the same thing as :</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="batch">paket.bootstrapper.exe -s --max-file-age=720 --run add nuget FAKE
+</code></pre></td></tr></table>
+<p>Even while renamed as <code>paket.exe</code> the bootstraper parameters can still be specified if <code>--run</code> is present:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="batch">paket.exe --force-nuget --run add nuget FAKE
+</code></pre></td></tr></table>
 
 
         </div>
