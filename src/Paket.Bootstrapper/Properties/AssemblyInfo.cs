@@ -4,12 +4,12 @@ using System.Reflection;
 [assembly: AssemblyTitleAttribute("Paket.Bootstrapper")]
 [assembly: AssemblyProductAttribute("Paket")]
 [assembly: AssemblyDescriptionAttribute("A dependency manager for .NET with support for NuGet packages and git repositories.")]
-[assembly: AssemblyVersionAttribute("3.24.0")]
-[assembly: AssemblyFileVersionAttribute("3.24.0")]
-[assembly: AssemblyInformationalVersionAttribute("3.24.0-alpha002")]
+[assembly: AssemblyVersionAttribute("4.0.0")]
+[assembly: AssemblyFileVersionAttribute("4.0.0")]
+[assembly: AssemblyInformationalVersionAttribute("4.0.0-alpha001")]
 namespace System {
     internal static class AssemblyVersionInformation {
-        internal const string Version = "3.24.0";
-        internal const string InformationalVersion = "3.24.0-alpha002";
+        internal const string Version = "4.0.0";
+        internal const string InformationalVersion = "4.0.0-alpha001";
     }
 }
