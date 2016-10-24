@@ -30,6 +30,7 @@ namespace Paket.Bootstrapper
             public const string PreferNugetAppSettingsKey = "PreferNuget";
             public const string ForceNugetAppSettingsKey = "ForceNuget";
             public const string PaketVersionAppSettingsKey = "PaketVersion";
+            public const string PrereleaseAppSettingsKey = "Prerelease";
         }
         public static class EnvArgs
         {
@@ -124,7 +125,7 @@ namespace Paket.Bootstrapper
             string nugetSource = null;
 
             var latestVersion = appSettings.GetKey(AppSettingKeys.PaketVersionAppSettingsKey) ?? envVariables.GetKey(EnvArgs.PaketVersionEnv) ?? String.Empty;
-            var ignorePrerelease = true;
+            var prerelease = appSettings.GetKey(AppSettingKeys.PrereleaseAppSettingsKey).ToLowerSafe() == "true" && string.IsNullOrEmpty(latestVersion);
             bool doSelfUpdate = false;
             var ignoreCache = false;
             var commandArgs = args.ToList();
@@ -166,19 +167,20 @@ namespace Paket.Bootstrapper
             {
                 if (commandArgs[0] == CommandArgs.Prerelease)
                 {
-                    ignorePrerelease = false;
+                    prerelease = true;
                     latestVersion = String.Empty;
                     commandArgs.Remove(CommandArgs.Prerelease);
                 }
                 else
                 {
+                    prerelease = false;
                     latestVersion = commandArgs[0];
                     commandArgs.Remove(commandArgs[0]);
                 }
             }
 
             downloadArguments.LatestVersion = latestVersion;
-            downloadArguments.IgnorePrerelease = ignorePrerelease;
+            downloadArguments.IgnorePrerelease = !prerelease;
             downloadArguments.IgnoreCache = ignoreCache;
             downloadArguments.NugetSource = nugetSource;
             downloadArguments.DoSelfUpdate = doSelfUpdate;

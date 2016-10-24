@@ -184,6 +184,20 @@ namespace Paket.Bootstrapper.Tests
         }
 
         [Test]
+        public void Prerelease_FromAppSettings()
+        {
+            //arrange
+            var appSettings = new NameValueCollection();
+            appSettings.Add(ArgumentParser.AppSettingKeys.PrereleaseAppSettingsKey, "TrUe");
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] { }, appSettings, null, false);
+
+            //assert
+            Assert.That(result.DownloadArguments.IgnorePrerelease, Is.False);
+        }
+
+        [Test]
         public void SelfUpdate()
         {
             //arrange

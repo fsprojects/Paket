@@ -45,6 +45,7 @@ Example file :
   <appSettings>
     <add key="PreferNuget" value="True"/>
     <add key="ForceNuget" value="True"/>
+    <add key="Prerelease" value="True"/>
     <add key="PaketVersion" value="1.5"/>
   </appSettings>
 </configuration>
@@ -55,6 +56,8 @@ Example file :
   `ForceNuget`: Same as `--force-nuget` option. Downloads paket.exe from nuget.org instead of github.com, but does *not* use github.com as a fallback.
 
   `PaketVersion`: Same as `version` option. Downloads the given version of paket.exe from github.com.
+
+  `Prerelease`: Same as `prerelease` option. Ignored if a version number is specified in `PaketVersion` or via another way.
 
 ## Environment Variables
 
