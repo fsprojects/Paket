@@ -375,55 +375,6 @@ let ``#1507 allows to download remote dependencies``() =
     File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "bin", "PrivateEye.Bridge.dll")) |> shouldEqual true
 
 [<Test>]
-let ``#1552 install mvvmlightlibs again``() =
-    let scenarioName = "i001552-install-mvvmlightlibs-again"
-    let scenarioPath = scenarioTempPath scenarioName
-
-    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.locktemplate")) |> normalizeLineEndings
-
-    let oldProjectFile = Path.Combine(originalScenarioPath scenarioName,"CSharp","CSharp.csprojtemplate")
-    let oldProjectFileText = File.ReadAllText oldProjectFile |> normalizeLineEndings
-
-    let newLockFilePath = Path.Combine(scenarioPath,"paket.lock")
-    let lockFileShouldBeConsistentAfterCommand command =
-        directPaketInPath command scenarioPath |> ignore
-
-        File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
-
-        let newProjectFile = Path.Combine(scenarioPath,"CSharp","CSharp.csproj")
-        File.ReadAllText newProjectFile
-        |> normalizeLineEndings |> shouldEqual oldProjectFileText
-
-    prepare scenarioName
-    let commands =
-        ["install -f"
-         "update -f"
-         "install"
-         "update"]
-    let rnd = new Random((int)DateTime.Now.Ticks)
-    for x in [1..10] do
-        let ind = if x<=4 then x-1 else rnd.Next(commands.Length)
-        let command = commands.[ind]
-        lockFileShouldBeConsistentAfterCommand command
-
-[<Test>]
-let ``#1552 install mvvmlightlibs first time``() =
-    let scenarioName = "i001552-install-mvvmlightlibs-first-time"
-
-    let expected = File.ReadAllText (Path.Combine(originalScenarioPath scenarioName,"paket.locktemplate")) |> normalizeLineEndings
-
-    install scenarioName |> ignore
-    
-    let newLockFilePath = Path.Combine(scenarioTempPath scenarioName,"paket.lock")
-    File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
-
-    directPaketInPath "install" (scenarioTempPath scenarioName) |> ignore
-    File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
-
-    directPaketInPath "install -f" (scenarioTempPath scenarioName) |> ignore
-    File.ReadAllText newLockFilePath |> normalizeLineEndings |> shouldEqual expected
-
-[<Test>]
 [<Ignore("very slow test")>]
 let ``#1589 http dep restore in parallel``() =
     let scenarioName = "i001589-http-dep-restore-in-parallel"
