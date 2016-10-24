@@ -9,17 +9,18 @@ open Chessie.ErrorHandling
 
 type AdjGraph<'a> = list<'a * list<'a>>
 
-let adj n (g: AdjGraph<_>) =
-    g
-    |> List.find (fst >> (=) n)
-    |> snd
+module AdjGraph =
+    let adj n (g: AdjGraph<_>) =
+        g
+        |> List.find (fst >> (=) n)
+        |> snd
 
-let rec paths start stop (g : AdjGraph<'a>) =
-    if start = stop then [[start]]
-    else
-        [ for n in adj start g do
-            for path in paths n stop g do
-                yield start :: path ]
+    let rec paths start stop (g : AdjGraph<'a>) =
+        if start = stop then [[start]]
+        else
+            [ for n in adj start g do
+                for path in paths n stop g do
+                    yield start :: path ]
 
 let depGraph (res : PackageResolver.PackageResolution) : AdjGraph<Domain.PackageName> =
     res
@@ -75,17 +76,23 @@ module Reason =
                directDeps : Set<PackageName>, 
                lockFile : LockFile) :
                Result<Reason, InferError> =
-        let group = lockFile.GetGroup groupName
-        if not <| group.Resolution.ContainsKey packageName then
+
+        let inferError () =
             let otherGroups =
                 lockFile.Groups 
                 |> Seq.filter (fun pair -> pair.Value.Resolution.ContainsKey packageName) 
                 |> Seq.map (fun pair -> pair.Key)
                 |> Seq.toList
             if List.isEmpty otherGroups then
-                Result.Bad [NuGetNotInLockFile]
+                NuGetNotInLockFile
             else
-                Result.Bad [NuGetNotInGroup otherGroups]
+                NuGetNotInGroup otherGroups
+
+        let group = lockFile.GetGroup groupName
+        if not <| group.Resolution.ContainsKey packageName then
+            inferError () 
+            |> List.singleton 
+            |> Result.Bad
         else
             let graph = depGraph group.Resolution
             let topLevelDeps = 
@@ -95,7 +102,7 @@ module Reason =
             let chains = 
                 topLevelDeps
                 |> Set.toList
-                |> List.collect (fun p -> paths p packageName graph)
+                |> List.collect (fun p -> AdjGraph.paths p packageName graph)
             match Set.contains packageName directDeps, Set.contains packageName topLevelDeps with
             | true, true ->
                 Result.Succeed TopLevel
