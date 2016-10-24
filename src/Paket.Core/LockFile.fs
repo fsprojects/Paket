@@ -709,7 +709,6 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         let usedPackages = Dictionary<_,_>()
         match referencesFile.Groups |> Map.tryFind groupName with
         | Some g ->
-
             for p in g.NugetPackages do
                 let k = groupName,p.Name
                 if usedPackages.ContainsKey k then
@@ -717,7 +716,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                 usedPackages.Add(k,p)
 
             g.NugetPackages
-            |> List.iter (fun package -> 
+            |> List.iter (fun package ->                 
                 try
                     for d in this.GetAllDependenciesOf(groupName,package.Name,referencesFile.FileName) do
                         let k = groupName,d

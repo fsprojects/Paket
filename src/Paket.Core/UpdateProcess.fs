@@ -158,7 +158,7 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let groups =
         let targetFrameworks = lazy (
-            InstallProcess.findAllReferencesFiles root |> returnOrFail
+            RestoreProcess.findAllReferencesFiles root |> returnOrFail
             |> List.map (fun (p,_) -> 
                 match p.GetTargetFramework() with
                 | Some fw -> Requirements.FrameworkRestriction.Exactly fw
@@ -215,7 +215,7 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
     let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let projectsAndReferences = InstallProcess.findAllReferencesFiles root |> returnOrFail
+    let projectsAndReferences = RestoreProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
         let forceTouch = hasChanged && options.Common.TouchAffectedRefs

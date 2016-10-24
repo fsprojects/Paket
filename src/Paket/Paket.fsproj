@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
-    <OutputPath>..\..\bin</OutputPath>
+    <OutputPath>D:\code\coretest\.paket</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>convert-from-nuget</StartArguments>
-    <StartWorkingDirectory>C:\Git\Third Party\Paket\integrationtests\scenarios\i001922-convert-nuget-with-analyzers\before\</StartWorkingDirectory>
+    <StartArguments>restore</StartArguments>
+    <StartWorkingDirectory>D:\code\coretest\.paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -53,8 +53,8 @@
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\temp\repo3</StartWorkingDirectory>
+    <StartArguments>restore</StartArguments>
+    <StartWorkingDirectory>D:\code\coretest</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
@@ -85,7 +85,6 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Commands.fs" />
-    <Compile Include="PlatformTask.fs" />
     <Compile Include="Program.fs" />
     <Content Include="App.config" />
     <None Include="paket.references" />

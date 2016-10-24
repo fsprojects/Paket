@@ -46,7 +46,7 @@ module PaketEnv =
                     with _ ->
                         fail (LockFileParseError fi)
 
-            let! projects = InstallProcess.findAllReferencesFiles(directory.FullName)
+            let! projects = RestoreProcess.findAllReferencesFiles(directory.FullName)
 
             return create directory dependenciesFile lockFile projects
     }

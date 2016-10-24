@@ -294,25 +294,6 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
 
     applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibs bindingRedirects
 
-let findAllReferencesFiles root =
-    let findRefFile (p:ProjectFile) =
-        match p.FindReferencesFile() with
-        | Some fileName -> 
-                try
-                    ok <| (p, ReferencesFile.FromFile fileName)
-                with _ ->
-                    fail <| ReferencesFileParseError (FileInfo fileName)
-        | None ->
-            let fileName = 
-                let fi = FileInfo(p.FileName)
-                Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
-
-            ok <| (p, ReferencesFile.New fileName)
-
-    ProjectFile.FindAllProjects root 
-    |> Array.map findRefFile
-    |> collect
-
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
     let packagesToInstall =
@@ -492,5 +473,5 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 /// Installs all packages from the lock file.
 let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =
     let root = FileInfo(lockFile.FileName).Directory.FullName
-    let projects = findAllReferencesFiles root |> returnOrFail
+    let projects = RestoreProcess.findAllReferencesFiles root |> returnOrFail
     InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects, updatedGroups)

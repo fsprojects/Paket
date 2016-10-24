@@ -9,6 +9,7 @@ open Paket.PackageResolver
 open Paket.PackageSources
 open FSharp.Polyfill
 open System
+open Chessie.ErrorHandling
 
 // Find packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
@@ -119,6 +120,25 @@ let internal computePackageHull groupName (lockFile : LockFile) (referencesFileN
         |> Seq.map (fun p -> (snd p.Key)))
     |> Seq.concat
 
+let findAllReferencesFiles root =
+    let findRefFile (p:ProjectFile) =
+        match p.FindReferencesFile() with
+        | Some fileName -> 
+                try
+                    ok <| (p, ReferencesFile.FromFile fileName)
+                with _ ->
+                    fail <| ReferencesFileParseError (FileInfo fileName)
+        | None ->
+            let fileName = 
+                let fi = FileInfo(p.FileName)
+                Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
+
+            ok <| (p, ReferencesFile.New fileName)
+
+    ProjectFile.FindAllProjects root 
+    |> Array.map findRefFile
+    |> collect
+
 let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks,failOnChecks) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
@@ -177,5 +197,28 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks,fa
             restore(root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
             |> Async.RunSynchronously
             |> ignore
+
+    // .NET Core restore
+    let root = FileInfo(lockFile.FileName).Directory.FullName
+    let projects = findAllReferencesFiles root |> returnOrFail
+    let resolved = lockFile.GetGroupedResolution()
+    for projectFile,referencesFile in projects do
+        let list = System.Collections.Generic.List<_>()
+        let fi = FileInfo projectFile.FileName
+        let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))
+        if not newFileName.Directory.Exists then
+            newFileName.Directory.Create()
+
+        for kv in groups do
+            let hull = lockFile.GetPackageHull(kv.Key,referencesFile)
+
+            for package in hull do
+                let _,packageName = package.Key
+                list.Add(packageName.ToString() + "," + resolved.[package.Key].Version.ToString())
+                
+        let output = String.Join(Environment.NewLine,list)
+        if not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
+            File.WriteAllLines(newFileName.FullName,list)
+        tracefn "Created %s" newFileName.FullName
 
     GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
