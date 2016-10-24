@@ -15,8 +15,6 @@ namespace Paket.Bootstrapper
 {
     static class Program
     {
-        private static readonly PaketRunner ConsoleRunner = new PaketRunner();
-
         static bool GetIsMagicMode()
         {
             var fileName = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
