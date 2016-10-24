@@ -158,6 +158,7 @@ type RestoreArgs =
     | [<CustomCommandLine("--ignore-checks")>] Ignore_Checks
     | [<CustomCommandLine("--fail-on-checks")>] Fail_On_Checks
     | [<CustomCommandLine("group")>] Group of name:string
+    | [<Unique>] Project of file_name:string
     | [<Unique>] References_Files of file_name:string list
 with
     interface IArgParserTemplate with
@@ -169,7 +170,8 @@ with
             | Touch_Affected_Refs -> "Touches project files referencing packages which are being restored, to help incremental build tools detecting the change."
             | Ignore_Checks -> "Skips the test if paket.dependencies and paket.lock are in sync."
             | Fail_On_Checks -> "Causes the restore to fail if any of the checks fail."
-            | References_Files(_) -> "Allows to restore all packages from the given paket.references files. This implies --only-referenced."
+            | Project(_) -> "Allows to restore dependencies for a project."
+            | References_Files(_) -> "Allows to restore all packages from the given paket.references files."
 
 type SimplifyArgs =
     | [<AltCommandLine("-i")>] Interactive

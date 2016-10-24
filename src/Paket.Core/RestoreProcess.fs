@@ -139,7 +139,7 @@ let findAllReferencesFiles root =
     |> Array.map findRefFile
     |> collect
 
-let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks,failOnChecks) = 
+let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -163,7 +163,6 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks,fa
         if hasAnyChanges then 
             checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
 
-
     let groups =
         match group with
         | None -> lockFile.Groups 
@@ -171,6 +170,50 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks,fa
             match lockFile.Groups |> Map.tryFind groupName with
             | None -> failwithf "The group %O was not found in the paket.lock file." groupName
             | Some group -> [groupName,group] |> Map.ofList
+
+    let referencesFileNames =
+        match projectFile with
+        | Some projectFile ->
+            let projectFile = ProjectFile.LoadFromFile projectFile
+            let referencesFile =
+                match projectFile.FindReferencesFile() with
+                | Some fileName -> 
+                        try
+                            ReferencesFile.FromFile fileName
+                        with _ ->
+                            failwith ((ReferencesFileParseError (FileInfo fileName)).ToString())
+                | None ->
+                    let fileName = 
+                        let fi = FileInfo(projectFile.FileName)
+                        Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
+
+                    ReferencesFile.New fileName
+
+            let resolved = lockFile.GetGroupedResolution()        
+            let list = System.Collections.Generic.List<_>()
+            let fi = FileInfo projectFile.FileName
+            let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))
+            if not newFileName.Directory.Exists then
+                newFileName.Directory.Create()
+
+            for kv in groups do
+                let hull = lockFile.GetPackageHull(kv.Key,referencesFile)
+
+                for package in hull do
+                    let _,packageName = package.Key
+                    list.Add(packageName.ToString() + "," + resolved.[package.Key].Version.ToString())
+                
+            let output = String.Join(Environment.NewLine,list)
+            if not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
+                File.WriteAllText(newFileName.FullName,output)
+                tracefn " - %s created" newFileName.FullName
+            else
+                tracefn " - %s already up-to-date" newFileName.FullName
+
+            [referencesFile.FileName]
+        | None -> referencesFileNames
+
+
 
     for kv in groups do
         let packages = 
@@ -198,27 +241,6 @@ let Restore(dependenciesFileName,force,group,referencesFileNames,ignoreChecks,fa
             |> Async.RunSynchronously
             |> ignore
 
-    // .NET Core restore
-    let root = FileInfo(lockFile.FileName).Directory.FullName
-    let projects = findAllReferencesFiles root |> returnOrFail
-    let resolved = lockFile.GetGroupedResolution()
-    for projectFile,referencesFile in projects do
-        let list = System.Collections.Generic.List<_>()
-        let fi = FileInfo projectFile.FileName
-        let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))
-        if not newFileName.Directory.Exists then
-            newFileName.Directory.Create()
 
-        for kv in groups do
-            let hull = lockFile.GetPackageHull(kv.Key,referencesFile)
-
-            for package in hull do
-                let _,packageName = package.Key
-                list.Add(packageName.ToString() + "," + resolved.[package.Key].Version.ToString())
-                
-        let output = String.Join(Environment.NewLine,list)
-        if not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
-            File.WriteAllLines(newFileName.FullName,list)
-        tracefn "Created %s" newFileName.FullName
 
     GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
