@@ -477,6 +477,7 @@ Target "ReleaseGitHub" (fun _ ->
     |> uploadFile "./bin/merged/paket.exe"
     |> uploadFile "./bin/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
+    |> uploadFile ".paket/Paket.Restore.targets"
     |> releaseDraft
     |> Async.RunSynchronously
 )
