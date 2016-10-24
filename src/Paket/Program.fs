@@ -150,19 +150,21 @@ let remove (results : ParseResults<_>) =
 let restore (results : ParseResults<_>) =
     let force = results.Contains <@ RestoreArgs.Force @>
     let files = results.GetResult (<@ RestoreArgs.References_Files @>, defaultValue = [])
-    let project = results.GetResult (<@ RestoreArgs.Project @>)
+    let project = results.TryGetResult (<@ RestoreArgs.Project @>)
     let group = results.TryGetResult <@ RestoreArgs.Group @>
     let installOnlyReferenced = results.Contains <@ RestoreArgs.Install_Only_Referenced @>
     let touchAffectedRefs = results.Contains <@ RestoreArgs.Touch_Affected_Refs @>
     let ignoreChecks = results.Contains <@ RestoreArgs.Ignore_Checks @>
     let failOnChecks = results.Contains <@ RestoreArgs.Fail_On_Checks @>
     
-    if String.IsNullOrWhiteSpace project |> not then 
+    match project with
+    | Some project ->
         Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks)
-    elif List.isEmpty files then 
-        Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks)
-    else 
-        Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks)
+    | None ->
+        if List.isEmpty files then 
+            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks)
+        else 
+            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks)
 
 let simplify (results : ParseResults<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>

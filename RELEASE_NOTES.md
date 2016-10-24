@@ -1,4 +1,4 @@
-#### 4.0.0-alpha004 - 24.10.2016
+#### 4.0.0-alpha005 - 24.10.2016
 * Make Paket compatible with dotnet sdk preview3
 * New Command: paket why - https://github.com/fsprojects/Paket/pull/1960
 * USABILITY: Bootstraper magic mode & run - https://github.com/fsprojects/Paket/pull/1961
