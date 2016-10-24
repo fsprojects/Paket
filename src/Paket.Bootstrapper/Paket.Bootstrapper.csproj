@@ -53,6 +53,7 @@
     <Compile Include="ArgumentParser.cs" />
     <Compile Include="BootstrapperHelper.cs" />
     <Compile Include="BootstrapperOptions.cs" />
+    <Compile Include="PaketDependencies.cs" />
     <Compile Include="PaketRunner.cs" />
     <Compile Include="WindowsProcessArguments.cs" />
     <Compile Include="DownloadStrategies\CacheDownloadStrategy.cs" />

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -20,8 +19,11 @@ namespace Paket.Bootstrapper
             Console.CancelKeyPress += CancelKeyPressed;
 
             var fileProxy = new FileSystemProxy();
+            var argumentsFromDependenciesFile =
+                WindowsProcessArguments.Parse(
+                    PaketDependencies.GetBootstrapperArgsForFolder(Environment.CurrentDirectory));
             var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
-                Environment.GetEnvironmentVariables(), fileProxy);
+                Environment.GetEnvironmentVariables(), fileProxy, argumentsFromDependenciesFile);
             if (options.ShowHelp)
             {
                 ConsoleImpl.WriteDebug(BootstrapperHelper.HelpText);

@@ -37,7 +37,7 @@ namespace Paket.Bootstrapper
             public const string PaketVersionEnv = "PAKET.VERSION";
         }
 
-        public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, IFileSystemProxy fileSystemProxy)
+        public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, IFileSystemProxy fileSystemProxy, IEnumerable<string> argumentsInDependenciesFile = null)
         {
             var options = new BootstrapperOptions();
             var commandArgs = arguments.ToList();
@@ -86,6 +86,7 @@ namespace Paket.Bootstrapper
             commandArgs = EvaluateDownloadOptions(options.DownloadArguments, commandArgs, appSettings, envVariables, magicMode, fileSystemProxy).ToList();
 
             options.UnprocessedCommandArgs = commandArgs;
+
             return options;
         }
 
