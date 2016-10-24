@@ -99,7 +99,7 @@ namespace Paket.Bootstrapper.Tests
         {
             //arrange
             var appSettings = new NameValueCollection();
-            appSettings.Add(ArgumentParser.AppSettingKeys.ForceNugetAppSettingsKey, "TrUe");
+            appSettings.Add(ArgumentParser.AppSettingKeys.ForceNuget, "TrUe");
 
             //act
             var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] { }, appSettings, null, false);
@@ -137,7 +137,7 @@ namespace Paket.Bootstrapper.Tests
         {
             //arrange
             var appSettings = new NameValueCollection();
-            appSettings.Add(ArgumentParser.AppSettingKeys.PreferNugetAppSettingsKey, "TrUe");
+            appSettings.Add(ArgumentParser.AppSettingKeys.PreferNuget, "TrUe");
 
             //act
             var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] {}, appSettings, null, false);
@@ -188,7 +188,7 @@ namespace Paket.Bootstrapper.Tests
         {
             //arrange
             var appSettings = new NameValueCollection();
-            appSettings.Add(ArgumentParser.AppSettingKeys.PrereleaseAppSettingsKey, "TrUe");
+            appSettings.Add(ArgumentParser.AppSettingKeys.Prerelease, "TrUe");
 
             //act
             var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] { }, appSettings, null, false);

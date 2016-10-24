@@ -27,10 +27,10 @@ namespace Paket.Bootstrapper
         }
         public static class AppSettingKeys
         {
-            public const string PreferNugetAppSettingsKey = "PreferNuget";
-            public const string ForceNugetAppSettingsKey = "ForceNuget";
-            public const string PaketVersionAppSettingsKey = "PaketVersion";
-            public const string PrereleaseAppSettingsKey = "Prerelease";
+            public const string PreferNuget = "PreferNuget";
+            public const string ForceNuget = "ForceNuget";
+            public const string PaketVersion = "PaketVersion";
+            public const string Prerelease = "Prerelease";
         }
         public static class EnvArgs
         {
@@ -92,11 +92,11 @@ namespace Paket.Bootstrapper
 
         private static void ApplyAppSettings(NameValueCollection appSettings, BootstrapperOptions options)
         {
-            if (appSettings.GetKey(AppSettingKeys.PreferNugetAppSettingsKey).ToLowerSafe() == "true")
+            if (appSettings.IsTrue(AppSettingKeys.PreferNuget))
             {
                 options.PreferNuget = true;
             }
-            if (appSettings.GetKey(AppSettingKeys.ForceNugetAppSettingsKey).ToLowerSafe() == "true")
+            if (appSettings.IsTrue(AppSettingKeys.ForceNuget))
             {
                 options.ForceNuget = true;
             }
@@ -124,9 +124,9 @@ namespace Paket.Bootstrapper
             var target = magicMode ? GetMagicModeTarget() : Path.Combine(folder, "paket.exe");
             string nugetSource = downloadArguments.NugetSource;
 
-            var latestVersion = appSettings.GetKey(AppSettingKeys.PaketVersionAppSettingsKey) ?? envVariables.GetKey(EnvArgs.PaketVersionEnv) ?? downloadArguments.LatestVersion;
-            var prerelease = (appSettings.GetKey(AppSettingKeys.PrereleaseAppSettingsKey).ToLowerSafe() == "true" &&
-                              string.IsNullOrEmpty(latestVersion)) || !downloadArguments.IgnorePrerelease;
+            var latestVersion = appSettings.GetKey(AppSettingKeys.PaketVersion) ?? envVariables.GetKey(EnvArgs.PaketVersionEnv) ?? downloadArguments.LatestVersion;
+            var prerelease = (appSettings.IsTrue(AppSettingKeys.Prerelease) && string.IsNullOrEmpty(latestVersion))
+                || !downloadArguments.IgnorePrerelease;
             bool doSelfUpdate = downloadArguments.DoSelfUpdate;
             var ignoreCache = downloadArguments.IgnoreCache;
             var commandArgs = args.ToList();
@@ -191,6 +191,11 @@ namespace Paket.Bootstrapper
             return commandArgs;
         }
 
+        private static bool IsTrue(this NameValueCollection appSettings, string key)
+        {
+            return appSettings.GetKey(key).ToLowerSafe() == "true";
+        }
+
         private static string GetKey(this NameValueCollection appSettings, string key)
         {
             if (appSettings != null && appSettings.AllKeys.Any(x => x == key))
@@ -207,9 +212,7 @@ namespace Paket.Bootstrapper
 
         private static string ToLowerSafe(this string value)
         {
-            if (value != null)
-                return value.ToLower();
-            return null;
+            return value?.ToLower();
         }
     }
 }
