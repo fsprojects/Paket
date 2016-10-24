@@ -10,6 +10,7 @@ open Paket.PackageSources
 open FSharp.Polyfill
 open System
 open Chessie.ErrorHandling
+open System.Reflection
 
 // Find packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
@@ -138,6 +139,22 @@ let findAllReferencesFiles root =
     ProjectFile.FindAllProjects root 
     |> Array.map findRefFile
     |> collect
+
+let extractElement name =
+    let a = Assembly.GetEntryAssembly()
+    let s = a.GetManifestResourceStream(name)
+    let fi = FileInfo a.FullName
+    let targetFile = Path.Combine(fi.Directory.FullName,name)
+    
+    use fileStream = File.Create(targetFile)
+    s.Seek(int64 0, SeekOrigin.Begin) |> ignore
+    s.CopyTo(fileStream)
+
+let extractBuildTask() = 
+    extractElement "PaketRestoreTask.dll"
+    extractElement "Paket.Restore.targets"
+    extractElement "PaketRestoreTask.deps.json"
+
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName

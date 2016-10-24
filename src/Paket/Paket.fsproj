@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -22,7 +22,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
-    <OutputPath>D:\code\coretest\.paket</OutputPath>
+    <OutputPath>..\..\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
@@ -30,7 +30,7 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>restore</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\code\coretest\.paket</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -88,6 +88,9 @@
     <Compile Include="Program.fs" />
     <Content Include="App.config" />
     <None Include="paket.references" />
+    <EmbeddedResource Include="embedded\PaketRestoreTask.deps.json" />
+    <EmbeddedResource Include="embedded\PaketRestoreTask.dll" />
+    <EmbeddedResource Include="embedded\Paket.Restore.targets" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build" />

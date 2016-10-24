@@ -211,8 +211,8 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, updateMode, semVerUpdat
     lockFile,hasChanged,updatedGroups
 
 /// Smart install command
-let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
-    let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)
+let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =    
+    let lockFile,hasChanged,updatedGroups = SelectiveUpdate(dependenciesFile, updateMode, options.Common.SemVerUpdateMode, options.Common.Force)    
 
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let projectsAndReferences = RestoreProcess.findAllReferencesFiles root |> returnOrFail

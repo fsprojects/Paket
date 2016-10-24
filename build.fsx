@@ -114,7 +114,7 @@ Target "AssemblyInfo" (fun _ ->
     let fsProjs =  !! "src/**/*.fsproj"
     let csProjs = !! "src/**/*.csproj"
     fsProjs |> Seq.iter genFSAssemblyInfo
-    csProjs |> Seq.iter genCSAssemblyInfo
+    csProjs |> Seq.filter (fun s -> s.Contains "PaketRestoreTask") |> Seq.iter genCSAssemblyInfo
 )
 
 // --------------------------------------------------------------------------------------

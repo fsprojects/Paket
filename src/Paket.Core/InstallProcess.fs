@@ -296,6 +296,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
+    RestoreProcess.extractBuildTask()
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -469,9 +470,9 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 projectCache
             first := false
 
-
 /// Installs all packages from the lock file.
-let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =
+let Install(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, updatedGroups) =    
     let root = FileInfo(lockFile.FileName).Directory.FullName
+
     let projects = RestoreProcess.findAllReferencesFiles root |> returnOrFail
     InstallIntoProjects(options, forceTouch, dependenciesFile, lockFile, projects, updatedGroups)
