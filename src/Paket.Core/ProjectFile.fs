@@ -1475,6 +1475,10 @@ type ProjectFile with
 
     member this.FindTemplatesFile() = this.FindCorrespondingFile Constants.TemplateFile
 
+    member this.GetToolsVersion() : string = 
+        let node = this.ProjectNode
+        node.Attributes.["ToolsVersion"].Value
+
     static member FindOrCreateReferencesFile projectFile =
         match ProjectFile.FindReferencesFile(projectFile) with
         | None ->

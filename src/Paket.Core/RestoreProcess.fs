@@ -149,11 +149,12 @@ let extractElement name =
     use fileStream = File.Create(targetFile)
     s.Seek(int64 0, SeekOrigin.Begin) |> ignore
     s.CopyTo(fileStream)
+    targetFile
 
-let extractBuildTask() = 
-    extractElement "PaketRestoreTask.dll"
-    extractElement "Paket.Restore.targets"
-    extractElement "PaketRestoreTask.deps.json"
+let extractBuildTask = lazy(
+    extractElement "PaketRestoreTask.dll" |> ignore    
+    extractElement "PaketRestoreTask.deps.json" |> ignore
+    extractElement "Paket.Restore.targets")
 
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks) = 

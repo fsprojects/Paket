@@ -294,9 +294,13 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
 
     applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibs bindingRedirects
 
+let installForDotnetSDK (project:ProjectFile) = 
+    let paketTargetsPath = RestoreProcess.extractBuildTask.Force()
+    let relativePath = createRelativePath project.FileName paketTargetsPath    
+    project.AddImportForPaketTargets(relativePath)
+
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
-    RestoreProcess.extractBuildTask()
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -378,10 +382,13 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     dict.Add(packageName,v)
                     true)
 
-        project.UpdateReferences(root, model, directDependencies, usedPackages)
+        if project.GetToolsVersion() >= "15.0" then 
+            installForDotnetSDK project  
+        else
+            project.UpdateReferences(root, model, directDependencies, usedPackages)
     
-        Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
-        |> updatePackagesConfigFile usedPackages 
+            Path.Combine(FileInfo(project.FileName).Directory.FullName, Constants.PackagesConfigFile)
+            |> updatePackagesConfigFile usedPackages 
 
         let gitRemoteItems =
             referenceFile.Groups
