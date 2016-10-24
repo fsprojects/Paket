@@ -111,21 +111,6 @@ let init (fromBootstrapper:bool) (results : ParseResults<InitArgs>) =
     let deps = Dependencies.Locate()
     deps.DownloadLatestBootstrapper(fromBootstrapper)
 
-    try
-        let fileName = Path.Combine(deps.RootPath,Constants.PaketFolderName,Constants.BootstrapperFileName)
-        let paketVersion =
-            let assembly = Assembly.GetExecutingAssembly()
-            let fvi = FileVersionInfo.GetVersionInfo(assembly.Location)
-            fvi.ProductVersion
-        let _ = 
-            Paket.Git.CommandHelper.ExecProcessAndReturnMessages (fun info ->
-              info.FileName <- fileName
-              info.WorkingDirectory <- Path.Combine(deps.RootPath,Constants.PaketFolderName)
-              info.Arguments <- paketVersion) System.TimeSpan.MaxValue
-        ()
-    with
-    | _ -> ()
-
 let clearCache (results : ParseResults<ClearCacheArgs>) =
     Dependencies.ClearCache()
 
