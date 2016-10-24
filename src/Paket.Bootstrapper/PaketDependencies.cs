@@ -7,7 +7,7 @@ namespace Paket.Bootstrapper
     static class PaketDependencies
     {
         private static readonly Regex bootstrapperArgsLine =
-            new Regex("^(#|//)\\s*bootstrapper:(?<args>.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            new Regex("^(#|//)\\s*bootstrapper\\s*:(?<args>.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         const string DEPENDENCY_FILE = "paket.dependencies";
 
@@ -19,7 +19,7 @@ namespace Paket.Bootstrapper
                 var match = bootstrapperArgsLine.Match(line);
                 if (match.Success)
                 {
-                    return match.Groups["args"].Value;
+                    return match.Groups["args"].Value.Trim();
                 }
                 line = reader.ReadLine();
             }
