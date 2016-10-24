@@ -118,8 +118,8 @@
             CreateModel (...)
           </code>
           <div class="tip" id="126">
-            <strong>Signature:</strong> (root:string * force:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * packages:Set&lt;GroupName * PackageName&gt; * updatedGroups:Map&lt;GroupName,&#39;?10653&gt;) -&gt; ((GroupName * PackageName) * (ResolvedPackage * InstallModel)) []<br />
-                          <strong>Type parameters:</strong> '?10653          </div>
+            <strong>Signature:</strong> (root:string * force:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * packages:Set&lt;GroupName * PackageName&gt; * updatedGroups:Map&lt;GroupName,&#39;?10654&gt;) -&gt; ((GroupName * PackageName) * (ResolvedPackage * InstallModel)) []<br />
+                          <strong>Type parameters:</strong> '?10654          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L174-174" class="github-link">
@@ -138,8 +138,8 @@
             findPackageFolder (...)
           </code>
           <div class="tip" id="127">
-            <strong>Signature:</strong> root:string -&gt; (groupName:GroupName * packageName:PackageName) -&gt; (version:&#39;?10646 * settings:InstallSettings) -&gt; DirectoryInfo<br />
-                          <strong>Type parameters:</strong> '?10646          </div>
+            <strong>Signature:</strong> root:string -&gt; (groupName:GroupName * packageName:PackageName) -&gt; (version:&#39;?10647 * settings:InstallSettings) -&gt; DirectoryInfo<br />
+                          <strong>Type parameters:</strong> '?10647          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L37-37" class="github-link">
@@ -160,7 +160,7 @@
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L474-474" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L481-481" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -173,14 +173,32 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '129', 129)" onmouseover="showTip(event, '129', 129)">
-            InstallIntoProjects (...)
+            installForDotnetSDK project
           </code>
           <div class="tip" id="129">
+            <strong>Signature:</strong> project:ProjectFile -&gt; unit<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L297-297" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '130', 130)" onmouseover="showTip(event, '130', 130)">
+            InstallIntoProjects (...)
+          </code>
+          <div class="tip" id="130">
             <strong>Signature:</strong> (options:InstallerOptions * forceTouch:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * projectsAndReferences:(ProjectFile * ReferencesFile) list * updatedGroups:Map&lt;GroupName,&#39;a&gt;) -&gt; unit<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L298-298" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L303-303" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -192,12 +210,12 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '130', 130)" onmouseover="showTip(event, '130', 130)">
+          <code onmouseout="hideTip(event, '131', 131)" onmouseover="showTip(event, '131', 131)">
             processContentFiles (...)
           </code>
-          <div class="tip" id="130">
-            <strong>Signature:</strong> root:string -&gt; project:ProjectFile -&gt; usedPackages:Map&lt;(GroupName * PackageName),(&#39;?10649 * InstallSettings)&gt; -&gt; gitRemoteItems:FileItem list -&gt; options:&#39;?10650 -&gt; unit<br />
-                          <strong>Type parameters:</strong> '?10649, '?10650          </div>
+          <div class="tip" id="131">
+            <strong>Signature:</strong> root:string -&gt; project:ProjectFile -&gt; usedPackages:Map&lt;(GroupName * PackageName),(&#39;?10650 * InstallSettings)&gt; -&gt; gitRemoteItems:FileItem list -&gt; options:&#39;?10651 -&gt; unit<br />
+                          <strong>Type parameters:</strong> '?10650, '?10651          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L80-80" class="github-link">
@@ -210,10 +228,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '131', 131)" onmouseover="showTip(event, '131', 131)">
+          <code onmouseout="hideTip(event, '132', 132)" onmouseover="showTip(event, '132', 132)">
             updatePackagesConfigFile (...)
           </code>
-          <div class="tip" id="131">
+          <div class="tip" id="132">
             <strong>Signature:</strong> model:Map&lt;(GroupName * PackageName),(SemVerInfo * InstallSettings)&gt; -&gt; packagesConfigFileName:string -&gt; unit<br />
                       </div>
         </td>
