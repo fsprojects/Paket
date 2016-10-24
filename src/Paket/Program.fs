@@ -8,7 +8,6 @@ open System.IO
 
 open Paket.Logging
 open Paket.Commands
-open Paket.Releases
 
 open Argu
 open PackageSources
@@ -109,7 +108,23 @@ let findRefs (results : ParseResults<_>) =
 
 let init (fromBootstrapper:bool) (results : ParseResults<InitArgs>) =
     Dependencies.Init()
-    Dependencies.Locate().DownloadLatestBootstrapper(fromBootstrapper)
+    let deps = Dependencies.Locate()
+    deps.DownloadLatestBootstrapper(fromBootstrapper)
+
+    try
+        let fileName = Path.Combine(deps.RootPath,Constants.PaketFolderName,Constants.BootstrapperFileName)
+        let paketVersion =
+            let assembly = Assembly.GetExecutingAssembly()
+            let fvi = FileVersionInfo.GetVersionInfo(assembly.Location)
+            fvi.ProductVersion
+        let _ = 
+            Paket.Git.CommandHelper.ExecProcessAndReturnMessages (fun info ->
+              info.FileName <- fileName
+              info.WorkingDirectory <- Path.Combine(deps.RootPath,Constants.PaketFolderName)
+              info.Arguments <- paketVersion) System.TimeSpan.MaxValue
+        ()
+    with
+    | _ -> ()
 
 let clearCache (results : ParseResults<ClearCacheArgs>) =
     Dependencies.ClearCache()
