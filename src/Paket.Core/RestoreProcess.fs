@@ -140,21 +140,29 @@ let findAllReferencesFiles root =
     |> Array.map findRefFile
     |> collect
 
-let extractElement name =
+let copiedElements = ref false
+
+let extractElement root name =
     let a = Assembly.GetEntryAssembly()
     let s = a.GetManifestResourceStream(name)
     let fi = FileInfo a.FullName
-    let targetFile = Path.Combine(fi.Directory.FullName,name)
+    let targetFile = Path.Combine(root,".paket",name)
     
     use fileStream = File.Create(targetFile)
     s.Seek(int64 0, SeekOrigin.Begin) |> ignore
     s.CopyTo(fileStream)
     targetFile
 
-let extractBuildTask = lazy(
-    extractElement "PaketRestoreTask.dll" |> ignore    
-    extractElement "PaketRestoreTask.deps.json" |> ignore
-    extractElement "Paket.Restore.targets")
+let extractBuildTask root =
+    if !copiedElements then
+        Path.Combine(root,".paket","Paket.Restore.targets")
+    else
+        extractElement root "PaketRestoreTask.dll" |> ignore    
+        extractElement root "PaketRestoreTask.deps.json" |> ignore
+    
+        let result = extractElement root "Paket.Restore.targets"
+        copiedElements := true
+        result
 
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks) = 

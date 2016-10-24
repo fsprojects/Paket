@@ -294,8 +294,8 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
 
     applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibs bindingRedirects
 
-let installForDotnetSDK (project:ProjectFile) = 
-    let paketTargetsPath = RestoreProcess.extractBuildTask.Force()
+let installForDotnetSDK root (project:ProjectFile) = 
+    let paketTargetsPath = RestoreProcess.extractBuildTask(root)
     let relativePath = createRelativePath project.FileName paketTargetsPath    
     project.AddImportForPaketTargets(relativePath)
 
@@ -383,7 +383,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     true)
 
         if project.GetToolsVersion() >= "15.0" then 
-            installForDotnetSDK project  
+            installForDotnetSDK root project  
         else
             project.UpdateReferences(root, model, directDependencies, usedPackages)
     
