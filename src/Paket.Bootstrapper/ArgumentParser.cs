@@ -122,14 +122,15 @@ namespace Paket.Bootstrapper
         {
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var target = magicMode ? GetMagicModeTarget() : Path.Combine(folder, "paket.exe");
-            string nugetSource = null;
+            string nugetSource = downloadArguments.NugetSource;
 
-            var latestVersion = appSettings.GetKey(AppSettingKeys.PaketVersionAppSettingsKey) ?? envVariables.GetKey(EnvArgs.PaketVersionEnv) ?? String.Empty;
-            var prerelease = appSettings.GetKey(AppSettingKeys.PrereleaseAppSettingsKey).ToLowerSafe() == "true" && string.IsNullOrEmpty(latestVersion);
-            bool doSelfUpdate = false;
-            var ignoreCache = false;
+            var latestVersion = appSettings.GetKey(AppSettingKeys.PaketVersionAppSettingsKey) ?? envVariables.GetKey(EnvArgs.PaketVersionEnv) ?? downloadArguments.LatestVersion;
+            var prerelease = (appSettings.GetKey(AppSettingKeys.PrereleaseAppSettingsKey).ToLowerSafe() == "true" &&
+                              string.IsNullOrEmpty(latestVersion)) || !downloadArguments.IgnorePrerelease;
+            bool doSelfUpdate = downloadArguments.DoSelfUpdate;
+            var ignoreCache = downloadArguments.IgnoreCache;
             var commandArgs = args.ToList();
-            int? maxFileAgeInMinutes = null;
+            int? maxFileAgeInMinutes = downloadArguments.MaxFileAgeInMinutes;
 
             if (commandArgs.Contains(CommandArgs.SelfUpdate))
             {
