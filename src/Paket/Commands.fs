@@ -317,6 +317,7 @@ type Command =
     | [<Inherit>]                                       Log_File of path:string
     | [<AltCommandLine("-s"); Inherit>]                 Silent
     | [<Inherit>]                                       Version
+    | [<Inherit;Hidden>]                                From_Bootstrapper
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
     | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResults<ClearCacheArgs>
