@@ -146,12 +146,14 @@ let extractElement root name =
     let a = Assembly.GetEntryAssembly()
     let s = a.GetManifestResourceStream(name)
     let fi = FileInfo a.FullName
-    let targetFile = Path.Combine(root,".paket",name)
+    let targetFile = FileInfo(Path.Combine(root,".paket",name))
+    if not targetFile.Directory.Exists then
+        targetFile.Directory.Create()
     
-    use fileStream = File.Create(targetFile)
+    use fileStream = File.Create(targetFile.FullName)
     s.Seek(int64 0, SeekOrigin.Begin) |> ignore
     s.CopyTo(fileStream)
-    targetFile
+    targetFile.FullName
 
 let extractBuildTask root =
     if !copiedElements then
