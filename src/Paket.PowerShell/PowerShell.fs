@@ -146,7 +146,7 @@ type ConvertFromNuGetCmdlet() =
                     yield ConvertFromNugetArgs.Creds_Migration x.CredsMigration
             ]
             |> parser.ToParseResults
-            |> Program.convert
+            |> Program.convert false
         } |> processWithLogging x
 
 [<Cmdlet("Paket", "FindRefs")>]
@@ -223,7 +223,7 @@ type InitCmdlet() =
             let parser = ArgumentParser.Create<InitArgs>()
             List.empty
             |> parser.ToParseResults
-            |> Program.init
+            |> Program.init false
         } |> processWithLogging x
 
 [<Cmdlet("Paket", "Install")>]

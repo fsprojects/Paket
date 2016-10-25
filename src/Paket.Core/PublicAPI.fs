@@ -72,7 +72,13 @@ type Dependencies(dependenciesFileName: string) =
         )
 
     /// Converts the solution from NuGet to Paket.
-    static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory) : unit =
+    static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory: DirectoryInfo) : unit =
+        match directory with
+        |Some d -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false, d)
+        |None -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false)
+
+    /// Converts the solution from NuGet to Paket.
+    static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, fromBootstrapper, ?directory: DirectoryInfo) : unit =
         let dir = defaultArg directory (DirectoryInfo(Directory.GetCurrentDirectory()))
         let rootDirectory = dir
 
@@ -81,7 +87,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 NuGetConvert.convertR rootDirectory force credsMigrationMode
                 |> returnOrFail
-                |> NuGetConvert.replaceNuGetWithPaket initAutoRestore installAfter
+                |> NuGetConvert.replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper
         )
 
     /// Converts the current package dependency graph to the simplest dependency graph.
@@ -289,15 +295,19 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Downloads the latest paket.bootstrapper into the .paket folder.
     member this.DownloadLatestBootstrapper() : unit =
+        this.DownloadLatestBootstrapper(false)
+
+    /// Downloads the latest paket.bootstrapper into the .paket folder.
+    member this.DownloadLatestBootstrapper(fromBootstrapper) : unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> Releases.downloadLatestBootstrapperAndTargets |> this.Process)
+            fun () -> Releases.downloadLatestBootstrapperAndTargets fromBootstrapper |> this.Process)
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> VSIntegration.TurnOnAutoRestore |> this.Process)
+            fun () -> VSIntegration.TurnOnAutoRestore false |> this.Process)
 
     /// Removes paket.targets file and Import section from project files.
     member this.TurnOffAutoRestore(): unit =
