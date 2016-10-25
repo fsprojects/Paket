@@ -518,7 +518,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
     member this.CheckIfPackageExistsInAnyGroup (packageName:PackageName) =
         match groups |> Seq.tryFind (fun g -> g.Value.Resolution.ContainsKey packageName) with
-        | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine PackageName group.Value.Name
+        | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
         
 

@@ -15,7 +15,7 @@ GITHUB
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.39)
+    FAKE (4.41.8)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
