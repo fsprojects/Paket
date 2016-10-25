@@ -171,12 +171,6 @@ let createAlternativeNuGetConfig alternativeConfigFileName =
 <configuration>
   <packageSources>
     <clear />
-    <add key="BuildFeed" value="Nupkgs" />
-    <add key="NuGetVolatile" value="https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json" />
-    <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
-    <add key="cli-deps" value="https://dotnet.myget.org/F/cli-deps/api/v3/index.json" />
-    <add key="dotnet-core" value="https://dotnet.myget.org/F/dotnet-core/api/v3/index.json" />
-    <add key="dotnet-buildtools" value="https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json" />
   </packageSources>
   <disabledPackageSources>
      <clear />
