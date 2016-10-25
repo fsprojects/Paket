@@ -716,7 +716,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                 usedPackages.Add(k,p)
 
             g.NugetPackages
-            |> List.iter (fun package ->                 
+            |> List.iter (fun package ->
                 try
                     for d in this.GetAllDependenciesOf(groupName,package.Name,referencesFile.FileName) do
                         let k = groupName,d

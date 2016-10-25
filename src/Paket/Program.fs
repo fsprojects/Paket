@@ -107,9 +107,7 @@ let findRefs (results : ParseResults<_>) =
     |> Dependencies.Locate().ShowReferencesFor
 
 let init (fromBootstrapper:bool) (results : ParseResults<InitArgs>) =
-    Dependencies.Init()
-    let deps = Dependencies.Locate()
-    deps.DownloadLatestBootstrapper(fromBootstrapper)
+    Dependencies.Init(Directory.GetCurrentDirectory(),fromBootstrapper)
 
 let clearCache (results : ParseResults<ClearCacheArgs>) =
     Dependencies.ClearCache()

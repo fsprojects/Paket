@@ -61,7 +61,10 @@ type Dependencies(dependenciesFileName: string) =
     static member Init() = Dependencies.Init(Directory.GetCurrentDirectory())
 
     /// Initialize paket.dependencies file in the given directory
-    static member Init(directory) =
+    static member Init(directory) =  Dependencies.Init(directory,false)
+
+    /// Initialize paket.dependencies file in the given directory
+    static member Init(directory,fromBootstrapper) =
         let directory = DirectoryInfo(directory)
 
         Utils.RunInLockedAccessMode(
@@ -69,6 +72,9 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 PaketEnv.init directory
                 |> returnOrFail
+
+                let deps = Dependencies.Locate()
+                deps.DownloadLatestBootstrapper(fromBootstrapper)
         )
 
     /// Converts the solution from NuGet to Paket.
