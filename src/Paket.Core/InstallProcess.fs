@@ -319,7 +319,8 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     let projectCache = Dictionary<string, ProjectFile option>();
 
     for project, referenceFile in projectsAndReferences do
-        verbosefn "Installing to %s" project.FileName
+        let toolsVersion = project.GetToolsVersion()
+        verbosefn "Installing to %s with ToolsVersion %s" project.FileName toolsVersion
         let directDependencies =
             referenceFile.Groups
             |> Seq.map (fun kv ->
@@ -382,7 +383,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     dict.Add(packageName,v)
                     true)
 
-        if project.GetToolsVersion() >= "15.0" then 
+        if toolsVersion >= "15.0" then 
             installForDotnetSDK root project  
         else
             project.UpdateReferences(root, model, directDependencies, usedPackages)

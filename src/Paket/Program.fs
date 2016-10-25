@@ -386,7 +386,7 @@ let main() =
     let paketVersion =
         let assembly = Assembly.GetExecutingAssembly()
         let fvi = FileVersionInfo.GetVersionInfo(assembly.Location)
-        fvi.FileVersion
+        fvi.ProductVersion
 
     try
         let parser = ArgumentParser.Create<Command>(programName = "paket",
