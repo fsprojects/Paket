@@ -72,10 +72,10 @@ type Dependencies(dependenciesFileName: string) =
             fun () ->
                 PaketEnv.init directory
                 |> returnOrFail
-
-                let deps = Dependencies.Locate()
-                deps.DownloadLatestBootstrapper(fromBootstrapper)
         )
+
+        let deps = Dependencies.Locate()
+        deps.DownloadLatestBootstrapper(fromBootstrapper)
 
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory: DirectoryInfo) : unit =
@@ -313,11 +313,21 @@ type Dependencies(dependenciesFileName: string) =
     member this.DownloadLatestBootstrapper() : unit =
         this.DownloadLatestBootstrapper(false)
 
-    /// Downloads the latest paket.bootstrapper into the .paket folder.
+    /// Downloads the latest paket.bootstrapper into the .paket folder andtry to rename it to paket.exe in order to activate magic mode.
     member this.DownloadLatestBootstrapper(fromBootstrapper) : unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> Releases.downloadLatestBootstrapperAndTargets fromBootstrapper |> this.Process)
+            fun () -> 
+                Releases.downloadLatestBootstrapperAndTargets fromBootstrapper |> this.Process
+                let bootStrapperFileName = Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.BootstrapperFileName)
+                let paketFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName))
+                try
+                    if paketFileName.Exists then
+                        paketFileName.Delete()
+                    File.Move(bootStrapperFileName,paketFileName.FullName)
+                with
+                | _ ->()
+                )
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(): unit =

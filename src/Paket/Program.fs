@@ -380,7 +380,7 @@ let why (results: ParseResults<WhyArgs>) =
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
-    let paketVersion = AssemblyVersionInformation.InformationalVersion
+    let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
     try
         let parser = ArgumentParser.Create<Command>(programName = "paket",
