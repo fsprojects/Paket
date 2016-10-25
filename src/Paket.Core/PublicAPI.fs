@@ -321,10 +321,19 @@ type Dependencies(dependenciesFileName: string) =
                 Releases.downloadLatestBootstrapperAndTargets fromBootstrapper |> this.Process
                 let bootStrapperFileName = Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.BootstrapperFileName)
                 let paketFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName))
+                let configFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName + ".config"))
                 try
                     if paketFileName.Exists then
                         paketFileName.Delete()
                     File.Move(bootStrapperFileName,paketFileName.FullName)
+
+                    let config = """<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+  <appSettings>
+    <add key="Prerelease" value="True"/>
+  </appSettings>
+</configuration>"""
+                    File.WriteAllText(configFileName.FullName, config)
                 with
                 | _ ->()
                 )
