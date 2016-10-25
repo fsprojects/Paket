@@ -3,7 +3,6 @@ module Paket.Program
 
 open System
 open System.Diagnostics
-open System.Reflection
 open System.IO
 
 open Paket.Logging
@@ -381,10 +380,7 @@ let why (results: ParseResults<WhyArgs>) =
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
-    let paketVersion =
-        let assembly = Assembly.GetExecutingAssembly()
-        let fvi = FileVersionInfo.GetVersionInfo(assembly.Location)
-        fvi.ProductVersion
+    let paketVersion = AssemblyVersionInformation.InformationalVersion
 
     try
         let parser = ArgumentParser.Create<Command>(programName = "paket",
