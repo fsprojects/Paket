@@ -112,7 +112,7 @@ namespace Paket.Bootstrapper
         static string GetMagicModeTarget()
         {
             var assemblyLocation = Assembly.GetExecutingAssembly().Location;
-            var targetName = $"paket_{GetHash(assemblyLocation)}.exe";
+            var targetName = String.Format("paket_{0}.exe",GetHash(assemblyLocation));
 
             return Path.Combine(Path.GetTempPath(), targetName);
         }
@@ -220,7 +220,9 @@ namespace Paket.Bootstrapper
 
         private static string ToLowerSafe(this string value)
         {
-            return value?.ToLower();
+            if(String.IsNullOrEmpty(value)) 
+                return value;
+            return value.ToLower();
         }
     }
 }
