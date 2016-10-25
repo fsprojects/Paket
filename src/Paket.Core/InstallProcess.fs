@@ -297,6 +297,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
 let installForDotnetSDK root (project:ProjectFile) = 
     let paketTargetsPath = RestoreProcess.extractBuildTask(root)
     let relativePath = createRelativePath project.FileName paketTargetsPath    
+    project.RemoveImportForPaketTargets()
     project.AddImportForPaketTargets(relativePath)
 
 /// Installs all packages from the lock file.
@@ -320,7 +321,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
     for project, referenceFile in projectsAndReferences do
         let toolsVersion = project.GetToolsVersion()
-        verbosefn "Installing to %s with ToolsVersion %s" project.FileName toolsVersion
+        verbosefn "Installing to %s with ToolsVersion %O" project.FileName toolsVersion
         let directDependencies =
             referenceFile.Groups
             |> Seq.map (fun kv ->
@@ -383,7 +384,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     dict.Add(packageName,v)
                     true)
 
-        if toolsVersion >= "15.0" then 
+        if toolsVersion >= 15.0 then 
             installForDotnetSDK root project  
         else
             project.UpdateReferences(root, model, directDependencies, usedPackages)
