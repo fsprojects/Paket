@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.IO;
 using System.Linq;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 
 namespace Paket.Bootstrapper.Tests
 {
@@ -17,7 +17,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
             //act
             //assert
-            Assert.Throws<ArgumentNullException>(() => ArgumentParser.ParseArgumentsAndConfigurations(null, null, null));
+            Assert.Throws<ArgumentNullException>(() => ArgumentParser.ParseArgumentsAndConfigurations(null, null, null, false));
         }
 
         [Test]
@@ -26,7 +26,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] { }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] { }, null, null, false);
 
             //assert
             Assert.That(result, Is.Not.Null);
@@ -44,8 +44,10 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.DownloadArguments.Target, Does.EndWith("paket.exe"));
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
             Assert.That(result.ShowHelp, Is.False);
+            Assert.That(result.Run, Is.False);
+            Assert.That(result.RunArgs, Is.Empty);
 
-            var knownProps = new[] { "DownloadArguments.MaxFileAgeInMinutes", "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Silent", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp" };
+            var knownProps = new[] { "DownloadArguments.MaxFileAgeInMinutes", "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Silent", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp", "Run", "RunArgs" };
             var allProperties = GetAllProperties(result);
             Assert.That(allProperties, Is.Not.Null.And.Count.EqualTo(knownProps.Length));
             Assert.That(allProperties, Is.EquivalentTo(knownProps));
@@ -74,7 +76,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.Silent }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.Silent }, null, null, false);
 
             //assert
             Assert.That(result.Silent, Is.True);
@@ -86,7 +88,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.ForceNuget }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.ForceNuget }, null, null, false);
 
             //assert
             Assert.That(result.ForceNuget, Is.True);
@@ -97,10 +99,10 @@ namespace Paket.Bootstrapper.Tests
         {
             //arrange
             var appSettings = new NameValueCollection();
-            appSettings.Add(ArgumentParser.AppSettingKeys.ForceNugetAppSettingsKey, "TrUe");
+            appSettings.Add(ArgumentParser.AppSettingKeys.ForceNuget, "TrUe");
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] { }, appSettings, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] { }, appSettings, null, false);
 
             //assert
             Assert.That(result.ForceNuget, Is.True);
@@ -112,7 +114,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.Help }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.Help }, null, null, false);
 
             //assert
             Assert.That(result.ShowHelp, Is.True);
@@ -124,7 +126,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.PreferNuget }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.PreferNuget }, null, null, false);
 
             //assert
             Assert.That(result.PreferNuget, Is.True);
@@ -135,10 +137,10 @@ namespace Paket.Bootstrapper.Tests
         {
             //arrange
             var appSettings = new NameValueCollection();
-            appSettings.Add(ArgumentParser.AppSettingKeys.PreferNugetAppSettingsKey, "TrUe");
+            appSettings.Add(ArgumentParser.AppSettingKeys.PreferNuget, "TrUe");
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] {}, appSettings, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] {}, appSettings, null, false);
 
             //assert
             Assert.That(result.PreferNuget, Is.True);
@@ -150,7 +152,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.IgnoreCache }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.IgnoreCache }, null, null, false);
 
             //assert
             Assert.That(result.DownloadArguments.IgnoreCache, Is.True);
@@ -162,7 +164,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { String.Format("{0}anySource", ArgumentParser.CommandArgs.NugetSourceArgPrefix) }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { String.Format("{0}anySource", ArgumentParser.CommandArgs.NugetSourceArgPrefix) }, null, null, false);
 
             //assert
             Assert.That(result.DownloadArguments.NugetSource, Is.EqualTo("anySource"));
@@ -174,11 +176,25 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.Prerelease }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.Prerelease }, null, null, false);
 
             //assert
             Assert.That(result.DownloadArguments.IgnorePrerelease, Is.False);
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
+
+        [Test]
+        public void Prerelease_FromAppSettings()
+        {
+            //arrange
+            var appSettings = new NameValueCollection();
+            appSettings.Add(ArgumentParser.AppSettingKeys.Prerelease, "TrUe");
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] { }, appSettings, null, false);
+
+            //assert
+            Assert.That(result.DownloadArguments.IgnorePrerelease, Is.False);
         }
 
         [Test]
@@ -187,7 +203,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.SelfUpdate }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.SelfUpdate }, null, null, false);
 
             //assert
             Assert.That(result.DownloadArguments.DoSelfUpdate, Is.True);
@@ -199,7 +215,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.MaxFileAge + "10" }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.MaxFileAge + "10" }, null, null, false);
 
             //assert
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(10));
@@ -212,7 +228,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.MaxFileAge }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.MaxFileAge }, null, null, false);
 
             //assert
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
@@ -225,7 +241,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.MaxFileAge+"FOO" }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.MaxFileAge+"FOO" }, null, null, false);
 
             //assert
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
@@ -238,7 +254,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { "1.0" }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { "1.0" }, null, null, false);
 
             //assert
             Assert.That(result.DownloadArguments.LatestVersion, Is.EqualTo("1.0"));
@@ -253,7 +269,7 @@ namespace Paket.Bootstrapper.Tests
             envVariables.Add(ArgumentParser.EnvArgs.PaketVersionEnv, "1.0");
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] {}, null, envVariables);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new string[] {}, null, envVariables, false);
 
             //assert
             Assert.That(result.DownloadArguments.LatestVersion, Is.EqualTo("1.0"));
@@ -265,7 +281,7 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { "2.22", "leftover" }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { "2.22", "leftover" }, null, null, false);
 
             //assert
             Assert.That(result.UnprocessedCommandArgs, Is.Not.Empty.And.EqualTo(new[] { "leftover" }));
@@ -277,11 +293,88 @@ namespace Paket.Bootstrapper.Tests
             //arrange
 
             //act
-            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.SelfUpdate }, null, null);
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.SelfUpdate }, null, null, false);
 
             //assert
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
         }
 
+        [Test]
+        public void Run()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] { ArgumentParser.CommandArgs.Run }, null, null, false);
+
+            //assert
+            Assert.That(result.Run, Is.True);
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
+
+        [Test]
+        public void Run_WithArgs()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(
+                new[]
+                {
+                    ArgumentParser.CommandArgs.MaxFileAge + "10",
+                    ArgumentParser.CommandArgs.Run,
+                    "-s",
+                    "--help",
+                    "foo"
+                }, null, null, false);
+            
+            //assert
+            Assert.That(result.Run, Is.True);
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(10));
+            Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
+
+        [Test]
+        public void Magic()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(new[] {"-s", "--help", "foo"}, null, null, true);
+
+            //assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Silent, Is.True);
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+            Assert.That(result.Run, Is.True);
+            Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(720));
+            Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.GetTempPath()).And.EndsWith(".exe"));
+        }
+
+        [Test]
+        public void Magic_WithRun()
+        {
+            //arrange
+
+            //act
+            var result = ArgumentParser.ParseArgumentsAndConfigurations(
+                new[]
+                {
+                    ArgumentParser.CommandArgs.Silent,
+                    ArgumentParser.CommandArgs.Run,
+                    "-s",
+                    "--help",
+                    "foo"
+                }, null, null, true);
+            
+            //assert
+            Assert.That(result.Run, Is.True);
+            Assert.That(result.Silent, Is.True);
+            Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+            Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.GetTempPath()).And.EndsWith(".exe"));
+        }
     }
 }

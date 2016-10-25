@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -14,27 +15,52 @@ namespace Paket.Bootstrapper
 {
     static class Program
     {
+        static bool GetIsMagicMode()
+        {
+            var fileName = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
+            return string.Equals(fileName, "paket.exe", StringComparison.OrdinalIgnoreCase);
+        }
 
         static void Main(string[] args)
         {
             Console.CancelKeyPress += CancelKeyPressed;
 
-            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings, Environment.GetEnvironmentVariables());
+            var magicMode = GetIsMagicMode();
+            var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
+                Environment.GetEnvironmentVariables(), magicMode);
             if (options.ShowHelp)
             {
                 ConsoleImpl.WriteDebug(BootstrapperHelper.HelpText);
                 return;
             }
+
             ConsoleImpl.IsSilent = options.Silent;
             if (options.UnprocessedCommandArgs.Any())
                 ConsoleImpl.WriteInfo("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
 
-            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, new FileProxy());
+            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, new FileProxy(), () => OnSuccessfulDownload(options));
         }
 
-        private static void CancelKeyPressed(object sender, ConsoleCancelEventArgs e)
+        private static void OnSuccessfulDownload(BootstrapperOptions options)
+        {
+            if (options.Run && File.Exists(options.DownloadArguments.Target))
+            {
+                Console.CancelKeyPress -= CancelKeyPressed;
+                try
+                {
+                    var exitCode = PaketRunner.Run(options.DownloadArguments.Target, options.RunArgs);
+                    Environment.Exit(exitCode);
+                }
+                catch (Exception e)
+                {
+                    ConsoleImpl.WriteError("Running paket failed with: {0}", e);
+                }
+            }
+        }
+
+        private static void CancelKeyPressed(object o, ConsoleCancelEventArgs eventArgs)
         {
             Console.WriteLine("Bootstrapper cancelled");
             var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -50,11 +76,11 @@ namespace Paket.Bootstrapper
             Environment.Exit(exitCode);
         }
 
-        public static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, IFileProxy fileProxy)
+        public static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, IFileProxy fileProxy, Action onSuccess)
         {
             Action<Exception> handleException = exception =>
             {
-                if (!File.Exists(dlArgs.Target))
+                if (!fileProxy.Exists(dlArgs.Target))
                     Environment.ExitCode = 1;
                 ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
             };
@@ -104,18 +130,20 @@ namespace Paket.Bootstrapper
                         ConsoleImpl.WriteDebug("Paket.exe {0} is up to date.", localVersion);
                     }
                 }
+
+                onSuccess();
             }
             catch (WebException exn)
             {
                 var shouldHandleException = true;
-                if (!File.Exists(dlArgs.Target))
+                if (!fileProxy.Exists(dlArgs.Target))
                 {
                     if (downloadStrategy.FallbackStrategy != null)
                     {
                         var fallbackStrategy = downloadStrategy.FallbackStrategy;
                         ConsoleImpl.WriteDebug("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
-                        StartPaketBootstrapping(fallbackStrategy, dlArgs, fileProxy);
-                        shouldHandleException = !File.Exists(dlArgs.Target);
+                        StartPaketBootstrapping(fallbackStrategy, dlArgs, fileProxy, onSuccess);
+                        shouldHandleException = !fileProxy.Exists(dlArgs.Target);
                     }
                 }
                 if (shouldHandleException)
