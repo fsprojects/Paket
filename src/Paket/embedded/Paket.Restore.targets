@@ -14,9 +14,8 @@
       ProjectUniqueName="$(MSBuildProjectFullPath)"
       PackageReferences="@(PackageReference)"
       TargetFrameworks="$(TargetFramework)">
-      <Output
-        TaskParameter="NewPackageReferences"
-        ItemName="PackageReference" />
+      <Output TaskParameter="NewPackageReferences" ItemName="PackageReference" />
+      <Output TaskParameter="AlternativeConfigFile" ItemName="RestoreConfigFile" />        
     </PaketRestoreTask>
    </Target>
 </Project>

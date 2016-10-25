@@ -31,6 +31,9 @@ namespace Paket.Build.Tasks
         [Output]
         public ITaskItem[] NewPackageReferences { get; set; }
 
+        [Output]
+        public string AlternativeConfigFile { get; set; }
+
         public override bool Execute()
         {            
             var fileInfo = new FileInfo(ProjectUniqueName);
@@ -51,6 +54,8 @@ namespace Paket.Build.Tasks
             }
             
             this.NewPackageReferences = list.ToArray();
+
+            AlternativeConfigFile = Path.Combine(fileInfo.Directory.FullName, "obj", fileInfo.Name + ".NuGet.Config");
 
             return true;
         }

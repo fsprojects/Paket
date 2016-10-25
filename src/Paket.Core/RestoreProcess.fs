@@ -166,6 +166,23 @@ let extractBuildTask root =
         copiedElements := true
         result
 
+let createAlternativeNuGetConfig alternativeConfigFileName =
+    let config = """<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="BuildFeed" value="Nupkgs" />
+    <add key="NuGetVolatile" value="https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json" />
+    <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="cli-deps" value="https://dotnet.myget.org/F/cli-deps/api/v3/index.json" />
+    <add key="dotnet-core" value="https://dotnet.myget.org/F/dotnet-core/api/v3/index.json" />
+    <add key="dotnet-buildtools" value="https://dotnet.myget.org/F/dotnet-buildtools/api/v3/index.json" />
+  </packageSources>
+  <disabledPackageSources>
+     <clear />
+  </disabledPackageSources>
+</configuration>"""
+    File.WriteAllText(alternativeConfigFileName,config)
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -220,9 +237,13 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let resolved = lockFile.GetGroupedResolution()        
             let list = System.Collections.Generic.List<_>()
             let fi = FileInfo projectFile.FileName
-            let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))
+            let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
+            let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))
+
             if not newFileName.Directory.Exists then
                 newFileName.Directory.Create()
+
+            createAlternativeNuGetConfig alternativeConfigFileName.FullName
 
             for kv in groups do
                 let hull = lockFile.GetPackageHull(kv.Key,referencesFile)
