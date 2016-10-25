@@ -1,9 +1,9 @@
-#### 4.0.0-alpha011 - 25.10.2016
+#### 4.0.0-alpha012 - 25.10.2016
 * Make Paket compatible with dotnet sdk preview3
 * New Command: paket why - https://github.com/fsprojects/Paket/pull/1960
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
-#### 3.24.0 - 25.10.2016
+#### 3.24.1 - 25.10.2016
 * USABILITY: New magic mode bootstrapper - https://github.com/fsprojects/Paket/pull/1961
 * USABILITY: Specify Chessie version - https://github.com/fsprojects/Paket/issues/1958
 * REVERT: Support long paths for NTFS - https://github.com/fsprojects/Paket/pull/1944
