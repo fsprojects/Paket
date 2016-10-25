@@ -1,7 +1,0 @@
-framework: net452, native
-
-source https://www.nuget.org/api/v2
-nuget boost_filesystem-vc140
-nuget boost_system-vc140
-nuget Newtonsoft.Json
-nuget NUnit 2.6.4

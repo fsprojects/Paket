@@ -317,21 +317,6 @@ let ``#1663 should install google apis``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1523 should emit correct files in mixed setting``() = 
-    install "i001523-not-true" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001523-not-true","TestPaket","TestPaket.vcxproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001523-not-true","TestPaket","TestPaket.vcxprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-    let newFile = Path.Combine(scenarioTempPath "i001523-not-true","TestPaketDotNet","TestPaketDotNet.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001523-not-true","TestPaketDotNet","TestPaketDotNet.csprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
 let ``#1578 should reference transitive dep from ref``() = 
     let scenario = "i001578-transitive-ref"
     install scenario |> ignore
