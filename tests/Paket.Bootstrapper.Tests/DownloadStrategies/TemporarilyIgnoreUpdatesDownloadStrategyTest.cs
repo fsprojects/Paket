@@ -13,14 +13,14 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         private const string Target = @"C:\Test\paket.exe";
         private TemporarilyIgnoreUpdatesDownloadStrategy _sut;
         private Mock<IDownloadStrategy> _mockEffectiveStrategy;
-        private Mock<IFileProxy> _mockFileProxy;
+        private Mock<IFileSystemProxy> _mockFileProxy;
         private static readonly DateTime Now = new DateTime(2016, 1, 20, 10, 0, 0);
 
         [SetUp]
         public void Setup()
         {
             _mockEffectiveStrategy = new Mock<IDownloadStrategy>();
-            _mockFileProxy = new Mock<IFileProxy>();
+            _mockFileProxy = new Mock<IFileSystemProxy>();
             DateTimeProxy.GetNow = () => Now;
 
             _sut = new TemporarilyIgnoreUpdatesDownloadStrategy(

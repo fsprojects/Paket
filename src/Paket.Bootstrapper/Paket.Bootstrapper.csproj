@@ -58,14 +58,12 @@
     <Compile Include="DownloadStrategies\CacheDownloadStrategy.cs" />
     <Compile Include="HelperProxies\IWebRequestProxy.cs" />
     <Compile Include="HelperProxies\WebRequestProxy.cs" />
-    <Compile Include="HelperProxies\DirectoryProxy.cs" />
     <Compile Include="DownloadArguments.cs" />
     <Compile Include="EnvProxy.cs" />
-    <Compile Include="HelperProxies\FileProxy.cs" />
+    <Compile Include="HelperProxies\FileSystemProxy.cs" />
     <Compile Include="DownloadStrategies\GitHubDownloadStrategy.cs" />
-    <Compile Include="HelperProxies\IDirectoryProxy.cs" />
     <Compile Include="DownloadStrategies\IDownloadStrategy.cs" />
-    <Compile Include="HelperProxies\IFileProxy.cs" />
+    <Compile Include="HelperProxies\IFileSystemProxy.cs" />
     <Compile Include="DownloadStrategies\NugetDownloadStrategy.cs" />
     <Compile Include="ConsoleImpl.cs" />
     <Compile Include="Program.cs" />

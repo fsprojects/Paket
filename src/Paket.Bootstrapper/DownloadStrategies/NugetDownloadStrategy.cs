@@ -48,18 +48,16 @@ namespace Paket.Bootstrapper.DownloadStrategies
         }
 
         private IWebRequestProxy WebRequestProxy { get; set; }
-        private IDirectoryProxy DirectoryProxy { get; set; }
-        private IFileProxy FileProxy { get; set; }
+        private IFileSystemProxy FileSystemProxy { get; set; }
         private string Folder { get; set; }
         private string NugetSource { get; set; }
         private const string PaketNugetPackageName = "Paket";
         private const string PaketBootstrapperNugetPackageName = "Paket.Bootstrapper";
 
-        public NugetDownloadStrategy(IWebRequestProxy webRequestProxy, IDirectoryProxy directoryProxy, IFileProxy fileProxy, string folder, string nugetSource)
+        public NugetDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy, string folder, string nugetSource)
         {
             WebRequestProxy = webRequestProxy;
-            DirectoryProxy = directoryProxy;
-            FileProxy = fileProxy;
+            FileSystemProxy = fileSystemProxy;
             Folder = folder;
             NugetSource = nugetSource;
         }
@@ -74,10 +72,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
         public string GetLatestVersion(bool ignorePrerelease)
         {
             IEnumerable<string> allVersions = null;
-            if (DirectoryProxy.Exists(NugetSource))
+            if (FileSystemProxy.DirectoryExists(NugetSource))
             {
                 var paketPrefix = "paket.";
-                allVersions = DirectoryProxy.
+                allVersions = FileSystemProxy.
                     EnumerateFiles(NugetSource, "paket.*.nupkg", SearchOption.TopDirectoryOnly).
                     Select(x => Path.GetFileNameWithoutExtension(x)).
                     // If the specified character isn't a digit, then the file
@@ -119,17 +117,17 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
 
             var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
-            DirectoryProxy.CreateDirectory(randomFullPath);
+            FileSystemProxy.CreateDirectory(randomFullPath);
             var paketPackageFile = Path.Combine(randomFullPath, paketFile);
 
-            if (DirectoryProxy.Exists(NugetSource))
+            if (FileSystemProxy.DirectoryExists(NugetSource))
             {
                 if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
                 ConsoleImpl.WriteDebug("Starting download from {0}", sourcePath);
 
-                FileProxy.Copy(sourcePath, paketPackageFile);
+                FileSystemProxy.CopyFile(sourcePath, paketPackageFile);
             }
             else
             {
@@ -138,16 +136,16 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
             }
 
-            FileProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
+            FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
             var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.exe");
-            FileProxy.Copy(paketSourceFile, target, true);
-            DirectoryProxy.Delete(randomFullPath, true);
+            FileSystemProxy.CopyFile(paketSourceFile, target, true);
+            FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
 
         public void SelfUpdate(string latestVersion)
         {
             string target = Assembly.GetExecutingAssembly().Location;
-            var localVersion = FileProxy.GetLocalFileVersion(target);
+            var localVersion = FileSystemProxy.GetLocalFileVersion(target);
             if (localVersion.StartsWith(latestVersion))
             {
                 ConsoleImpl.WriteDebug("Bootstrapper is up to date. Nothing to do.");
@@ -168,17 +166,17 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
 
             var randomFullPath = Path.Combine(Folder, Path.GetRandomFileName());
-            DirectoryProxy.CreateDirectory(randomFullPath);
+            FileSystemProxy.CreateDirectory(randomFullPath);
             var paketPackageFile = Path.Combine(randomFullPath, paketFile);
 
-            if (DirectoryProxy.Exists(NugetSource))
+            if (FileSystemProxy.DirectoryExists(NugetSource))
             {
                 if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
                 ConsoleImpl.WriteDebug("Starting download from {0}", sourcePath);
 
-                FileProxy.Copy(sourcePath, paketPackageFile);
+                FileSystemProxy.CopyFile(sourcePath, paketPackageFile);
             }
             else
             {
@@ -187,23 +185,23 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
             }
 
-            FileProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
+            FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
 
             var paketSourceFile = Path.Combine(randomFullPath, "tools", "paket.bootstrapper.exe");
             var renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             try
             {
-                FileProxy.FileMove(target, renamedPath);
-                FileProxy.FileMove(paketSourceFile, target);
+                FileSystemProxy.MoveFile(target, renamedPath);
+                FileSystemProxy.MoveFile(paketSourceFile, target);
                 ConsoleImpl.WriteDebug("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
                 ConsoleImpl.WriteDebug("Self update failed. Resetting bootstrapper.");
-                FileProxy.FileMove(renamedPath, target);
+                FileSystemProxy.MoveFile(renamedPath, target);
                 throw;
             }
-            DirectoryProxy.Delete(randomFullPath, true);
+            FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
     }
 }

@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper
 {
@@ -37,11 +37,11 @@ namespace Paket.Bootstrapper
             public const string PaketVersionEnv = "PAKET.VERSION";
         }
 
-        public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, bool magicMode)
+        public static BootstrapperOptions ParseArgumentsAndConfigurations(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, IFileSystemProxy fileSystemProxy)
         {
             var options = new BootstrapperOptions();
-
             var commandArgs = arguments.ToList();
+            var magicMode = GetIsMagicMode(fileSystemProxy);
 
             ApplyAppSettings(appSettings, options);
 
@@ -51,7 +51,7 @@ namespace Paket.Bootstrapper
                 options.Silent = true;
                 options.Run = true;
                 options.RunArgs = commandArgs;
-                EvaluateDownloadOptions(options.DownloadArguments, new string[0], appSettings, envVariables, true);                
+                EvaluateDownloadOptions(options.DownloadArguments, new string[0], appSettings, envVariables, true, fileSystemProxy);                
                 return options;
             }
 
@@ -83,10 +83,16 @@ namespace Paket.Bootstrapper
                 commandArgs.Remove(CommandArgs.Help);
             }
 
-            commandArgs = EvaluateDownloadOptions(options.DownloadArguments, commandArgs, appSettings, envVariables, magicMode).ToList();
+            commandArgs = EvaluateDownloadOptions(options.DownloadArguments, commandArgs, appSettings, envVariables, magicMode, fileSystemProxy).ToList();
 
             options.UnprocessedCommandArgs = commandArgs;
             return options;
+        }
+
+        static bool GetIsMagicMode(IFileSystemProxy fileSystemProxy)
+        {
+            var fileName = Path.GetFileName(fileSystemProxy.GetExecutingAssemblyPath());
+            return string.Equals(fileName, "paket.exe", StringComparison.OrdinalIgnoreCase);
         }
 
         private static void ApplyAppSettings(NameValueCollection appSettings, BootstrapperOptions options)
@@ -109,18 +115,18 @@ namespace Paket.Bootstrapper
             }
         }
 
-        static string GetMagicModeTarget()
+        private static string GetMagicModeTarget(IFileSystemProxy fileSystemProxy)
         {
-            var assemblyLocation = Assembly.GetExecutingAssembly().Location;
+            var assemblyLocation = fileSystemProxy.GetExecutingAssemblyPath();
             var targetName = $"paket_{GetHash(assemblyLocation)}.exe";
 
-            return Path.Combine(Path.GetTempPath(), targetName);
+            return Path.Combine(fileSystemProxy.GetTempPath(), targetName);
         }
 
-        private static IEnumerable<string> EvaluateDownloadOptions(DownloadArguments downloadArguments, IEnumerable<string> args, NameValueCollection appSettings, IDictionary envVariables, bool magicMode)
+        private static IEnumerable<string> EvaluateDownloadOptions(DownloadArguments downloadArguments, IEnumerable<string> args, NameValueCollection appSettings, IDictionary envVariables, bool magicMode, IFileSystemProxy fileSystemProxy)
         {
-            var folder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            var target = magicMode ? GetMagicModeTarget() : Path.Combine(folder, "paket.exe");
+            var folder = Path.GetDirectoryName(fileSystemProxy.GetExecutingAssemblyPath());
+            var target = magicMode ? GetMagicModeTarget(fileSystemProxy) : Path.Combine(folder, "paket.exe");
             string nugetSource = downloadArguments.NugetSource;
 
             var appSettingsVersion = appSettings.GetKey(AppSettingKeys.PaketVersion);
@@ -190,7 +196,7 @@ namespace Paket.Bootstrapper
             if (magicMode)
             {
                 if (appSettingsRequestPrerelease || !String.IsNullOrWhiteSpace(appSettingsVersion))
-                    downloadArguments.MaxFileAgeInMinutes = 0;
+                    downloadArguments.MaxFileAgeInMinutes = null;
                 else
                     downloadArguments.MaxFileAgeInMinutes = 60 * 12;
             }

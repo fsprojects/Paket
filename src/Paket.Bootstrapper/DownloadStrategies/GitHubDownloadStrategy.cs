@@ -16,14 +16,14 @@ namespace Paket.Bootstrapper.DownloadStrategies
         }
 
         private IWebRequestProxy WebRequestProxy { get; set; }
-        private IFileProxy FileProxy { get; set; }
+        private IFileSystemProxy FileSystemProxy { get; set; }
         public string Name { get { return "Github"; } }
         public IDownloadStrategy FallbackStrategy { get; set; }
 
-        public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileProxy fileProxy)
+        public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy)
         {
             WebRequestProxy = webRequestProxy;
-            FileProxy = fileProxy;
+            FileSystemProxy = fileSystemProxy;
         }
 
         public string GetLatestVersion(bool ignorePrerelease)
@@ -78,15 +78,15 @@ namespace Paket.Bootstrapper.DownloadStrategies
             var tmpFile = BootstrapperHelper.GetTempFile("paket");
             WebRequestProxy.DownloadFile(url, tmpFile);
 
-            FileProxy.Copy(tmpFile, target, true);
-            FileProxy.Delete(tmpFile);
+            FileSystemProxy.CopyFile(tmpFile, target, true);
+            FileSystemProxy.DeleteFile(tmpFile);
         }
 
         public void SelfUpdate(string latestVersion)
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
             string exePath = executingAssembly.Location;
-            var localVersion = FileProxy.GetLocalFileVersion(exePath);
+            var localVersion = FileSystemProxy.GetLocalFileVersion(exePath);
             if (localVersion.StartsWith(latestVersion))
             {
                 ConsoleImpl.WriteDebug("Bootstrapper is up to date. Nothing to do.");
@@ -102,14 +102,14 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             try
             {
-                FileProxy.FileMove(exePath, renamedPath);
-                FileProxy.FileMove(tmpDownloadPath, exePath);
+                FileSystemProxy.MoveFile(exePath, renamedPath);
+                FileSystemProxy.MoveFile(tmpDownloadPath, exePath);
                 ConsoleImpl.WriteDebug("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
                 ConsoleImpl.WriteDebug("Self update failed. Resetting bootstrapper.");
-                FileProxy.FileMove(renamedPath, exePath);
+                FileSystemProxy.MoveFile(renamedPath, exePath);
                 throw;
             }
         }
