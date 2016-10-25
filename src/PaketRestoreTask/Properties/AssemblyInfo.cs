@@ -6,10 +6,14 @@ using System.Reflection;
 [assembly: AssemblyDescriptionAttribute("A dependency manager for .NET with support for NuGet packages and git repositories.")]
 [assembly: AssemblyVersionAttribute("4.0.0")]
 [assembly: AssemblyFileVersionAttribute("4.0.0")]
-[assembly: AssemblyInformationalVersionAttribute("4.0.0-alpha009")]
+[assembly: AssemblyInformationalVersionAttribute("4.0.0-alpha010")]
 namespace System {
     internal static class AssemblyVersionInformation {
-        internal const string Version = "4.0.0";
-        internal const string InformationalVersion = "4.0.0-alpha009";
+        internal const System.String AssemblyTitle = "PaketRestoreTask";
+        internal const System.String AssemblyProduct = "Paket";
+        internal const System.String AssemblyDescription = "A dependency manager for .NET with support for NuGet packages and git repositories.";
+        internal const System.String AssemblyVersion = "4.0.0";
+        internal const System.String AssemblyFileVersion = "4.0.0";
+        internal const System.String AssemblyInformationalVersion = "4.0.0-alpha010";
     }
 }
