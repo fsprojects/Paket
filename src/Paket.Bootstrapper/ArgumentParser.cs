@@ -51,8 +51,7 @@ namespace Paket.Bootstrapper
                 options.Silent = true;
                 options.Run = true;
                 options.RunArgs = commandArgs;
-                EvaluateDownloadOptions(options.DownloadArguments, new string[0], appSettings, envVariables, true);
-                options.DownloadArguments.MaxFileAgeInMinutes = 60*12;
+                EvaluateDownloadOptions(options.DownloadArguments, new string[0], appSettings, envVariables, true);                
                 return options;
             }
 
@@ -124,9 +123,10 @@ namespace Paket.Bootstrapper
             var target = magicMode ? GetMagicModeTarget() : Path.Combine(folder, "paket.exe");
             string nugetSource = downloadArguments.NugetSource;
 
-            var latestVersion = appSettings.GetKey(AppSettingKeys.PaketVersion) ?? envVariables.GetKey(EnvArgs.PaketVersionEnv) ?? downloadArguments.LatestVersion;
-            var prerelease = (appSettings.IsTrue(AppSettingKeys.Prerelease) && string.IsNullOrEmpty(latestVersion))
-                || !downloadArguments.IgnorePrerelease;
+            var appSettingsVersion = appSettings.GetKey(AppSettingKeys.PaketVersion);
+            var latestVersion = appSettingsVersion ?? envVariables.GetKey(EnvArgs.PaketVersionEnv) ?? downloadArguments.LatestVersion;
+            var appSettingsRequestPrerelease = appSettings.IsTrue(AppSettingKeys.Prerelease);
+            var prerelease = (appSettingsRequestPrerelease && string.IsNullOrEmpty(latestVersion)) || !downloadArguments.IgnorePrerelease;
             bool doSelfUpdate = downloadArguments.DoSelfUpdate;
             var ignoreCache = downloadArguments.IgnoreCache;
             var commandArgs = args.ToList();
@@ -187,7 +187,15 @@ namespace Paket.Bootstrapper
             downloadArguments.DoSelfUpdate = doSelfUpdate;
             downloadArguments.Target = target;
             downloadArguments.Folder = Path.GetDirectoryName(target);
-            downloadArguments.MaxFileAgeInMinutes = maxFileAgeInMinutes;
+            if (magicMode)
+            {
+                if (appSettingsRequestPrerelease || !String.IsNullOrWhiteSpace(appSettingsVersion))
+                    downloadArguments.MaxFileAgeInMinutes = 0;
+                else
+                    downloadArguments.MaxFileAgeInMinutes = 60 * 12;
+            }
+            else
+                downloadArguments.MaxFileAgeInMinutes = maxFileAgeInMinutes;
             return commandArgs;
         }
 

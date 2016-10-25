@@ -375,7 +375,6 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.GetTempPath()).And.EndsWith(".exe"));
-            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
         }
     }
 }
