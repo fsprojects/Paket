@@ -79,14 +79,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '341', 341)" onmouseover="showTip(event, '341', 341)">
-            copiedElements 
+            CopyToCaches force caches fileName
           </code>
           <div class="tip" id="341">
-            <strong>Signature:</strong> bool ref<br />
+            <strong>Signature:</strong> force:bool -&gt; caches:seq&lt;Cache&gt; -&gt; fileName:string -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L143-143" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L25-25" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -97,68 +97,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '342', 342)" onmouseover="showTip(event, '342', 342)">
-            CopyToCaches force caches fileName
-          </code>
-          <div class="tip" id="342">
-            <strong>Signature:</strong> force:bool -&gt; caches:seq&lt;Cache&gt; -&gt; fileName:string -&gt; unit<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L27-27" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '343', 343)" onmouseover="showTip(event, '343', 343)">
-            extractBuildTask root
-          </code>
-          <div class="tip" id="343">
-            <strong>Signature:</strong> root:string -&gt; string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L156-156" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '344', 344)" onmouseover="showTip(event, '344', 344)">
-            extractElement root name
-          </code>
-          <div class="tip" id="344">
-            <strong>Signature:</strong> root:string -&gt; name:string -&gt; string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L145-145" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '345', 345)" onmouseover="showTip(event, '345', 345)">
             ExtractPackage (...)
           </code>
-          <div class="tip" id="345">
+          <div class="tip" id="342">
             <strong>Signature:</strong> (root:string * groupName:GroupName * sources:PackageSource list * caches:Cache list * force:bool * package:ResolvedPackage * localOverride:bool) -&gt; Async&lt;ResolvedPackage * FileInfo [] * FileInfo [] * FileInfo []&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L59-59" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L57-57" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -170,33 +116,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '346', 346)" onmouseover="showTip(event, '346', 346)">
-            findAllReferencesFiles root
-          </code>
-          <div class="tip" id="346">
-            <strong>Signature:</strong> root:string -&gt; Result&lt;(ProjectFile * ReferencesFile) list,DomainMessage&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L124-124" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '347', 347)" onmouseover="showTip(event, '347', 347)">
+          <code onmouseout="hideTip(event, '343', 343)" onmouseover="showTip(event, '343', 343)">
             FindPackagesNotExtractedYet (...)
           </code>
-          <div class="tip" id="347">
+          <div class="tip" id="343">
             <strong>Signature:</strong> dependenciesFileName:string -&gt; (GroupName * PackageName) list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L16-16" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L14-14" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -206,15 +134,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '348', 348)" onmouseover="showTip(event, '348', 348)">
+          <code onmouseout="hideTip(event, '344', 344)" onmouseover="showTip(event, '344', 344)">
             Restore (...)
           </code>
-          <div class="tip" id="348">
-            <strong>Signature:</strong> (dependenciesFileName:string * projectFile:string option * force:bool * group:GroupName option * referencesFileNames:string list * ignoreChecks:bool * failOnChecks:bool) -&gt; unit<br />
+          <div class="tip" id="344">
+            <strong>Signature:</strong> (dependenciesFileName:string * force:bool * group:GroupName option * referencesFileNames:string list * ignoreChecks:bool) -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L168-168" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/RestoreProcess.fs#L122-122" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
