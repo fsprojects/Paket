@@ -87,12 +87,14 @@
 <span class="l">6: </span>
 <span class="l">7: </span>
 <span class="l">8: </span>
+<span class="l">9: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="xml"><span class="prep">&lt;?</span>xml version=<span class="s">"1.0"</span> encoding=<span class="s">"utf-8"</span> <span class="prep">?&gt;</span>
 <span class="k">&lt;</span><span class="i">configuration</span><span class="k">&gt;</span>
   <span class="k">&lt;</span><span class="i">appSettings</span><span class="k">&gt;</span>
     <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="PreferNuget"</span> <span class="o">value</span><span class="k">="True"</span><span class="k">/&gt;</span>
     <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="ForceNuget"</span> <span class="o">value</span><span class="k">="True"</span><span class="k">/&gt;</span>
+    <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="Prerelease"</span> <span class="o">value</span><span class="k">="True"</span><span class="k">/&gt;</span>
     <span class="k">&lt;</span><span class="i">add</span> <span class="o">key</span><span class="k">="PaketVersion"</span> <span class="o">value</span><span class="k">="1.5"</span><span class="k">/&gt;</span>
   <span class="k">&lt;/</span><span class="i">appSettings</span><span class="k">&gt;</span>
 <span class="k">&lt;/</span><span class="i">configuration</span><span class="k">&gt;</span>
@@ -100,6 +102,7 @@
 <p><code>PreferNuget</code>: Same as <code>--prefer-nuget</code> option. Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails</p>
 <p><code>ForceNuget</code>: Same as <code>--force-nuget</code> option. Downloads paket.exe from nuget.org instead of github.com, but does <em>not</em> use github.com as a fallback.</p>
 <p><code>PaketVersion</code>: Same as <code>version</code> option. Downloads the given version of paket.exe from github.com.</p>
+<p><code>Prerelease</code>: Same as <code>prerelease</code> option. Ignored if a version number is specified in <code>PaketVersion</code> or via another way.</p>
 <h2><a name="Environment-Variables" class="anchor" href="#Environment-Variables">Environment Variables</a></h2>
 <p><code>PAKET.VERSION</code>: The requested version can also be set using this environment variable. Above options take precedence over the environment variable</p>
 <h2><a name="Magic-mode" class="anchor" href="#Magic-mode">Magic mode</a></h2>
@@ -114,7 +117,7 @@
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="batch">paket.bootstrapper.exe -s --max-file-age=720 --run add nuget FAKE
 </code></pre></td></tr></table>
-<p>Even while renamed as <code>paket.exe</code> the bootstraper parameters can still be specified if <code>--run</code> is present:</p>
+<p>Even while renamed as <code>paket.exe</code> the bootstrapper parameters can still be specified if <code>--run</code> is present:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="batch">paket.exe --force-nuget --run add nuget FAKE
