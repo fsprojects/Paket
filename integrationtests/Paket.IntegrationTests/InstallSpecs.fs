@@ -280,15 +280,6 @@ let ``#1467 install native package into vcxproj``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1458 should install non conflicting deps from different groups only once``() = 
-    install "i001458-same-version-group" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001458-same-version-group","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001458-same-version-group","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
 let ``#1505 should install conditionals``() = 
     install "i001505-conditionals" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
@@ -413,15 +404,6 @@ let ``#1333 should install framework refs only once``() =
     install "i001333-dup-refs" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001333-dup-refs","ConsoleApplication1","ConsoleApplication1.fsproj")
     let oldFile = Path.Combine(originalScenarioPath "i001333-dup-refs","ConsoleApplication1","ConsoleApplication1.fsprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-    
-[<Test>]
-let ``#1854 install only in corresponding folder``() =
-    install "i001854-submodules" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001854-submodules","TopLevel","Project1.fsproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001854-submodules","TopLevel","Project1.fsprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
