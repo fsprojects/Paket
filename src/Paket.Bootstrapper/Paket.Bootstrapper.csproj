@@ -55,6 +55,7 @@
     <Compile Include="BootstrapperOptions.cs" />
     <Compile Include="PaketDependencies.cs" />
     <Compile Include="PaketRunner.cs" />
+    <Compile Include="SilentMode.cs" />
     <Compile Include="WindowsProcessArguments.cs" />
     <Compile Include="DownloadStrategies\CacheDownloadStrategy.cs" />
     <Compile Include="HelperProxies\IWebRequestProxy.cs" />

@@ -70,7 +70,7 @@ namespace Paket.Bootstrapper
                 // Transparent magic mode mean that we're renamed 'paket.exe' and --run wasn't passed
                 
                 // Enforce silence
-                options.Silent = true;
+                options.Silent = SilentMode.ErrorsOnly;
                 
                 // Assume --run and that all arguments are for the real paket binary
                 options.Run = true;
@@ -159,7 +159,7 @@ namespace Paket.Bootstrapper
             }
             if (commandArgs.Contains(CommandArgs.Silent))
             {
-                options.Silent = true;
+                options.Silent = SilentMode.Silent;
                 commandArgs.Remove(CommandArgs.Silent);
             }
             if (commandArgs.Contains(CommandArgs.Help))
