@@ -7,7 +7,7 @@ Cached paket.exe versions are removed when the NuGet cache folder is [cleared](p
 `Ctrl+C` interrupts the download process. The return value of the bootstrapper is 0 when a paket.exe already exists, so that any subsequent scripts can continue.
 
     [lang=batchfile]
-    $ paket.bootstrapper.exe [prerelease|version] [--prefer-nuget] [--self] [-s] [-f]
+    $ paket.bootstrapper.exe [prerelease|<version>] [--prefer-nuget] [--self] [-s] [-f]
 
 ## Options
 
@@ -15,7 +15,7 @@ Cached paket.exe versions are removed when the NuGet cache folder is [cleared](p
 
   `prerelease`: Downloads the latest paket.exe from github.com and includes prerelease versions.
 
-  `version`: Downloads the given version of paket.exe from github.com.
+  `<version>`: Downloads the given version of paket.exe from github.com.
 
   `--prefer-nuget`: Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails
 
@@ -47,20 +47,26 @@ Example file :
   <appSettings>
     <add key="PreferNuget" value="True"/>
     <add key="ForceNuget" value="True"/>
+    <add key="Prerelease" value="True"/>
     <add key="PaketVersion" value="1.5"/>
   </appSettings>
 </configuration>
 ```
 
-  `PreferNuget`: Same as `--prefer-nuget` option. Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails
+  `PreferNuget`: Same as `--prefer-nuget` option. Downloads the given version of paket.exe from nuget.org instead of
+  github.com. Uses github.com as fallback, when nuget.org fails
 
-  `ForceNuget`: Same as `--force-nuget` option. Downloads paket.exe from nuget.org instead of github.com, but does *not* use github.com as a fallback.
+  `ForceNuget`: Same as `--force-nuget` option. Downloads paket.exe from nuget.org instead of github.com, but does
+  *not* use github.com as a fallback.
 
   `PaketVersion`: Same as `version` option. Downloads the given version of paket.exe from github.com.
 
+  `Prerelease`: Same as `prerelease` option. Ignored if a version number is specified in `PaketVersion` or via
+  another way.
+
 ### In Environment Variables
 
-  `PAKET.VERSION`: The requested version can also be set using this environment variable. Above options take precedence over the environment variable
+  `PAKET.VERSION`: The requested version can also be set using this environment variable.
 
 ### In paket.dependencies
 
