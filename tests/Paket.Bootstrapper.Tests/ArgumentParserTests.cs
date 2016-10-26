@@ -12,6 +12,11 @@ namespace Paket.Bootstrapper.Tests
     [TestFixture]
     public class ArgumentParserTests
     {
+        private static string rootDir = Environment.OSVersion.Platform == PlatformID.Unix ||
+                                        Environment.OSVersion.Platform == PlatformID.MacOSX
+            ? "/"
+            : "C:\\";
+
         class DummyFileSystemProxy : IFileSystemProxy
         {
             private readonly string assembly;
@@ -96,12 +101,12 @@ namespace Paket.Bootstrapper.Tests
 
             public string GetTempPath()
             {
-                return "C:\\temp";
+                return Path.Combine(rootDir, "temp");
             }
         }
 
-        private static readonly IFileSystemProxy NormalModeFileSystemSystem = new DummyFileSystemProxy("C:\\repo\\.paket\\paket.bootstrapper.exe");
-        private static readonly IFileSystemProxy MagicModeFileSystemSystem = new DummyFileSystemProxy("C:\\repo\\paket.exe");
+        private static readonly IFileSystemProxy NormalModeFileSystemSystem = new DummyFileSystemProxy(Path.Combine(rootDir, "repo", ".paket", "paket.bootstrapper.exe"));
+        private static readonly IFileSystemProxy MagicModeFileSystemSystem = new DummyFileSystemProxy(Path.Combine(rootDir, "repo", "paket.exe"));
 
         private static BootstrapperOptions Parse(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, IEnumerable<string> argumentsInDependenciesFile = null)
         {
