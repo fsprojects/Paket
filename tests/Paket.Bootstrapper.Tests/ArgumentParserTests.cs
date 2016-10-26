@@ -105,12 +105,12 @@ namespace Paket.Bootstrapper.Tests
 
         private static BootstrapperOptions Parse(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, IEnumerable<string> argumentsInDependenciesFile = null)
         {
-            return ArgumentParser.ParseArgumentsAndConfigurations(arguments, appSettings, envVariables, NormalModeFileSystemSystem, argumentsInDependenciesFile);
+            return ArgumentParser.ParseArgumentsAndConfigurations(arguments, appSettings, envVariables, NormalModeFileSystemSystem, argumentsInDependenciesFile ?? Enumerable.Empty<string>());
         }
 
         private static BootstrapperOptions ParseMagic(IEnumerable<string> arguments, NameValueCollection appSettings, IDictionary envVariables, IEnumerable<string> argumentsInDependenciesFile = null)
         {
-            return ArgumentParser.ParseArgumentsAndConfigurations(arguments, appSettings, envVariables, MagicModeFileSystemSystem, argumentsInDependenciesFile);
+            return ArgumentParser.ParseArgumentsAndConfigurations(arguments, appSettings, envVariables, MagicModeFileSystemSystem, argumentsInDependenciesFile ?? Enumerable.Empty<string>());
         }
 
         [Test]
@@ -537,7 +537,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(720));
-            Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.GetTempPath()).And.EndsWith(".exe"));
+            Assert.That(result.DownloadArguments.Target, Does.StartWith(MagicModeFileSystemSystem.GetTempPath()).And.EndsWith(".exe"));
         }
 
         [Test]
@@ -556,7 +556,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(42));
-            Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.GetTempPath()).And.EndsWith(".exe"));
+            Assert.That(result.DownloadArguments.Target, Does.StartWith(MagicModeFileSystemSystem.GetTempPath()).And.EndsWith(".exe"));
             Assert.That(result.DownloadArguments.IgnorePrerelease, Is.False);
             Assert.That(result.DownloadArguments.NugetSource, Is.EqualTo("http://local.site/path/here"));
             Assert.That(result.DownloadArguments.IgnoreCache, Is.True);
@@ -586,8 +586,8 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.Silent, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
-            Assert.That(result.DownloadArguments.Target, Does.StartWith(Path.GetTempPath()).And.EndsWith(".exe"));
-            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.Null);
+            Assert.That(result.DownloadArguments.Target, Does.StartWith(MagicModeFileSystemSystem.GetTempPath()).And.EndsWith(".exe"));
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(42));
         }
     }
 }
