@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Reflection;
 using Paket.Bootstrapper.HelperProxies;
 
@@ -133,7 +134,30 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 ConsoleImpl.WriteDebug("Starting download from {0}", paketDownloadUrl);
 
-                WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
+                try
+                {
+                    WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
+                }
+                catch (WebException webException)
+                {
+                    if (webException.Status == WebExceptionStatus.ProtocolError && !string.IsNullOrEmpty(latestVersion))
+                    {
+                        var response = (HttpWebResponse) webException.Response;
+                        if (response.StatusCode == HttpStatusCode.NotFound)
+                        {
+                            throw new WebException($"Version {latestVersion} wasn't found (404)",
+                                webException);
+                        }
+                        if (response.StatusCode == HttpStatusCode.BadRequest)
+                        {
+                            // For cases like "The package version is not a valid semantic version"
+                            throw new WebException($"Unable to get version '{latestVersion}': {response.StatusDescription }",
+                                webException);
+                        }
+                    }
+                    Console.WriteLine(webException.ToString());
+                    throw;
+                }
             }
 
             FileSystemProxy.ExtractToDirectory(paketPackageFile, randomFullPath);
