@@ -141,7 +141,7 @@ namespace Paket.Bootstrapper
         {
             if (args == null)
             {
-                return null;
+                return new List<string>();
             }
 
             var result = new List<string>();
