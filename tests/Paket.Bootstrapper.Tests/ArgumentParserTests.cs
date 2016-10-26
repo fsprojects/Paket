@@ -134,7 +134,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result, Is.Not.Null);
             Assert.That(result.ForceNuget, Is.False);
             Assert.That(result.PreferNuget, Is.False);
-            Assert.That(result.Silent, Is.False);
+            Assert.That(result.Silent, Is.EqualTo(SilentMode.NotSilent));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.DownloadArguments, Is.Not.Null);
             Assert.That(result.DownloadArguments.DoSelfUpdate, Is.False);
@@ -164,7 +164,7 @@ namespace Paket.Bootstrapper.Tests
                 var propName = prop.Name;
                 if (!String.IsNullOrEmpty(prefix))
                     propName = String.Format("{0}.{1}", prefix, propName);
-                if (!prop.PropertyType.IsPrimitive && prop.PropertyType != typeof(string) && !prop.PropertyType.IsGenericType)
+                if (!prop.PropertyType.IsPrimitive && prop.PropertyType != typeof(string) && !prop.PropertyType.IsGenericType && !prop.PropertyType.IsEnum)
                     allProps.AddRange(GetAllProperties(valueResult, propName));
                 else
                     allProps.Add(propName);
@@ -181,7 +181,7 @@ namespace Paket.Bootstrapper.Tests
             var result = Parse(new[] { ArgumentParser.CommandArgs.Silent }, null, null);
 
             //assert
-            Assert.That(result.Silent, Is.True);
+            Assert.That(result.Silent, Is.EqualTo(SilentMode.Silent));
         }
 
         [Test]
@@ -447,7 +447,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.True);
+            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -467,7 +467,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.True);
+            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -488,7 +488,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.True);
+            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -515,7 +515,7 @@ namespace Paket.Bootstrapper.Tests
             
             //assert
             Assert.That(result.Run, Is.True);
-            Assert.That(result.Silent, Is.True);
+            Assert.That(result.Silent, Is.EqualTo(SilentMode.Silent));
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.DownloadArguments.Target, Does.StartWith(MagicModeFileSystemSystem.GetTempPath()).And.EndsWith(".exe"));
@@ -532,7 +532,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.True);
+            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -551,7 +551,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.True);
+            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -583,7 +583,7 @@ namespace Paket.Bootstrapper.Tests
             
             //assert
             Assert.That(result.Run, Is.True);
-            Assert.That(result.Silent, Is.True);
+            Assert.That(result.Silent, Is.EqualTo(SilentMode.Silent));
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.DownloadArguments.Target, Does.StartWith(MagicModeFileSystemSystem.GetTempPath()).And.EndsWith(".exe"));
