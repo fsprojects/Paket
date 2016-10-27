@@ -27,10 +27,19 @@ type EnvironmentVariable =
         else
             None
 
+
+[<StructuredFormatDisplay("{AsString}")>]
 type NugetSourceAuthentication = 
     | PlainTextAuthentication of username : string * password : string
     | EnvVarAuthentication of usernameVar : EnvironmentVariable * passwordVar : EnvironmentVariable
-    | ConfigAuthentication of username : string * password : string
+    | ConfigAuthentication of username : string * password : string 
+        with
+            override x.ToString() =
+                match x with
+                    | PlainTextAuthentication(u,_) -> sprintf "PlainTextAuthentication (username = %s, password = ***)" u
+                    | EnvVarAuthentication(u,_) ->  sprintf "EnvVarAuthentication (usernameVar = %s, passwordVar = ***)" u.Variable
+                    | ConfigAuthentication(u,_) -> sprintf "ConfigAuthentication (username = %s, password = ***)" u
+            member x.AsString = x.ToString()
 
 let toBasicAuth = function
     | PlainTextAuthentication(username,password) | ConfigAuthentication(username, password) ->
