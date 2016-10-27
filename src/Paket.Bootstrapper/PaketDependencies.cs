@@ -7,7 +7,7 @@ namespace Paket.Bootstrapper
     static class PaketDependencies
     {
         private static readonly Regex bootstrapperArgsLine =
-            new Regex("^(#|//)\\s*bootstrapper\\s*:(?<args>.*)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+            new Regex("^\\s*version\\s+(?<args>.*)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
         const string DEPENDENCY_FILE = "paket.dependencies";
 

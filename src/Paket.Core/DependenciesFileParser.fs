@@ -225,6 +225,7 @@ module DependenciesFileParser =
 
         match trimmed with
         | _ when String.IsNullOrWhiteSpace line -> Empty(line)
+        | String.StartsWith "version" _ as trimmed -> Empty(trimmed) // Parsed by the boostrapper, not paket itself
         | String.StartsWith "source" _ as trimmed -> 
             try 
                 let source = PackageSource.Parse(trimmed)
