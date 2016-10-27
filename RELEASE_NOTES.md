@@ -1,5 +1,6 @@
 #### 3.24.2 - 27.10.2016
 * BUGFIX: Custom print for NugetSourceAuthentication types - https://github.com/fsprojects/Paket/pull/1985
+* BUGFIX: DependenciesFileParser now tracks inner exceptions for package sources - https://github.com/fsprojects/Paket/pull/1987
 
 #### 3.24.1 - 25.10.2016
 * USABILITY: New magic mode bootstrapper - https://github.com/fsprojects/Paket/pull/1961
