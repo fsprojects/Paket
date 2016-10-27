@@ -270,7 +270,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
             |> ok
-        with _ -> DependenciesFileParseError (FileInfo dependenciesFileName) |> fail
+        with e -> DependenciesFileParseError (FileInfo dependenciesFileName, e) |> fail
         |> lift addPackages
 
     let create() =

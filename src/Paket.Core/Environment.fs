@@ -33,8 +33,8 @@ module PaketEnv =
                 else
                     try
                         ok (DependenciesFile.ReadFromFile(fi.FullName))
-                    with _ ->
-                        fail (DependenciesFileParseError fi)
+                    with e ->
+                        DependenciesFileParseError(fi,e) |> fail
 
             let! lockFile =
                 let fi = FileInfo(Path.Combine(directory.FullName, Constants.LockFileName))

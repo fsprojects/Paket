@@ -94,7 +94,7 @@ let GroupName(name:string) =
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
     | DependenciesFileNotFoundInDir of DirectoryInfo
-    | DependenciesFileParseError of FileInfo
+    | DependenciesFileParseError of FileInfo * exn
     | LockFileNotFound of DirectoryInfo
     | LockFileParseError of FileInfo
     | ReferencesFileParseError of FileInfo
@@ -127,8 +127,8 @@ type DomainMessage =
             sprintf "Directory %s does not exist." di.FullName
         | DependenciesFileNotFoundInDir(di) -> 
             sprintf "Dependencies file not found in %s." di.FullName
-        | DependenciesFileParseError(fi) -> 
-            sprintf "Unable to parse %s." fi.FullName
+        | DependenciesFileParseError(fi,e) -> 
+            sprintf "Unable to parse %s. (%s)" fi.FullName e.Message
         | LockFileNotFound(di) -> 
             sprintf "Lock file not found in %s. Create lock file by running paket install." di.FullName
         | LockFileParseError(fi) -> 
