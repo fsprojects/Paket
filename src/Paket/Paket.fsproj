@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>convert-from-nuget</StartArguments>
-    <StartWorkingDirectory>C:\Git\Third Party\Paket\integrationtests\scenarios\i001922-convert-nuget-with-analyzers\before\</StartWorkingDirectory>
+    <StartArguments>remove nuget Autofac</StartArguments>
+    <StartWorkingDirectory>D:\temp\Paket-1652</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

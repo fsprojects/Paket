@@ -35,13 +35,13 @@ let private remove removeFromProjects dependenciesFileName groupName (package: P
         let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
         LockFile.LoadFrom(lockFileName.FullName)
 
-    let dependenciesFile,lockFile,hasChanged =
+    let dependenciesFile,lockFile,_ =
         let exisitingDependenciesFile = DependenciesFile.ReadFromFile dependenciesFileName
         if stillInstalled then exisitingDependenciesFile,oldLockFile,false else
         let dependenciesFile = exisitingDependenciesFile.Remove(groupName,package)
         dependenciesFile.Save()
         
-        let lockFile,hasChanged,_ = UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.UpdateGroup groupName,SemVerUpdateMode.NoRestriction,force)
+        let lockFile,hasChanged,_ = UpdateProcess.SelectiveUpdate(dependenciesFile,PackageResolver.UpdateMode.Install,SemVerUpdateMode.NoRestriction,force)
         dependenciesFile,lockFile,hasChanged
     
     if installAfter then

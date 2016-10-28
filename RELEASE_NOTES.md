@@ -1,3 +1,6 @@
+#### 3.25.1 - 28.10.2016
+* BUGFIX: Be more conservative during paket add and paket remove - https://github.com/fsprojects/Paket/issues/1652
+
 #### 3.25.0 - 28.10.2016
 * Allow to put required paket version into the paket.dependencies file - https://github.com/fsprojects/Paket/pull/1983
 * BUGFIX: Custom print for NugetSourceAuthentication types - https://github.com/fsprojects/Paket/pull/1985
