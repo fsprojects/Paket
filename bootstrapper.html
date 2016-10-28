@@ -111,15 +111,28 @@ another way.</p>
 <p><code>PAKET.VERSION</code>: The requested version can also be set using this environment variable.</p>
 <h3><a name="In-paket-dependencies" class="anchor" href="#In-paket-dependencies">In paket.dependencies</a></h3>
 <p>If a <a href="dependencies-file.html"><code>paket.dependencies</code></a> file can be found in the current directory it can contain a
-special comment containing options for the boostrapper.</p>
-<p>The comment must start with <code>bootstrapper:</code> followed by normal command line arguments :</p>
+special line containing options for the boostrapper.</p>
+<p>The line must start with <code>version</code> followed by a requested paket version and optionally bootstrapper command line arguments:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
 <span class="l">5: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">#bootstrapper: <span class="n">3.24.1</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">version <span class="n">3.24.1</span>
+
+<span class="k">source</span> https://api.nuget.org/v3/index.json
+<span class="k">nuget</span> FAKE
+<span class="k">nuget</span> FSharp.Core <span class="o">~&gt;</span> <span class="n">4</span>
+</code></pre></td></tr></table>
+<p>or</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">version <span class="n">3.24.1</span> --prefer-nuget
 
 <span class="k">source</span> https://api.nuget.org/v3/index.json
 <span class="k">nuget</span> FAKE
