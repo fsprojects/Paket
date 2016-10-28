@@ -225,7 +225,14 @@ module DependenciesFileParser =
 
         match trimmed with
         | _ when String.IsNullOrWhiteSpace line -> Empty(line)
-        | String.StartsWith "source" _ as trimmed -> Remote(RemoteParserOption.PackageSource(PackageSource.Parse(trimmed)))
+        | String.StartsWith "version" _ as trimmed -> Empty(trimmed) // Parsed by the boostrapper, not paket itself
+        | String.StartsWith "source" _ as trimmed -> 
+            try 
+                let source = PackageSource.Parse(trimmed)
+                Remote(RemoteParserOption.PackageSource(source))
+            with e -> 
+                traceWarnfn "could not parse package source %s (%s)" trimmed e.Message
+                reraise ()
         | String.StartsWith "cache" _ as trimmed -> Remote(RemoteParserOption.Cache(Cache.Parse(trimmed)))
         | String.StartsWith "group" _ as trimmed -> Group(trimmed.Replace("group ",""))
         | String.StartsWith "nuget" trimmed -> 

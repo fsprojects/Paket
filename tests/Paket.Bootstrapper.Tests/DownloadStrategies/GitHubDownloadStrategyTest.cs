@@ -13,13 +13,13 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
     {
         private GitHubDownloadStrategy sut;
         private Mock<IWebRequestProxy> mockWebProxy;
-        private Mock<IFileProxy> mockFileProxy;
+        private Mock<IFileSystemProxy> mockFileProxy;
 
         [SetUp]
         public void Setup()
         {
             mockWebProxy = new Mock<IWebRequestProxy>();
-            mockFileProxy = new Mock<IFileProxy>();
+            mockFileProxy = new Mock<IFileSystemProxy>();
             sut = new GitHubDownloadStrategy(mockWebProxy.Object, mockFileProxy.Object);
         }
 
@@ -64,8 +64,8 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
 
             //assert
             mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileName));
-            mockFileProxy.Verify(x => x.Copy(tempFileName, "paketExeLocation", true));
-            mockFileProxy.Verify(x => x.Delete(tempFileName));
+            mockFileProxy.Verify(x => x.CopyFile(tempFileName, "paketExeLocation", true));
+            mockFileProxy.Verify(x => x.DeleteFile(tempFileName));
         }
 
         [Test]
@@ -83,8 +83,8 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
 
             //assert
             mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileNameNew));
-            mockFileProxy.Verify(x => x.FileMove(Assembly.GetAssembly(typeof(GitHubDownloadStrategy)).Location, tempFileNameOld));
-            mockFileProxy.Verify(x => x.FileMove(tempFileNameNew, Assembly.GetAssembly(typeof(GitHubDownloadStrategy)).Location));
+            mockFileProxy.Verify(x => x.MoveFile(Assembly.GetAssembly(typeof(GitHubDownloadStrategy)).Location, tempFileNameOld));
+            mockFileProxy.Verify(x => x.MoveFile(tempFileNameNew, Assembly.GetAssembly(typeof(GitHubDownloadStrategy)).Location));
         }
     }
 }

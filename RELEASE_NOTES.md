@@ -1,7 +1,15 @@
-#### 4.0.0-alpha017 - 25.10.2016
+#### 4.0.0-alpha018 - 28.10.2016
 * Make Paket compatible with dotnet sdk preview3
 * New Command: paket why - https://github.com/fsprojects/Paket/pull/1960
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
+
+#### 3.25.1 - 28.10.2016
+* BUGFIX: Be more conservative during paket add and paket remove - https://github.com/fsprojects/Paket/issues/1652
+
+#### 3.25.0 - 28.10.2016
+* Allow to put required paket version into the paket.dependencies file - https://github.com/fsprojects/Paket/pull/1983
+* BUGFIX: Custom print for NugetSourceAuthentication types - https://github.com/fsprojects/Paket/pull/1985
+* BUGFIX: DependenciesFileParser now tracks inner exceptions for package sources - https://github.com/fsprojects/Paket/pull/1987
 
 #### 3.24.1 - 25.10.2016
 * USABILITY: New magic mode bootstrapper - https://github.com/fsprojects/Paket/pull/1961

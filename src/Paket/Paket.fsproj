@@ -32,6 +32,8 @@
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
+    <StartArguments>remove nuget Autofac</StartArguments>
+    <StartWorkingDirectory>D:\temp\Paket-1652</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

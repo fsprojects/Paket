@@ -85,8 +85,8 @@
     <Compile Include="Async.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CustomAssemblyInfo.fs" />
-    <Compile Include="Domain.fs" />
     <Compile Include="Logging.fsi" />
+    <Compile Include="Domain.fs" />
     <Compile Include="Logging.fs" />
     <Compile Include="Constants.fs" />
     <Compile Include="Utils.fs" />

@@ -24,7 +24,7 @@ let private add installToProjects addToProjectsF dependenciesFileName groupName 
             existingDependenciesFile
                 .Add(groupName,package,version)
 
-        let updateMode = PackageResolver.UpdateMode.UpdateFiltered(groupName, PackageFilter.ofName package)
+        let updateMode = PackageResolver.UpdateMode.Install
         let lockFile,hasChanged,updatedGroups = UpdateProcess.SelectiveUpdate(dependenciesFile, updateMode, options.SemVerUpdateMode, options.Force)
         let projects = seq { for p in ProjectFile.FindAllProjects(Path.GetDirectoryName lockFile.FileName) -> p } // lazy sequence in case no project install required
 

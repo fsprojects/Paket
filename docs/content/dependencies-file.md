@@ -47,6 +47,29 @@ Paket supports the following source types:
 
 ## Global options
 
+### Required Paket version
+
+It is possible to require a specific Paket version for a [`paket.dependencies` file](dependencies-file.html).
+This can be achieved by a line which starts with `version` followed by a requested `paket.exe` version and optionally [bootstrapper command line](bootstrapper.html) arguments:
+
+```paket
+version 3.24.1
+
+source https://api.nuget.org/v3/index.json
+nuget FAKE
+nuget FSharp.Core ~> 4
+```
+
+or 
+
+```paket
+version 3.24.1 --prefer-nuget
+
+source https://api.nuget.org/v3/index.json
+nuget FAKE
+nuget FSharp.Core ~> 4
+```
+
 ### Strict references
 
 Paket usually references all direct and transitive dependencies that are listed in your [`paket.references` files](references-files.html) to your project file.

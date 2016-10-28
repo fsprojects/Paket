@@ -64,6 +64,16 @@ let ``should read simple config with prerelease and comment``() =
     packageDefinition.Range |> shouldEqual (VersionRange.AtLeast("3.2"))
     packageDefinition.PreReleases |> shouldEqual (PreReleaseStatus.All)
 
+let configWithVersionLine = """
+version 1.2.3 --prefer-nuget
+source "http://www.nuget.org/api/v2"
+nuget Castle.Windsor-log4net
+"""
+
+[<Test>]
+let ``should read simple config with version line for bootstrapper``() = 
+    DependenciesFile.FromCode(configWithVersionLine) |> ignore
+
 
 let config2 = """
 source "http://www.nuget.org/api/v2"
