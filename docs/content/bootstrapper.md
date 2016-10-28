@@ -73,7 +73,7 @@ Example file :
 If a [`paket.dependencies`](dependencies-file.html) file can be found in the current directory it can contain a
 special line containing options for the boostrapper.
 
-The line must start with `version` followed by a requested paket version and optionally bootstrapper command line arguments:
+The line must start with `version` followed by a requested `paket.exe` version and optionally bootstrapper command line arguments:
 
 ```paket
 version 3.24.1
