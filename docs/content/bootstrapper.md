@@ -71,12 +71,22 @@ Example file :
 ### In paket.dependencies
 
 If a [`paket.dependencies`](dependencies-file.html) file can be found in the current directory it can contain a
-special comment containing options for the boostrapper.
+special line containing options for the boostrapper.
 
-The comment must start with `bootstrapper:` followed by normal command line arguments :
+The line must start with `version` followed by a requested paket version and optionally bootstrapper command line arguments:
 
 ```paket
-#bootstrapper: 3.24.1
+version 3.24.1
+
+source https://api.nuget.org/v3/index.json
+nuget FAKE
+nuget FSharp.Core ~> 4
+```
+
+or 
+
+```paket
+version 3.24.1 --prefer-nuget
 
 source https://api.nuget.org/v3/index.json
 nuget FAKE
