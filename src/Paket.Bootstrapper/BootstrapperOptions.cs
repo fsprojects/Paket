@@ -14,7 +14,7 @@ namespace Paket.Bootstrapper
 
         public DownloadArguments DownloadArguments { get; set; }
 
-        public bool Silent { get; set; }
+        public SilentMode Silent { get; set; }
         public bool ForceNuget { get; set; }
         public bool PreferNuget { get; set; }
         public bool ShowHelp { get; set; }

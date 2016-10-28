@@ -7,13 +7,15 @@ Cached paket.exe versions are removed when the NuGet cache folder is [cleared](p
 `Ctrl+C` interrupts the download process. The return value of the bootstrapper is 0 when a paket.exe already exists, so that any subsequent scripts can continue.
 
     [lang=batchfile]
-    $ paket.bootstrapper.exe [prerelease|version] [--prefer-nuget] [--self] [-s] [-f]
+    $ paket.bootstrapper.exe [prerelease|<version>] [--prefer-nuget] [--self] [-s] [-f]
 
 ## Options
 
+### On the command line
+
   `prerelease`: Downloads the latest paket.exe from github.com and includes prerelease versions.
 
-  `version`: Downloads the given version of paket.exe from github.com.
+  `<version>`: Downloads the given version of paket.exe from github.com.
 
   `--prefer-nuget`: Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails
 
@@ -33,7 +35,7 @@ Cached paket.exe versions are removed when the NuGet cache folder is [cleared](p
 
   `--help`: Shows a help page with all possible options.
 
-## Application settings
+### In Application settings
 
 If present the paket.boostraper.exe.config file can be used to set AppSettings. When an option is passed on the command line the corresponding application setting is ignored.
 
@@ -45,26 +47,46 @@ Example file :
   <appSettings>
     <add key="PreferNuget" value="True"/>
     <add key="ForceNuget" value="True"/>
+    <add key="Prerelease" value="True"/>
     <add key="PaketVersion" value="1.5"/>
   </appSettings>
 </configuration>
 ```
 
-  `PreferNuget`: Same as `--prefer-nuget` option. Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails
+  `PreferNuget`: Same as `--prefer-nuget` option. Downloads the given version of paket.exe from nuget.org instead of
+  github.com. Uses github.com as fallback, when nuget.org fails
 
-  `ForceNuget`: Same as `--force-nuget` option. Downloads paket.exe from nuget.org instead of github.com, but does *not* use github.com as a fallback.
+  `ForceNuget`: Same as `--force-nuget` option. Downloads paket.exe from nuget.org instead of github.com, but does
+  *not* use github.com as a fallback.
 
   `PaketVersion`: Same as `version` option. Downloads the given version of paket.exe from github.com.
 
-## Environment Variables
+  `Prerelease`: Same as `prerelease` option. Ignored if a version number is specified in `PaketVersion` or via
+  another way.
 
-  `PAKET.VERSION`: The requested version can also be set using this environment variable. Above options take precedence over the environment variable
+### In Environment Variables
+
+  `PAKET.VERSION`: The requested version can also be set using this environment variable.
+
+### In paket.dependencies
+
+If a [`paket.dependencies`](dependencies-file.html) file can be found in the current directory it can contain a
+special comment containing options for the boostrapper.
+
+The comment must start with `bootstrapper:` followed by normal command line arguments :
+
+```paket
+#bootstrapper: 3.24.1
+
+source https://api.nuget.org/v3/index.json
+nuget FAKE
+nuget FSharp.Core ~> 4
+```
 
 ## Magic mode
 
-When `paket.bootstrapper.exe` is renamed `paket.exe` the real `paket.exe` is downloaded to a temporary location and executed with all arguments passed directly.
-
-Some default arguments are also used for the bootstrapper to feel more like if it didn't exists.
+When `paket.bootstrapper.exe` is renamed `paket.exe` the real `paket.exe` is downloaded to a temporary location and
+executed with all arguments passed directly.
 
 ```batch
 paket.exe add nuget FAKE
@@ -76,8 +98,9 @@ Would do the same thing as :
 paket.bootstrapper.exe -s --max-file-age=720 --run add nuget FAKE
 ```
 
-Even while renamed as `paket.exe` the bootstraper parameters can still be specified if `--run` is present:
+Using this feature paket can be used simply by committing a ~50KB `paket.exe` to source control an using it directly.
+The fact that a boostrapper exists is completely hidden and become an implementation detail that contributors to your
+repository won't have to know — or care — about.
 
-```batch
-paket.exe --force-nuget --run add nuget FAKE
-```
+While command line bootstrapper options can't be used (Except if `--run` is passed) the other sources
+(AppSettings, Environment Variables & paket.dependencies) can still be used to configure the bootstrapper.

@@ -8,11 +8,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
     {
         private readonly int _maxFileAgeOfPaketExeInMinutes;
         private readonly string _target;
-        private readonly IFileProxy _fileProxy;
+        private readonly IFileSystemProxy fileSystemProxy;
 
         public TemporarilyIgnoreUpdatesDownloadStrategy(
             IDownloadStrategy effectiveStrategy, 
-            IFileProxy fileProxy,
+            IFileSystemProxy fileSystemProxy,
             string target,
             int maxFileAgeOfPaketExeInMinutes)
         {
@@ -24,7 +24,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             
             _effectiveStrategy = effectiveStrategy;
             _maxFileAgeOfPaketExeInMinutes = maxFileAgeOfPaketExeInMinutes;
-            _fileProxy = fileProxy;
+            this.fileSystemProxy = fileSystemProxy;
 
             _target = target;
         }
@@ -34,7 +34,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             var targetVersion = string.Empty;
             try 
             {
-                targetVersion = _fileProxy.GetLocalFileVersion(_target);
+                targetVersion = fileSystemProxy.GetLocalFileVersion(_target);
             } 
             catch (FileNotFoundException) 
             {
@@ -88,7 +88,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             
             try 
             {
-                var lastModification = _fileProxy.GetLastWriteTime(_target);
+                var lastModification = fileSystemProxy.GetLastWriteTime(_target);
 
                 return DateTimeProxy.Now > lastModification.AddMinutes(_maxFileAgeOfPaketExeInMinutes);
             } 
@@ -102,7 +102,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
         {
             try
             {
-                _fileProxy.Touch(target);
+                fileSystemProxy.Touch(target);
             }
             catch (FileNotFoundException)
             {

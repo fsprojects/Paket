@@ -12,7 +12,7 @@ namespace Paket.Bootstrapper.Tests
     {
         private DownloadArguments dlArgs;
         private Mock<IDownloadStrategy> mockDownloadStrategy;
-        private Mock<IFileProxy> mockFileProxy;
+        private Mock<IFileSystemProxy> mockFileProxy;
 
         private static Action DoNothing = () => { };
 
@@ -21,7 +21,7 @@ namespace Paket.Bootstrapper.Tests
         {
             mockDownloadStrategy = new Mock<IDownloadStrategy>();
             dlArgs = new DownloadArguments { Target = "paket.exe" };
-            mockFileProxy = new Mock<IFileProxy>();
+            mockFileProxy = new Mock<IFileSystemProxy>();
         }
 
         [Test]
@@ -219,7 +219,7 @@ namespace Paket.Bootstrapper.Tests
             int successCount = 0;
             Action onSuccess = () => successCount++;
             dlArgs.LatestVersion = "1.5";
-            mockFileProxy.Setup(x => x.Exists(It.IsAny<string>())).Returns(false);
+            mockFileProxy.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
             mockDownloadStrategy.Setup(x => x.DownloadVersion("1.5", "paket.exe")).Throws(new WebException());
 
             //act

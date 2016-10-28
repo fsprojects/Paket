@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -15,32 +14,28 @@ namespace Paket.Bootstrapper
 {
     static class Program
     {
-        static bool GetIsMagicMode()
-        {
-            var fileName = Path.GetFileName(Assembly.GetExecutingAssembly().Location);
-            return string.Equals(fileName, "paket.exe", StringComparison.OrdinalIgnoreCase);
-        }
-
         static void Main(string[] args)
         {
             Console.CancelKeyPress += CancelKeyPressed;
 
-            var magicMode = GetIsMagicMode();
+            var fileProxy = new FileSystemProxy();
+            var argumentsFromDependenciesFile =
+                WindowsProcessArguments.Parse(
+                    PaketDependencies.GetBootstrapperArgsForFolder(Environment.CurrentDirectory));
             var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
-                Environment.GetEnvironmentVariables(), magicMode);
+                Environment.GetEnvironmentVariables(), fileProxy, argumentsFromDependenciesFile);
             if (options.ShowHelp)
             {
                 ConsoleImpl.WriteDebug(BootstrapperHelper.HelpText);
                 return;
             }
 
-            ConsoleImpl.IsSilent = options.Silent;
+            ConsoleImpl.Silent = options.Silent;
             if (options.UnprocessedCommandArgs.Any())
                 ConsoleImpl.WriteInfo("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
 
             var effectiveStrategy = GetEffectiveDownloadStrategy(options.DownloadArguments, options.PreferNuget, options.ForceNuget);
-
-            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, new FileProxy(), () => OnSuccessfulDownload(options));
+            StartPaketBootstrapping(effectiveStrategy, options.DownloadArguments, fileProxy, () => OnSuccessfulDownload(options));
         }
 
         private static void OnSuccessfulDownload(BootstrapperOptions options)
@@ -76,13 +71,13 @@ namespace Paket.Bootstrapper
             Environment.Exit(exitCode);
         }
 
-        public static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, IFileProxy fileProxy, Action onSuccess)
+        public static void StartPaketBootstrapping(IDownloadStrategy downloadStrategy, DownloadArguments dlArgs, IFileSystemProxy fileSystemProxy, Action onSuccess)
         {
             Action<Exception> handleException = exception =>
             {
-                if (!fileProxy.Exists(dlArgs.Target))
+                if (!fileSystemProxy.FileExists(dlArgs.Target))
                     Environment.ExitCode = 1;
-                ConsoleImpl.WriteError(String.Format("{0} ({1})", exception.Message, downloadStrategy.Name));
+                ConsoleImpl.WriteError($"{exception.Message} ({downloadStrategy.Name})");
             };
             try
             {
@@ -96,7 +91,7 @@ namespace Paket.Bootstrapper
 
                 ConsoleImpl.WriteDebug("Checking Paket version ({0})...", versionRequested);
 
-                var localVersion = fileProxy.GetLocalFileVersion(dlArgs.Target);
+                var localVersion = fileSystemProxy.GetLocalFileVersion(dlArgs.Target);
 
                 var specificVersionRequested = true;
                 var latestVersion = dlArgs.LatestVersion;
@@ -136,14 +131,14 @@ namespace Paket.Bootstrapper
             catch (WebException exn)
             {
                 var shouldHandleException = true;
-                if (!fileProxy.Exists(dlArgs.Target))
+                if (!fileSystemProxy.FileExists(dlArgs.Target))
                 {
                     if (downloadStrategy.FallbackStrategy != null)
                     {
                         var fallbackStrategy = downloadStrategy.FallbackStrategy;
                         ConsoleImpl.WriteDebug("'{0}' download failed. If using Mono, you may need to import trusted certificates using the 'mozroots' tool as none are contained by default. Trying fallback download from '{1}'.", downloadStrategy.Name, fallbackStrategy.Name);
-                        StartPaketBootstrapping(fallbackStrategy, dlArgs, fileProxy, onSuccess);
-                        shouldHandleException = !fileProxy.Exists(dlArgs.Target);
+                        StartPaketBootstrapping(fallbackStrategy, dlArgs, fileSystemProxy, onSuccess);
+                        shouldHandleException = !fileSystemProxy.FileExists(dlArgs.Target);
                     }
                 }
                 if (shouldHandleException)
@@ -157,8 +152,8 @@ namespace Paket.Bootstrapper
 
         public static IDownloadStrategy GetEffectiveDownloadStrategy(DownloadArguments dlArgs, bool preferNuget, bool forceNuget)
         {
-            var gitHubDownloadStrategy = new GitHubDownloadStrategy(new WebRequestProxy(), new FileProxy()).AsCached(dlArgs.IgnoreCache);
-            var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new DirectoryProxy(), new FileProxy(), dlArgs.Folder, dlArgs.NugetSource).AsCached(dlArgs.IgnoreCache);
+            var gitHubDownloadStrategy = new GitHubDownloadStrategy(new WebRequestProxy(), new FileSystemProxy()).AsCached(dlArgs.IgnoreCache);
+            var nugetDownloadStrategy = new NugetDownloadStrategy(new WebRequestProxy(), new FileSystemProxy(), dlArgs.Folder, dlArgs.NugetSource).AsCached(dlArgs.IgnoreCache);
 
             IDownloadStrategy effectiveStrategy;
             if (forceNuget)
@@ -184,13 +179,13 @@ namespace Paket.Bootstrapper
         {
             if (ignoreCache)
                 return effectiveStrategy;
-            return new CacheDownloadStrategy(effectiveStrategy, new DirectoryProxy(), new FileProxy());
+            return new CacheDownloadStrategy(effectiveStrategy, new FileSystemProxy());
         }
 
         private static IDownloadStrategy AsTemporarilyIgnored(this IDownloadStrategy effectiveStrategy, int? maxFileAgeInMinutes, string target)
         {
             if (maxFileAgeInMinutes.HasValue)
-                return new TemporarilyIgnoreUpdatesDownloadStrategy(effectiveStrategy, new FileProxy(), target, maxFileAgeInMinutes.Value);
+                return new TemporarilyIgnoreUpdatesDownloadStrategy(effectiveStrategy, new FileSystemProxy(), target, maxFileAgeInMinutes.Value);
             return effectiveStrategy;
         }
     }

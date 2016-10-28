@@ -48,7 +48,8 @@
     <Compile Include="SemVerTests.cs" />
     <Compile Include="StartPaketBootstrappingTests.cs" />
     <Compile Include="DownloadStrategies\TemporarilyIgnoreUpdatesDownloadStrategyTest.cs" />
-    <Compile Include="WindowsProcessArguments.cs" />
+    <Compile Include="WindowsProcessArgumentsParseTests.cs" />
+    <Compile Include="WindowsProcessArgumentsToStringTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
