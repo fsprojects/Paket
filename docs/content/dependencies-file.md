@@ -47,7 +47,7 @@ Paket supports the following source types:
 
 ## Global options
 
-## Required Paket version
+### Required Paket version
 
 It is possible to require a specific Paket version for a [`paket.dependencies` file](dependencies-file.html).
 This can be achieved by a line which starts with `version` followed by a requested paket version and optionally [bootstrapper command line](bootstrapper.html) arguments:
