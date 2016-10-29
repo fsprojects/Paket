@@ -87,7 +87,7 @@ type GroupName =
 
 /// Function to convert a string into a group name
 let GroupName(name:string) = 
-  match name.ToLowerInvariant().Trim() with
+    match name.ToLowerInvariant().Trim() with
     | "lib" | "runtimes" -> invalidArg "name" (sprintf "It is not allowed to use '%s' as group name." name)
     | id -> GroupName.GroupName(name.Trim(), id)
 
