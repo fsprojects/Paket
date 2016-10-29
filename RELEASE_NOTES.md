@@ -1,3 +1,6 @@
+#### 3.25.2 - 29.10.2016
+* BUGFIX: Fix out-of-date-check
+
 #### 3.25.1 - 28.10.2016
 * BUGFIX: Be more conservative during paket add and paket remove - https://github.com/fsprojects/Paket/issues/1652
 
