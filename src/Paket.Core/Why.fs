@@ -4,6 +4,7 @@ open System
 
 open Paket.Domain
 open Paket.Logging
+open Paket.Requirements
 
 open Chessie.ErrorHandling
 
@@ -27,18 +28,17 @@ module AdjLblGraph =
             for path in paths n stop g do 
                 yield (start, LblPathNode path)]
 
-let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<Domain.PackageName, VersionRequirement> =
+let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_,_> =
     res
     |> Seq.toList
     |> List.map (fun pair -> pair.Key, (pair.Value.Dependencies 
-                                       |> Set.map (fun (p,v,_) -> p,v) 
+                                       |> Set.map (fun (p,v,f) -> p,(v,f)) 
                                        |> Set.toList))
 
 type WhyOptions = 
-    { AllPaths : bool
-      VersionConstraints : bool }
+    { Details : bool }
 
-type DependencyChain = LblPath<PackageName, VersionRequirement>
+type DependencyChain = LblPath<PackageName, (VersionRequirement * FrameworkRestrictions)>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module DependencyChain =
@@ -48,25 +48,38 @@ module DependencyChain =
     | (_, LblPathNode n) -> length n + 1
     | (_, LblPathLeaf _) -> 2
 
-    let format showVersions (c : DependencyChain) =
+    let format showDetails (c : DependencyChain) =
         let formatVerReq (vr : VersionRequirement) =
             match vr.ToString() with
             | "" -> ""
             | nonempty -> sprintf " (%s)" nonempty
+        let formatFxReq (fr : FrameworkRestrictions) = 
+            match fr with
+            | AutoDetectFramework 
+            | FrameworkRestrictionList [] -> ""
+            | FrameworkRestrictionList [fx] -> sprintf " (%O)" fx
+            | FrameworkRestrictionList fxs -> 
+                fxs
+                |> List.map string
+                |> String.concat ","
+                |> sprintf " (%s)"
         let formatName name i = sprintf "%s-> %O" (String.replicate i "  ") name
         let rec format' i (name,chain) =
             let rest = 
-                match chain, showVersions with
-                | LblPathNode chain,_ -> format' (i+1) chain
-                | LblPathLeaf (name,req), true -> sprintf "%s%s" (formatName name (i+1)) (formatVerReq req)
-                | LblPathLeaf (name,req), false -> formatName name (i+1)
+                match chain, showDetails with
+                | LblPathNode chain,_ -> 
+                    format' (i+1) chain
+                | LblPathLeaf (name,(vr,fr)), true -> 
+                    sprintf "%s%s%s" (formatName name (i+1)) (formatVerReq vr) (formatFxReq fr)
+                | LblPathLeaf (name,_), false -> 
+                    formatName name (i+1)
             sprintf "%s%s%s" (formatName name i) Environment.NewLine rest
         
         format' 0 c
 
-    let formatMany showVersions chains =
+    let formatMany showDetails chains =
         chains
-        |> Seq.map (format showVersions)
+        |> Seq.map (format showDetails)
         |> String.concat (String.replicate 2 Environment.NewLine)
 
 // In context of FAKE project dependencies
@@ -161,7 +174,7 @@ let ohWhy (packageName,
     | Result.Ok ((reason, version), []) ->
         reason
         |> Reason.format
-        |> sprintf "NuGet %O%s is a %s" packageName (if options.VersionConstraints then " " + version.ToString() else "")
+        |> sprintf "NuGet %O%s is a %s" packageName (if options.Details then " " + version.ToString() else "")
         |> tracen
 
         match reason with
@@ -171,19 +184,19 @@ let ohWhy (packageName,
             tracefn "It's a part of following dependency chains:"
             tracen ""
             for (top, chains) in chains |> List.groupBy (DependencyChain.first) do
-                match chains |> List.sortBy DependencyChain.length, options.AllPaths with
+                match chains |> List.sortBy DependencyChain.length, options.Details with
                 | shortest :: [], false ->
-                    DependencyChain.format options.VersionConstraints shortest |> tracen
+                    DependencyChain.format options.Details shortest |> tracen
                 | shortest :: rest, false ->
-                    DependencyChain.format options.VersionConstraints shortest |> tracen
+                    DependencyChain.format options.Details shortest |> tracen
                     tracen ""
                     tracefn 
-                        "... and %d path%s more starting at %O. To display all paths use --allpaths flag" 
+                        "... and %d path%s more starting at %O. To display all paths use --details flag" 
                         rest.Length 
                         (if rest.Length > 1 then "s" else "") 
                         top
                 | all, true ->
-                    DependencyChain.formatMany options.VersionConstraints all |> tracen
+                    DependencyChain.formatMany options.Details all |> tracen
                 | _ ->
                     failwith "impossible"
                 tracen ""
