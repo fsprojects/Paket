@@ -1,3 +1,7 @@
+#### 3.26.0 - 31.10.2016
+* Make Paket compatible with dotnet sdk preview3
+* New Command: paket why - http://theimowski.com/blog/2016/10-30-paket-why-command/index.html
+
 #### 3.25.3 - 30.10.2016
 * BUGFIX: Do not remove main group - https://github.com/fsprojects/Paket/issues/1950
 
