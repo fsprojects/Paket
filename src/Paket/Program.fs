@@ -374,7 +374,7 @@ let why (results: ParseResults<WhyArgs>) =
             |> Seq.map (fun pair -> pair.Key)
             |> Set.ofSeq
     let options = 
-        { Why.WhyOptions.AllPaths = results.Contains <@ WhyArgs.AllPaths @> }
+        { Why.WhyOptions.Details = results.Contains <@ WhyArgs.Details @> }
 
     Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
 
