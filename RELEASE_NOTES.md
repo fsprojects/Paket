@@ -3,6 +3,9 @@
 * New Command: paket why - https://github.com/fsprojects/Paket/pull/1960
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
+#### 3.25.3 - 30.10.2016
+* BUGFIX: Do not remove main group - https://github.com/fsprojects/Paket/issues/1950
+
 #### 3.25.2 - 29.10.2016
 * BUGFIX: Fix out-of-date-check
 
