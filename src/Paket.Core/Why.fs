@@ -4,54 +4,94 @@ open System
 
 open Paket.Domain
 open Paket.Logging
+open Paket.Requirements
 
 open Chessie.ErrorHandling
 
-type AdjGraph<'a> = list<'a * list<'a>>
+type AdjLblGraph<'a, 'b> = list<'a * list<('a * 'b)>>
 
-let adj n (g: AdjGraph<_>) =
-    g
-    |> List.find (fst >> (=) n)
-    |> snd
+type LblPath<'a, 'b> = 'a * LblPathNode<'a, 'b>
 
-let rec paths start stop (g : AdjGraph<'a>) =
-    if start = stop then [[start]]
-    else
-        [ for n in adj start g do
-            for path in paths n stop g do
-                yield start :: path ]
+and LblPathNode<'a, 'b> =
+| LblPathNode of LblPath<'a, 'b>
+| LblPathLeaf of 'a * 'b
 
-let depGraph (res : PackageResolver.PackageResolution) : AdjGraph<Domain.PackageName> =
+module AdjLblGraph =
+    let adj n (g: AdjLblGraph<_, _>) =
+        g
+        |> List.find (fst >> (=) n)
+        |> snd
+
+    let rec paths start stop g : list<LblPath<_, _>> =
+        [ for (n, lbl) in adj start g do
+            if n = stop then yield (start, LblPathLeaf (stop, lbl))
+            for path in paths n stop g do 
+                yield (start, LblPathNode path)]
+
+let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_,_> =
     res
     |> Seq.toList
     |> List.map (fun pair -> pair.Key, (pair.Value.Dependencies 
-                                       |> Set.map (fun (p,_,_) -> p) 
+                                       |> Set.map (fun (p,v,f) -> p,(v,f)) 
                                        |> Set.toList))
 
 type WhyOptions = 
-    { AllPaths : bool }
+    { Details : bool }
 
-type DependencyChain = List<PackageName>
+type DependencyChain = LblPath<PackageName, (VersionRequirement * FrameworkRestrictions)>
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module DependencyChain =
-    let format (chain : DependencyChain) =
-        chain
-        |> Seq.mapi (fun i name -> sprintf "%s-> %O" (String.replicate i "  ") name)
-        |> String.concat Environment.NewLine
+    let first ((name, _) : DependencyChain) = name
 
-    let formatMany chains =
+    let rec length = function
+    | (_, LblPathNode n) -> length n + 1
+    | (_, LblPathLeaf _) -> 2
+
+    let format showDetails (c : DependencyChain) =
+        let formatVerReq (vr : VersionRequirement) =
+            match vr.ToString() with
+            | "" -> ""
+            | nonempty -> sprintf " (%s)" nonempty
+        let formatFxReq (fr : FrameworkRestrictions) = 
+            match fr with
+            | AutoDetectFramework 
+            | FrameworkRestrictionList [] -> ""
+            | FrameworkRestrictionList [fx] -> sprintf " (%O)" fx
+            | FrameworkRestrictionList fxs -> 
+                fxs
+                |> List.map string
+                |> String.concat ","
+                |> sprintf " (%s)"
+        let formatName name i = sprintf "%s-> %O" (String.replicate i "  ") name
+        let rec format' i (name,chain) =
+            let rest = 
+                match chain, showDetails with
+                | LblPathNode chain,_ -> 
+                    format' (i+1) chain
+                | LblPathLeaf (name,(vr,fr)), true -> 
+                    sprintf "%s%s%s" (formatName name (i+1)) (formatVerReq vr) (formatFxReq fr)
+                | LblPathLeaf (name,_), false -> 
+                    formatName name (i+1)
+            sprintf "%s%s%s" (formatName name i) Environment.NewLine rest
+        
+        format' 0 c
+
+    let formatMany showDetails chains =
         chains
-        |> Seq.map format
+        |> Seq.map (format showDetails)
         |> String.concat (String.replicate 2 Environment.NewLine)
 
 // In context of FAKE project dependencies
 type Reason =
-// e.g. Argu - specified in paket.dependencies, is not a dependency of any other package
+// e.g. Argu - specified in paket.dependencies
+// is not a dependency of any other package
 | TopLevel
-// e.g. Microsoft.AspNet.Razor - specified in paket.dependencies, but also a dependency of other package(s)
+// e.g. Microsoft.AspNet.Razor - specified in paket.dependencies
+// but also a dependency of other package(s)
 | Direct of DependencyChain list
-// e.g. Microsoft.AspNet.Mvc - not specified in paket.dependencies, a dependency of other package(s)
+// e.g. Microsoft.AspNet.Mvc - not specified in paket.dependencies
+// a dependency of other package(s)
 | Transient of DependencyChain list
 
 type InferError =
@@ -74,18 +114,24 @@ module Reason =
                groupName : GroupName,
                directDeps : Set<PackageName>, 
                lockFile : LockFile) :
-               Result<Reason, InferError> =
-        let group = lockFile.GetGroup groupName
-        if not <| group.Resolution.ContainsKey packageName then
+               Result<_,_> =
+
+        let inferError () =
             let otherGroups =
                 lockFile.Groups 
                 |> Seq.filter (fun pair -> pair.Value.Resolution.ContainsKey packageName) 
                 |> Seq.map (fun pair -> pair.Key)
                 |> Seq.toList
             if List.isEmpty otherGroups then
-                Result.Bad [NuGetNotInLockFile]
+                NuGetNotInLockFile
             else
-                Result.Bad [NuGetNotInGroup otherGroups]
+                NuGetNotInGroup otherGroups
+
+        let group = lockFile.GetGroup groupName
+        if not <| group.Resolution.ContainsKey packageName then
+            inferError () 
+            |> List.singleton 
+            |> Result.Bad
         else
             let graph = depGraph group.Resolution
             let topLevelDeps = 
@@ -95,14 +141,18 @@ module Reason =
             let chains = 
                 topLevelDeps
                 |> Set.toList
-                |> List.collect (fun p -> paths p packageName graph)
+                |> List.collect (fun p -> AdjLblGraph.paths p packageName graph)
+            let version =
+                group.Resolution
+                |> Map.find packageName
+                |> fun x -> x.Version
             match Set.contains packageName directDeps, Set.contains packageName topLevelDeps with
             | true, true ->
-                Result.Succeed TopLevel
+                Result.Ok ((TopLevel, version), [])
             | true, false ->
-                Result.Succeed (Direct chains)
+                Result.Ok ((Direct chains, version), [])
             | false, false ->
-                Result.Succeed (Transient chains)
+                Result.Ok ((Transient chains, version), [])
             | false, true ->
                 failwith "impossible"
 
@@ -124,10 +174,10 @@ let ohWhy (packageName,
             (otherGroups |> List.map (fun pair -> pair.ToString()))
 
         usage |> traceWarn
-    | Result.Ok (reason, []) ->
+    | Result.Ok ((reason, version), []) ->
         reason
         |> Reason.format
-        |> sprintf "NuGet %O is a %s" packageName
+        |> sprintf "NuGet %O%s is a %s" packageName (if options.Details then " " + version.ToString() else "")
         |> tracen
 
         match reason with
@@ -136,20 +186,20 @@ let ohWhy (packageName,
         | Transient chains ->
             tracefn "It's a part of following dependency chains:"
             tracen ""
-            for (top, chains) in chains |> List.groupBy (Seq.item 0) do
-                match chains |> List.sortBy Seq.length, options.AllPaths with
+            for (top, chains) in chains |> List.groupBy (DependencyChain.first) do
+                match chains |> List.sortBy DependencyChain.length, options.Details with
                 | shortest :: [], false ->
-                    DependencyChain.format shortest |> tracen
+                    DependencyChain.format options.Details shortest |> tracen
                 | shortest :: rest, false ->
-                    DependencyChain.format shortest |> tracen
+                    DependencyChain.format options.Details shortest |> tracen
                     tracen ""
                     tracefn 
-                        "... and %d path%s more starting at %O. To display all paths use --allpaths flag" 
+                        "... and %d chain%s more starting at %O. To display all chains use --details flag" 
                         rest.Length 
                         (if rest.Length > 1 then "s" else "") 
                         top
                 | all, true ->
-                    DependencyChain.formatMany all |> tracen
+                    DependencyChain.formatMany options.Details all |> tracen
                 | _ ->
                     failwith "impossible"
                 tracen ""
