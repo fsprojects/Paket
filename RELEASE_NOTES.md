@@ -1,6 +1,6 @@
 #### 4.0.0-alpha019 - 30.10.2016
 * Make Paket compatible with dotnet sdk preview3
-* New Command: paket why - https://github.com/fsprojects/Paket/pull/1960
+* New Command: paket why - http://theimowski.com/blog/2016/10-30-paket-why-command/index.html
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
 #### 3.25.3 - 30.10.2016
