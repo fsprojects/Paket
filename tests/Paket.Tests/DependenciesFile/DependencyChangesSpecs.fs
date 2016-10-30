@@ -365,37 +365,6 @@ github SignalR/bower-signalr jquery.signalR.js"""
     changedDependencies.Count |> shouldEqual 1
 
 [<Test>]
-let ``should detect removed github dependency``() = 
-    let before = """source https://www.nuget.org/api/v2
-
-nuget FAKE
-
-github zurb/bower-foundation css/normalize.css
-github zurb/bower-foundation js/foundation.min.js"""
-
-    let lockFileData = """NUGET
-  remote: https://www.nuget.org/api/v2
-  specs:
-    FAKE (4.4.4)
-GITHUB
-  remote: zurb/bower-foundation
-  specs:
-    css/normalize.css (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
-    js/foundation.min.js (eb5e3ed178ef3b678cb520f1366a737a32aafeca)
-"""
-
-    let after = """source https://www.nuget.org/api/v2
-
-nuget FAKE
-
-github zurb/bower-foundation js/foundation.min.js"""
-
-    let cfg = DependenciesFile.FromCode(after)
-    let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
-    changedDependencies.Count |> shouldEqual 1
-
-[<Test>]
 let ``should detect new github dependency in new group``() = 
     let before = """source https://www.nuget.org/api/v2
 

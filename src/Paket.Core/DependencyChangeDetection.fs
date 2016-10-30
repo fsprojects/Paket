@@ -155,14 +155,8 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
                 | _ -> { r with Commit = None })
             |> Set.ofList
 
-        let u =
-            dependenciesFileRemoteFiles
-            |> Set.union lockFileRemoteFiles
-        let i =
-            dependenciesFileRemoteFiles
-            |> Set.intersect lockFileRemoteFiles
-
-        Set.difference u i
+        let missingRemotes = Set.difference dependenciesFileRemoteFiles lockFileRemoteFiles
+        missingRemotes
 
     groupNames
     |> Seq.map (fun groupName ->

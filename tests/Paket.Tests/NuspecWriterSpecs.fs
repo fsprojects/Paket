@@ -18,8 +18,8 @@ let ``should serialize core info``() =
     <description>A description</description>
   </metadata>
 </package>"""
-    
-    let core = 
+
+    let core : CompleteCoreInfo =
         { Id = "Paket.Tests"
           Version = SemVer.Parse "1.0.0.0" |> Some
           Authors = [ "Two"; "Authors" ]
@@ -46,8 +46,8 @@ let ``should serialize dependencies``() =
     </dependencies>
   </metadata>
 </package>"""
-    
-    let core = 
+
+    let core : CompleteCoreInfo =
         { Id = "Paket.Tests"
           Version = SemVer.Parse "1.0.0.0" |> Some
           Authors = [ "Two"; "Authors" ]
@@ -82,8 +82,8 @@ let ``should serialize frameworkAssemblues``() =
     </frameworkAssemblies>
   </metadata>
 </package>"""
-    
-    let core = 
+
+    let core : CompleteCoreInfo =
         { Id = "Paket.Tests"
           Version = SemVer.Parse "1.0.0.0" |> Some
           Authors = [ "Two"; "Authors" ]
@@ -112,8 +112,8 @@ let ``should not serialize files``() =
     <description>A description</description>
   </metadata>
 </package>"""
-    
-    let core = 
+
+    let core : CompleteCoreInfo =
         { Id = "Paket.Core"
           Version = SemVer.Parse "4.2" |> Some
           Authors = [ "Michael"; "Steffen" ]
@@ -159,8 +159,8 @@ second line</releaseNotes>
     </references>
   </metadata>
 </package>"""
-    
-    let core = 
+
+    let core : CompleteCoreInfo =
         { Id = "Paket.Core"
           Version = SemVer.Parse "4.2" |> Some
           Authors = [ "Michael"; "Steffen" ]
