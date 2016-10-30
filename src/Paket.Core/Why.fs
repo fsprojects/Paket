@@ -194,10 +194,11 @@ let ohWhy (packageName,
                     DependencyChain.format options.Details shortest |> tracen
                     tracen ""
                     tracefn 
-                        "... and %d chain%s more starting at %O. To display all chains use --details flag" 
+                        "... and %d chain%s more starting at %O ..." 
                         rest.Length 
                         (if rest.Length > 1 then "s" else "") 
                         top
+                    tracen "To display all chains use --details flag."
                 | all, true ->
                     DependencyChain.formatMany options.Details all |> tracen
                 | _ ->
