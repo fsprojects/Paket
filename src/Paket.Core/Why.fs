@@ -84,11 +84,14 @@ module DependencyChain =
 
 // In context of FAKE project dependencies
 type Reason =
-// e.g. Argu - specified in paket.dependencies, is not a dependency of any other package
+// e.g. Argu - specified in paket.dependencies
+// is not a dependency of any other package
 | TopLevel
-// e.g. Microsoft.AspNet.Razor - specified in paket.dependencies, but also a dependency of other package(s)
+// e.g. Microsoft.AspNet.Razor - specified in paket.dependencies
+// but also a dependency of other package(s)
 | Direct of DependencyChain list
-// e.g. Microsoft.AspNet.Mvc - not specified in paket.dependencies, a dependency of other package(s)
+// e.g. Microsoft.AspNet.Mvc - not specified in paket.dependencies
+// a dependency of other package(s)
 | Transient of DependencyChain list
 
 type InferError =
@@ -191,7 +194,7 @@ let ohWhy (packageName,
                     DependencyChain.format options.Details shortest |> tracen
                     tracen ""
                     tracefn 
-                        "... and %d path%s more starting at %O. To display all paths use --details flag" 
+                        "... and %d chain%s more starting at %O. To display all chains use --details flag" 
                         rest.Length 
                         (if rest.Length > 1 then "s" else "") 
                         top
