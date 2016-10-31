@@ -22,10 +22,18 @@ module AdjLblGraph =
         |> List.find (fst >> (=) n)
         |> snd
 
+    let removeEdge ((n1,n2): 'a * 'a) (g: AdjLblGraph<'a, 'b>) =
+        g
+        |> List.map (fun (n, es) -> 
+            if n1 <> n then 
+                (n,es)
+            else
+                (n,es |> List.filter (fst >> ((<>)n2))))
+
     let rec paths start stop g : list<LblPath<_, _>> =
         [ for (n, lbl) in adj start g do
             if n = stop then yield (start, LblPathLeaf (stop, lbl))
-            for path in paths n stop g do 
+            for path in paths n stop (removeEdge (start,n) g) do 
                 yield (start, LblPathNode path)]
 
 let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_,_> =
