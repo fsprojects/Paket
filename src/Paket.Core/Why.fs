@@ -22,10 +22,18 @@ module AdjLblGraph =
         |> List.find (fst >> (=) n)
         |> snd
 
+    let removeEdge ((n1,n2): 'a * 'a) (g: AdjLblGraph<'a, 'b>) =
+        g
+        |> List.map (fun (n, es) -> 
+            if n1 <> n then 
+                (n,es)
+            else
+                (n,es |> List.filter (fst >> ((<>)n2))))
+
     let rec paths start stop g : list<LblPath<_, _>> =
         [ for (n, lbl) in adj start g do
             if n = stop then yield (start, LblPathLeaf (stop, lbl))
-            for path in paths n stop g do 
+            for path in paths n stop (removeEdge (start,n) g) do 
                 yield (start, LblPathNode path)]
 
 let depGraph (res : PackageResolver.PackageResolution) : AdjLblGraph<_,_> =
@@ -92,7 +100,7 @@ type Reason =
 | Direct of DependencyChain list
 // e.g. Microsoft.AspNet.Mvc - not specified in paket.dependencies
 // a dependency of other package(s)
-| Transient of DependencyChain list
+| Transitive of DependencyChain list
 
 type InferError =
 | NuGetNotInLockFile
@@ -107,8 +115,8 @@ module Reason =
     | Direct chains -> 
         sprintf "direct (%s) dependency."
                 Constants.DependenciesFileName
-    | Transient chains -> 
-        sprintf "transient dependency."
+    | Transitive chains -> 
+        sprintf "transitive dependency."
 
     let infer (packageName : PackageName, 
                groupName : GroupName,
@@ -152,7 +160,7 @@ module Reason =
             | true, false ->
                 Result.Ok ((Direct chains, version), [])
             | false, false ->
-                Result.Ok ((Transient chains, version), [])
+                Result.Ok ((Transitive chains, version), [])
             | false, true ->
                 failwith "impossible"
 
@@ -183,7 +191,7 @@ let ohWhy (packageName,
         match reason with
         | TopLevel -> ()
         | Direct chains
-        | Transient chains ->
+        | Transitive chains ->
             tracefn "It's a part of following dependency chains:"
             tracen ""
             for (top, chains) in chains |> List.groupBy (DependencyChain.first) do

@@ -297,7 +297,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
 
          yield! getPackages project]
     
-    // filter out any references that are transient
+    // filter out any references that are transitive
     let distinctRefs = allReferences |> List.distinct
     let refs = 
         distinctRefs
@@ -412,12 +412,12 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                     match lockFile.Groups |> Map.tryFind groupName with
                                     | None -> None
                                     | Some group ->
-                                        // If it's a transient dependency, try to
+                                        // If it's a transitive dependency, try to
                                         // find it in `paket.lock` and set min version
                                         // to current locked version
                                         group.Resolution
                                         |> Map.tryFind np.Name
-                                        |> Option.map (fun transient -> VersionRequirement(Minimum transient.Version, getPreReleaseStatus transient.Version))
+                                        |> Option.map (fun transitive -> VersionRequirement(Minimum transitive.Version, getPreReleaseStatus transitive.Version))
                             else
                                 match lockFile.Groups |> Map.tryFind groupName with
                                 | None -> None
