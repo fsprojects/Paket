@@ -92,7 +92,7 @@ type Reason =
 | Direct of DependencyChain list
 // e.g. Microsoft.AspNet.Mvc - not specified in paket.dependencies
 // a dependency of other package(s)
-| Transient of DependencyChain list
+| Transitive of DependencyChain list
 
 type InferError =
 | NuGetNotInLockFile
@@ -107,8 +107,8 @@ module Reason =
     | Direct chains -> 
         sprintf "direct (%s) dependency."
                 Constants.DependenciesFileName
-    | Transient chains -> 
-        sprintf "transient dependency."
+    | Transitive chains -> 
+        sprintf "transitive dependency."
 
     let infer (packageName : PackageName, 
                groupName : GroupName,
@@ -152,7 +152,7 @@ module Reason =
             | true, false ->
                 Result.Ok ((Direct chains, version), [])
             | false, false ->
-                Result.Ok ((Transient chains, version), [])
+                Result.Ok ((Transitive chains, version), [])
             | false, true ->
                 failwith "impossible"
 
@@ -183,7 +183,7 @@ let ohWhy (packageName,
         match reason with
         | TopLevel -> ()
         | Direct chains
-        | Transient chains ->
+        | Transitive chains ->
             tracefn "It's a part of following dependency chains:"
             tracen ""
             for (top, chains) in chains |> List.groupBy (DependencyChain.first) do
