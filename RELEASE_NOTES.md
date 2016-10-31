@@ -1,13 +1,7 @@
 #### 3.26.0 - 31.10.2016
 * New Command: paket why - http://theimowski.com/blog/2016/10-30-paket-why-command/index.html
-
-#### 3.25.3 - 30.10.2016
 * BUGFIX: Do not remove main group - https://github.com/fsprojects/Paket/issues/1950
-
-#### 3.25.2 - 29.10.2016
 * BUGFIX: Fix out-of-date-check
-
-#### 3.25.1 - 28.10.2016
 * BUGFIX: Be more conservative during paket add and paket remove - https://github.com/fsprojects/Paket/issues/1652
 
 #### 3.25.0 - 28.10.2016
