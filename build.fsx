@@ -61,6 +61,11 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
+
+
+let dotnetcliVersion = "1.0.0-preview3-003981"
+let dotnetPath = DirectoryInfo "./dotnetcore"
+
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
 // --------------------------------------------------------------------------------------
@@ -117,9 +122,6 @@ Target "AssemblyInfo" (fun _ ->
     fsProjs |> Seq.iter genFSAssemblyInfo
     csProjs |> Seq.iter genCSAssemblyInfo
 )
-
-let dotnetcliVersion = "1.0.0-preview3-003886"
-let dotnetPath = DirectoryInfo "./dotnetcore"
 
 Target "InstallDotNetCore" (fun _ ->
     if not dotnetPath.Exists then
