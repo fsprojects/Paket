@@ -126,17 +126,17 @@ Target "AssemblyInfo" (fun _ ->
 Target "InstallDotNetCore" (fun _ ->
     if not dotnetPath.Exists then
         dotnetPath.Create()
+    else
+        let DOTNET_ZIP_NAME = sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
+        let DOTNET_REMOTE_PATH = sprintf "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/%s/%s" dotnetcliVersion DOTNET_ZIP_NAME
+        let DOTNET_LOCAL_PATH = Path.Combine(dotnetPath.FullName, DOTNET_ZIP_NAME)
 
-    let DOTNET_ZIP_NAME = sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
-    let DOTNET_REMOTE_PATH = sprintf "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/%s/%s" dotnetcliVersion DOTNET_ZIP_NAME
-    let DOTNET_LOCAL_PATH = Path.Combine(dotnetPath.FullName, DOTNET_ZIP_NAME)
+        tracefn "Installing '%s' to '%s" DOTNET_REMOTE_PATH DOTNET_LOCAL_PATH
+        
+        use webclient = new Net.WebClient()
+        webclient.DownloadFile(DOTNET_REMOTE_PATH, DOTNET_LOCAL_PATH)
 
-    tracefn "Installing '%s' to '%s" DOTNET_REMOTE_PATH DOTNET_LOCAL_PATH
-    
-    use webclient = new Net.WebClient()
-    webclient.DownloadFile(DOTNET_REMOTE_PATH, DOTNET_LOCAL_PATH)
-
-    System.IO.Compression.ZipFile.ExtractToDirectory(DOTNET_LOCAL_PATH, dotnetPath.FullName)    
+        System.IO.Compression.ZipFile.ExtractToDirectory(DOTNET_LOCAL_PATH, dotnetPath.FullName)
 )
 
 // --------------------------------------------------------------------------------------
@@ -161,7 +161,7 @@ Target "Build" (fun _ ->
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
-
+1
 let dotnetExePath =
     match tryFindFileOnPath (if isWindows then "dotnet.exe" else "dotnet") with
     | Some p -> p
