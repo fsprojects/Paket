@@ -126,6 +126,9 @@ Target "AssemblyInfo" (fun _ ->
 Target "InstallDotNetCore" (fun _ ->
     if not dotnetPath.Exists then
         dotnetPath.Create()
+
+    if FileInfo(Path.Combine(dotnetPath.FullName,"dotnet.exe")).Exists then
+        tracefn "dotnetcli already installed"
     else
         let DOTNET_ZIP_NAME = sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
         let DOTNET_REMOTE_PATH = sprintf "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/%s/%s" dotnetcliVersion DOTNET_ZIP_NAME
