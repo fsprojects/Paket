@@ -1333,6 +1333,14 @@ module ProjectFile =
 
         tryNextPlat platforms []
 
+    let dotNetCorePackages (projectFile: ProjectFile) =
+        projectFile.ProjectNode
+        |> getDescendants "PackageReference"
+        |> List.map (fun node ->
+                           {Paket.PackagesConfigFile.NugetPackage.Id = node |> getAttribute "Include" |> Option.get
+                            Paket.PackagesConfigFile.Version = node |> getNode "Version" |> Option.get |> (fun n -> Paket.SemVer.Parse n.InnerText)
+                            Paket.PackagesConfigFile.TargetFramework = None })
+
 type ProjectFile with
 
     member this.GetPropertyWithDefaults propertyName defaultProperties = ProjectFile.getPropertyWithDefaults propertyName defaultProperties this
