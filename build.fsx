@@ -3,6 +3,7 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
+#r "System.IO.Compression.FileSystem"
 
 open Fake
 open Fake.Git
@@ -115,6 +116,25 @@ Target "AssemblyInfo" (fun _ ->
     let csProjs = !! "src/**/*.csproj"
     fsProjs |> Seq.iter genFSAssemblyInfo
     csProjs |> Seq.iter genCSAssemblyInfo
+)
+
+let dotnetcliVersion = "1.0.0-preview3-003886"
+let dotnetPath = DirectoryInfo "./dotnetcore"
+
+Target "InstallDotNetCore" (fun _ ->
+    if not dotnetPath.Exists then
+        dotnetPath.Create()
+
+    let DOTNET_ZIP_NAME = sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
+    let DOTNET_REMOTE_PATH = sprintf "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/%s/%s" dotnetcliVersion DOTNET_ZIP_NAME
+    let DOTNET_LOCAL_PATH = Path.Combine(dotnetPath.FullName, DOTNET_ZIP_NAME)
+
+    tracefn "Installing '%s' to '%s" DOTNET_REMOTE_PATH DOTNET_LOCAL_PATH
+    
+    use webclient = new Net.WebClient()
+    webclient.DownloadFile(DOTNET_REMOTE_PATH, DOTNET_LOCAL_PATH)
+
+    System.IO.Compression.ZipFile.ExtractToDirectory(DOTNET_LOCAL_PATH, dotnetPath.FullName)    
 )
 
 // --------------------------------------------------------------------------------------
@@ -491,8 +511,9 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
-  ==> "Build"
+  =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
+  ==> "Build"
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("BuildPowerShell", not isMono)
   ==> "RunTests"
