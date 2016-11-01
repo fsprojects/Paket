@@ -165,10 +165,7 @@ Target "Build" (fun _ ->
     |> ignore
 )
 1
-let dotnetExePath =
-    match tryFindFileOnPath (if isWindows then "dotnet.exe" else "dotnet") with
-    | Some p -> p
-    | None -> ""
+let dotnetExePath = if isWindows then "dotnetcore/dotnet.exe" else "dotnetcore/dotnet" |> FullName
 
 Target "DotnetRestore" (fun _ ->
     // dotnet restore
