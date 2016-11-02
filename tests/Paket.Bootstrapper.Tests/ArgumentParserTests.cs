@@ -139,7 +139,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result, Is.Not.Null);
             Assert.That(result.ForceNuget, Is.False);
             Assert.That(result.PreferNuget, Is.False);
-            Assert.That(result.Silent, Is.EqualTo(SilentMode.NotSilent));
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.Normal));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.DownloadArguments, Is.Not.Null);
             Assert.That(result.DownloadArguments.DoSelfUpdate, Is.False);
@@ -154,7 +154,7 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.Run, Is.False);
             Assert.That(result.RunArgs, Is.Empty);
 
-            var knownProps = new[] { "DownloadArguments.MaxFileAgeInMinutes", "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Silent", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp", "Run", "RunArgs" };
+            var knownProps = new[] { "DownloadArguments.MaxFileAgeInMinutes", "DownloadArguments.Folder", "DownloadArguments.Target", "DownloadArguments.NugetSource", "DownloadArguments.DoSelfUpdate", "DownloadArguments.LatestVersion", "DownloadArguments.IgnorePrerelease", "DownloadArguments.IgnoreCache", "Verbosity", "ForceNuget", "PreferNuget", "UnprocessedCommandArgs", "ShowHelp", "Run", "RunArgs" };
             var allProperties = GetAllProperties(result);
             Assert.That(allProperties, Is.Not.Null.And.Count.EqualTo(knownProps.Length));
             Assert.That(allProperties, Is.EquivalentTo(knownProps));
@@ -186,7 +186,31 @@ namespace Paket.Bootstrapper.Tests
             var result = Parse(new[] { ArgumentParser.CommandArgs.Silent }, null, null);
 
             //assert
-            Assert.That(result.Silent, Is.EqualTo(SilentMode.Silent));
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.ErrorsOnly));
+        }
+
+        [Test]
+        public void Silent_x2()
+        {
+            //arrange
+
+            //act
+            var result = Parse(new[] { ArgumentParser.CommandArgs.Silent, ArgumentParser.CommandArgs.Silent }, null, null);
+
+            //assert
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.Silent));
+        }
+
+        [Test]
+        public void Verbose()
+        {
+            //arrange
+
+            //act
+            var result = Parse(new[] { ArgumentParser.CommandArgs.Verbose }, null, null);
+
+            //assert
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.Trace));
         }
 
         [Test]
@@ -452,7 +476,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -472,7 +496,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -493,7 +517,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -520,7 +544,7 @@ namespace Paket.Bootstrapper.Tests
             
             //assert
             Assert.That(result.Run, Is.True);
-            Assert.That(result.Silent, Is.EqualTo(SilentMode.Silent));
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.ErrorsOnly));
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.DownloadArguments.Target, Does.StartWith(MagicModeFileSystemSystem.GetTempPath()).And.EndsWith(".exe"));
@@ -537,7 +561,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -556,7 +580,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             Assert.That(result, Is.Not.Null);
-            Assert.That(result.Silent, Is.EqualTo(SilentMode.ErrorsOnly));
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.ErrorsOnly));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.Run, Is.True);
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
@@ -588,7 +612,7 @@ namespace Paket.Bootstrapper.Tests
             
             //assert
             Assert.That(result.Run, Is.True);
-            Assert.That(result.Silent, Is.EqualTo(SilentMode.Silent));
+            Assert.That(result.Verbosity, Is.EqualTo(Verbosity.ErrorsOnly));
             Assert.That(result.RunArgs, Is.Not.Empty.And.EqualTo(new[] {"-s", "--help", "foo"}));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
             Assert.That(result.DownloadArguments.Target, Does.StartWith(MagicModeFileSystemSystem.GetTempPath()).And.EndsWith(".exe"));

@@ -30,7 +30,7 @@ namespace Paket.Bootstrapper
                 return;
             }
 
-            ConsoleImpl.Silent = options.Silent;
+            ConsoleImpl.Verbosity = options.Verbosity;
             if (options.UnprocessedCommandArgs.Any())
                 ConsoleImpl.WriteInfo("Ignoring the following unknown argument(s): {0}", String.Join(", ", options.UnprocessedCommandArgs));
 
