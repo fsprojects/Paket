@@ -62,7 +62,7 @@ let gitName = "Paket"
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
 
-let dotnetcliVersion = "1.0.0-preview3-004007"
+let dotnetcliVersion = "1.0.0-preview3-003884"
 let dotnetPath = DirectoryInfo "./dotnetcore"
 
 // --------------------------------------------------------------------------------------
