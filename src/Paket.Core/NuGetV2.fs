@@ -892,7 +892,7 @@ let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName
             | _ -> getFromCache rest
         | [] -> false
 
-    let rec download authenticated =
+    let rec download authenticated attempt =
         async {
             if not force && targetFile.Exists && targetFile.Length > 0L then
                 verbosefn "%O %O already downloaded." packageName version
@@ -979,16 +979,17 @@ let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName
                             traceWarnfn "Could not download license for %O %O from %s.%s    %s" packageName version nugetPackage.LicenseUrl Environment.NewLine exn.Message
                 with
                 | :? System.Net.WebException as exn when
+                    attempt < 5 &&
                     exn.Status = WebExceptionStatus.ProtocolError &&
                      (match source.Auth |> Option.map toBasicAuth with
                       | Some(Credentials(_)) -> true
                       | _ -> false)
-                        -> do! download false
+                        -> do! download false (attempt + 1)
                 | exn when String.IsNullOrWhiteSpace !downloadUrl -> failwithf "Could not download %O %O.%s    %s" packageName version Environment.NewLine exn.Message 
                 | exn -> failwithf "Could not download %O %O from %s.%s    %s" packageName version !downloadUrl Environment.NewLine exn.Message }
 
     async {
-        do! download true
+        do! download true 0
         let! files = CopyFromCache(root, groupName, targetFile.FullName, licenseFileName, packageName, version, includeVersionInPath, force, detailed)
         return targetFileName,files
     }
