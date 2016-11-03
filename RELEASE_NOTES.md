@@ -1,4 +1,4 @@
-#### 3.26.2 - 03.11.2016
+#### 3.26.3 - 03.11.2016
 * BUGFIX: Paket doesn't reference libs for UWP apps - https://github.com/fsprojects/Paket/issues/2001
 
 #### 3.26.1 - 03.11.2016

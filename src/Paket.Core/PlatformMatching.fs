@@ -181,7 +181,7 @@ let getTargetCondition (target:TargetProfile) =
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
-        | UAP(version) ->"$(TargetPlatformIdentifier) == 'UAP'", sprintf "$(TargetPlatformVersion) == '%O'" version
+        | UAP(version) ->"$(TargetPlatformIdentifier) == 'UAP'", sprintf "$(TargetPlatformVersion.StartsWith('%O'))" version
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
         | Native("","") -> "true", ""
         | Native("",bits) -> (sprintf "'$(Platform)'=='%s'" bits), ""
