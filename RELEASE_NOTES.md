@@ -1,5 +1,6 @@
 #### 3.26.1 - 03.11.2016
 * BUGFIX: Version constraint was missing on referenced projects packed separately - https://github.com/fsprojects/Paket/issues/1976
+* BUGFIX: Make download loop to terminate in max N=5 iterations - https://github.com/fsprojects/Paket/pull/1999
 
 #### 3.26.0 - 31.10.2016
 * New Command: paket why - http://theimowski.com/blog/2016/10-30-paket-why-command/index.html
