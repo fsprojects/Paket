@@ -91,6 +91,15 @@ type DotNetStandardVersion =
         | DotNetStandardVersion.V1_6 -> "16"
 
 [<RequireQualifiedAccess>]
+/// The UAP version.
+type UAPVersion = 
+    | V10
+    override this.ToString() =
+        match this with
+        | V10 -> "10.0.14393.0"
+
+
+[<RequireQualifiedAccess>]
 /// The .NET Standard version.
 type DotNetCoreVersion = 
     | V1_0
@@ -115,6 +124,7 @@ module KnownAliases =
          "windowsPhoneApp", "wpa"
          ".netportable", "portable"
          "netportable", "portable"
+         "10.0", "100"
          "0.0", ""
          ".", ""
          " ", "" ]
@@ -124,6 +134,7 @@ module KnownAliases =
 /// Framework Identifier type.
 type FrameworkIdentifier = 
     | DotNetFramework of FrameworkVersion
+    | UAP of UAPVersion
     | DNX of FrameworkVersion
     | DNXCore of FrameworkVersion
     | DotNetStandard of DotNetStandardVersion
@@ -171,6 +182,7 @@ type FrameworkIdentifier =
         | Runtimes(_) -> [ ]
         | XamariniOS -> [ ]
         | XamarinMac -> [ ]
+        | UAP UAPVersion.V10 -> [ ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
         | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
@@ -217,6 +229,7 @@ type FrameworkIdentifier =
     /// Return if the parameter is of the same framework category (dotnet, windows phone, silverlight, ...)
     member x.IsSameCategoryAs y =
         match (x, y) with
+        | UAP _, UAP _ -> true
         | DotNetFramework _, DotNetFramework _ -> true
         | DotNetStandard _, DotNetStandard _ -> true
         | DotNetCore _, DotNetCore _ -> true
@@ -272,6 +285,8 @@ type FrameworkIdentifier =
     member x.IsBetween(a,b) = x.IsAtLeast a && x.IsAtMost b
 
 module FrameworkDetection =
+    open Logging
+
     let Extract =
         memoize 
           (fun (path:string) ->
@@ -299,6 +314,7 @@ module FrameworkDetection =
                 | "net461" -> Some (DotNetFramework FrameworkVersion.V4_6_1)
                 | "net462" -> Some (DotNetFramework FrameworkVersion.V4_6_2)
                 | "net463" -> Some (DotNetFramework FrameworkVersion.V4_6_3)
+                | "uap100" -> Some (UAP UAPVersion.V10)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid44" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50" | "monoandroid60" -> Some MonoAndroid
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
@@ -488,6 +504,9 @@ module KnownTargetProfiles =
         SinglePlatform(Silverlight "v4.0")
         SinglePlatform(Silverlight "v5.0")]
 
+    let UAPProfiles =
+       [SinglePlatform(UAP UAPVersion.V10)]
+
     let WindowsPhoneSilverlightProfiles =
        [SinglePlatform(WindowsPhoneSilverlight "v7.0")
         SinglePlatform(WindowsPhoneSilverlight "v7.1")
@@ -558,6 +577,7 @@ module KnownTargetProfiles =
     let AllDotNetProfiles =
        DotNetFrameworkProfiles @ 
        WindowsProfiles @ 
+       UAPProfiles @
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
        [SinglePlatform(MonoAndroid)
