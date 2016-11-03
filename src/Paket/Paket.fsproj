@@ -55,6 +55,8 @@
     <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
     <StartArguments>update -f</StartArguments>
     <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>D:\temp\repo3</StartWorkingDirectory>
     <StartArguments>install -v</StartArguments>
     <StartWorkingDirectory>D:\temp\IconPacksTestApp\src</StartWorkingDirectory>
   </PropertyGroup>
