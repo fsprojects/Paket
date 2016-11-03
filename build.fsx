@@ -3,6 +3,7 @@
 // --------------------------------------------------------------------------------------
 
 #r @"packages/build/FAKE/tools/FakeLib.dll"
+#r "System.IO.Compression.FileSystem"
 
 open Fake
 open Fake.Git
@@ -59,6 +60,11 @@ let gitName = "Paket"
 
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
+
+
+let dotnetcliVersion = "1.0.0-preview3-004031"
+
+let dotnetPath = DirectoryInfo "./dotnetcore"
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
@@ -117,6 +123,41 @@ Target "AssemblyInfo" (fun _ ->
     csProjs |> Seq.filter (fun s -> s.Contains "PaketRestoreTask" |> not) |> Seq.iter genCSAssemblyInfo
 )
 
+let dotnetExePath = if isWindows then "dotnetcore/dotnet.exe" else "dotnetcore/dotnet" |> FullName
+
+Target "InstallDotNetCore" (fun _ ->
+    let correctVersionInstalled = 
+        try
+            if FileInfo(Path.Combine(dotnetPath.FullName,"dotnet.exe")).Exists then
+                let processResult = 
+                    ExecProcessAndReturnMessages (fun info ->  
+                    info.FileName <- dotnetExePath
+                    info.WorkingDirectory <- Environment.CurrentDirectory
+                    info.Arguments <- "--version") (TimeSpan.FromMinutes 30.)
+
+                processResult.Messages |> separated "" = dotnetcliVersion
+                
+            else
+                false
+        with 
+        | _ -> false
+
+    if correctVersionInstalled then
+        tracefn "dotnetcli %s already installed" dotnetcliVersion
+    else
+        CleanDir dotnetPath.FullName
+        let zipFileName = sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
+        let downloadPath = sprintf "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/%s/%s" dotnetcliVersion zipFileName
+        let localPath = Path.Combine(dotnetPath.FullName, zipFileName)
+
+        tracefn "Installing '%s' to '%s" downloadPath localPath
+        
+        use webclient = new Net.WebClient()
+        webclient.DownloadFile(downloadPath, localPath)
+
+        System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetPath.FullName)
+)
+
 // --------------------------------------------------------------------------------------
 // Clean build results
 
@@ -139,11 +180,6 @@ Target "Build" (fun _ ->
     |> MSBuildRelease "" "Rebuild"
     |> ignore
 )
-
-let dotnetExePath =
-    match tryFindFileOnPath (if isWindows then "dotnet.exe" else "dotnet") with
-    | Some p -> p
-    | None -> ""
 
 Target "DotnetRestore" (fun _ ->
     // dotnet restore
@@ -492,8 +528,9 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
-  ==> "Build"
+  =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
+  ==> "Build"
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("BuildPowerShell", not isMono)
   ==> "RunTests"
