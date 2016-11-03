@@ -70,8 +70,8 @@ namespace Paket.Bootstrapper
             {
                 // Transparent magic mode mean that we're renamed 'paket.exe' and --run wasn't passed
                 
-                // Enforce silence
-                options.Verbosity = Verbosity.ErrorsOnly;
+                // Virtually add a '-s'
+                options.Verbosity -= 1;
                 
                 // Assume --run and that all arguments are for the real paket binary
                 options.Run = true;
