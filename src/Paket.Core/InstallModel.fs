@@ -4,6 +4,7 @@ open System
 open System.IO
 open Paket.Domain
 open Paket.Requirements
+open Logging
 
 [<RequireQualifiedAccess>]
 type Reference = 
@@ -126,6 +127,7 @@ type InstallModel =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module InstallModel =
+    open Logging
 
     let emptyModel packageName packageVersion = 
         { PackageName = packageName
@@ -248,7 +250,7 @@ module InstallModel =
 
     let addLibReferences libs references (installModel:InstallModel) : InstallModel =
         let libs = libs |> Seq.toList
-        let libFolders = calcLibFolders installModel.PackageName libs
+        let libFolders = calcLibFolders installModel.PackageName libs        
         let refFolders = calcRefFolders installModel.PackageName libs
 
         let addItem extract addFunc getFolder initialState =
@@ -413,7 +415,6 @@ module InstallModel =
         |> applyFrameworkRestrictions frameworkRestrictions
         |> removeIfCompletelyEmpty
         |> addLicense nuspec.LicenseUrl
-
 
 type InstallModel with
 

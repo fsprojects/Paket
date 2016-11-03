@@ -182,7 +182,7 @@ module NugetEnv =
         let readPackages (projectFile : ProjectFile) : Result<ProjectFile * option<NugetPackagesConfig>, DomainMessage> =
             let path = Path.Combine(Path.GetDirectoryName(projectFile.FileName), Constants.PackagesConfigFile)
             if File.Exists path then
-                path |> FileInfo |> readSingle |> lift Some
+                FileInfo(path) |> readSingle |> lift Some
             else
                 Result.Succeed None
             |> lift (fun configFile -> (projectFile,configFile))

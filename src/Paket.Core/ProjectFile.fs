@@ -718,10 +718,10 @@ module ProjectFile =
                         Some(propertyName,createRelativePath project.FileName fi.FullName,path.Substring(0,path.LastIndexOf("build\\") + 6)))
                 |> Set.ofSeq
                     
-            propertyNames,propertyGroup
+            propertyNames,propertyGroup        
 
         let allTargets =
-            model.GetReferenceFolders()            
+            model.GetReferenceFolders()
             |> List.map (fun lib -> lib.Targets)
 
         let conditions =
@@ -989,12 +989,13 @@ module ProjectFile =
             deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
             let restrictionList = installSettings.FrameworkRestrictions |> getRestrictionList
+
             let projectModel =
                 (snd kv.Value)
                     .ApplyFrameworkRestrictions(restrictionList)
                     .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
-            
+
             if directPackages.ContainsKey kv.Key then
                 match getTargetFramework project with 
                 | Some targetFramework ->
