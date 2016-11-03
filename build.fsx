@@ -63,7 +63,6 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
 
 let dotnetcliVersion = "1.0.0-preview3-004031"
-
 let dotnetPath = DirectoryInfo "./dotnetcore"
 
 // --------------------------------------------------------------------------------------
@@ -123,7 +122,11 @@ Target "AssemblyInfo" (fun _ ->
     csProjs |> Seq.iter genCSAssemblyInfo
 )
 
-let dotnetExePath = if isWindows then "dotnetcore/dotnet.exe" else "dotnetcore/dotnet" |> FullName
+let dotnetExePath = 
+    // TODO: if isWindows then "dotnetcore/dotnet.exe" else "dotnetcore/dotnet" |> FullName
+    match tryFindFileOnPath (if isWindows then "dotnet.exe" else "dotnet") with
+    | Some p -> p
+    | None -> ""
 
 Target "InstallDotNetCore" (fun _ ->
     let correctVersionInstalled = 
