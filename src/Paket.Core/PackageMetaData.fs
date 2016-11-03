@@ -213,7 +213,6 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 let assemblyfi = FileInfo(assemblyFileName)
                 let name = Path.GetFileNameWithoutExtension assemblyfi.Name
 
-                let projectdir = Path.GetDirectoryName(Path.GetFullPath(project.FileName))
                 let path = Path.Combine(projectDir, project.GetOutputDirectory config platform)
 
                 Directory.GetFiles(path, name + ".*")
@@ -240,8 +239,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
 
     let templateWithOutputAndExcludes =
         match template.Contents with
-          | CompleteInfo(core, optional) -> optional.ExcludedGroups
-          | ProjectInfo(core, optional) -> optional.ExcludedGroups
+        | CompleteInfo(_, optional) -> optional.ExcludedGroups
+        | ProjectInfo(_, optional) -> optional.ExcludedGroups
         |> Seq.collect dependenciesFile.GetDependenciesInGroup
         |> Seq.fold (fun templatefile package -> excludeDependency templatefile package.Key) templateWithOutput
     
@@ -250,7 +249,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         deps
         |> List.map (fun (templateFile, _) -> 
                match templateFile with
-               | CompleteTemplate(core, opt) -> 
+               | CompleteTemplate(core, _) -> 
                    match core.Version with
                    | Some v -> 
                        let versionConstraint = if lockDependencies || pinProjectReferences then Specific v else Minimum v
@@ -275,7 +274,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | Some f -> 
                 let refFile = ReferencesFile.FromFile f
                 refFile.Groups
-                |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> Some kv.Key, p))
+                |> Seq.map (fun kv -> kv.Value.NugetPackages |> List.map (fun p -> Some kv.Key, p, None))
                 |> List.concat
             | None -> []
           
@@ -284,15 +283,22 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 match proj.FindTemplatesFile() with
                 | Some templateFileName when TemplateFile.IsProjectType templateFileName ->
                     match TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq).Contents with
-                    | CompleteInfo(core, optional) ->
+                    | CompleteInfo(_) ->
                         yield! getPackages proj
-                    | ProjectInfo(core, optional) ->
+                    | ProjectInfo(core, _) ->
                         let name = 
                             match core.Id with
                             | Some name -> name
                             | None -> proj.GetAssemblyName().Replace(".dll","").Replace(".exe","")
-                            
-                        yield None, { Name = PackageName name; Settings = InstallSettings.Default }
+
+                        let versionConstraint = 
+                            match core.Version with
+                            | Some v -> 
+                                let vr = if lockDependencies || pinProjectReferences then Specific v else Minimum v
+                                VersionRequirement(vr, getPreReleaseStatus v)
+                            | None -> VersionRequirement.AllReleases
+
+                        yield None, { Name = PackageName name; Settings = InstallSettings.Default }, Some versionConstraint
                 | _ -> yield! getPackages proj
 
          yield! getPackages project]
@@ -301,10 +307,10 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
     let distinctRefs = allReferences |> List.distinct
     let refs = 
         distinctRefs
-        |> List.filter (fun (group, settings: Paket.PackageInstallSettings) ->
+        |> List.filter (fun (group, settings: Paket.PackageInstallSettings, _) ->
             let isDependencyOfAnyOtherDependency packageName =
                 distinctRefs 
-                |> List.exists (fun (group, settings2) -> 
+                |> List.exists (fun (group, settings2,_) -> 
                     settings2.Name <> packageName && 
                         match group with
                         | Some groupName ->
@@ -321,14 +327,14 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 | Some group ->
                     group.Packages |> List.exists (fun p -> p.Name = settings.Name) ||
                         isDependencyOfAnyOtherDependency settings.Name |> not)
-        |> List.sortByDescending (fun (group, settings) -> settings.Name)
+        |> List.sortByDescending (fun (_, settings,_) -> settings.Name)
     
     match refs with
     | [] -> withDepsAndIncluded
     | _ -> 
         let deps =
             refs
-            |> List.filter (fun (group, np) ->
+            |> List.filter (fun (group, np, _) ->
                 match group with
                 | None ->  true
                 | Some groupName ->
@@ -345,7 +351,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                             not nuspec.IsDevelopmentDependency
                     with
                     | _ -> true)
-            |> List.map (fun (group, np) ->
+            |> List.map (fun (group, np, specificVersionRequirement) ->
+                let specificVersionRequirement = defaultArg specificVersionRequirement VersionRequirement.AllReleases
                 match group with
                 | None ->
                     match version with
@@ -361,18 +368,18 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                 |> Option.map fst
 
                             match groupName with
-                            | None -> np.Name,VersionRequirement.AllReleases
+                            | None -> np.Name,specificVersionRequirement
                             | Some groupName -> 
                                 let group = lockFile.GetGroup groupName
 
                                 let lockedVersion = 
                                     match Map.tryFind np.Name group.Resolution with
                                     | Some resolvedPackage -> VersionRequirement(GreaterThan resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version)
-                                    | None -> VersionRequirement.AllReleases
+                                    | None -> specificVersionRequirement
 
                                 np.Name,lockedVersion
                         else
-                            np.Name,VersionRequirement.AllReleases
+                            np.Name,specificVersionRequirement
                 | Some groupName ->
                     let dependencyVersionRequirement =
                         if not lockDependencies then
@@ -402,7 +409,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                                         Some(VersionRequirement(Specific resolvedPackage.Version,pre))
                                                     else
                                                         Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v,VersionRangeBound.Including),pre))
-                                                | Range(lb,v,v2,ub) ->
+                                                | Range(_,_,v2,ub) ->
                                                     Some(VersionRequirement(VersionRange.Range(VersionRangeBound.Including,resolvedPackage.Version,v2,ub),pre))
                                                 | _ -> Some(VersionRequirement(Minimum resolvedPackage.Version,pre))
                                             | None -> Some requirement.VersionRequirement
@@ -430,4 +437,6 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         | Some installed -> installed
                         | None -> failwithf "No package with id '%O' installed in group %O." np.Name groupName
                     np.Name, dep)
-        deps |> List.fold addDependency withDepsAndIncluded
+
+        deps
+        |> List.fold addDependency withDepsAndIncluded
