@@ -133,6 +133,7 @@ There is no reasonable way to make this work – and even NuGet.exe can't do it 
 <p>The following files should <em>not</em> be committed to your version control system, and should be added to any ignore files:</p>
 <ul>
 <li><code>.paket/paket.exe</code> - the main Paket executable, downloaded by <a href="getting-started.html"><code>.paket/paket.bootstrapper.exe</code></a>. This should not be committed, as it is a binary file, which can unnecessarily bloat repositories, and because it is likely to be updated on a regular basis.</li>
+<li><code>paket-files</code> directory, as paket install will restore this. Same goes for the <code>packages</code> directory</li>
 </ul>
 <h2><a name="Why-should-I-commit-the-lock-file" class="anchor" href="#Why-should-I-commit-the-lock-file">Why should I commit the lock file?</a></h2>
 <p>Committing the <a href="lock-file.html"><code>paket.lock</code> file</a> to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when <a href="paket-install.html"><code>paket install</code></a> is run.</p>
