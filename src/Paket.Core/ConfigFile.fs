@@ -17,6 +17,13 @@ let private rootElement = "configuration"
 let private getConfigNode (nodeName : string) =
     let rootNode = 
         let doc = XmlDocument ()
+        
+        let xmldecl = doc.CreateXmlDeclaration("1.0",null,null)
+        xmldecl.Encoding <- "UTF-8"
+        xmldecl.Standalone <- "yes"
+
+        doc.InsertBefore(xmldecl, doc.DocumentElement) |> ignore
+
         if File.Exists Constants.PaketConfigFile then 
             try 
                 use f = File.OpenRead(Constants.PaketConfigFile)

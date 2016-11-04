@@ -2,7 +2,7 @@
 * Make Paket compatible with dotnet sdk preview3
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
-#### 3.26.2 - 03.11.2016
+#### 3.26.3 - 03.11.2016
 * BUGFIX: Paket doesn't reference libs for UWP apps - https://github.com/fsprojects/Paket/issues/2001
 
 #### 3.26.1 - 03.11.2016

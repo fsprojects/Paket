@@ -96,7 +96,7 @@ type UAPVersion =
     | V10
     override this.ToString() =
         match this with
-        | V10 -> "10.0.14393.0"
+        | V10 -> "10.0"
 
 
 [<RequireQualifiedAccess>]
