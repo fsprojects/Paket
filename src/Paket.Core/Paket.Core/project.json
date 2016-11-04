@@ -71,6 +71,7 @@
         "../NugetConvert.fs",
         "../FindOutdated.fs",
         "../FindReferences.fs",
+        "../Why.fs",
         "../PublicAPI.fs",
         "../ScriptGeneration.fs"
       ]
