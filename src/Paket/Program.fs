@@ -29,7 +29,11 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
         traceError "Command was:"
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
         result.Parser.PrintUsage() |> traceError
+#if NETCOREAPP1_0
+        // Environment.ExitCode not supported in netcoreapp1.0
+#else
         Environment.ExitCode <- 1
+#endif
     else
         commandF result
         let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
@@ -201,7 +205,11 @@ let pack (results : ParseResults<_>) =
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
                       ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>,
                       excludedTemplates = results.GetResults <@ PackArgs.ExcludedTemplate @>,
+#if NETCOREAPP1_0
+                      workingDir = System.IO.Directory.GetCurrentDirectory(),
+#else                   
                       workingDir = Environment.CurrentDirectory,
+#endif
                       lockDependencies = results.Contains <@ PackArgs.LockDependencies @>,
                       minimumFromLockFile = results.Contains <@ PackArgs.LockDependenciesToMinimum @>,
                       pinProjectReferences = results.Contains <@ PackArgs.PinProjectReferences @>,
@@ -311,11 +319,17 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
     let environmentFramework = lazy (
         // HACK: resolve .net version based on environment
         // list of match is incomplete / inaccurate
+#if NETCOREAPP1_0
+        // Environment.Version is not supported
+        //dunno what is used for, using a default
+        DotNetFramework (FrameworkVersion.V4_5)
+#else        
         let version = Environment.Version
         match version.Major, version.Minor, version.Build, version.Revision with
         | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
         | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
         | _ -> DotNetFramework (FrameworkVersion.V4_5) // paket.exe is compiled for framework 4.5
+#endif        
     )
     let tupleMap f v = (v, f v)
     let failOnMismatch toParse parsed f message =
@@ -433,7 +447,11 @@ let main() =
 
     with
     | exn when not (exn :? System.NullReferenceException) ->
+#if NETCOREAPP1_0    
+        // Environment.ExitCode not supported
+#else
         Environment.ExitCode <- 1
+#endif
         traceErrorfn "Paket failed with:%s\t%s" Environment.NewLine exn.Message
 
         if verbose then
