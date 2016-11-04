@@ -1215,6 +1215,21 @@ module ProjectFile =
                         sibling.ParentNode.RemoveChild sibling |> ignore
                 | _ -> ())
     
+    let getPackageReferences project =
+        project.ProjectNode
+        |> getDescendants "PackageReference"
+        |> List.map (getAttribute "Include" >> Option.get)
+
+    let removePackageReferenceEntries project =
+        let toDelete = 
+            project.ProjectNode 
+            |> getDescendants "PackageReference"
+        
+        toDelete 
+        |> List.iter (fun node -> node.ParentNode.RemoveChild node |> ignore)
+
+        deleteIfEmpty "ItemGroup" project |> ignore
+
     let removeNugetAnalysers (packages : list<string*SemVerInfo>) (project : ProjectFile) : unit = 
         let packageIds = packages |> List.map (fun (id,version) -> sprintf "%s.%O" id version)
         let pathContainsString (searchString :string) = packageIds |> List.exists (fun id -> searchString.Contains(id))
@@ -1395,6 +1410,10 @@ type ProjectFile with
     member this.RemoveNuGetPackageImportStamp () =  ProjectFile.removeNuGetPackageImportStamp this
 
     member this.RemoveImportAndTargetEntries (packages : list<string * SemVerInfo> ) =  ProjectFile.removeImportAndTargetEntries packages this
+
+    member this.GetPackageReferences () = ProjectFile.getPackageReferences this
+
+    member this.RemovePackageReferenceEntries () = ProjectFile.removePackageReferenceEntries this
 
     member this.OutputType =  ProjectFile.outputType this
 

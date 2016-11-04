@@ -343,11 +343,22 @@ let convertProjects nugetEnv =
         project.RemoveNugetAnalysers(packagesAndIds)
         project.RemoveImportAndTargetEntries(packagesAndIds)
         project.RemoveNuGetPackageImportStamp()
-        match packagesConfig with
-        | Some packagesConfig ->
-            yield project, convertPackagesConfigToReferencesFile project.FileName packagesConfig
-        | None ->
-            ()]
+        let referencesFileFromPackagesConfig = 
+            packagesConfig
+            |> Option.map (convertPackagesConfigToReferencesFile project.FileName)
+        let packageReferences = 
+            project.GetPackageReferences()
+        let referencesFile = 
+            match referencesFileFromPackagesConfig with
+            | Some x -> x
+            | None -> project.FindOrCreateReferencesFile()
+        let referencesFile =
+            packageReferences
+            |> List.fold 
+                (fun (rf: ReferencesFile) pr -> rf.AddNuGetReference(Constants.MainDependencyGroup, PackageName pr))
+                referencesFile
+        project.RemovePackageReferenceEntries()
+        yield project, referencesFile]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
