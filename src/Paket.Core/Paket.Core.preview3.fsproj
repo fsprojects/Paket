@@ -145,7 +145,6 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <!-- Default value here -->
     <DefineConstants>$(DefineConstants);DOTNETCORE;NETSTANDARD1_5;NETSTANDARD1_6;USE_HTTP_CLIENT</DefineConstants>
   </PropertyGroup>
 
