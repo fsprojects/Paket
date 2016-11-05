@@ -599,6 +599,8 @@ NUGET
       System.Text.Encoding (>= 4.0.11) - framework: dnxcore50, >= netstandard13
       System.Threading (>= 4.0.11) - framework: dnxcore50, >= netstandard13
       System.Xml.ReaderWriter (>= 4.0.11) - framework: dnxcore50, netstandard10, >= netstandard13
+  remote: https://www.myget.org/F/netcorecli-fsc-preview3
+    FSharp.NET.Sdk (1.0.0-alpha-000001)
 GITHUB
   remote: fsharp/FAKE
     src/app/FakeLib/Globbing/Globbing.fs (f367c3d28b1fc9a2a89636c2b870dea4b4559dca)
