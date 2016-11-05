@@ -203,14 +203,16 @@ Target "DotnetBuild" (fun _ ->
 )
 
 Target "DotnetPackage" (fun _ ->
-    netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Pack (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath 
-            })
-    )
+    // netcoreFiles
+    // |> Seq.iter (fun proj ->
+    //     DotNetCli.Pack (fun c ->
+    //         { c with
+    //             Project = proj
+    //             ToolPath = dotnetExePath 
+    //         })
+    // )
+
+    ()
 )
 
 
