@@ -7,7 +7,6 @@ open Paket.Domain
 open Paket.Logging
 open Paket.PackageResolver
 open Paket.PackageSources
-open FSharp.Polyfill
 open System
 
 // Find packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
@@ -30,7 +29,7 @@ let CopyToCaches force caches fileName =
         with
         | exn ->
             if verbose then
-                traceWarnfn "Could not copy %s to cache %s" fileName cache.Location)
+                traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
 let private extractPackage caches package root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
