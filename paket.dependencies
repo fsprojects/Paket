@@ -7,7 +7,10 @@ nuget Argu prerelease
 nuget FSharp.Core prerelease redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil prerelease
+
 nuget FSharp.NET.Sdk
+nuget System.Diagnostics.Process
+nuget System.Diagnostics.FileVersionInfo 
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
