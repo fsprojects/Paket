@@ -211,11 +211,7 @@ let pack (results : ParseResults<_>) =
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
                       ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>,
                       excludedTemplates = results.GetResults <@ PackArgs.ExcludedTemplate @>,
-#if NETCOREAPP1_0
                       workingDir = System.IO.Directory.GetCurrentDirectory(),
-#else                   
-                      workingDir = Environment.CurrentDirectory,
-#endif
                       lockDependencies = results.Contains <@ PackArgs.LockDependencies @>,
                       minimumFromLockFile = results.Contains <@ PackArgs.LockDependenciesToMinimum @>,
                       pinProjectReferences = results.Contains <@ PackArgs.PinProjectReferences @>,
