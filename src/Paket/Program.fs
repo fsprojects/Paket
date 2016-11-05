@@ -205,11 +205,7 @@ let pack (results : ParseResults<_>) =
                       ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
                       ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>,
                       excludedTemplates = results.GetResults <@ PackArgs.ExcludedTemplate @>,
-#if NETCOREAPP1_0
                       workingDir = System.IO.Directory.GetCurrentDirectory(),
-#else                   
-                      workingDir = Environment.CurrentDirectory,
-#endif
                       lockDependencies = results.Contains <@ PackArgs.LockDependencies @>,
                       minimumFromLockFile = results.Contains <@ PackArgs.LockDependenciesToMinimum @>,
                       pinProjectReferences = results.Contains <@ PackArgs.PinProjectReferences @>,
@@ -388,10 +384,7 @@ let why (results: ParseResults<WhyArgs>) =
 
 let main() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
-    let paketVersion =
-        let assembly = Assembly.GetExecutingAssembly()
-        let fvi = FileVersionInfo.GetVersionInfo(assembly.Location)
-        fvi.FileVersion
+    let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
     try
         let parser = ArgumentParser.Create<Command>(programName = "paket",

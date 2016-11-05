@@ -1,18 +1,21 @@
-﻿<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
-  
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
   </PropertyGroup>
-
   <PropertyGroup>
     <Version>1.0.0-preview3</Version>
     <Authors>Enrico Sada</Authors>
   </PropertyGroup>
-
   <ItemGroup>
-    <Compile Include="../../paket-files/fsprojects/FSharp.TypeProviders.StarterPack/src/AssemblyReader.fs" />
-    <Compile Include="../../paket-files/fsharp/FAKE/src/app/FakeLib/Globbing/Globbing.fs" />
+    <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
+      <Paket>True</Paket>
+      <Link>Globbing.fs</Link>
+    </Compile>
+    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
+      <Paket>True</Paket>
+      <Link>AssemblyReader.fs</Link>
+    </Compile>
     <Compile Include="Async.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="CustomAssemblyInfo.fs" />
@@ -76,12 +79,10 @@
     <Compile Include="PublicAPI.fs" />
     <Compile Include="ScriptGeneration.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <None Include="paket.template" />
     <None Include="paket.references" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="NETStandard.Library">
       <Version>1.6.0</Version>
@@ -99,7 +100,6 @@
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="NETStandard.Library">
       <Version>1.6.0</Version>
@@ -144,17 +144,13 @@
       <Version>4.0.0</Version>
     </PackageReference>
   </ItemGroup>
-
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);DOTNETCORE;NETSTANDARD1_5;NETSTANDARD1_6;USE_HTTP_CLIENT</DefineConstants>
   </PropertyGroup>
-
   <ItemGroup>
     <DotNetCliToolReference Include="dotnet-compile-fsc">
       <Version>1.0.0-preview2-020000</Version>
     </DotNetCliToolReference>
   </ItemGroup>
-
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
-
 </Project>
