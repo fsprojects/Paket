@@ -8,9 +8,16 @@ nuget FSharp.Core prerelease redirects: force
 nuget Chessie >= 0.6
 nuget Mono.Cecil prerelease
 
-nuget FSharp.NET.Sdk
-nuget System.Diagnostics.Process
-nuget System.Diagnostics.FileVersionInfo 
+nuget FSharp.NET.Sdk prerelease       
+nuget System.Diagnostics.TraceSource prerelease
+nuget System.Diagnostics.FileVersionInfo prerelease
+nuget System.Xml.XDocument prerelease 
+nuget System.Xml.XPath.XmlDocument prerelease
+nuget System.Diagnostics.Process prerelease
+nuget System.Xml.XPath.XDocument prerelease
+nuget System.Security.Cryptography.ProtectedData prerelease
+nuget System.Security.Cryptography.Algorithms prerelease
+
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
