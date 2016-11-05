@@ -1,12 +1,10 @@
 source https://nuget.org/api/v2
-framework: >= net40
-cache ./nupkgs versions:current
 
 nuget Newtonsoft.Json redirects: force
-nuget Argu ~> 3.1
-nuget FSharp.Core redirects: force
+nuget Argu prerelease
+nuget FSharp.Core prerelease redirects: force
 nuget Chessie >= 0.6
-nuget Mono.Cecil
+nuget Mono.Cecil prerelease
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
@@ -14,7 +12,6 @@ github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
 group Build
 
   source https://nuget.org/api/v2
-  cache ./nupkgs versions:current
   
   nuget FAKE prerelease
   nuget FSharp.Formatting
@@ -25,13 +22,13 @@ group Build
 group Test
 
   source https://nuget.org/api/v2
-  cache ./nupkgs versions:current
 
   nuget Moq
   nuget FSCheck
   
   nuget NUnit
   nuget NUnit.Console
-  nuget NUnit3TestAdapter version_in_path: true
+  nuget NUnit3TestAdapter version_in_path: true               
+  nuget FSharp.Core == 4.0.1.7-alpha redirects: force
 
   github forki/FsUnit FsUnit.fs

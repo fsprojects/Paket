@@ -61,7 +61,7 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "1.0.0-preview3-004031"
+let dotnetcliVersion = "1.0.0-preview3-004056"
 
 let dotnetCliPath = DirectoryInfo "./dotnetcore"
 
@@ -208,7 +208,8 @@ Target "DotnetPackage" (fun _ ->
     //     DotNetCli.Pack (fun c ->
     //         { c with
     //             Project = proj
-    //             ToolPath = dotnetExePath 
+    //             ToolPath = dotnetExePath
+    //             AdditionalArgs = ["/p:RuntimeIdentifier=win7-x64"]
     //         })
     // )
 
