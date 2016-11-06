@@ -594,5 +594,18 @@ namespace Paket.Bootstrapper.Tests
             Assert.That(result.DownloadArguments.Target, Does.StartWith(MagicModeFileSystemSystem.GetTempPath()).And.EndsWith(".exe"));
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(42));
         }
+
+        [Test]
+        public void Magic_MaxFileAgeInMinutes()
+        {
+            //arrange
+
+            //act
+            var result = ParseMagic(new List<string>(), null, null, new[] { ArgumentParser.CommandArgs.MaxFileAge + "4242" });
+
+            //assert
+            Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(4242));
+            Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
     }
 }
