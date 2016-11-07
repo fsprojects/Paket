@@ -80,8 +80,10 @@ namespace Paket.Bootstrapper
                 // Don't check more than twice a day
                 //  - Except if we want pre-releases as we're living on the bleeding edge
                 //  - Or if we specify a fixed version because it will never check anyway
-                if (options.DownloadArguments.IgnorePrerelease &&
-                    string.IsNullOrEmpty(options.DownloadArguments.LatestVersion))
+                //  - Or if the user specified any other value via 'paket.dependencies'
+                if (options.DownloadArguments.IgnorePrerelease
+                    && string.IsNullOrEmpty(options.DownloadArguments.LatestVersion)
+                    && options.DownloadArguments.MaxFileAgeInMinutes == null)
                 {
                     options.DownloadArguments.MaxFileAgeInMinutes = 60*12;
                 }
