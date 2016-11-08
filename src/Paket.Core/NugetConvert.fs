@@ -240,7 +240,6 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                              |> Option.toList 
                              |> List.concat 
                              |> List.append (ProjectFile.dotNetCorePackages pf))
-        |> List.map (fun x -> tracefn "%A" x; x)
         |> List.groupBy (fun p -> p.Id)
 
     let findDistinctPackages selector =
@@ -291,6 +290,9 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 (nugetEnv.NuGetConfig.PackageSources
                  |> Map.toList
                  |> List.map snd)
+            |> List.append 
+                [ Constants.DotnetCoreStream, None 
+                  Constants.CliDepsStream, None ]
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> ok
@@ -298,7 +300,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                             |> successTee PackageSource.WarnIfNoConnection)
                             
             |> collect
-
+            
         sources
         |> lift (fun sources -> 
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
