@@ -21,6 +21,7 @@ namespace Paket.Bootstrapper
             public const string NugetSourceArgPrefix = "--nuget-source=";
             public const string SelfUpdate = "--self";
             public const string Silent = "-s";
+            public const string Verbose = "-v";
             public const string IgnoreCache = "-f";
             public const string MaxFileAge = "--max-file-age=";
             public const string Run = "--run";
@@ -69,8 +70,8 @@ namespace Paket.Bootstrapper
             {
                 // Transparent magic mode mean that we're renamed 'paket.exe' and --run wasn't passed
                 
-                // Enforce silence
-                options.Silent = SilentMode.ErrorsOnly;
+                // Virtually add a '-s'
+                options.Verbosity -= 1;
                 
                 // Assume --run and that all arguments are for the real paket binary
                 options.Run = true;
@@ -159,10 +160,15 @@ namespace Paket.Bootstrapper
                 options.ForceNuget = true;
                 commandArgs.Remove(CommandArgs.ForceNuget);
             }
-            if (commandArgs.Contains(CommandArgs.Silent))
+            while (commandArgs.Contains(CommandArgs.Silent))
             {
-                options.Silent = SilentMode.Silent;
+                options.Verbosity -= 1;
                 commandArgs.Remove(CommandArgs.Silent);
+            }
+            while (commandArgs.Contains(CommandArgs.Verbose))
+            {
+                options.Verbosity += 1;
+                commandArgs.Remove(CommandArgs.Verbose);
             }
             if (commandArgs.Contains(CommandArgs.Help))
             {

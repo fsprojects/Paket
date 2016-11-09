@@ -35,7 +35,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         public void CreateStrategy_EffectiveStrategyHasFallback()
         {
             //arrange
-            mockEffectiveStrategy.SetupGet(x => x.FallbackStrategy).Returns(new Mock<IDownloadStrategy>().Object);
+            mockEffectiveStrategy.SetupGet(x => x.FallbackStrategy).Returns(new Mock<DownloadStrategy>().Object);
 
             //act
             //assert
@@ -71,7 +71,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             mockEffectiveStrategy.Setup(x => x.GetLatestVersion(true)).Throws<WebException>().Verifiable();
-            var mockFallback = new Mock<IDownloadStrategy>();
+            var mockFallback = new Mock<DownloadStrategy>();
             mockEffectiveStrategy.SetupGet(x => x.FallbackStrategy).Returns(mockFallback.Object);
             mockFileProxy.Setup(x => x.GetDirectories(It.IsAny<string>())).Returns(new[] { "1.0" });
 

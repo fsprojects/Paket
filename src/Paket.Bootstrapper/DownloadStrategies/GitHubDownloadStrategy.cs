@@ -6,7 +6,7 @@ using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
-    public class GitHubDownloadStrategy : IDownloadStrategy
+    public class GitHubDownloadStrategy : DownloadStrategy
     {
         public static class Constants
         {
@@ -17,8 +17,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         private IWebRequestProxy WebRequestProxy { get; set; }
         private IFileSystemProxy FileSystemProxy { get; set; }
-        public string Name { get { return "Github"; } }
-        public IDownloadStrategy FallbackStrategy { get; set; }
+        public override string Name { get { return "Github"; } }
 
         public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy)
         {
@@ -26,7 +25,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             FileSystemProxy = fileSystemProxy;
         }
 
-        public string GetLatestVersion(bool ignorePrerelease)
+        protected override string GetLatestVersionCore(bool ignorePrerelease)
         {
             var latestStable = GetLatestStable();
             if (ignorePrerelease)
@@ -70,10 +69,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return versions;
         }
 
-        public void DownloadVersion(string latestVersion, string target)
+        protected override void DownloadVersionCore(string latestVersion, string target)
         {
             var url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
-            ConsoleImpl.WriteDebug("Starting download from {0}", url);
+            ConsoleImpl.WriteInfo("Starting download from {0}", url);
 
             var tmpFile = BootstrapperHelper.GetTempFile("paket");
             WebRequestProxy.DownloadFile(url, tmpFile);
@@ -82,19 +81,19 @@ namespace Paket.Bootstrapper.DownloadStrategies
             FileSystemProxy.DeleteFile(tmpFile);
         }
 
-        public void SelfUpdate(string latestVersion)
+        protected override void SelfUpdateCore(string latestVersion)
         {
             var executingAssembly = Assembly.GetExecutingAssembly();
             string exePath = executingAssembly.Location;
             var localVersion = FileSystemProxy.GetLocalFileVersion(exePath);
             if (localVersion.StartsWith(latestVersion))
             {
-                ConsoleImpl.WriteDebug("Bootstrapper is up to date. Nothing to do.");
+                ConsoleImpl.WriteInfo("Bootstrapper is up to date. Nothing to do.");
                 return;
             }
 
             var url = String.Format("https://github.com/fsprojects/Paket/releases/download/{0}/paket.bootstrapper.exe", latestVersion);
-            ConsoleImpl.WriteDebug("Starting download of bootstrapper from {0}", url);
+            ConsoleImpl.WriteInfo("Starting download of bootstrapper from {0}", url);
 
             string renamedPath = BootstrapperHelper.GetTempFile("oldBootstrapper");
             string tmpDownloadPath = BootstrapperHelper.GetTempFile("newBootstrapper");
@@ -104,11 +103,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 FileSystemProxy.MoveFile(exePath, renamedPath);
                 FileSystemProxy.MoveFile(tmpDownloadPath, exePath);
-                ConsoleImpl.WriteDebug("Self update of bootstrapper was successful.");
+                ConsoleImpl.WriteInfo("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
-                ConsoleImpl.WriteDebug("Self update failed. Resetting bootstrapper.");
+                ConsoleImpl.WriteInfo("Self update failed. Resetting bootstrapper.");
                 FileSystemProxy.MoveFile(renamedPath, exePath);
                 throw;
             }

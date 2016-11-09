@@ -4,7 +4,7 @@ using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
-    internal class TemporarilyIgnoreUpdatesDownloadStrategy : IHaveEffectiveStrategy
+    internal class TemporarilyIgnoreUpdatesDownloadStrategy : DownloadStrategy, IHaveEffectiveStrategy
     {
         private readonly int _maxFileAgeOfPaketExeInMinutes;
         private readonly string _target;
@@ -29,7 +29,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             _target = target;
         }
 
-        public string GetLatestVersion (bool ignorePrerelease)
+        protected override string GetLatestVersionCore(bool ignorePrerelease)
         {
             var targetVersion = string.Empty;
             try 
@@ -43,37 +43,40 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             if (!IsOlderThanMaxFileAge())
             {
-                ConsoleImpl.WriteDebug("Don't look for new version, as last version is not older than {0} minutes", _maxFileAgeOfPaketExeInMinutes);
+                ConsoleImpl.WriteInfo("Don't look for new version, as last version is not older than {0} minutes", _maxFileAgeOfPaketExeInMinutes);
                 return targetVersion;
             }
             
+            ConsoleImpl.WriteTrace("Target file is older than {0} minutes or not found.", _maxFileAgeOfPaketExeInMinutes);
+
             var latestVersion = _effectiveStrategy.GetLatestVersion(ignorePrerelease);
             if (latestVersion == targetVersion)
+            {
+                ConsoleImpl.WriteTrace("Target file version is already the latest version (v{0})", latestVersion);
                 TouchTarget(_target);
+            }
 
             return latestVersion;
         }
 
-        public void DownloadVersion (string latestVersion, string target)
+        protected override void DownloadVersionCore(string latestVersion, string target)
         {
             _effectiveStrategy.DownloadVersion(latestVersion, target);
             TouchTarget(target);
         }
 
-        public void SelfUpdate (string latestVersion)
+        protected override void SelfUpdateCore(string latestVersion)
         {
             _effectiveStrategy.SelfUpdate (latestVersion);
         }
 
-        public string Name { get { return string.Format("{0} (temporarily ignore updates)", EffectiveStrategy.Name); } }
-
-        public IDownloadStrategy FallbackStrategy { get; set; }
+        public override string Name { get { return string.Format("{0} (temporarily ignore updates)", EffectiveStrategy.Name); } }
 
         public IDownloadStrategy EffectiveStrategy {
             get { return _effectiveStrategy; }
             set {
                 if (value == null)
-                    throw new ArgumentException("TemporarilyIgnoreUpdatesDownloadStrategy needs a non-null EffecitveStrategy");
+                    throw new ArgumentException("TemporarilyIgnoreUpdatesDownloadStrategy needs a non-null EffectiveStrategy");
 
                 _effectiveStrategy = value;
             }
@@ -89,6 +92,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             try 
             {
                 var lastModification = fileSystemProxy.GetLastWriteTime(_target);
+                ConsoleImpl.WriteTrace("Target file last modification: {0}", lastModification);
 
                 return DateTimeProxy.Now > lastModification.AddMinutes(_maxFileAgeOfPaketExeInMinutes);
             } 
@@ -106,11 +110,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
             catch (FileNotFoundException)
             {
-                ConsoleImpl.WriteDebug("Could not update the timestamps. File {0} not found!", _target);
+                ConsoleImpl.WriteInfo("Could not update the timestamps. File {0} not found!", _target);
             }
             catch (Exception)
             {
-                ConsoleImpl.WriteDebug("Could not update the timestamps.");
+                ConsoleImpl.WriteInfo("Could not update the timestamps.");
             }
         }
     }

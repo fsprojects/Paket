@@ -14,7 +14,7 @@ namespace Paket.Bootstrapper.Tests
         private Mock<IDownloadStrategy> mockDownloadStrategy;
         private Mock<IFileSystemProxy> mockFileProxy;
 
-        private static Action DoNothing = () => { };
+        private static readonly Action DoNothing = () => { };
 
         [SetUp]
         public void Setup()
@@ -204,6 +204,8 @@ namespace Paket.Bootstrapper.Tests
             int successCount = 0;
             Action onSuccess = () => successCount++;
             dlArgs.LatestVersion = "1.5";
+            mockFileProxy.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
+            mockFileProxy.Setup(x => x.GetLocalFileVersion(It.IsAny<string>())).Returns("1.5");
 
             //act
             Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, onSuccess);

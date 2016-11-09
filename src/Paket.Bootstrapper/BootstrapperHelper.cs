@@ -22,8 +22,9 @@ Options:
                                older than <IN MINUTES> all checks will be skipped.
 --self                         downloads and updates paket.bootstrapper
 -f                             don't use local cache; always downloads
--s                             silent mode; no output
---run                          run the downloaded paket.exe with all following arguments";
+-s                             silent mode; errors only. Use twice for no output
+-v                             verbose; show more information on console.
+--run <other args>             run the downloaded paket.exe with all following arguments";
         const string PaketBootstrapperUserAgent = "Paket.Bootstrapper";
 
         internal static string GetLocalFileVersion(string target)
