@@ -1,7 +1,6 @@
-#### 3.26.3 - 03.11.2016
+#### 3.27.0 - 09.11.2016
+* BUGFIX: NuGetV2-OData: retrieve versions in descending order - https://github.com/fsprojects/Paket/pull/2008
 * BUGFIX: Paket doesn't reference libs for UWP apps - https://github.com/fsprojects/Paket/issues/2001
-
-#### 3.26.1 - 03.11.2016
 * BUGFIX: Version constraint was missing on referenced projects packed separately - https://github.com/fsprojects/Paket/issues/1976
 * BUGFIX: Make download loop to terminate in max N=5 iterations - https://github.com/fsprojects/Paket/pull/1999
 
