@@ -9,7 +9,7 @@ using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
-    internal class NugetDownloadStrategy : IDownloadStrategy
+    internal class NugetDownloadStrategy : DownloadStrategy
     {
         internal class NugetApiHelper
         {
@@ -63,14 +63,12 @@ namespace Paket.Bootstrapper.DownloadStrategies
             NugetSource = nugetSource;
         }
 
-        public string Name
+        public override string Name
         {
             get { return "Nuget"; }
         }
 
-        public IDownloadStrategy FallbackStrategy { get; set; }
-
-        public string GetLatestVersion(bool ignorePrerelease)
+        protected override string GetLatestVersionCore(bool ignorePrerelease)
         {
             IEnumerable<string> allVersions = null;
             if (FileSystemProxy.DirectoryExists(NugetSource))
@@ -102,7 +100,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return latestVersion != null ? latestVersion.Original : String.Empty;
         }
 
-        public void DownloadVersion(string latestVersion, string target)
+        protected override void DownloadVersionCore(string latestVersion, string target)
         {
             var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
 
@@ -126,13 +124,13 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
-                ConsoleImpl.WriteDebug("Starting download from {0}", sourcePath);
+                ConsoleImpl.WriteInfo("Starting download from {0}", sourcePath);
 
                 FileSystemProxy.CopyFile(sourcePath, paketPackageFile);
             }
             else
             {
-                ConsoleImpl.WriteDebug("Starting download from {0}", paketDownloadUrl);
+                ConsoleImpl.WriteInfo("Starting download from {0}", paketDownloadUrl);
 
                 try
                 {
@@ -145,13 +143,13 @@ namespace Paket.Bootstrapper.DownloadStrategies
                         var response = (HttpWebResponse) webException.Response;
                         if (response.StatusCode == HttpStatusCode.NotFound)
                         {
-                            throw new WebException($"Version {latestVersion} wasn't found (404)",
+                            throw new WebException(String.Format("Version {0} wasn't found (404)",latestVersion),
                                 webException);
                         }
                         if (response.StatusCode == HttpStatusCode.BadRequest)
                         {
                             // For cases like "The package version is not a valid semantic version"
-                            throw new WebException($"Unable to get version '{latestVersion}': {response.StatusDescription }",
+                            throw new WebException(String.Format("Unable to get version '{0}': {1}",latestVersion,response.StatusDescription),
                                 webException);
                         }
                     }
@@ -166,13 +164,13 @@ namespace Paket.Bootstrapper.DownloadStrategies
             FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
 
-        public void SelfUpdate(string latestVersion)
+        protected override void SelfUpdateCore(string latestVersion)
         {
             string target = Assembly.GetExecutingAssembly().Location;
             var localVersion = FileSystemProxy.GetLocalFileVersion(target);
             if (localVersion.StartsWith(latestVersion))
             {
-                ConsoleImpl.WriteDebug("Bootstrapper is up to date. Nothing to do.");
+                ConsoleImpl.WriteInfo("Bootstrapper is up to date. Nothing to do.");
                 return;
             }
             var apiHelper = new NugetApiHelper(PaketBootstrapperNugetPackageName, NugetSource);
@@ -198,13 +196,13 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 if (String.IsNullOrWhiteSpace(latestVersion)) latestVersion = GetLatestVersion(false);
                 var sourcePath = Path.Combine(NugetSource, String.Format(paketNupkgFileTemplate, latestVersion));
 
-                ConsoleImpl.WriteDebug("Starting download from {0}", sourcePath);
+                ConsoleImpl.WriteInfo("Starting download from {0}", sourcePath);
 
                 FileSystemProxy.CopyFile(sourcePath, paketPackageFile);
             }
             else
             {
-                ConsoleImpl.WriteDebug("Starting download from {0}", paketDownloadUrl);
+                ConsoleImpl.WriteInfo("Starting download from {0}", paketDownloadUrl);
 
                 WebRequestProxy.DownloadFile(paketDownloadUrl, paketPackageFile);
             }
@@ -217,11 +215,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
             {
                 FileSystemProxy.MoveFile(target, renamedPath);
                 FileSystemProxy.MoveFile(paketSourceFile, target);
-                ConsoleImpl.WriteDebug("Self update of bootstrapper was successful.");
+                ConsoleImpl.WriteInfo("Self update of bootstrapper was successful.");
             }
             catch (Exception)
             {
-                ConsoleImpl.WriteDebug("Self update failed. Resetting bootstrapper.");
+                ConsoleImpl.WriteInfo("Self update failed. Resetting bootstrapper.");
                 FileSystemProxy.MoveFile(renamedPath, target);
                 throw;
             }

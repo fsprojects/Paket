@@ -12,7 +12,7 @@ namespace Paket.Bootstrapper
 
         private static Func<DateTime> _getNow;
 
-        public static DateTime Now => GetNow();
+        public static DateTime Now { get { return GetNow(); } }
     }
 }
 

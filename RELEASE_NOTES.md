@@ -1,11 +1,11 @@
-#### 4.0.0-alpha022 - 03.11.2016
+#### 4.0.0-alpha023 - 10.11.2016
 * Make Paket compatible with dotnet sdk preview3
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
-#### 3.26.3 - 03.11.2016
+#### 3.27.0 - 09.11.2016
+* Verbose bootstrapper - https://github.com/fsprojects/Paket/pull/2007 
+* BUGFIX: NuGetV2-OData: retrieve versions in descending order - https://github.com/fsprojects/Paket/pull/2008
 * BUGFIX: Paket doesn't reference libs for UWP apps - https://github.com/fsprojects/Paket/issues/2001
-
-#### 3.26.1 - 03.11.2016
 * BUGFIX: Version constraint was missing on referenced projects packed separately - https://github.com/fsprojects/Paket/issues/1976
 * BUGFIX: Make download loop to terminate in max N=5 iterations - https://github.com/fsprojects/Paket/pull/1999
 

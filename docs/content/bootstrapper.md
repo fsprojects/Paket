@@ -27,7 +27,9 @@ Cached paket.exe versions are removed when the NuGet cache folder is [cleared](p
 
   `--self`: Self updating the paket.bootstrapper.exe. When this option is used the download of paket.exe will be skipped. (Can be combined with `--prefer-nuget`)
 
-  `-s`: If this flag is set the bootstrapper will not perform any output.
+  `-s`: Make the boostrapper more silent. Use it once to display display only errors or twice to supress all output.
+
+  `-v`: Make the boostrapper more verbose. Display more information about the boostrapper process, including operation timings.
 
   `-f`: Forces the bootstrapper to ignore any cached paket.exe versions and go directly to github.com or nuget.org based on other flags.
 
@@ -83,7 +85,7 @@ nuget FAKE
 nuget FSharp.Core ~> 4
 ```
 
-or 
+or
 
 ```paket
 version 3.24.1 --prefer-nuget
@@ -112,5 +114,10 @@ Using this feature paket can be used simply by committing a ~50KB `paket.exe` to
 The fact that a boostrapper exists is completely hidden and become an implementation detail that contributors to your
 repository won't have to know — or care — about.
 
-While command line bootstrapper options can't be used (Except if `--run` is passed) the other sources
-(AppSettings, Environment Variables & paket.dependencies) can still be used to configure the bootstrapper.
+While command line bootstrapper options can't be used the other sources (AppSettings, Environment Variables
+& paket.dependencies) can still be used to configure the bootstrapper.
+
+A few default settings are applied:
+* The boostrapper is silent and only errors are displayed. `-v` can be used once to restore normal output or twice
+  to show more details.
+* If no version is specified a default `--max-file-age` of 12 Hours is used.
