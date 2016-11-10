@@ -341,22 +341,33 @@ Target "SignAssemblies" (fun _ ->
 
 Target "NuGet" (fun _ ->    
     !! "integrationtests/**/paket.template" |> Seq.iter DeleteFile
+    
+    let files = !! "src/**/*.preview*" |> Seq.toList
+    for file in files do
+        File.Move(file,file + ".temp")
+
     Paket.Pack (fun p -> 
         { p with 
             ToolPath = "bin/merged/paket.exe" 
             Version = release.NugetVersion
             ReleaseNotes = toLines release.Notes })
+
+    for file in files do
+        File.Move(file + ".temp",file)
 )
 
 Target "MergeDotnetCoreIntoNuget" (fun _ ->
-    let nupkg = sprintf "./temp/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
-    let netcoreNupkg = sprintf "./temp/dotnetcore/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
 
-    Shell.Exec(
-      dotnetExePath, 
-      sprintf """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg,
-      "src/Paket.Core/Paket.Core/")
-    |> fun exitCode -> if exitCode <> 0 then failwithf "mergenupkg exited with exit code %d" exitCode
+//    let nupkg = sprintf "./temp/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
+//    let netcoreNupkg = sprintf "./temp/dotnetcore/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
+//
+//    Shell.Exec(
+//      dotnetExePath, 
+//      sprintf """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg,
+//      "src/Paket.Core/Paket.Core/")
+//    |> fun exitCode -> if exitCode <> 0 then failwithf "mergenupkg exited with exit code %d" exitCode
+
+    ()
 )
 
 Target "PublishChocolatey" (fun _ ->
