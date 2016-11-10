@@ -240,7 +240,6 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                              |> Option.toList 
                              |> List.concat 
                              |> List.append (ProjectFile.dotNetCorePackages pf))
-        |> List.map (fun x -> tracefn "%A" x; x)
         |> List.groupBy (fun p -> p.Id)
 
     let findDistinctPackages selector =
@@ -291,6 +290,9 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 (nugetEnv.NuGetConfig.PackageSources
                  |> Map.toList
                  |> List.map snd)
+            |> List.append 
+                [ Constants.DotnetCoreStream, None 
+                  Constants.CliDepsStream, None ]
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> ok
@@ -298,7 +300,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                             |> successTee PackageSource.WarnIfNoConnection)
                             
             |> collect
-
+            
         sources
         |> lift (fun sources -> 
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
@@ -343,11 +345,22 @@ let convertProjects nugetEnv =
         project.RemoveNugetAnalysers(packagesAndIds)
         project.RemoveImportAndTargetEntries(packagesAndIds)
         project.RemoveNuGetPackageImportStamp()
-        match packagesConfig with
-        | Some packagesConfig ->
-            yield project, convertPackagesConfigToReferencesFile project.FileName packagesConfig
-        | None ->
-            ()]
+        let referencesFileFromPackagesConfig = 
+            packagesConfig
+            |> Option.map (convertPackagesConfigToReferencesFile project.FileName)
+        let packageReferences = 
+            project.GetPackageReferences()
+        let referencesFile = 
+            match referencesFileFromPackagesConfig with
+            | Some x -> x
+            | None -> project.FindOrCreateReferencesFile()
+        let referencesFile =
+            packageReferences
+            |> List.fold 
+                (fun (rf: ReferencesFile) pr -> rf.AddNuGetReference(Constants.MainDependencyGroup, PackageName pr))
+                referencesFile
+        project.RemovePackageReferenceEntries()
+        yield project, referencesFile]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
