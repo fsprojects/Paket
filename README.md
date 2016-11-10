@@ -1,6 +1,6 @@
 [![Travis build status](https://api.travis-ci.org/fsprojects/Paket.svg)](https://travis-ci.org/fsprojects/Paket)
 [![AppVeyor Build status](https://ci.appveyor.com/api/projects/status/aqs8eux16x4g5p47/branch/master?svg=true)](https://ci.appveyor.com/project/SteffenForkmann/paket/branch/master)
-[![NuGet Status](http://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
+[![NuGet Status](https://img.shields.io/nuget/v/Paket.svg?style=flat)](https://www.nuget.org/packages/Paket/)
 [![Join the chat at https://gitter.im/fsprojects/Paket](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/fsprojects/Paket?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Twitter](https://img.shields.io/badge/Twitter-PaketManager-blue.svg)](https://twitter.com/PaketManager)
 
@@ -14,7 +14,7 @@ NuGet does not separate out the concept of transitive dependencies.
 If you install a package into your project and that package has further dependencies then all transitive packages are included in the packages.config.
 There is no way to tell which packages are only transitive dependencies.
 
-Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version ([read more](http://fsprojects.github.io/Paket/controlling-nuget-resolution.html)). You have no control over this process.
+Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version ([read more](https://fsprojects.github.io/Paket/controlling-nuget-resolution.html)). You have no control over this process.
 
 Paket on the other hand maintains this information on a consistent and stable basis within the [`paket.lock` file][7] in the solution root.
 This file, together with the [`paket.dependencies` file][8] enables you to determine exactly what's happening with your dependencies.
@@ -27,7 +27,7 @@ For more reasons see the [FAQ][10].
 
  - [Source code][1]
  - [Documentation][2]
- - [Getting started guide](http://fsprojects.github.io/Paket/getting-started.html)
+ - [Getting started guide](https://fsprojects.github.io/Paket/getting-started.html)
  - Download [paket.exe][3]
  - Download [paket.bootstrapper.exe][3]
 
@@ -63,16 +63,16 @@ The [MIT license][6]
 The default maintainer account for projects under "fsprojects" is [@fsprojectsgit](https://github.com/fsprojectsgit) - F# Community Project Incubation Space (repo management)
 
  [1]: https://github.com/fsprojects/Paket/
- [2]: http://fsprojects.github.io/Paket/
+ [2]: https://fsprojects.github.io/Paket/
  [3]: https://github.com/fsprojects/Paket/releases/latest
  [4]: https://github.com/fsprojects/Paket/issues
- [5]: http://twitter.com/PaketManager
+ [5]: https://twitter.com/PaketManager
  [6]: https://github.com/fsprojects/Paket/blob/master/LICENSE.txt
- [7]: http://fsprojects.github.io/Paket/lock-file.html
- [8]: http://fsprojects.github.io/Paket/dependencies-file.html
- [9]: http://fsprojects.github.io/Paket/git-dependencies.html
- [10]: http://fsprojects.github.io/Paket/faq.html
- [11]: http://fsprojects.github.io/Paket/http-dependencies.html
- [badge-pr-stats]: http://www.issuestats.com/github/fsprojects/Paket/badge/pr
- [badge-issue-stats]: http://www.issuestats.com/github/fsprojects/Paket/badge/issue
- [link-issue-stats]: http://www.issuestats.com/github/fsprojects/Paket
+ [7]: https://fsprojects.github.io/Paket/lock-file.html
+ [8]: https://fsprojects.github.io/Paket/dependencies-file.html
+ [9]: https://fsprojects.github.io/Paket/git-dependencies.html
+ [10]: https://fsprojects.github.io/Paket/faq.html
+ [11]: https://fsprojects.github.io/Paket/http-dependencies.html
+ [badge-pr-stats]: https://www.issuestats.com/github/fsprojects/Paket/badge/pr
+ [badge-issue-stats]: https://www.issuestats.com/github/fsprojects/Paket/badge/issue
+ [link-issue-stats]: https://www.issuestats.com/github/fsprojects/Paket
