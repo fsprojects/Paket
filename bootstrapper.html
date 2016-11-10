@@ -73,7 +73,8 @@
 <p><code>--max-file-age=120</code>: if the paket.exe already exists, and it is not older than <code>120</code> minutes all checks will be skipped.</p>
 <p><code>--nuget-source</code>: When specified as <code>--nuget-source=http://local.site/path/here</code>, the specified path is used instead of nuget.org when trying to fetch paket.exe as a nuget package. Combine this with either <code>--prefer-nuget</code> or <code>--force-nuget</code> to get paket.exe from a custom source.</p>
 <p><code>--self</code>: Self updating the paket.bootstrapper.exe. When this option is used the download of paket.exe will be skipped. (Can be combined with <code>--prefer-nuget</code>)</p>
-<p><code>-s</code>: If this flag is set the bootstrapper will not perform any output.</p>
+<p><code>-s</code>: Make the boostrapper more silent. Use it once to display display only errors or twice to supress all output.</p>
+<p><code>-v</code>: Make the boostrapper more verbose. Display more information about the boostrapper process, including operation timings.</p>
 <p><code>-f</code>: Forces the bootstrapper to ignore any cached paket.exe versions and go directly to github.com or nuget.org based on other flags.</p>
 <p><code>--run</code>: Once downloaded run <code>paket.exe</code>. All arguments following this one are ignored and passed directly to <code>paket.exe</code>.</p>
 <p><code>--help</code>: Shows a help page with all possible options.</p>
@@ -153,8 +154,12 @@ executed with all arguments passed directly.</p>
 <p>Using this feature paket can be used simply by committing a ~50KB <code>paket.exe</code> to source control an using it directly.
 The fact that a boostrapper exists is completely hidden and become an implementation detail that contributors to your
 repository won't have to know — or care — about.</p>
-<p>While command line bootstrapper options can't be used (Except if <code>--run</code> is passed) the other sources
-(AppSettings, Environment Variables &amp; paket.dependencies) can still be used to configure the bootstrapper.</p>
+<p>While command line bootstrapper options can't be used the other sources (AppSettings, Environment Variables
+&amp; paket.dependencies) can still be used to configure the bootstrapper.</p>
+<p>A few default settings are applied:
+<em> The boostrapper is silent and only errors are displayed. <code>-v</code> can be used once to restore normal output or twice
+to show more details.
+</em> If no version is specified a default <code>--max-file-age</code> of 12 Hours is used.</p>
 
 
         </div>
