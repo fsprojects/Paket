@@ -78,10 +78,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '124', 124)" onmouseover="showTip(event, '124', 124)">
+          <code onmouseout="hideTip(event, '126', 126)" onmouseover="showTip(event, '126', 126)">
             contentFileBlackList 
           </code>
-          <div class="tip" id="124">
+          <div class="tip" id="126">
             <strong>Signature:</strong> (FileInfo -&gt; bool) list<br />
                       </div>
         </td>
@@ -96,10 +96,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '125', 125)" onmouseover="showTip(event, '125', 125)">
+          <code onmouseout="hideTip(event, '127', 127)" onmouseover="showTip(event, '127', 127)">
             CreateInstallModel (...)
           </code>
-          <div class="tip" id="125">
+          <div class="tip" id="127">
             <strong>Signature:</strong> (root:string * groupName:GroupName * sources:PackageSource list * caches:Cache list * force:bool * package:ResolvedPackage) -&gt; Async&lt;(GroupName * PackageName) * (ResolvedPackage * InstallModel)&gt;<br />
                       </div>
         </td>
@@ -114,12 +114,12 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '126', 126)" onmouseover="showTip(event, '126', 126)">
+          <code onmouseout="hideTip(event, '128', 128)" onmouseover="showTip(event, '128', 128)">
             CreateModel (...)
           </code>
-          <div class="tip" id="126">
-            <strong>Signature:</strong> (root:string * force:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * packages:Set&lt;GroupName * PackageName&gt; * updatedGroups:Map&lt;GroupName,&#39;?10728&gt;) -&gt; ((GroupName * PackageName) * (ResolvedPackage * InstallModel)) []<br />
-                          <strong>Type parameters:</strong> '?10728          </div>
+          <div class="tip" id="128">
+            <strong>Signature:</strong> (root:string * force:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * packages:Set&lt;GroupName * PackageName&gt; * updatedGroups:Map&lt;GroupName,&#39;?10741&gt;) -&gt; ((GroupName * PackageName) * (ResolvedPackage * InstallModel)) []<br />
+                          <strong>Type parameters:</strong> '?10741          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L174-174" class="github-link">
@@ -134,11 +134,49 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '127', 127)" onmouseover="showTip(event, '127', 127)">
-            findAllReferencesFiles root
+          <code onmouseout="hideTip(event, '129', 129)" onmouseover="showTip(event, '129', 129)">
+            findPackageFolder (...)
           </code>
-          <div class="tip" id="127">
-            <strong>Signature:</strong> root:string -&gt; Result&lt;(ProjectFile * ReferencesFile) list,DomainMessage&gt;<br />
+          <div class="tip" id="129">
+            <strong>Signature:</strong> root:string -&gt; (groupName:GroupName * packageName:PackageName) -&gt; (version:&#39;?10734 * settings:InstallSettings) -&gt; DirectoryInfo<br />
+                          <strong>Type parameters:</strong> '?10734          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L37-37" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '130', 130)" onmouseover="showTip(event, '130', 130)">
+            Install (...)
+          </code>
+          <div class="tip" id="130">
+            <strong>Signature:</strong> (options:InstallerOptions * forceTouch:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * updatedGroups:Map&lt;GroupName,&#39;a&gt;) -&gt; unit<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L483-483" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Installs all packages from the lock file.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '131', 131)" onmouseover="showTip(event, '131', 131)">
+            installForDotnetSDK root project
+          </code>
+          <div class="tip" id="131">
+            <strong>Signature:</strong> root:string -&gt; project:ProjectFile -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -152,53 +190,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '128', 128)" onmouseover="showTip(event, '128', 128)">
-            findPackageFolder (...)
-          </code>
-          <div class="tip" id="128">
-            <strong>Signature:</strong> root:string -&gt; (groupName:GroupName * packageName:PackageName) -&gt; (version:&#39;?10721 * settings:InstallSettings) -&gt; DirectoryInfo<br />
-                          <strong>Type parameters:</strong> '?10721          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L37-37" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '129', 129)" onmouseover="showTip(event, '129', 129)">
-            Install (...)
-          </code>
-          <div class="tip" id="129">
-            <strong>Signature:</strong> (options:InstallerOptions * forceTouch:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * updatedGroups:Map&lt;GroupName,&#39;a&gt;) -&gt; unit<br />
-                          <strong>Type parameters:</strong> 'a          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L493-493" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          <p>Installs all packages from the lock file.</p>
-
-
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '130', 130)" onmouseover="showTip(event, '130', 130)">
+          <code onmouseout="hideTip(event, '132', 132)" onmouseover="showTip(event, '132', 132)">
             InstallIntoProjects (...)
           </code>
-          <div class="tip" id="130">
+          <div class="tip" id="132">
             <strong>Signature:</strong> (options:InstallerOptions * forceTouch:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * projectsAndReferences:(ProjectFile * ReferencesFile) list * updatedGroups:Map&lt;GroupName,&#39;a&gt;) -&gt; unit<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L317-317" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L304-304" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -210,12 +210,12 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '131', 131)" onmouseover="showTip(event, '131', 131)">
+          <code onmouseout="hideTip(event, '133', 133)" onmouseover="showTip(event, '133', 133)">
             processContentFiles (...)
           </code>
-          <div class="tip" id="131">
-            <strong>Signature:</strong> root:string -&gt; project:ProjectFile -&gt; usedPackages:Map&lt;(GroupName * PackageName),(&#39;?10724 * InstallSettings)&gt; -&gt; gitRemoteItems:FileItem list -&gt; options:&#39;?10725 -&gt; unit<br />
-                          <strong>Type parameters:</strong> '?10724, '?10725          </div>
+          <div class="tip" id="133">
+            <strong>Signature:</strong> root:string -&gt; project:ProjectFile -&gt; usedPackages:Map&lt;(GroupName * PackageName),(&#39;?10737 * InstallSettings)&gt; -&gt; gitRemoteItems:FileItem list -&gt; options:&#39;?10738 -&gt; unit<br />
+                          <strong>Type parameters:</strong> '?10737, '?10738          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallProcess.fs#L80-80" class="github-link">
@@ -228,10 +228,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '132', 132)" onmouseover="showTip(event, '132', 132)">
+          <code onmouseout="hideTip(event, '134', 134)" onmouseover="showTip(event, '134', 134)">
             updatePackagesConfigFile (...)
           </code>
-          <div class="tip" id="132">
+          <div class="tip" id="134">
             <strong>Signature:</strong> model:Map&lt;(GroupName * PackageName),(SemVerInfo * InstallSettings)&gt; -&gt; packagesConfigFileName:string -&gt; unit<br />
                       </div>
         </td>
