@@ -7,7 +7,7 @@ namespace Paket.Bootstrapper
     {
         public static Verbosity Verbosity { get; set; }
 
-        public static bool IsTraceEnabled => Verbosity >= Verbosity.Trace;
+        public static bool IsTraceEnabled { get { return Verbosity >= Verbosity.Trace; } }
 
         internal static void WriteError(string message, params object[] parameters)
         {

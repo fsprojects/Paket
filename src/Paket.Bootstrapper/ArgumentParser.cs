@@ -255,7 +255,7 @@ namespace Paket.Bootstrapper
             //  - There is no risk to have two bootstrapper instances in two different locations
             //    accessing the same file as their path depends on the bootstrapper path.
             var assemblyLocation = fileSystemProxy.GetExecutingAssemblyPath();
-            var targetName = $"paket_{GetHash(assemblyLocation)}.exe";
+            var targetName = String.Format("paket_{0}.exe",GetHash(assemblyLocation));
 
             return Path.Combine(fileSystemProxy.GetTempPath(), targetName);
         }
@@ -281,7 +281,9 @@ namespace Paket.Bootstrapper
 
         private static string ToLowerSafe(this string value)
         {
-            return value?.ToLower();
+            if(value == null)
+                return "";
+            return value.ToLower();
         }
     }
 }

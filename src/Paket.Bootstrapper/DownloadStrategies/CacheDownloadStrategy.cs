@@ -8,7 +8,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 {
     internal class CacheDownloadStrategy : DownloadStrategy, IHaveEffectiveStrategy
     {
-        public override string Name => $"{EffectiveStrategy.Name} - cached";
+        public override string Name { get { return String.Format("{0} - cached", EffectiveStrategy.Name); } }
 
         private readonly string _paketCacheDir =
             Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "NuGet", "Cache", "Paket");

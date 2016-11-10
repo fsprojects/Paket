@@ -143,13 +143,13 @@ namespace Paket.Bootstrapper.DownloadStrategies
                         var response = (HttpWebResponse) webException.Response;
                         if (response.StatusCode == HttpStatusCode.NotFound)
                         {
-                            throw new WebException($"Version {latestVersion} wasn't found (404)",
+                            throw new WebException(String.Format("Version {0} wasn't found (404)",latestVersion),
                                 webException);
                         }
                         if (response.StatusCode == HttpStatusCode.BadRequest)
                         {
                             // For cases like "The package version is not a valid semantic version"
-                            throw new WebException($"Unable to get version '{latestVersion}': {response.StatusDescription }",
+                            throw new WebException(String.Format("Unable to get version '{0}': {1}",latestVersion,response.StatusDescription),
                                 webException);
                         }
                     }
