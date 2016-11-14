@@ -1,3 +1,6 @@
+#### 3.27.01 - 14.11.2016
+* BUGFIX: Git Dependency failed to install when space exists in User Folder name - https://github.com/fsprojects/Paket/pull/2015
+
 #### 3.27.0 - 09.11.2016
 * Verbose bootstrapper - https://github.com/fsprojects/Paket/pull/2007 
 * BUGFIX: NuGetV2-OData: retrieve versions in descending order - https://github.com/fsprojects/Paket/pull/2008

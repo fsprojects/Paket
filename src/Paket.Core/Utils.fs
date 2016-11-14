@@ -17,6 +17,11 @@ open Paket.Domain
 open System.Net.Http
 #endif
 
+
+/// Adds quotes around the string
+/// [omit]
+let quote (str:string) = "\"" + str.Replace("\"","\\\"") + "\""
+
 let acceptXml = "application/atom+xml,application/xml"
 let acceptJson = "application/atom+json,application/json"
 
