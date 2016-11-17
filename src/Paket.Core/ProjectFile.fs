@@ -828,9 +828,10 @@ module ProjectFile =
                 let containsProperties = ref false
                 targetsFileConditions
                 |> List.map (fun (condition,(propertyNames,propertyGroup)) ->
+                    let finalCondition = if condition = "" || condition.Length > 3000 || condition = "$(TargetFrameworkIdentifier) == 'true'" then "1 == 1" else condition
                     let whenNode = 
                         createNode "When" project
-                        |> addAttribute "Condition" condition 
+                        |> addAttribute "Condition" finalCondition 
                     if not <| Set.isEmpty propertyNames then
                         whenNode.AppendChild(propertyGroup) |> ignore
                         containsProperties := true
