@@ -1,7 +1,10 @@
-#### 3.27.02 - 14.11.2016
+#### 3.27.3 - 17.11.2016
+* BUGFIX: Fix broken condition in WhenNode - https://github.com/fsprojects/Paket/pull/2022
+
+#### 3.27.2 - 14.11.2016
 * REVERT: NuGetV2-OData: retrieve versions in descending order - https://github.com/fsprojects/Paket/pull/2008
 
-#### 3.27.01 - 14.11.2016
+#### 3.27.1 - 14.11.2016
 * BUGFIX: Git Dependency failed to install when space exists in User Folder name - https://github.com/fsprojects/Paket/pull/2015
 
 #### 3.27.0 - 09.11.2016
