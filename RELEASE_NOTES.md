@@ -1,3 +1,6 @@
+#### 3.27.4 - 17.11.2016
+* BUGFIX: Added missing tolower() - https://github.com/fsprojects/Paket/pull/2023
+
 #### 3.27.3 - 17.11.2016
 * BUGFIX: Fix broken condition in WhenNode - https://github.com/fsprojects/Paket/pull/2022
 
