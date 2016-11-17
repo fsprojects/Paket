@@ -1,6 +1,13 @@
-#### 4.0.0-alpha023 - 10.11.2016
+#### 4.0.0-alpha024 - 17.11.2016
 * Make Paket compatible with dotnet sdk preview3
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
+
+#### 3.28.0 - 17.11.2016
+* BUGFIX: Optimize deps to make #2020 work -  https://github.com/fsprojects/Paket/pull/2020
+* BUGFIX: Added missing tolower() - https://github.com/fsprojects/Paket/pull/2023
+* BUGFIX: Fix broken condition in WhenNode - https://github.com/fsprojects/Paket/pull/2022
+* REVERT: NuGetV2-OData: retrieve versions in descending order - https://github.com/fsprojects/Paket/pull/2008
+* BUGFIX: Git Dependency failed to install when space exists in User Folder name - https://github.com/fsprojects/Paket/pull/2015
 
 #### 3.27.0 - 09.11.2016
 * Verbose bootstrapper - https://github.com/fsprojects/Paket/pull/2007 

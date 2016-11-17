@@ -325,7 +325,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                       Version = version
                       Dependencies = filteredDependencies
                       Unlisted = packageDetails.Unlisted
-                      Settings = settings
+                      Settings = { settings with FrameworkRestrictions = newRestrictions }
                       Source = packageDetails.Source }
                 exploredPackages.Add(key,explored)
                 Some explored

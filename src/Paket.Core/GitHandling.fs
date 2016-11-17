@@ -147,9 +147,9 @@ let fetchCache repoCacheFolder cloneUrl =
             if not <| Directory.Exists Constants.GitRepoCacheFolder then
                 Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
-            CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone " + cloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone " + quote cloneUrl) |> ignore
         else
-            CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + cloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + quote cloneUrl) |> ignore
             verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder 
         
         CommandHelper.runSimpleGitCommand repoCacheFolder "fetch -f --tags" |> ignore
@@ -167,7 +167,7 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
     try
         // checkout to local folder
         if Directory.Exists repoFolder then
-            CommandHelper.runSimpleGitCommand repoFolder ("remote set-url origin " + cacheCloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder ("remote set-url origin " + quote cacheCloneUrl) |> ignore
             verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder 
             CommandHelper.runSimpleGitCommand repoFolder "fetch origin -f" |> ignore
         else
@@ -175,8 +175,8 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
             if not <| Directory.Exists destination then
                 Directory.CreateDirectory destination |> ignore
             verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
-            CommandHelper.runSimpleGitCommand destination ("clone " + cacheCloneUrl) |> ignore
-            CommandHelper.runSimpleGitCommand repoFolder ("remote add upstream " + cloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand destination ("clone " + quote cacheCloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder ("remote add upstream " + quote cloneUrl) |> ignore
 
         tracefn "Setting %s to %s" repoFolder commit
         CommandHelper.runSimpleGitCommand repoFolder ("reset --hard " + commit) |> ignore

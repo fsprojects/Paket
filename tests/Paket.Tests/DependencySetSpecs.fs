@@ -251,3 +251,19 @@ let ``should optimize real world restrictions 3``() =
 
     let result = optimizeRestrictions original
     result |> shouldEqual expected
+
+
+
+[<Test>]
+let ``should optimize real world .NET Standard restrictions``() = 
+    let original =
+        [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1))
+         FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_1))
+         FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_3))]
+
+    let expected = 
+        [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1))
+         FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_1))]
+
+    let result = optimizeRestrictions original
+    result |> shouldEqual expected
