@@ -19,7 +19,7 @@ type FrameworkRestriction =
         | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
         | FrameworkRestriction.Between(min,max) -> sprintf ">= %O < %O" min max
 
-    member private x.GetOneIdentifier =
+    member x.GetOneIdentifier =
         match x with
         | Exactly r -> Some r
         | Portable _ -> None
@@ -113,7 +113,7 @@ let rec optimizeRestrictions restrictions =
     | [] -> []
     | [x] -> [x]
     | odered ->
-        let newRestrictions' =
+        let newRestrictions =
             match odered |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
             | Some((FrameworkRestriction.AtLeast(DotNetFramework(v)) as r)) ->
                 odered
@@ -131,9 +131,9 @@ let rec optimizeRestrictions restrictions =
                     | _ -> true)
             | _ -> odered
 
-        let newRestrictions =
-            match newRestrictions' |> Seq.rev |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
-            | None -> newRestrictions'
+        let filtered =
+            match newRestrictions |> Seq.rev |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
+            | None -> newRestrictions
             | Some r ->
                 let currentVersion =
                     match r with
@@ -141,7 +141,7 @@ let rec optimizeRestrictions restrictions =
                     | FrameworkRestriction.AtLeast(DotNetStandard(x)) -> DotNetStandard x
                     | x -> failwithf "Unknown .NET moniker %O" x
                                                                                                            
-                let isLowerVersion (currentVersion:FrameworkIdentifier) x =
+                let isLowerVersion (currentVersion:FrameworkIdentifier) compareVersion =
                     let isMatching (x:FrameworkIdentifier) =
                         if x = DotNetFramework FrameworkVersion.V3_5 && currentVersion = DotNetFramework FrameworkVersion.V4 then true else
                         if x = DotNetFramework FrameworkVersion.V3_5 && currentVersion = DotNetFramework FrameworkVersion.V4_Client then true else
@@ -155,15 +155,23 @@ let rec optimizeRestrictions restrictions =
 
                         not hasFrameworksBetween && not hasStandardsBetween
 
-                    match x with
+                    match compareVersion with
                     | FrameworkRestriction.Exactly(DotNetFramework(x)) -> isMatching (DotNetFramework x)
                     | FrameworkRestriction.Exactly(DotNetStandard(x)) -> isMatching (DotNetStandard x)
-                    | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> isMatching (DotNetFramework x)
-                    | FrameworkRestriction.AtLeast(DotNetStandard(x)) -> isMatching (DotNetStandard x)
+                    | FrameworkRestriction.AtLeast(DotNetFramework(x)) -> 
+                        isMatching (DotNetFramework x) || 
+                            (match currentVersion with
+                             | DotNetFramework(y) when x < y -> true
+                             | _ -> false)
+                    | FrameworkRestriction.AtLeast(DotNetStandard(x)) -> 
+                        isMatching (DotNetStandard x) ||
+                            (match currentVersion with
+                             | DotNetStandard(y) when x < y -> true
+                             | _ -> false)
                     | _ -> false
 
-                match newRestrictions' |> Seq.tryFind (isLowerVersion currentVersion) with
-                | None -> newRestrictions'
+                match newRestrictions |> Seq.tryFind (isLowerVersion currentVersion) with
+                | None -> newRestrictions
                 | Some n -> 
                     let newLowest =
                         match n with
@@ -174,12 +182,12 @@ let rec optimizeRestrictions restrictions =
                         | x -> failwithf "Unknown .NET moniker %O" x
 
                     let filtered =
-                        newRestrictions'
+                        newRestrictions
                         |> List.filter (fun x -> x <> r && x <> n)
 
                     filtered @ [FrameworkRestriction.AtLeast(newLowest)]
                                         
-        if restrictions = newRestrictions then sorting newRestrictions else optimizeRestrictions newRestrictions
+        if restrictions = filtered then sorting filtered else optimizeRestrictions filtered
 
 let hasDotNetFrameworkOrAnyCase =
     List.exists (fun (_,_,rs) ->
@@ -425,25 +433,51 @@ let private combineSameCategoryOrPortableRestrictions x y =
             if min' = max' then [FrameworkRestriction.Exactly(min')] else
             []
 
-let combineRestrictions (x : FrameworkRestriction) y =
-    if (x.IsSameCategoryAs(y) = Some(false)) then
-        []
-    else
+let combineRestrictions loose (x : FrameworkRestriction) y =
+    if x.IsSameCategoryAs(y) <> Some false then
         combineSameCategoryOrPortableRestrictions x y
+    else
+        if loose then
+             match (x.GetOneIdentifier, y.GetOneIdentifier) with
+             | Some (FrameworkIdentifier.DotNetFramework _ ), Some (FrameworkIdentifier.DotNetStandard _ ) -> [x]
+             | Some (FrameworkIdentifier.DotNetStandard _ ), Some (FrameworkIdentifier.DotNetFramework _ ) -> [y]
+             | _ -> []
+        else
+            []
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
     let list1 = getRestrictionList list1
     let list2 = getRestrictionList list2
 
-    let optimized =
+    let filtered =
         match list1, list2 with
         | [],_ -> list2
         | _,[] -> list1
         | _ ->
             [for x in list1 do
                 for y in list2 do
-                    let c = combineRestrictions x y
+                    let c = combineRestrictions false x y
                     if c <> [] then yield! c]
+
+    let tryLoose = 
+        (filtered |> List.exists (fun r -> match r.GetOneIdentifier with | Some (FrameworkIdentifier.DotNetFramework _ ) -> true | _ -> false)  |> not) &&
+            (list2 |> List.exists (fun r -> match r.GetOneIdentifier with | Some (FrameworkIdentifier.DotNetFramework _ ) -> true | _ -> false))
+
+    let filtered = 
+        if tryLoose then
+            match list1, list2 with
+            | [],_ -> list2
+            | _,[] -> list1
+            | _ ->
+                [for x in list1 do
+                    for y in list2 do
+                        let c = combineRestrictions true x y
+                        if c <> [] then yield! c]
+        else
+            filtered
+
+    let optimized =
+        filtered
         |> optimizeRestrictions
     FrameworkRestrictionList optimized
 

@@ -1,3 +1,0 @@
-source http://nuget.org/api/v2
-
-nuget Ninject >= 3.2.3 prerelease #clever comment goes here
