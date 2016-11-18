@@ -182,7 +182,7 @@ module DependenciesFileParser =
             
             HttpLink(projectSpec'), (owner, projectName, Some commit), fileName, authKey
 
-        match parseDependencyLine trimmed with
+        match parts with
         | [| spec; url |] -> getParts url "" "" None
         | [| spec; url; fileSpec |] -> getParts url fileSpec "" None
         | [| spec; url; fileSpec; authKey |] -> getParts url fileSpec "" (Some authKey)
