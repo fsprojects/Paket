@@ -1,3 +1,6 @@
+#### 3.29.1 - 18.11.2016
+* BUGFIX: eport which nuspec file is invalid when the nuspec cannot be loaded - https://github.com/fsprojects/Paket/issues/2026
+
 #### 3.29.0 - 18.11.2016
 * BUGFIX: Paket adds stricter prerelease dependencies to make NuGet happy - https://github.com/fsprojects/Paket/issues/2024
 

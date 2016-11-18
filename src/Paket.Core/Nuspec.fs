@@ -197,4 +197,4 @@ type Nuspec =
                     Nuspec.Load(fileName, text)
                 with
                 | ex ->
-                    raise (IOException("Cannot load " + fileName + " because: " + ex.Message))
+                    raise (IOException("Cannot load " + fileName + Environment.NewLine + "Message: " + ex.Message))
