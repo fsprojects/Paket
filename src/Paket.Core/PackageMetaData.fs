@@ -387,14 +387,15 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                             | None -> None
                             | Some group ->
                                 match List.tryFind (fun r -> r.Name = np.Name) group.Packages with
-                                | Some requirement -> 
-                                    if minimumFromLockFile then
+                                | Some requirement ->
+                                    
+                                    if minimumFromLockFile || requirement.VersionRequirement = VersionRequirement.NoRestriction then
                                         match lockFile.Groups |> Map.tryFind groupName with
                                         | None -> Some requirement.VersionRequirement
                                         | Some group ->
                                             match Map.tryFind np.Name group.Resolution with
                                             | Some resolvedPackage -> 
-                                                let pre = getPreReleaseStatus resolvedPackage.Version
+                                                let pre = if minimumFromLockFile then getPreReleaseStatus resolvedPackage.Version else requirement.VersionRequirement.PreReleases
                                                 match requirement.VersionRequirement.Range with 
                                                 | OverrideAll v -> 
                                                     if v <> resolvedPackage.Version then

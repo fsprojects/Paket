@@ -1,5 +1,8 @@
+#### 3.29.0 - 18.11.2016
+* BUGFIX: Paket adds stricter prerelease dependencies to make NuGet happy - https://github.com/fsprojects/Paket/issues/2024
+
 #### 3.28.0 - 17.11.2016
-* BUGFIX: Optimize deps to make #2020 work -  https://github.com/fsprojects/Paket/pull/2020
+* BUGFIX: Optimize deps to make #2020 work - https://github.com/fsprojects/Paket/pull/2020
 * BUGFIX: Added missing tolower() - https://github.com/fsprojects/Paket/pull/2023
 * BUGFIX: Fix broken condition in WhenNode - https://github.com/fsprojects/Paket/pull/2022
 * REVERT: NuGetV2-OData: retrieve versions in descending order - https://github.com/fsprojects/Paket/pull/2008
