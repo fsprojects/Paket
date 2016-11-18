@@ -192,5 +192,9 @@ type Nuspec =
                 Nuspec.Load(fileName, f)
             with
             | exn ->
-                let text = File.ReadAllText(fi.FullName)  // work around mono bug https://github.com/fsprojects/Paket/issues/1189
-                Nuspec.Load(fileName, text)
+                try
+                    let text = File.ReadAllText(fi.FullName)  // work around mono bug https://github.com/fsprojects/Paket/issues/1189
+                    Nuspec.Load(fileName, text)
+                with
+                | ex ->
+                    raise (IOException("Cannot load " + fileName + " because: " + ex.Message))
