@@ -59,8 +59,8 @@
     <StartWorkingDirectory>D:\temp\repo3</StartWorkingDirectory>
     <StartArguments>install -v</StartArguments>
     <StartWorkingDirectory>D:\temp\IconPacksTestApp\src</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\temp\primitives</StartWorkingDirectory>
+    <StartArguments>pack output nugets</StartArguments>
+    <StartWorkingDirectory>D:\temp\PaketRepro</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

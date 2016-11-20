@@ -1,9 +1,15 @@
-#### 4.0.0-alpha024 - 17.11.2016
+#### 4.0.0-alpha025 - 20.11.2016
 * Make Paket compatible with dotnet sdk preview3
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
+#### 3.29.1 - 18.11.2016
+* BUGFIX: eport which nuspec file is invalid when the nuspec cannot be loaded - https://github.com/fsprojects/Paket/issues/2026
+
+#### 3.29.0 - 18.11.2016
+* BUGFIX: Paket adds stricter prerelease dependencies to make NuGet happy - https://github.com/fsprojects/Paket/issues/2024
+
 #### 3.28.0 - 17.11.2016
-* BUGFIX: Optimize deps to make #2020 work -  https://github.com/fsprojects/Paket/pull/2020
+* BUGFIX: Optimize deps to make #2020 work - https://github.com/fsprojects/Paket/pull/2020
 * BUGFIX: Added missing tolower() - https://github.com/fsprojects/Paket/pull/2023
 * BUGFIX: Fix broken condition in WhenNode - https://github.com/fsprojects/Paket/pull/2022
 * REVERT: NuGetV2-OData: retrieve versions in descending order - https://github.com/fsprojects/Paket/pull/2008
