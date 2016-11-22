@@ -1,4 +1,4 @@
-#### 3.29.2 - 2.11.2016
+#### 3.29.3 - 22.11.2016
 * BUGFIX: Fix package name displayed when package is found in different group - https://github.com/fsprojects/Paket/issues/2031
 
 #### 3.29.1 - 18.11.2016
