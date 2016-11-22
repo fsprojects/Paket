@@ -1,4 +1,4 @@
-#### 3.29.4 - 22.11.2016
+#### 3.29.5 - 22.11.2016
 * BUGFIX: Add authorization headers to Paket Push - https://github.com/fsprojects/Paket/pull/2034
 
 #### 3.29.3 - 22.11.2016
