@@ -82,7 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="$(PaketCoreSourcesDir)\paket.template" />
-    <None Include="$(PaketCoreSourcesDir)\paket.references" />
+    <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk">
