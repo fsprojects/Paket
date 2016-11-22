@@ -65,7 +65,7 @@ let dotnetcliVersion = "1.0.0-preview3-004056"
 
 let dotnetCliPath = DirectoryInfo "./dotnetcore"
 
-let netcoreFiles = !! "src/**/*.preview?.fsproj" |> Seq.toList
+let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
