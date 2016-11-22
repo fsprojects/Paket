@@ -157,6 +157,9 @@ Target "InstallDotNetCore" (fun _ ->
         webclient.DownloadFile(downloadPath, localPath)
 
         System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetCliPath.FullName)
+
+    let oldPath = System.Environment.GetEnvironmentVariable("PATH")
+    System.Environment.SetEnvironmentVariable("PATH", sprintf "%s%s%s" dotnetCliPath.FullName (System.IO.Path.PathSeparator.ToString()) oldPath)
 )
 
 // --------------------------------------------------------------------------------------
