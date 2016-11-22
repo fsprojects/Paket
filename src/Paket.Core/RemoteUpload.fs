@@ -57,12 +57,15 @@ let Push maxTrials url apiKey packageFileName =
             failwithf "Package %s already exists." packageFileName
         | exn when trial < maxTrials ->            
             if exn.Message.Contains("(409)") |> not then // exclude conflicts
-                let response = (exn :?> System.Net.WebException).Response
-                use reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8)
-                let text = reader.ReadToEnd()
+                match exn with
+                | :? WebException as we when not (isNull we.Response) -> 
+                    let response = (exn :?> System.Net.WebException).Response
+                    use reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8)
+                    let text = reader.ReadToEnd()
+                    tracefnVerbose "Response body was: %s" text
+                    tracefnVerbose "Response: %A" response
+                | _ -> ()
                 traceWarnfn "Could not push %s: %s" packageFileName exn.Message
-                tracefnVerbose "Response body was: %s" text
-                tracefnVerbose "Response: %A" response
                 push (trial + 1)
 
     push 1
