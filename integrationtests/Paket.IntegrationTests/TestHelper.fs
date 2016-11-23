@@ -70,7 +70,11 @@ let update scenario =
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario =
+    #if INTERACTIVE
+    paket "install --verbose" scenario |> printfn "%s"
+    #else
     paket "install" scenario |> ignore
+    #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let restore scenario = paket "restore" scenario |> ignore

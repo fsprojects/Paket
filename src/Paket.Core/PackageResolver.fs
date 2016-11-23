@@ -125,7 +125,8 @@ module Resolution =
         match conflicts with
         | [] -> errorReport
         | req::conflicts ->
-            errorReport.AddLine (sprintf "  Could not resolve package %O:" req.Name)
+            
+            errorReport.AddLine (sprintf "  Could not resolve package %O %O:" req.Name req.VersionRequirement.Range)
             let hasPrereleases =
                 conflicts |> List.exists (fun r -> r.VersionRequirement.PreReleases <> PreReleaseStatus.No)
 
@@ -611,11 +612,11 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
             ,   firstTrial  = true
             )
 
-    let stopLooping (flags:StepFlags) (conflictState:ConflictState) =
-        if flags.ForceBreak then true else
-        if conflictState.Status.IsDone || Seq.isEmpty conflictState.VersionsToExplore then true else
-        if (flags.FirstTrial || Set.isEmpty conflictState.Conflicts) then false
-        else true
+    let keepLooping (flags:StepFlags) (conflictState:ConflictState) =
+        if flags.ForceBreak then false else
+        if conflictState.Status.IsDone || Seq.isEmpty conflictState.VersionsToExplore then false else
+        flags.FirstTrial || Set.isEmpty conflictState.Conflicts
+        
 
 
 
@@ -688,7 +689,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                 stepLoop flags (Inner(conflictState))
 
             | Inner (conflictState) ->
-                if stopLooping flags conflictState then
+                if not (keepLooping flags conflictState) then
                     let flags =
                         if not flags.UseUnlisted && flags.HasUnlisted && not conflictState.Status.IsDone then
                             StepFlags(flags.Ready,true,flags.HasUnlisted,flags.ForceBreak,flags.FirstTrial)
@@ -724,6 +725,8 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                     let flags = StepFlags(flags.Ready,flags.UseUnlisted,hasUnlisted,flags.ForceBreak,flags.FirstTrial)
                     if exploredPackage.Unlisted && not flags.UseUnlisted then
                         tracefn "     unlisted"
+                        stepLoop flags (Inner(conflictState))
+                    else
                     
                     let nextStep =
                         {   Relax              = currentStep.Relax
