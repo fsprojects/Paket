@@ -88,4 +88,8 @@ let updateShouldFindPackageConflict packageName scenario =
         update scenario |> ignore
         failwith "No conflict was found."
     with
-    | exn when exn.Message.Contains(sprintf "Could not resolve package %s:" packageName) -> ()
+    | exn when exn.Message.Contains(sprintf "Could not resolve package %s" packageName) -> 
+        #if INTERACTIVE
+        printfn "Ninject conflict test passed"
+        #endif
+        ()
