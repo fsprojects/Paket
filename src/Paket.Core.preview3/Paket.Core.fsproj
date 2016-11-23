@@ -1,0 +1,107 @@
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+  <PropertyGroup>
+    <TargetFramework>netstandard1.6</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Version>1.0.0-preview3</Version>
+    <Authors>Enrico Sada</Authors>
+    <PaketCoreSourcesDir>..\Paket.Core</PaketCoreSourcesDir>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
+      <Paket>True</Paket>
+      <Link>Globbing.fs</Link>
+    </Compile>
+    <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
+      <Paket>True</Paket>
+      <Link>AssemblyReader.fs</Link>
+    </Compile>
+    <Compile Include="$(PaketCoreSourcesDir)\Async.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\AssemblyInfo.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\CustomAssemblyInfo.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Domain.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Logging.fsi" />
+    <Compile Include="$(PaketCoreSourcesDir)\Logging.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Constants.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Utils.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\SemVer.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\VersionRange.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Xml.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\GitCommandHelper.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\GitHandling.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\ConfigFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Cache.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Cultures.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PackageSources.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\FrameworkHandling.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PlatformMatching.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Requirements.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\ModuleResolver.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\RemoteDownload.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\RemoteUpload.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PackageResolver.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Nuspec.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\InstallModel.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\ReferencesFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\SolutionFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Nuget.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\NuGetV3.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\NuGetV2.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\DependenciesTypes.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\DependenciesFileParser.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\LockFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\TemplateFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PackagesConfigFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\ProjectFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\DependenciesFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\LocalFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\DependencyChangeDetection.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\GarbageCollection.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\RestoreProcess.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\BindingRedirects.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\NupkgWriter.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\ProcessOptions.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\DependencyModel.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\InstallProcess.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\UpdateProcess.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\RemoveProcess.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\AddProcess.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PackageMetaData.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PackageProcess.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Environment.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Releases.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Simplifier.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\VSIntegration.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\NugetConvert.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\FindOutdated.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\FindReferences.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Why.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PublicAPI.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\ScriptGeneration.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(PaketCoreSourcesDir)\paket.template" />
+    <None Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Sdk">
+      <Version>1.0.0-alpha-20161104-2</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FSharp.NET.Sdk">
+      <Version>1.0.0-alpha-*</Version>
+      <PrivateAssets>All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);DOTNETCORE;NETSTANDARD1_5;NETSTANDARD1_6;USE_HTTP_CLIENT</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="dotnet-compile-fsc">
+      <Version>1.0.0-preview2-020000</Version>
+    </DotNetCliToolReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
