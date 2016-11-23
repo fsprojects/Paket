@@ -1216,15 +1216,19 @@ module ProjectFile =
                         sibling.ParentNode.RemoveChild sibling |> ignore
                 | _ -> ())
     
-    let getPackageReferences project =
+    let packageReferencesNoPrivateAssets project =
         project.ProjectNode
         |> getDescendants "PackageReference"
+        |> List.filter (getDescendants "PrivateAssets" >>
+                        List.exists (fun x -> x.InnerText = "All") >>
+                        not)
+
+    let getPackageReferences project =
+        packageReferencesNoPrivateAssets project
         |> List.map (getAttribute "Include" >> Option.get)
 
     let removePackageReferenceEntries project =
-        let toDelete = 
-            project.ProjectNode 
-            |> getDescendants "PackageReference"
+        let toDelete = packageReferencesNoPrivateAssets project
         
         toDelete 
         |> List.iter (fun node -> node.ParentNode.RemoveChild node |> ignore)
@@ -1351,8 +1355,7 @@ module ProjectFile =
         tryNextPlat platforms []
 
     let dotNetCorePackages (projectFile: ProjectFile) =
-        projectFile.ProjectNode
-        |> getDescendants "PackageReference"
+        packageReferencesNoPrivateAssets projectFile
         |> List.map (fun node ->
                            {Paket.PackagesConfigFile.NugetPackage.Id = node |> getAttribute "Include" |> Option.get
                             Paket.PackagesConfigFile.Version = node |> getNode "Version" |> Option.get |> (fun n -> Paket.SemVer.Parse n.InnerText)
