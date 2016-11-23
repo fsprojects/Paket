@@ -1,14 +1,11 @@
-#### 4.0.0-alpha027 - 23.11.2016
+#### 4.0.0-alpha028 - 23.11.2016
 * Make Paket compatible with dotnet sdk preview3
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
-#### 3.29.5 - 22.11.2016
+#### 3.30.0 - 22.11.2016
+* Allow override of NuGetCacheFolder location through environment variable - https://github.com/fsprojects/Paket/pull/2035
 * BUGFIX: Add authorization headers to Paket Push - https://github.com/fsprojects/Paket/pull/2034
-
-#### 3.29.3 - 22.11.2016
 * BUGFIX: Fix package name displayed when package is found in different group - https://github.com/fsprojects/Paket/issues/2031
-
-#### 3.29.1 - 18.11.2016
 * BUGFIX: Report which nuspec file is invalid when the nuspec cannot be loaded - https://github.com/fsprojects/Paket/issues/2026
 
 #### 3.29.0 - 18.11.2016

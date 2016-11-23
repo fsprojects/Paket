@@ -56,3 +56,13 @@ All configured caches are automatically used as additional package feeds. So if 
 The fact that it's now only found in the cache will be written to the [`paket.lock` file](lock-file.html).
 
 All packages in the cache are treated as "unlisted". This means Paket's resolver will only use these packages in a new resolution if the central feed has no unlisted packages.
+
+## NuGet machine cache
+
+In addition to the above, Paket will also cache packages to a local machine cache, which defaults to `%LocalAppData%\NuGet\Cache`.  
+
+This location can be overridden to support cases where parallelised package installs (or updates) are prone to file locks, such as when running multiple build agent processes on a single server.
+
+To override at the process level, define a process environment variable called `"NuGetCachePath"` with the custom location, such as
+
+    $env:NuGetCachePath = "C:\NuGetCaches\BuildAgentName"
