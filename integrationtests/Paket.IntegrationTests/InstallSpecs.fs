@@ -444,5 +444,5 @@ let ``#1860 faulty condition was generated`` () =
 
 #if INTERACTIVE
 ;;
-let newLockFile = install "i001883-chessie"
+
 #endif

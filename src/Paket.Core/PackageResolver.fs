@@ -661,7 +661,6 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
         let conflictState = {
             conflictState with
                 Conflicts         = conflicts
-                VersionsToExplore = compatibleVersions
                 TryRelaxed        = tryRelaxed
                 GlobalOverride    = globalOverride
         }
@@ -686,6 +685,12 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
             | Outer (conflictState) ->
                 if flags.Ready then conflictState else
                 let flags = StepFlags(flags.Ready,flags.UseUnlisted,flags.HasUnlisted,false,true)
+
+                let conflictState = {
+                    conflictState with
+                        VersionsToExplore = compatibleVersions
+                }
+
                 stepLoop flags (Inner(conflictState))
 
             | Inner (conflictState) ->

@@ -66,7 +66,11 @@ let paket command scenario =
     directPaket command scenario
 
 let update scenario =
+    #if INTERACTIVE
+    paket "update --verbose" scenario |> printfn "%s"
+    #else
     paket "update" scenario |> ignore
+    #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario =
