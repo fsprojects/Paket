@@ -10,9 +10,9 @@
   </PropertyGroup>
   <!--<Win32Resource>paket.res</Win32Resource>-->
   <ItemGroup>
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="Commands.fs" />
-    <Compile Include="Program.fs" />
+    <Compile Include="..\Paket\AssemblyInfo.fs" />
+    <Compile Include="..\Paket\Commands.fs" />
+    <Compile Include="..\Paket\Program.fs" />
     <!--<Content Include="App.config" />-->
     <None Include="paket.references" />
     <!--<EmbeddedResource Include="embedded\PaketRestoreTask.deps.json" />
@@ -24,16 +24,16 @@
       <Version>1.0.1</Version>
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Sdk">
-      <Version>1.0.0-alpha-20161029-1</Version>
+      <Version>1.0.0-alpha-20161104-2</Version>
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FSharp.NET.Sdk">
-      <Version>1.0.0-alpha-000001</Version>
+      <Version>1.0.0-alpha-*</Version>
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Paket.Core\Paket.Core.preview3.fsproj">
+    <ProjectReference Include="..\Paket.Core.preview3\Paket.Core.fsproj">
       <Name>Paket.Core.preview3</Name>
     </ProjectReference>
   </ItemGroup>

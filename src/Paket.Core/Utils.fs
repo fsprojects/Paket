@@ -479,7 +479,8 @@ type System.Net.WebClient with
             System.String.Format
                 (System.Globalization.CultureInfo.InvariantCulture, fileTemplate, boundary, "package", "package", "application/octet-stream") 
             |> Encoding.UTF8.GetBytes
-        let newlineBytes = Environment.NewLine |> Encoding.UTF8.GetBytes
+        // we use a windows-style newline rather than Environment.NewLine for compatibility
+        let newlineBytes = "\r\n" |> Encoding.UTF8.GetBytes
         let trailerbytes = String.Format(System.Globalization.CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
         x.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary)
         use stream = x.OpenWrite(url, "PUT")

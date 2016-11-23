@@ -61,11 +61,11 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "1.0.0-preview4-004079"
+let dotnetcliVersion = "1.0.0-preview3-004056"
 
 let dotnetCliPath = DirectoryInfo "./dotnetcore"
 
-let netcoreFiles = !! "src/**/*.preview?.fsproj" |> Seq.toList
+let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
 
 // --------------------------------------------------------------------------------------
 // END TODO: The rest of the file includes standard build steps
@@ -157,6 +157,9 @@ Target "InstallDotNetCore" (fun _ ->
         webclient.DownloadFile(downloadPath, localPath)
 
         System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetCliPath.FullName)
+
+    let oldPath = System.Environment.GetEnvironmentVariable("PATH")
+    System.Environment.SetEnvironmentVariable("PATH", sprintf "%s%s%s" dotnetCliPath.FullName (System.IO.Path.PathSeparator.ToString()) oldPath)
 )
 
 // --------------------------------------------------------------------------------------

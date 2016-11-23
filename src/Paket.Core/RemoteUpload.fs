@@ -31,12 +31,21 @@ let GetUrlWithEndpoint (url: string option) (endPoint: string option) =
 
   
 let Push maxTrials url apiKey packageFileName =
+    let tracefnVerbose m = Printf.kprintf traceVerbose m
     let rec push trial =
         if not (File.Exists packageFileName) then
             failwithf "The package file %s does not exist." packageFileName
         tracefn "Pushing package %s to %s - trial %d" packageFileName url trial
         try
-            let client = Utils.createWebClient(url, None)
+            let authOpt = ConfigFile.GetAuthentication(url)
+            match authOpt with
+            | Some (Auth.Credentials (u,_)) -> 
+                tracefnVerbose "Authorizing using credentials for user %s" u
+            | Some (Auth.Token _) -> 
+                tracefnVerbose "Authorizing using token"
+            | None ->
+                tracefnVerbose "No authorization found in config file."
+            let client = Utils.createWebClient(url, authOpt)
             Utils.addHeader client "X-NuGet-ApiKey" apiKey
 
             client.UploadFileAsMultipart (new Uri(url)) packageFileName
@@ -48,6 +57,14 @@ let Push maxTrials url apiKey packageFileName =
             failwithf "Package %s already exists." packageFileName
         | exn when trial < maxTrials ->            
             if exn.Message.Contains("(409)") |> not then // exclude conflicts
+                match exn with
+                | :? WebException as we when not (isNull we.Response) -> 
+                    let response = (exn :?> System.Net.WebException).Response
+                    use reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8)
+                    let text = reader.ReadToEnd()
+                    tracefnVerbose "Response body was: %s" text
+                    tracefnVerbose "Response: %A" response
+                | _ -> ()
                 traceWarnfn "Could not push %s: %s" packageFileName exn.Message
                 push (trial + 1)
 

@@ -98,6 +98,10 @@ type UAPVersion =
         match this with
         | V10 -> "10.0"
 
+    member this.ShortString() =
+        match this with
+        | UAPVersion.V10 -> "100"
+
 
 [<RequireQualifiedAccess>]
 /// The .NET Standard version.
@@ -165,6 +169,7 @@ type FrameworkIdentifier =
         | Native(_) -> "native"
         | Runtimes(_) -> "runtimes"
         | XamariniOS -> "xamarinios"
+        | UAP v -> "uap" + v.ShortString()
         | XamarinMac -> "xamarinmac"
         | Windows v -> "win" + v
         | WindowsPhoneSilverlight v -> "wp" + v

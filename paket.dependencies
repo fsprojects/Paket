@@ -1,6 +1,4 @@
 source https://nuget.org/api/v2
-source https://www.myget.org/F/nuget-volatile/api/v3/index.json
-source https://www.myget.org/F/netcorecli-fsc-preview3/api/v3/index.json
 
 nuget Newtonsoft.Json redirects: force
 nuget Argu prerelease

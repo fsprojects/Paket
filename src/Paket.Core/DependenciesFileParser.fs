@@ -182,7 +182,7 @@ module DependenciesFileParser =
             
             HttpLink(projectSpec'), (owner, projectName, Some commit), fileName, authKey
 
-        match parseDependencyLine trimmed with
+        match parts with
         | [| spec; url |] -> getParts url "" "" None
         | [| spec; url; fileSpec |] -> getParts url fileSpec "" None
         | [| spec; url; fileSpec; authKey |] -> getParts url fileSpec "" (Some authKey)
@@ -205,36 +205,36 @@ module DependenciesFileParser =
     | PackageSource of PackageSource
     | Cache of Cache
 
-    let private (|Remote|Package|Empty|ParserOptions|SourceFile|Git|Group|) (line:string) =
-        let trimmed = line.Trim()
-
-        let removeComment (text:string) =
-            match text.IndexOf("//") with
-            | -1 ->
-                match text.IndexOf("#") with
-                | -1 -> text
-                | p -> 
-                    let f = text.Substring(0,p).Trim()
-                    printfn "%s" f
-                    f
+    let private removeComment (text:string) =
+        match text.IndexOf("//") with
+        | -1 ->
+            match text.IndexOf("#") with
+            | -1 -> text
             | p -> 
                 let f = text.Substring(0,p).Trim()
                 printfn "%s" f
                 f
-            
+        | p -> 
+            let f = text.Substring(0,p).Trim()
+            printfn "%s" f
+            f 
 
+    let private (|Remote|_|) (line:string) =
+        let trimmed = line.Trim() 
         match trimmed with
-        | _ when String.IsNullOrWhiteSpace line -> Empty(line)
-        | String.StartsWith "version" _ as trimmed -> Empty(trimmed) // Parsed by the boostrapper, not paket itself
         | String.StartsWith "source" _ as trimmed -> 
             try 
                 let source = PackageSource.Parse(trimmed)
-                Remote(RemoteParserOption.PackageSource(source))
+                Some (Remote(RemoteParserOption.PackageSource(source)))
             with e -> 
                 traceWarnfn "could not parse package source %s (%s)" trimmed e.Message
                 reraise ()
-        | String.StartsWith "cache" _ as trimmed -> Remote(RemoteParserOption.Cache(Cache.Parse(trimmed)))
-        | String.StartsWith "group" _ as trimmed -> Group(trimmed.Replace("group ",""))
+        | String.StartsWith "cache" _ as trimmed -> Some (Remote(RemoteParserOption.Cache(Cache.Parse(trimmed))))
+        | _ -> None
+        
+    let private (|Package|_|) (line:string) =
+        let trimmed = line.Trim() 
+        match trimmed with
         | String.StartsWith "nuget" trimmed -> 
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
@@ -246,16 +246,30 @@ module DependenciesFileParser =
             match parts with
             | name :: operator1 :: version1  :: operator2 :: version2 :: rest
                 when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> 
-                Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2, String.Join(" ",rest) |> removeComment)
+                Some (Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2, String.Join(" ",rest) |> removeComment))
             | name :: operator :: version  :: rest 
                 when List.exists ((=) operator) operators ->
-                Package(name,operator + " " + version, String.Join(" ",rest) |> removeComment)
+                Some (Package(name,operator + " " + version, String.Join(" ",rest) |> removeComment))
             | name :: version :: rest when isVersion version -> 
-                Package(name,version,String.Join(" ",rest) |> removeComment)
-            | name :: rest -> Package(name,">= 0", String.Join(" ",rest) |> removeComment)
-            | [name] -> Package(name,">= 0","")
+                Some (Package(name,version,String.Join(" ",rest) |> removeComment))
+            | name :: rest -> Some (Package(name,">= 0", String.Join(" ",rest) |> removeComment))
+            | [name] -> Some (Package(name,">= 0",""))
             | _ -> failwithf "could not retrieve NuGet package from %s" trimmed
-        | String.StartsWith "references" trimmed -> ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict"))
+        | _ -> None
+    
+    let private (|Empty|_|) (line:string) =
+        let trimmed = line.Trim() 
+        match trimmed with
+        | _ when String.IsNullOrWhiteSpace line -> Some (Empty(line))
+        | String.StartsWith "version" _ as trimmed -> Some (Empty(trimmed)) // Parsed by the boostrapper, not paket itself
+        | String.StartsWith "//" _ -> Some (Empty(line))
+        | String.StartsWith "#" _ -> Some (Empty(line))
+        | _ -> None
+        
+    let private (|ParserOptions|_|) (line:string) =
+        let trimmed = line.Trim() 
+        match trimmed with
+        | String.StartsWith "references" trimmed -> Some (ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict")))
         | String.StartsWith "redirects" trimmed ->
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -263,7 +277,7 @@ module DependenciesFileParser =
                 | "off" -> Some false
                 | _ -> None
 
-            ParserOptions(ParserOption.Redirects(setting))
+            Some (ParserOptions(ParserOption.Redirects(setting)))
         | String.StartsWith "strategy" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -271,7 +285,7 @@ module DependenciesFileParser =
                 | "min" -> Some ResolverStrategy.Min
                 | _ -> None
 
-            ParserOptions(ParserOption.ResolverStrategyForTransitives(setting))
+            Some (ParserOptions(ParserOption.ResolverStrategyForTransitives(setting)))
         | String.StartsWith "lowest_matching" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -279,19 +293,19 @@ module DependenciesFileParser =
                 | "true" -> Some ResolverStrategy.Min
                 | _ -> None
 
-            ParserOptions(ParserOption.ResolverStrategyForDirectDependencies(setting))
+            Some (ParserOptions(ParserOption.ResolverStrategyForDirectDependencies(setting)))
         | String.StartsWith "framework" trimmed -> 
             let text = trimmed.Replace(":", "").Trim()
             
             if text = "auto-detect" then 
-                ParserOptions(ParserOption.AutodetectFrameworkRestrictions)
+                Some (ParserOptions(ParserOption.AutodetectFrameworkRestrictions))
             else 
                 let restrictions = Requirements.parseRestrictions text
                 if String.IsNullOrWhiteSpace text |> not && List.isEmpty restrictions then 
                     failwithf "Could not parse framework restriction \"%s\"" text
 
                 let options = ParserOption.FrameworkRestrictions(FrameworkRestrictionList restrictions)
-                ParserOptions options
+                Some (ParserOptions options)
 
         | String.StartsWith "content" trimmed -> 
             let setting =
@@ -300,9 +314,9 @@ module DependenciesFileParser =
                 | "once" -> ContentCopySettings.OmitIfExisting
                 | _ -> ContentCopySettings.Overwrite
 
-            ParserOptions(ParserOption.OmitContent(setting))
-        | String.StartsWith "import_targets" trimmed -> ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true"))
-        | String.StartsWith "copy_local" trimmed -> ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true"))
+            Some (ParserOptions(ParserOption.OmitContent(setting)))
+        | String.StartsWith "import_targets" trimmed -> Some (ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true")))
+        | String.StartsWith "copy_local" trimmed -> Some (ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true")))
         | String.StartsWith "copy_content_to_output_dir" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -311,21 +325,35 @@ module DependenciesFileParser =
                 | "preserve_newest" -> CopyToOutputDirectorySettings.PreserveNewest
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
                         
-            ParserOptions(ParserOption.CopyContentToOutputDir(setting))
-        | String.StartsWith "condition" trimmed -> ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper()))
+            Some (ParserOptions(ParserOption.CopyContentToOutputDir(setting)))
+        | String.StartsWith "condition" trimmed -> Some (ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper())))
+        | _ -> None
+        
+    let private (|SourceFile|_|) (line:string) =
+        let trimmed = line.Trim() 
+        match trimmed with
         | String.StartsWith "gist" _ as trimmed ->
-            SourceFile(parseGitSource trimmed Origin.GistLink "gist")
+            Some (SourceFile(parseGitSource trimmed Origin.GistLink "gist"))
         | String.StartsWith "github" _ as trimmed  ->
-            SourceFile(parseGitSource trimmed Origin.GitHubLink "github")
-        | String.StartsWith "git" _ as trimmed  ->
-            Git(trimmed.Substring(4))
-        | String.StartsWith "file:" _ as trimmed  ->
-            Git(trimmed)
+            Some (SourceFile(parseGitSource trimmed Origin.GitHubLink "github"))
         | String.StartsWith "http" _ as trimmed  ->
-            SourceFile(parseHttpSource trimmed)
-        | String.StartsWith "//" _ -> Empty(line)
-        | String.StartsWith "#" _ -> Empty(line)
-        | _ -> failwithf "Unrecognized token: %s" line
+            Some (SourceFile(parseHttpSource trimmed))
+        | _ -> None 
+
+    let private (|Git|_|) (line:string) =
+        let trimmed = line.Trim() 
+        match trimmed with
+        | String.StartsWith "git" _ as trimmed  ->
+            Some (Git(trimmed.Substring(4)))
+        | String.StartsWith "file:" _ as trimmed  ->
+            Some (Git(trimmed))
+        | _ -> None
+        
+    let private (|Group|_|) (line:string) =
+        let trimmed = line.Trim() 
+        match trimmed with
+        | String.StartsWith "group" _ as trimmed -> Some (Group(trimmed.Replace("group ","")))
+        | _ -> None
     
     let parsePackage(sources,parent,name,version,rest:string) =
         let prereleases,optionsText =
@@ -462,6 +490,7 @@ module DependenciesFileParser =
                             let relative = (createRelativePath root fullPath).Replace("\\","/")
                             LocalNuGet(relative,None) :: current.Sources |> List.distinct 
                     lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile]; Sources = sources }::other
+                | _ -> failwithf "Unrecognized token: %s" line
             with
             | exn -> failwithf "Error in paket.dependencies line %d%s  %s" lineNo Environment.NewLine exn.Message
         | [] -> failwithf "Error in paket.dependencies line %d" lineNo
