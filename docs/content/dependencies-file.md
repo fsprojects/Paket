@@ -1,6 +1,6 @@
 # The paket.dependencies file
 
-The `paket.dependencies` file is used to specify rules regarding your application's dependencies. It contains top level dependencies from all projects in the solution, while [`paket.references` file] specifies dependencies only for particular project.
+The `paket.dependencies` file is used to specify rules regarding your application's dependencies. It contains top level dependencies from all projects in the solution, while [`paket.references` file](references-files.html) specifies dependencies only for particular project.
 
 To give you an overview, consider the following `paket.dependencies` file:
 
