@@ -298,7 +298,8 @@ let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) 
     let frameworksForDependencyGroups = lazy (
         dependencies.Groups
             |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
-            |> Seq.map(function
+            |> Seq.map(fun resttrictions ->
+                match resttrictions with
                 | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
                 | Paket.Requirements.FrameworkRestrictionList list ->
                   list |> Seq.collect (

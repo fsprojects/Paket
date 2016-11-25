@@ -446,40 +446,42 @@ let combineRestrictions loose (x : FrameworkRestriction) y =
             []
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
-    let list1 = getRestrictionList list1
-    let list2 = getRestrictionList list2
-
-    let filtered =
-        match list1, list2 with
-        | [],_ -> list2
-        | _,[] -> list1
-        | _ ->
-            [for x in list1 do
-                for y in list2 do
-                    let c = combineRestrictions false x y
-                    if c <> [] then yield! c]
-
-    let tryLoose = 
-        (filtered |> List.exists (fun r -> match r.GetOneIdentifier with | Some (FrameworkIdentifier.DotNetFramework _ ) -> true | _ -> false)  |> not) &&
-            (list2 |> List.exists (fun r -> match r.GetOneIdentifier with | Some (FrameworkIdentifier.DotNetFramework _ ) -> true | _ -> false))
-
-    let filtered = 
-        if tryLoose then
+    match list1,list2 with 
+    | FrameworkRestrictionList [], AutoDetectFramework -> AutoDetectFramework
+    | AutoDetectFramework, FrameworkRestrictionList [] -> AutoDetectFramework
+    | FrameworkRestrictionList list1 , FrameworkRestrictionList list2 ->
+        let filtered =
             match list1, list2 with
             | [],_ -> list2
             | _,[] -> list1
             | _ ->
                 [for x in list1 do
                     for y in list2 do
-                        let c = combineRestrictions true x y
+                        let c = combineRestrictions false x y
                         if c <> [] then yield! c]
-        else
-            filtered
 
-    let optimized =
-        filtered
-        |> optimizeRestrictions
-    FrameworkRestrictionList optimized
+        let tryLoose = 
+            (filtered |> List.exists (fun r -> match r.GetOneIdentifier with | Some (FrameworkIdentifier.DotNetFramework _ ) -> true | _ -> false) |> not) &&
+                (list2 |> List.exists (fun r -> match r.GetOneIdentifier with | Some (FrameworkIdentifier.DotNetFramework _ ) -> true | _ -> false))
+
+        let filtered = 
+            if tryLoose then
+                match list1, list2 with
+                | [],_ -> list2
+                | _,[] -> list1
+                | _ ->
+                    [for x in list1 do
+                        for y in list2 do
+                            let c = combineRestrictions true x y
+                            if c <> [] then yield! c]
+            else
+                filtered
+
+        let optimized =
+            filtered
+            |> optimizeRestrictions
+        FrameworkRestrictionList optimized
+    | _ -> failwithf "The framework restriction %O and %O could not be combined." list1 list2
 
 /// Get if a target should be considered with the specified restrictions
 let isTargetMatchingRestrictions =

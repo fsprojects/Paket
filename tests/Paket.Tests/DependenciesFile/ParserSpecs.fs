@@ -1384,3 +1384,52 @@ let ``async cache should work``() =
     } |> Async.RunSynchronously
     !x |> shouldEqual 1
 
+let autodetectconfig = """
+framework: auto-detect
+source https://api.nuget.org/v3/index.json
+nuget nlog
+
+group build
+framework: net4.5.2
+source https://www.nuget.org/api/v2
+
+nuget GitVersion
+
+group tests
+framework: net4.5.2
+source https://www.nuget.org/api/v2
+
+nuget xunit
+"""
+
+[<Test>]
+let ``should read autodetect from main group``() = 
+    let cfg = DependenciesFile.FromCode(autodetectconfig)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions 
+    |> shouldEqual FrameworkRestrictions.AutoDetectFramework
+
+let autodetectconfigSpecific = """
+//`auto-detect` with explicit 'Main' group fails
+group Main
+framework: auto-detect
+source https://api.nuget.org/v3/index.json
+nuget nlog
+
+group build
+framework: net4.5.2
+source https://www.nuget.org/api/v2
+
+nuget GitVersion
+
+group tests
+framework: net4.5.2
+source https://www.nuget.org/api/v2
+
+nuget xunit
+"""
+
+[<Test>]
+let ``should read autodetect from specific main group``() = 
+    let cfg = DependenciesFile.FromCode(autodetectconfigSpecific)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions 
+    |> shouldEqual FrameworkRestrictions.AutoDetectFramework

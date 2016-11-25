@@ -1,3 +1,6 @@
+#### 3.30.1 - 25.11.2016
+* BUGFIX: Allow specify auto-detect in specific groups - https://github.com/fsprojects/Paket/issues/2011
+
 #### 3.30.0 - 22.11.2016
 * Allow override of NuGetCacheFolder location through environment variable - https://github.com/fsprojects/Paket/pull/2035
 * BUGFIX: Add authorization headers to Paket Push - https://github.com/fsprojects/Paket/pull/2034
