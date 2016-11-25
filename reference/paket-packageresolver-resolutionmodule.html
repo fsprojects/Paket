@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PackageAndAssemblyResolution - Paket</title>
+    <title>Resolution - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,9 +58,10 @@
 
 
 
-<h1>PackageAndAssemblyResolution</h1>
+<h1>Resolution</h1>
 <p>
-  <span>Namespace: Paket.LoadingScripts</span><br />
+  <span>Namespace: Paket</span><br />
+  <span>Parent Module: <a href="paket-packageresolver.html">PackageResolver</a></span>
 </p>
 <div class="xmldoc">
 </div>
@@ -76,15 +77,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '500', 500)" onmouseover="showTip(event, '500', 500)">
-            getDllOrder dllFiles
+          <code onmouseout="hideTip(event, '249', 249)" onmouseover="showTip(event, '249', 249)">
+            buildConflictReport (...)
           </code>
-          <div class="tip" id="500">
-            <strong>Signature:</strong> dllFiles:AssemblyDefinition list -&gt; AssemblyDefinition list<br />
+          <div class="tip" id="249">
+            <strong>Signature:</strong> errorReport:StringBuilder -&gt; conflicts:PackageRequirement list -&gt; StringBuilder<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L44-44" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L124-124" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -94,15 +95,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '501', 501)" onmouseover="showTip(event, '501', 501)">
-            getDllsWithinPackage (...)
+          <code onmouseout="hideTip(event, '250', 250)" onmouseover="showTip(event, '250', 250)">
+            getConflicts res
           </code>
-          <div class="tip" id="501">
-            <strong>Signature:</strong> framework:FrameworkIdentifier -&gt; installModel:InstallModel -&gt; FileInfo list<br />
+          <div class="tip" id="250">
+            <strong>Signature:</strong> res:Resolution -&gt; PackageRequirement list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L56-56" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L113-113" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -112,15 +113,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '502', 502)" onmouseover="showTip(event, '502', 502)">
-            getFrameworkReferencesWithinPackage (...)
+          <code onmouseout="hideTip(event, '251', 251)" onmouseover="showTip(event, '251', 251)">
+            getErrorText showResolvedPackages _arg1
           </code>
-          <div class="tip" id="502">
-            <strong>Signature:</strong> installModel:InstallModel -&gt; string list<br />
+          <div class="tip" id="251">
+            <strong>Signature:</strong> showResolvedPackages:bool -&gt; _arg1:Resolution -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L66-66" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L149-149" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -130,33 +131,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '503', 503)" onmouseover="showTip(event, '503', 503)">
-            getLeafPackagesGeneric (...)
+          <code onmouseout="hideTip(event, '252', 252)" onmouseover="showTip(event, '252', 252)">
+            getModelOrFail _arg1
           </code>
-          <div class="tip" id="503">
-            <strong>Signature:</strong> getPackageName:(&#39;?10683 -&gt; &#39;?10684) -&gt; getDependencies:(&#39;?10683 -&gt; &#39;?10685) -&gt; knownPackages:Set&lt;&#39;?10684&gt; -&gt; openList:&#39;?10683 list -&gt; &#39;?10683 list * Set&lt;&#39;?10684&gt; * &#39;?10683 list<br />
-                          <strong>Type parameters:</strong> '?10683, '?10684, '?10685          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L10-10" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '504', 504)" onmouseover="showTip(event, '504', 504)">
-            getPackageOrderFromDependenciesFile (...)
-          </code>
-          <div class="tip" id="504">
-            <strong>Signature:</strong> lockFile:FileInfo -&gt; Map&lt;GroupName,ResolvedPackage list&gt;<br />
+          <div class="tip" id="252">
+            <strong>Signature:</strong> _arg1:Resolution -&gt; PackageResolution<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L38-38" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L177-177" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -166,33 +149,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '505', 505)" onmouseover="showTip(event, '505', 505)">
-            getPackageOrderGeneric (...)
+          <code onmouseout="hideTip(event, '253', 253)" onmouseover="showTip(event, '253', 253)">
+            isDone _arg1
           </code>
-          <div class="tip" id="505">
-            <strong>Signature:</strong> getPackageName:(&#39;?10687 -&gt; &#39;?10688) -&gt; getDependencies:(&#39;?10687 -&gt; &#39;?10689) -&gt; packages:&#39;?10687 list -&gt; &#39;?10687 list<br />
-                          <strong>Type parameters:</strong> '?10687, '?10688, '?10689          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L24-24" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '506', 506)" onmouseover="showTip(event, '506', 506)">
-            getPackageOrderResolvedPackage 
-          </code>
-          <div class="tip" id="506">
-            <strong>Signature:</strong> ResolvedPackage list -&gt; ResolvedPackage list<br />
+          <div class="tip" id="253">
+            <strong>Signature:</strong> _arg1:Resolution -&gt; bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L33-33" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L184-184" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
