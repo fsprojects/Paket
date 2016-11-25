@@ -1,4 +1,4 @@
-#### 3.30.1 - 25.11.2016
+#### 3.30.2 - 25.11.2016
 * BUGFIX: Allow specify auto-detect in specific groups - https://github.com/fsprojects/Paket/issues/2011
 
 #### 3.30.0 - 22.11.2016
