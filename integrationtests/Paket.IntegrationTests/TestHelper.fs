@@ -66,11 +66,19 @@ let paket command scenario =
     directPaket command scenario
 
 let update scenario =
+    #if INTERACTIVE
+    paket "update --verbose" scenario |> printfn "%s"
+    #else
     paket "update" scenario |> ignore
+    #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario =
+    #if INTERACTIVE
+    paket "install --verbose" scenario |> printfn "%s"
+    #else
     paket "install" scenario |> ignore
+    #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let restore scenario = paket "restore" scenario |> ignore
@@ -80,4 +88,8 @@ let updateShouldFindPackageConflict packageName scenario =
         update scenario |> ignore
         failwith "No conflict was found."
     with
-    | exn when exn.Message.Contains(sprintf "Could not resolve package %s:" packageName) -> ()
+    | exn when exn.Message.Contains(sprintf "Could not resolve package %s" packageName) -> 
+        #if INTERACTIVE
+        printfn "Ninject conflict test passed"
+        #endif
+        ()

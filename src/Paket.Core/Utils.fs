@@ -955,3 +955,9 @@ module ObservableExtensions =
             let seen = HashSet()
             Observable.filter seen.Add a
 
+type StringBuilder with
+
+    member self.AddLine text =
+        self.AppendLine text |> ignore
+
+    member self.AppendLinef text = Printf.kprintf self.AppendLine text
