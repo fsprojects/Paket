@@ -1,5 +1,6 @@
-#### 4.0.0-alpha028 - 23.11.2016
+#### 4.0.0-alpha029 - 25.11.2016
 * Make Paket compatible with dotnet sdk preview3
+* Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
 #### 3.30.0 - 22.11.2016
