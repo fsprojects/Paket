@@ -11,6 +11,7 @@ open System.Text.RegularExpressions
 open System.Xml
 open Paket.Xml
 open Paket.Requirements
+open Paket.PackagesConfigFile
 
 [<RequireQualifiedAccess>]
 type BuildAction =
@@ -1357,9 +1358,12 @@ module ProjectFile =
     let dotNetCorePackages (projectFile: ProjectFile) =
         packageReferencesNoPrivateAssets projectFile
         |> List.map (fun node ->
-                           {Paket.PackagesConfigFile.NugetPackage.Id = node |> getAttribute "Include" |> Option.get
-                            Paket.PackagesConfigFile.Version = node |> getNode "Version" |> Option.get |> (fun n -> Paket.SemVer.Parse n.InnerText)
-                            Paket.PackagesConfigFile.TargetFramework = None })
+                           {NugetPackage.Id = node |> getAttribute "Include" |> Option.get
+                            Version = match node |> getAttribute "Version" with
+                                      | Some version -> version
+                                      | None -> node |> getNode "Version" |> (fun n -> n.Value.InnerText)
+                                      |> Paket.SemVer.Parse
+                            TargetFramework = None })
 
 type ProjectFile with
 
