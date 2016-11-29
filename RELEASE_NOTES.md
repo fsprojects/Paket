@@ -1,4 +1,4 @@
-#### 3.30.3 - 29.11.2016
+#### 3.30.4 - 29.11.2016
 * BUGFIX: Relax prerelease condition for --keep-patch - https://github.com/fsprojects/Paket/issues/2048
 
 #### 3.30.2 - 25.11.2016
