@@ -47,7 +47,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
     
         let formatPrerelease (v:SemVerInfo) =
             match v.PreRelease with
-            | Some p -> sprintf " %O" p
+            | Some p -> sprintf " prerelease"
             | None -> ""
 
         match semVerUpdateMode with

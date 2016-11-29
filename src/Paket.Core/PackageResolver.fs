@@ -137,7 +137,11 @@ module Resolution =
                     let vr =
                         hd.VersionRequirement.ToString ()
                         |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else s
-                    let pr = if hasPrereleases && hd.VersionRequirement.PreReleases = PreReleaseStatus.No then " (no prereleases)" else ""
+                    let pr = if hasPrereleases && hd.VersionRequirement.PreReleases = PreReleaseStatus.No then " (no prereleases)" else
+                             match hd.VersionRequirement.PreReleases with
+                             | PreReleaseStatus.Concrete [x] -> sprintf " (%s)" x
+                             | PreReleaseStatus.Concrete x -> sprintf " %A" x
+                             | _ -> ""
                     match hd.Parent with
                     | DependenciesFile _ ->
                         loop tl (errorReport.AppendLinef "   - Dependencies file requested package %O: %s%s" req.Name vr pr)

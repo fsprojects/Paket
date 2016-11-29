@@ -1,7 +1,13 @@
-#### 4.0.0-alpha029 - 25.11.2016
+#### 4.0.0-alpha030 - 29.11.2016
 * Make Paket compatible with dotnet sdk preview3
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
+
+#### 3.30.4 - 29.11.2016
+* BUGFIX: Relax prerelease condition for --keep-patch - https://github.com/fsprojects/Paket/issues/2048
+
+#### 3.30.2 - 25.11.2016
+* BUGFIX: Allow specify auto-detect in specific groups - https://github.com/fsprojects/Paket/issues/2011
 
 #### 3.30.0 - 22.11.2016
 * Allow override of NuGetCacheFolder location through environment variable - https://github.com/fsprojects/Paket/pull/2035
