@@ -129,7 +129,12 @@ type Resolution =
                 conflicts
                 |> List.iter (fun x ->
                         let vr = x.VersionRequirement.ToString() |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else s
-                        let pr = if hasPrereleases && x.VersionRequirement.PreReleases = PreReleaseStatus.No then " (no prereleases)" else ""
+                        let pr = 
+                            if hasPrereleases && x.VersionRequirement.PreReleases = PreReleaseStatus.No then " (no prereleases)" else 
+                            match x.VersionRequirement.PreReleases with
+                            | PreReleaseStatus.Concrete [x] -> sprintf " (%s)" x
+                            | PreReleaseStatus.Concrete x -> sprintf " %A" x
+                            | _ -> ""
 
                         match x.Parent with
                         | DependenciesFile _ ->
