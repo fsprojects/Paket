@@ -1,6 +1,6 @@
-## Adding to a single project
+## Adding to a project
 
-It's also possible to add a package to a specified project only:
+By default a package is only added to the solution, but not on any of its projects. It's possible to add the package to a specified project at the same:
 
     [lang=batchfile]
     $ paket add nuget PACKAGENAME [version VERSION] [project PROJECT] [--force]
