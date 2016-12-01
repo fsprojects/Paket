@@ -1,3 +1,6 @@
+#### 3.30.5 - 01.12.2016
+* BUGFIX: Fixed Git dependency change detection - https://github.com/fsprojects/Paket/pull/2061
+
 #### 3.30.4 - 29.11.2016
 * BUGFIX: Relax prerelease condition for --keep-patch - https://github.com/fsprojects/Paket/issues/2048
 
