@@ -115,8 +115,8 @@
 </table>
 <p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
-<h2><a name="Adding-to-a-single-project" class="anchor" href="#Adding-to-a-single-project">Adding to a single project</a></h2>
-<p>It's also possible to add a package to a specified project only:</p>
+<h2><a name="Adding-to-a-project" class="anchor" href="#Adding-to-a-project">Adding to a project</a></h2>
+<p>By default a package is only added to the solution, but not on any of its projects. It's possible to add the package to a specified project at the same:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="msh">$ paket add nuget PACKAGENAME [version VERSION] [project PROJECT] [--force]
