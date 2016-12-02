@@ -534,29 +534,24 @@ let private getCurrentRequirement packageFilter (openRequirements:Set<PackageReq
 [<StructuredFormatDisplay "{Display}">]
 type ConflictState = {
     Status               : Resolution
-    CurrentRequirement   : PackageRequirement
     LastConflictReported : DateTime
     TryRelaxed           : bool
     Conflicts            : Set<PackageRequirement>
     VersionsToExplore    : seq<SemVerInfo * PackageSource list>
-    CompatibleVersions   : seq<SemVerInfo * PackageSource list>
     GlobalOverride       : bool
 } with
     member private self.Display 
         with get () = 
             let conflicts = self.Conflicts |> Seq.map (printfn "%A\n") |> String.Concat
             let explore = self.VersionsToExplore |> Seq.map (printfn "%A\n") |> String.Concat
-            let compat = self.CompatibleVersions |> Seq.map (printfn "%A\n") |> String.Concat
             sprintf 
                "Status       - %A\n\
-                CurrentReq   - %A\n\
                 Conflicts    - %A\n\
                 ExploreVers  - %A\n\
-                CompatVers   - %A\n\
                 TryRelaxed   - %A\n\
                 LastReport   - %A\n"                
-                    self.Status self.CurrentRequirement conflicts 
-                    explore compat self.TryRelaxed self.LastConflictReported
+                    self.Status conflicts explore 
+                    self.TryRelaxed self.LastConflictReported
         
 let private boostConflicts
                     (filteredVersions:Map<PackageName, ((SemVerInfo * PackageSource list) list * bool)>)
@@ -609,9 +604,10 @@ type private StepFlags (ready:bool,useUnlisted:bool,hasUnlisted:bool,forceBreak:
 
 
 type private Stage =
-    | Step  of conflictState : ConflictState
-    | Outer of conflictState : ConflictState
-    | Inner of conflictState : ConflictState
+    | Step  of conflictState : ConflictState * diveConflict : ConflictState option
+    | Outer of conflictState : ConflictState * diveConflict : ConflictState option
+    | Inner of conflictState : ConflictState * diveConflict : ConflictState option
+
 
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
@@ -627,15 +623,11 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
         |> Seq.map (fun x -> x.Name,x.Settings)
         |> dict
 
-    if Set.isEmpty rootDependencies then Resolution.Ok Map.empty else
+    if Set.isEmpty rootDependencies then Resolution.Ok Map.empty 
+    //      ----------- TERMINATE --------------
+    else
 
-    let startingStep = {
-        Relax = false
-        FilteredVersions   = Map.empty
-        CurrentResolution  = Map.empty
-        ClosedRequirements = Set.empty
-        OpenRequirements   = rootDependencies
-    }
+
 
 
 
@@ -650,87 +642,27 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
     // to the end of a package resolution
 
 
+    let rec stepLoop    (stage:Stage) (currentStep:ResolverStep) (stackpack:StackPack) 
+                        (currentRequirement:PackageRequirement)  compatibleVersions (flags:StepFlags) =
+        match stage with            
+        | Step  (conflictState, diver)
+        | Outer (conflictState, diver) ->
+            if flags.Ready then 
+                conflictState 
+            //------------EXIT STEPLOOP----------------    
+            else
+            let flags = StepFlags(flags.Ready,flags.UseUnlisted,flags.HasUnlisted,false,true)
 
-    let rec step ((Step conflictState | Inner conflictState | Outer conflictState) (* as stage :Stage*)  ) 
-                 (currentStep:ResolverStep) (stackpack:StackPack)(flags:StepFlags) =
-        
-        if Set.isEmpty currentStep.OpenRequirements then
-            { conflictState with
-               Status = Resolution.Ok (cleanupNames currentStep.CurrentResolution)
+            let conflictState = {
+                conflictState with
+                    VersionsToExplore = compatibleVersions
             }
-        // ----------- TERMINATE --------------
-        else
-        verbosefn "  %d packages in resolution. %d requirements left" currentStep.CurrentResolution.Count currentStep.OpenRequirements.Count
 
-        let currentRequirement = getCurrentRequirement packageFilter currentStep.OpenRequirements stackpack.ConflictHistory
-        let conflicts = getConflicts currentStep currentRequirement stackpack.KnownConflicts
+            stepLoop    (Inner (conflictState, diver))(currentStep:ResolverStep)  (stackpack:StackPack) 
+                        (currentRequirement:PackageRequirement) compatibleVersions  flags 
+            //------------STEPLOOP AGAIN----------------    
 
-
-        let conflictState =
-            if Set.isEmpty conflicts then
-                let getVersionsF = getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName
-                { conflictState with
-                    Status = Resolution.Conflict(currentStep,Set.empty,currentRequirement,getVersionsF)
-                }
-            else
-                let getVersionsF = getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName
-                { conflictState with
-                    Status = Resolution.Conflict(currentStep,conflicts,Seq.head conflicts,getVersionsF)
-                }
-
-
-        if not (Set.isEmpty conflicts) then
-            conflictState
-        // ----------- TERMINATE --------------
-
-        else
-        let compatibleVersions,globalOverride,tryRelaxed =
-            getCompatibleVersions currentStep groupName currentRequirement getVersionsF
-                    conflictState.GlobalOverride
-                    globalStrategyForDirectDependencies
-                    globalStrategyForTransitives
-
-        let conflictState = {
-            conflictState with
-                Conflicts         = conflicts
-                TryRelaxed        = tryRelaxed
-                GlobalOverride    = globalOverride
-        }
-
-        let conflictState, stackpack =
-            if Seq.isEmpty compatibleVersions then
-                boostConflicts currentStep.FilteredVersions currentRequirement stackpack conflictState
-            else
-                conflictState, stackpack
-
-        let flags =
-            StepFlags
-                (   ready       = false
-                ,   useUnlisted = false
-                ,   hasUnlisted = false
-                ,   forceBreak  = flags.ForceBreak
-                ,   firstTrial  = flags.FirstTrial
-                )
-
-        let rec stepLoop (stage:Stage) (flags:StepFlags) =
-            match stage with            
-            | Step  conflictState
-            | Outer conflictState ->
-                if flags.Ready then 
-                    conflictState 
-                //------------EXIT STEPLOOP----------------    
-                else
-                let flags = StepFlags(flags.Ready,flags.UseUnlisted,flags.HasUnlisted,false,true)
-
-                let conflictState = {
-                    conflictState with
-                        VersionsToExplore = compatibleVersions
-                }
-
-                stepLoop (Inner conflictState) flags 
-                //------------STEPLOOP AGAIN----------------    
-
-            | Inner conflictState ->
+        | Inner (conflictState,diver )->
 
 //                let conflictState, flags =
 //                    match conflictState.Status with
@@ -749,67 +681,77 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
 
 
 
-                if not (keepLooping flags conflictState) then
-                    let flags =
-                        if not flags.UseUnlisted && flags.HasUnlisted && not conflictState.Status.IsDone then
-                            StepFlags(flags.Ready,true,flags.HasUnlisted,flags.ForceBreak,flags.FirstTrial)
-                        else
-                            StepFlags(true,flags.UseUnlisted,flags.HasUnlisted,flags.ForceBreak,flags.FirstTrial)
+            if not (keepLooping flags conflictState) then
+                let flags =
+                    if not flags.UseUnlisted && flags.HasUnlisted && not conflictState.Status.IsDone then
+                        StepFlags(flags.Ready,true,flags.HasUnlisted,flags.ForceBreak,flags.FirstTrial)
+                    else
+                        StepFlags(true,flags.UseUnlisted,flags.HasUnlisted,flags.ForceBreak,flags.FirstTrial)
 
-                    stepLoop (Outer conflictState) flags 
+                stepLoop (Outer(conflictState,diver)) (currentStep:ResolverStep)  (stackpack:StackPack) 
+                         (currentRequirement:PackageRequirement) compatibleVersions  flags 
+                //------------STEPLOOP AGAIN----------------    
+            else
+            let flags = StepFlags(flags.Ready,flags.UseUnlisted,flags.HasUnlisted,flags.ForceBreak,false)
+            let (version,sources) & versionToExplore = Seq.head conflictState.VersionsToExplore
+
+            let conflictState = {
+                conflictState with
+                    VersionsToExplore = Seq.tail conflictState.VersionsToExplore
+            }
+            let packageDetails = {
+                GroupName          = groupName
+                Dependency         = currentRequirement
+                GlobalRestrictions = globalFrameworkRestrictions
+                RootSettings       = rootSettings
+                Version            = version
+                Sources            = sources
+                UpdateMode         = updateMode
+            }
+
+
+            match getExploredPackage packageDetails getPackageDetailsF stackpack.ExploredPackages with
+            | None ->
+                stepLoop (Inner(conflictState,diver)) (currentStep:ResolverStep) (stackpack:StackPack) 
+                         (currentRequirement:PackageRequirement) compatibleVersions  flags
+                //------------STEPLOOP AGAIN----------------    
+
+            | Some exploredPackage ->
+                let hasUnlisted = exploredPackage.Unlisted || flags.HasUnlisted
+
+                let flags = StepFlags(flags.Ready,flags.UseUnlisted,hasUnlisted,flags.ForceBreak,flags.FirstTrial)
+                if exploredPackage.Unlisted && not flags.UseUnlisted then
+                    tracefn "     unlisted"
+                    stepLoop (Inner (conflictState,diver)) (currentStep:ResolverStep) (stackpack:StackPack) 
+                             (currentRequirement:PackageRequirement) compatibleVersions  flags 
                     //------------STEPLOOP AGAIN----------------    
                 else
-                let flags = StepFlags(flags.Ready,flags.UseUnlisted,flags.HasUnlisted,flags.ForceBreak,false)
-                let (version,sources) & versionToExplore = Seq.head conflictState.VersionsToExplore
-
-                let conflictState = {
-                    conflictState with
-                        VersionsToExplore = Seq.tail conflictState.VersionsToExplore
-                }
-                let packageDetails = {
-                    GroupName          = groupName
-                    Dependency         = currentRequirement
-                    GlobalRestrictions = globalFrameworkRestrictions
-                    RootSettings       = rootSettings
-                    Version            = version
-                    Sources            = sources
-                    UpdateMode         = updateMode
-                }
-
-
-                match getExploredPackage packageDetails getPackageDetailsF stackpack.ExploredPackages with
-                | None ->
-                    stepLoop (Inner conflictState) flags
-                    //------------STEPLOOP AGAIN----------------    
-
-                | Some exploredPackage ->
-                    let hasUnlisted = exploredPackage.Unlisted || flags.HasUnlisted
-
-                    let flags = StepFlags(flags.Ready,flags.UseUnlisted,hasUnlisted,flags.ForceBreak,flags.FirstTrial)
-                    if exploredPackage.Unlisted && not flags.UseUnlisted then
-                        tracefn "     unlisted"
-                        stepLoop (Inner conflictState) flags 
-                        //------------STEPLOOP AGAIN----------------    
-                    else
                     
-                    let nextStep =
-                        {   Relax              = currentStep.Relax
-                            FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],conflictState.GlobalOverride) currentStep.FilteredVersions
-                            CurrentResolution  = Map.add exploredPackage.Name exploredPackage currentStep.CurrentResolution
-                            ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
-                            OpenRequirements   = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep)
-                        }
-
-                    if nextStep.OpenRequirements = currentStep.OpenRequirements then
-                        failwithf "The resolver confused itself. The new open requirements are the same as the old ones. This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A" Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
-
-//                    let versionsToExplore = conflictState.VersionsToExplore
-
-                    let conflictState = {
-                        step (Step conflictState) nextStep stackpack flags with
-                            VersionsToExplore = conflictState.VersionsToExplore
+                let nextStep =
+                    {   Relax              = currentStep.Relax
+                        FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],conflictState.GlobalOverride) currentStep.FilteredVersions
+                        CurrentResolution  = Map.add exploredPackage.Name exploredPackage currentStep.CurrentResolution
+                        ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
+                        OpenRequirements   = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep)
                     }
 
+                if nextStep.OpenRequirements = currentStep.OpenRequirements then
+                    failwithf "The resolver confused itself. The new open requirements are the same as the old ones. This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A" Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
+
+//                    let versionsToExplore = conflictState.VersionsToExplore
+                    
+                // takes the next step and dives to update internal conflicts
+                // explore more versions, and accumulate more compatible packages for the requirement
+                let diveConflict = step (Step(conflictState,diver)) nextStep stackpack flags : ConflictState
+
+
+                // we take the updated state from the diveconflct, but we need to continue 
+                // searching the versions we halted to allow the diveConflict to evaluate
+                let continueConflict = {
+                    diveConflict with
+                        VersionsToExplore = conflictState.VersionsToExplore
+                }
+// !!!!! disabled temporarily !!!!!
 //                    match conflictState.Status with
 //                    | Resolution.Conflict (_,conflicts,_,_)
 //                        when
@@ -819,14 +761,103 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
 //                                r = currentRequirement
 //                                || r.Graph |> List.contains currentRequirement)) ->
 //                        let flags = StepFlags(flags.Ready,flags.UseUnlisted,flags.HasUnlisted,true,flags.FirstTrial)
-//                        stepLoop flags (Inner conflictState)
+//                        stepLoop (Inner conflictState) flags
 //                    | _ ->
 //                        stepLoop flags (Inner conflictState)
-                    stepLoop (Inner conflictState) flags 
-                    //------------STEPLOOP AGAIN----------------    
+                stepLoop (Inner(continueConflict,diver)) (currentStep:ResolverStep) (stackpack:StackPack) 
+                         (currentRequirement:PackageRequirement) compatibleVersions  flags 
+                //------------STEPLOOP AGAIN----------------    
+    //--------END-OF-STEPLOOP---------------------
 
-        stepLoop (Outer conflictState) flags 
+
+
+    and step (stage:Stage) (currentStep:ResolverStep) (stackpack:StackPack)(flags:StepFlags) =
+        match stage with
+        | Step  (conflictState, diver)
+        | Inner (conflictState, diver) 
+        | Outer (conflictState, diver) ->
+
+        // if there are no outstanding package requirements we can return successfully
+        if Set.isEmpty currentStep.OpenRequirements then
+            { conflictState with
+               Status = Resolution.Ok (cleanupNames currentStep.CurrentResolution)
+            }
         // ----------- TERMINATE --------------
+        //    NEED TO HANDLE DIVER HERE - loop with INNER STAGE
+        //-------------------------------------
+        else
+        verbosefn "  %d packages in resolution. %d requirements left" 
+            currentStep.CurrentResolution.Count currentStep.OpenRequirements.Count
+
+        let currentRequirement = 
+            getCurrentRequirement packageFilter currentStep.OpenRequirements stackpack.ConflictHistory
+
+        let conflicts = 
+            getConflicts currentStep currentRequirement stackpack.KnownConflicts
+
+        let conflictState =
+            if Set.isEmpty conflicts then
+                let getVersionsF = getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName
+                { conflictState with
+                    Status = Resolution.Conflict(currentStep,Set.empty,currentRequirement,getVersionsF)}
+            else
+                let getVersionsF = getVersionsF currentRequirement.Sources ResolverStrategy.Max groupName
+                { conflictState with
+                    Status = Resolution.Conflict(currentStep,conflicts,Seq.head conflicts,getVersionsF)}
+
+
+        if not (Set.isEmpty conflicts) then
+            conflictState
+        // ----------- TERMINATE --------------
+        //    NEED TO HANDLE DIVER HERE - loop with INNER STAGE
+        //-------------------------------------
+        else
+        let compatibleVersions,globalOverride,tryRelaxed =
+            getCompatibleVersions currentStep groupName currentRequirement getVersionsF
+                    conflictState.GlobalOverride
+                    globalStrategyForDirectDependencies
+                    globalStrategyForTransitives
+
+        let conflictState = {
+            conflictState with
+                Conflicts           = conflicts
+                TryRelaxed          = tryRelaxed
+                GlobalOverride      = globalOverride
+        }
+
+        let conflictState, stackpack =
+            if Seq.isEmpty compatibleVersions then
+                boostConflicts currentStep.FilteredVersions currentRequirement stackpack conflictState
+            else
+                conflictState, stackpack
+
+        let flags =
+            StepFlags
+                (   ready       = false
+                ,   useUnlisted = false
+                ,   hasUnlisted = false
+                ,   forceBreak  = flags.ForceBreak
+                ,   firstTrial  = flags.FirstTrial
+                )
+
+
+
+        stepLoop (Outer (conflictState,diver)) (currentStep:ResolverStep) (stackpack:StackPack) 
+                 currentRequirement compatibleVersions  flags 
+        // ----------- TERMINATE --------------
+    
+    //--------END-OF-STEP---------------------
+
+
+
+    let startingStep = {
+        Relax              = false
+        FilteredVersions   = Map.empty
+        CurrentResolution  = Map.empty
+        ClosedRequirements = Set.empty
+        OpenRequirements   = rootDependencies
+    }
+
 
 
     let currentRequirement = getCurrentRequirement packageFilter startingStep.OpenRequirements (Dictionary())
@@ -838,22 +869,18 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
 
     let conflictState : ConflictState = {
         Status               = (status : Resolution)
-        CurrentRequirement   = currentRequirement
         LastConflictReported = DateTime.Now
         TryRelaxed           = false
         GlobalOverride       = false
         Conflicts            = (Set.empty : Set<PackageRequirement>)
         VersionsToExplore    = (Seq.empty : seq<SemVerInfo * PackageSource list>)
-        CompatibleVersions   = (Seq.empty : seq<SemVerInfo * PackageSource list>)
     }
-
 
     let stackpack = {
         ExploredPackages     = Dictionary<PackageName*SemVerInfo,ResolvedPackage>()
         KnownConflicts       = (HashSet() : HashSet<Set<PackageRequirement> * ((SemVerInfo * PackageSource list) list * bool) option>)
         ConflictHistory      = (Dictionary() : Dictionary<PackageName, int>)
     }
-
 
     let flags =
         StepFlags
@@ -865,12 +892,12 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
             )
 
 
-    match step (Step conflictState) startingStep stackpack flags  with
+    match step (Step(conflictState,None)) startingStep stackpack flags  with
     | { Status = Resolution.Conflict _ } as conflict ->
         if conflict.TryRelaxed then
             stackpack.KnownConflicts.Clear()
             stackpack.ConflictHistory.Clear()
-            (step (Step conflict) { startingStep with Relax = true } stackpack flags ).Status
+            (step (Step(conflict,None)) { startingStep with Relax = true } stackpack flags ).Status
         else
             conflict.Status
     | x -> x.Status
