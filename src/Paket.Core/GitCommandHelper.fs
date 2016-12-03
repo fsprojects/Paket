@@ -15,7 +15,7 @@ let mutable monoArguments = ""
 
 /// Modifies the ProcessStartInfo according to the platform semantics
 let platformInfoAction (psi : ProcessStartInfo) = 
-    if isMono && psi.FileName.EndsWith ".exe" then 
+    if isMonoRuntime && psi.FileName.EndsWith ".exe" then 
         psi.Arguments <- monoArguments + " " + psi.FileName + " " + psi.Arguments
         psi.FileName <- monoPath
 /// Specifies a global timeout for git.exe - default is *no timeout*
@@ -134,7 +134,7 @@ let startedProcesses = HashSet()
 
 /// [omit]
 let start (proc : Process) = 
-    if isMono && proc.StartInfo.FileName.ToLowerInvariant().EndsWith(".exe") then
+    if isMonoRuntime && proc.StartInfo.FileName.ToLowerInvariant().EndsWith(".exe") then
         proc.StartInfo.Arguments <- "--debug \"" + proc.StartInfo.FileName + "\" " + proc.StartInfo.Arguments
         proc.StartInfo.FileName <- monoPath
 
