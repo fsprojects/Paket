@@ -641,7 +641,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                 let continueConflict = 
                     { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }        
 
-                step (Inner((continueConflict,lastStep,lastRequirement),priorConflictSteps))  stackpack compatibleVersions  flags 
+                step (Inner((continueConflict,lastStep,lastRequirement),priorConflictSteps))  stackpack compatibleVersions flags 
             | currentConflict, [] -> currentConflict
 
         match stage with            
@@ -739,7 +739,8 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                     if  not flags.UseUnlisted 
                      && flags.HasUnlisted 
                      && not currentConflict.Status.IsDone then
-                        StepFlags(flags.Ready,true,flags.HasUnlisted,flags.ForceBreak,flags.FirstTrial)
+                     // if it's been determined that an unlisted package must be used, ready must be set to false
+                        StepFlags(false,true,flags.HasUnlisted,flags.ForceBreak,flags.FirstTrial)
                     else
                         StepFlags(true,flags.UseUnlisted,flags.HasUnlisted,flags.ForceBreak,flags.FirstTrial)
 
