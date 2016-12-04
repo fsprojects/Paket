@@ -1,5 +1,6 @@
 ﻿module Paket.Domain
 
+open System
 open System.IO
 open System.Text.RegularExpressions
 
@@ -27,7 +28,7 @@ type PackageName =
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? PackageName as that -> this.GetCompareString().CompareTo(that.GetCompareString())
+          | :? PackageName as that -> StringComparer.Ordinal.Compare(this.GetCompareString(), that.GetCompareString())
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Function to convert a string into a NuGet package name
@@ -82,7 +83,7 @@ type GroupName =
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? GroupName as that -> this.GetCompareString().CompareTo(that.GetCompareString())
+          | :? GroupName as that -> StringComparer.Ordinal.Compare(this.GetCompareString(), that.GetCompareString())
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Function to convert a string into a group name
