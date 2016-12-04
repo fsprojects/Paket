@@ -1,3 +1,6 @@
+#### 3.30.6 - 04.12.2016
+* BUGFIX: Package names are compared using non-linguistic Ordinal comparison - https://github.com/fsprojects/Paket/pull/2067
+
 #### 3.30.5 - 01.12.2016
 * BUGFIX: Fixed Git dependency change detection - https://github.com/fsprojects/Paket/pull/2061
 
