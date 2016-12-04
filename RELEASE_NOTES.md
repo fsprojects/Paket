@@ -1,13 +1,8 @@
-#### 3.30.6 - 04.12.2016
+#### 3.31.0 - 04.12.2016
+* Added monoandroid70 moniker (Android 7 Nougat) - https://github.com/fsprojects/Paket/pull/2065
 * BUGFIX: Package names are compared using non-linguistic Ordinal comparison - https://github.com/fsprojects/Paket/pull/2067
-
-#### 3.30.5 - 01.12.2016
 * BUGFIX: Fixed Git dependency change detection - https://github.com/fsprojects/Paket/pull/2061
-
-#### 3.30.4 - 29.11.2016
 * BUGFIX: Relax prerelease condition for --keep-patch - https://github.com/fsprojects/Paket/issues/2048
-
-#### 3.30.2 - 25.11.2016
 * BUGFIX: Allow specify auto-detect in specific groups - https://github.com/fsprojects/Paket/issues/2011
 
 #### 3.30.0 - 22.11.2016
