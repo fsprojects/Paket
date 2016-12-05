@@ -127,6 +127,7 @@ Target "AssemblyInfo" (fun _ ->
 let dotnetExePath = if isWindows then "dotnetcore/dotnet.exe" else "dotnetcore/dotnet" |> FullName
 
 Target "InstallDotNetCore" (fun _ ->
+    if isLinux then () else
     let correctVersionInstalled = 
         try
             if FileInfo(Path.Combine(dotnetCliPath.FullName,"dotnet.exe")).Exists then
@@ -147,16 +148,30 @@ Target "InstallDotNetCore" (fun _ ->
         tracefn "dotnetcli %s already installed" dotnetcliVersion
     else
         CleanDir dotnetCliPath.FullName
-        let zipFileName = sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
-        let downloadPath = sprintf "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/%s/%s" dotnetcliVersion zipFileName
-        let localPath = Path.Combine(dotnetCliPath.FullName, zipFileName)
+        let archiveFileName = 
+            if isLinux then
+                sprintf "dotnet-dev-ubuntu-x64.%s.tar.gz" dotnetcliVersion
+            else
+                sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
+        let downloadPath = 
+                sprintf "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/%s/%s" dotnetcliVersion archiveFileName
+        let localPath = Path.Combine(dotnetCliPath.FullName, archiveFileName)
 
         tracefn "Installing '%s' to '%s" downloadPath localPath
         
         use webclient = new Net.WebClient()
         webclient.DownloadFile(downloadPath, localPath)
-
-        System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetCliPath.FullName)
+        
+        if isLinux then
+            ArchiveHelper.Tar.Extract (DirectoryInfo localPath) (FileInfo dotnetCliPath.FullName)
+        else  
+            System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetCliPath.FullName)
+        
+        tracefn "dotnet cli path - %s" dotnetCliPath.FullName
+        System.IO.Directory.EnumerateFiles dotnetCliPath.FullName
+        |> Seq.iter (fun path -> tracefn " - %s" path)
+        System.IO.Directory.EnumerateDirectories dotnetCliPath.FullName
+        |> Seq.iter (fun path -> tracefn " - %s%c" path System.IO.Path.DirectorySeparatorChar)
 
     let oldPath = System.Environment.GetEnvironmentVariable("PATH")
     System.Environment.SetEnvironmentVariable("PATH", sprintf "%s%s%s" dotnetCliPath.FullName (System.IO.Path.PathSeparator.ToString()) oldPath)
@@ -183,40 +198,71 @@ Target "Build" (fun _ ->
 )
 
 
+let assertExitCodeZero x = 
+    if x = 0 then () else 
+    failwithf "Command failed with exit code %i" x
+
+let runCmdIn workDir exe = 
+    Printf.ksprintf (fun args -> 
+        Shell.Exec(exe, args, workDir) |> assertExitCodeZero)
+
+/// Execute a dotnet cli command
+let dotnet workDir = runCmdIn workDir "dotnet"
+
 Target "DotnetRestore" (fun _ ->
-    netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Restore (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath 
-            }) 
-    )
+    if isLinux then
+        netcoreFiles
+        |> Seq.iter (fun proj ->
+            let dir = Path.GetDirectoryName proj
+            dotnet dir "--info"
+            dotnet dir "--verbose restore"
+        )
+    else
+        netcoreFiles
+        |> Seq.iter (fun proj ->
+            DotNetCli.Restore (fun c ->
+                { c with
+                    Project = proj
+                    ToolPath = dotnetExePath 
+                }) 
+        )
 )
 
 Target "DotnetBuild" (fun _ ->
+    if isLinux then
+        netcoreFiles
+        |> Seq.iter (fun proj ->
+            let dir = Path.GetDirectoryName proj
+            dotnet dir "--verbose build"
+        )
+    else
     netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Build (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-            })
+        |> Seq.iter (fun proj ->
+            DotNetCli.Build (fun c ->
+                { c with
+                    Project = proj
+                    ToolPath = dotnetExePath
+                })
+        )
     )
-)
 
 Target "DotnetPackage" (fun _ ->
-    // netcoreFiles
-    // |> Seq.iter (fun proj ->
-    //     DotNetCli.Pack (fun c ->
-    //         { c with
-    //             Project = proj
-    //             ToolPath = dotnetExePath
-    //             AdditionalArgs = ["/p:RuntimeIdentifier=win7-x64"]
-    //         })
-    // )
-
-    ()
+    if isLinux then
+        netcoreFiles
+        |> Seq.iter (fun proj ->
+            let dir = Path.GetDirectoryName proj
+            dotnet dir "--verbose pack"
+        )
+    else
+        netcoreFiles
+        |> Seq.iter (fun proj ->
+            DotNetCli.Pack (fun c ->
+                { c with
+                    Project = proj
+                    ToolPath = dotnetExePath
+                    AdditionalArgs = ["/p:RuntimeIdentifier=win7-x64"]
+                })
+        )
 )
 
 
