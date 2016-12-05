@@ -46,6 +46,18 @@ let prepare scenario =
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "json")))
 
 let directPaketInPath command scenarioPath =
+    #if INTERACTIVE
+    let result =
+        ExecProcessWithLambdas (fun info ->
+          info.FileName <- paketToolPath
+          info.WorkingDirectory <- scenarioPath
+          info.Arguments <- command) 
+          (System.TimeSpan.FromMinutes 5.)
+          false
+          (printfn "%s")
+          (printfn "%s")
+    string result
+    #else
     let result =
         ExecProcessAndReturnMessages (fun info ->
           info.FileName <- paketToolPath
@@ -54,9 +66,9 @@ let directPaketInPath command scenarioPath =
     if result.ExitCode <> 0 then 
         let errors = String.Join(Environment.NewLine,result.Errors)
         printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
-        failwith errors
+        failwith errors      
     String.Join(Environment.NewLine,result.Messages)
-
+    #endif
 let directPaket command scenario =
     directPaketInPath command (scenarioTempPath scenario)
 
