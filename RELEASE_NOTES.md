@@ -1,3 +1,6 @@
+#### 3.31.1 - 07.12.2016
+* BUGFIX: Default address of NuGet v3 stream points to https - https://github.com/fsprojects/Paket/pull/2071
+ 
 #### 3.31.0 - 04.12.2016
 * Added monoandroid70 moniker (Android 7 Nougat) - https://github.com/fsprojects/Paket/pull/2065
 * BUGFIX: Package names are compared using non-linguistic Ordinal comparison - https://github.com/fsprojects/Paket/pull/2067
