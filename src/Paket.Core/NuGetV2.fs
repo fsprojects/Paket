@@ -67,7 +67,7 @@ let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName
     async {
         try
             let url = sprintf "%s/FindPackagesById()?id='%O'" nugetURL package
-            verbosefn "getPackageVersionsViaOData from url '%s'" url
+            verbosefn "getAllVersionsFromNugetODataFindById from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
@@ -77,7 +77,7 @@ let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:
     async {
         try
             let url = sprintf "%s/FindPackagesById()?id='%O'&$orderby=Published desc" nugetURL package
-            verbosefn "getPackageVersionsViaODataNewestFirst from url '%s'" url
+            verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
