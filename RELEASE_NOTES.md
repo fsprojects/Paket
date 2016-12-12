@@ -1,3 +1,6 @@
+#### 3.31.2 - 12.12.2016
+* BUGFIX: NuGetV2-OData: retrieve versions in descending order for artifactory - https://github.com/fsprojects/Paket/pull/2073
+
 #### 3.31.1 - 07.12.2016
 * BUGFIX: Default address of NuGet v3 stream points to https - https://github.com/fsprojects/Paket/pull/2071
  
