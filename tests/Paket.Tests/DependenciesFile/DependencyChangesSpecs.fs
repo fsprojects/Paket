@@ -332,6 +332,67 @@ github zurb/bower-foundation js/foundation.min.js"""
     changedDependencies.Count |> shouldEqual 0
 
 [<Test>]
+let ``should detect no changes if nothing changes in git dependency``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+git https://github.com/zurb/bower-foundation.git 5.5.3
+git https://github.com/zurb/tribute.git 2.1.0"""
+
+    let lockFileData = """NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    FAKE (4.4.4)
+GIT
+  remote: https://github.com/zurb/bower-foundation.git
+     (b879716aa268e1f88fe43de98db2db4487af00ca)
+  remote: https://github.com/zurb/tribute.git
+     (94d4f17e1d338c2afdc6bb7cedea98b04d253932)
+"""
+
+    let after = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+git https://github.com/zurb/bower-foundation.git 5.5.3
+git https://github.com/zurb/tribute.git 2.1.0"""
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 0
+
+[<Test>]
+let ``should detect new git dependency``() = 
+    let before = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+git https://github.com/zurb/bower-foundation.git 5.5.3"""
+
+    let lockFileData = """NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    FAKE (4.4.4)
+GIT
+  remote: https://github.com/zurb/bower-foundation.git
+     (b879716aa268e1f88fe43de98db2db4487af00ca)
+"""
+
+    let after = """source https://www.nuget.org/api/v2
+
+nuget FAKE
+
+git https://github.com/zurb/bower-foundation.git 5.5.3
+git https://github.com/zurb/tribute.git 2.1.0"""
+
+    let cfg = DependenciesFile.FromCode(after)
+    let lockFile = LockFile.Parse("",toLines lockFileData)
+    let changedDependencies = DependencyChangeDetection.findRemoteFileChangesInDependenciesFile(cfg,lockFile)
+    changedDependencies.Count |> shouldEqual 1
+
+[<Test>]
 let ``should detect new github dependency``() = 
     let before = """source https://www.nuget.org/api/v2
 

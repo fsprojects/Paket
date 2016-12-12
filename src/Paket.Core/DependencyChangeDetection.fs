@@ -150,7 +150,7 @@ let findRemoteFileChangesInDependenciesFile(dependenciesFile:DependenciesFile,lo
             lockFileGroup.RemoteFiles
             |> List.map RemoteFileChange.CreateResolvedVersion
             |> List.map (fun r ->
-                match dependenciesFileRemoteFiles |> Seq.tryFind (fun d -> d.Name = r.Name) with
+                match dependenciesFileRemoteFiles |> Seq.tryFind (fun d -> d.Name = r.Name && d.Origin = r.Origin) with
                 | Some d -> { r with Commit = d.Commit }
                 | _ -> { r with Commit = None })
             |> Set.ofList

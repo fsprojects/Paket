@@ -1,12 +1,19 @@
-#### 4.0.0-alpha030 - 29.11.2016
+#### 4.0.0-alpha031 - 12.12.2016
 * Make Paket compatible with dotnet sdk preview3
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
-#### 3.30.4 - 29.11.2016
-* BUGFIX: Relax prerelease condition for --keep-patch - https://github.com/fsprojects/Paket/issues/2048
+#### 3.31.2 - 12.12.2016
+* BUGFIX: NuGetV2-OData: retrieve versions in descending order for artifactory - https://github.com/fsprojects/Paket/pull/2073
 
-#### 3.30.2 - 25.11.2016
+#### 3.31.1 - 07.12.2016
+* BUGFIX: Default address of NuGet v3 stream points to https - https://github.com/fsprojects/Paket/pull/2071
+ 
+#### 3.31.0 - 04.12.2016
+* Added monoandroid70 moniker (Android 7 Nougat) - https://github.com/fsprojects/Paket/pull/2065
+* BUGFIX: Package names are compared using non-linguistic Ordinal comparison - https://github.com/fsprojects/Paket/pull/2067
+* BUGFIX: Fixed Git dependency change detection - https://github.com/fsprojects/Paket/pull/2061
+* BUGFIX: Relax prerelease condition for --keep-patch - https://github.com/fsprojects/Paket/issues/2048
 * BUGFIX: Allow specify auto-detect in specific groups - https://github.com/fsprojects/Paket/issues/2011
 
 #### 3.30.0 - 22.11.2016

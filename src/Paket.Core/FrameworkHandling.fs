@@ -321,7 +321,7 @@ module FrameworkDetection =
                 | "net463" -> Some (DotNetFramework FrameworkVersion.V4_6_3)
                 | "uap100" -> Some (UAP UAPVersion.V10)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
-                | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid44" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50" | "monoandroid60" -> Some MonoAndroid
+                | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid44" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50" | "monoandroid60" | "monoandroid70" -> Some MonoAndroid
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac

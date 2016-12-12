@@ -63,11 +63,21 @@ let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageNa
         with _ -> return None
     }
 
-let tryGetPackageVersionsViaOData (auth, nugetURL, package:PackageName) =
+let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName) =
     async {
         try
             let url = sprintf "%s/FindPackagesById()?id='%O'" nugetURL package
-            verbosefn "getAllVersionsFromNugetOData from url '%s'" url
+            verbosefn "getAllVersionsFromNugetODataFindById from url '%s'" url
+            let! result = followODataLink auth url
+            return Some result
+        with _ -> return None
+    }
+
+let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:PackageName) =
+    async {
+        try
+            let url = sprintf "%s/FindPackagesById()?id='%O'&$orderby=Published desc" nugetURL package
+            verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
@@ -785,9 +795,11 @@ let GetVersions force root (sources, packageName:PackageName) =
                             let auth = source.Authentication |> Option.map toBasicAuth
                             if not force && (String.containsIgnoreCase "nuget.org" source.Url || String.containsIgnoreCase "myget.org" source.Url || String.containsIgnoreCase "visualstudio.com" source.Url) then
                                 [getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
+                            elif String.containsIgnoreCase "artifactory" source.Url then
+                                [getVersionsCached "ODataNewestFirst" tryGetAllVersionsFromNugetODataFindByIdNewestFirst (nugetSource, auth, source.Url, packageName) ]
                             else
                                 let v2Feeds =
-                                    [ yield getVersionsCached "OData" tryGetPackageVersionsViaOData (nugetSource, auth, source.Url, packageName)
+                                    [ yield getVersionsCached "OData" tryGetAllVersionsFromNugetODataFindById (nugetSource, auth, source.Url, packageName)
                                       yield getVersionsCached "ODataWithFilter" tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName)
                                       if not (String.containsIgnoreCase "teamcity" source.Url || String.containsIgnoreCase"feedservice.svc" source.Url  ) then
                                         yield getVersionsCached "Json" tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
