@@ -592,7 +592,7 @@ Target "All" DoNothing
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
   ==> "Build"
-  =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
+//  =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("BuildPowerShell", not isMono)
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
