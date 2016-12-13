@@ -18,4 +18,26 @@
       <Output TaskParameter="AlternativeConfigFile" ItemName="RestoreConfigFile" />        
     </PaketRestoreTask>
    </Target>
+
+   <Target Name="FixPackRef" AfterTargets="_WalkEachTargetPerFramework" Returns="@(_PackageReferences)">
+      <!-- Write out package references for NETCore -->
+      <PaketRestoreTask
+        ProjectUniqueName="$(MSBuildProjectFullPath)"
+        PackageReferences="@(PackageReference)"
+        TargetFrameworks="$(TargetFramework)">
+        <Output TaskParameter="NewPackageReferences" ItemName="_PaketPackageReference" />
+        <Output TaskParameter="AlternativeConfigFile" ItemName="RestoreConfigFile2" />        
+      </PaketRestoreTask>
+      <ItemGroup>
+        <_PackageReferences Include="%(_PaketPackageReference.Identity)">
+          <TargetFramework>$(TargetFramework)</TargetFramework>
+          <IncludeAssets></IncludeAssets>
+          <ExcludeAssets></ExcludeAssets>
+          <PrivateAssets></PrivateAssets>
+          <Version>%(_PaketPackageReference.Version)</Version>
+        </_PackageReferences>
+      </ItemGroup>
+      
+    </Target>
+
 </Project>
