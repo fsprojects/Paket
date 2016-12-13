@@ -166,7 +166,7 @@ Target "InstallDotNetCore" (fun _ ->
                 if x = 0 then () else
                 failwithf "Command failed with exit code %i" x
 
-            Shell.Exec("tar", sprintf """-xzv "%s" -C "%s" """ localPath dotnetCliPath.FullName)
+            Shell.Exec("tar", sprintf """-xvf "%s" -C "%s" """ localPath dotnetCliPath.FullName)
             |> assertExitCodeZero
         else  
             System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetCliPath.FullName)
