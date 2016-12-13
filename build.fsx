@@ -223,59 +223,37 @@ Target "DotnetRestoreTools" (fun _ ->
 )
 
 Target "DotnetRestore" (fun _ ->
-    if isLinux then
-        netcoreFiles
-        |> Seq.iter (fun proj ->
-            let dir = Path.GetDirectoryName proj
-            dotnet dir "--info"
-            dotnet dir "--verbose restore"
-        )
-    else
-        netcoreFiles
-        |> Seq.iter (fun proj ->
-            DotNetCli.Restore (fun c ->
-                { c with
-                    Project = proj
-                    ToolPath = dotnetExePath 
-                }) 
-        )
+    netcoreFiles
+    |> Seq.iter (fun proj ->
+        DotNetCli.Restore (fun c ->
+            { c with
+                Project = proj
+                ToolPath = dotnetExePath
+            })
+    )
 )
 
 Target "DotnetBuild" (fun _ ->
-    if isLinux then
-        netcoreFiles
-        |> Seq.iter (fun proj ->
-            let dir = Path.GetDirectoryName proj
-            dotnet dir "--verbose build"
-        )
-    else
     netcoreFiles
-        |> Seq.iter (fun proj ->
-            DotNetCli.Build (fun c ->
-                { c with
-                    Project = proj
-                    ToolPath = dotnetExePath
-                })
-        )
+    |> Seq.iter (fun proj ->
+        DotNetCli.Build (fun c ->
+            { c with
+                Project = proj
+                ToolPath = dotnetExePath
+            })
     )
+)
 
 Target "DotnetPackage" (fun _ ->
-    if isLinux then
-        netcoreFiles
-        |> Seq.iter (fun proj ->
-            let dir = Path.GetDirectoryName proj
-            dotnet dir "--verbose pack"
-        )
-    else
-        netcoreFiles
-        |> Seq.iter (fun proj ->
-            DotNetCli.Pack (fun c ->
-                { c with
-                    Project = proj
-                    ToolPath = dotnetExePath
-                    AdditionalArgs = [(sprintf "-o %s" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
-                })
-        )
+    netcoreFiles
+    |> Seq.iter (fun proj ->
+        DotNetCli.Pack (fun c ->
+            { c with
+                Project = proj
+                ToolPath = dotnetExePath
+                AdditionalArgs = [(sprintf "-o %s" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
+            })
+    )
 )
 
 
