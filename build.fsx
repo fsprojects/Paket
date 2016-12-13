@@ -61,7 +61,7 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "1.0.0-preview3-004056"
+let dotnetcliVersion = "1.0.0-preview4-004233"
 
 let dotnetCliPath = DirectoryInfo "./dotnetcore"
 
@@ -154,7 +154,7 @@ Target "InstallDotNetCore" (fun _ ->
             else
                 sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
         let downloadPath = 
-                sprintf "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/%s/%s" dotnetcliVersion archiveFileName
+                sprintf "https://dotnetcli.azureedge.net/dotnet/Sdk/%s/%s" dotnetcliVersion archiveFileName
         let localPath = Path.Combine(dotnetCliPath.FullName, archiveFileName)
 
         tracefn "Installing '%s' to '%s" downloadPath localPath
