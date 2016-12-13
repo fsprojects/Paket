@@ -26,7 +26,7 @@
         PackageReferences="@(PackageReference)"
         TargetFrameworks="$(TargetFramework)">
         <Output TaskParameter="NewPackageReferences" ItemName="_PaketPackageReference" />
-        <Output TaskParameter="AlternativeConfigFile" ItemName="RestoreConfigFile2" />        
+        <Output TaskParameter="AlternativeConfigFile" ItemName="RestoreConfigFile2" />
       </PaketRestoreTask>
       <ItemGroup>
         <_PackageReferences Include="%(_PaketPackageReference.Identity)">
@@ -37,7 +37,7 @@
           <Version>%(_PaketPackageReference.Version)</Version>
         </_PackageReferences>
       </ItemGroup>
-      
+
     </Target>
 
 </Project>
