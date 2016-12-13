@@ -156,16 +156,13 @@ Target "InstallDotNetCore" (fun _ ->
                 sprintf "https://dotnetcli.azureedge.net/dotnet/Sdk/%s/%s" dotnetcliVersion archiveFileName
         let localPath = Path.Combine(dotnetCliPath.FullName, archiveFileName)
 
-        tracefn "Installing '%s' to '%s" downloadPath localPath
+        tracefn "Installing '%s' to '%s'" downloadPath localPath
         
         use webclient = new Net.WebClient()
         webclient.DownloadFile(downloadPath, localPath)
 
-        if not (System.IO.Directory.Exists(dotnetCliPath.FullName)) then
-            System.IO.Directory.CreateDirectory(dotnetCliPath.FullName) |> ignore
-
         if isLinux then
-            ArchiveHelper.Tar.Extract (DirectoryInfo localPath) (FileInfo dotnetCliPath.FullName)
+            (FileInfo localPath) |> ArchiveHelper.Tar.Extract dotnetCliPath
         else  
             System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetCliPath.FullName)
         
