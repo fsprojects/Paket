@@ -162,7 +162,12 @@ Target "InstallDotNetCore" (fun _ ->
         webclient.DownloadFile(downloadPath, localPath)
 
         if isLinux then
-            (FileInfo localPath) |> ArchiveHelper.Tar.Extract dotnetCliPath
+            let assertExitCodeZero x =
+                if x = 0 then () else
+                failwithf "Command failed with exit code %i" x
+
+            Shell.Exec("tar", sprintf """-xzv "%s" -C "%s" """ localPath dotnetCliPath.FullName)
+            |> assertExitCodeZero
         else  
             System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetCliPath.FullName)
         
