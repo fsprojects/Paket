@@ -210,6 +210,14 @@ let runCmdIn workDir exe =
 /// Execute a dotnet cli command
 let dotnet workDir = runCmdIn workDir "dotnet"
 
+Target "DotnetRestoreTools" (fun _ ->
+    DotNetCli.Restore (fun c ->
+        { c with
+            Project = currentDirectory </> "tools" </> "tools.fsproj"
+            ToolPath = dotnetExePath 
+        })
+)
+
 Target "DotnetRestore" (fun _ ->
     if isLinux then
         netcoreFiles
@@ -408,16 +416,12 @@ Target "NuGet" (fun _ ->
 
 Target "MergeDotnetCoreIntoNuget" (fun _ ->
 
-//    let nupkg = sprintf "./temp/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
-//    let netcoreNupkg = sprintf "./temp/dotnetcore/Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
-//
-//    Shell.Exec(
-//      dotnetExePath, 
-//      sprintf """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg,
-//      "src/Paket.Core/Paket.Core/")
-//    |> fun exitCode -> if exitCode <> 0 then failwithf "mergenupkg exited with exit code %d" exitCode
+    let nupkg = tempDir </> sprintf "Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
+    let netcoreNupkg = tempDir </> "dotnetcore" </> sprintf "Paket.Core.%s.nupkg" (release.NugetVersion) |> Path.GetFullPath
 
-    ()
+    let runTool = runCmdIn "tools" dotnetExePath
+
+    runTool """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg
 )
 
 Target "PublishChocolatey" (fun _ ->
@@ -634,5 +638,8 @@ Target "All" DoNothing
 
 "ReleaseDocs"
   ==> "Release"
+
+"DotnetRestoreTools"
+  ==> "MergeDotnetCoreIntoNuget"
 
 RunTargetOrDefault "All"
