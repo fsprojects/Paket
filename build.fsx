@@ -124,7 +124,9 @@ Target "AssemblyInfo" (fun _ ->
     csProjs |> Seq.filter (fun s -> s.Contains "PaketRestoreTask" |> not) |> Seq.iter genCSAssemblyInfo
 )
 
-let dotnetExePath = "dotnetcore" </> if isWindows then "dotnet.exe" else "dotnet" |> FullName
+let dotnetExePath =
+    "dotnetcore" </> (if isWindows then "dotnet.exe" else "dotnet")
+    |> FullName
 
 Target "InstallDotNetCore" (fun _ ->
     let correctVersionInstalled = 
