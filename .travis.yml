@@ -6,8 +6,6 @@ env:
 sudo: false  # use the new container-based Travis infrastructure
 #sudo: required
 dist: trusty # Ubuntu 14.04
-dotnet: 1.0.0-preview2-003121
-env: DOTNET_SDK_URL=https://dotnetcli.blob.core.windows.net/dotnet/Sdk/1.0.0-preview3-004056/dotnet-dev-ubuntu-x64.1.0.0-preview3-004056.tar.gz
 
 mono:
   - latest
@@ -15,13 +13,6 @@ mono:
 branches:
   except:
     - gh-pages
-
-install:
-  # Download .NET Core SDK and add to PATH
-  - export DOTNET_INSTALL_DIR="$PWD/.dotnetsdk"
-  - mkdir -p "$DOTNET_INSTALL_DIR"
-  - curl -L "$DOTNET_SDK_URL" | tar -xzv -C "$DOTNET_INSTALL_DIR"
-  - export PATH="$DOTNET_INSTALL_DIR:$PATH"
 
 script: 
   - ./build.sh RunIntegrationTests
