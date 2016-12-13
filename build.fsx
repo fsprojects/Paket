@@ -127,10 +127,9 @@ Target "AssemblyInfo" (fun _ ->
 let dotnetExePath = "dotnetcore" </> if isWindows then "dotnet.exe" else "dotnet" |> FullName
 
 Target "InstallDotNetCore" (fun _ ->
-    if isLinux then () else
     let correctVersionInstalled = 
         try
-            if FileInfo(Path.Combine(dotnetCliPath.FullName,"dotnet.exe")).Exists then
+            if FileInfo(dotnetExePath |> Path.GetFullPath).Exists then
                 let processResult = 
                     ExecProcessAndReturnMessages (fun info ->  
                     info.FileName <- dotnetExePath
