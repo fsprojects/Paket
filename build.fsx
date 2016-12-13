@@ -160,7 +160,10 @@ Target "InstallDotNetCore" (fun _ ->
         
         use webclient = new Net.WebClient()
         webclient.DownloadFile(downloadPath, localPath)
-        
+
+        if not (System.IO.Directory.Exists(dotnetCliPath.FullName)) then
+            System.IO.Directory.CreateDirectory(dotnetCliPath.FullName) |> ignore
+
         if isLinux then
             ArchiveHelper.Tar.Extract (DirectoryInfo localPath) (FileInfo dotnetCliPath.FullName)
         else  
