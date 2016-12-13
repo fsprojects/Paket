@@ -302,8 +302,8 @@ let isMatchingOperatingSystem (operatingSystemFilter : string option) =
 let isMatchingPlatform (operatingSystemFilter : string option) =
     match operatingSystemFilter with
     | None -> true
-    | Some filter when filter = "mono" -> isMono
-    | Some filter when filter = "windows" -> not isMono
+    | Some filter when filter = "mono" -> isMonoRuntime
+    | Some filter when filter = "windows" -> not isMonoRuntime
     | _ -> isMatchingOperatingSystem operatingSystemFilter
 
 /// [omit]
