@@ -124,7 +124,7 @@ Target "AssemblyInfo" (fun _ ->
     csProjs |> Seq.filter (fun s -> s.Contains "PaketRestoreTask" |> not) |> Seq.iter genCSAssemblyInfo
 )
 
-let dotnetExePath = if isWindows then "dotnetcore/dotnet.exe" else "dotnetcore/dotnet" |> FullName
+let dotnetExePath = "dotnetcore" </> if isWindows then "dotnet.exe" else "dotnet" |> FullName
 
 Target "InstallDotNetCore" (fun _ ->
     if isLinux then () else
@@ -204,6 +204,7 @@ let assertExitCodeZero x =
 
 let runCmdIn workDir exe = 
     Printf.ksprintf (fun args -> 
+        tracefn "%s %s" exe args
         Shell.Exec(exe, args, workDir) |> assertExitCodeZero)
 
 /// Execute a dotnet cli command
@@ -260,7 +261,7 @@ Target "DotnetPackage" (fun _ ->
                 { c with
                     Project = proj
                     ToolPath = dotnetExePath
-                    AdditionalArgs = ["/p:RuntimeIdentifier=win7-x64"]
+                    AdditionalArgs = [(sprintf "-o %s" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
                 })
         )
 )
@@ -592,7 +593,7 @@ Target "All" DoNothing
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
   ==> "Build"
-//  =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
+  =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("BuildPowerShell", not isMono)
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
