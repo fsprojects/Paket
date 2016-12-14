@@ -183,6 +183,8 @@ module ScriptGeneration =
       pieces
       |> String.concat ("\n")
     
+
+    scriptFile.Directory.Create()
     File.WriteAllText(scriptFile.FullName, text)
     
   let writeCSharpScript scriptFile input =
@@ -316,7 +318,6 @@ module ScriptGeneration =
           match scriptGenerator scriptInfo with
           | DoNotGenerate -> knownIncludeScripts
           | Generate pieces -> 
-            scriptFile.Directory.Create()
             writeScript scriptFile pieces
             knownIncludeScripts |> Map.add package.Name scriptFile
 
