@@ -38,7 +38,7 @@ let private extractPackage caches package root source groupName version includeV
         return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
-    async {
+    async { 
         try 
             return! downloadAndExtract force false
         with exn -> 
