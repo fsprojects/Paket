@@ -1,3 +1,6 @@
+#### 3.31.4 - 17.12.2016
+* Avoid infinite recursive calls in followODataLink - https://github.com/fsprojects/Paket/pull/2081 
+
 #### 3.31.3 - 15.12.2016
 * BUGFIX: One of the file writes was missing a Directory.Create() - https://github.com/fsprojects/Paket/pull/2080
 
