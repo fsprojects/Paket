@@ -360,7 +360,8 @@ module ScriptGeneration =
 
       let getGroupFile group = 
         let folder = getScriptFolder includeScriptsRootFolder framework group
-        FileInfo(Path.Combine(folder.FullName, sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant())
+        let fileName = (sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant()
+        FileInfo(Path.Combine(folder.FullName, fileName))
         
       generateGroupScript dependenciesFile getGroupFile scriptWriter filterFrameworkLibs filterNuget framework
 
