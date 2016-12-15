@@ -1,3 +1,6 @@
+#### 3.31.3 - 15.12.2016
+* BUGFIX: One of the file writes was missing a Directory.Create() - https://github.com/fsprojects/Paket/pull/2080
+
 #### 3.31.2 - 12.12.2016
 * BUGFIX: NuGetV2-OData: retrieve versions in descending order for artifactory - https://github.com/fsprojects/Paket/pull/2073
 
