@@ -292,15 +292,6 @@ let ``#1505 should install conditionals``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1663 should install google apis``() = 
-    install "i001663-google-apis" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001663-google-apis","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001663-google-apis","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
 let ``#1578 should reference transitive dep from ref``() = 
     let scenario = "i001578-transitive-ref"
     install scenario |> ignore
