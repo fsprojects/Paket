@@ -183,6 +183,8 @@ module ScriptGeneration =
       pieces
       |> String.concat ("\n")
     
+
+    scriptFile.Directory.Create()
     File.WriteAllText(scriptFile.FullName, text)
     
   let writeCSharpScript scriptFile input =
@@ -316,7 +318,6 @@ module ScriptGeneration =
           match scriptGenerator scriptInfo with
           | DoNotGenerate -> knownIncludeScripts
           | Generate pieces -> 
-            scriptFile.Directory.Create()
             writeScript scriptFile pieces
             knownIncludeScripts |> Map.add package.Name scriptFile
 
@@ -360,7 +361,8 @@ module ScriptGeneration =
 
       let getGroupFile group = 
         let folder = getScriptFolder includeScriptsRootFolder framework group
-        FileInfo(Path.Combine(folder.FullName, sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant())
+        let fileName = (sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant()
+        FileInfo(Path.Combine(folder.FullName, fileName))
         
       generateGroupScript dependenciesFile getGroupFile scriptWriter filterFrameworkLibs filterNuget framework
 

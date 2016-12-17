@@ -1,8 +1,14 @@
-#### 4.0.0-alpha032 - 13.12.2016
+#### 4.0.0-alpha033 - 17.12.2016
 * Make Paket compatible with DotNet SDK preview3
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
+
+#### 3.31.4 - 17.12.2016
+* Avoid infinite recursive calls in followODataLink - https://github.com/fsprojects/Paket/pull/2081 
+
+#### 3.31.3 - 15.12.2016
+* BUGFIX: One of the file writes was missing a Directory.Create() - https://github.com/fsprojects/Paket/pull/2080
 
 #### 3.31.2 - 12.12.2016
 * BUGFIX: NuGetV2-OData: retrieve versions in descending order for artifactory - https://github.com/fsprojects/Paket/pull/2073
