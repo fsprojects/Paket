@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Reference - Paket</title>
+    <title>ConflictState - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,30 +58,31 @@
 
 
 
-<h1>Reference</h1>
+<h1>ConflictState</h1>
 <p>
   <span>Namespace: Paket</span><br />
+  <span>Parent Module: <a href="paket-packageresolver.html">PackageResolver</a></span>
 </p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+  <h3>Record Fields</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Record Field</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1217', 1217)" onmouseover="showTip(event, '1217', 1217)">
-            FrameworkAssemblyReference(string)
+          <code onmouseout="hideTip(event, '653', 653)" onmouseover="showTip(event, '653', 653)">
+            Conflicts
           </code>
-          <div class="tip" id="1217">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="653">
+            <strong>Signature:</strong> Set&lt;PackageRequirement&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L13-13" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L541-541" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -91,15 +92,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1218', 1218)" onmouseover="showTip(event, '1218', 1218)">
-            Library(string)
+          <code onmouseout="hideTip(event, '654', 654)" onmouseover="showTip(event, '654', 654)">
+            GlobalOverride
           </code>
-          <div class="tip" id="1218">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="654">
+            <strong>Signature:</strong> bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L11-11" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L543-543" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -109,103 +110,73 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1219', 1219)" onmouseover="showTip(event, '1219', 1219)">
-            TargetsFile(string)
+          <code onmouseout="hideTip(event, '655', 655)" onmouseover="showTip(event, '655', 655)">
+            LastConflictReported
           </code>
-          <div class="tip" id="1219">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="655">
+            <strong>Signature:</strong> DateTime<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L12-12" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L539-539" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
         </td>
       </tr>
-    </tbody>
-  </table>
-  <h3>Instance members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Instance member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1220', 1220)" onmouseover="showTip(event, '1220', 1220)">
-            FrameworkReferenceName
+          <code onmouseout="hideTip(event, '656', 656)" onmouseover="showTip(event, '656', 656)">
+            Status
           </code>
-          <div class="tip" id="1220">
-            <strong>Signature:</strong> string option<br />
+          <div class="tip" id="656">
+            <strong>Signature:</strong> Resolution<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L22-22" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L538-538" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>get_FrameworkReferenceName</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1221', 1221)" onmouseover="showTip(event, '1221', 1221)">
-            LibName
+          <code onmouseout="hideTip(event, '657', 657)" onmouseover="showTip(event, '657', 657)">
+            TryRelaxed
           </code>
-          <div class="tip" id="1221">
-            <strong>Signature:</strong> string option<br />
+          <div class="tip" id="657">
+            <strong>Signature:</strong> bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L15-15" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L540-540" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>get_LibName</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1222', 1222)" onmouseover="showTip(event, '1222', 1222)">
-            Path
+          <code onmouseout="hideTip(event, '658', 658)" onmouseover="showTip(event, '658', 658)">
+            VersionsToExplore
           </code>
-          <div class="tip" id="1222">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="658">
+            <strong>Signature:</strong> seq&lt;SemVerInfo * PackageSource list&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L37-37" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L542-542" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>get_Path</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1223', 1223)" onmouseover="showTip(event, '1223', 1223)">
-            ReferenceName
-          </code>
-          <div class="tip" id="1223">
-            <strong>Signature:</strong> string<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L27-27" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>get_ReferenceName</code></p>
         </td>
       </tr>
     </tbody>
