@@ -42,6 +42,7 @@ let rec private followODataLink auth url =
             |> getNodes "link"
             |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
             |> List.choose (getAttribute "href")
+            |> List.filter (fun x -> x <> url)
             |> List.map (followODataLink auth)
             |> Async.Parallel
 
