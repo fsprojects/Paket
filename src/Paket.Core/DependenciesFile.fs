@@ -385,7 +385,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let filteredGroups, filteredLines =
               groups
               |> Seq.map(fun item -> item.Value)
-              |> Seq.filter(fun group -> group.Packages.IsEmpty && group.Name <> Constants.MainDependencyGroup)
+              |> Seq.filter(fun group -> group.Packages.IsEmpty && group.RemoteFiles.IsEmpty && group.Name <> Constants.MainDependencyGroup)
               |> Seq.fold(fun (groups, (lines:string[])) emptyGroup ->
                   groups 
                   |> Map.remove emptyGroup.Name,

@@ -124,3 +124,27 @@ nuget Castle.Windsor ~> 3.2"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should not remove group if only contains remote files``() = 
+    let config = """source http://www.nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget Castle.Windsor ~> 3.2
+
+group Test
+http http://www.fssnip.net/1n decrypt.fs
+nuget Castle.Windsor ~> 3.2"""
+
+    let cfg = DependenciesFile.FromCode(config).Remove(GroupName "Test", PackageName "Castle.Windsor")
+    
+    let expected = """source http://www.nuget.org/api/v2
+
+nuget Castle.Windsor-log4net ~> 3.2
+nuget Castle.Windsor ~> 3.2
+
+group Test
+http http://www.fssnip.net/1n decrypt.fs"""
+
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings expected)
