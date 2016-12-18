@@ -2,7 +2,7 @@
 
 ## I don't understand why I need Paket to manage my packages. Why can't I just use NuGet?
 
-NuGet does not separate out the concept of transitive dependencies; if you install a package into your project and that package has further dependencies then all transitive packages are included in the `packages.config`. There is no way to tell which packages are only transitive dependencies.
+NuGet does not separate out the concept of [transitive dependencies](faq.html#transitive); if you install a package into your project and that package has further dependencies then all transitive packages are included in the `packages.config`. There is no way to tell which packages are only transitive dependencies.
 
 Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version ([read more](controlling-nuget-resolution.html)). You have no control over this process.
 
@@ -128,6 +128,11 @@ That said: if you don't agree with that (but please take some time and think abo
 [No.](https://github.com/fsprojects/Paket/issues/61) We don't believe in reinventing the wheel.
 
 On top of that, such a "meta package manager" abstraction is likely to be less flexible and behind on what native tools have to offer. Paket serves a specific need, that is [SemVer-compatible](http://semver.org) NuGet.
+
+<div id="transitive"></div>
+## What does "transitive dependencies" mean?
+
+If install NuGet packages into your project then these packages can have dependencies on other NuGet packages. Paket calls these dependencies "transitive". These packages will be automatically uninstalled if none of your "direct dependencies" (the packages thata you actually installed) still depend on them.
 
 ## I am behind a proxy. Can I use Paket?
 

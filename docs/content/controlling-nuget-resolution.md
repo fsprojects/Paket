@@ -12,7 +12,7 @@ Installing packages like this is almost always a two-step operation: install and
 
 Paket uses the definitions from `paket.dependencies` to compute the dependency graph.
 
-The resolution algorithm balances direct and transitive dependencies such that you will get the *latest matching versions* of direct dependencies (defined using the [`nuget` statement](#dependencies)) and transitive dependencies (defined by your direct dependency's [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference)). Paket checks compatibility by comparing available versions to the constraints of either source, `paket.dependencies`, or [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference).
+The resolution algorithm balances direct and [transitive dependencies](faq.html#transitive) such that you will get the *latest matching versions* of direct dependencies (defined using the [`nuget` statement](#dependencies)) and transitive dependencies (defined by your direct dependency's [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference)). Paket checks compatibility by comparing available versions to the constraints of either source, `paket.dependencies`, or [nuspec](http://docs.nuget.org/docs/reference/nuspec-reference).
 
 As stated above, the algorithm defaults to resolving the latest versions matching the constraints.
 

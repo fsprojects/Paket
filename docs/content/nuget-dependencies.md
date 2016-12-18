@@ -98,7 +98,7 @@ This is a version conflict and Paket will complain during resolution phase.
 If we specify C = 1.1 in the dependencies file then Paket still considers this as a version conflict with the version requirement in A.
 By specifying C == 1.1 we overwrite all other requirements and Paket will not complain about the conflict anymore.</blockquote>
 
-If your transitive dependencies result in a version conflict you might want to instruct Paket to use a specific version. The `==` operator allows you to manually resolve the conflict:
+If your [transitive dependencies](faq.html#transitive) result in a version conflict you might want to instruct Paket to use a specific version. The `==` operator allows you to manually resolve the conflict:
 
     [lang=paket]
     nuget Example == 1.2.3 // take exactly this version
@@ -271,7 +271,7 @@ If you want to influence the resolution of direct dependencies then read about t
 
 #### Max modifier
 
-To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `strategy:max` setting:
+To request Paket to override the resolver strategy for the [transitive dependencies](faq.html#transitive) of a package, use the `strategy:max` setting:
 
     [lang=paket]
     strategy: min
@@ -290,7 +290,7 @@ The following code is doing the same by using the `@` operator in your version c
 
 #### Min modifier
 
-To request Paket to override the resolver strategy for the transitive dependencies of a package, use the `strategy:min` setting:
+To request Paket to override the resolver strategy for the [transitive dependencies](faq.html#transitive) of a package, use the `strategy:min` setting:
 
     [lang=paket]
     source https://nuget.org/api/v2
@@ -320,8 +320,8 @@ The strategy setting and the corresponding `!` and `@` modifiers are applicable 
 
 To override the [lowest_matching option](dependencies-file.html#Lowest_matching-option) you can use one of the following modifiers.
 
-Note, however, that all transitive dependencies will still get their *latest matching versions*, no matter the value of the `lowest_matching` option.
-If you want to influence the resolution of transitive dependencies then read about the [strategy option](dependencies-file.html#Strategy-option).
+Note, however, that all [transitive dependencies](faq.html#transitive) will still get their *latest matching versions*, no matter the value of the `lowest_matching` option.
+If you want to influence the resolution of [transitive dependencies](faq.html#transitive) then read about the [strategy option](dependencies-file.html#Strategy-option).
 
 To request Paket to override the resolver strategy for a package, use the `lowest_matching:true` setting:
 

@@ -87,8 +87,8 @@ Following are valid modes for the `--creds-migration` option:
 
 ## Simplify direct dependencies
 
-After converting your solution from NuGet, you may end up with many transitive dependencies in your Paket files.
-Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary transitive dependencies from your paket.dependencies and paket.references files.
+After converting your solution from NuGet, you may end up with many [transitive dependencies](faq.html#transitive)in your Paket files.
+Consider using [`paket simplify`](paket-simplify.html) to remove unnecessary [transitive dependencies](faq.html#transitive) from your paket.dependencies and paket.references files.
 
 
 ## Partial NuGet conversion
