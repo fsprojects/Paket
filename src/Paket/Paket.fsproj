@@ -59,8 +59,8 @@
     <StartWorkingDirectory>D:\temp\repo3</StartWorkingDirectory>
     <StartArguments>install -v</StartArguments>
     <StartWorkingDirectory>D:\temp\IconPacksTestApp\src</StartWorkingDirectory>
-    <StartArguments>install --keep-patch</StartArguments>
-    <StartWorkingDirectory>D:\temp\paket</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>D:\temp\unlisted</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
