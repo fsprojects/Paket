@@ -69,7 +69,7 @@
 <span class="k">nuget</span> Rx-Main <span class="o">!</span><span class="o">~&gt;</span> <span class="n">2.0</span>
 </code></pre></td></tr></table>
 <p>Here we <a href="dependencies-file.html">specify dependencies</a> on the default NuGet feed's <a href="https://www.nuget.org/packages/Castle.Windsor-log4net/"><code>Castle.Windsor-log4net</code></a> and <a href="https://www.nuget.org/packages/Rx-Main/"><code>Rx-Main</code></a> packages; both these packages have dependencies on further NuGet packages.</p>
-<p>The <a href="lock-file.html"><code>paket.lock</code> file</a> records the concrete dependency resolution of all direct <em>and transitive</em> dependencies of your project:</p>
+<p>The <a href="lock-file.html"><code>paket.lock</code> file</a> records the concrete dependency resolution of all direct and <a href="faq.html#transitive">transitive dependencies</a> of your project:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -133,7 +133,7 @@
 <p>If the <a href="lock-file.html"><code>paket.lock</code> file</a> is not present when <a href="paket-install.html"><code>paket install</code></a> is run, it will be generated. Subsequent runs of <a href="paket-install.html"><code>paket install</code></a> will only perform updates according to the latest changes in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</p>
 <p>Committing the <a href="lock-file.html"><code>paket.lock</code> file</a> to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when <a href="paket-restore.html"><code>paket restore</code></a> is executed.</p>
 <h2><a name="Performing-updates" class="anchor" href="#Performing-updates">Performing updates</a></h2>
-<p>If you make changes to <a href="dependencies-file.html"><code>paket.dependencies</code></a> or you want Paket to check for newer versions of the direct and transitive dependencies as specified in <a href="dependencies-file.html"><code>paket.dependencies</code></a>, run:</p>
+<p>If you make changes to <a href="dependencies-file.html"><code>paket.dependencies</code></a> or you want Paket to check for newer versions of the direct and <a href="faq.html#transitive">transitive dependencies</a> as specified in <a href="dependencies-file.html"><code>paket.dependencies</code></a>, run:</p>
 <ul>
 <li><a href="paket-outdated.html"><code>paket outdated</code></a> to check for new versions, and report what's available.</li>
 <li><a href="paket-install.html"><code>paket install</code></a> to analyze the modifications in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> and perform a selective update (only changed dependencies are updated).</li>

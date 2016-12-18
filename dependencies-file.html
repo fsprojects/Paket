@@ -103,8 +103,8 @@
 <li>Gist number <a href="https://gist.github.com/Thorium/1972349">1972349</a> from GitHub Gist</li>
 <li>External HTTP resource, e.g. <a href="http://www.fssnip.net/1n">1n</a> from <a href="http://www.fssnip.net/">FSSnip</a></li>
 </ul>
-<p>Paket uses this definition to compute a concrete dependency resolution, which also includes transitive dependencies. The resulting dependency graph is then persisted to the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
-<p>Only direct dependencies should be listed and you can use the <a href="paket-simplify.html"><code>paket simplify</code> command</a> to remove transitive dependencies.</p>
+<p>Paket uses this definition to compute a concrete dependency resolution, which also includes <a href="faq.html#transitive">transitive dependencies</a>. The resulting dependency graph is then persisted to the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
+<p>Only direct dependencies should be listed and you can use the <a href="paket-simplify.html"><code>paket simplify</code> command</a> to remove <a href="faq.html#transitive">transitive dependencies</a>.</p>
 <h2><a name="Sources" class="anchor" href="#Sources">Sources</a></h2>
 <p>Paket supports the following source types:</p>
 <ul>
@@ -143,7 +143,7 @@ This can be achieved by a line which starts with <code>version</code> followed b
 <span class="k">nuget</span> FSharp.Core <span class="o">~&gt;</span> <span class="n">4</span>
 </code></pre></td></tr></table>
 <h3><a name="Strict-references" class="anchor" href="#Strict-references">Strict references</a></h3>
-<p>Paket usually references all direct and transitive dependencies that are listed in your <a href="references-files.html"><code>paket.references</code> files</a> to your project file.
+<p>Paket usually references all direct and <a href="faq.html#transitive">transitive dependencies</a> that are listed in your <a href="references-files.html"><code>paket.references</code> files</a> to your project file.
 In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</em> dependencies.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -302,9 +302,9 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
     <span class="k">nuget</span> FAKE <span class="k">redirects</span>: on
 </code></pre></td></tr></table>
 <h3><a name="Strategy-option" class="anchor" href="#Strategy-option">Strategy option</a></h3>
-<p>This option tells Paket what resolver strategy it should use for transitive dependencies.</p>
+<p>This option tells Paket what resolver strategy it should use for <a href="faq.html#transitive">transitive dependencies</a>.</p>
 <p>NuGet's dependency syntax led to a lot of incompatible packages on nuget.org.
-To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving transitive dependencies (i.e. defaulting to lowest matching versions).</p>
+To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving <a href="faq.html#transitive">transitive dependencies</a> (i.e. defaulting to lowest matching versions).</p>
 <p>The strategy can be either <code>min</code> or <code>max</code> with max being the default.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -316,10 +316,10 @@ To make your transition to Paket easier and to allow package authors to correct 
 
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
-<p>A <code>min</code> strategy means you get the <em>lowest matching version</em> of your transitive dependencies (i.e. NuGet-style). In contrast, a <code>max</code> strategy will get you the <em>highest matching version</em>.</p>
+<p>A <code>min</code> strategy means you get the <em>lowest matching version</em> of your <a href="faq.html#transitive">transitive dependencies</a> (i.e. NuGet-style). In contrast, a <code>max</code> strategy will get you the <em>highest matching version</em>.</p>
 <p>Note, however, that all direct dependencies will still get their <em>latest matching versions</em>, no matter the value of the <code>strategy</code> option.
 If you want to influence the resolution of direct dependencies then read about the <a href="dependencies-file.html#Lowest_matching-option">lowest_matching option</a>.</p>
-<p>The only exception is when you are updating a single package and one of your direct dependencies is a transitive dependency for that specific package.
+<p>The only exception is when you are updating a single package and one of your direct dependencies is a <a href="faq.html#transitive">transitive dependency</a> for that specific package.
 In this case, only the updating package will get its <em>latest matching version</em> and the dependency is treated as transitive.</p>
 <p>To override a strategy for a single NuGet package, you can use the package specific <a href="nuget-dependencies.html#Strategy-modifiers">strategy modifiers</a>.</p>
 <h3><a name="Lowest_matching-option" class="anchor" href="#Lowest_matching-option">Lowest_matching option</a></h3>
@@ -336,8 +336,8 @@ In this case, only the updating package will get its <em>latest matching version
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
 <p>A <code>lowest_matching: true</code> setting means you get the <em>lowest matching version</em> of your direct dependencies. In contrast, a <code>lowest_matching:false</code> will get you the <em>highest matching version</em>.</p>
-<p>Note, however, that all transitive dependencies will still get their <em>latest matching versions</em>, no matter the value of the <code>lowest_matching</code> option.
-If you want to influence the resolution of transitive dependencies then read about the <a href="dependencies-file.html#Strategy-option">strategy option</a>.</p>
+<p>Note, however, that all <a href="faq.html#transitive">transitive dependencies</a> will still get their <em>latest matching versions</em>, no matter the value of the <code>lowest_matching</code> option.
+If you want to influence the resolution of <a href="faq.html#transitive">transitive dependencies</a> then read about the <a href="dependencies-file.html#Strategy-option">strategy option</a>.</p>
 <p>To override a <code>lowest_matching</code> option for a single NuGet package, you can use the package specific <a href="nuget-dependencies.html#Lowest_matching-option">lowest_matching option</a>.</p>
 <h2><a name="Comments" class="anchor" href="#Comments">Comments</a></h2>
 <p>All lines starting with with <code>//</code> or <code>#</code> are considered comments.</p>

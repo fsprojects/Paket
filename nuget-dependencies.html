@@ -138,7 +138,7 @@ A needs exactly C 1.0 and B wants version 1.1 of C.
 This is a version conflict and Paket will complain during resolution phase.</p>
 <p>If we specify C = 1.1 in the dependencies file then Paket still considers this as a version conflict with the version requirement in A.
 By specifying C == 1.1 we overwrite all other requirements and Paket will not complain about the conflict anymore.</blockquote></p>
-<p>If your transitive dependencies result in a version conflict you might want to instruct Paket to use a specific version. The <code>==</code> operator allows you to manually resolve the conflict:</p>
+<p>If your <a href="faq.html#transitive">transitive dependencies</a> result in a version conflict you might want to instruct Paket to use a specific version. The <code>==</code> operator allows you to manually resolve the conflict:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">==</span> <span class="n">1.2.3</span> <span class="c">// take exactly this version</span>
@@ -321,7 +321,7 @@ By specifying C == 1.1 we overwrite all other requirements and Paket will not co
 <p>Note, however, that all direct dependencies will still get their <em>latest matching versions</em>, no matter the value of the <code>strategy</code> option.
 If you want to influence the resolution of direct dependencies then read about the <a href="dependencies-file.html#Lowest_matching-option">lowest_matching option</a>.</p>
 <h4><a name="Max-modifier" class="anchor" href="#Max-modifier">Max modifier</a></h4>
-<p>To request Paket to override the resolver strategy for the transitive dependencies of a package, use the <code>strategy:max</code> setting:</p>
+<p>To request Paket to override the resolver strategy for the <a href="faq.html#transitive">transitive dependencies</a> of a package, use the <code>strategy:max</code> setting:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -345,7 +345,7 @@ The following code is doing the same by using the <code>@</code> operator in you
 <span class="k">nuget</span> Example <span class="o">@</span><span class="o">~&gt;</span> <span class="n">1.2</span> <span class="c">// use "max" version resolution strategy</span>
 </code></pre></td></tr></table>
 <h4><a name="Min-modifier" class="anchor" href="#Min-modifier">Min modifier</a></h4>
-<p>To request Paket to override the resolver strategy for the transitive dependencies of a package, use the <code>strategy:min</code> setting:</p>
+<p>To request Paket to override the resolver strategy for the <a href="faq.html#transitive">transitive dependencies</a> of a package, use the <code>strategy:min</code> setting:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -381,8 +381,8 @@ The following code is doing the same by using the <code>!</code> operator in you
 </code></pre></td></tr></table>
 <h3><a name="Lowest_matching-option" class="anchor" href="#Lowest_matching-option">Lowest_matching option</a></h3>
 <p>To override the <a href="dependencies-file.html#Lowest_matching-option">lowest_matching option</a> you can use one of the following modifiers.</p>
-<p>Note, however, that all transitive dependencies will still get their <em>latest matching versions</em>, no matter the value of the <code>lowest_matching</code> option.
-If you want to influence the resolution of transitive dependencies then read about the <a href="dependencies-file.html#Strategy-option">strategy option</a>.</p>
+<p>Note, however, that all <a href="faq.html#transitive">transitive dependencies</a> will still get their <em>latest matching versions</em>, no matter the value of the <code>lowest_matching</code> option.
+If you want to influence the resolution of <a href="faq.html#transitive">transitive dependencies</a> then read about the <a href="dependencies-file.html#Strategy-option">strategy option</a>.</p>
 <p>To request Paket to override the resolver strategy for a package, use the <code>lowest_matching:true</code> setting:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>

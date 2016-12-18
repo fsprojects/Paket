@@ -136,8 +136,8 @@ Following are valid modes for the <code>--creds-migration</code> option:</p>
 <li><code>selective</code> - Use this switch if you're using more than one authorized NuGet feed, and you want to apply different modes for each of them.</li>
 </ol>
 <h2><a name="Simplify-direct-dependencies" class="anchor" href="#Simplify-direct-dependencies">Simplify direct dependencies</a></h2>
-<p>After converting your solution from NuGet, you may end up with many transitive dependencies in your Paket files.
-Consider using <a href="paket-simplify.html"><code>paket simplify</code></a> to remove unnecessary transitive dependencies from your paket.dependencies and paket.references files.</p>
+<p>After converting your solution from NuGet, you may end up with many <a href="faq.html#transitive">transitive dependencies</a>in your Paket files.
+Consider using <a href="paket-simplify.html"><code>paket simplify</code></a> to remove unnecessary <a href="faq.html#transitive">transitive dependencies</a> from your paket.dependencies and paket.references files.</p>
 <h2><a name="Partial-NuGet-conversion" class="anchor" href="#Partial-NuGet-conversion">Partial NuGet conversion</a></h2>
 <p>The <code>convert-from-nuget</code> will not work if it discovers that the codebase already utilizes Paket (when <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> is found).
 However, if for some reason you happen to have a mixture of projects already migrated to Paket and projects still using NuGet, you can pass the <code>--force</code> flag to <code>convert-from-nuget</code> for the remaining projects.</p>
