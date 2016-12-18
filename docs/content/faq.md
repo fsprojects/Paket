@@ -129,6 +129,11 @@ That said: if you don't agree with that (but please take some time and think abo
 
 On top of that, such a "meta package manager" abstraction is likely to be less flexible and behind on what native tools have to offer. Paket serves a specific need, that is [SemVer-compatible](http://semver.org) NuGet.
 
+<div id="transitive"></div>
+## What does "transitive dependencies" mean?
+
+If install NuGet packages into your project then these packages can dependencies on other NuGet packages. Paket calls these dependencies "transitive". These packages will be automatically uninstalled if none of your "direct dependencies" (the packages thata you actually installed) still depend on them.
+
 ## I am behind a proxy. Can I use Paket?
 
 If your proxy uses default (Active Directory) credentials, you have nothing to do, Paket will handle it automatically.
