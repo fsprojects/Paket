@@ -39,7 +39,9 @@ let TurnOnAutoRestore fromBootstrapper environment =
             let relativePath = createRelativePath project.FileName paketTargetsPath
             // refreshing project as it can be dirty from call to TurnOffAutoRestore
             let project = ProjectFile.LoadFromFile(project.FileName)
-            project.AddImportForPaketTargets(relativePath)
-            project.Save(false)
+            let toolsVersion = project.GetToolsVersion()
+            if toolsVersion < 15.0 then 
+                project.AddImportForPaketTargets(relativePath)
+                project.Save(false)
         )
     } 
