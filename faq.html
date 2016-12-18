@@ -159,6 +159,9 @@ We believe dependency management is so important that these files belong in the 
 <h2><a name="Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies" class="anchor" href="#Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies">Can I use Paket to manage npm/bower/whatever dependencies?</a></h2>
 <p><a href="https://github.com/fsprojects/Paket/issues/61">No.</a> We don't believe in reinventing the wheel.</p>
 <p>On top of that, such a "meta package manager" abstraction is likely to be less flexible and behind on what native tools have to offer. Paket serves a specific need, that is <a href="http://semver.org">SemVer-compatible</a> NuGet.</p>
+<div id="transitive"></div>
+<h2><a name="What-does-transitive-dependencies-mean" class="anchor" href="#What-does-transitive-dependencies-mean">What does "transitive dependencies" mean?</a></h2>
+<p>If install NuGet packages into your project then these packages can dependencies on other NuGet packages. Paket calls these dependencies "transitive". These packages will be automatically uninstalled if none of your "direct dependencies" (the packages thata you actually installed) still depend on them.</p>
 <h2><a name="I-am-behind-a-proxy-Can-I-use-Paket" class="anchor" href="#I-am-behind-a-proxy-Can-I-use-Paket">I am behind a proxy. Can I use Paket?</a></h2>
 <p>If your proxy uses default (Active Directory) credentials, you have nothing to do, Paket will handle it automatically.</p>
 <p>If your proxy uses custom credentials, you need to set the following environment variables:</p>
