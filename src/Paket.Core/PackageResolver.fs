@@ -781,6 +781,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                     Sources            = sources
                     UpdateMode         = updateMode
                 }
+
                 match getExploredPackage packageDetails getPackageDetailsF stackpack with
                 | stackpack, None ->
                     step (Inner((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
@@ -789,9 +790,10 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                     let hasUnlisted = exploredPackage.Unlisted || flags.HasUnlisted
                     let flags = 
                         StepFlags(flags.Ready,flags.UseUnlisted,hasUnlisted,flags.ForceBreak,flags.FirstTrial,flags.UnlistedSearch)
+
                     if exploredPackage.Unlisted && not flags.UseUnlisted then
-                        tracefn "     unlisted"
-                        step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags 
+                        tracefn "     %O %O was unlisted" exploredPackage.Name exploredPackage.Version
+                        step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags 
                     else
                         let nextStep =
                             {   Relax              = currentStep.Relax
