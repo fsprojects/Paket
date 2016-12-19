@@ -1,5 +1,9 @@
+#### 3.31.5 - 19.12.2016
+* BUGFIX: Don't remove group with only remote files - https://github.com/fsprojects/Paket/pull/2089
+* BUGFI: Fix displayed package name for packages found in another group - https://github.com/fsprojects/Paket/pull/2088
+
 #### 3.31.4 - 17.12.2016
-* Avoid infinite recursive calls in followODataLink - https://github.com/fsprojects/Paket/pull/2081 
+* BUGFIX: Avoid infinite recursive calls in followODataLink - https://github.com/fsprojects/Paket/pull/2081 
 
 #### 3.31.3 - 15.12.2016
 * BUGFIX: One of the file writes was missing a Directory.Create() - https://github.com/fsprojects/Paket/pull/2080
