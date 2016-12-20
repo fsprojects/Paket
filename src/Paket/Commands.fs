@@ -417,7 +417,7 @@ let markdown (subParser : ArgumentParser) (additionalText : string) =
         .Append("# paket ")
         .AppendLine(parentMetadata.Name)
         .AppendLine()
-        .AppendLine(String.concat Environment.NewLine parentMetadata.Description)
+        .AppendLine(parentMetadata.Description)
         .AppendLine()
         .AppendLine("    [lang=batchfile]")
         .Append("    ")

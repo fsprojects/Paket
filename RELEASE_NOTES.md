@@ -1,11 +1,16 @@
-#### 4.0.0-alpha035 - 18.12.2016
+#### 4.0.0-alpha036 - 20.12.2016
 * Make Paket compatible with DotNet SDK preview3
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
+
+#### 3.31.5 - 19.12.2016
+* BUGFIX: Don't remove group with only remote files - https://github.com/fsprojects/Paket/pull/2089
+* BUGFI: Fix displayed package name for packages found in another group - https://github.com/fsprojects/Paket/pull/2088
+
 #### 3.31.4 - 17.12.2016
-* Avoid infinite recursive calls in followODataLink - https://github.com/fsprojects/Paket/pull/2081 
+* BUGFIX: Avoid infinite recursive calls in followODataLink - https://github.com/fsprojects/Paket/pull/2081 
 
 #### 3.31.3 - 15.12.2016
 * BUGFIX: One of the file writes was missing a Directory.Create() - https://github.com/fsprojects/Paket/pull/2080

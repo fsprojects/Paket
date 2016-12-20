@@ -107,7 +107,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     member this.CheckIfPackageExistsInAnyGroup (packageName:PackageName) =
         match groups |> Seq.tryFind (fun g -> g.Value.Packages |> List.exists (fun p -> p.Name = packageName)) with
-        | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine PackageName group.Value.Name
+        | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
 
     member __.Groups = groups
@@ -385,7 +385,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let filteredGroups, filteredLines =
               groups
               |> Seq.map(fun item -> item.Value)
-              |> Seq.filter(fun group -> group.Packages.IsEmpty && group.Name <> Constants.MainDependencyGroup)
+              |> Seq.filter(fun group -> group.Packages.IsEmpty && group.RemoteFiles.IsEmpty && group.Name <> Constants.MainDependencyGroup)
               |> Seq.fold(fun (groups, (lines:string[])) emptyGroup ->
                   groups 
                   |> Map.remove emptyGroup.Name,
