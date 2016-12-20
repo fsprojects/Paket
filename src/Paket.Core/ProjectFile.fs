@@ -200,17 +200,8 @@ module ProjectFile =
             None
 
     let createNode name (project:ProjectFile) =
-        let namespaceURI = 
-            try
-                project.Document.DocumentElement.NamespaceURI
-            with
-            | _ -> null
-        if String.IsNullOrWhiteSpace namespaceURI then
-            project.Document.CreateElement (name, Constants.ProjectDefaultNameSpace)
-        else
-            project.Document.CreateElement (name, namespaceURI)
+        project.Document.CreateElement (name, project.Document.DocumentElement.NamespaceURI)
             
-
     let createNodeSet name text (project:ProjectFile) = 
         let node = createNode name project
         node.InnerText <- text
