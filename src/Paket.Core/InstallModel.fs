@@ -138,10 +138,14 @@ module InstallModel =
           Analyzers = []
           LicenseUrl = None }
 
-    let getReferenceFolders (installModel: InstallModel) =
-        if installModel.NewReferenceFileFolders.IsEmpty then
-          installModel.LegacyReferenceFileFolders
-        else installModel.NewReferenceFileFolders
+    let getReferenceFolders (installModel: InstallModel) = 
+        installModel.LegacyReferenceFileFolders @
+        (installModel.NewReferenceFileFolders
+         |> List.choose (fun r ->
+            match installModel.LegacyReferenceFileFolders |> List.tryFind (fun r2 -> r2.Targets = r.Targets) with
+            | None -> Some r
+            | _ -> None))
+            
 
     let extractRefFolder packageName (path:string) =
         let path = path.Replace("\\", "/").ToLower()
@@ -420,7 +424,7 @@ type InstallModel with
 
     static member EmptyModel (packageName, packageVersion) = InstallModel.emptyModel packageName packageVersion
 
-    member this.GetReferenceFolders () = InstallModel.getReferenceFolders this
+    member this.GetReferenceFolders() = InstallModel.getReferenceFolders this
 
     member this.MapFolders mapfn = InstallModel.mapFolders mapfn this
 
@@ -449,8 +453,6 @@ type InstallModel with
     member this.AddTargetsFile(path, file) = InstallModel.addTargetsFile path file this
 
     member this.AddTargetsFiles targetsFiles = InstallModel.addTargetsFiles targetsFiles this
-
-    //member this.AddPackageFile (path, file, references) = InstallModel.addPackageFile path file references this
     
     member this.AddFrameworkAssemblyReference reference = InstallModel.addFrameworkAssemblyReference this reference 
 

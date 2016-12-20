@@ -61,6 +61,8 @@
     <StartWorkingDirectory>D:\temp\IconPacksTestApp\src</StartWorkingDirectory>
     <StartArguments>update</StartArguments>
     <StartWorkingDirectory>D:\temp\unlisted</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>D:\temp\PaketWithProblem1</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
