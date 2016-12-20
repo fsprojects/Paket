@@ -30,6 +30,7 @@ let [<Literal>] PackagesConfigFile        = "packages.config"
 let [<Literal>] NuGetConfigFile           = "NuGet.Config"
 let [<Literal>] FullProjectSourceFileName = "FULLPROJECT"
 let [<Literal>] ProjectDefaultNameSpace   = "http://schemas.microsoft.com/developer/msbuild/2003"
+let [<Literal>] ProjectDefaultNameSpaceCore  = "http://schemas.microsoft.com/developer/msbuild/2003"
 
 #if DOTNETCORE
 module internal Environment =

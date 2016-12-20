@@ -199,8 +199,17 @@ module ProjectFile =
             traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
             None
 
-    let createNode name (project:ProjectFile) = 
-        project.Document.CreateElement (name, Constants.ProjectDefaultNameSpace)
+    let createNode name (project:ProjectFile) =
+        let namespaceURI = 
+            try
+                project.ProjectNode.NamespaceURI
+            with
+            | _ -> null
+        if String.IsNullOrWhiteSpace namespaceURI then
+            project.Document.CreateElement (name, Constants.ProjectDefaultNameSpace)
+        else
+            project.Document.CreateElement (name, namespaceURI)
+            
 
     let createNodeSet name text (project:ProjectFile) = 
         let node = createNode name project

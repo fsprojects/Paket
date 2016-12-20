@@ -4,7 +4,6 @@
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
-
 #### 3.31.5 - 19.12.2016
 * BUGFIX: Don't remove group with only remote files - https://github.com/fsprojects/Paket/pull/2089
 * BUGFI: Fix displayed package name for packages found in another group - https://github.com/fsprojects/Paket/pull/2088
