@@ -202,7 +202,7 @@ module ProjectFile =
     let createNode name (project:ProjectFile) =
         let namespaceURI = 
             try
-                project.ProjectNode.NamespaceURI
+                project.Document.DocumentElement.NamespaceURI
             with
             | _ -> null
         if String.IsNullOrWhiteSpace namespaceURI then
