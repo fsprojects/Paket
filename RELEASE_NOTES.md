@@ -1,3 +1,6 @@
+#### 3.31.7 - 20.12.2016
+* BUGFIX: Revert argu update
+
 #### 3.31.6 - 20.12.2016
 * BUGFIX: If we have ref and lib files then we prefer lib
 
