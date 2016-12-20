@@ -107,7 +107,7 @@ let platformsSupport =
 
 
 let findBestMatch = 
-    let rec findBestMatch (paths : string list,targetProfile : TargetProfile) = 
+    let rec findBestMatch (paths : string list, targetProfile : TargetProfile) = 
         let requiredPlatforms = 
             match targetProfile with
             | PortableProfile(_, platforms) -> platforms
@@ -140,7 +140,7 @@ let findBestMatch =
                         None
                 | _ -> None)
             |> List.distinct
-            |> List.sortBy (fun (x, pen) -> pen, (extractPlatforms x).Length) // prefer portable platform whith less platforms
+            |> List.sortBy (fun (x, pen) -> pen, (extractPlatforms x).Length) // prefer portable platform with less platforms
             |> List.map fst
             |> List.tryHead
         | path -> path

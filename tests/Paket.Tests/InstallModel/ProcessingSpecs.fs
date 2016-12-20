@@ -71,13 +71,13 @@ let ``should understand reference folder``() =
 
     let refs = model.GetLibReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
-    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
     
     let refs = model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
-    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
 [<Test>]
 let ``should understand aot in runtimes``() = 

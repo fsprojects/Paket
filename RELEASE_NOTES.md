@@ -1,3 +1,6 @@
+#### 3.31.6 - 20.12.2016
+* BUGFIX: If we have ref and lib files then we prefer lib
+
 #### 3.31.5 - 19.12.2016
 * BUGFIX: Don't remove group with only remote files - https://github.com/fsprojects/Paket/pull/2089
 * BUGFI: Fix displayed package name for packages found in another group - https://github.com/fsprojects/Paket/pull/2088
