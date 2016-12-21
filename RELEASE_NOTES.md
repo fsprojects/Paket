@@ -1,3 +1,6 @@
+#### 3.31.8 - 21.12.2016
+* BUGFIX: Update Argu to 3.6.1
+
 #### 3.31.7 - 20.12.2016
 * BUGFIX: Revert argu update
 
