@@ -200,7 +200,11 @@ module ProjectFile =
             None
 
     let createNode name (project:ProjectFile) =
-        project.Document.CreateElement (name, project.Document.DocumentElement.NamespaceURI)
+        try
+            project.Document.CreateElement (name, project.Document.DocumentElement.NamespaceURI)
+        with
+        | _ -> 
+            project.Document.CreateElement (name, Constants.ProjectDefaultNameSpace)
             
     let createNodeSet name text (project:ProjectFile) = 
         let node = createNode name project
