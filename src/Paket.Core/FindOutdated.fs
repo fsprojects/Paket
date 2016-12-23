@@ -25,7 +25,7 @@ let private adjustVersionRequirements strict includingPrereleases (dependenciesF
     DependenciesFile(dependenciesFile.FileName, groups, dependenciesFile.Lines)
 
 /// Finds all outdated packages.
-let FindOutdated strict includingPrereleases environment = trial {
+let FindOutdated strict includingPrereleases groupNameFilter environment = trial {
     let! lockFile = environment |> PaketEnv.ensureLockFileExists
     let force = true
 
@@ -45,11 +45,20 @@ let FindOutdated strict includingPrereleases environment = trial {
         |> List.toSeq
 
     let dependenciesFile = UpdateProcess.detectProjectFrameworksForDependenciesFile dependenciesFile
+    let checkedDepsGroups = 
+        match groupNameFilter with
+        | None -> dependenciesFile.Groups
+        | Some gname -> dependenciesFile.Groups |> Map.filter(fun k g -> k.ToString() = gname)
 
-    let newResolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, NuGetV2.GetPackageDetails root true, dependenciesFile.Groups, PackageResolver.UpdateMode.UpdateAll)
+    let newResolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, NuGetV2.GetPackageDetails root true, checkedDepsGroups, PackageResolver.UpdateMode.UpdateAll)
+
+    let checkedLockGroups = 
+        match groupNameFilter with
+        | None -> lockFile.Groups
+        | Some gname -> lockFile.Groups |> Map.filter(fun k g -> k.ToString() = gname)
 
     let changed = 
-        [for kv in lockFile.Groups do
+        [for kv in checkedLockGroups do
             match newResolution |> Map.tryFind kv.Key with
             | Some group ->
                 let newPackages = group.ResolvedPackages.GetModelOrFail()
@@ -77,7 +86,7 @@ let private printOutdated changed =
                 tracefn "    * %O %O -> %O" packageName oldVersion newVersion
 
 /// Prints all outdated packages.
-let ShowOutdated strict includingPrereleases environment = trial {
-    let! allOutdated = FindOutdated strict includingPrereleases environment
+let ShowOutdated strict includingPrereleases groupName environment = trial {
+    let! allOutdated = FindOutdated strict includingPrereleases groupName environment
     printOutdated allOutdated
 }
