@@ -385,7 +385,7 @@ with
 
 let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
 
-let markdown (subParser : ArgumentParser) (additionalText : string) =
+let markdown (subParser : ArgumentParser) (width : int) (additionalText : string) =
     let (afterCommandText, afterOptionsText) =
         let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text) then text else text + Environment.NewLine + Environment.NewLine
         let cleanUp (text : string) = text.Replace("# [after-command]", "")
@@ -400,14 +400,20 @@ let markdown (subParser : ArgumentParser) (additionalText : string) =
 
     let parentMetadata = subParser.ParentInfo |> Option.get
 
+    let indentBy spaces (text:string) =
+        let whitespace = String(' ', spaces)
+        text.Split([|Environment.NewLine|], StringSplitOptions.None)
+        |> Seq.map (fun line -> whitespace + line)
+        |> String.concat Environment.NewLine
+
     let replace (pattern : string) (replacement : string) input =
         System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
 
-    let syntax = subParser.PrintCommandLineSyntax()
-    let options =
-        subParser.PrintUsage(hideSyntax=true)
-        |> replace @"\s\t--help.*" ""
-        |> replace @"\t([-\w \[\]|\/\?<>\.]+):" (System.Environment.NewLine + @"  `$1`:")
+    let syntax = 
+        subParser.PrintCommandLineSyntax(usageStringCharacterWidth = width)
+        |> indentBy 4
+
+    let options = subParser.PrintUsage(hideSyntax=true, usageStringCharacterWidth = width)
 
     System.Text.StringBuilder()
         .Append("# paket ")
@@ -415,8 +421,7 @@ let markdown (subParser : ArgumentParser) (additionalText : string) =
         .AppendLine()
         .AppendLine(parentMetadata.Description)
         .AppendLine()
-        .AppendLine("    [lang=batchfile]")
-        .Append("    ")
+        .AppendLine("    [lang=console]")
         .AppendLine(syntax)
         .AppendLine()
         .Append(afterCommandText)

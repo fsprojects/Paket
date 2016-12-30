@@ -5,6 +5,8 @@ open System.IO
 
 
 #if COMMANDS
+let MaxCodeWidth = 100
+
 Paket.Commands.getAllCommands()
 |> List.iter (fun command ->
     let metadata = command.ParentInfo |> Option.get
@@ -20,9 +22,8 @@ With `--log-file [FileName]` you can trace the logged information into a file.
         if File.Exists optFile
         then verboseOption + File.ReadAllText optFile
         else verboseOption
-    // Work around bug tpetricek/FSharp.Formatting#321 (FSharp.Literate does not escape HTML entities in code blocks with unknown language)
-    let cleanText (text : string) = text.Replace("[lang=batchfile]", "[lang=msh]").Replace("```batchfile", "```msh")
-    File.WriteAllText(sprintf "../content/paket-%s.md" metadata.Name, Paket.Commands.markdown command additionalText |> cleanText))
+
+    File.WriteAllText(sprintf "../content/paket-%s.md" metadata.Name, Paket.Commands.markdown command MaxCodeWidth additionalText))
 #endif
 
 
