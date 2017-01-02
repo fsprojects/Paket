@@ -189,7 +189,7 @@ namespace Paket.Bootstrapper
             var nugetSourceArg = commandArgs.SingleOrDefault(x => x.StartsWith(CommandArgs.NugetSourceArgPrefix));
             if (nugetSourceArg != null)
             {
-                commandArgs = commandArgs.Where(x => !x.StartsWith(CommandArgs.NugetSourceArgPrefix)).ToList();
+                commandArgs.Remove(nugetSourceArg);
                 downloadArguments.NugetSource = nugetSourceArg.Substring(CommandArgs.NugetSourceArgPrefix.Length);
             }
             if (commandArgs.Contains(CommandArgs.IgnoreCache))
