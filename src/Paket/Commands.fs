@@ -118,12 +118,14 @@ with
 
 type OutdatedArgs =
     | Ignore_Constraints
+    | [<CustomCommandLine("group")>] Group of name:string
     | [<AltCommandLine("--pre")>] Include_Prereleases
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Ignore_Constraints -> "Ignores the version requirement as in the paket.dependencies file."
+            | Group(_) -> "Just check for one group."
             | Include_Prereleases -> "Includes prereleases."
 
 type RemoveArgs =

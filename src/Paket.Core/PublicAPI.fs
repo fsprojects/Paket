@@ -284,12 +284,12 @@ type Dependencies(dependenciesFileName: string) =
                 this.Restore(force, group, Array.toList referencesFiles, touchAffectedRefs, ignoreChecks)
 
     /// Lists outdated packages.
-    member this.ShowOutdated(strict: bool,includePrereleases: bool): unit =
-        FindOutdated.ShowOutdated strict includePrereleases |> this.Process
+    member this.ShowOutdated(strict: bool,includePrereleases: bool, groupName: string Option): unit =
+        FindOutdated.ShowOutdated strict includePrereleases groupName |> this.Process
 
     /// Finds all outdated packages.
-    member this.FindOutdated(strict: bool,includePrereleases: bool): (string * string * SemVerInfo) list =
-        FindOutdated.FindOutdated strict includePrereleases
+    member this.FindOutdated(strict: bool,includePrereleases: bool, groupName: string Option): (string * string * SemVerInfo) list =
+        FindOutdated.FindOutdated strict includePrereleases groupName
         |> this.Process
         |> List.map (fun (g, p,_,newVersion) -> g.ToString(),p.ToString(),newVersion)
 
