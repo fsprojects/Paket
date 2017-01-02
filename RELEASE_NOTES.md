@@ -1,3 +1,6 @@
+#### 3.31.9 - 02.01.2017
+* BUGFIX: Don't print incorrect warning in bootstraper - https://github.com/fsprojects/Paket/pull/2098
+
 #### 3.31.8 - 21.12.2016
 * BUGFIX: Update Argu to 3.6.1
 
