@@ -1,5 +1,6 @@
 #### 3.32.0 - 02.01.2017
 * paket outdated: group -parameter added - https://github.com/fsprojects/Paket/pull/2097
+* BUGFIX: Correctly escape no_proxy domains for bootstraper - https://github.com/fsprojects/Paket/pull/2100
 * BUGFIX: Don't print incorrect warning in bootstraper - https://github.com/fsprojects/Paket/pull/2098
 * BUGFIX: Update Argu to 3.6.1
 * BUGFIX: Revert argu update
