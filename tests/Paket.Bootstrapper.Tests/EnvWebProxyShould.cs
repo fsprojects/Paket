@@ -137,8 +137,8 @@ namespace Paket.Bootstrapper.Tests
                 Assert.That(webProxy.Address, Is.EqualTo(new Uri("http://proxy.local:8080")));
                 Assert.IsTrue(webProxy.BypassProxyOnLocal);
                 Assert.That(webProxy.BypassList.Length, Is.EqualTo(2));
-                Assert.That(webProxy.BypassList[0], Is.EqualTo(".local"));
-                Assert.That(webProxy.BypassList[1], Is.EqualTo("127.0.0.1"));
+                Assert.That(".local", Does.Match(webProxy.BypassList[0]));
+                Assert.That("127.0.0.1", Does.Match(webProxy.BypassList[1]));
                 Assert.IsNull(webProxy.Credentials);
             }
         }
