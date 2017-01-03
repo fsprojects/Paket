@@ -1,3 +1,6 @@
+#### 3.32.1 - 03.01.2017
+* BUGFIX: Template with multiparagraph description was not working with LF line endings - https://github.com/fsprojects/Paket/issues/2104
+
 #### 3.32.0 - 02.01.2017
 * paket outdated: group -parameter added - https://github.com/fsprojects/Paket/pull/2097
 * BUGFIX: Fix "directory doesn't exist" in NuGet v2 - https://github.com/fsprojects/Paket/pull/2102
