@@ -133,7 +133,8 @@ let install (results : ParseResults<_>) =
 let outdated (results : ParseResults<_>) =
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
     let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
-    Dependencies.Locate().ShowOutdated(strict, includePrereleases)
+    let group = results.TryGetResult <@ OutdatedArgs.Group @>
+    Dependencies.Locate().ShowOutdated(strict, includePrereleases, group)
 
 let remove (results : ParseResults<_>) =
     let packageName = results.GetResult <@ RemoveArgs.Nuget @>
@@ -442,8 +443,9 @@ let main() =
             // in case of new subcommands added
             | Verbose
             | Silent
+            | From_Bootstrapper
             | Version
-            | Log_File _ -> failwith "internal error: this code should never be reached."
+            | Log_File _ -> failwithf "internal error: this code should never be reached."
 
     with
     | exn when not (exn :? System.NullReferenceException) ->

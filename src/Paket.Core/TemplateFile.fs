@@ -48,8 +48,8 @@ module private TemplateParser =
 
     let rec private indentedBlock acc i lines =
         match lines with
-        | (Indented h)::t ->
-            indentedBlock (h::acc) (i + 1) t
+        | empty :: t when String.IsNullOrWhiteSpace empty -> indentedBlock (empty :: acc) (i + 1) t
+        | (Indented h)::t -> indentedBlock (h::acc) (i + 1) t
         | _ -> acc |> List.rev |> String.concat "\n", i, lines
 
     let rec private inner state =
@@ -81,10 +81,13 @@ module private TemplateParser =
                 Choice2Of2 <| sprintf "Invalid syntax line %d" state.Line
 
     let parse (contents : string) =
+        let contents = contents.Replace("\r\n","\n").Replace("\r","\n")
+        let remaining = 
+            contents.Split('\n')
+            |> Array.toList
+
         inner {
-            Remaining =
-                contents.Split('\n')
-                |> Array.toList
+            Remaining = remaining
             Line = 1
             Map = Map.empty
         }
@@ -421,6 +424,7 @@ module internal TemplateFile =
                 | Choice1Of2 m -> ok m
                 | Choice2Of2 f -> failP file f
             sr.Dispose()
+
             let! type' = parsePackageConfigType file map
 
             let resolveCurrentVersion id =

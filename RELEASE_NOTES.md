@@ -1,32 +1,25 @@
-#### 4.0.0-alpha041 - 22.12.2016
+#### 4.0.0-alpha042 - 03.01.2017
 * Make Paket compatible with DotNet SDK preview3
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 
-#### 3.31.8 - 21.12.2016
+#### 3.32.2 - 03.01.2017
+* BUGFIX: Template with multiparagraph description was not working with LF line endings - https://github.com/fsprojects/Paket/issues/2104
+
+#### 3.32.0 - 02.01.2017
+* paket outdated: group -parameter added - https://github.com/fsprojects/Paket/pull/2097
+* BUGFIX: Fix "directory doesn't exist" in NuGet v2 - https://github.com/fsprojects/Paket/pull/2102
+* BUGFIX: Correctly escape no_proxy domains for bootstraper - https://github.com/fsprojects/Paket/pull/2100
+* BUGFIX: Don't print incorrect warning in bootstraper - https://github.com/fsprojects/Paket/pull/2098
 * BUGFIX: Update Argu to 3.6.1
-
-#### 3.31.7 - 20.12.2016
 * BUGFIX: Revert argu update
-
-#### 3.31.6 - 20.12.2016
 * BUGFIX: If we have ref and lib files then we prefer lib
-
-#### 3.31.5 - 19.12.2016
 * BUGFIX: Don't remove group with only remote files - https://github.com/fsprojects/Paket/pull/2089
-* BUGFI: Fix displayed package name for packages found in another group - https://github.com/fsprojects/Paket/pull/2088
-
-#### 3.31.4 - 17.12.2016
+* BUGFIX: Fix displayed package name for packages found in another group - https://github.com/fsprojects/Paket/pull/2088
 * BUGFIX: Avoid infinite recursive calls in followODataLink - https://github.com/fsprojects/Paket/pull/2081 
-
-#### 3.31.3 - 15.12.2016
 * BUGFIX: One of the file writes was missing a Directory.Create() - https://github.com/fsprojects/Paket/pull/2080
-
-#### 3.31.2 - 12.12.2016
 * BUGFIX: NuGetV2-OData: retrieve versions in descending order for artifactory - https://github.com/fsprojects/Paket/pull/2073
-
-#### 3.31.1 - 07.12.2016
 * BUGFIX: Default address of NuGet v3 stream points to https - https://github.com/fsprojects/Paket/pull/2071
  
 #### 3.31.0 - 04.12.2016
