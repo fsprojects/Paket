@@ -646,7 +646,7 @@ module ProjectFile =
 
         model.Analyzers
         |> List.filter shouldBeInstalled
-        |> List.sortBy(fun lib -> lib.Path)
+        |> List.sortBy (fun lib -> lib.Path)
         |> createAnalyzersNode
 
     let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool option) (importTargets:bool) (referenceCondition:string option) (project:ProjectFile) =
@@ -658,8 +658,8 @@ module ProjectFile =
         let model = model.FilterReferences references
         let createItemGroup (targets:TargetProfile list) references = 
             let itemGroup = createNode "ItemGroup" project
-                
-            for lib in references |> List.sortBy(fun (r:Reference) -> r.ReferenceName ) do                
+
+            for lib in references |> List.sortBy(fun (r:Reference) -> r.ReferenceName) do
                 match lib with
                 | Reference.Library lib ->
                     let fi = FileInfo (normalizePath lib)
