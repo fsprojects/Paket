@@ -649,6 +649,9 @@ module ProjectFile =
         |> List.sortBy(fun lib -> lib.Path)
         |> createAnalyzersNode
 
+    let getReferenceSortString (reference:Reference) :string =
+        reference.ReferenceName
+
     let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool option) (importTargets:bool) (referenceCondition:string option) (project:ProjectFile) =
         let references = 
             getCustomReferenceAndFrameworkNodes project
@@ -658,8 +661,8 @@ module ProjectFile =
         let model = model.FilterReferences references
         let createItemGroup (targets:TargetProfile list) references = 
             let itemGroup = createNode "ItemGroup" project
-                                
-            for lib in references do
+                
+            for lib in references |> List.sortBy(fun r -> getReferenceSortString r ) do                
                 match lib with
                 | Reference.Library lib ->
                     let fi = FileInfo (normalizePath lib)
