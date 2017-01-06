@@ -11,6 +11,11 @@ let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
     <ItemGroup>
+      <Reference Include="System.Net.Http">
+        <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll</HintPath>
+        <Private>True</Private>
+        <Paket>True</Paket>
+      </Reference>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
@@ -23,11 +28,6 @@ let expected = """
       </Reference>
       <Reference Include="System.Net.Http.WebRequest">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
-        <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Net.Http">
-        <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll</HintPath>
         <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
