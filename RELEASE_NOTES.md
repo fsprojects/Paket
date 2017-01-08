@@ -1,4 +1,4 @@
-#### 3.33.1 - 08.01.2017
+#### 3.33.2 - 08.01.2017
 * BUGFIX: Ensure stable ordering of references
 
 #### 3.33.0 - 06.01.2017
