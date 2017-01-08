@@ -89,12 +89,12 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
       <ItemGroup>
+        <Reference Include="Microsoft.CSharp">
+          <Paket>True</Paket>
+        </Reference>
         <Reference Include="Dapper">
           <HintPath>..\..\packages\Dapper\lib\net40\Dapper.dll</HintPath>
           <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-        <Reference Include="Microsoft.CSharp">
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

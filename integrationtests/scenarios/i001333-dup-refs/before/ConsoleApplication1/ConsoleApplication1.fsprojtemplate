@@ -138,12 +138,12 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3')">
       <ItemGroup>
+        <Reference Include="System.Xml.Linq">
+          <Paket>True</Paket>
+        </Reference>
         <Reference Include="FSharp.Data">
           <HintPath>..\packages\FSharp.Data\lib\net40\FSharp.Data.dll</HintPath>
           <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
-        <Reference Include="System.Xml.Linq">
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -308,60 +308,60 @@
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3')">
       <ItemGroup>
-        <Reference Include="Microsoft.WindowsAzure.Storage">
-          <HintPath>..\packages\WindowsAzure.Storage\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
         <Reference Include="System.Data">
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Xml">
           <Paket>True</Paket>
         </Reference>
+        <Reference Include="Microsoft.WindowsAzure.Storage">
+          <HintPath>..\packages\WindowsAzure.Storage\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
+          <Private>True</Private>
+          <Paket>True</Paket>
+        </Reference>
       </ItemGroup>
     </When>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETCore'">
       <ItemGroup>
-        <Reference Include="Microsoft.WindowsAzure.Storage">
-          <HintPath>..\packages\WindowsAzure.Storage\lib\win8\Microsoft.WindowsAzure.Storage.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
         <Reference Include="System.Xml">
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Xml.Linq">
+          <Paket>True</Paket>
+        </Reference>
+        <Reference Include="Microsoft.WindowsAzure.Storage">
+          <HintPath>..\packages\WindowsAzure.Storage\lib\win8\Microsoft.WindowsAzure.Storage.dll</HintPath>
+          <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
     <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhone' And ($(TargetFrameworkVersion) == 'v8.0' Or $(TargetFrameworkVersion) == 'v8.1')">
       <ItemGroup>
-        <Reference Include="Microsoft.WindowsAzure.Storage">
-          <HintPath>..\packages\WindowsAzure.Storage\lib\wp8\Microsoft.WindowsAzure.Storage.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
         <Reference Include="System.Xml">
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Xml.Linq">
+          <Paket>True</Paket>
+        </Reference>
+        <Reference Include="Microsoft.WindowsAzure.Storage">
+          <HintPath>..\packages\WindowsAzure.Storage\lib\wp8\Microsoft.WindowsAzure.Storage.dll</HintPath>
+          <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
     </When>
     <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'">
       <ItemGroup>
-        <Reference Include="Microsoft.WindowsAzure.Storage">
-          <HintPath>..\packages\WindowsAzure.Storage\lib\wpa\Microsoft.WindowsAzure.Storage.dll</HintPath>
-          <Private>True</Private>
-          <Paket>True</Paket>
-        </Reference>
         <Reference Include="System.Xml">
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Xml.Linq">
+          <Paket>True</Paket>
+        </Reference>
+        <Reference Include="Microsoft.WindowsAzure.Storage">
+          <HintPath>..\packages\WindowsAzure.Storage\lib\wpa\Microsoft.WindowsAzure.Storage.dll</HintPath>
+          <Private>True</Private>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

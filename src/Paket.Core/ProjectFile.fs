@@ -664,7 +664,13 @@ module ProjectFile =
         let createItemGroup (targets:TargetProfile list) references = 
             let itemGroup = createNode "ItemGroup" project
 
-            for lib in references |> List.sortBy(fun (r:Reference) -> r.ReferenceName) do
+            let refOrder (r:Reference) =
+                match r with
+                | Reference.FrameworkAssemblyReference _ -> 0
+                | Reference.Library _ -> 1
+                | _ -> 2
+
+            for lib in references |> List.sortBy(fun (r:Reference) -> refOrder r, r.ReferenceName) do
                 match lib with
                 | Reference.Library lib ->
                     let fi = FileInfo (normalizePath lib)
