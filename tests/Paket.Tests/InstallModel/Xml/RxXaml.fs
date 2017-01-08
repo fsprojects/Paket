@@ -11,24 +11,24 @@ let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
     <ItemGroup>
+      <Reference Include="WindowsBase">
+        <Paket>True</Paket>
+      </Reference>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="WindowsBase">
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3')">
     <ItemGroup>
+      <Reference Include="WindowsBase">
+        <Paket>True</Paket>
+      </Reference>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="WindowsBase">
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -44,12 +44,12 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'Silverlight' And $(TargetFrameworkVersion) == 'v5.0'">
     <ItemGroup>
+      <Reference Include="System.Windows">
+        <Paket>True</Paket>
+      </Reference>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\sl5\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Windows">
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -65,12 +65,12 @@ let expected = """
   </When>
   <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == 'v7.1'">
     <ItemGroup>
+      <Reference Include="System.Windows">
+        <Paket>True</Paket>
+      </Reference>
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\windowsphone71\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-      <Reference Include="System.Windows">
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>

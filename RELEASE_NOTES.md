@@ -1,3 +1,6 @@
+#### 3.33.1 - 08.01.2017
+* BUGFIX: Ensure stable ordering of references
+
 #### 3.33.0 - 06.01.2017
 * USABILITY: Ensure stable ordering of references in the same ItemGroup - https://github.com/fsprojects/Paket/pull/2105
 * BUGFIX: Template with multiparagraph description was not working with LF line endings - https://github.com/fsprojects/Paket/issues/2104

@@ -11,15 +11,15 @@ let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3')">
     <ItemGroup>
-      <Reference Include="FSharp.Data.SqlClient">
-        <HintPath>..\..\..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.dll</HintPath>
-        <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
       <Reference Include="System.Data">
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Xml">
+        <Paket>True</Paket>
+      </Reference>
+      <Reference Include="FSharp.Data.SqlClient">
+        <HintPath>..\..\..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.dll</HintPath>
+        <Private>True</Private>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
