@@ -1,3 +1,6 @@
+#### 3.33.3 - 10.01.2017
+* BUGFIX: Ensure case when getting packages from nuget feed - https://github.com/fsprojects/Paket/pull/2106
+
 #### 3.33.2 - 08.01.2017
 * BUGFIX: Ensure stable ordering of references
 
