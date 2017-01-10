@@ -1,8 +1,11 @@
-#### 4.0.0-alpha044 - 08.01.2017
+#### 4.0.0-alpha045 - 10.01.2017
 * Make Paket compatible with DotNet SDK preview3
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
+
+#### 3.33.3 - 10.01.2017
+* BUGFIX: Ensure case when getting packages from nuget feed - https://github.com/fsprojects/Paket/pull/2106
 
 #### 3.33.2 - 08.01.2017
 * BUGFIX: Ensure stable ordering of references
