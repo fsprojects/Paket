@@ -110,8 +110,8 @@ Would do the same thing as :
 paket.bootstrapper.exe -s --max-file-age=720 --run add nuget FAKE
 ```
 
-Using this feature paket can be used simply by committing a ~50KB `paket.exe` to source control an using it directly.
-The fact that a boostrapper exists is completely hidden and become an implementation detail that contributors to your
+Using this feature paket can be used simply by committing a ~50KB `paket.exe` to source control and using it directly.
+The fact that a boostrapper exists is completely hidden and becomes an implementation detail that contributors to your
 repository won't have to know — or care — about.
 
 While command line bootstrapper options can't be used the other sources (AppSettings, Environment Variables
