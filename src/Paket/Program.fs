@@ -453,4 +453,6 @@ let main() =
         if verbose then
             traceErrorfn "StackTrace:%s  %s" Environment.NewLine exn.StackTrace
 
+        System.Console.ReadKey() |> ignore
+
 main()
