@@ -453,6 +453,9 @@ let main() =
         if verbose then
             traceErrorfn "StackTrace:%s  %s" Environment.NewLine exn.StackTrace
 
+#if DEBUG
+        System.Console.WriteLine("Press any key to continue . . .")
         System.Console.ReadKey() |> ignore
+#endif
 
 main()
