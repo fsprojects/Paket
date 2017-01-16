@@ -53,7 +53,7 @@ let tryParseWindowsStyleNetworkPath (path : string) =
         trimmed.Replace('\\', '/') |> sprintf "smb:%s" |> Some
     else None
 
-let RemoveStringQuotes(path : string) =
+let RemoveOutsideQuotes(path : string) =
     let trimChars = [|'\"'|]
     path.Trim(trimChars)
 
@@ -236,9 +236,7 @@ type PackageSource =
         | NuGetV2 x -> n x.Url x.Authentication
         | NuGetV3 x -> n x.Url x.Authentication
         | LocalNuGet(path,_) -> 
-            if not <| Directory.Exists (RemoveStringQuotes path) then 
+            if not <| Directory.Exists (RemoveOutsideQuotes path) then 
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path
 
 let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStream
-
-
