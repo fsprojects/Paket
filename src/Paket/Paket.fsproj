@@ -16,7 +16,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <Win32Resource>paket.res</Win32Resource>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <RunPostBuildEvent>Always</RunPostBuildEvent>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -1438,6 +1438,6 @@
     </When>
   </Choose>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(TargetDir)*.*" "C:\Users\johan\Documents\Visual Studio 2015\Projects\PaketConvertNuget\.paket" /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(TargetDir)*.*" "C:\Users\johan\Documents\Visual Studio 2015\Projects\PaketConvertNuget\.paket" /Y /I</PostBuildEvent>
   </PropertyGroup>
 </Project>
