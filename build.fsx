@@ -151,11 +151,11 @@ Target "InstallDotNetCore" (fun _ ->
         CleanDir dotnetCliPath.FullName
         let archiveFileName = 
             if isLinux then
-                sprintf "dotnet-dev-ubuntu-x64.%s.tar.gz" dotnetcliVersion
+                sprintf "dotnet-ubuntu-x64.%s.tar.gz" dotnetcliVersion
             else
-                sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
+                sprintf "dotnet-win-x64.%s.zip" dotnetcliVersion
         let downloadPath = 
-                sprintf "https://dotnetcli.azureedge.net/dotnet/Sdk/%s/%s" dotnetcliVersion archiveFileName
+                sprintf "https://dotnetcli.blob.core.windows.net/dotnet/preview/Binaries/%s/%s" dotnetcliVersion archiveFileName
         let localPath = Path.Combine(dotnetCliPath.FullName, archiveFileName)
 
         tracefn "Installing '%s' to '%s'" downloadPath localPath
