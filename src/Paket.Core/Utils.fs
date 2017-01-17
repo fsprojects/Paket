@@ -316,6 +316,19 @@ let inline normalizeXml (doc:XmlDocument) =
     xmlTextWriter.Flush()
     stringWriter.GetStringBuilder() |> string
 
+let saveNormalizedXml (fileName:string) (doc:XmlDocument) =
+    // combination of saveFile and normalizeXml which ensures that the
+    // file encoding matches the one listed in the XML itself.
+    tracefn "Saving xml %s" fileName
+    let settings = XmlWriterSettings (Indent=true)
+
+    try
+        use fstream = File.Create(fileName)
+        use xmlTextWriter = XmlWriter.Create(fstream, settings)
+        doc.WriteTo(xmlTextWriter) |> ok
+    with _ ->
+        FileSaveError fileName |> fail
+
 let normalizeFeedUrl (source:string) =
     match source.TrimEnd([|'/'|]) with
     | "https://api.nuget.org/v3/index.json" -> Constants.DefaultNuGetV3Stream 
