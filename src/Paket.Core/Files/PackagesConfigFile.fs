@@ -6,13 +6,8 @@ open System.IO
 open System.Xml
 open Paket.Xml
 open Paket.Domain
+open Paket.PackageSources  // NugetPackage moved there
 open Chessie.ErrorHandling
-
-type NugetPackage = {
-    Id : string
-    Version : SemVerInfo
-    TargetFramework : string option
-}
 
 let Read fileName = 
     let file = FileInfo fileName
@@ -22,7 +17,7 @@ let Read fileName =
       doc.Load f)
     
     [for node in doc.SelectNodes("//package") ->
-        { Id = node.Attributes.["id"].Value
+        { NugetPackage.Id = node.Attributes.["id"].Value
           Version = SemVer.Parse node.Attributes.["version"].Value 
           TargetFramework = 
             node 

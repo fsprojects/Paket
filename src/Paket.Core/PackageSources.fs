@@ -1,4 +1,4 @@
-﻿module Paket.PackageSources
+﻿module Paket.PackageSources 
 
 open System
 open System.IO
@@ -26,7 +26,6 @@ type EnvironmentVariable =
                 Some { Variable = variable; Value = expanded }
         else
             None
-
 
 [<StructuredFormatDisplay("{AsString}")>]
 type NugetSourceAuthentication = 
@@ -236,3 +235,10 @@ type PackageSource =
                 traceWarnfn "Local NuGet feed doesn't exist: %s." path
 
 let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStream
+
+
+type NugetPackage = {
+    Id : string
+    Version : SemVerInfo
+    TargetFramework : string option
+}

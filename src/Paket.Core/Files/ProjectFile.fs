@@ -11,7 +11,7 @@ open System.Text.RegularExpressions
 open System.Xml
 open Paket.Xml
 open Paket.Requirements
-open Paket.PackagesConfigFile
+open Paket.PackageSources
 
 [<RequireQualifiedAccess>]
 type BuildAction =

@@ -10,6 +10,7 @@ open Paket.ModuleResolver
 open Paket.PackageResolver
 open System.IO
 open System.Reflection
+open Paket.PackageSources
 open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Collections.Generic
@@ -23,7 +24,7 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
         model
         |> Seq.filter (fun kv -> defaultArg (snd kv.Value).IncludeVersionInPath false)
         |> Seq.map (fun kv ->
-            { Id = (snd kv.Key).ToString()
+            { NugetPackage.Id = (snd kv.Key).ToString()
               Version = fst kv.Value
               TargetFramework = None })
         |> Seq.toList
