@@ -6,6 +6,8 @@ open NUnit.Framework
 open FsUnit
 open System
 open System.Net
+open Chessie.ErrorHandling
+open System.Xml
 
 [<Test>]
 let ``createRelativePath should handle spaces``() =
@@ -253,3 +255,19 @@ let ``should simplify path``() =
     System.IO.Path.IsPathRooted p3 |> shouldEqual false
     System.IO.Path.GetFullPath p1 |> shouldEqual (System.IO.Path.GetFullPath p2)
     System.IO.Path.Combine(normalizePath p0,normalizePath p3) |> Path.GetFullPath |> shouldEqual (System.IO.Path.GetFullPath p2)
+
+[<Test>]
+let ``saving new XML file should produce valid XML``() =
+    let tempFile = Path.GetTempFileName ()
+    try
+        let doc = XmlDocument ()
+        doc.AppendChild(doc.CreateElement("configuration")) |> ignore
+        saveNormalizedXml tempFile doc |> shouldEqual (ok ())
+        let newDoc = XmlDocument ()
+        use f = File.OpenRead(tempFile)
+        newDoc.Load f
+        if not (newDoc.FirstChild :? XmlDeclaration) then
+            failwith "Generated XML should contain a declaration"
+    finally
+        if File.Exists(tempFile) then
+            File.Delete(tempFile)
