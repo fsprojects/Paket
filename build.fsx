@@ -61,7 +61,7 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "1.0.0-preview4-004527"
+let dotnetcliVersion = "1.0.0-preview4-004233"
 
 let dotnetCliPath = DirectoryInfo "./dotnetcore"
 
