@@ -196,6 +196,7 @@ module DependenciesFileParser =
     | ImportTargets of bool
     | CopyLocal of bool
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
+    | GenerateLoadScripts of bool option
     | ReferenceCondition of string
     | Redirects of bool option
     | ResolverStrategyForTransitives of ResolverStrategy option
@@ -327,6 +328,13 @@ module DependenciesFileParser =
                         
             Some (ParserOptions(ParserOption.CopyContentToOutputDir(setting)))
         | String.StartsWith "condition" trimmed -> Some (ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper())))
+        | String.StartsWith "generate_load_scripts" trimmed ->
+            let setting =
+                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
+                | "on"  | "true"  -> Some true
+                | "off" | "false" -> Some false
+                | _ -> None
+            Some (ParserOptions(ParserOption.GenerateLoadScripts setting))
         | _ -> None
         
     let private (|SourceFile|_|) (line:string) =
@@ -406,19 +414,18 @@ module DependenciesFileParser =
 
     let private parseOptions (current  : DependenciesGroup) options =
         match options with 
-        | ReferencesMode mode -> { current.Options with Strict = mode } 
-        | Redirects mode -> { current.Options with Redirects = mode }
-        | ResolverStrategyForTransitives strategy -> { current.Options with ResolverStrategyForTransitives = strategy }
+        | ReferencesMode mode                            -> { current.Options with Strict = mode } 
+        | Redirects mode                                 -> { current.Options with Redirects = mode }
+        | ResolverStrategyForTransitives strategy        -> { current.Options with ResolverStrategyForTransitives = strategy }
         | ResolverStrategyForDirectDependencies strategy -> { current.Options with ResolverStrategyForDirectDependencies = strategy }
-        | CopyLocal mode -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
-        | CopyContentToOutputDir mode -> { current.Options with Settings = { current.Options.Settings with CopyContentToOutputDirectory = Some mode } }
-        | ImportTargets mode -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
-        | FrameworkRestrictions r -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
-        | AutodetectFrameworkRestrictions ->
-            { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = AutoDetectFramework } }
-        | OmitContent omit -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
-        | ReferenceCondition condition -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
-
+        | CopyLocal mode                                 -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
+        | CopyContentToOutputDir mode                    -> { current.Options with Settings = { current.Options.Settings with CopyContentToOutputDirectory = Some mode } }
+        | ImportTargets mode                             -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
+        | FrameworkRestrictions r                        -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }
+        | AutodetectFrameworkRestrictions                -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = AutoDetectFramework } }
+        | OmitContent omit                               -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
+        | ReferenceCondition condition                   -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
+        | GenerateLoadScripts mode                       -> { current.Options with Settings = { current.Options.Settings with GenerateLoadScripts = mode }}
     let private parseLine fileName checkDuplicates (lineNo, state) line =
         match state with
         | current::other ->

@@ -120,6 +120,8 @@
     <Compile Include="Nuget.fs" />
     <Compile Include="NuGetV3.fs" />
     <Compile Include="NuGetV2.fs" />
+    <Compile Include="Queries.fs" />
+    <Compile Include="ScriptGeneration.fs" />
     <Compile Include="LocalFile.fs" />
     <Compile Include="DependencyChangeDetection.fs" />
     <Compile Include="GarbageCollection.fs" />
@@ -143,7 +145,6 @@
     <Compile Include="FindReferences.fs" />
     <Compile Include="Why.fs" />
     <Compile Include="PublicAPI.fs" />
-    <Compile Include="ScriptGeneration.fs" />
     <None Include="paket.template" />
     <None Include="paket.references" />
   </ItemGroup>

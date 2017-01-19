@@ -550,7 +550,8 @@ type InstallSettings =
       CopyLocal : bool option
       Excludes : string list
       Aliases : Map<string,string>
-      CopyContentToOutputDirectory : CopyToOutputDirectorySettings option }
+      CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
+      GenerateLoadScripts : bool option }
 
     static member Default =
         { CopyLocal = None
@@ -562,7 +563,8 @@ type InstallSettings =
           Excludes = []
           Aliases = Map.empty
           CopyContentToOutputDirectory = None
-          OmitContent = None }
+          OmitContent = None 
+          GenerateLoadScripts = None }
 
     member this.ToString(asLines) =
         let options =
@@ -596,7 +598,11 @@ type InstallSettings =
               match this.FrameworkRestrictions with
               | FrameworkRestrictionList [] -> ()
               | AutoDetectFramework -> ()
-              | FrameworkRestrictionList list -> yield "framework: " + (String.Join(", ",list))]
+              | FrameworkRestrictionList list -> yield "framework: " + (String.Join(", ",list))
+              match this.GenerateLoadScripts with
+              | Some true -> yield "generate_load_scripts: true"
+              | Some false -> yield "generate_load_scripts: false"
+              | None -> () ]
 
         let separator = if asLines then Environment.NewLine else ", "
         String.Join(separator,options)
@@ -668,6 +674,11 @@ type InstallSettings =
                 match getPair "copy_local" with
                 | Some "false" -> Some false 
                 | Some "true" -> Some true
+                | _ -> None
+              GenerateLoadScripts =
+                match getPair "generate_load_scripts" with
+                | Some "on"  | Some "true" -> Some true
+                | Some "off" | Some "false" -> Some true
                 | _ -> None }
 
         // ignore resolver settings here

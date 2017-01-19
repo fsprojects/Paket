@@ -139,7 +139,8 @@ type ReferencesFile =
                     CreateBindingRedirects = createBindingRedirects
                     Excludes = []
                     Aliases = Map.empty
-                    OmitContent = if omitContent then Some ContentCopySettings.Omit else None } }
+                    OmitContent = if omitContent then Some ContentCopySettings.Omit else None 
+                    GenerateLoadScripts = Some false } }
 
 
         match this.Groups |> Map.tryFind groupName with

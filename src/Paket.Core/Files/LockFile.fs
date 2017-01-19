@@ -510,7 +510,7 @@ module LockFileParser =
 type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
     member __.Groups = groups
     member __.FileName = fileName
-
+    member __.RootPath = FileInfo(fileName).Directory.FullName
     member this.GetGroup groupName =
         match this.Groups |> Map.tryFind groupName with
         | Some g -> g
@@ -749,3 +749,5 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                 |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName.ToString(), package.Name)))
             |> collect
             |> lift (Seq.concat >> Set.ofSeq)
+    
+    
