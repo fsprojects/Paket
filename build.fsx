@@ -155,7 +155,7 @@ Target "InstallDotNetCore" (fun _ ->
             else
                 sprintf "dotnet-win-x64.%s.zip" dotnetcliVersion
         let downloadPath = 
-                sprintf "https://dotnetcli.blob.core.windows.net/dotnet/preview/Binaries/%s/%s" dotnetcliVersion archiveFileName
+                sprintf "https://dotnetcli.azureedge.net/dotnet/Sdk/%s/%s" dotnetcliVersion archiveFileName
         let localPath = Path.Combine(dotnetCliPath.FullName, archiveFileName)
 
         tracefn "Installing '%s' to '%s'" downloadPath localPath
