@@ -1,3 +1,6 @@
+#### 3.33.4 - 18.01.2017
+* BUGFIX: Make config writer use XmlWriter for disk write - https://github.com/fsprojects/Paket/pull/2110
+
 #### 3.33.3 - 10.01.2017
 * BUGFIX: Ensure case when getting packages from nuget feed - https://github.com/fsprojects/Paket/pull/2106
 
