@@ -151,9 +151,9 @@ Target "InstallDotNetCore" (fun _ ->
         CleanDir dotnetCliPath.FullName
         let archiveFileName = 
             if isLinux then
-                sprintf "dotnet-ubuntu-x64.%s.tar.gz" dotnetcliVersion
+                sprintf "dotnet-dev-ubuntu-x64.%s.tar.gz" dotnetcliVersion
             else
-                sprintf "dotnet-win-x64.%s.zip" dotnetcliVersion
+                sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
         let downloadPath = 
                 sprintf "https://dotnetcli.azureedge.net/dotnet/Sdk/%s/%s" dotnetcliVersion archiveFileName
         let localPath = Path.Combine(dotnetCliPath.FullName, archiveFileName)
