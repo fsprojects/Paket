@@ -65,6 +65,7 @@ type PackageDetails = {
     LicenseUrl         : string
     Unlisted           : bool
     DirectDependencies : DependencySet
+    Hash               : string option
 }
 
 /// Represents data about resolved packages
@@ -76,8 +77,9 @@ type ResolvedPackage = {
     Unlisted     : bool
     Settings     : InstallSettings
     Source       : PackageSource
+    Hash         : string option
 } with
-    override this.ToString () = sprintf "%O %O" this.Name this.Version
+    override this.ToString () = sprintf "%O %O%s" this.Name this.Version (match this.Hash with | Some s -> sprintf "(%s)" s | None -> "")
 
     member self.HasFrameworkRestrictions =
         not (getRestrictionList self.Settings.FrameworkRestrictions = [])
@@ -93,9 +95,10 @@ type ResolvedPackage = {
                 "%A\n\
                  Dependencies -\n\
                  %s\n\
+                 Hash - %A\n\
                  Source - %A\n\
                  Install Settings\n\
-                 %A"                self.Name deps self.Source self.Settings
+                 %A"                self.Name deps self.Hash self.Source self.Settings
 
 type PackageResolution = Map<PackageName, ResolvedPackage>
 
@@ -383,6 +386,7 @@ let private explorePackageConfig getPackageDetailsF  (pkgConfig:PackageConfig) =
                 Unlisted     = packageDetails.Unlisted
                 Settings     = { settings with FrameworkRestrictions = newRestrictions }
                 Source       = packageDetails.Source
+                Hash         = None
             }
     with
     | exn ->

@@ -201,7 +201,13 @@ type Catalog =
       Listed : System.Nullable<bool>
       
       [<JsonProperty("dependencyGroups")>]
-      DependencyGroups : CatalogDependencyGroup [] }
+      DependencyGroups : CatalogDependencyGroup [] 
+      
+      [<JsonProperty("packageHash")>]
+      PackageHash : string
+      
+      [<JsonProperty("packageHashAlgorithm")>]
+      PackageHashAlgorithm : string }
 
 let getRegistration (source : NugetV3Source) (packageName:PackageName) (version:SemVerInfo) =
     async {
@@ -233,13 +239,12 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                 []
             else
                 catalogData.DependencyGroups
-                |> Seq.map(fun group -> 
+                |> Seq.collect(fun group -> 
                     if group.Dependencies = null then
                         Seq.empty
                     else
                         group.Dependencies
                         |> Seq.map(fun dep -> dep, group.TargetFramework))
-                |> Seq.concat
                 |> Seq.map(fun (dep, targetFramework) ->
                     let targetFramework =
                         match targetFramework with
@@ -254,6 +259,11 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                 false
 
         let optimized = Requirements.optimizeDependencies dependencies 
+        let hash = 
+            if catalogData.PackageHashAlgorithm = "SHA512" 
+            then Some catalogData.PackageHash 
+            else None
+
         return 
             { Dependencies = optimized
               PackageName = packageName.ToString()
@@ -262,7 +272,8 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
               DownloadUrl = registrationData.PackageContent
               LicenseUrl = catalogData.LicenseUrl
               Version = version.Normalize()
-              CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion }
+              CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
+              Hash = hash }
     }
 
 let loadFromCacheOrGetDetails (force:bool)

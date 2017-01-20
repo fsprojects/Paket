@@ -49,7 +49,8 @@ type NuGetPackageCache =
       DownloadUrl : string
       LicenseUrl : string
       Version: string
-      CacheVersion: string }
+      CacheVersion: string
+      Hash : string option }
 
     static member CurrentCacheVersion = "2.8"
 

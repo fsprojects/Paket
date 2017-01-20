@@ -11,25 +11,12 @@ open System
 open Chessie.ErrorHandling
 open System.Reflection
 
-#if NETSTANDARD1_6
-open System.Security.Cryptography.Algorithms
-#endif
-
-let private makeHash (fileInfo : FileInfo) = 
-#if NETSTANDARD1_6
-    use h = new System.Security.Cryptography.SHA512.Create()
-#else
-    use h = new System.Security.Cryptography.SHA512CryptoServiceProvider()
-#endif
-    use stream = fileInfo.OpenRead()
-    h.ComputeHash(stream) |> Convert.ToBase64String
-
 /// ensures that the hash of a package exists and then checks the package hash against the pinned hash
 let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) useHash =
     if not useHash 
     then package
     else
-        let packageHash = makeHash nupkg
+        let packageHash = Utils.makeHash nupkg
         match package.Settings.Hash with
         | None -> 
             { package with Settings = { package.Settings with Hash = Some packageHash }}
