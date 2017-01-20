@@ -11,8 +11,16 @@ open System
 open Chessie.ErrorHandling
 open System.Reflection
 
+#if NETSTANDARD1_6
+open System.Security.Cryptography.Algorithms
+#endif
+
 let private makeHash (fileInfo : FileInfo) = 
+#if NETSTANDARD1_6
+    use h = new System.Security.Cryptography.SHA512.Create()
+#else
     use h = new System.Security.Cryptography.SHA512CryptoServiceProvider()
+#endif
     use stream = fileInfo.OpenRead()
     h.ComputeHash(stream) |> Convert.ToBase64String
 
