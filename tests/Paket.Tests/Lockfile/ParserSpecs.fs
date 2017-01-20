@@ -884,14 +884,12 @@ let ``should parse local git lock file with build and no specs``() =
 let useHashLockFile = """HASH:on
 NUGET
   remote: "D:\code\temp with space"
-  specs:
     Castle.Windsor (2.1)
 """
 
 let ``don't use hash lockfile`` = """HASH: off
 NUGET
   remote: "D:\code\temp with space"
-  specs:
     Castle.Windsor (2.1)
 """
 
