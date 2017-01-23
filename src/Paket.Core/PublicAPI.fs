@@ -192,7 +192,7 @@ type Dependencies(dependenciesFileName: string) =
             semVerUpdateMode = defaultArg semVerUpdateMode SemVerUpdateMode.NoRestriction,
             touchAffectedRefs = defaultArg touchAffectedRefs false)
 
-    static member GenerateIncludeScripts() =
+    static member GenerateLoadScripts() =
         LoadingScripts.ScriptGeneration.executeCommand (DirectoryInfo (Directory.GetCurrentDirectory())) List.empty List.empty
 
     /// Updates all dependencies.
