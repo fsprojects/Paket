@@ -63,7 +63,11 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
 let dotnetcliVersion = "1.0.0-preview4-004233"
 
-let dotnetCliPath = DirectoryInfo "./dotnetcore"
+let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "dotnetcore" |> FullName
+
+let dotnetExePath =
+    dotnetSDKPath </> (if isWindows then "dotnet.exe" else "dotnet")
+    |> FullName
 
 let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
 
@@ -124,10 +128,6 @@ Target "AssemblyInfo" (fun _ ->
     csProjs |> Seq.filter (fun s -> s.Contains "PaketRestoreTask" |> not) |> Seq.iter genCSAssemblyInfo
 )
 
-let dotnetExePath =
-    "dotnetcore" </> (if isWindows then "dotnet.exe" else "dotnet")
-    |> FullName
-
 Target "InstallDotNetCore" (fun _ ->
     let correctVersionInstalled = 
         try
@@ -148,7 +148,7 @@ Target "InstallDotNetCore" (fun _ ->
     if correctVersionInstalled then
         tracefn "dotnetcli %s already installed" dotnetcliVersion
     else
-        CleanDir dotnetCliPath.FullName
+        CleanDir dotnetSDKPath
         let archiveFileName = 
             if isLinux then
                 sprintf "dotnet-dev-ubuntu-x64.%s.tar.gz" dotnetcliVersion
@@ -156,7 +156,7 @@ Target "InstallDotNetCore" (fun _ ->
                 sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
         let downloadPath = 
                 sprintf "https://dotnetcli.azureedge.net/dotnet/Sdk/%s/%s" dotnetcliVersion archiveFileName
-        let localPath = Path.Combine(dotnetCliPath.FullName, archiveFileName)
+        let localPath = Path.Combine(dotnetSDKPath, archiveFileName)
 
         tracefn "Installing '%s' to '%s'" downloadPath localPath
         
@@ -168,19 +168,19 @@ Target "InstallDotNetCore" (fun _ ->
                 if x = 0 then () else
                 failwithf "Command failed with exit code %i" x
 
-            Shell.Exec("tar", sprintf """-xvf "%s" -C "%s" """ localPath dotnetCliPath.FullName)
+            Shell.Exec("tar", sprintf """-xvf "%s" -C "%s" """ localPath dotnetSDKPath)
             |> assertExitCodeZero
         else  
-            System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetCliPath.FullName)
+            System.IO.Compression.ZipFile.ExtractToDirectory(localPath, dotnetSDKPath)
         
-        tracefn "dotnet cli path - %s" dotnetCliPath.FullName
-        System.IO.Directory.EnumerateFiles dotnetCliPath.FullName
+        tracefn "dotnet cli path - %s" dotnetSDKPath
+        System.IO.Directory.EnumerateFiles dotnetSDKPath
         |> Seq.iter (fun path -> tracefn " - %s" path)
-        System.IO.Directory.EnumerateDirectories dotnetCliPath.FullName
+        System.IO.Directory.EnumerateDirectories dotnetSDKPath
         |> Seq.iter (fun path -> tracefn " - %s%c" path System.IO.Path.DirectorySeparatorChar)
 
     let oldPath = System.Environment.GetEnvironmentVariable("PATH")
-    System.Environment.SetEnvironmentVariable("PATH", sprintf "%s%s%s" dotnetCliPath.FullName (System.IO.Path.PathSeparator.ToString()) oldPath)
+    System.Environment.SetEnvironmentVariable("PATH", sprintf "%s%s%s" dotnetSDKPath (System.IO.Path.PathSeparator.ToString()) oldPath)
 )
 
 // --------------------------------------------------------------------------------------
