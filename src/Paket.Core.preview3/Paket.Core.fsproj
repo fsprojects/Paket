@@ -50,6 +50,8 @@
     <Compile Include="$(PaketCoreSourcesDir)\Nuget.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\NuGetV3.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\NuGetV2.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Queries.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\ScriptGeneration.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\LocalFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\DependencyChangeDetection.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\GarbageCollection.fs" />
@@ -73,7 +75,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\FindReferences.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Why.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PublicAPI.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\ScriptGeneration.fs" />
+
   </ItemGroup>
   <ItemGroup>
     <None Include="$(PaketCoreSourcesDir)\paket.template" />
