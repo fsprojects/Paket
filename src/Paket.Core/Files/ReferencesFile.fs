@@ -140,7 +140,7 @@ type ReferencesFile =
                     Excludes = []
                     Aliases = Map.empty
                     OmitContent = if omitContent then Some ContentCopySettings.Omit else None 
-                    GenerateLoadScripts = Some false } }
+                    GenerateLoadScripts = None } }
 
 
         match this.Groups |> Map.tryFind groupName with
