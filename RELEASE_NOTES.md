@@ -1,3 +1,6 @@
+#### 3.33.5 - 24.01.2017
+* BUGFIX:  Convert from nuget: Local package source gave false error - https://github.com/fsprojects/Paket/pull/2112
+
 #### 3.33.4 - 18.01.2017
 * BUGFIX: Make config writer use XmlWriter for disk write - https://github.com/fsprojects/Paket/pull/2110
 
