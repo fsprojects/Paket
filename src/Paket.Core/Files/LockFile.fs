@@ -397,7 +397,7 @@ module LockFileParser =
                                 failwithf "No version specified for package %O in group %O." package currentGroup.GroupName
                             parts'.[1] |> removeBrackets
                         let hash = 
-                            if parts'.Length < 3 || parts'.[2] = "()" then 
+                            if parts'.Length < 3 || parts'.[2] = "()" && (defaultArg currentGroup.Options.Settings.UseHash false) then 
                                 tracefn "No hash for package %O in group %O. One will be added on next add, update, or install." package currentGroup.GroupName
                                 None
                             else 
