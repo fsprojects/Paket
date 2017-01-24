@@ -689,9 +689,8 @@ type InstallSettings =
                 | Some "off" | Some "false" -> Some true
                 | _ -> None 
               Hash = 
-                match kvPairs.TryGetValue "hash" with
-                | true, "" -> None 
-                | true, s -> Some s
+                match getPair "hash" with
+                | Some s -> Some s
                 | _ -> None
               UseHash = None }
 
