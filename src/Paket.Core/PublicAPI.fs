@@ -192,6 +192,9 @@ type Dependencies(dependenciesFileName: string) =
             semVerUpdateMode = defaultArg semVerUpdateMode SemVerUpdateMode.NoRestriction,
             touchAffectedRefs = defaultArg touchAffectedRefs false)
 
+    static member GenerateLoadScripts() =
+        LoadingScripts.ScriptGeneration.executeCommand (DirectoryInfo (Directory.GetCurrentDirectory())) List.empty List.empty
+
     /// Updates all dependencies.
     member this.Update(force: bool): unit = this.Update(force, false, false, false)
 

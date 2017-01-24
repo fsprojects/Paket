@@ -57,13 +57,7 @@ let ``simple dependencies generates expected scripts``() =
   if not isMono then // TODO: Fix me
     Assert.AreEqual(expectedFiles,actualFiles)
 
-[<Test;Category("scriptgen")>]
-let ``framework specified``() = 
-  let scenario = "framework-specified"
-  paket "install" scenario |> ignore
-
-  directPaket "generate-include-scripts" scenario |> ignore
-
+let assertNhibernateForFramework35IsThere scenario =
   let expectations = [
     "include.iesi.collections.csx", ["Net35/Iesi.Collections.dll"]
     "include.iesi.collections.fsx", ["Net35/Iesi.Collections.dll"]
@@ -75,6 +69,16 @@ let ``framework specified``() =
 
   if not (Seq.isEmpty failures) then
     Assert.Fail (failures |> String.concat Environment.NewLine)
+
+
+[<Test;Category("scriptgen")>]
+let ``framework specified``() = 
+  let scenario = "framework-specified"
+  paket "install" scenario |> ignore
+
+  directPaket "generate-include-scripts" scenario |> ignore
+
+  assertNhibernateForFramework35IsThere scenario
 
 [<Test; Category("scriptgen"); Ignore("group script is always generated")>]
 let ``don't generate scripts when no references are found``() = 
@@ -191,3 +195,9 @@ let ``fsharp.core excluded from f# script`` () =
 
     Assert.False hasFilesWithFsharpCore
 
+[<Test; Category("scriptgen dependencies")>]
+let ``generates script on install`` () =
+    let scenario = "dependencies-file-flag"
+    paket "install" scenario |> ignore
+
+    assertNhibernateForFramework35IsThere scenario

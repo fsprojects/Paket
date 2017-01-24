@@ -1433,3 +1433,36 @@ let ``should read autodetect from specific main group``() =
     let cfg = DependenciesFile.FromCode(autodetectconfigSpecific)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions 
     |> shouldEqual FrameworkRestrictions.AutoDetectFramework
+
+[<Test>]
+let ``parsing generate load scripts`` () =
+    let casesAndExpectation = [
+      Some "true"  , Some true
+      Some "on"    , Some true
+      Some "false" , Some false
+      Some "off"   , Some false
+      None         , None
+    ]
+    let results = [
+        for case, expectation in casesAndExpectation do
+            let config = 
+                DependenciesFile.FromCode <|
+                match case with
+                | Some value ->
+                    sprintf """
+      source https://nuget.org/api/v2
+      generate_load_scripts: %s""" value
+                | None ->
+                    """
+      source https://nuget.org/api/v2
+      """
+            let result = config.Groups.[Constants.MainDependencyGroup].Options.Settings.GenerateLoadScripts
+            yield (result = expectation), (case, expectation, result)
+    ]
+
+    let failedResults = results |> Seq.filter (fst >> not)
+    if failedResults |> (Seq.isEmpty >> not) then
+        for _, (case, expectation, result) in failedResults do
+            printfn "case %A expected %A got %A" case expectation result
+        failwith "failed"
+

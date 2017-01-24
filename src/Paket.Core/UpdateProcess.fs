@@ -222,6 +222,17 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
         InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
         GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
 
+    let shouldGenerateScripts =
+        // hardcoded assumption, if option is set on any of the group, generate everything
+        dependenciesFile.Groups 
+        |> Seq.map (fun kvp -> kvp.Value)
+        |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
+        |> Seq.tryHead
+        |> Option.isSome
+
+    if shouldGenerateScripts then
+        LoadingScripts.ScriptGeneration.executeCommand (DirectoryInfo dependenciesFile.RootPath) List.empty List.empty
+
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
