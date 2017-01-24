@@ -12,6 +12,7 @@ open Paket.Logging
 open Paket.Constants
 open Chessie.ErrorHandling
 open Paket.Domain
+open System.Security.Cryptography
 
 #if NETSTANDARD1_6
 open System.Net.Http
@@ -975,15 +976,11 @@ type StringBuilder with
 
     member self.AppendLinef text = Printf.kprintf self.AppendLine text
 
-#if NETSTANDARD1_6
-open System.Security.Cryptography.Algorithms
-#endif
-
 let makeHash (fileInfo : FileInfo) =
 #if NETSTANDARD1_6
-    use h = new System.Security.Cryptography.SHA512.Create()
+    use h = SHA512.Create()
 #else
-    use h = new System.Security.Cryptography.SHA512CryptoServiceProvider()
+    use h = new SHA512CryptoServiceProvider()
 #endif
     use stream = fileInfo.OpenRead()
     h.ComputeHash(stream) |> Convert.ToBase64String
