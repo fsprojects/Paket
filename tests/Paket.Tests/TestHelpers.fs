@@ -44,7 +44,8 @@ let PackageDetailsFromGraph (graph : DependencyGraph) sources groupName (package
       DownloadLink = ""
       LicenseUrl = ""
       Unlisted = false
-      DirectDependencies = Set.ofList dependencies }
+      DirectDependencies = Set.ofList dependencies
+      Hash = None }
 
 let VersionsFromGraph (graph : DependencyGraph) sources resolverStrategy groupName packageName = 
     let versions =
