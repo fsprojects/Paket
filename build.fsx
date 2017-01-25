@@ -152,6 +152,8 @@ Target "InstallDotNetCore" (fun _ ->
         let archiveFileName = 
             if isLinux then
                 sprintf "dotnet-dev-ubuntu-x64.%s.tar.gz" dotnetcliVersion
+            else if Fake.EnvironmentHelper.isMacOS then
+                sprintf "dotnet-dev-osx-x64.%s.tar.gz" dotnetcliVersion
             else
                 sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
         let downloadPath = 
@@ -163,7 +165,7 @@ Target "InstallDotNetCore" (fun _ ->
         use webclient = new Net.WebClient()
         webclient.DownloadFile(downloadPath, localPath)
 
-        if isLinux then
+        if isLinux || isMacOS then
             let assertExitCodeZero x =
                 if x = 0 then () else
                 failwithf "Command failed with exit code %i" x
