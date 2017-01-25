@@ -176,7 +176,12 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
         | Some node -> node.InnerText
         | None -> failwithf "unable to find dependencies for package %O %O" packageName version
     
-    let hash = None
+    let hash = 
+        let props = entry |> getNode "properties"
+        match props |> optGetNode "PackageHash", props |> optGetNode "PackageHashAlgorithm" with 
+        | _, None -> None
+        | Some h, Some algo when algo.InnerText = "SHA512" -> Some h.InnerText
+        | _ -> None
 
     let packages =
         let split (d : string) =
