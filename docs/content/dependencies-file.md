@@ -239,7 +239,7 @@ To override a `lowest_matching` option for a single NuGet package, you can use t
 
 This option tells Paket to generate include scripts which reference installed packages during package installation.
 
-The `generate_load_scripts` option can be either `true` or `false` with false being the default.
+The `generate_load_scripts` option can be either `true` or `false` with `false` being the default.
 
     [lang=paket]
     generate_load_scripts: true
