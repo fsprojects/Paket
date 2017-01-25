@@ -53,3 +53,15 @@ You'll see messages when you execute the `#load` line in FSI:
     Loaded http.fs
     Loaded xplot.plotly
     Loaded fslab
+    
+    ## Generate include scripts while installing packages
+
+Alternatively, the include scripts can be generated automatically when running the `paket install` command.
+
+To enable this, add the `generate_load_scripts` option to the `paket.dependencies` file:
+
+    [lang=paket]
+    generate_load_scripts: true
+    source https://nuget.org/api/v2
+
+    nuget Suave
