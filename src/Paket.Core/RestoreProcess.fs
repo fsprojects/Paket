@@ -1,4 +1,4 @@
-﻿/// Contains methods for the restore process.
+﻿/// Contains methods for the restore process. 
 module Paket.RestoreProcess
 
 open Paket
@@ -11,6 +11,21 @@ open System
 open Chessie.ErrorHandling
 open System.Reflection
 
+/// ensures that the hash of a package exists and then checks the package hash against the pinned hash
+let private checkHash (package : ResolvedPackage) (nupkg : FileInfo) useHash =
+    if not useHash 
+    then package
+    else
+        let packageHash = Utils.makeHash nupkg
+        match package.Settings.Hash with
+        | None -> 
+            { package with Settings = { package.Settings with Hash = Some packageHash }}
+        | Some storedHash ->
+            if storedHash <> packageHash then
+                failwithf "Error when extracting nuget package %O, the hash of %s did not match the pinned hash of %s" package.Name packageHash storedHash
+            else 
+                package
+
 // Find packages which would be affected by a restore, i.e. not extracted yet or with the wrong version
 let FindPackagesNotExtractedYet(dependenciesFileName) =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -22,7 +37,6 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
     |> List.filter (fun ((group,package),resolved) -> NuGetV2.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
     |> List.map fst
 
-
 let CopyToCaches force caches fileName =
     caches
     |> Seq.iter (fun cache -> 
@@ -33,9 +47,11 @@ let CopyToCaches force caches fileName =
             if verbose then
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
-let private extractPackage caches package root source groupName version includeVersionInPath force =
+let private extractPackage caches package root source groupName version includeVersionInPath force useHash =
     let downloadAndExtract force detailed = async {
-        let! fileName,folder = NuGetV2.DownloadPackage(root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let! fileName, folder = NuGetV2.DownloadPackage(root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let nupkg = NuGetV2.findLocalPackage folder package.Name package.Version
+        let package = checkHash package nupkg useHash
         CopyToCaches force caches fileName
         return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
@@ -55,7 +71,7 @@ let private extractPackage caches package root source groupName version includeV
     }
 
 /// Downloads and extracts a package.
-let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
+let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPackage, localOverride, useHash) = 
     async { 
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
@@ -80,12 +96,12 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
                     | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
                     | Some s -> s 
 
-                return! extractPackage caches package root source groupName v includeVersionInPath force
+                return! extractPackage caches package root source groupName v includeVersionInPath force useHash
             | LocalNuGet(path,_) ->
                 let path = Utils.normalizeLocalPath path
                 let di = Utils.getDirectoryInfo path root
                 let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
-
+                let package = checkHash package nupkg useHash
                 CopyToCaches force caches nupkg.FullName
 
                 let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
@@ -106,19 +122,20 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
 let internal restore (root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
-        let! _ = lockFile.Groups.[groupName].Resolution
+        let group = lockFile.Groups.[groupName]
+        let useHash = defaultArg group.Options.Settings.UseHash false
+        let! _ = group.Resolution
                  |> Map.filter (fun name _ -> packages.Contains name)
-                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
+                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden, useHash))
                  |> Async.Parallel
         return ()
     }
 
 let internal computePackageHull groupName (lockFile : LockFile) (referencesFileNames : string seq) =
     referencesFileNames
-    |> Seq.map (fun fileName ->
+    |> Seq.collect (fun fileName ->
         lockFile.GetPackageHull(groupName,ReferencesFile.FromFile fileName)
         |> Seq.map (fun p -> (snd p.Key)))
-    |> Seq.concat
 
 let findAllReferencesFiles root =
     let findRefFile (p:ProjectFile) =

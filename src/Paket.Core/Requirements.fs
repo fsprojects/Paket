@@ -280,8 +280,7 @@ let optimizeDependencies originalDependencies =
                 else
                     let sorted = 
                         group 
-                        |> List.map (fun (_,_,res) -> res) 
-                        |> List.concat
+                        |> List.collect (fun (_,_,res) -> res) 
                         |> List.distinct
                         |> List.sort
 
@@ -300,15 +299,15 @@ let optimizeDependencies originalDependencies =
                                 | Some globalMin ->
                                     KnownTargetProfiles.DotNetFrameworkVersions 
                                     |> List.filter (fun fw -> DotNetFramework(fw) < globalMin)
-                                    |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetFramework(fw)))
+                                    |> List.map (DotNetFramework >> FrameworkRestriction.Exactly)
                                 | _ ->
                                     KnownTargetProfiles.DotNetFrameworkVersions                                     
-                                    |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetFramework(fw)))
+                                    |> List.map (DotNetFramework >> FrameworkRestriction.Exactly)
 
                             let standards =
                                 KnownTargetProfiles.DotNetStandardVersions 
                                 |> List.filter (fun fw -> DotNetStandard(fw) < globalStandardMin)
-                                |> List.map (fun fw -> FrameworkRestriction.Exactly(DotNetStandard(fw)))
+                                |> List.map (DotNetStandard >> FrameworkRestriction.Exactly)
 
                             frameworks @ standards
 
@@ -371,13 +370,13 @@ let optimizeDependencies originalDependencies =
                                 let compatible = 
                                     KnownTargetProfiles.DotNetFrameworkIdentifiers
                                     |> List.filter (fun p -> p.IsCompatible(DotNetStandard r))
-                                    |> List.map (fun p -> FrameworkRestriction.Exactly p)
+                                    |> List.map FrameworkRestriction.Exactly
                                 FrameworkRestriction.AtLeast(DotNetStandard(r)) :: compatible
                             | FrameworkRestriction.AtLeast(DotNetStandard(r)) -> 
                                 let compatible = 
                                     KnownTargetProfiles.DotNetFrameworkIdentifiers
                                     |> List.filter (fun p -> p.IsCompatible(DotNetStandard r))
-                                    |> List.map (fun p -> FrameworkRestriction.AtLeast p)
+                                    |> List.map FrameworkRestriction.AtLeast
                                 FrameworkRestriction.AtLeast(DotNetStandard(r)) :: compatible
                             | r -> [r])
                         |> optimizeRestrictions
@@ -551,7 +550,9 @@ type InstallSettings =
       Excludes : string list
       Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
-      GenerateLoadScripts : bool option }
+      GenerateLoadScripts : bool option
+      UseHash : bool option
+      Hash : string option }
 
     static member Default =
         { CopyLocal = None
@@ -564,7 +565,9 @@ type InstallSettings =
           Aliases = Map.empty
           CopyContentToOutputDirectory = None
           OmitContent = None 
-          GenerateLoadScripts = None }
+          GenerateLoadScripts = None
+          UseHash = None
+          Hash = None }
 
     member this.ToString(asLines) =
         let options =
@@ -602,7 +605,10 @@ type InstallSettings =
               match this.GenerateLoadScripts with
               | Some true -> yield "generate_load_scripts: true"
               | Some false -> yield "generate_load_scripts: false"
-              | None -> () ]
+              | None -> ()
+              match this.Hash with
+              | None -> ()
+              | Some h -> yield "hash: " + h ]
 
         let separator = if asLines then Environment.NewLine else ", "
         String.Join(separator,options)
@@ -620,6 +626,8 @@ type InstallSettings =
                 ReferenceCondition = self.ReferenceCondition ++ other.ReferenceCondition
                 Excludes = self.Excludes @ other.Excludes
                 IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
+                UseHash = self.UseHash ++ other.UseHash
+                Hash = self.Hash ++ other.Hash
         }
 
     static member Parse(text:string) : InstallSettings =
@@ -679,7 +687,12 @@ type InstallSettings =
                 match getPair "generate_load_scripts" with
                 | Some "on"  | Some "true" -> Some true
                 | Some "off" | Some "false" -> Some true
-                | _ -> None }
+                | _ -> None 
+              Hash = 
+                match getPair "hash" with
+                | Some s -> Some s
+                | _ -> None
+              UseHash = None }
 
         // ignore resolver settings here
         getPair "strategy" |> ignore

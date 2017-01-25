@@ -129,7 +129,7 @@ let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, r
     }
 
 
-let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
+let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) : NuGetPackageCache=
     let doc = XmlDocument()
     try
         doc.LoadXml raw
@@ -175,6 +175,13 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
         match entry |> getNode "properties" |> optGetNode "Dependencies" with
         | Some node -> node.InnerText
         | None -> failwithf "unable to find dependencies for package %O %O" packageName version
+    
+    let hash = 
+        let props = entry |> getNode "properties"
+        match props |> optGetNode "PackageHash", props |> optGetNode "PackageHashAlgorithm" with 
+        | _, None -> None
+        | Some h, Some algo when algo.InnerText = "SHA512" -> Some h.InnerText
+        | _ -> None
 
     let packages =
         let split (d : string) =
@@ -235,7 +242,8 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
       CacheVersion = NuGetPackageCache.CurrentCacheVersion
       LicenseUrl = licenseUrl
       Version = (SemVer.Parse v).Normalize()
-      Unlisted = publishDate = Constants.MagicUnlistingDate }
+      Unlisted = publishDate = Constants.MagicUnlistingDate
+      Hash = hash }
 
 
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
@@ -383,7 +391,8 @@ let getDetailsFromLocalNuGetPackage isCache root localNuGetPath (packageName:Pac
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
               Version = version.Normalize()
-              Unlisted = isCache }
+              Unlisted = isCache
+              Hash = Some (Utils.makeHash nupkg) }
     }
 
 
@@ -725,7 +734,8 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
       DownloadLink = nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
       LicenseUrl = nugetObject.LicenseUrl
-      DirectDependencies = nugetObject.Dependencies |> Set.ofList }
+      DirectDependencies = nugetObject.Dependencies |> Set.ofList 
+      Hash = nugetObject.Hash}
 
 let rec GetPackageDetails root force (sources:PackageSource list) groupName packageName (version:SemVerInfo) : PackageResolver.PackageDetails =
     try
@@ -848,8 +858,7 @@ let GetVersions force root (sources, packageName:PackageName) =
                         File.WriteAllText(errorFile.FullName,DateTime.Now.ToString())
                 with _ -> ()
                 None)
-        |> Array.map (fun (s,versions) -> versions |> Array.map (fun v -> v,s))
-        |> Array.concat
+        |> Array.collect (fun (s,versions) -> versions |> Array.map (fun v -> v,s))
 
     let versions =
         match trial force with

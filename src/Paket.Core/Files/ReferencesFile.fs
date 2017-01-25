@@ -94,20 +94,23 @@ type ReferencesFile =
                         packages |> Seq.toList
 
                     let remoteFiles = 
-                        remoteLines
-                        |> List.map (fun s -> s.Replace("File:","").Split([|' '|], StringSplitOptions.RemoveEmptyEntries))
-                        |> List.map (fun segments ->
-                                        let hasPath =
-                                            let get x = if segments.Length > x then segments.[x] else ""
-                                            segments.Length >= 2 && not ((get 1).Contains(":")) && not ((get 2).StartsWith(":")) 
+                        let removeFile (s: string) = s.Replace("File:","")
+                        let splitSpace (s: string) = s.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
+                        let parseRemote (segments : string []) = 
+                            let hasPath =
+                                let get x = if segments.Length > x then segments.[x] else ""
+                                segments.Length >= 2 && not ((get 1).Contains(":")) && not ((get 2).StartsWith(":")) 
 
-                                        let rest = 
-                                            let skip = if hasPath then 2 else 1
-                                            if segments.Length < skip then "" else String.Join(" ",segments |> Seq.skip skip)
+                            let rest = 
+                                let skip = if hasPath then 2 else 1
+                                if segments.Length < skip then "" else String.Join(" ",segments |> Seq.skip skip)
 
-                                        { Name = segments.[0]
-                                          Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink 
-                                          Settings = RemoteFileInstallSettings.Parse rest })
+                            { Name = segments.[0]
+                              Link = if hasPath then segments.[1] else ReferencesFile.DefaultLink 
+                              Settings = RemoteFileInstallSettings.Parse rest }
+
+                        remoteLines |> List.map (removeFile >> splitSpace >> parseRemote)
+                        
                     { Name = groupName; NugetPackages = nugetPackages; RemoteFiles = remoteFiles })
             |> List.fold (fun m g -> 
                 match Map.tryFind g.Name m with
@@ -140,8 +143,9 @@ type ReferencesFile =
                     Excludes = []
                     Aliases = Map.empty
                     OmitContent = if omitContent then Some ContentCopySettings.Omit else None 
-                    GenerateLoadScripts = None } }
-
+                    GenerateLoadScripts = None
+                    UseHash = None
+                    Hash = None } }
 
         match this.Groups |> Map.tryFind groupName with
         | None -> 
@@ -160,8 +164,11 @@ type ReferencesFile =
                 this
             else
                 tracefn "Adding package %O to %s into group %O" packageName this.FileName groupName
-
-                let newGroup = { group with NugetPackages = group.NugetPackages @ [ package ] }
+                // if we should use the hash for this package or not is determined by the setting on the other packages, or false if there is no other package
+                let pkg1Hash = group.NugetPackages |> List.tryHead |> Option.bind (fun p -> p.Settings.UseHash)
+                let settings = { package.Settings with UseHash = pkg1Hash}
+                let package' = { package with Settings = settings }
+                let newGroup = { group with NugetPackages = group.NugetPackages @ [ package' ] }
                 let newGroups = this.Groups |> Map.add newGroup.Name newGroup
 
                 { this with Groups = newGroups }

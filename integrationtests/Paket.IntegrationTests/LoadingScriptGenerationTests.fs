@@ -54,7 +54,7 @@ let ``simple dependencies generates expected scripts``() =
       "include.nunit.fsx"
   |]
   
-  if not isMono then // TODO: Fix me
+  if not isMonoRuntime then // TODO: Fix me
     Assert.AreEqual(expectedFiles,actualFiles)
 
 let assertNhibernateForFramework35IsThere scenario =

@@ -235,6 +235,19 @@ If you want to influence the resolution of [transitive dependencies](faq.html#tr
 
 To override a `lowest_matching` option for a single NuGet package, you can use the package specific [lowest_matching option](nuget-dependencies.html#Lowest_matching-option).
 
+## Hash option
+
+This option opts in to Paket's package verification mechanism.  This mechanism verifies the Base64-encoded SHA256 hash of any Nuget packages downloaded from any source against a value that is recorded in the `paket.lock` file.
+
+To enable this feature, add the `hash: on` directive to either the top-level of your `paket.dependencies` file, or within a particular desired dependency group.
+
+	hash: on
+	source https://nuget.org/api/v2
+
+	nuget FAKE
+
+The valid values for this directive are `on`, `off`, or no directive.  If no directive is given, then the lock file will not be modified in any way.
+
 ## Comments
 
 All lines starting with with `//` or `#` are considered comments.

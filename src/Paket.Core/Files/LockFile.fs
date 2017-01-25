@@ -60,7 +60,12 @@ module LockFileSerializer =
 
         match options.Settings.FrameworkRestrictions |> getRestrictionList with
         | [] -> ()
-        | list  -> yield "FRAMEWORK: " + (String.Join(", ",list)).ToUpper()]
+        | list  -> yield "FRAMEWORK: " + (String.Join(", ",list)).ToUpper()
+
+        match options.Settings.UseHash with
+        | None -> ()
+        | Some true -> yield "HASH: on"
+        | Some false -> yield "HASH: off" ]
 
     /// [omit]
     let serializePackages options (resolved : PackageResolution) = 
@@ -103,12 +108,11 @@ module LockFileSerializer =
                             { package.Settings with FrameworkRestrictions = FrameworkRestrictionList [] }
                         else
                             package.Settings
-                      let s = settings.ToString().ToLower()
 
-                      if s = "" then 
-                        yield sprintf "    %O %s" package.Name versionStr 
-                      else
-                        yield sprintf "    %O %s - %s" package.Name versionStr s
+                      let pkgpart = sprintf "    %O" package.Name
+                      let versionpart = sprintf " %s" versionStr
+                      let settingspart = match settings.ToString() with "" -> "" | s -> sprintf " - %O" s
+                      yield sprintf "%s%s%s" pkgpart versionpart settingspart
 
                       for name,v,restrictions in package.Dependencies do
                           let versionStr = 
@@ -224,6 +228,7 @@ module LockFileParser =
     | Command of string
     | PackagePath of string
     | OperatingSystemRestriction of string
+    | Hash of bool option
 
     let private (|Remote|NugetPackage|NugetDependency|SourceFile|RepositoryType|Group|InstallOption|) (state, line:string) =
         match (state.RepositoryType, line.Trim()) with
@@ -287,6 +292,14 @@ module LockFileParser =
             InstallOption(PackagePath trimmed)
         | _, String.StartsWith "os: " trimmed ->
             InstallOption(OperatingSystemRestriction trimmed)
+        | _, String.StartsWith "HASH:" trimmed -> 
+            let setting = 
+                match trimmed.Trim().ToLowerInvariant() with
+                | "on" -> Some true
+                | "off" -> Some false
+                | _ -> None
+
+            InstallOption(Hash(setting))
         | _, trimmed when line.StartsWith "      " ->
             let frameworkSettings =
                 if trimmed.Contains(" - ") then
@@ -326,6 +339,9 @@ module LockFileParser =
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
         | DirectDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForDirectDependencies = strategy }
         | TransitiveDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }
+        | Hash set -> 
+            let settings = { currentGroup.Options.Settings with UseHash = set}
+            {currentGroup.Options with Settings = settings }
         | _ -> failwithf "Unknown option %A" option
 
     let Parse(lockFileLines) =
@@ -380,7 +396,13 @@ module LockFileParser =
                             if parts'.Length < 2 then
                                 failwithf "No version specified for package %O in group %O." package currentGroup.GroupName
                             parts'.[1] |> removeBrackets
-
+                        let hash = 
+                            if parts'.Length < 3 || parts'.[2] = "()" && (defaultArg currentGroup.Options.Settings.UseHash false) then 
+                                tracefn "No hash for package %O in group %O. One will be added on next add, update, or install." package currentGroup.GroupName
+                                None
+                            else 
+                                parts'.[2].TrimStart('(').TrimEnd(')') |> Some
+                                    
                         { currentGroup with 
                             LastWasPackage = true
                             Packages = 
@@ -389,7 +411,8 @@ module LockFileParser =
                                       Dependencies = Set.empty
                                       Unlisted = false
                                       Settings = settings
-                                      Version = SemVer.Parse version } :: currentGroup.Packages }::otherGroups
+                                      Version = SemVer.Parse version
+                                      Hash = hash } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
                     let version,settings = parsePackage v
@@ -576,14 +599,12 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         let collectDependenciesForGroup group = 
             let fromNuGets =
                 group.Resolution 
-                |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
-                |> Seq.concat
+                |> Seq.collect (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
                 |> Set.ofSeq
 
             let fromSourceFiles =
                 group.RemoteFiles
-                |> Seq.map (fun d -> d.Dependencies |> Seq.map fst)
-                |> Seq.concat
+                |> Seq.collect (fun d -> d.Dependencies |> Seq.map fst)
                 |> Set.ofSeq
 
             Set.union fromNuGets fromSourceFiles
@@ -605,8 +626,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
     member this.GetGroupedResolution() =
         this.Groups
-        |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv' -> (kv.Key,kv'.Key),kv'.Value))
-        |> Seq.concat
+        |> Seq.collect (fun kv -> kv.Value.Resolution |> Seq.map (fun kv' -> (kv.Key,kv'.Key),kv'.Value))
         |> Map.ofSeq
 
     override __.ToString() =
@@ -729,14 +749,13 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
     member this.GetDependencyLookupTable() = 
         groups
-        |> Seq.map (fun kv ->
+        |> Seq.collect (fun kv ->
                 kv.Value.Resolution
                 |> Seq.map (fun kv' -> 
                                 (kv.Key,kv'.Key),
                                 this.GetAllDependenciesOf(kv.Key,kv'.Value.Name,this.FileName)
                                 |> Set.ofSeq
                                 |> Set.remove kv'.Value.Name))
-        |> Seq.concat
         |> Map.ofSeq
 
     member this.GetPackageHullSafe(referencesFile,groupName) =

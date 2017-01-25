@@ -26,7 +26,8 @@ let ``can detect explicit dependencies for Fantomas``() =
           LicenseUrl = "http://github.com/dungpa/fantomas/blob/master/LICENSE.md"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Version = "1.6.0"
-          SourceUrl = fakeUrl }
+          SourceUrl = fakeUrl
+          Hash = None }
 
 [<Test>]
 let ``can detect explicit dependencies for Rx-PlaformServices``() = 
@@ -41,7 +42,8 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
           LicenseUrl = "http://go.microsoft.com/fwlink/?LinkID=261272"
           Version = "2.3.0"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
-          SourceUrl = fakeUrl }
+          SourceUrl = fakeUrl 
+          Hash = None }
 
 [<Test>]
 let ``can detect explicit dependencies for EasyNetQ``() = 
@@ -55,7 +57,8 @@ let ``can detect explicit dependencies for EasyNetQ``() =
           LicenseUrl = "https://github.com/mikehadlow/EasyNetQ/blob/master/licence.txt"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Version = "0.40.3.352"
-          SourceUrl = fakeUrl }
+          SourceUrl = fakeUrl 
+          Hash = None }
 
 [<Test>]
 let ``can detect explicit dependencies for Fleece``() = 
@@ -72,7 +75,8 @@ let ``can detect explicit dependencies for Fleece``() =
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),FrameworkRestrictionList []
              PackageName "ReadOnlyCollectionExtensions",DependenciesFileParser.parseVersionRequirement(">= 1.2.0"),FrameworkRestrictionList []
              PackageName "System.Json",DependenciesFileParser.parseVersionRequirement(">= 4.0.20126.16343"),FrameworkRestrictionList []]
-          SourceUrl = fakeUrl }
+          SourceUrl = fakeUrl 
+          Hash = None }
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
@@ -90,7 +94,8 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
               FrameworkRestrictionList
                [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
                 FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V3_5))]]
-          SourceUrl = fakeUrl }
+          SourceUrl = fakeUrl 
+          Hash = None }
 
 [<Test>]
 let ``can detect explicit dependencies for Math.Numerics``() = 
@@ -104,7 +109,8 @@ let ``can detect explicit dependencies for Math.Numerics``() =
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Dependencies = 
             [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), FrameworkRestrictionList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]]
-          SourceUrl = fakeUrl }
+          SourceUrl = fakeUrl 
+          Hash = None }
 
 [<Test>]
 let ``can detect explicit dependencies for Math.Numerics.FSharp``() = 

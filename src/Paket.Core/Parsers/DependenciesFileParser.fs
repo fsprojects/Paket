@@ -11,7 +11,7 @@ module DependenciesFileParser =
 
     let private operators =
         VersionRange.BasicOperators
-        @ (VersionRange.BasicOperators |> List.map (fun o -> VersionRange.StrategyOperators |> List.map (fun s -> string s + o)) |> List.concat)
+        @ (VersionRange.BasicOperators |> List.collect (fun o -> VersionRange.StrategyOperators |> List.map (fun s -> string s + o)))
 
     let (|NuGetStrategy|PaketStrategy|NoStrategy|) (text : string) =
         match text |> Seq.tryHead with
@@ -134,7 +134,6 @@ module DependenciesFileParser =
         |> List.rev
         |> List.toArray
 
-
     let private parseGitSource trimmed origin originTxt = 
         let parts = parseDependencyLine trimmed
         
@@ -148,7 +147,6 @@ module DependenciesFileParser =
         | [| _; projectSpec; fileSpec |] -> origin, getParts projectSpec, fileSpec, None
         | [| _; projectSpec |] -> origin, getParts projectSpec, Constants.FullProjectSourceFileName, None
         | _ -> failwithf "invalid %s specification:%s     %s" originTxt Environment.NewLine trimmed
-
 
     let private parseHttpSource trimmed = 
         let parts = parseDependencyLine trimmed
@@ -201,6 +199,7 @@ module DependenciesFileParser =
     | Redirects of bool option
     | ResolverStrategyForTransitives of ResolverStrategy option
     | ResolverStrategyForDirectDependencies of ResolverStrategy option
+    | UseHash of bool option
 
     type RemoteParserOption =
     | PackageSource of PackageSource
@@ -335,6 +334,14 @@ module DependenciesFileParser =
                 | "off" | "false" -> Some false
                 | _ -> None
             Some (ParserOptions(ParserOption.GenerateLoadScripts setting))
+        | String.StartsWith "hash" trimmed -> 
+            let setting = 
+                match trimmed.Replace(":", "").Trim() with
+                | "on" -> Some true
+                | "off" -> Some false
+                | _ -> None
+
+            Some (ParserOptions(ParserOption.UseHash(setting)))
         | _ -> None
         
     let private (|SourceFile|_|) (line:string) =
@@ -426,6 +433,8 @@ module DependenciesFileParser =
         | OmitContent omit                               -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
         | ReferenceCondition condition                   -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
         | GenerateLoadScripts mode                       -> { current.Options with Settings = { current.Options.Settings with GenerateLoadScripts = mode }}
+        | UseHash useHash                                -> { current.Options with Settings = { current.Options.Settings with UseHash = useHash}}
+
     let private parseLine fileName checkDuplicates (lineNo, state) line =
         match state with
         | current::other ->

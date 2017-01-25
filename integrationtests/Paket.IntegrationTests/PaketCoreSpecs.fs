@@ -63,3 +63,65 @@ let ``#1259 install via script``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001259-install-script","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Suave"].Version
     |> shouldBeGreaterThan (SemVer.Parse "0.33.0")
+
+[<Test>]
+let ``#1341 http dlls``() = 
+    prepare "i001341-http-dlls"
+    let root = scenarioTempPath "i001341-http-dlls"
+    let deps = sprintf """group Files
+
+http file:///%s/library.dll library/library.dll""" (root.Replace("\\","/"))
+
+    File.WriteAllText(Path.Combine(root,"paket.dependencies"),deps)
+
+    directPaket "update -v" "i001341-http-dlls" |> ignore
+    
+    let newFile = Path.Combine(scenarioTempPath "i001341-http-dlls","HttpDependencyToProjectReference","HttpDependencyToProjectReference.csproj")
+    let oldFile = Path.Combine(originalScenarioPath "i001341-http-dlls","HttpDependencyToProjectReference","HttpDependencyToProjectReference.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+[<Test>]
+let ``should calculate hash when enabled``() = 
+    prepare "hash-calculation-on"
+
+    Paket.Dependencies.Install("""
+    hash: on
+    source https://nuget.org/api/v2
+    nuget Owin 1.0.0
+    """, path = scenarioTempPath "hash-calculation-on")
+
+    let lockfile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "hash-calculation-on", "paket.lock"))
+    lockfile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash |> shouldEqual (Some true)
+    // the hash should be set on the package now
+    lockfile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Owin"].Settings.Hash |> shouldEqual (Some "osetfnikmyp76mezobwikgbrs5emoynkmkamxopxx9jv88+b6mh1rsaw43vjboitnhalfg3d0a20pfhyibh5sw==")
+
+[<Test>]
+let ``should not calculate hash when disabled``() =
+    prepare "hash-calculation-off"
+    
+    Paket.Dependencies.Install("""
+    hash: off
+    source https://nuget.org/api/v2
+    nuget Owin
+    """, path = scenarioTempPath "hash-calculation-off")
+
+    let lockfile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "hash-calculation-off", "paket.lock"))
+    lockfile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash |> shouldEqual (Some false)
+    // the hash should be set on the package now
+    lockfile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Owin"].Settings.Hash |> shouldEqual None
+
+[<Test>]
+let ``should not calculate hash when hash directive missing``() =
+    prepare "hash-calculation-missing"
+
+    Paket.Dependencies.Install("""
+    hash: off
+    source https://nuget.org/api/v2
+    nuget Owin
+    """, path = scenarioTempPath "hash-calculation-missing")
+
+    let lockfile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "hash-calculation-missing", "paket.lock"))
+    lockfile.Groups.[Constants.MainDependencyGroup].Options.Settings.UseHash |> shouldEqual (Some false)
+    // the hash should be set on the package now
+    lockfile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Owin"].Settings.Hash |> shouldEqual None
