@@ -235,7 +235,7 @@ If you want to influence the resolution of [transitive dependencies](faq.html#tr
 
 To override a `lowest_matching` option for a single NuGet package, you can use the package specific [lowest_matching option](nuget-dependencies.html#Lowest_matching-option).
 
-### Generate_load_scripts option
+### Generate load scripts
 
 This option tells Paket to generate include scripts which reference installed packages during package installation.
 
