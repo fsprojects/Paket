@@ -220,7 +220,7 @@ To override a strategy for a single NuGet package, you can use the package speci
 
 This option tells Paket what resolver strategy it should use for direct dependencies.
 
-The `lowest_matching` option can be either `true` or `false` with false being the default.
+The `lowest_matching` option can be either `true` or `false` with `false` being the default.
 
     [lang=paket]
     lowest_matching: true
@@ -234,6 +234,23 @@ Note, however, that all [transitive dependencies](faq.html#transitive) will stil
 If you want to influence the resolution of [transitive dependencies](faq.html#transitive) then read about the [strategy option](dependencies-file.html#Strategy-option).
 
 To override a `lowest_matching` option for a single NuGet package, you can use the package specific [lowest_matching option](nuget-dependencies.html#Lowest_matching-option).
+
+### Generate_load_scripts option
+
+This option tells Paket to generate include scripts which reference installed packages during package installation.
+
+The `generate_load_scripts` option can be either `true` or `false` with false being the default.
+
+    [lang=paket]
+    generate_load_scripts: true
+    source https://nuget.org/api/v2
+
+    nuget Suave
+
+Generated include scripts can be loaded like this:
+
+    [lang=fsharp]
+    #load @"paket-files/include-scripts/net45/include.suave.fsx"
 
 ## Comments
 
