@@ -339,7 +339,7 @@ In this case, only the updating package will get its <em>latest matching version
 <p>Note, however, that all <a href="faq.html#transitive">transitive dependencies</a> will still get their <em>latest matching versions</em>, no matter the value of the <code>lowest_matching</code> option.
 If you want to influence the resolution of <a href="faq.html#transitive">transitive dependencies</a> then read about the <a href="dependencies-file.html#Strategy-option">strategy option</a>.</p>
 <p>To override a <code>lowest_matching</code> option for a single NuGet package, you can use the package specific <a href="nuget-dependencies.html#Lowest_matching-option">lowest_matching option</a>.</p>
-<h3><a name="Generate-load-scripts-option" class="anchor" href="#Generate-load-scripts-option">Generate<em>load</em>scripts option</a></h3>
+<h3><a name="Generate-load-scripts" class="anchor" href="#Generate-load-scripts">Generate load scripts</a></h3>
 <p>This option tells Paket to generate include scripts which reference installed packages during package installation.</p>
 <p>The <code>generate_load_scripts</code> option can be either <code>true</code> or <code>false</code> with <code>false</code> being the default.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
