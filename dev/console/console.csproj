@@ -14,4 +14,6 @@
     <PackageReference Include="Microsoft.NETCore.App" Version="1.0.1" />
   </ItemGroup>
 
+  <Import Project="..\.paket\Paket.Restore.targets" />
+
 </Project>
