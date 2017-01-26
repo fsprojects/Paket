@@ -9,5 +9,6 @@
     </metadata>
     <files>
         <file src="build\**\*" target="build" />
+        <file src="..\PaketRestoreTask\bin\Debug\**\*" target="build\msbuild" />
     </files>
 </package>
