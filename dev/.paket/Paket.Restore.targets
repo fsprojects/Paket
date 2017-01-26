@@ -4,6 +4,10 @@
     <IsPaketRestoreTargetsFileLoaded>true</IsPaketRestoreTargetsFileLoaded>
   </PropertyGroup>    
 
+  <Target Name="RemoveBoostrappedPaket">
+    <RemoveDir Directories="$(MSBuildThisFileDirectory)/out" />
+  </Target>
+
   <Target Name="BoostrapPaket"
           Condition=" !Exists('$(MSBuildThisFileDirectory)/out') "
           BeforeTargets="_GenerateRestoreGraphWalkPerFramework"
