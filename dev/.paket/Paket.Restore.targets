@@ -4,43 +4,24 @@
     <IsPaketRestoreTargetsFileLoaded>true</IsPaketRestoreTargetsFileLoaded>
   </PropertyGroup>    
 
-  <!--<UsingTask TaskName="Paket.Build.Tasks.PaketRestoreTask" AssemblyFile="PaketRestoreTask.dll" />-->
+  <Target Name="BoostrapPaket"
+          Condition=" !Exists('$(MSBuildThisFileDirectory)/out') "
+          BeforeTargets="_GenerateRestoreGraphWalkPerFramework"
+          >
+    <RemoveDir Directories="$(MSBuildThisFileDirectory)/obj" />
+    <Exec Command='dotnet restore "$(MSBuildThisFileDirectory)/paket-boostrapper.csproj" --packages "$(MSBuildThisFileDirectory)/out" --source "E:\github\Paket\src\Paket.Sdk\bin" ' />
+  </Target>
 
-  <Target Name="PaketRestore" BeforeTargets="_GenerateRestoreGraphWalkPerFramework" >
-    <Exec Command='dotnet restore --project "$(MSBuildThisFileDirectory)/paket-boostrapper.csproj" ' />
-    <Exec Command='dotnet compile-fsc ' WorkingDirectory="$(MSBuildThisFileDirectory)" />
+  <Import Project="$(MSBuildThisFileDirectory)/out/**/Paket.Sdk.props" />
 
-    <Exec Command="$(PaketCommand) restore --project $(MSBuildProjectFullPath)" />
+  <Target Name="CheckPaketIsBoostrapped" 
+          DependsOnTargets="BoostrapPaket"
+          BeforeTargets="_GenerateRestoreGraphWalkPerFramework" >
 
-     <!-- Write out package references for NETCore -->
-    <!--<PaketRestoreTask
-      ProjectUniqueName="$(MSBuildProjectFullPath)"
-      PackageReferences="@(PackageReference)"
-      TargetFrameworks="$(TargetFramework)">
-      <Output TaskParameter="NewPackageReferences" ItemName="PackageReference" />
-      <Output TaskParameter="AlternativeConfigFile" ItemName="RestoreConfigFile" />        
-    </PaketRestoreTask>-->
-   </Target>
+    <Error Text="run boostrapped before"
+           Condition=" '$(PaketCommand)' == '' " />
+  </Target>
 
-   <!--<Target Name="FixPackRef" AfterTargets="_WalkEachTargetPerFramework" Returns="@(_PackageReferences)">-->
-      <!-- Write out package references for NETCore -->
-      <!--<PaketRestoreTask
-        ProjectUniqueName="$(MSBuildProjectFullPath)"
-        PackageReferences="@(PackageReference)"
-        TargetFrameworks="$(TargetFramework)">
-        <Output TaskParameter="NewPackageReferences" ItemName="_PaketPackageReference" />
-        <Output TaskParameter="AlternativeConfigFile" ItemName="RestoreConfigFile2" />
-      </PaketRestoreTask>
-      <ItemGroup>
-        <_PackageReferences Include="%(_PaketPackageReference.Identity)">
-          <TargetFramework>$(TargetFramework)</TargetFramework>
-          <IncludeAssets></IncludeAssets>
-          <ExcludeAssets></ExcludeAssets>
-          <PrivateAssets></PrivateAssets>
-          <Version>%(_PaketPackageReference.Version)</Version>
-        </_PackageReferences>
-      </ItemGroup>
-      
-    </Target>-->
+  <Import Project="$(MSBuildThisFileDirectory)/out/**/Paket.Sdk.targets" />
 
 </Project>
