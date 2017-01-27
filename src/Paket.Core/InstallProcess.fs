@@ -198,6 +198,9 @@ let inline private getOrAdd (key: 'key) (getValue: 'key -> 'value) (d: Dictionar
         d.[key] <- value
         value
 
+// HashSet to prevent repeating the same "Broken project dependency" warning
+let brokenDeps = HashSet<_>()
+
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
 let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects cleanBindingRedirects
                                   root groupName findDependencies allKnownLibs 
@@ -213,11 +216,23 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
             |> Option.map ReferencesFile.FromFile
         referenceFiles |> getOrAdd projectFile referenceFile
 
-    let rec dependencies (projectFile : ProjectFile) =
+
+    let rec dependencies (projectFile : ProjectFile) =             
+        let reportBrokenDep (src:string) (target:string) =
+            if brokenDeps.Add (src,target) then
+                traceWarnfn "Broken project dependency: '%s' -> '%s'" src target
+
         match referenceFile projectFile with
         | Some referenceFile -> 
             projectFile.GetInterProjectDependencies()
-            |> Seq.map (fun r -> projectCache |> getOrAdd r.Path ProjectFile.TryLoad)
+            |> Seq.map (fun r ->  
+                let found = getOrAdd r.Path ProjectFile.TryLoad projectCache
+                match found with
+                | Some prj -> Some prj
+                | None ->
+                    reportBrokenDep projectFile.FileName r.Path
+                    None)
+           
             |> Seq.choose id
             |> Seq.collect (fun p -> dependencyGraph |> getOrAdd p dependencies)
             |> Seq.append (
