@@ -11,10 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PaketReference Include="Microsoft.NETCore.App" />
-    <PaketReference Include="Newtonsoft.Json" />
+    <PackageReference Include="Microsoft.NETCore.App" Version="1.0.1" />
   </ItemGroup>
-
-  <Import Project="../../.paket/Paket.Restore.targets" />
 
 </Project>

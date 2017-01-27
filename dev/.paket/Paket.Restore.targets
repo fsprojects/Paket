@@ -4,6 +4,8 @@
     <IsPaketRestoreTargetsFileLoaded>true</IsPaketRestoreTargetsFileLoaded>
   </PropertyGroup>    
 
+  <!--TODO refactor extract '$(MSBuildThisFileDirectory)/out' diretory as property-->
+
   <Target Name="RemoveBoostrappedPaket">
     <RemoveDir Directories="$(MSBuildThisFileDirectory)/out" />
   </Target>

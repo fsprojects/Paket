@@ -11,14 +11,17 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--<Reference Include="c:\dotnetcli\dotnet-dev-win-x64.1.0.0-preview4-004233\sdk\1.0.0-preview4-004233\NuGet.Build.Tasks.dll" />-->
+
     <PackageReference Include="NETStandard.Library" Version="1.6.0" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="0.1.0-preview-00038-160914">
+    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="15.1.0-preview-000458-02">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="0.1.0-preview-00038-160914">
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="15.1.0-preview-000458-02">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="0.1.0-preview-00038-160914">
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="15.1.0-preview-000458-02">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
   </ItemGroup>
