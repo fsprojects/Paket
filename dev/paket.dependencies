@@ -3,4 +3,7 @@ source https://api.nuget.org/v3/index.json
 
 nuget Newtonsoft.Json
 nuget FSharp.Core = 4.0.1.7-alpha
-nuget Microsoft.NETCore.App ~> 1.0.1
+
+// the Microsoft.NETCore.App package is serviceable, so pin it to 1.0.1 
+// the dotnet run will use the installed version anyway
+nuget Microsoft.NETCore.App = 1.0.1
