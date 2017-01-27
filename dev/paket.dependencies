@@ -1,5 +1,6 @@
 //source https://nuget.org/api/v2
 source https://api.nuget.org/v3/index.json
 
-nuget Newtonsoft.Json redirects: force
-nuget FSharp.Core prerelease redirects: force
+nuget Newtonsoft.Json
+nuget FSharp.Core = 4.0.1.7-alpha
+nuget Microsoft.NETCore.App ~> 1.0.1
