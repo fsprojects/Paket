@@ -1,4 +1,5 @@
 using System;
+using Newtonsoft.Json;
 
 public class Product
 {
@@ -23,6 +24,6 @@ public class Program
         var output = JsonConvert.SerializeObject(product);
 
         Console.WriteLine("Hello World!");
-        Console.WriteLine("Prova json: ${output}");
+        Console.WriteLine($"Prova json: {output}");
     }
 }
