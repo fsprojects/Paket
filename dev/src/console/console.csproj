@@ -10,6 +10,6 @@
     <EmbeddedResource Include="**\*.resx" />
   </ItemGroup>
 
-  <Import Project="..\.paket\Paket.Restore.targets" />
+  <Import Project="../../.paket/Paket.Restore.targets" />
 
 </Project>
