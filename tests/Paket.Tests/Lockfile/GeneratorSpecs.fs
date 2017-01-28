@@ -155,9 +155,9 @@ let ``should generate lock file with disabled content for packages``() =
 
 let expectedWithGitHub = """GITHUB
   remote: owner/project1
+    "folder/file 2.fs" (commit1)
     folder/file.fs (master)
     folder/file1.fs (commit1)
-    "folder/file 2.fs" (commit1)
   remote: owner/project2
     folder/file.fs (commit2)
     folder/file3.fs (commit3) githubAuth"""
