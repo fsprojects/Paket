@@ -157,6 +157,7 @@ let expectedWithGitHub = """GITHUB
   remote: owner/project1
     folder/file.fs (master)
     folder/file1.fs (commit1)
+    "folder/file 2.fs" (commit)
   remote: owner/project2
     folder/file.fs (commit2)
     folder/file3.fs (commit3) githubAuth"""
@@ -165,6 +166,7 @@ let expectedWithGitHub = """GITHUB
 let ``should generate lock file for source files``() = 
     let config = """github "owner:project1:master" "folder/file.fs"
 github "owner/project1:commit1" "folder/file1.fs"
+github "owner/project1" "folder/file 2.fs"
 github "owner:project2:commit2" "folder/file.fs"
 github "owner:project2:commit3" "folder/file3.fs" githubAuth """ 
 

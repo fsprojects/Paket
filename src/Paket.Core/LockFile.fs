@@ -165,10 +165,16 @@ module LockFileSerializer =
                     yield sprintf "  remote: " + url
 
                 for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
-                    
-                    let path = file.Name.TrimStart '/'
-                    match String.IsNullOrEmpty(file.Commit) with 
-                    | false -> 
+
+                    let path =
+                        file.Name.TrimStart '/'
+                        |> fun s ->
+                            if System.Text.RegularExpressions.Regex.IsMatch (s, "\s") then
+                                String.Concat ("\"", s, "\"")
+                            else
+                                s
+                    match String.IsNullOrEmpty(file.Commit) with
+                    | false ->
                         match file.AuthKey with
                         | Some authKey -> 
                             yield sprintf "    %s (%s) %s" path file.Commit authKey
