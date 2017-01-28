@@ -880,3 +880,25 @@ let ``should parse local git lock file with build and no specs``() =
     lockFile.Head.SourceFiles.Head.Commit |> shouldEqual "2942d23fcb13a2574b635194203aed7610b21903"
     lockFile.Head.SourceFiles.Head.Project |> shouldEqual "nupkgtest"
     lockFile.Head.SourceFiles.Head.Command |> shouldEqual (Some "build.cmd Test")
+
+let lockFileWithFilesContainingSpaces = """
+GITHUB
+  remote: owner/repo
+  specs:
+    "file 1.fs" (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)"""
+
+[<Test>]
+let ``should parse lock file with spaces in file names``() =
+    let lockFile = LockFileParser.Parse (toLines lockFileWithFilesContainingSpaces)
+    let sourceFiles = List.rev lockFile.Head.SourceFiles
+    sourceFiles|> shouldEqual
+        [ { Owner = "owner"
+            Project = "repo"
+            Name = "file 1.fs"
+            Origin = ModuleResolver.Origin.GitHubLink
+            Dependencies = Set.empty
+            Commit = "7623fc13439f0e60bd05c1ed3b5f6dcb937fe468"
+            Command = None
+            OperatingSystemRestriction = None
+            PackagePath = None
+            AuthKey = None } ]

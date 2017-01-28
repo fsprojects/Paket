@@ -421,8 +421,22 @@ module LockFileParser =
                     | GitHubLink | GistLink ->
                         match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/') with
                         | Some [| owner; project |] ->
+                            let pieces =
+                                if details.Contains "\"" then
+                                    let pathInfo =
+                                        match details.IndexOf ('"', 1) with
+                                        | idx when idx >= 0 -> Some (details.Substring (1, idx - 1), idx)
+                                        | _ -> None
+                                    match pathInfo with
+                                    | Some (path, pathEndIdx) ->
+                                        let commitAndAuthKey = details.Substring(pathEndIdx + 1).Split(' ')
+                                        Array.append [| path |] commitAndAuthKey
+                                    | None -> Array.empty
+                                else
+                                    details.Split ' '
+
                             let path, commit, authKey =
-                                match details.Split ' ' with
+                                match pieces with
                                 | [| filePath; commit; authKey |] -> filePath, commit |> removeBrackets, (Some authKey)
                                 | [| filePath; commit |] -> filePath, commit |> removeBrackets, None
                                 | _ -> failwith "invalid file source details."
