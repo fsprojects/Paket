@@ -429,7 +429,7 @@ module LockFileParser =
                                         | _ -> None
                                     match pathInfo with
                                     | Some (path, pathEndIdx) ->
-                                        let commitAndAuthKey = details.Substring(pathEndIdx + 1).Split(' ')
+                                        let commitAndAuthKey = details.Substring(pathEndIdx + 2).Split(' ')
                                         Array.append [| path |] commitAndAuthKey
                                     | None -> Array.empty
                                 else
