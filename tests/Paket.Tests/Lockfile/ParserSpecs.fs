@@ -885,7 +885,8 @@ let lockFileWithFilesContainingSpaces = """
 GITHUB
   remote: owner/repo
   specs:
-    "file 1.fs" (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)"""
+    "file 1.fs" (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
+    "file 2.fs" (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468) secret"""
 
 [<Test>]
 let ``should parse lock file with spaces in file names``() =
@@ -901,4 +902,14 @@ let ``should parse lock file with spaces in file names``() =
             Command = None
             OperatingSystemRestriction = None
             PackagePath = None
-            AuthKey = None } ]
+            AuthKey = None }
+          { Owner = "owner"
+            Project = "repo"
+            Name = "file 2.fs"
+            Origin = ModuleResolver.Origin.GitHubLink
+            Dependencies = Set.empty
+            Commit = "7623fc13439f0e60bd05c1ed3b5f6dcb937fe468"
+            Command = None
+            OperatingSystemRestriction = None
+            PackagePath = None
+            AuthKey = Some "secret" } ]
