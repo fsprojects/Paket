@@ -20,10 +20,14 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.toList
         
     /// Clears the NuGet cache
-    static member ClearCache() = 
-        Utils.emptyDir (DirectoryInfo Constants.UserNuGetPackagesFolder)
-        Utils.emptyDir (DirectoryInfo Constants.NuGetCacheFolder)
-        Utils.emptyDir (DirectoryInfo Constants.GitRepoCacheFolder)
+    static member ClearCache() =
+        let emptyDir path =
+            verbosefn "Emptying '%s'" path
+            Utils.emptyDir (DirectoryInfo path)
+        
+        emptyDir (Constants.UserNuGetPackagesFolder)
+        emptyDir (Constants.NuGetCacheFolder)
+        emptyDir (Constants.GitRepoCacheFolder)
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate(): Dependencies = Dependencies.Locate(Directory.GetCurrentDirectory())
