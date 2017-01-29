@@ -165,10 +165,16 @@ module LockFileSerializer =
                     yield sprintf "  remote: " + url
 
                 for file in files |> Seq.sortBy (fun f -> f.Owner.ToLower(),f.Project.ToLower(),f.Name.ToLower())  do
-                    
-                    let path = file.Name.TrimStart '/'
-                    match String.IsNullOrEmpty(file.Commit) with 
-                    | false -> 
+
+                    let path =
+                        file.Name.TrimStart '/'
+                        |> fun s ->
+                            if System.Text.RegularExpressions.Regex.IsMatch (s, "\s") then
+                                String.Concat ("\"", s, "\"")
+                            else
+                                s
+                    match String.IsNullOrEmpty(file.Commit) with
+                    | false ->
                         match file.AuthKey with
                         | Some authKey -> 
                             yield sprintf "    %s (%s) %s" path file.Commit authKey
@@ -415,8 +421,22 @@ module LockFileParser =
                     | GitHubLink | GistLink ->
                         match currentGroup.RemoteUrl |> Option.map(fun s -> s.Split '/') with
                         | Some [| owner; project |] ->
+                            let pieces =
+                                if details.Contains "\"" then
+                                    let pathInfo =
+                                        match details.IndexOf ('"', 1) with
+                                        | idx when idx >= 0 -> Some (details.Substring (1, idx - 1), idx)
+                                        | _ -> None
+                                    match pathInfo with
+                                    | Some (path, pathEndIdx) ->
+                                        let commitAndAuthKey = details.Substring(pathEndIdx + 2).Split(' ')
+                                        Array.append [| path |] commitAndAuthKey
+                                    | None -> Array.empty
+                                else
+                                    details.Split ' '
+
                             let path, commit, authKey =
-                                match details.Split ' ' with
+                                match pieces with
                                 | [| filePath; commit; authKey |] -> filePath, commit |> removeBrackets, (Some authKey)
                                 | [| filePath; commit |] -> filePath, commit |> removeBrackets, None
                                 | _ -> failwith "invalid file source details."

@@ -1,20 +1,15 @@
-#### 4.0.0-beta006 - 25.01.2017
+#### 4.0.0-beta007 - 29.01.2017
 * Make Paket compatible with DotNet SDK preview3
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 * Generate load scripts on install abidding to new paket.dependencies option - https://fsprojects.github.io/Paket/dependencies-file.html#Generate-load-scripts
 
-#### 3.33.5 - 24.01.2017
-* BUGFIX:  Convert from nuget: Local package source gave false error - https://github.com/fsprojects/Paket/pull/2112
-
-#### 3.33.4 - 18.01.2017
+#### 3.34.0 - 29.01.2017
+* BUGFIX: Support GitHub dependencies with spaces -https://github.com/fsprojects/Paket/pull/2127
+* BUGFIX: Convert from nuget: Local package source gave false error - https://github.com/fsprojects/Paket/pull/2112
 * BUGFIX: Make config writer use XmlWriter for disk write - https://github.com/fsprojects/Paket/pull/2110
-
-#### 3.33.3 - 10.01.2017
 * BUGFIX: Ensure case when getting packages from nuget feed - https://github.com/fsprojects/Paket/pull/2106
-
-#### 3.33.2 - 08.01.2017
 * BUGFIX: Ensure stable ordering of references
 
 #### 3.33.0 - 06.01.2017
