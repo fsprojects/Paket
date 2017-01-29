@@ -107,13 +107,16 @@ type UAPVersion =
 /// The .NET Standard version.
 type DotNetCoreVersion = 
     | V1_0
+    | V1_1
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
+        | V1_1 -> "v1.1"
 
     member this.ShortString() =
         match this with
         | DotNetCoreVersion.V1_0 -> "10"
+        | DotNetCoreVersion.V1_1 -> "11"
 
 module KnownAliases =
     let Data =
@@ -214,6 +217,7 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
         | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetCore DotNetCoreVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetCore DotNetCoreVersion.V1_1 -> [ DotNetCore DotNetCoreVersion.V1_0 ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -355,6 +359,7 @@ module FrameworkDetection =
                 | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | "netstandard16" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
                 | "netcoreapp10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
+                | "netcoreapp11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
                 | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
                 | _ -> None
             result)
