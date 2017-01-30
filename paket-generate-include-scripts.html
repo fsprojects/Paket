@@ -138,6 +138,8 @@ used in your scripts without having to bother with the list and order of all dep
 <span class="l">18: </span>
 <span class="l">19: </span>
 <span class="l">20: </span>
+<span class="l">21: </span>
+<span class="l">22: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">Loaded</span> <span class="i">deedle</span>
 <span class="i">Loaded</span> <span class="i">deedle</span><span class="o">.</span><span class="i">rplugin</span>
@@ -159,9 +161,23 @@ used in your scripts without having to bother with the list and order of all dep
 <span class="i">Loaded</span> <span class="i">http</span><span class="o">.</span><span class="i">fs</span>
 <span class="i">Loaded</span> <span class="i">xplot</span><span class="o">.</span><span class="i">plotly</span>
 <span class="i">Loaded</span> <span class="i">fslab</span>
+
+# <span class="i">Generate</span> <span class="i">include</span> <span class="i">scripts</span> <span class="k">while</span> <span class="i">installing</span> <span class="i">packages</span>
 </code></pre></td>
 </tr>
 </table>
+<p>Alternatively, the include scripts can be generated automatically when running the <code>paket install</code> command.</p>
+<p>To enable this, add the <code>generate_load_scripts</code> option to the <code>paket.dependencies</code> file:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">generate_load_scripts: true
+<span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Suave
+</code></pre></td></tr></table>
 
 <div class="tip" id="fs1">val id : x:&#39;T -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.id</div>
 <div class="tip" id="fs2">val log : value:&#39;T -&gt; &#39;T (requires member Log)<br /><br />Full name: Microsoft.FSharp.Core.Operators.log</div>
