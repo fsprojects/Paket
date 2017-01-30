@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:d="http://schemas.microsoft.com/ado/2007/08/dataservices" xmlns:georss="http://www.georss.org/georss" xmlns:gml="http://www.opengis.net/gml" xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xml:base="https://www.nuget.org/api/v2">
+   <id>http://schemas.datacontract.org/2004/07/</id>
+   <title />
+   <updated>2017-01-29T21:10:54Z</updated>
+   <link rel="self" href="https://www.nuget.org/api/v2/Packages" />
+   <entry>
+      <id>https://www.nuget.org/api/v2/Packages(Id='BenchmarkDotNet',Version='0.10.1')</id>
+      <category term="NuGetGallery.OData.V2FeedPackage" scheme="http://schemas.microsoft.com/ado/2007/08/dataservices/scheme" />
+      <link rel="edit" href="https://www.nuget.org/api/v2/Packages(Id='BenchmarkDotNet',Version='0.10.1')" />
+      <link rel="self" href="https://www.nuget.org/api/v2/Packages(Id='BenchmarkDotNet',Version='0.10.1')" />
+      <title type="text">BenchmarkDotNet</title>
+      <updated>2016-12-04T06:12:30Z</updated>
+      <author>
+         <name>.NET Foundation and contributors</name>
+      </author>
+      <content type="application/zip" src="https://www.nuget.org/api/v2/package/BenchmarkDotNet/0.10.1" />
+      <m:properties>
+         <d:Id>BenchmarkDotNet</d:Id>
+         <d:Version>0.10.1</d:Version>
+         <d:NormalizedVersion>0.10.1</d:NormalizedVersion>
+         <d:Authors>.NET Foundation and contributors</d:Authors>
+         <d:Copyright>.NET Foundation and contributors</d:Copyright>
+         <d:Created m:type="Edm.DateTime">2016-12-04T06:12:30.877</d:Created>
+         <d:Dependencies>BenchmarkDotNet.Core:[0.10.1, ):unknown-framework-42|BenchmarkDotNet.Toolchains.Roslyn:[0.10.1, ):net45</d:Dependencies>
+         <d:Description>Powerful .NET library for benchmarking</d:Description>
+         <d:DownloadCount m:type="Edm.Int32">54909</d:DownloadCount>
+         <d:GalleryDetailsUrl>https://www.nuget.org/packages/BenchmarkDotNet/0.10.1</d:GalleryDetailsUrl>
+         <d:IconUrl>https://raw.githubusercontent.com/dotnet/BenchmarkDotNet/master/docs/guide/logo.png</d:IconUrl>
+         <d:IsLatestVersion m:type="Edm.Boolean">false</d:IsLatestVersion>
+         <d:IsAbsoluteLatestVersion m:type="Edm.Boolean">false</d:IsAbsoluteLatestVersion>
+         <d:IsPrerelease m:type="Edm.Boolean">false</d:IsPrerelease>
+         <d:Language>en-US</d:Language>
+         <d:LastUpdated m:type="Edm.DateTime">2016-12-04T06:12:30.877</d:LastUpdated>
+         <d:Published m:type="Edm.DateTime">2016-12-04T06:12:30.877</d:Published>
+         <d:PackageHash>492Rz7UdKnM3i/H3P2EW8ZrE0R53D/8sIvfAZbvFk8tqf9vHe/mg/MazXijZm0UKInkBgslotwQL8pRg0ZSnIQ==</d:PackageHash>
+         <d:PackageHashAlgorithm>SHA512</d:PackageHashAlgorithm>
+         <d:PackageSize m:type="Edm.Int64">15435</d:PackageSize>
+         <d:ProjectUrl>https://github.com/dotnet/BenchmarkDotNet</d:ProjectUrl>
+         <d:ReportAbuseUrl>https://www.nuget.org/packages/BenchmarkDotNet/0.10.1/ReportAbuse</d:ReportAbuseUrl>
+         <d:ReleaseNotes m:null="true" />
+         <d:RequireLicenseAcceptance m:type="Edm.Boolean">false</d:RequireLicenseAcceptance>
+         <d:Summary m:null="true" />
+         <d:Tags>benchmark benchmarking performance</d:Tags>
+         <d:Title>BenchmarkDotNet</d:Title>
+         <d:VersionDownloadCount m:type="Edm.Int32">5778</d:VersionDownloadCount>
+         <d:MinClientVersion m:null="true" />
+         <d:LastEdited m:null="true" />
+         <d:LicenseUrl>https://github.com/dotnet/BenchmarkDotNet/blob/master/LICENSE.md</d:LicenseUrl>
+         <d:LicenseNames m:null="true" />
+         <d:LicenseReportUrl m:null="true" />
+      </m:properties>
+   </entry>
+</feed>

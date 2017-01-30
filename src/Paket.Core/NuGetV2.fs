@@ -182,17 +182,24 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
             PackageName a.[0],
             VersionRequirement.Parse(if a.Length > 1 then a.[1] else "0"),
             (if a.Length > 2 && a.[2] <> "" then
-                 if String.startsWithIgnoreCase "portable" a.[2] then
-                    [ yield FrameworkRestriction.Portable a.[2]]
+                 let restriction = a.[2]
+                 if String.startsWithIgnoreCase "portable" restriction then
+                    Some [ yield FrameworkRestriction.Portable restriction ]
                  else
-                     match FrameworkDetection.Extract a.[2] with
-                     | Some x -> [ FrameworkRestriction.Exactly x ]
-                     | None -> []
-             else [])
+                     match FrameworkDetection.Extract restriction with
+                     | Some x -> Some [ FrameworkRestriction.Exactly x ]
+                     | None ->
+                        verbosefn "Unable to parse framework restriction '%s' for package '%s' in package '%s'" restriction a.[0] (packageName.ToString())
+                        None
+             else Some [])
 
         dependencies
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
         |> Array.map split
+        |> Array.choose (fun (name, version, restrictions) ->
+            match restrictions with
+            | Some(restrictions) -> Some (name, version, restrictions)
+            | None -> None)
 
     let expandedPackages =
         let isMatch (n',v',r') =
