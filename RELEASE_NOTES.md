@@ -1,4 +1,5 @@
 #### 3.35.0 - 30.01.2017
+* Added "netcoreapp1.1" support - https://github.com/fsprojects/Paket/pull/2129
 * BUGFIX: Ensures that boostrapper --help always work - https://github.com/fsprojects/Paket/pull/2128
 
 #### 3.34.0 - 29.01.2017
