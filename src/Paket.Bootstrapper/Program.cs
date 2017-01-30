@@ -30,7 +30,7 @@ namespace Paket.Bootstrapper
                 Environment.GetEnvironmentVariables(), fileProxy, argumentsFromDependenciesFile);
             if (options.ShowHelp)
             {
-                ConsoleImpl.WriteInfo(BootstrapperHelper.HelpText);
+                ConsoleImpl.WriteAlways(BootstrapperHelper.HelpText);
                 return;
             }
 

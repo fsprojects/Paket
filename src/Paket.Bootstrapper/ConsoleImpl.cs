@@ -49,6 +49,16 @@ namespace Paket.Bootstrapper
             WriteConsole(message, ConsoleColor.DarkGray, Verbosity.Trace);
         }
 
+        internal static void WriteAlways(string message, params object[] parameters)
+        {
+            WriteConsoleCore(string.Format(message, parameters), Console.ForegroundColor);
+        }
+
+        internal static void WriteAlways(string message)
+        {
+            WriteConsoleCore(message, Console.ForegroundColor);
+        }
+
         private static void WriteConsole(string message, ConsoleColor consoleColor, Verbosity minVerbosity = Verbosity.Normal)
         {
             if (Verbosity < minVerbosity)
@@ -56,6 +66,11 @@ namespace Paket.Bootstrapper
                 return;
             }
 
+            WriteConsoleCore(message, consoleColor);
+        }
+
+        private static void WriteConsoleCore(string message, ConsoleColor consoleColor)
+        {
             var oldColor = Console.ForegroundColor;
             Console.ForegroundColor = consoleColor;
             Console.WriteLine(message);
