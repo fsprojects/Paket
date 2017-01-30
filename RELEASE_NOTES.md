@@ -1,5 +1,8 @@
+#### 3.35.0 - 30.01.2017
+* BUGFIX: Ensures that boostrapper --help always work - https://github.com/fsprojects/Paket/pull/2128
+
 #### 3.34.0 - 29.01.2017
-* BUGFIX: Support GitHub dependencies with spaces -https://github.com/fsprojects/Paket/pull/2127
+* BUGFIX: Support GitHub dependencies with spaces - https://github.com/fsprojects/Paket/pull/2127
 * BUGFIX: Convert from nuget: Local package source gave false error - https://github.com/fsprojects/Paket/pull/2112
 * BUGFIX: Make config writer use XmlWriter for disk write - https://github.com/fsprojects/Paket/pull/2110
 * BUGFIX: Ensure case when getting packages from nuget feed - https://github.com/fsprojects/Paket/pull/2106
