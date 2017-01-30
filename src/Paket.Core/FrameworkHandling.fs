@@ -5,6 +5,7 @@ open System
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
+// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkVersion = 
     | V1
     | V1_1
@@ -62,6 +63,7 @@ type FrameworkVersion =
 
 [<RequireQualifiedAccess>]
 /// The .NET Standard version.
+// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type DotNetStandardVersion = 
     | V1_0
     | V1_1
@@ -92,6 +94,7 @@ type DotNetStandardVersion =
 
 [<RequireQualifiedAccess>]
 /// The UAP version.
+// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type UAPVersion = 
     | V10
     override this.ToString() =
@@ -105,6 +108,7 @@ type UAPVersion =
 
 [<RequireQualifiedAccess>]
 /// The .NET Standard version.
+// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type DotNetCoreVersion = 
     | V1_0
     | V1_1
@@ -139,6 +143,7 @@ module KnownAliases =
 
 
 /// Framework Identifier type.
+// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkIdentifier = 
     | DotNetFramework of FrameworkVersion
     | UAP of UAPVersion
@@ -305,6 +310,7 @@ module FrameworkDetection =
                      sb.Replace(pattern,replacement) |> ignore
                 sb.ToString()
 
+            // Each time the parsing is changed, NuGetPackageCache.CurrentCacheVersion should be bumped.
             let result = 
                 match path with
                 | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
