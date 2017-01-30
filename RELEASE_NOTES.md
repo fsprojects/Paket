@@ -1,6 +1,7 @@
 #### 3.35.0 - 30.01.2017
 * Added "netcoreapp1.1" support - https://github.com/fsprojects/Paket/pull/2129
 * BUGFIX: Ensures that boostrapper --help always work - https://github.com/fsprojects/Paket/pull/2128
+* USABILITY: Added details for "clear-cache" in --verbose mode - https://github.com/fsprojects/Paket/pull/2130
 
 #### 3.34.0 - 29.01.2017
 * BUGFIX: Support GitHub dependencies with spaces - https://github.com/fsprojects/Paket/pull/2127
