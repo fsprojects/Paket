@@ -1,3 +1,6 @@
+#### 3.35.1 - 31.01.2017
+* BUGFIX: Ignore unknown frameworks - https://github.com/fsprojects/Paket/pull/2132
+
 #### 3.35.0 - 30.01.2017
 * Added "netcoreapp1.1" support - https://github.com/fsprojects/Paket/pull/2129
 * BUGFIX: Ensures that boostrapper --help always work - https://github.com/fsprojects/Paket/pull/2128
