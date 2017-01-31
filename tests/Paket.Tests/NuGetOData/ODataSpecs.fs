@@ -152,3 +152,21 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
     dependencies.[44] |> shouldEqual 
         (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.8"), 
             FrameworkRestrictionList [FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0")); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))])
+
+[<Test>]
+let ``can ignore unknown frameworks``() = 
+    parse "NuGetOData/BenchmarkDotNet-UnknownFramework.xml"
+    |> shouldEqual 
+        { PackageName = "BenchmarkDotNet"
+          DownloadUrl = "https://www.nuget.org/api/v2/package/BenchmarkDotNet/0.10.1"
+          Dependencies =
+            [
+                PackageName "BenchmarkDotNet.Toolchains.Roslyn",
+                DependenciesFileParser.parseVersionRequirement(">= 0.10.1"),
+                FrameworkRestrictionList [FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V4_5)]
+            ]
+          Unlisted = false
+          LicenseUrl = "https://github.com/dotnet/BenchmarkDotNet/blob/master/LICENSE.md"
+          CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
+          Version = "0.10.1"
+          SourceUrl = fakeUrl }
