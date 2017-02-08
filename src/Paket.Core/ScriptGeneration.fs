@@ -81,7 +81,6 @@ module ScriptGeneration =
 
   type ScriptGenInput = {
       PackageName                  : PackageName
-      Framework                    : FrameworkIdentifier
       PackagesOrGroupFolder        : DirectoryInfo
       IncludeScriptsRootFolder     : DirectoryInfo
       DependentScripts             : FileInfo list
@@ -109,7 +108,7 @@ module ScriptGeneration =
               // we never want to reference mscorlib directly (some nuget package state it as a dependency)
               // reason is that having it referenced more than once fails in FSI
               false 
-          | _ -> true    
+          | _ -> true
     )
 
   /// default implementation of F# include script generator
@@ -215,19 +214,22 @@ module ScriptGeneration =
     scriptFile.Directory.Create()
     File.WriteAllText(scriptFile.FullName, text)
 
-  let getIncludeScriptRootFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) = 
-      DirectoryInfo(Path.Combine(includeScriptsRootFolder.FullName, string framework))
-
-  let getScriptFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName) =
-      if groupName = Constants.MainDependencyGroup then
-          getIncludeScriptRootFolder includeScriptsRootFolder framework
+  let getIncludeScriptRootFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (folderForDefaultFramework: bool) = 
+      if folderForDefaultFramework then
+        DirectoryInfo(includeScriptsRootFolder.FullName)
       else
-          DirectoryInfo(Path.Combine((getIncludeScriptRootFolder includeScriptsRootFolder framework).FullName, groupName.GetCompareString()))
+        DirectoryInfo(Path.Combine(includeScriptsRootFolder.FullName, string framework))
 
-  let getScriptFile (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName) (package: PackageName) (extension: string) =
-      let folder = getScriptFolder includeScriptsRootFolder framework groupName
+  let getScriptFolder (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName) (folderForDefaultFramework: bool) =
+      if groupName = Constants.MainDependencyGroup then
+          getIncludeScriptRootFolder includeScriptsRootFolder framework folderForDefaultFramework
+      else
+          DirectoryInfo(Path.Combine((getIncludeScriptRootFolder includeScriptsRootFolder framework folderForDefaultFramework).FullName, groupName.GetCompareString()))
 
-      FileInfo(Path.Combine(folder.FullName, sprintf "include.%s.%s" (package.GetCompareString()) extension))
+  let getScriptFile (includeScriptsRootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName)  (folderForDefaultFramework: bool) (package: PackageName) (extension: string) =
+      let folder = getScriptFolder includeScriptsRootFolder framework groupName folderForDefaultFramework
+
+      FileInfo(Path.Combine(folder.FullName, sprintf "%s.%s" (package.GetCompareString()) extension))
 
   let getGroupNameAsOption groupName =
       if groupName = Constants.MainDependencyGroup then
@@ -308,7 +310,6 @@ module ScriptGeneration =
 
           let scriptInfo = {
             PackageName                  = installModel.PackageName
-            Framework                    = framework
             PackagesOrGroupFolder        = packagesOrGroupFolder
             IncludeScriptsRootFolder     = includeScriptsRootFolder
             FrameworkReferences          = getFrameworkReferencesWithinPackage installModel
@@ -328,7 +329,7 @@ module ScriptGeneration =
 
   /// Generate a include scripts for all packages defined in paket.dependencies,
   /// if a package is ordered before its dependencies this function will throw.
-  let generateScriptsForRootFolderGeneric extension scriptGenerator scriptWriter filterFrameworkLibs filterNuget (framework: FrameworkIdentifier) (rootFolder: DirectoryInfo) =
+  let generateScriptsForRootFolderGeneric extension scriptGenerator scriptWriter filterFrameworkLibs filterNuget (framework: FrameworkIdentifier) isDefaultFramework (rootFolder: DirectoryInfo) =
       match Queries.PaketFiles.LocateFromDirectory rootFolder with
       | Queries.PaketFiles.JustDependencies _ -> failwith "paket.lock file not found"
       | Queries.PaketFiles.DependenciesAndLock(dependenciesFile, lockFile) ->
@@ -338,10 +339,10 @@ module ScriptGeneration =
           let packagesFolder = DirectoryInfo(Path.Combine(rootFolder.FullName, Constants.PackagesFolderName))
         
           let includeScriptsRootFolder = 
-              DirectoryInfo(Path.Combine((FileInfo dependenciesFile.FileName).Directory.FullName, Constants.PaketFilesFolderName, "include-scripts"))
+              DirectoryInfo(Path.Combine((FileInfo dependenciesFile.FileName).Directory.FullName, Constants.PaketFolderName, "load"))
 
           let getScriptFile groupName packageName =
-            getScriptFile includeScriptsRootFolder framework groupName packageName extension
+            getScriptFile includeScriptsRootFolder framework groupName isDefaultFramework packageName extension
       
 
           dependencies
@@ -356,8 +357,8 @@ module ScriptGeneration =
           |> ignore
 
           let getGroupFile group = 
-            let folder = getScriptFolder includeScriptsRootFolder framework group
-            let fileName = (sprintf "include.%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant()
+            let folder = getScriptFolder includeScriptsRootFolder framework group isDefaultFramework
+            let fileName = (sprintf "%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant()
             FileInfo(Path.Combine(folder.FullName, fileName))
         
           generateGroupScript lockFile getGroupFile scriptWriter filterFrameworkLibs filterNuget framework
@@ -403,14 +404,23 @@ module ScriptGeneration =
                   |> sprintf "%s: %s. Cannot generate include scripts." message
                   |> failwith
 
+          // prepare list of frameworks to generate, paired with "is default framework"
+          // default framework will get generated under root folder rather than framework specific subfolder
           let frameworksToGenerate =
-              let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract
+              // specified frameworks are never considered default
+              let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract |> List.map (fun f -> f, false)
 
               failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
 
-              if targetFrameworkList |> Seq.isEmpty |> not then targetFrameworkList |> Seq.ofList
-              else if frameworksForDependencyGroups.Value |> Seq.isEmpty |> not then frameworksForDependencyGroups.Value
-              else Seq.singleton environmentFramework.Value
+              if not (Seq.isEmpty targetFrameworkList) then targetFrameworkList |> Seq.ofList
+              else if not (Seq.isEmpty frameworksForDependencyGroups.Value) then 
+                  // if paket.dependencies evaluate to single framework, consider it as default
+                  let isDefaultFramework = Seq.length frameworksForDependencyGroups.Value = 1
+                  frameworksForDependencyGroups.Value |> Seq.map (fun f -> f, isDefaultFramework)
+                  
+              else
+                  // environment framework is default
+                  Seq.singleton (environmentFramework.Value, true)
 
           let scriptTypesToGenerate =
             let parsedScriptTypes = providedScriptTypes |> List.choose ScriptType.TryCreate
@@ -422,10 +432,10 @@ module ScriptGeneration =
             | xs -> xs
 
           let workaround() = null |> ignore
-          for framework in frameworksToGenerate do
+          for framework, isDefaultFramework in frameworksToGenerate do
               Paket.Logging.tracefn "generating scripts for framework %s" (framework.ToString())
               workaround() // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
               for scriptType in scriptTypesToGenerate do
-                  generateScriptsForRootFolder scriptType framework rootFolder
+                  generateScriptsForRootFolder scriptType framework isDefaultFramework rootFolder
 
       ()

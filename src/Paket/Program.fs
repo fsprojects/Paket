@@ -290,10 +290,10 @@ let push (results : ParseResults<_>) =
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
-let generateIncludeScripts (results : ParseResults<GenerateIncludeScriptsArgs>) =
+let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
 
-    let providedFrameworks = results.GetResults <@ GenerateIncludeScriptsArgs.Framework @>
-    let providedScriptTypes = results.GetResults <@ GenerateIncludeScriptsArgs.ScriptType @>
+    let providedFrameworks = results.GetResults <@ GenerateLoadScriptsArgs.Framework @>
+    let providedScriptTypes = results.GetResults <@ GenerateLoadScriptsArgs.ScriptType @>
     LoadingScripts.ScriptGeneration.executeCommand (DirectoryInfo (Directory.GetCurrentDirectory())) providedFrameworks providedScriptTypes
 
 let why (results: ParseResults<WhyArgs>) =
@@ -335,7 +335,7 @@ let main() =
         let fromBootstrapper = results.Contains <@ From_Bootstrapper @>
 
         let version = results.Contains <@ Version @> 
-        if not version then            
+        if not version then
 
             use fileTrace =
                 match results.TryGetResult <@ Log_File @> with
@@ -362,7 +362,8 @@ let main() =
             | ShowGroups r -> processCommand silent showGroups r
             | Pack r -> processCommand silent pack r
             | Push r -> processCommand silent push r
-            | GenerateIncludeScripts r -> processCommand silent generateIncludeScripts r
+            | GenerateIncludeScripts r -> traceWarn "please use generate-load-scripts" ; processCommand silent generateLoadScripts r
+            | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
             | Why r -> processCommand silent why r
             // global options; list here in order to maintain compiler warnings
             // in case of new subcommands added

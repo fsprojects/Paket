@@ -307,7 +307,7 @@ with
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
-type GenerateIncludeScriptsArgs = 
+type GenerateLoadScriptsArgs = 
     | [<CustomCommandLine("framework")>] Framework of target:string
     | [<CustomCommandLine("type")>] ScriptType of id:string
 with
@@ -356,7 +356,8 @@ type Command =
     | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResults<ShowGroupsArgs>
     | [<CustomCommandLine("pack")>]                     Pack of ParseResults<PackArgs>
     | [<CustomCommandLine("push")>]                     Push of ParseResults<PushArgs>
-    | [<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateIncludeScriptsArgs>
+    | [<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs> // backward compatibility
+    | [<CustomCommandLine("generate-load-scripts")>]    GenerateLoadScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
 with
     interface IArgParserTemplate with
@@ -381,7 +382,8 @@ with
             | ShowGroups _ -> "Shows all groups."
             | Pack _ -> "Packs all paket.template files within this repository."
             | Push _ -> "Pushes the given `.nupkg` file."
-            | GenerateIncludeScripts _ -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
+            | GenerateIncludeScripts _ -> "Obsolete, see generate-load-scripts."
+            | GenerateLoadScripts _ -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
             | Why _ -> "Prints user-friendly reason for referencing a specified package"
             | Log_File _ -> "Specify a log file for the paket process."
             | Silent -> "Suppress console output for the paket process."
