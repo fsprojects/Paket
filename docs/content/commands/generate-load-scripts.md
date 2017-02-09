@@ -8,7 +8,10 @@ It is possible to generate load scripts for all registered NuGet packages define
 This will create .csx and .fsx scripts under `.paket/load/net45/`, those files can now be 
 used in your scripts without having to bother with the list and order of all dependencies for given package.
 
-Note: this command only works after packages have been restored, please call `paket restore` before using `paket generate-load-scripts` or `paket install` if you just changed your `paket.dependencies` file.
+Notes:
+
+* this command only works after packages have been restored, please call `paket restore` before using `paket generate-load-scripts` or `paket install` if you just changed your `paket.dependencies` file
+* this command was called `generate-include-scripts` in V3 and used to put files under `paket-files/include-scripts` instead of `.paket/load`
 
 ## Sample
 
