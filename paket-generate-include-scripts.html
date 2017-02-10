@@ -57,7 +57,7 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-generate-include-scripts" class="anchor" href="#paket-generate-include-scripts">paket generate-include-scripts</a></h1>
-<p>Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS.</p>
+<p>Obsolete, see generate-load-scripts.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="console">paket generate-include-scripts [--help] [framework &lt;target&gt;] [type &lt;id&gt;]
@@ -85,99 +85,6 @@
 </table>
 <p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
-<h2><a name="Generating-include-scripts-for-all-NuGet-packages" class="anchor" href="#Generating-include-scripts-for-all-NuGet-packages">Generating include scripts for all NuGet packages</a></h2>
-<p>It is possible to generate include scripts for all registered NuGet packages defined in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="batchfile">$ paket generate-include-scripts framework net45
-</code></pre></td></tr></table>
-<p>This will create .csx and .fsx scripts under <code>paket-files/include-scripts/net45/</code>, those files can now be
-used in your scripts without having to bother with the list and order of all dependencies for given package.</p>
-<p>Note: this command only works after packages have been restored, please call <code>paket restore</code> before using <code>paket generate-include-scripts</code> or <code>paket install</code> if you just changed your <code>paket.dependencies</code> file.</p>
-<h2><a name="Sample" class="anchor" href="#Sample">Sample</a></h2>
-<p>Consider the following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> FsLab
-</code></pre></td></tr></table>
-<p>Now we run <code>paket install</code> to install the packages.</p>
-<p>Then we run <code>paket generate-include-scripts framework net45</code> to generate include scripts.</p>
-<p>In a .fsx script file you can now use</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#load</span> <span class="s">@&quot;paket-files/include-scripts/net45/include.fslab.fsx&quot;</span>
-
-<span class="c">// now ready to use FsLab and any of it&#39;s dependencies</span>
-</code></pre></td>
-</tr>
-</table>
-<p>You'll see messages when you execute the <code>#load</code> line in FSI:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-<span class="l">15: </span>
-<span class="l">16: </span>
-<span class="l">17: </span>
-<span class="l">18: </span>
-<span class="l">19: </span>
-<span class="l">20: </span>
-<span class="l">21: </span>
-<span class="l">22: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">Loaded</span> <span class="i">deedle</span>
-<span class="i">Loaded</span> <span class="i">deedle</span><span class="o">.</span><span class="i">rplugin</span>
-<span class="i">Loaded</span> <span class="i">dynamicinterop</span>
-<span class="i">Loaded</span> <span class="i">foogle</span><span class="o">.</span><span class="i">charts</span>
-<span class="i">Loaded</span> <span class="i">fsharp</span><span class="o">.</span><span class="i">charting</span>
-<span class="i">Loaded</span> <span class="i">zlib</span><span class="o">.</span><span class="i">portable</span>
-<span class="i">Loaded</span> <span class="i">fsharp</span><span class="o">.</span><span class="i">data</span>
-<span class="i">Loaded</span> <span class="i">google</span><span class="o">.</span><span class="i">datatable</span><span class="o">.</span><span class="i">net</span><span class="o">.</span><span class="i">wrapper</span>
-<span class="i">Loaded</span> <span class="i">taskparallellibrary</span>
-<span class="i">Loaded</span> <span class="i">mathnet</span><span class="o">.</span><span class="i">numerics</span>
-<span class="i">Loaded</span> <span class="i">mathnet</span><span class="o">.</span><span class="i">numerics</span><span class="o">.</span><span class="i">fsharp</span>
-<span class="i">Loaded</span> <span class="i">newtonsoft</span><span class="o">.</span><span class="i">json</span>
-<span class="i">Loaded</span> <span class="i">r</span><span class="o">.</span><span class="i">net</span><span class="o">.</span><span class="i">community</span>
-<span class="i">Loaded</span> <span class="i">r</span><span class="o">.</span><span class="i">net</span><span class="o">.</span><span class="i">community</span><span class="o">.</span><span class="i">fsharp</span>
-<span class="i">Loaded</span> <span class="i">rprovider</span>
-<span class="i">Loaded</span> <span class="i">xplot</span><span class="o">.</span><span class="i">googlecharts</span>
-<span class="i">Loaded</span> <span class="i">xplot</span><span class="o">.</span><span class="i">googlecharts</span><span class="o">.</span><span class="i">deedle</span>
-<span class="i">Loaded</span> <span class="i">http</span><span class="o">.</span><span class="i">fs</span>
-<span class="i">Loaded</span> <span class="i">xplot</span><span class="o">.</span><span class="i">plotly</span>
-<span class="i">Loaded</span> <span class="i">fslab</span>
-
-# <span class="i">Generate</span> <span class="i">include</span> <span class="i">scripts</span> <span class="k">while</span> <span class="i">installing</span> <span class="i">packages</span>
-</code></pre></td>
-</tr>
-</table>
-<p>Alternatively, the include scripts can be generated automatically when running the <code>paket install</code> command.</p>
-<p>To enable this, add the <code>generate_load_scripts</code> option to the <code>paket.dependencies</code> file:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">generate_load_scripts: true
-<span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> Suave
-</code></pre></td></tr></table>
 
 <div class="tip" id="fs1">val id : x:&#39;T -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.id</div>
 <div class="tip" id="fs2">val log : value:&#39;T -&gt; &#39;T (requires member Log)<br /><br />Full name: Microsoft.FSharp.Core.Operators.log</div>
@@ -238,7 +145,7 @@ used in your scripts without having to bother with the list and order of all dep
             <li><a href="./paket-find-refs.html">paket find-refs</a></li>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
-            <li><a href="./paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
+            <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
             <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
