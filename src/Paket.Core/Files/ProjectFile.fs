@@ -1525,7 +1525,14 @@ type ProjectFile with
         try
             this.ProjectNode.Attributes.["ToolsVersion"].Value |> float
         with
-        | _ -> 4.0
+        | _ -> 
+            try
+                if this.ProjectNode.Attributes.["Sdk"].Value <> "" then
+                    15.0
+                else
+                    4.0
+            with
+            | _ -> 4.0
 
     static member FindOrCreateReferencesFile projectFile =
         match ProjectFile.FindReferencesFile(projectFile) with
