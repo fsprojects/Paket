@@ -650,7 +650,7 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
         return Some(source,result)  }
 
     let tryV3 source nugetSource = async {
-        if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") || nugetSource.Url.Contains("visualstudio.com") then
+        if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") || nugetSource.Url.Contains("visualstudio.com") || nugetSource.Url.Contains("/nuget/v3/") then
             match NuGetV3.calculateNuGet2Path nugetSource.Url with
             | Some url ->
                 let! result =
