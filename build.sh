@@ -15,7 +15,8 @@ else
   if [ $exit_code -ne 0 ]; then  
     certificate_count=$(certmgr -list -c Trust | grep X.509 | wc -l)
     if [ $certificate_count -le 1 ]; then
-      echo "Couldn't download Paket. This might be because your Mono installation"-     echo "doesn't have the right SSL root certificates installed. One way"
+      echo "Couldn't download Paket. This might be because your Mono installation"
+      echo "doesn't have the right SSL root certificates installed. One way"
       echo "to fix this would be to download the list of SSL root certificates"
       echo "from the Mozilla project by running the following command:"
       echo ""
