@@ -418,7 +418,7 @@ let ``#1871 should install suave``() =
 [<Test>]
 let ``#1883 install FSharp.Core from Chessie``() = 
     let newLockFile = install "i001883-chessie"
-    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "FSharp.Core"].Version |> shouldEqual (SemVer.Parse "4.0.0.1")
+    newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "FSharp.Core"].Version |> shouldEqual (SemVer.Parse "4.1")
 
 [<Test>]
 let ``#1883 should not install .NET Standard``() = 
