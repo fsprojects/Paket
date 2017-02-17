@@ -195,14 +195,16 @@ Target "DotnetRestore" (fun _ ->
 )
 
 Target "DotnetBuild" (fun _ ->
-    netcoreFiles
-    |> Seq.iter (fun proj ->
-        DotNetCli.Build (fun c ->
-            { c with
-                Project = proj
-                ToolPath = dotnetExePath
-            })
-    )
+    // netcoreFiles
+    // |> Seq.iter (fun proj ->
+    //     DotNetCli.Build (fun c ->
+    //         { c with
+    //             Project = proj
+    //             ToolPath = dotnetExePath
+    //         })
+    // )
+
+    ()
 )
 
 Target "DotnetPackage" (fun _ ->
