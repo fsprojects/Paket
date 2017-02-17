@@ -1,3 +1,6 @@
+#### 3.35.2 - 17.02.2017
+* BUGFIX: Add a workaround for https://github.com/fsprojects/Paket/issues/2145
+
 #### 3.35.1 - 31.01.2017
 * BUGFIX: Ignore unknown frameworks - https://github.com/fsprojects/Paket/pull/2132
 

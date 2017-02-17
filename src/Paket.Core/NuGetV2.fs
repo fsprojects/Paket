@@ -267,7 +267,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
 
 /// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
-    let queryPackagesProtocol() = 
+    let queryPackagesProtocol (packageName:PackageName) = 
         async {
             let url = sprintf "%s/Packages(Id='%O',Version='%O')" nugetURL packageName version
             let! response = safeGetFromUrl(auth,url,acceptXml)
@@ -295,11 +295,17 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
             let! result = getDetailsFromNuGetViaODataFast auth nugetURL packageName version
             if String.containsIgnoreCase "visualstudio.com" nugetURL && result.Dependencies.IsEmpty then
                 // TODO: There is a bug in VSTS, so we can't trust this protocol. Remvoe when VSTS is fixed
-                return! queryPackagesProtocol()
+                return! queryPackagesProtocol packageName
             else
                 return result
-        with _ -> return! queryPackagesProtocol()
-
+        with _ -> 
+            try
+                return! queryPackagesProtocol packageName
+            with _ ->
+                // try uppercase version as workaround for https://github.com/fsprojects/Paket/issues/2145 - Bad!
+                let name = PackageName.ToString()
+                let uppercase = PackageName.ToString().[0].ToString().ToUpper() + name.Substring(1)
+                return! queryPackagesProtocol (PackageName uppercase)
     }
 
 let getDetailsFromNuGet force auth nugetURL packageName version =
