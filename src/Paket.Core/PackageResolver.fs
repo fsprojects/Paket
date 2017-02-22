@@ -373,7 +373,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                 | _ -> 
                     let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
                     getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
-                |> Seq.cache
+                |> Seq.cache            
 
             let preRelease v =
                 v.PreRelease = None
@@ -384,6 +384,8 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                     | _ -> false
 
             compatibleVersions := Seq.filter (isInRange id) (!availableVersions) |> Seq.cache
+
+
             if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
                 globalOverride := true
             else
@@ -545,9 +547,10 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                                     when
                                         (Set.isEmpty conflicts |> not) && 
                                           nextStep.CurrentResolution.Count > 1 &&
-                                          (conflicts |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not) ->
+                                          (conflicts |> Set.exists (fun r -> r = currentRequirement || r.Graph |> List.contains currentRequirement) |> not) &&
+                                          getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives (currentStep.OpenRequirements |> Set.filter (fun r -> currentRequirement.Name = r.Name)) currentRequirement = ResolverStrategy.Max ->
                                         forceBreak := true
-                                | _ -> ()                            
+                                | _ -> ()
 
                     if not !useUnlisted && !hasUnlisted && not (!state).IsDone then
                         useUnlisted := true

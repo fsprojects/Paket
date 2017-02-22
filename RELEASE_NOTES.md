@@ -1,3 +1,6 @@
+#### 3.35.4 - 22.02.2017
+* BUGFIX: Fix resolver for Strategy.Min - https://github.com/fsprojects/Paket/issues/2148
+
 #### 3.35.3 - 17.02.2017
 * BUGFIX: Fix TFS-on-premise - https://github.com/fsprojects/Paket/pull/2147
 
