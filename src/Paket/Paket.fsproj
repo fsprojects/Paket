@@ -37,6 +37,8 @@
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>D:\temp\PaketResolveFailure</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
