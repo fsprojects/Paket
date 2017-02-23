@@ -300,7 +300,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
             
             let package = { package with Settings = { package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions } }
             exploredPackages.[key] <- package
-            Some package
+            Some(true, package)
         | false,_ ->
             match updateMode with
             | Install -> tracefn  " - %O %A" dependency.Name version
@@ -333,7 +333,7 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                       Settings = { settings with FrameworkRestrictions = newRestrictions }
                       Source = packageDetails.Source }
                 exploredPackages.Add(key,explored)
-                Some explored
+                Some(false, explored)
             with
             | exn ->
                 traceWarnfn "    Package not available.%s      Message: %s" Environment.NewLine exn.Message
@@ -520,15 +520,17 @@ let Resolve(getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrateg
                         !firstTrial || Set.isEmpty conflicts
 
                     while shouldTryHarder() do
+                        let isFirstTrial = !firstTrial
                         firstTrial := false
                         let versionToExplore = Seq.head !versionsToExplore
                         versionsToExplore := Seq.tail !versionsToExplore
                         match getExploredPackage(currentRequirement,versionToExplore) with
                         | None -> ()
-                        | Some exploredPackage ->
+                        | Some (alreadyExplored, exploredPackage) ->
                             hasUnlisted := exploredPackage.Unlisted || !hasUnlisted
                             if exploredPackage.Unlisted && not !useUnlisted then
-                                tracefn "     unlisted"
+                                if isFirstTrial && not alreadyExplored then
+                                    tracefn "     unlisted"
                             else
                                 let nextStep =
                                     { Relax = currentStep.Relax

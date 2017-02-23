@@ -1,3 +1,6 @@
+#### 3.35.5 - 23.02.2017
+* COSMETICS: Do not spam "unlisted" - https://github.com/fsprojects/Paket/issues/2149
+
 #### 3.35.4 - 22.02.2017
 * BUGFIX: Fix resolver for Strategy.Min - https://github.com/fsprojects/Paket/issues/2148
 
