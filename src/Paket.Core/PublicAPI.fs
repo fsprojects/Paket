@@ -384,7 +384,7 @@ type Dependencies(dependenciesFileName: string) =
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
                 let packageName = resolvedPackage.Name
-                let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString().ToLower()
+                let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.GetCompareString()
                 let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
                 let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
                 let nuspec = Nuspec.Load nuspec.FullName

@@ -1,3 +1,6 @@
+#### 3.35.6 - 23.02.2017
+* BUGFIX: Lower case group folder name - https://github.com/fsprojects/Paket/pull/2150
+
 #### 3.35.5 - 23.02.2017
 * COSMETICS: Do not spam "unlisted" - https://github.com/fsprojects/Paket/issues/2149
 
