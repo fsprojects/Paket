@@ -405,13 +405,13 @@ let private getExploredPackage (pkgConfig:PackageConfig) getPackageDetailsF (sta
         let package = updateRestrictions pkgConfig package
         stackpack.ExploredPackages.[key] <- package
         verbosefn "   Retrieved Explored Package  %O" package
-        stackpack, Some package
+        stackpack, Some(true, package)
     | false,_ ->
         match explorePackageConfig getPackageDetailsF pkgConfig with
         | Some explored ->
             verbosefn "   Found Explored Package  %O" explored
             stackpack.ExploredPackages.Add(key,explored)
-            stackpack, Some explored
+            stackpack, Some(false, explored)
         | None ->
             stackpack, None
 
@@ -786,13 +786,14 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                 | stackpack, None ->
                     step (Inner((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
 
-                | stackpack, Some exploredPackage ->
+                | stackpack, Some(alreadyExplored,exploredPackage) ->
                     let hasUnlisted = exploredPackage.Unlisted || flags.HasUnlisted
                     let flags = 
                         StepFlags(flags.Ready,flags.UseUnlisted,hasUnlisted,flags.ForceBreak,flags.FirstTrial,flags.UnlistedSearch)
 
                     if exploredPackage.Unlisted && not flags.UseUnlisted then
-                        tracefn "     %O %O was unlisted" exploredPackage.Name exploredPackage.Version
+                        if not alreadyExplored then
+                            tracefn "     %O %O was unlisted" exploredPackage.Name exploredPackage.Version
                         step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags 
                     else
                         let nextStep =
