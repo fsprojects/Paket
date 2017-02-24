@@ -19,6 +19,7 @@ type InstallerOptions =
       CleanBindingRedirects : bool
       CreateNewBindingFiles : bool
       OnlyReferenced : bool
+      GenerateLoadScripts : bool
       TouchAffectedRefs : bool }
 
     static member Default =
@@ -28,16 +29,18 @@ type InstallerOptions =
           CreateNewBindingFiles = false
           OnlyReferenced = false
           CleanBindingRedirects = false
+          GenerateLoadScripts = false
           TouchAffectedRefs = false }
 
-    static member CreateLegacyOptions(force, redirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs) =
+    static member CreateLegacyOptions(force, redirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, generateLoadScripts) =
         { InstallerOptions.Default with
             Force = force
             CreateNewBindingFiles = createNewBindingFiles
             CleanBindingRedirects = cleanBindingRedirects
             Redirects = redirects
             SemVerUpdateMode = semVerUpdateMode
-            TouchAffectedRefs = touchAffectedRefs }
+            TouchAffectedRefs = touchAffectedRefs
+            GenerateLoadScripts = generateLoadScripts }
 
 type UpdaterOptions =
     { Common : InstallerOptions

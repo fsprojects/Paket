@@ -223,6 +223,7 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
         GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
 
     let shouldGenerateScripts =
+        options.Common.GenerateLoadScripts ||
         // hardcoded assumption, if option is set on any of the group, generate everything
         dependenciesFile.Groups 
         |> Seq.map (fun kvp -> kvp.Value)

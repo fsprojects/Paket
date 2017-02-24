@@ -100,6 +100,7 @@ type InstallArgs =
     | Keep_Major
     | Keep_Minor
     | Keep_Patch
+    | [<CustomCommandLine("--generate-load-scripts")>] Generate_Load_Scripts
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
     | Touch_Affected_Refs
 with
@@ -111,6 +112,7 @@ with
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
+            | Generate_Load_Scripts -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
             | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
