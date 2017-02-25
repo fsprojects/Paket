@@ -210,7 +210,7 @@ module Resolution =
     | Resolution.Ok model -> model
     | Resolution.Conflict _ as res ->
         failwithf  "There was a version conflict during package resolution.\n\
-                    %s\n  Please try to relax some conditions." (getErrorText true res)
+                    %s\n  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)." (getErrorText true res)
 
 
     let isDone = function
