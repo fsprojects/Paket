@@ -163,7 +163,7 @@ type Resolution =
         | Resolution.Conflict(_) -> 
             "There was a version conflict during package resolution." + Environment.NewLine +
                 this.GetErrorText(true)  + Environment.NewLine +
-                "  Please try to relax some conditions."
+                "  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)."
             |> failwithf "%s"
 
     member this.IsDone =
