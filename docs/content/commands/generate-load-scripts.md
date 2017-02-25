@@ -34,32 +34,9 @@ In a .fsx script file you can now use
 
     // now ready to use FsLab and any of it's dependencies
 
-You'll see messages when you execute the `#load` line in FSI:
-
-    Loaded deedle
-    Loaded deedle.rplugin
-    Loaded dynamicinterop
-    Loaded foogle.charts
-    Loaded fsharp.charting
-    Loaded zlib.portable
-    Loaded fsharp.data
-    Loaded google.datatable.net.wrapper
-    Loaded taskparallellibrary
-    Loaded mathnet.numerics
-    Loaded mathnet.numerics.fsharp
-    Loaded newtonsoft.json
-    Loaded r.net.community
-    Loaded r.net.community.fsharp
-    Loaded rprovider
-    Loaded xplot.googlecharts
-    Loaded xplot.googlecharts.deedle
-    Loaded http.fs
-    Loaded xplot.plotly
-    Loaded fslab
-    
     ## Generate load scripts while installing packages
 
-Alternatively, the include scripts can be generated automatically when running the `paket install` command.
+Alternatively, the load scripts can be generated automatically when running the `paket install` command.
 
 To enable this, add the `generate_load_scripts` option to the `paket.dependencies` file:
 

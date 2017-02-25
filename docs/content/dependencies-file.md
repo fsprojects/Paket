@@ -247,10 +247,10 @@ The `generate_load_scripts` option can be either `true` or `false` with `false` 
 
     nuget Suave
 
-Generated include scripts can be loaded like this:
+Generated load scripts can be loaded like this:
 
     [lang=fsharp]
-    #load @"paket-files/include-scripts/net45/include.suave.fsx"
+    #load @".paket/load/net45/suave.fsx"
 
 ## Comments
 
