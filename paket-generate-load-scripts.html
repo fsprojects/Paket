@@ -114,63 +114,18 @@ used in your scripts without having to bother with the list and order of all dep
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="prep">#load</span> <span class="s">@&quot;.paket/load/net45/fslab.fsx&quot;</span>
 
 <span class="c">// now ready to use FsLab and any of it&#39;s dependencies</span>
-</code></pre></td>
-</tr>
-</table>
-<p>You'll see messages when you execute the <code>#load</code> line in FSI:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-<span class="l">15: </span>
-<span class="l">16: </span>
-<span class="l">17: </span>
-<span class="l">18: </span>
-<span class="l">19: </span>
-<span class="l">20: </span>
-<span class="l">21: </span>
-<span class="l">22: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">Loaded</span> <span class="i">deedle</span>
-<span class="i">Loaded</span> <span class="i">deedle</span><span class="o">.</span><span class="i">rplugin</span>
-<span class="i">Loaded</span> <span class="i">dynamicinterop</span>
-<span class="i">Loaded</span> <span class="i">foogle</span><span class="o">.</span><span class="i">charts</span>
-<span class="i">Loaded</span> <span class="i">fsharp</span><span class="o">.</span><span class="i">charting</span>
-<span class="i">Loaded</span> <span class="i">zlib</span><span class="o">.</span><span class="i">portable</span>
-<span class="i">Loaded</span> <span class="i">fsharp</span><span class="o">.</span><span class="i">data</span>
-<span class="i">Loaded</span> <span class="i">google</span><span class="o">.</span><span class="i">datatable</span><span class="o">.</span><span class="i">net</span><span class="o">.</span><span class="i">wrapper</span>
-<span class="i">Loaded</span> <span class="i">taskparallellibrary</span>
-<span class="i">Loaded</span> <span class="i">mathnet</span><span class="o">.</span><span class="i">numerics</span>
-<span class="i">Loaded</span> <span class="i">mathnet</span><span class="o">.</span><span class="i">numerics</span><span class="o">.</span><span class="i">fsharp</span>
-<span class="i">Loaded</span> <span class="i">newtonsoft</span><span class="o">.</span><span class="i">json</span>
-<span class="i">Loaded</span> <span class="i">r</span><span class="o">.</span><span class="i">net</span><span class="o">.</span><span class="i">community</span>
-<span class="i">Loaded</span> <span class="i">r</span><span class="o">.</span><span class="i">net</span><span class="o">.</span><span class="i">community</span><span class="o">.</span><span class="i">fsharp</span>
-<span class="i">Loaded</span> <span class="i">rprovider</span>
-<span class="i">Loaded</span> <span class="i">xplot</span><span class="o">.</span><span class="i">googlecharts</span>
-<span class="i">Loaded</span> <span class="i">xplot</span><span class="o">.</span><span class="i">googlecharts</span><span class="o">.</span><span class="i">deedle</span>
-<span class="i">Loaded</span> <span class="i">http</span><span class="o">.</span><span class="i">fs</span>
-<span class="i">Loaded</span> <span class="i">xplot</span><span class="o">.</span><span class="i">plotly</span>
-<span class="i">Loaded</span> <span class="i">fslab</span>
 
 # <span class="i">Generate</span> <span class="i">load</span> <span class="i">scripts</span> <span class="k">while</span> <span class="i">installing</span> <span class="i">packages</span>
 </code></pre></td>
 </tr>
 </table>
-<p>Alternatively, the include scripts can be generated automatically when running the <code>paket install</code> command.</p>
+<p>Alternatively, the load scripts can be generated automatically when running the <code>paket install</code> command.</p>
 <p>To enable this, add the <code>generate_load_scripts</code> option to the <code>paket.dependencies</code> file:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
