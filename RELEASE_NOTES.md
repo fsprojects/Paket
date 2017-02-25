@@ -1,20 +1,11 @@
-#### 3.35.6 - 23.02.2017
+#### 3.36.0 - 25.02.2017
 * BUGFIX: Lower case group folder name - https://github.com/fsprojects/Paket/pull/2150
-
-#### 3.35.5 - 23.02.2017
-* COSMETICS: Do not spam "unlisted" - https://github.com/fsprojects/Paket/issues/2149
-
-#### 3.35.4 - 22.02.2017
 * BUGFIX: Fix resolver for Strategy.Min - https://github.com/fsprojects/Paket/issues/2148
-
-#### 3.35.3 - 17.02.2017
 * BUGFIX: Fix TFS-on-premise - https://github.com/fsprojects/Paket/pull/2147
-
-#### 3.35.2 - 17.02.2017
 * BUGFIX: Add a workaround for https://github.com/fsprojects/Paket/issues/2145
-
-#### 3.35.1 - 31.01.2017
 * BUGFIX: Ignore unknown frameworks - https://github.com/fsprojects/Paket/pull/2132
+* COSMETICS: Do not spam "unlisted" - https://github.com/fsprojects/Paket/issues/2149
+* USABILITY: Link to documentation on how to resolve a conflict - https://github.com/fsprojects/Paket/pull/2155
 
 #### 3.35.0 - 30.01.2017
 * Added "netcoreapp1.1" support - https://github.com/fsprojects/Paket/pull/2129
