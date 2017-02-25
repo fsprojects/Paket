@@ -77,7 +77,6 @@ module ScriptGeneration =
   | ReferenceAssemblyFile      of FileInfo
   | ReferenceFrameworkAssembly of string
   | LoadScript                 of FileInfo
-  | PrintStatement             of string
 
   type ScriptGenInput = {
       PackageName                  : PackageName
@@ -135,7 +134,7 @@ module ScriptGeneration =
     let lines = List.concat [depLines; frameworkRefLines; dllLines]
     match lines with
     | [] -> DoNotGenerate
-    | xs -> List.append xs [ PrintStatement (sprintf "%s Loaded" packageName) ] |> Generate
+    | xs -> Generate xs
 
   /// default implementation of C# include script generator
   let generateCSharpScript (input: ScriptGenInput) =
@@ -157,7 +156,7 @@ module ScriptGeneration =
 
     match lines with
     | [] -> DoNotGenerate
-    | xs -> List.append xs [ PrintStatement (sprintf "%s Loaded" packageName) ] |> Generate
+    | xs -> Generate xs
 
   let writeFSharpScript scriptFile input =
     let pieces = [
@@ -172,11 +171,6 @@ module ScriptGeneration =
             |> sprintf """#load @"%s" """
           | ReferenceFrameworkAssembly name ->
             sprintf """#r "%s" """ name
-          | PrintStatement text -> 
-            let escape = 
-              // /!\ /!\ /!\ TODO escape text /!\ /!\ /!\
-              id
-            sprintf @"printfn ""%s"" " (escape text)
     ]
 
     let text =
@@ -200,11 +194,6 @@ module ScriptGeneration =
             |> sprintf """#load "%s" """
           | ReferenceFrameworkAssembly name ->
             sprintf """#r "%s" """ name
-          | PrintStatement text -> 
-            let escape = 
-              // /!\ /!\ /!\ TODO escape text /!\ /!\ /!\
-              id
-            sprintf @"System.Console.WriteLine(""%s""); " (escape text)
     ]
     
     let text =
@@ -280,7 +269,6 @@ module ScriptGeneration =
             yield ScriptPiece.ReferenceFrameworkAssembly a
           for a in assemblies do
             yield ScriptPiece.ReferenceAssemblyFile a
-          yield ScriptPiece.PrintStatement (sprintf "Loaded group %s" group)
         ]
         |> writeScript scriptFile
   
