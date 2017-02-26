@@ -144,7 +144,7 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
-                                     InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], []),
+                                     InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
                                      interactive, installAfter))
 
    /// Adds the given package with the given version to the dependencies file.
@@ -152,7 +152,7 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
-                                              InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], []),
+                                              InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
                                               projectName, installAfter))
 
     /// Adds credentials for a Nuget feed
@@ -166,11 +166,11 @@ type Dependencies(dependenciesFileName: string) =
         Utils.RunInLockedAccessMode(this.RootPath, fun () -> ConfigFile.AddToken(source, token) |> returnOrFail)
 
     /// Installs all dependencies.
-    member this.Install(force: bool) = this.Install(force, false, false, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [])
+    member this.Install(force: bool) = this.Install(force, false, false, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None)
 
     /// Installs all dependencies.
-    member this.Install(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, onlyReferenced: bool, semVerUpdateMode, touchAffectedRefs, generateLoadScripts, providedFrameworks, providedScriptTypes): unit =
-        this.Install({ InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, generateLoadScripts, providedFrameworks, providedScriptTypes) with OnlyReferenced = onlyReferenced })
+    member this.Install(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, onlyReferenced: bool, semVerUpdateMode, touchAffectedRefs, generateLoadScripts, providedFrameworks, providedScriptTypes, alternativeProjectRoot): unit =        
+        this.Install({ InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, generateLoadScripts, providedFrameworks, providedScriptTypes, alternativeProjectRoot) with OnlyReferenced = onlyReferenced })
 
     /// Installs all dependencies.
     member private this.Install(options: InstallerOptions): unit =
@@ -197,7 +197,8 @@ type Dependencies(dependenciesFileName: string) =
             touchAffectedRefs = defaultArg touchAffectedRefs false,
             generateLoadScripts = defaultArg generateLoadScripts false,
             providedFrameworks = defaultArg providedFrameworks [],
-            providedScriptTypes = defaultArg providedScriptTypes [])
+            providedScriptTypes = defaultArg providedScriptTypes [],
+            alternativeProjectRoot = None)
 
     static member GenerateLoadScripts() =
         LoadingScripts.ScriptGeneration.executeCommand (DirectoryInfo (Directory.GetCurrentDirectory())) List.empty List.empty
@@ -216,7 +217,7 @@ type Dependencies(dependenciesFileName: string) =
             fun () -> UpdateProcess.Update(
                         dependenciesFileName,
                         { UpdaterOptions.Default with
-                            Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [])
+                            Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
                             NoInstall = installAfter |> not }))
 
     /// Updates dependencies in single group.
@@ -227,7 +228,7 @@ type Dependencies(dependenciesFileName: string) =
                             dependenciesFileName,
                             GroupName groupName,
                             { UpdaterOptions.Default with
-                                Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [])
+                                Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
                                 NoInstall = installAfter |> not }))
 
     /// Update a filtered set of packages
@@ -241,7 +242,7 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.UpdateFilteredPackages(dependenciesFileName, groupName, package, version,
                                                   { UpdaterOptions.Default with
-                                                      Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [])
+                                                      Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
                                                       NoInstall = installAfter |> not }))
 
     /// Updates the given package.
@@ -259,7 +260,7 @@ type Dependencies(dependenciesFileName: string) =
             this.RootPath,
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version,
                                                   { UpdaterOptions.Default with
-                                                      Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [])
+                                                      Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
                                                       NoInstall = installAfter |> not }))
 
     /// Restores all dependencies.
@@ -570,16 +571,16 @@ type Dependencies(dependenciesFileName: string) =
             cancellationToken,
             maxResults)
 
-    static member FindPackageVersions(root,sources:PackageSource seq,name:string,?maxResults) =
+    static member FindPackageVersions(root,sources:PackageSource seq,name:string,?maxResults,?alternativeProjectRoot) =
         let maxResults = defaultArg maxResults 1000
         let sources = 
             match sources |> Seq.toList |> List.distinct with
             | [] -> [PackageSources.DefaultNuGetSource]
             | sources -> sources
             |> List.distinct
-
+        
         let versions = 
-            NuGetV2.GetVersions true root (sources, PackageName name)
+            NuGetV2.GetVersions true alternativeProjectRoot root (sources, PackageName name)
             |> List.map (fun (v,_) -> v.ToString())
             |> List.toArray
             |> SemVer.SortVersions

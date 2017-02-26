@@ -35,9 +35,10 @@ let FindOutdated strict includingPrereleases groupNameFilter environment = trial
 
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
+    let alternativeProjectRoot = None
 
     let getVersionsF sources resolverStrategy groupName packageName =
-        let versions = NuGetV2.GetVersions force root (sources, packageName)
+        let versions = NuGetV2.GetVersions force alternativeProjectRoot root (sources, packageName)
                 
         match resolverStrategy with
         | ResolverStrategy.Max -> List.sortDescending versions
@@ -50,7 +51,7 @@ let FindOutdated strict includingPrereleases groupNameFilter environment = trial
         | None -> dependenciesFile.Groups
         | Some gname -> dependenciesFile.Groups |> Map.filter(fun k g -> k.ToString() = gname)
 
-    let newResolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, NuGetV2.GetPackageDetails root true, checkedDepsGroups, PackageResolver.UpdateMode.UpdateAll)
+    let newResolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, NuGetV2.GetPackageDetails alternativeProjectRoot root true, checkedDepsGroups, PackageResolver.UpdateMode.UpdateAll)
 
     let checkedLockGroups = 
         match groupNameFilter with

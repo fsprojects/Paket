@@ -83,10 +83,13 @@ let normalizeLocalPath (path:string) =
     else
         RelativePath path
         
-let getDirectoryInfo pathInfo root =
+let getDirectoryInfoForLocalNuGetFeed pathInfo alternativeProjectRoot root =
     match pathInfo with
     | AbsolutePath s -> DirectoryInfo s 
-    | RelativePath s -> DirectoryInfo(Path.Combine(root, s))
+    | RelativePath s ->
+        match alternativeProjectRoot with
+        | Some root -> DirectoryInfo(Path.Combine(root, s))
+        | None -> DirectoryInfo(Path.Combine(root, s))
         
 /// Creates a directory if it does not exist.
 let createDir path = 

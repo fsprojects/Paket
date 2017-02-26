@@ -160,9 +160,9 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
     project.UpdateFileItems(gitRemoteItems @ nuGetFileItems)
 
 
-let CreateInstallModel(root, groupName, sources, caches, force, package) =
+let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
-        let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(root, groupName, sources, caches, force, package, false)
+        let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let files = files |> Array.map (fun fi -> fi.FullName)
         let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName) |> Array.toList
@@ -172,7 +172,7 @@ let CreateInstallModel(root, groupName, sources, caches, force, package) =
     }
 
 /// Restores the given packages from the lock file.
-let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>, updatedGroups:Map<_,_>) =
+let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:DependenciesFile, lockFile : LockFile, packages:Set<GroupName*PackageName>, updatedGroups:Map<_,_>) =
     for kv in lockFile.Groups do
          let files = if updatedGroups |> Map.containsKey kv.Key then [] else kv.Value.RemoteFiles
          if List.isEmpty files |> not then
@@ -184,7 +184,7 @@ let CreateModel(root, force, dependenciesFile:DependenciesFile, lockFile : LockF
         let caches = dependenciesFile.Groups.[kv'.Key].Caches
         kv'.Value.Resolution
         |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> CreateInstallModel(root,kv'.Key,sources,caches,force,kv.Value))
+        |> Seq.map (fun kv -> CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv.Value))
         |> Seq.toArray
         |> Async.Parallel
         |> Async.RunSynchronously)
@@ -331,7 +331,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             |> Seq.map (fun kv -> kv.Key)
 
     let root = Path.GetDirectoryName lockFile.FileName
-    let model = CreateModel(root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, updatedGroups) |> Map.ofArray
+    let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, updatedGroups) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
     let projectCache = Dictionary<string, ProjectFile option>();
 

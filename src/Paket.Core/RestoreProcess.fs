@@ -33,9 +33,9 @@ let CopyToCaches force caches fileName =
             if verbose then
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
-let private extractPackage caches package root source groupName version includeVersionInPath force =
+let private extractPackage caches package alternativeProjectRoot root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
-        let! fileName,folder = NuGetV2.DownloadPackage(root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let! fileName,folder = NuGetV2.DownloadPackage(alternativeProjectRoot, root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
         CopyToCaches force caches fileName
         return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
@@ -55,7 +55,7 @@ let private extractPackage caches package root source groupName version includeV
     }
 
 /// Downloads and extracts a package.
-let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
+let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
     async { 
         let v = package.Version
         let includeVersionInPath = defaultArg package.Settings.IncludeVersionInPath false
@@ -80,10 +80,10 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
                     | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
                     | Some s -> s 
 
-                return! extractPackage caches package root source groupName v includeVersionInPath force
+                return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
             | LocalNuGet(path,_) ->
                 let path = Utils.normalizeLocalPath path
-                let di = Utils.getDirectoryInfo path root
+                let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root
                 let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
 
                 CopyToCaches force caches nupkg.FullName
@@ -103,12 +103,12 @@ let ExtractPackage(root, groupName, sources, caches, force, package : ResolvedPa
     }
 
 /// Restores the given dependencies from the lock file.
-let internal restore (root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
+let internal restore (alternativeProjectRoot, root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
         let! _ = lockFile.Groups.[groupName].Resolution
                  |> Map.filter (fun name _ -> packages.Contains name)
-                 |> Seq.map (fun kv -> ExtractPackage(root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
+                 |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
                  |> Async.Parallel
         return ()
     }
@@ -181,6 +181,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
+    let alternativeProjectRoot = None
     if not lockFileName.Exists then 
         failwithf "%s doesn't exist." lockFileName.FullName
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
@@ -279,7 +280,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let overriden = 
                 packages
                 |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
-            restore(root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
+            restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
             |> Async.RunSynchronously
             |> ignore
 

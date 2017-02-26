@@ -473,7 +473,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     static member ReadFromFile fileName : DependenciesFile = 
         verbosefn "Parsing %s" fileName
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName true <| File.ReadAllLines fileName)
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName true <| File.ReadAllLines fileName)    
 
     /// Find the matching lock file to a dependencies file
     static member FindLockfile(dependenciesFileName) =
