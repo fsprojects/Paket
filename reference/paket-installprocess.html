@@ -118,7 +118,7 @@
             CreateInstallModel (...)
           </code>
           <div class="tip" id="129">
-            <strong>Signature:</strong> (root:string * groupName:GroupName * sources:PackageSource list * caches:Cache list * force:bool * package:ResolvedPackage) -&gt; Async&lt;(GroupName * PackageName) * (ResolvedPackage * InstallModel)&gt;<br />
+            <strong>Signature:</strong> (alternativeProjectRoot:string option * root:string * groupName:GroupName * sources:PackageSource list * caches:Cache list * force:bool * package:ResolvedPackage) -&gt; Async&lt;(GroupName * PackageName) * (ResolvedPackage * InstallModel)&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
@@ -136,7 +136,7 @@
             CreateModel (...)
           </code>
           <div class="tip" id="130">
-            <strong>Signature:</strong> (root:string * force:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * packages:Set&lt;GroupName * PackageName&gt; * updatedGroups:Map&lt;GroupName,&#39;?8266&gt;) -&gt; ((GroupName * PackageName) * (ResolvedPackage * InstallModel)) []<br />
+            <strong>Signature:</strong> (alternativeProjectRoot:string option * root:string * force:bool * dependenciesFile:DependenciesFile * lockFile:LockFile * packages:Set&lt;GroupName * PackageName&gt; * updatedGroups:Map&lt;GroupName,&#39;?8266&gt;) -&gt; ((GroupName * PackageName) * (ResolvedPackage * InstallModel)) []<br />
                           <strong>Type parameters:</strong> '?8266          </div>
         </td>
         <td class="xmldoc">
