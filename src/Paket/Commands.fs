@@ -102,6 +102,8 @@ type InstallArgs =
     | Keep_Patch
     | [<CustomCommandLine("--generate-load-scripts")>] Generate_Load_Scripts
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
+    | [<CustomCommandLine("load-script-framework")>] Load_Script_Framework of target:string
+    | [<CustomCommandLine("load-script-type")>] Load_Script_Type of id:string
     | Touch_Affected_Refs
 with
     interface IArgParserTemplate with
@@ -117,6 +119,8 @@ with
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
             | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
             | Touch_Affected_Refs -> "Touches project files referencing packages which are affected, to help incremental build tools detecting the change."
+            | Load_Script_Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore."
+            | Load_Script_Type _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
 
 type OutdatedArgs =
     | Ignore_Constraints

@@ -122,6 +122,8 @@ let install (results : ParseResults<_>) =
     let cleanBindingRedirects = results.Contains <@ InstallArgs.Clean_Redirects @>
     let installOnlyReferenced = results.Contains <@ InstallArgs.Install_Only_Referenced @>
     let generateLoadScripts = results.Contains <@ InstallArgs.Generate_Load_Scripts @>
+    let providedFrameworks = results.GetResults <@ InstallArgs.Load_Script_Framework @>
+    let providedScriptTypes = results.GetResults <@ InstallArgs.Load_Script_Type @>
     let semVerUpdateMode =
         if results.Contains <@ InstallArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
         if results.Contains <@ InstallArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
@@ -129,7 +131,7 @@ let install (results : ParseResults<_>) =
         SemVerUpdateMode.NoRestriction
     let touchAffectedRefs = results.Contains <@ InstallArgs.Touch_Affected_Refs @>
 
-    Dependencies.Locate().Install(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode, touchAffectedRefs, generateLoadScripts)
+    Dependencies.Locate().Install(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, installOnlyReferenced, semVerUpdateMode, touchAffectedRefs, generateLoadScripts, providedFrameworks, providedScriptTypes)
 
 let outdated (results : ParseResults<_>) =
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not

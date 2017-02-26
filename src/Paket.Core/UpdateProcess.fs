@@ -232,7 +232,7 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
         |> Option.isSome
 
     if shouldGenerateScripts then
-        LoadingScripts.ScriptGeneration.executeCommand (DirectoryInfo dependenciesFile.RootPath) List.empty List.empty
+        LoadingScripts.ScriptGeneration.executeCommand (DirectoryInfo dependenciesFile.RootPath) options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =
