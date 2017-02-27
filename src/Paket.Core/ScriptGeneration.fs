@@ -247,8 +247,8 @@ module ScriptGeneration =
               let syslibs = model.GetFrameworkAssembliesLazy.Value
               yield group, (libs, syslibs |> Set.toSeq)
 
-          if not !mainGroupSeen then
-            yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
+//          if not !mainGroupSeen then
+  //          yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
         }
         |> Seq.groupBy fst
         |> Seq.map (fun (group, items) -> group, items |> Seq.map snd)
