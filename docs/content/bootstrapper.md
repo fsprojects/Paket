@@ -21,15 +21,15 @@ Cached paket.exe versions are removed when the NuGet cache folder is [cleared](p
 
   `--force-nuget`: As with the `--prefer-nuget` option, downloads paket.exe from nuget.org instead of github.com, but does *not* use github.com as a fallback.
 
-  `--max-file-age=120`: if the paket.exe already exists, and it is not older than `120` minutes all checks will be skipped.
+  `--max-file-age=120`: if paket.exe already exists, and it is not older than `120` minutes, all checks will be skipped.
 
   `--nuget-source`: When specified as `--nuget-source=http://local.site/path/here`, the specified path is used instead of nuget.org when trying to fetch paket.exe as a nuget package. Combine this with either `--prefer-nuget` or `--force-nuget` to get paket.exe from a custom source.
 
   `--self`: Self updating the paket.bootstrapper.exe. When this option is used the download of paket.exe will be skipped. (Can be combined with `--prefer-nuget`)
 
-  `-s`: Make the boostrapper more silent. Use it once to display display only errors or twice to supress all output.
+  `-s`: Make the bootstrapper more silent. Use it once to display display only errors or twice to supress all output.
 
-  `-v`: Make the boostrapper more verbose. Display more information about the boostrapper process, including operation timings.
+  `-v`: Make the bootstrapper more verbose. Display more information about the boostrapper process, including operation timings.
 
   `-f`: Forces the bootstrapper to ignore any cached paket.exe versions and go directly to github.com or nuget.org based on other flags.
 
@@ -39,9 +39,9 @@ Cached paket.exe versions are removed when the NuGet cache folder is [cleared](p
 
 ### In Application settings
 
-If present the paket.boostraper.exe.config file can be used to set AppSettings. When an option is passed on the command line the corresponding application setting is ignored.
+If present, the `paket.bootstrapper.exe.config` file can be used to set AppSettings. When an option is passed on the command line, the corresponding application setting is ignored.
 
-Example file :
+Example file:
 
 ```xml
 <?xml version="1.0" encoding="utf-8" ?>
@@ -73,7 +73,7 @@ Example file :
 ### In paket.dependencies
 
 If a [`paket.dependencies`](dependencies-file.html) file can be found in the current directory it can contain a
-special line containing options for the boostrapper.
+special line containing options for the bootstrapper.
 
 The line must start with `version` followed by a requested `paket.exe` version and optionally bootstrapper command line arguments:
 
@@ -97,7 +97,7 @@ nuget FSharp.Core ~> 4
 
 ## Magic mode
 
-When `paket.bootstrapper.exe` is renamed `paket.exe` the real `paket.exe` is downloaded to a temporary location and
+When `paket.bootstrapper.exe` is renamed to `paket.exe`, the real `paket.exe` is downloaded to a temporary location and
 executed with all arguments passed directly.
 
 ```batch
@@ -111,13 +111,13 @@ paket.bootstrapper.exe -s --max-file-age=720 --run add nuget FAKE
 ```
 
 Using this feature paket can be used simply by committing a ~50KB `paket.exe` to source control and using it directly.
-The fact that a boostrapper exists is completely hidden and becomes an implementation detail that contributors to your
+The fact that a bootstrapper exists is completely hidden and becomes an implementation detail that contributors to your
 repository won't have to know — or care — about.
 
 While command line bootstrapper options can't be used the other sources (AppSettings, Environment Variables
 & paket.dependencies) can still be used to configure the bootstrapper.
 
 A few default settings are applied:
-* The boostrapper is silent and only errors are displayed. `-v` can be used once to restore normal output or twice
+* The bootstrapper is silent and only errors are displayed. `-v` can be used once to restore normal output or twice
   to show more details.
 * If no version is specified a default `--max-file-age` of 12 Hours is used.
