@@ -70,17 +70,17 @@
 <p><code>&lt;version&gt;</code>: Downloads the given version of paket.exe from github.com.</p>
 <p><code>--prefer-nuget</code>: Downloads the given version of paket.exe from nuget.org instead of github.com. Uses github.com as fallback, when nuget.org fails</p>
 <p><code>--force-nuget</code>: As with the <code>--prefer-nuget</code> option, downloads paket.exe from nuget.org instead of github.com, but does <em>not</em> use github.com as a fallback.</p>
-<p><code>--max-file-age=120</code>: if the paket.exe already exists, and it is not older than <code>120</code> minutes all checks will be skipped.</p>
+<p><code>--max-file-age=120</code>: if paket.exe already exists, and it is not older than <code>120</code> minutes, all checks will be skipped.</p>
 <p><code>--nuget-source</code>: When specified as <code>--nuget-source=http://local.site/path/here</code>, the specified path is used instead of nuget.org when trying to fetch paket.exe as a nuget package. Combine this with either <code>--prefer-nuget</code> or <code>--force-nuget</code> to get paket.exe from a custom source.</p>
 <p><code>--self</code>: Self updating the paket.bootstrapper.exe. When this option is used the download of paket.exe will be skipped. (Can be combined with <code>--prefer-nuget</code>)</p>
-<p><code>-s</code>: Make the boostrapper more silent. Use it once to display display only errors or twice to supress all output.</p>
-<p><code>-v</code>: Make the boostrapper more verbose. Display more information about the boostrapper process, including operation timings.</p>
+<p><code>-s</code>: Make the bootstrapper more silent. Use it once to display display only errors or twice to supress all output.</p>
+<p><code>-v</code>: Make the bootstrapper more verbose. Display more information about the boostrapper process, including operation timings.</p>
 <p><code>-f</code>: Forces the bootstrapper to ignore any cached paket.exe versions and go directly to github.com or nuget.org based on other flags.</p>
 <p><code>--run</code>: Once downloaded run <code>paket.exe</code>. All arguments following this one are ignored and passed directly to <code>paket.exe</code>.</p>
 <p><code>--help</code>: Shows a help page with all possible options.</p>
 <h3><a name="In-Application-settings" class="anchor" href="#In-Application-settings">In Application settings</a></h3>
-<p>If present the paket.boostraper.exe.config file can be used to set AppSettings. When an option is passed on the command line the corresponding application setting is ignored.</p>
-<p>Example file :</p>
+<p>If present, the <code>paket.bootstrapper.exe.config</code> file can be used to set AppSettings. When an option is passed on the command line, the corresponding application setting is ignored.</p>
+<p>Example file:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -112,7 +112,7 @@ another way.</p>
 <p><code>PAKET.VERSION</code>: The requested version can also be set using this environment variable.</p>
 <h3><a name="In-paket-dependencies" class="anchor" href="#In-paket-dependencies">In paket.dependencies</a></h3>
 <p>If a <a href="dependencies-file.html"><code>paket.dependencies</code></a> file can be found in the current directory it can contain a
-special line containing options for the boostrapper.</p>
+special line containing options for the bootstrapper.</p>
 <p>The line must start with <code>version</code> followed by a requested <code>paket.exe</code> version and optionally bootstrapper command line arguments:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -140,7 +140,7 @@ special line containing options for the boostrapper.</p>
 <span class="k">nuget</span> FSharp.Core <span class="o">~&gt;</span> <span class="n">4</span>
 </code></pre></td></tr></table>
 <h2><a name="Magic-mode" class="anchor" href="#Magic-mode">Magic mode</a></h2>
-<p>When <code>paket.bootstrapper.exe</code> is renamed <code>paket.exe</code> the real <code>paket.exe</code> is downloaded to a temporary location and
+<p>When <code>paket.bootstrapper.exe</code> is renamed to <code>paket.exe</code>, the real <code>paket.exe</code> is downloaded to a temporary location and
 executed with all arguments passed directly.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
@@ -152,12 +152,12 @@ executed with all arguments passed directly.</p>
 <td class="snippet"><pre class="fssnip"><code lang="batch">paket.bootstrapper.exe -s --max-file-age=720 --run add nuget FAKE
 </code></pre></td></tr></table>
 <p>Using this feature paket can be used simply by committing a ~50KB <code>paket.exe</code> to source control and using it directly.
-The fact that a boostrapper exists is completely hidden and becomes an implementation detail that contributors to your
+The fact that a bootstrapper exists is completely hidden and becomes an implementation detail that contributors to your
 repository won't have to know — or care — about.</p>
 <p>While command line bootstrapper options can't be used the other sources (AppSettings, Environment Variables
 &amp; paket.dependencies) can still be used to configure the bootstrapper.</p>
 <p>A few default settings are applied:
-<em> The boostrapper is silent and only errors are displayed. <code>-v</code> can be used once to restore normal output or twice
+<em> The bootstrapper is silent and only errors are displayed. <code>-v</code> can be used once to restore normal output or twice
 to show more details.
 </em> If no version is specified a default <code>--max-file-age</code> of 12 Hours is used.</p>
 
