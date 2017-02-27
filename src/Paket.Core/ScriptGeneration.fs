@@ -236,12 +236,19 @@ module ScriptGeneration =
     =
       let all =
         seq {
+          let mainGroupSeen = ref false
+          let mainGroupKey = Constants.MainDependencyGroup.GetCompareString()
           for group, nuget, _ in Queries.getAllInstalledPackagesFromLockFile lockFile do
             if not (filterNuget nuget) then
+              if group = mainGroupKey then
+                mainGroupSeen := true
               let model = Queries.getInstalledPackageModel lockFile (QualifiedPackageName.FromStrings(Some group, nuget))
               let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f)
               let syslibs = model.GetFrameworkAssembliesLazy.Value
               yield group, (libs, syslibs |> Set.toSeq)
+
+          if not !mainGroupSeen then
+            yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
         }
         |> Seq.groupBy fst
         |> Seq.map (fun (group, items) -> group, items |> Seq.map snd)
@@ -345,9 +352,9 @@ module ScriptGeneration =
           |> ignore
 
           let getGroupFile group = 
-            let folder = getScriptFolder includeScriptsRootFolder framework group isDefaultFramework
-            let fileName = (sprintf "%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant()
-            FileInfo(Path.Combine(folder.FullName, fileName))
+              let folder = getScriptFolder includeScriptsRootFolder framework group isDefaultFramework
+              let fileName = (sprintf "%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant()
+              FileInfo(Path.Combine(folder.FullName, fileName))
         
           generateGroupScript lockFile getGroupFile scriptWriter filterFrameworkLibs filterNuget framework
 
@@ -375,7 +382,7 @@ module ScriptGeneration =
 
   let executeCommand directory providedFrameworks providedScriptTypes =
       match PaketFiles.LocateFromDirectory directory with
-      | PaketFiles.JustDependencies _  -> failwith "paket.lock not found."
+      | PaketFiles.JustDependencies _ -> failwith "paket.lock not found."
       | PaketFiles.DependenciesAndLock(dependenciesFile, lockFile) ->
           let rootFolder = DirectoryInfo(dependenciesFile.RootPath)
           let frameworksForDependencyGroups = Queries.resolveFrameworkForScriptGeneration dependenciesFile
@@ -411,13 +418,13 @@ module ScriptGeneration =
                   Seq.singleton (environmentFramework.Value, true)
 
           let scriptTypesToGenerate =
-            let parsedScriptTypes = providedScriptTypes |> List.choose ScriptType.TryCreate
+              let parsedScriptTypes = providedScriptTypes |> List.choose ScriptType.TryCreate
 
-            failOnMismatch providedScriptTypes parsedScriptTypes ScriptType.TryCreate "Unrecognized Script Type(s)"
+              failOnMismatch providedScriptTypes parsedScriptTypes ScriptType.TryCreate "Unrecognized Script Type(s)"
 
-            match parsedScriptTypes with
-            | [] -> [CSharp; FSharp]
-            | xs -> xs
+              match parsedScriptTypes with
+              | [] -> [CSharp; FSharp]
+              | xs -> xs
 
           let workaround() = null |> ignore
           for framework, isDefaultFramework in frameworksToGenerate do
