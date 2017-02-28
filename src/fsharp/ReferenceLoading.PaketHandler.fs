@@ -123,7 +123,7 @@ module Internals =
         else 
             let toolPathOpt = 
                 // we try to resolve paket.exe any place up in the folder structure from current script
-                match findPaketExe rootDir with
+                match findPaketExe implicitIncludeDir with
                 | Some paketExe -> Some paketExe
                 | None ->
                     let profileExe = Path.Combine (userProfile, PM_DIR, PM_EXE)
