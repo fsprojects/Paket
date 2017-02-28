@@ -44,16 +44,19 @@ module Internals =
             yield! allParents directory
         }
 
-    /// walks up directory structure and tries to find .paket/paket.exe
+    /// Walks up directory structure and tries to find paket.exe
     let findPaketExe (baseDir: string) =
 
         let getPaketAndExe (directory: DirectoryInfo) =
-            match directory.GetDirectories(PM_DIR) with
-            | [| dir |] -> 
-                match dir.GetFiles(PM_EXE) with
-                | [|exe|] -> Some exe.FullName
+            match directory.GetFiles(PM_EXE) with
+            | [|exe|] -> Some exe.FullName
+            | _ -> 
+                match directory.GetDirectories(PM_DIR) with
+                | [| dir |] -> 
+                    match dir.GetFiles(PM_EXE) with
+                    | [|exe|] -> Some exe.FullName
+                    | _ -> None
                 | _ -> None
-            | _ -> None
 
         let dir = DirectoryInfo baseDir
         let allDirs = getDiretoryAndAllParentDirectories dir
@@ -106,35 +109,35 @@ module Internals =
            
             findSpecFile implicitIncludeDir
 
-        let toolPathOpt = 
-            // we try to resolve .paket/paket.exe any place up in the folder structure from current script
-            match findPaketExe implicitIncludeDir with
-            | Some paketExe -> Some paketExe
-            | None ->
-                match findPaketExe rootDir with
+        let loadScript = getRelativeLoadScriptLocation workingDir
+        let additionalIncludeFolders() = 
+            [Path.Combine(workingDir,"paket-files")]
+            |> List.filter Directory.Exists
+
+        if workingDirSpecFile.Exists && 
+            (File.ReadAllLines(workingDirSpecFile.FullName) |> Array.toList) = packageManagerTextLines && 
+            File.Exists loadScript
+        then 
+            printfn "skipping running package resolution... already done that" 
+            Solved(loadScript,additionalIncludeFolders())
+        else 
+            let toolPathOpt = 
+                // we try to resolve paket.exe any place up in the folder structure from current script
+                match findPaketExe implicitIncludeDir with
                 | Some paketExe -> Some paketExe
                 | None ->
-                  let profileExe = Path.Combine (userProfile, PM_DIR, PM_EXE)
-                  if File.Exists profileExe then Some profileExe
-                  else None
+                    match findPaketExe rootDir with
+                    | Some paketExe -> Some paketExe
+                    | None ->
+                      let profileExe = Path.Combine (userProfile, PM_DIR, PM_EXE)
+                      if File.Exists profileExe then Some profileExe
+                      else None
 
-        match toolPathOpt with 
-        | None -> 
-            PackageManagerNotFound(implicitIncludeDir, userProfile)
+            match toolPathOpt with 
+            | None -> 
+                PackageManagerNotFound(implicitIncludeDir, userProfile)
 
-        | Some toolPath ->
-            let loadScript = getRelativeLoadScriptLocation workingDir
-            let additionalIncludeFolders() = 
-                [Path.Combine(workingDir,"paket-files")]
-                |> List.filter Directory.Exists
-
-            if workingDirSpecFile.Exists && 
-               (File.ReadAllLines(workingDirSpecFile.FullName) |> Array.toList) = packageManagerTextLines && 
-               File.Exists loadScript
-            then 
-                printfn "skipping running package resolution... already done that" 
-                Solved(loadScript,additionalIncludeFolders())
-            else
+            | Some toolPath ->
                 try File.Delete(loadScript) with _ -> ()
                 let toolPath = alterToolPath toolPath
                 File.WriteAllLines(workingDirSpecFile.FullName, packageManagerTextLines)
