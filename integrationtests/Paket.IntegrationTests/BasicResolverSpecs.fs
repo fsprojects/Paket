@@ -58,7 +58,7 @@ let ``#108 should resolve jquery case-insensitive``() =
 
 [<Test>]
 let ``#144 should resolve nunit from fsunit``() =
-    let lockFile = update "i000144-resolve-nunit-from-fsunit"
+    let lockFile = update "i000144-resolve-nunit"
     let v = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
     v |> shouldBeGreaterThan (SemVer.Parse "2.6")
     v |> shouldBeSmallerThan (SemVer.Parse "3")
