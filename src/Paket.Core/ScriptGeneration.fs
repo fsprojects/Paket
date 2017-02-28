@@ -64,13 +64,18 @@ module PackageAndAssemblyResolution =
       getDllOrder (dllFiles.Keys |> Seq.toList)
       |> List.map (fun a -> dllFiles.[a])
 
+    let shouldExcludeFrameworkAssemblies =
+      // NOTE: apparently for .netcore / .netstandard we should skip framework dependencies
+      // https://github.com/fsprojects/Paket/issues/2156
+      function
+      | FrameworkIdentifier.DotNetCore _ 
+      | FrameworkIdentifier.DotNetStandard _ -> true
+      | _ -> false
+
     let getFrameworkReferencesWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
-        // NOTE: apparently for .netcore / .netstandard we should skip framework dependencies
-        // https://github.com/fsprojects/Paket/issues/2156
-        match framework with
-        | FrameworkIdentifier.DotNetCore _ 
-        | FrameworkIdentifier.DotNetStandard _ -> List.empty
-        | _ ->
+        if shouldExcludeFrameworkAssemblies framework
+        then List.empty
+        else
           installModel
           |> InstallModel.getFrameworkAssembliesLazy
           |> force
@@ -271,8 +276,9 @@ module ScriptGeneration =
         let scriptFile = getScriptFile (GroupName group)
         
         [
-          for a in frameworkLibs do
-            yield ScriptPiece.ReferenceFrameworkAssembly a
+          if not (shouldExcludeFrameworkAssemblies framework) then
+            for a in frameworkLibs do
+              yield ScriptPiece.ReferenceFrameworkAssembly a
           for a in assemblies do
             yield ScriptPiece.ReferenceAssemblyFile a
         ]
