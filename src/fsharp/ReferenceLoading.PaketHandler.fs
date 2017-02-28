@@ -6,7 +6,6 @@
 /// Paket invokation for In-Script reference loading
 module internal ReferenceLoading.PaketHandler
 
-
 type ReferenceLoadingResult =
 | Solved of loadingScript: string * additionalIncludeFolders : string list
 | PackageManagerNotFound of implicitIncludeDir: string * userProfile: string
@@ -14,7 +13,7 @@ type ReferenceLoadingResult =
 
 let MakePackageManagerCommand scriptType packageManagerTargetFramework projectRootDirArgument = 
     sprintf "install --generate-load-scripts load-script-type %s load-script-framework %s project-root \"%s\"" 
-      scriptType packageManagerTargetFramework (System.IO.Path.GetFullPath projectRootDirArgument)
+        scriptType packageManagerTargetFramework (System.IO.Path.GetFullPath projectRootDirArgument)
 
 module Internals =
     open System
@@ -170,15 +169,17 @@ module Internals =
                     Solved(loadScript,additionalIncludeFolders())
 
 let getLoadScript baseDir packageManagerLoadScriptSubDirectory loadScriptName =
-  System.IO.Path.Combine(baseDir, packageManagerLoadScriptSubDirectory, loadScriptName)
+    System.IO.Path.Combine(baseDir, packageManagerLoadScriptSubDirectory, loadScriptName)
 
 /// Resolves absolute load script location: something like
 /// baseDir/.paket/load/scriptName
 /// or
 /// baseDir/.paket/load/frameworkDir/scriptName 
 let GetPaketLoadScriptLocation baseDir optionalFrameworkDir scriptName =
-  let paketLoadFolder = System.IO.Path.Combine(Internals.PM_DIR,"load")
-  getLoadScript
-    baseDir
-    (match optionalFrameworkDir with | None -> paketLoadFolder | Some frameworkDir -> System.IO.Path.Combine(paketLoadFolder, frameworkDir))
-    scriptName
+    let paketLoadFolder = System.IO.Path.Combine(Internals.PM_DIR,"load")
+    let frameworkDir =
+        match optionalFrameworkDir with 
+        | None -> paketLoadFolder 
+        | Some frameworkDir -> System.IO.Path.Combine(paketLoadFolder, frameworkDir)
+
+    getLoadScript baseDir frameworkDir scriptName
