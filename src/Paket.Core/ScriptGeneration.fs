@@ -64,11 +64,17 @@ module PackageAndAssemblyResolution =
       getDllOrder (dllFiles.Keys |> Seq.toList)
       |> List.map (fun a -> dllFiles.[a])
 
-    let getFrameworkReferencesWithinPackage (installModel :InstallModel) =
-        installModel
-        |> InstallModel.getFrameworkAssembliesLazy
-        |> force
-        |> Set.toList
+    let getFrameworkReferencesWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
+        // NOTE: apparently for .netcore / .netstandard we should skip framework dependencies
+        // https://github.com/fsprojects/Paket/issues/2156
+        match framework with
+        | FrameworkIdentifier.DotNetCore _ 
+        | FrameworkIdentifier.DotNetStandard _ -> List.empty
+        | _ ->
+          installModel
+          |> InstallModel.getFrameworkAssembliesLazy
+          |> force
+          |> Set.toList
 
 module ScriptGeneration =
   open PackageAndAssemblyResolution
@@ -300,8 +306,8 @@ module ScriptGeneration =
             PackageName                  = installModel.PackageName
             PackagesOrGroupFolder        = packagesOrGroupFolder
             IncludeScriptsRootFolder     = includeScriptsRootFolder
-            FrameworkReferences          = getFrameworkReferencesWithinPackage installModel
-            OrderedDllReferences = dllFiles
+            FrameworkReferences          = getFrameworkReferencesWithinPackage framework installModel
+            OrderedDllReferences         = dllFiles
             DependentScripts             = dependencies
           }
 
@@ -317,7 +323,16 @@ module ScriptGeneration =
 
   /// Generate a include scripts for all packages defined in paket.dependencies,
   /// if a package is ordered before its dependencies this function will throw.
-  let generateScriptsForRootFolderGeneric extension scriptGenerator scriptWriter filterFrameworkLibs filterNuget (framework: FrameworkIdentifier) isDefaultFramework (rootFolder: DirectoryInfo) =
+  let generateScriptsForRootFolderGeneric 
+      extension 
+      scriptGenerator 
+      scriptWriter 
+      filterFrameworkLibs 
+      filterNuget 
+      (framework: FrameworkIdentifier) 
+      isDefaultFramework 
+      (rootFolder: DirectoryInfo)
+      =
       match Queries.PaketFiles.LocateFromDirectory rootFolder with
       | Queries.PaketFiles.JustDependencies _ -> failwith "paket.lock file not found"
       | Queries.PaketFiles.DependenciesAndLock(dependenciesFile, lockFile) ->
