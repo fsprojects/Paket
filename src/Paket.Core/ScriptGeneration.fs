@@ -237,18 +237,20 @@ module ScriptGeneration =
       let all =
         seq {
           let mainGroupSeen = ref false
+          let mainGroupName = Constants.MainDependencyGroup.ToString()
           let mainGroupKey = Constants.MainDependencyGroup.GetCompareString()
           for group, nuget, _ in Queries.getAllInstalledPackagesFromLockFile lockFile do
             if not (filterNuget nuget) then
-              if group = mainGroupKey then
-                mainGroupSeen := true
+              if group = mainGroupKey || group = mainGroupName then
+                  mainGroupSeen := true
+
               let model = Queries.getInstalledPackageModel lockFile (QualifiedPackageName.FromStrings(Some group, nuget))
               let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f)
               let syslibs = model.GetFrameworkAssembliesLazy.Value
               yield group, (libs, syslibs |> Set.toSeq)
 
-          //if not !mainGroupSeen then
-          //  yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
+          if not !mainGroupSeen then
+            yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
         }
         |> Seq.groupBy fst
         |> Seq.map (fun (group, items) -> group, items |> Seq.map snd)
