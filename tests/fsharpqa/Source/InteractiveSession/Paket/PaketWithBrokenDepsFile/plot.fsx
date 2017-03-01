@@ -1,4 +1,4 @@
-//<Expects status="Error" span="(3,1)" id="FS3216">PaketWithBrokenDepsFile</Expects>
+//<Expects status="Error" span="(3,1)" id="FS3216">Package resolution using</Expects>
 
 #r "paket: "
 
