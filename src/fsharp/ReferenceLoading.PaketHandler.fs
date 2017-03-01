@@ -46,21 +46,22 @@ module Internals =
         }
 
     /// Walks up directory structure and tries to find paket.exe
-    let findPaketExe (baseDir: string) =
+    let findPaketExe (prioritizedSearchPaths: DirectoryInfo seq) (baseDir: DirectoryInfo) =
 
+        // for each given directory, we look for paket.exe and .paket/paket.exe
         let getPaketAndExe (directory: DirectoryInfo) =
             match directory.GetFiles(PM_EXE) with
-            | [|exe|] -> Some exe.FullName
-            | _ -> 
+            | [| exe |] -> Some exe.FullName
+            | _ ->
                 match directory.GetDirectories(PM_DIR) with
                 | [| dir |] -> 
                     match dir.GetFiles(PM_EXE) with
-                    | [|exe|] -> Some exe.FullName
+                    | [| exe |] -> Some exe.FullName
                     | _ -> None
                 | _ -> None
 
-        let dir = DirectoryInfo baseDir
-        let allDirs = getDiretoryAndAllParentDirectories dir
+        let allDirs =
+            Seq.concat [prioritizedSearchPaths ; getDiretoryAndAllParentDirectories baseDir]
         
         allDirs
         |> Seq.choose getPaketAndExe
@@ -72,15 +73,27 @@ module Internals =
     /// <param name="getCommand">Prepares the full `paket.exe` command, given the targetFramework and the callsite rootDir (to pass as project-root argument to paket.exe).</param>
     /// <param name="getRelativeLoadScriptLocation">Resolves the path (based from the passed working dir, which is temporary) to the load script.</param>
     /// <param name="alterToolPath">Function which prefixes the whole command, some platforms such as mono requires invocation of `mono ` as prefix to the full `paket.exe` command.</param>
-    // TODO: comment the remaining parameters
-    let ResolvePackages targetFramework getCommand getRelativeLoadScriptLocation alterToolPath (implicitIncludeDir: string, scriptName: string, packageManagerTextLinesFromScript : string list) =
+    /// <param name="prioritizedSearchPaths">List of directories which are checked first to resolve `paket.exe`.</param>
+    /// <param name="implicitIncludeDir">normally, the folder containing the script</param>
+    /// <param name="scriptName">filename for the script (not necessarilly existing if interactive evaluation)</param>
+    /// <param name="packageManagerTextLinesFromScript">package manager text lines from script, those are meant to be just the inner part, without `#r "paket:` prefix</param>
+    let ResolvePackages 
+        targetFramework
+        getCommand
+        getRelativeLoadScriptLocation
+        alterToolPath
+        prioritizedSearchPaths
+        (implicitIncludeDir: string)
+        (scriptName: string)
+        (packageManagerTextLinesFromScript: string list)
+        =
         let workingDir = Path.Combine(Path.GetTempPath(), "script-packages", string(abs(hash (implicitIncludeDir,scriptName))))
         let workingDirSpecFile = FileInfo(Path.Combine(workingDir,PM_SPEC_FILE))
         if not (Directory.Exists workingDir) then
             Directory.CreateDirectory workingDir |> ignore
 
-        let packageManagerTextLinesFromScript = packageManagerTextLinesFromScript |> List.filter (fun l -> not (String.IsNullOrWhiteSpace l))
-
+        let packageManagerTextLinesFromScript = packageManagerTextLinesFromScript |> List.filter (not << String.IsNullOrWhiteSpace)
+        
         let rootDir,packageManagerTextLines =
             let rec findSpecFile dir =
                 let fi = FileInfo(Path.Combine(dir,PM_SPEC_FILE))
@@ -103,7 +116,7 @@ module Internals =
                             (Array.toList depsFileLines) @ ("group Main" :: packageManagerTextLinesFromScript)
 
                     fi.Directory.FullName, lines
-                elif fi.Directory.Parent <> null then
+                elif not (isNull fi.Directory.Parent) then
                     findSpecFile fi.Directory.Parent.FullName
                 else
                     workingDir, ("framework: " + targetFramework) :: "source https://nuget.org/api/v2" :: packageManagerTextLinesFromScript
@@ -123,8 +136,8 @@ module Internals =
             Solved(loadScript,additionalIncludeFolders())
         else 
             let toolPathOpt = 
-                // we try to resolve paket.exe any place up in the folder structure from current script
-                match findPaketExe implicitIncludeDir with
+                // we try to resolve .paket/paket.exe any place up in the folder structure from current script
+                match findPaketExe prioritizedSearchPaths (DirectoryInfo implicitIncludeDir) with
                 | Some paketExe -> Some paketExe
                 | None ->
                     let profileExe = Path.Combine (userProfile, PM_DIR, PM_EXE)
@@ -169,9 +182,6 @@ module Internals =
                     printfn "package resolution completed at %A" System.DateTimeOffset.UtcNow
                     Solved(loadScript,additionalIncludeFolders())
 
-let getLoadScript baseDir packageManagerLoadScriptSubDirectory loadScriptName =
-    System.IO.Path.Combine(baseDir, packageManagerLoadScriptSubDirectory, loadScriptName)
-
 /// Resolves absolute load script location: something like
 /// baseDir/.paket/load/scriptName
 /// or
@@ -183,4 +193,4 @@ let GetPaketLoadScriptLocation baseDir optionalFrameworkDir scriptName =
         | None -> paketLoadFolder 
         | Some frameworkDir -> System.IO.Path.Combine(paketLoadFolder, frameworkDir)
 
-    getLoadScript baseDir frameworkDir scriptName
+    System.IO.Path.Combine(baseDir, frameworkDir, scriptName)
