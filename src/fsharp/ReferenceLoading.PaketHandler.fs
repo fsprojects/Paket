@@ -5,7 +5,7 @@
 // This file should end up in paket repository instead of F#.
 
 /// Paket invokation for In-Script reference loading
-module internal ReferenceLoading.PaketHandler
+module ReferenceLoading.PaketHandler
 
 type ReferenceLoadingResult =
 | Solved of loadingScript: string * additionalIncludeFolders : string list
