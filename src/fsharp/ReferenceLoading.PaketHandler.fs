@@ -11,8 +11,6 @@ open System
 open System.IO
 let PM_EXE = "paket.exe"
 let PM_DIR = ".paket"
-let PM_SPEC_FILE = "paket.dependencies"
-let PM_LOCK_FILE = "paket.lock"
 
 let userProfile =
     let res = Environment.GetEnvironmentVariable("USERPROFILE")
@@ -104,7 +102,8 @@ let GetPaketLoadScriptLocation baseDir optionalFrameworkDir scriptName =
 /// <param name="packageManagerTextLinesFromScript">Package manager text lines from script, those are meant to be just the inner part, without `#r "paket:` prefix</param>
 let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSearchPaths: string seq, scriptDir: string, scriptName: string,packageManagerTextLinesFromScript: string seq) =
     let workingDir = Path.Combine(Path.GetTempPath(), "script-packages", string(abs(hash (scriptDir,scriptName))))
-    let workingDirSpecFile = FileInfo(Path.Combine(workingDir,PM_SPEC_FILE))
+    let depsFileName = "paket.dependencies"
+    let workingDirSpecFile = FileInfo(Path.Combine(workingDir,depsFileName))
     if not (Directory.Exists workingDir) then
         Directory.CreateDirectory workingDir |> ignore
 
@@ -115,9 +114,10 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
         
     let rootDir,packageManagerTextLines =
         let rec findSpecFile dir =
-            let fi = FileInfo(Path.Combine(dir,PM_SPEC_FILE))
+            let fi = FileInfo(Path.Combine(dir,depsFileName))
             if fi.Exists then
-                let lockFile = FileInfo(Path.Combine(fi.Directory.FullName,PM_LOCK_FILE))
+                let lockfileName = "paket.lock"
+                let lockFile = FileInfo(Path.Combine(fi.Directory.FullName,lockfileName))
                 let depsFileLines = File.ReadAllLines fi.FullName
                 if lockFile.Exists then
                     let originalDepsFile = FileInfo(workingDirSpecFile.FullName + ".original")
@@ -125,7 +125,7 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
                         File.ReadAllLines originalDepsFile.FullName <> depsFileLines
                     then
                         File.Copy(fi.FullName,originalDepsFile.FullName,true)
-                        let targetLockFile = FileInfo(Path.Combine(workingDir,PM_LOCK_FILE))
+                        let targetLockFile = FileInfo(Path.Combine(workingDir,lockfileName))
                         File.Copy(lockFile.FullName,targetLockFile.FullName,true)
                     
                 let lines = 
