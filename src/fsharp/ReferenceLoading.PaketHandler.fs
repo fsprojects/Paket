@@ -24,7 +24,7 @@ let MakeDependencyManagerCommand scriptType packageManagerTargetFramework projec
     sprintf "install --generate-load-scripts load-script-type %s load-script-framework %s project-root \"%s\"" 
         scriptType packageManagerTargetFramework (System.IO.Path.GetFullPath projectRootDirArgument)
 
-let getDiretoryAndAllParentDirectories (directory: DirectoryInfo) =
+let getDirectoryAndAllParentDirectories (directory: DirectoryInfo) =
     let rec allParents (directory: DirectoryInfo) =
         seq {
             match directory.Parent with
@@ -58,7 +58,8 @@ let runningOnMono =
 #endif
 
 /// Walks up directory structure and tries to find paket.exe
-let findPaketExe (prioritizedSearchPaths: DirectoryInfo seq) (baseDir: DirectoryInfo) =
+let findPaketExe (prioritizedSearchPaths: string seq) (baseDir: DirectoryInfo) =
+    let prioritizedSearchPaths = prioritizedSearchPaths |> Seq.map (fun d -> DirectoryInfo d)
 
     // for each given directory, we look for paket.exe and .paket/paket.exe
     let getPaketAndExe (directory: DirectoryInfo) =
@@ -73,7 +74,7 @@ let findPaketExe (prioritizedSearchPaths: DirectoryInfo seq) (baseDir: Directory
             | _ -> None
 
     let allDirs =
-        Seq.concat [prioritizedSearchPaths ; getDiretoryAndAllParentDirectories baseDir]
+        Seq.concat [prioritizedSearchPaths ; getDirectoryAndAllParentDirectories baseDir]
         
     allDirs
     |> Seq.choose getPaketAndExe
