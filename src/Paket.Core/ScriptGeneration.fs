@@ -64,11 +64,22 @@ module PackageAndAssemblyResolution =
       getDllOrder (dllFiles.Keys |> Seq.toList)
       |> List.map (fun a -> dllFiles.[a])
 
-    let getFrameworkReferencesWithinPackage (installModel :InstallModel) =
-        installModel
-        |> InstallModel.getFrameworkAssembliesLazy
-        |> force
-        |> Set.toList
+    let shouldExcludeFrameworkAssemblies =
+      // NOTE: apparently for .netcore / .netstandard we should skip framework dependencies
+      // https://github.com/fsprojects/Paket/issues/2156
+      function
+      | FrameworkIdentifier.DotNetCore _ 
+      | FrameworkIdentifier.DotNetStandard _ -> true
+      | _ -> false
+
+    let getFrameworkReferencesWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
+        if shouldExcludeFrameworkAssemblies framework
+        then List.empty
+        else
+          installModel
+          |> InstallModel.getFrameworkAssembliesLazy
+          |> force
+          |> Set.toList
 
 module ScriptGeneration =
   open PackageAndAssemblyResolution
@@ -274,8 +285,9 @@ module ScriptGeneration =
         let scriptFile = getScriptFile (GroupName group)
         
         [
-          for a in frameworkLibs do
-            yield ScriptPiece.ReferenceFrameworkAssembly a
+          if not (shouldExcludeFrameworkAssemblies framework) then
+            for a in frameworkLibs do
+              yield ScriptPiece.ReferenceFrameworkAssembly a
           for a in assemblies do
             yield ScriptPiece.ReferenceAssemblyFile a
         ]
@@ -309,8 +321,8 @@ module ScriptGeneration =
             PackageName                  = installModel.PackageName
             PackagesOrGroupFolder        = packagesOrGroupFolder
             IncludeScriptsRootFolder     = includeScriptsRootFolder
-            FrameworkReferences          = getFrameworkReferencesWithinPackage installModel
-            OrderedDllReferences = dllFiles
+            FrameworkReferences          = getFrameworkReferencesWithinPackage framework installModel
+            OrderedDllReferences         = dllFiles
             DependentScripts             = dependencies
           }
 
@@ -326,7 +338,16 @@ module ScriptGeneration =
 
   /// Generate a include scripts for all packages defined in paket.dependencies,
   /// if a package is ordered before its dependencies this function will throw.
-  let generateScriptsForRootFolderGeneric extension scriptGenerator scriptWriter filterFrameworkLibs filterNuget (framework: FrameworkIdentifier) isDefaultFramework (rootFolder: DirectoryInfo) =
+  let generateScriptsForRootFolderGeneric 
+      extension 
+      scriptGenerator 
+      scriptWriter 
+      filterFrameworkLibs 
+      filterNuget 
+      (framework: FrameworkIdentifier) 
+      isDefaultFramework 
+      (rootFolder: DirectoryInfo)
+      =
       match Queries.PaketFiles.LocateFromDirectory rootFolder with
       | Queries.PaketFiles.JustDependencies _ -> failwith "paket.lock file not found"
       | Queries.PaketFiles.DependenciesAndLock(dependenciesFile, lockFile) ->
