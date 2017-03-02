@@ -207,3 +207,10 @@ let ``generates script on install`` () =
     paket "install" scenario |> ignore
 
     assertNhibernateForFramework35IsThere scenario
+
+[<Test; Category("scriptgen dependencies")>]
+let ``issue 2156 netstandard`` () =
+    let scenario = "issue-2156-netstandard"
+    paket "install" scenario |> ignore
+    directPaket "generate-load-scripts" scenario |> ignore
+    // note: no assert for now, I don't know what we are exactly expecting
