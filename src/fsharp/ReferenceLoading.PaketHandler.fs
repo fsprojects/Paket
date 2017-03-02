@@ -96,11 +96,11 @@ let GetPaketLoadScriptLocation baseDir optionalFrameworkDir scriptName =
     
 /// Resolve packages loaded into scripts using `paket:` in `#r` directives such as `#r @"paket: nuget AmazingNugetPackage"`. 
 /// <remarks>This function will throw if the resolution is not successful or the tool wasn't found</remarks>
-/// <param name="fileType">A string given to paket command to select the output language. Can be fsx or csx</param>
+/// <param name="fileType">A string given to paket command to select the output language. Can be `fsx` or `csx`</param>
 /// <param name="targetFramework">A string given to paket command to fix the framework.</param>
 /// <param name="prioritizedSearchPaths">List of directories which are checked first to resolve `paket.exe`.</param>
 /// <param name="scriptDir"The folder containing the script</param>
-/// <param name="scriptName">filename for the script (not necessarilly existing if interactive evaluation)</param>
+/// <param name="scriptName">filename for the script (not necessarily existing if interactive evaluation)</param>
 /// <param name="packageManagerTextLinesFromScript">Package manager text lines from script, those are meant to be just the inner part, without `#r "paket:` prefix</param>
 let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSearchPaths: string seq, scriptDir: string, scriptName: string,packageManagerTextLinesFromScript: string seq) =
     let workingDir = Path.Combine(Path.GetTempPath(), "script-packages", string(abs(hash (scriptDir,scriptName))))
@@ -204,7 +204,7 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
 /// <remarks>This function will throw if the resolution is not successful or the tool wasn't found</remarks>
 /// <param name="targetFramework">A string given to paket command to fix the framework.</param>
 /// <param name="scriptDir"The folder containing the script</param>
-/// <param name="scriptName">filename for the script (not necessarilly existing if interactive evaluation)</param>
+/// <param name="scriptName">filename for the script (not necessarily existing if interactive evaluation)</param>
 /// <param name="packageManagerTextLinesFromScript">Package manager text lines from script, those are meant to be just the inner part, without `#r "paket:` prefix</param>
 let ResolveDependencies(targetFramework:string, scriptDir: string, scriptName: string,packageManagerTextLinesFromScript: string seq) =
     ResolveDependenciesForLanguage("fsx",targetFramework,Seq.empty, scriptDir, scriptName,packageManagerTextLinesFromScript)
