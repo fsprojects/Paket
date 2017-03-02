@@ -9,10 +9,10 @@ module ReferenceLoading.PaketHandler
 
 type ReferenceLoadingResult =
 | Solved of loadingScript: string * additionalIncludeFolders : string list
-| PackageManagerNotFound of implicitIncludeDir: string * userProfile: string
+| DependencyManagerNotFound of implicitIncludeDir: string * userProfile: string
 | PackageResolutionFailed of toolPath: string * workingDir: string * msg : string
 
-let MakePackageManagerCommand scriptType packageManagerTargetFramework projectRootDirArgument = 
+let MakeDependencyManagerCommand scriptType packageManagerTargetFramework projectRootDirArgument = 
     sprintf "install --generate-load-scripts load-script-type %s load-script-framework %s project-root \"%s\"" 
         scriptType packageManagerTargetFramework (System.IO.Path.GetFullPath projectRootDirArgument)
 
@@ -146,7 +146,7 @@ module Internals =
 
             match toolPathOpt with 
             | None -> 
-                PackageManagerNotFound(implicitIncludeDir, userProfile)
+                DependencyManagerNotFound(implicitIncludeDir, userProfile)
 
             | Some toolPath ->
                 try File.Delete(loadScript) with _ -> ()
