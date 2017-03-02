@@ -138,7 +138,11 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
             elif not (isNull fi.Directory.Parent) then
                 findSpecFile fi.Directory.Parent.FullName
             else
-                workingDir, ("framework: " + targetFramework) :: "source https://nuget.org/api/v2" :: packageManagerTextLinesFromScript
+                let withImplicitSource = 
+                    match packageManagerTextLinesFromScript with
+                    | line::_ when line.StartsWith "source" -> packageManagerTextLinesFromScript
+                    | _  -> "source https://nuget.org/api/v2" :: packageManagerTextLinesFromScript
+                workingDir, ("framework: " + targetFramework) :: withImplicitSource
            
         findSpecFile scriptDir
 
