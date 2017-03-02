@@ -17,7 +17,7 @@ OPTIONS:
     --log-file <path>     Specify a log file for the paket process.
     --silent, -s          Suppress console output for the paket process.
     --version             Display the version.
-    --from-bootstrapper   Call comming from the '--run' feature of the bootstrapper.
+    --from-bootstrapper   Call coming from the '--run' feature of the bootstrapper.
     --help                display this list of options.
 If you add the `-v` flag, then Paket will run in verbose mode and show detailed information.
 
