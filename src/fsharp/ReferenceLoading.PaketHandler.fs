@@ -141,8 +141,9 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
                 workingDir, ("framework: " + targetFramework) :: "source https://nuget.org/api/v2" :: packageManagerTextLinesFromScript
            
         findSpecFile scriptDir
-        
-    let loadScript = GetPaketLoadScriptLocation workingDir (Some targetFramework) scriptName
+
+    /// hardcoded to load the "Main" group (implicit in paket)
+    let loadScript = GetPaketLoadScriptLocation workingDir (Some targetFramework) ("main.group." + fileType)
     let additionalIncludeFolders() = 
         [Path.Combine(workingDir,"paket-files")]
         |> List.filter Directory.Exists
