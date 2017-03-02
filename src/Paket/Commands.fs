@@ -397,7 +397,7 @@ with
             | Silent -> "Suppress console output for the paket process."
             | Verbose -> "Enable verbose console output for the paket process." 
             | Version -> "Display the version." 
-            | From_Bootstrapper -> "Call comming from the '--run' feature of the bootstrapper." 
+            | From_Bootstrapper -> "Call coming from the '--run' feature of the bootstrapper." 
 
 let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
 
