@@ -47,7 +47,7 @@ The configuration can be done in the  [`paket.dependencies` file](dependencies-f
 
 Paket allows you two caching options:
 
-* `versions:all` - stores all currently used version of the dependencies.
+* `versions:all` - stores all versions of the dependencies ever used.
 * `versions:current` - stores only currently used version of the dependencies and deletes all other version. This option should not be used with network shares since it might affect other projects.
 
 ## Caches as package feeds
