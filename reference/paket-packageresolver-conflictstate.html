@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>NugetPackage - Paket</title>
+    <title>ConflictState - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,10 +58,10 @@
 
 
 
-<h1>NugetPackage</h1>
+<h1>ConflictState</h1>
 <p>
   <span>Namespace: Paket</span><br />
-  <span>Parent Module: <a href="paket-packagesconfigfile.html">PackagesConfigFile</a></span>
+  <span>Parent Module: <a href="paket-packageresolver.html">PackageResolver</a></span>
 </p>
 <div class="xmldoc">
 </div>
@@ -74,15 +74,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '704', 704)" onmouseover="showTip(event, '704', 704)">
-            Id
+          <code onmouseout="hideTip(event, '665', 665)" onmouseover="showTip(event, '665', 665)">
+            Conflicts
           </code>
-          <div class="tip" id="704">
-            <strong>Signature:</strong> string<br />
+          <div class="tip" id="665">
+            <strong>Signature:</strong> Set&lt;PackageRequirement&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackagesConfigFile.fs#L12-12" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L541-541" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -92,15 +92,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '705', 705)" onmouseover="showTip(event, '705', 705)">
-            TargetFramework
+          <code onmouseout="hideTip(event, '666', 666)" onmouseover="showTip(event, '666', 666)">
+            GlobalOverride
           </code>
-          <div class="tip" id="705">
-            <strong>Signature:</strong> string option<br />
+          <div class="tip" id="666">
+            <strong>Signature:</strong> bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackagesConfigFile.fs#L14-14" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L543-543" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -110,15 +110,69 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '706', 706)" onmouseover="showTip(event, '706', 706)">
-            Version
+          <code onmouseout="hideTip(event, '667', 667)" onmouseover="showTip(event, '667', 667)">
+            LastConflictReported
           </code>
-          <div class="tip" id="706">
-            <strong>Signature:</strong> SemVerInfo<br />
+          <div class="tip" id="667">
+            <strong>Signature:</strong> DateTime<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackagesConfigFile.fs#L13-13" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L539-539" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '668', 668)" onmouseover="showTip(event, '668', 668)">
+            Status
+          </code>
+          <div class="tip" id="668">
+            <strong>Signature:</strong> Resolution<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L538-538" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '669', 669)" onmouseover="showTip(event, '669', 669)">
+            TryRelaxed
+          </code>
+          <div class="tip" id="669">
+            <strong>Signature:</strong> bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L540-540" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '670', 670)" onmouseover="showTip(event, '670', 670)">
+            VersionsToExplore
+          </code>
+          <div class="tip" id="670">
+            <strong>Signature:</strong> seq&lt;SemVerInfo * PackageSource list&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PackageResolver.fs#L542-542" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -183,7 +237,7 @@
             <li><a href="..//paket-find-refs.html">paket find-refs</a></li>
             <li><a href="..//paket-find-packages.html">paket find-packages</a></li>
             <li><a href="..//paket-find-package-versions.html">paket find-package-versions</a></li>
-            <li><a href="..//paket-generate-include-scripts.html">paket generate-include-scripts</a></li>
+            <li><a href="..//paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
             <li><a href="..//paket-init.html">paket init</a></li>          
             <li><a href="..//paket-install.html">paket install</a></li>
             <li><a href="..//paket-outdated.html">paket outdated</a></li>
