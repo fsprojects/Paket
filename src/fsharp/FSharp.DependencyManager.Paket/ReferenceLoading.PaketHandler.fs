@@ -187,11 +187,18 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
                     UseShellExecute = false)
                 
             use p = new System.Diagnostics.Process()
-            let errors = System.Collections.Generic.List<_>()
-            let log = System.Collections.Generic.List<_>()
+            let errors = ResizeArray<_>()
+            let log = ResizeArray<_>()
             p.StartInfo <- startInfo
-            p.ErrorDataReceived.Add(fun d -> if d.Data <> null then errors.Add d.Data)
-            p.OutputDataReceived.Add(fun d -> if d.Data <> null then printfn "%s" d.Data; log.Add d.Data)
+            p.ErrorDataReceived.Add(fun d -> if not (isNull d.Data) then errors.Add d.Data)
+            p.OutputDataReceived.Add(fun d -> 
+                if not (isNull d.Data) then
+                    Console.ForegroundColor <- ConsoleColor.Green
+                    Console.Write ":paket>"
+                    Console.ResetColor()
+                    Console.WriteLine (" " + d.Data)
+                    log.Add d.Data
+            )
             p.Start() |> ignore
             p.BeginErrorReadLine()
             p.BeginOutputReadLine()
