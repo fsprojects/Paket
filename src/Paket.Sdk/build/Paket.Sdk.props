@@ -1,0 +1,10 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <PaketExePath>$(MSBuildThisFileDirectory)\netcoreapp1.0\Paket.dll</PaketExePath>
+
+    <!-- TODO resolve dotnet path from relative sdk -->
+    <PaketCommand>dotnet $(PaketExePath)</PaketCommand>
+  </PropertyGroup>
+
+</Project>

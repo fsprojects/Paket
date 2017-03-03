@@ -1,0 +1,33 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <!-- Mark that this target file has been loaded.  -->
+    <IsPaketRestoreTargetsFileLoaded>true</IsPaketRestoreTargetsFileLoaded>
+  </PropertyGroup>    
+
+  <!--TODO refactor extract '$(MSBuildThisFileDirectory)/out' diretory as property-->
+
+  <Target Name="RemoveBoostrappedPaket">
+    <RemoveDir Directories="$(MSBuildThisFileDirectory)/out" />
+  </Target>
+
+  <Target Name="BoostrapPaket"
+          Condition=" !Exists('$(MSBuildThisFileDirectory)/out') "
+          BeforeTargets="_GenerateRestoreGraphWalkPerFramework"
+          >
+    <RemoveDir Directories="$(MSBuildThisFileDirectory)/obj" />
+    <Exec Command='dotnet restore "$(MSBuildThisFileDirectory)/paket-boostrapper.csproj" --packages "$(MSBuildThisFileDirectory)/out" --source "E:\github\Paket\src\Paket.Sdk\bin" ' />
+  </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)/out/**/Paket.Sdk.props" />
+
+  <Target Name="CheckPaketIsBoostrapped" 
+          DependsOnTargets="BoostrapPaket"
+          BeforeTargets="_GenerateRestoreGraphWalkPerFramework" >
+
+    <Error Text="run boostrapped before"
+           Condition=" '$(PaketCommand)' == '' " />
+  </Target>
+
+  <Import Project="$(MSBuildThisFileDirectory)/out/**/Paket.Sdk.targets" />
+
+</Project>

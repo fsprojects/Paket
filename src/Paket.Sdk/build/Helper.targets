@@ -1,0 +1,50 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <UsingTask TaskName="Paket.Build.Tasks.Sha512TheFile" AssemblyFile="$(MSBuildThisFileDirectory)/msbuild/netstandard1.4/PaketRestoreTask.dll" />
+
+  <Target Name="SetupCopyToLayout">
+    <PropertyGroup>
+      <_NewCacheDir>E:\github\Paket\dev\packages2</_NewCacheDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <MoveThese Include="E:\github\Paket\dev\packages\%(PackageReference.Identity)\**\*">
+        <OutDir>$(_NewCacheDir)/%(PackageReference.Identity)/%(PackageReference.Version)</OutDir>
+      </MoveThese>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="CopyToLayout"
+          DependsOnTargets="SetupCopyToLayout"
+          Inputs="@(MoveThese)"
+          Outputs="@(MoveThese -> '%(OutDir)/%(RecursiveDir)%(FileName)%(Extension)')"
+          >
+    <!--Layout a packages cache directory like dotnet expect, less issues.-->
+    <Copy
+        SourceFiles="@(MoveThese)"
+        DestinationFolder="%(MoveThese.OutDir)/%(RecursiveDir)"
+        SkipUnchangedFiles="true"
+        />
+  </Target>
+
+  <Target Name="SetupShaTheFiles"
+          DependsOnTargets="CopyToLayout">
+    <ItemGroup>
+      <ShaFiles Include="E:\github\Paket\dev\packages2\**\*.nupkg" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="ShaTheFiles"
+          Inputs="@(ShaFiles)"
+          Outputs="@(ShaFiles -> '%(Identity).sha512')"
+          DependsOnTargets="SetupShaTheFiles"
+          >
+    <!-- Use symlink directly of directory, so zero space needed and fastest -->
+    <Sha512TheFile
+        InputFile="%(ShaFiles.Identity)"
+        Condition=" !Exists('$(Identity).sha512') "
+        OutputFile="%(Identity).sha512" />
+
+  </Target>
+
+</Project>

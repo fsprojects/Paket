@@ -8,6 +8,29 @@ using Microsoft.Build.Utilities;
 
 namespace Paket.Build.Tasks
 {
+    public class Sha512TheFile : Task
+    {
+        [Required]
+        public string InputFile { get; set; }
+
+        [Required]
+        public string OutputFile { get; set; }
+
+        public override bool Execute()
+        {
+            Log.LogMessage(MessageImportance.Normal, $"SHA512 '{InputFile} -> {OutputFile}");
+
+            using (var sha = System.Security.Cryptography.SHA512.Create())
+            using (var fs = File.OpenRead(InputFile))
+            {
+                string hash = Convert.ToBase64String(sha.ComputeHash(fs));
+                File.WriteAllText(OutputFile, hash);
+                return true;
+            }
+        }
+
+    }
+
     public class PaketRestoreTask : Task
     {
 
@@ -25,6 +48,8 @@ namespace Paket.Build.Tasks
         /// </summary>
         public string TargetFrameworks { get; set; }
 
+        public string PaketPackageCache { get; set; }
+
         /// <summary>
         /// Output items
         /// </summary>
@@ -33,6 +58,21 @@ namespace Paket.Build.Tasks
 
         [Output]
         public string AlternativeConfigFile { get; set; }
+
+        public string GetRealVersionForPackage(string packageName)
+        {
+            string paketPackageCachedDir = Path.Combine(PaketPackageCache, packageName);
+
+            string nupkg = 
+                Directory.GetFiles(paketPackageCachedDir, $"{packageName}.*.nupkg")
+                         .FirstOrDefault();
+            
+            if (nupkg == null)
+                throw new Exception($"Nupkg for package {packageName} not found in dir '{paketPackageCachedDir}'");
+
+            // path/to/System.IO.4.3.0.nupkg -> 4.3.0
+            return Path.GetFileNameWithoutExtension(nupkg).Replace($"{packageName}.", "");
+        }
 
         public override bool Execute()
         {            
@@ -48,8 +88,13 @@ namespace Paket.Build.Tasks
                 var splitted = line.Split(delimiterChars);
                 if(splitted.Length < 2)
                     break;
-                ITaskItem dependency = new TaskItem(splitted[0].Trim());
-                dependency.SetMetadata("Version", splitted[1].Trim());
+
+                string packageName = splitted[0].Trim();
+                string packageVersion = splitted[1].Trim();
+
+                ITaskItem dependency = new TaskItem(packageName);
+                dependency.SetMetadata("Version", GetRealVersionForPackage(packageName));
+
                 list.Add(dependency);
             }
             

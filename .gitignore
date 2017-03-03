@@ -193,3 +193,12 @@ TestResult.xml
 tests/Paket.Tests/NuGetConfig/PasswordConfig.xml
 paket.local
 dotnetcore
+
+!src/Paket.Sdk/build
+src/Paket.Sdk/build/netcoreapp1.0
+dev/nopaket/pkgs/
+dev/packages2/
+dev/packages2-pre/
+dev/log.txt
+dev/logr.txt
+dev/nopaket/logr.txt
