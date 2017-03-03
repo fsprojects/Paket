@@ -191,7 +191,7 @@ let ResolveDependenciesForLanguage(fileType,targetFramework:string,prioritizedSe
             let log = System.Collections.Generic.List<_>()
             p.StartInfo <- startInfo
             p.ErrorDataReceived.Add(fun d -> if d.Data <> null then errors.Add d.Data)
-            p.OutputDataReceived.Add(fun d -> if d.Data <> null then log.Add d.Data)
+            p.OutputDataReceived.Add(fun d -> if d.Data <> null then printfn "%s" d.Data; log.Add d.Data)
             p.Start() |> ignore
             p.BeginErrorReadLine()
             p.BeginOutputReadLine()
