@@ -1,3 +1,6 @@
+#### 3.36.1 - 03.03.2017
+* USABILITY: old bootstrapper did not work
+
 #### 3.36.0 - 25.02.2017
 * BUGFIX: Lower case group folder name - https://github.com/fsprojects/Paket/pull/2150
 * BUGFIX: Fix resolver for Strategy.Min - https://github.com/fsprojects/Paket/issues/2148
