@@ -1,8 +1,10 @@
-<Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk" ToolsVersion="15.0">
+<Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
     <PaketCoreSourcesDir>..\Paket.Core</PaketCoreSourcesDir>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
@@ -75,24 +77,16 @@
     <Compile Include="$(PaketCoreSourcesDir)\FindReferences.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Why.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PublicAPI.fs" />
-
   </ItemGroup>
+  
   <ItemGroup>
     <None Include="$(PaketCoreSourcesDir)\paket.template" />
     <None Include="paket.references" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="FSharp.NET.Sdk" Version="1.0.0-beta-*">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
+
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);DOTNETCORE;NETSTANDARD1_5;NETSTANDARD1_6;USE_HTTP_CLIENT</DefineConstants>
   </PropertyGroup>
-  <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-compile-fsc">
-      <Version>1.0.0-preview2-020000</Version>
-    </DotNetCliToolReference>
-  </ItemGroup>
+
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

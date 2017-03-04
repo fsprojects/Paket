@@ -1,3 +1,4 @@
+System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
 // --------------------------------------------------------------------------------------
 // FAKE build script
 // --------------------------------------------------------------------------------------
@@ -61,7 +62,7 @@ let gitName = "Paket"
 // The url for the raw files hosted
 let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/fsprojects"
 
-let dotnetcliVersion = "1.0.0-preview4-004233"
+let dotnetcliVersion = "2.0.0-alpha-005165"
 
 let dotnetSDKPath = System.Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) </> "dotnetcore" |> FullName
 
@@ -130,8 +131,7 @@ Target "AssemblyInfo" (fun _ ->
 
 Target "InstallDotNetCore" (fun _ ->
     let correctVersionInstalled = 
-        try
-            if FileInfo(dotnetExePath |> Path.GetFullPath).Exists then
+        try if FileInfo(dotnetExePath |> Path.GetFullPath).Exists then
                 let processResult = 
                     ExecProcessAndReturnMessages (fun info ->  
                     info.FileName <- dotnetExePath
@@ -139,11 +139,8 @@ Target "InstallDotNetCore" (fun _ ->
                     info.Arguments <- "--version") (TimeSpan.FromMinutes 30.)
 
                 processResult.Messages |> separated "" = dotnetcliVersion
-                
-            else
-                false
-        with 
-        | _ -> false
+            else false
+        with  _ -> false
 
     if correctVersionInstalled then
         tracefn "dotnetcli %s already installed" dotnetcliVersion
@@ -152,7 +149,7 @@ Target "InstallDotNetCore" (fun _ ->
         let archiveFileName = 
             if isLinux then
                 sprintf "dotnet-dev-ubuntu-x64.%s.tar.gz" dotnetcliVersion
-            else if Fake.EnvironmentHelper.isMacOS then
+            elif Fake.EnvironmentHelper.isMacOS then
                 sprintf "dotnet-dev-osx-x64.%s.tar.gz" dotnetcliVersion
             else
                 sprintf "dotnet-dev-win-x64.%s.zip" dotnetcliVersion
@@ -201,7 +198,10 @@ Target "CleanDocs" (fun _ ->
 
 Target "Build" (fun _ ->
     !! solutionFile
-    |> MSBuildRelease "" "Rebuild"
+    |> MSBuildReleaseExt "" [
+            "VisualStudioVersion", "14.0"
+            "ToolsVersion"       , "14.0"  
+    ] "Rebuild"
     |> ignore
 )
 
