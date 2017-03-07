@@ -381,20 +381,20 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 directDependencies 
                 |> Seq.collect (fun u -> lookup.[u.Key] |> Seq.map (fun i -> fst u.Key, u.Value, i))
                 |> Seq.partitionAndChoose 
-                        (fun (groupName,(_,parentSettings), dep) -> 
-                            lockFile.Groups |> Map.containsKey groupName)
-                        (fun (groupName,(_,parentSettings), dep) -> 
-                            let group = lockFile.Groups.[groupName]
-                            match group.Resolution |> Map.tryFind dep with
-                            | None -> None
-                            | Some p -> 
-                                let resolvedSettings = 
-                                    [p.Settings; group.Options.Settings] 
-                                    |> List.fold (+) parentSettings
-                                Some ((groupName,p.Name), (p.Version,resolvedSettings)) )
-                        (fun (groupName,(_,parentSettings), dep) -> 
-                            Some <| sprintf "%s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
-                        )
+                    (fun (groupName,(_,parentSettings), dep) -> 
+                        lockFile.Groups |> Map.containsKey groupName)
+                    (fun (groupName,(_,parentSettings), dep) -> 
+                        let group = lockFile.Groups.[groupName]
+                        match group.Resolution |> Map.tryFind dep with
+                        | None -> None
+                        | Some p -> 
+                            let resolvedSettings = 
+                                [p.Settings; group.Options.Settings] 
+                                |> List.fold (+) parentSettings
+                            Some ((groupName,p.Name), (p.Version,resolvedSettings)) )
+                    (fun (groupName,(_,parentSettings), dep) -> 
+                        Some <| sprintf " - %s uses the group %O, but this group was not found in paket.lock." referenceFile.FileName groupName
+                    )
             for key,settings in usedPackageDependencies do
                 if d.ContainsKey key |> not then
                     d <- Map.add key settings d
@@ -415,10 +415,36 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     true)
             |> fun usedPackages -> usedPackages, Seq.append errorMessages errors
 
+        let gitRemotePathPairs, errorMessages =                
+            ((Seq.empty,Seq.empty),referenceFile.Groups)
+            ||> Seq.fold (fun (pathAcc,errorAcc) kv -> 
+                let refpaths, errors =  
+                    kv.Value.RemoteFiles
+                    |> Seq.partitionAndChoose 
+                        // reject files with missing group names or who can't be found in the group specified
+                        (fun remoteFile ->   
+                            match lockFile.Groups |> Map.tryFind kv.Key with
+                            | None -> false
+                            | Some group ->
+                                group.RemoteFiles
+                                |> Seq.exists (fun f -> Path.GetFileName(f.Name) = remoteFile.Name))
+                        // get the full path of the remote item
+                        (fun remoteFile -> 
+                            let group = lockFile.Groups.[kv.Key] 
+                            group.RemoteFiles
+                            |> Seq.find (fun f -> Path.GetFileName(f.Name) = remoteFile.Name) 
+                            |> fun  file -> Some (remoteFile, (file.FilePath(root,kv.Key))))
+                        (fun remoteFile ->    
+                            Some <| sprintf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName remoteFile.Name kv.Key
+                        )
+                (Seq.append pathAcc refpaths),(Seq.append errorAcc errors)
+            )|> fun (refpaths,errors) -> refpaths, Seq.append errorMessages errors 
+
         // if any errors have been found during the installation process thus far, fail and print all errors collected
         if not (Seq.isEmpty errorMessages) then 
-            failwithf  "Installation Failed :\n%s" (String.concat "\n" errorMessages)
-        else
+            failwithf  "\nInstallation Errors :\n%s" (String.concat "\n" errorMessages)
+        
+        else // start the installation process             
             if toolsVersion >= 15.0 then 
                 installForDotnetSDK root project  
             else
@@ -428,42 +454,28 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 |> updatePackagesConfigFile usedPackages 
 
             let gitRemoteItems =
-                referenceFile.Groups
-                |> Seq.map (fun kv ->
-                    kv.Value.RemoteFiles
-                    |> List.map (fun file ->
-                        let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
-                        let remoteFilePath = 
-                            if verbose then
-                                tracefn "FileName: %s " file.Name 
-
-                            let lockFileReference =
-                                match lockFile.Groups |> Map.tryFind kv.Key with
-                                | None -> None
-                                | Some group ->
-                                    group.RemoteFiles
-                                    |> Seq.tryFind (fun f -> Path.GetFileName(f.Name) = file.Name)
-
-                            match lockFileReference with
-                            | Some file -> file.FilePath(root,kv.Key)
-                            | None -> failwithf "%s references file %s in group %O, but it was not found in the paket.lock file." referenceFile.FileName file.Name kv.Key
-
-                        let linked = defaultArg file.Settings.Link true
-
-                        let buildAction = project.DetermineBuildActionForRemoteItems file.Name
-                        if buildAction <> BuildAction.Reference && linked then
-                            { BuildAction = buildAction
-                              Include = createRelativePath project.FileName remoteFilePath
-                              WithPaketSubNode = true
-                              CopyToOutputDirectory = None
-                              Link = Some link }
-                        else
-                            { BuildAction = buildAction
-                              WithPaketSubNode = true
-                              CopyToOutputDirectory = None
-                              Include =
+                gitRemotePathPairs 
+                |> Seq.map (fun (file,remoteFilePath) -> 
+                    let link = if file.Link = "." then Path.GetFileName file.Name else Path.Combine(file.Link, Path.GetFileName file.Name)
+                    if verbose then
+                        tracefn "FileName: %s " file.Name 
+    
+                    let linked = defaultArg file.Settings.Link true
+                    let buildAction = project.DetermineBuildActionForRemoteItems file.Name
+                    if buildAction <> BuildAction.Reference && linked then
+                        {   BuildAction = buildAction
+                            Include = createRelativePath project.FileName remoteFilePath
+                            WithPaketSubNode = true
+                            CopyToOutputDirectory = None
+                            Link = Some link 
+                        }
+                    else
+                        {   BuildAction = buildAction
+                            WithPaketSubNode = true
+                            CopyToOutputDirectory = None
+                            Include =
                                 if buildAction = BuildAction.Reference then
-                                     createRelativePath project.FileName remoteFilePath
+                                    createRelativePath project.FileName remoteFilePath
                                 else
                                     let toDir = Path.GetDirectoryName(project.FileName)
                                     let targetFile = FileInfo(Path.Combine(toDir,link))
@@ -472,8 +484,9 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
                                     File.Copy(remoteFilePath,targetFile.FullName)
                                     createRelativePath project.FileName targetFile.FullName
-                              Link = None }))
-                |> List.concat
+                            Link = None 
+                        }
+                ) |> Seq.toList
 
             processContentFiles root project usedPackages gitRemoteItems options
             project.Save forceTouch
