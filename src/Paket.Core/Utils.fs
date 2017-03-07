@@ -977,3 +977,24 @@ type StringBuilder with
         self.AppendLine text |> ignore
 
     member self.AppendLinef text = Printf.kprintf self.AppendLine text
+
+[<RequireQualifiedAccess>]
+module Seq =
+    /// Unzip a seq by mapping the elements that satisfy the predicate 
+    /// into the first seq and mapping the elements that fail to satisfy the predicate
+    /// into the second seq
+    let partitionAndChoose predicate choosefn1 choosefn2 sqs =   
+        (([],[]),sqs)
+        ||> Seq.fold (fun (xs,ys) elem ->
+            if predicate elem then 
+                match choosefn1 elem with 
+                | Some x ->  (x::xs,ys) 
+                | None -> xs,ys
+            else 
+                match choosefn2 elem with
+                | Some y -> xs,y::ys 
+                | None -> xs,ys
+        ) |> fun (xs,ys) ->
+            List.rev xs :> seq<_>, List.rev ys :> seq<_>
+
+
