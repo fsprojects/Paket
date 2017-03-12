@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>OverriddenPackage - Paket</title>
+    <title>Seq - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,52 +58,42 @@
 
 
 
-<h1>OverriddenPackage</h1>
+<h1>Seq</h1>
 <p>
   <span>Namespace: Paket</span><br />
+  <span>Parent Module: <a href="paket-utils-0.html">Utils</a></span>
 </p>
 <div class="xmldoc">
 </div>
-  <h3>Record Fields</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1139', 1139)" onmouseover="showTip(event, '1139', 1139)">
-            Group
+          <code onmouseout="hideTip(event, '452', 452)" onmouseover="showTip(event, '452', 452)">
+            partitionAndChoose(...)
           </code>
-          <div class="tip" id="1139">
-            <strong>Signature:</strong> GroupName<br />
-                      </div>
+          <div class="tip" id="452">
+            <strong>Signature:</strong> predicate:(&#39;b -&gt; bool) -&gt; choosefn1:(&#39;b -&gt; &#39;c option) -&gt; choosefn2:(&#39;b -&gt; &#39;d option) -&gt; sqs:seq&lt;&#39;b&gt; -&gt; seq&lt;&#39;c&gt; * seq&lt;&#39;d&gt;<br />
+                          <strong>Type parameters:</strong> 'b, 'c, 'd          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L9-9" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Utils.fs#L986-986" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
+          <p>Unzip a seq by mapping the elements that satisfy the predicate
+into the first seq and mapping the elements that fail to satisfy the predicate
+into the second seq</p>
 
-          <code onmouseout="hideTip(event, '1140', 1140)" onmouseover="showTip(event, '1140', 1140)">
-            Name
-          </code>
-          <div class="tip" id="1140">
-            <strong>Signature:</strong> PackageName<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/LocalFile.fs#L8-8" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
+
         </td>
       </tr>
     </tbody>
