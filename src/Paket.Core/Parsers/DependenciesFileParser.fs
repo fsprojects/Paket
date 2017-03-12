@@ -426,13 +426,21 @@ module DependenciesFileParser =
         | OmitContent omit                               -> { current.Options with Settings = { current.Options.Settings with OmitContent = Some omit } }
         | ReferenceCondition condition                   -> { current.Options with Settings = { current.Options.Settings with ReferenceCondition = Some condition } }
         | GenerateLoadScripts mode                       -> { current.Options with Settings = { current.Options.Settings with GenerateLoadScripts = mode }}
-    let private parseLine fileName checkDuplicates (lineNo, state) line =
+
+    let private parseLine fileName checkDuplicates (lineNo, state: DependenciesGroup list) line =
         match state with
         | current::other ->
             let lineNo = lineNo + 1
             try
                 match line with
-                | Group(newGroupName) -> lineNo, DependenciesGroup.New(GroupName newGroupName)::current::other
+                | Group(newGroupName) -> 
+                    let newGroups =
+                        let newGroupName = GroupName newGroupName
+                        if current.Name = newGroupName then current::other else
+                        match other |> List.tryFind (fun g -> g.Name = newGroupName) with
+                        | Some g -> g::current::(other |> List.filter (fun g -> g.Name <> newGroupName))
+                        | None -> DependenciesGroup.New(newGroupName)::current::other
+                    lineNo,newGroups
                 | Empty(_) -> lineNo, current::other
                 | Remote(RemoteParserOption.PackageSource newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
                 | Remote(RemoteParserOption.Cache newCache) ->                    
