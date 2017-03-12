@@ -1,8 +1,9 @@
-#### 4.0.0-beta031 - 09.03.2017
+#### 4.0.0-rc1 - 12.03.2017
 * Make Paket compatible with DotNet SDK preview3
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
+* USABILITY: Collect multiple install errors before failing  - https://github.com/fsprojects/Paket/pull/2177
 * Generate load scripts on install abidding to new paket.dependencies option - https://fsprojects.github.io/Paket/dependencies-file.html#Generate-load-scripts
 
 #### 3.36.1 - 03.03.2017
