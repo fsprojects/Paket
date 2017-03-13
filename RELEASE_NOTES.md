@@ -1,3 +1,6 @@
+#### 3.36.2 - 13.03.2017
+* BUGFIX: Allow to add package when sources are splitted - https://github.com/fsprojects/Paket.VisualStudio/issues/137
+
 #### 3.36.1 - 03.03.2017
 * USABILITY: old bootstrapper did not work
 
