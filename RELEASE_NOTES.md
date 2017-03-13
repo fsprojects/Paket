@@ -1,3 +1,6 @@
+#### 3.36.3 - 13.03.2017
+* USABILITY: Support TLS > 1.0 - https://github.com/fsprojects/Paket/issues/2174
+
 #### 3.36.2 - 13.03.2017
 * BUGFIX: Allow to add package when sources are splitted - https://github.com/fsprojects/Paket.VisualStudio/issues/137
 
