@@ -546,13 +546,13 @@ NUGET
       System.Xml.XPath (>= 4.3) - framework: >= net46, >= netstandard13
 GITHUB
   remote: fsharp/FAKE
-    src/app/FakeLib/Globbing/Globbing.fs (97f1721db63ff392de34e1d09e449b750f22c811)
+    src/app/FakeLib/Globbing/Globbing.fs (d67516367361a02ae7836744e8396040ed5e4b22)
   remote: fsprojects/FSharp.TypeProviders.StarterPack
     src/AssemblyReader.fs (45f4d8780b3213ef61ba4fccc716cd495565c1a4)
 GROUP Build
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.53)
+    FAKE (4.55)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
@@ -570,7 +570,7 @@ NUGET
       Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (97f1721db63ff392de34e1d09e449b750f22c811)
+    modules/Octokit/Octokit.fsx (d67516367361a02ae7836744e8396040ed5e4b22)
       Octokit (>= 0.20)
 GROUP Test
 NUGET
