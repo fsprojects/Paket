@@ -17,6 +17,7 @@ open Paket.Domain
 open System.Net.Http
 #endif
 
+ServicePointManager.SecurityProtocol <- SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
 
 /// Adds quotes around the string
 /// [omit]

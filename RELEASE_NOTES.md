@@ -1,10 +1,19 @@
-#### 4.0.0-rc3 - 13.03.2017
+#### 4.0.0-rc4 - 13.03.2017
 * Make Paket compatible with DotNet SDK preview3
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
 * USABILITY: Collect multiple install errors before failing  - https://github.com/fsprojects/Paket/pull/2177
 * Generate load scripts on install abidding to new paket.dependencies option - https://fsprojects.github.io/Paket/dependencies-file.html#Generate-load-scripts
+
+#### 3.36.4 - 13.03.2017
+* USABILITY: Remove confusing yellow diagnostics in pack - https://github.com/fsprojects/Paket/issues/2164
+
+#### 3.36.3 - 13.03.2017
+* USABILITY: Support TLS > 1.0 - https://github.com/fsprojects/Paket/issues/2174
+
+#### 3.36.2 - 13.03.2017
+* BUGFIX: Allow to add package when sources are splitted - https://github.com/fsprojects/Paket.VisualStudio/issues/137
 
 #### 3.36.1 - 03.03.2017
 * USABILITY: old bootstrapper did not work

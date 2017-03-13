@@ -393,8 +393,8 @@ nuget Microsoft.AspNet.WebApi.WebHost 5.2.3
 source https://www.nuget.org/api/v2
 nuget log4net 1.2.10
 nuget Microsoft.AspNet.WebApi 5.2.1
-nuget Moq
-"""
+
+nuget Moq"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)

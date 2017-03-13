@@ -246,7 +246,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let packageString = DependenciesFileSerializer.packageString packageName versionRequirement resolverStrategy settings
 
         // Try to find alphabetical matching position to insert the package
-        let isPackageInLastSource (p:PackageRequirement) =
+        let isPackageInLastSource =
             match groups |> Map.tryFind groupName with
             | None -> true
             | Some group ->
@@ -256,12 +256,21 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let lastSource = Seq.last sources
                     group.Sources |> Seq.exists (fun s -> s = lastSource)
 
+        let sourceCount =
+            match groups |> Map.tryFind groupName with
+            | None -> 0
+            | Some group ->
+                match group.Sources with
+                | [] -> 0
+                | sources -> group.Sources |> Seq.length
+
+
         let smaller = 
             match groups |> Map.tryFind groupName with
             | None -> []
             | Some group ->
                 group.Packages 
-                |> Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName || not (isPackageInLastSource p)) 
+                |> Seq.takeWhile (fun (p:PackageRequirement) -> p.Name <= packageName || not isPackageInLastSource) 
                 |> List.ofSeq
         
         let list = new System.Collections.Generic.List<_>()
@@ -287,7 +296,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 list.Insert(pos + 1, packageString)
         | None -> 
             let firstGroupLine,lastGroupLine = findGroupBorders groupName
-            if pinDown then
+            if pinDown || sourceCount > 1 then
                 if newGroupInserted then
                     list.Add(packageString)
                 else
