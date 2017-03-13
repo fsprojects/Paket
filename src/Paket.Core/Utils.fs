@@ -17,7 +17,8 @@ open Paket.Domain
 open System.Net.Http
 #else
 // TODO: Activate this in .NETCore 2.0
-ServicePointManager.SecurityProtocol <- SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
+ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
+                                        ///SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
 #endif
 
 /// Adds quotes around the string
