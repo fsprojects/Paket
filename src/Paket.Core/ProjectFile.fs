@@ -1334,8 +1334,8 @@ module ProjectFile =
                 |> function
                     | [] -> tryNextPlat xs (x::attempted)
                     | s :: _ ->
-                        if String.IsNullOrWhiteSpace buildPlatform then
-                            let tested = String.Join(", ", Array.ofList attempted)
+                        if String.IsNullOrWhiteSpace buildPlatform && attempted <> [] then
+                            let tested = String.Join(", ", attempted)
                             traceWarnfn "No platform specified; found output path node for the %s platform after failing to find one for the following: %s" x tested
                         s.TrimEnd [|'\\'|] |> normalizePath
 

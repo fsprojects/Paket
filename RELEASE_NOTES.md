@@ -1,3 +1,6 @@
+#### 3.36.4 - 13.03.2017
+* USABILITY: Remove confusing yellow diagnostics in pack - https://github.com/fsprojects/Paket/issues/2164
+
 #### 3.36.3 - 13.03.2017
 * USABILITY: Support TLS > 1.0 - https://github.com/fsprojects/Paket/issues/2174
 
