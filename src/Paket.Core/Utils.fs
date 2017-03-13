@@ -15,9 +15,10 @@ open Paket.Domain
 
 #if NETSTANDARD1_6
 open System.Net.Http
-#endif
-
+#else
+// TODO: Activate this in .NETCore 2.0
 ServicePointManager.SecurityProtocol <- SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
+#endif
 
 /// Adds quotes around the string
 /// [omit]
