@@ -6,6 +6,9 @@
 * USABILITY: Collect multiple install errors before failing  - https://github.com/fsprojects/Paket/pull/2177
 * Generate load scripts on install abidding to new paket.dependencies option - https://fsprojects.github.io/Paket/dependencies-file.html#Generate-load-scripts
 
+#### 3.36.5 - 13.03.2017
+* BUGFIX: auto-detect no onger causes Out of sync warning - https://github.com/fsprojects/Paket/issues/2096
+
 #### 3.36.4 - 13.03.2017
 * USABILITY: Remove confusing yellow diagnostics in pack - https://github.com/fsprojects/Paket/issues/2164
 

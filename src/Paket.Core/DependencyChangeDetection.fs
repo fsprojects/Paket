@@ -26,19 +26,20 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
     let added groupName transitives =
         match dependenciesFile.Groups |> Map.tryFind groupName with
         | None -> Set.empty
-        | Some group ->
+        | Some depsGroup ->
             let lockFileGroup = lockFile.Groups |> Map.tryFind groupName 
-            group.Packages
+            depsGroup.Packages
             |> Seq.map (fun d ->
-                d.Name, { d with Settings = group.Options.Settings + d.Settings })
+                d.Name, { d with Settings = depsGroup.Options.Settings + d.Settings })
             |> Seq.filter (fun (name,dependenciesFilePackage) ->
                 match lockFileGroup with
                 | None -> true
                 | Some group ->
                     match group.Resolution.TryFind name with
                     | Some lockFilePackage ->
-                        let p' = { lockFilePackage with Settings = group.Options.Settings + lockFilePackage.Settings }
-                        hasChanged groupName transitives dependenciesFilePackage p'
+                        hasChanged groupName transitives 
+                            { dependenciesFilePackage with Settings = depsGroup.Options.Settings + dependenciesFilePackage.Settings }
+                            { lockFilePackage with Settings = group.Options.Settings + lockFilePackage.Settings }
                     | _ -> true)
             |> Seq.map (fun (p,_) -> groupName,p)
             |> Set.ofSeq
