@@ -1,3 +1,6 @@
+#### 3.36.5 - 13.03.2017
+* BUGFIX: auto-detect no onger causes Out of sync warning - https://github.com/fsprojects/Paket/issues/2096
+
 #### 3.36.4 - 13.03.2017
 * USABILITY: Remove confusing yellow diagnostics in pack - https://github.com/fsprojects/Paket/issues/2164
 
