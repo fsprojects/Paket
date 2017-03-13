@@ -1521,15 +1521,19 @@ type ProjectFile with
 
     member this.FindTemplatesFile() = this.FindCorrespondingFile Constants.TemplateFile
 
-    member this.GetToolsVersion () : float =         
-        match  Double.TryParse  this.ProjectNode.Attributes.["ToolsVersion"].Value with
-        | true , 15.0 -> 
-                let sdkAttr = this.ProjectNode.Attributes.["Sdk"]
-                if  isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
-                then 14.0   // adjustment so paket still installs to old style msbuild projects
-                else 15.0   // that are using MSBuild15 but not the new format
-        | true,  version -> version
-        | _         ->  4.0
+    member this.GetToolsVersion () : float =
+        try
+            let v = this.ProjectNode.Attributes.["ToolsVersion"].Value
+            match Double.TryParse v with
+            | true , 15.0 -> 
+                    let sdkAttr = this.ProjectNode.Attributes.["Sdk"]
+                    if  isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
+                    then 14.0   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
+                    else 15.0
+            | true,  version -> version
+            | _         ->  4.0
+        with
+        | _ -> 4.0
 
 
     static member FindOrCreateReferencesFile projectFile =
