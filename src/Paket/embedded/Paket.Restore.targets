@@ -14,7 +14,7 @@
 
   <UsingTask TaskName="Paket.Build.Tasks.PaketRestoreTask" AssemblyFile="PaketRestoreTask.dll" />
 
-  <Target Name="PaketRestore" BeforeTargets="_GenerateRestoreGraphWalkPerFramework;CollectPackageReference" >
+  <Target Name="PaketRestore" BeforeTargets="_GenerateRestoreGraphWalkPerFramework;CollectPackageReference2" >
     <Exec Command="$(PaketCommand) restore --project $(MSBuildProjectFullPath)" />
 
      <!-- Write out package references for NETCore -->

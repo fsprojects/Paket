@@ -1,5 +1,5 @@
-#### 4.0.0-rc5 - 14.03.2017
-* Make Paket compatible with DotNet SDK preview3
+#### 4.0.0-rc6 - 14.03.2017
+* Make Paket compatible with DotNet SDK / MSBuild 15 / Visual Sudio 2017
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
 * USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
