@@ -12,6 +12,7 @@ open System.Xml
 open Paket.Xml
 open Paket.Requirements
 open Paket.PackageSources
+open System.Globalization
 
 [<RequireQualifiedAccess>]
 type BuildAction =
@@ -1524,7 +1525,7 @@ type ProjectFile with
     member this.GetToolsVersion () : float =
         try
             let v = this.ProjectNode.Attributes.["ToolsVersion"].Value
-            match Double.TryParse v with
+            match Double.TryParse(v, NumberStyles.Any, CultureInfo.InvariantCulture) with
             | true , 15.0 -> 
                     let sdkAttr = this.ProjectNode.Attributes.["Sdk"]
                     if  isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
