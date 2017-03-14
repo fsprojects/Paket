@@ -1,4 +1,4 @@
-#### 4.0.0-rc4 - 13.03.2017
+#### 4.0.0-rc5 - 14.03.2017
 * Make Paket compatible with DotNet SDK preview3
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
