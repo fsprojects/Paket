@@ -1,3 +1,6 @@
+#### 4.0.1 - 15.03.2017
+* Handle empty references files for .NET Core
+
 #### 4.0.0 - 15.03.2017
 * Make Paket compatible with DotNet SDK / MSBuild 15 / Visual Sudio 2017
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
