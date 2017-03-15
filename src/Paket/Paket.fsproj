@@ -108,8 +108,6 @@
     <Compile Include="Program.fs" />
     <Content Include="App.config" />
     <None Include="paket.references" />
-    <EmbeddedResource Include="embedded\PaketRestoreTask.deps.json" />
-    <EmbeddedResource Include="embedded\PaketRestoreTask.dll" />
     <EmbeddedResource Include="embedded\Paket.Restore.targets" />
   </ItemGroup>
   <ItemGroup>

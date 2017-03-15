@@ -12,40 +12,31 @@
     <PaketCommand Condition=" '$(OS)' != 'Windows_NT' ">$(MonoPath) --runtime=v4.0.30319 "$(PaketExePath)"</PaketCommand>
   </PropertyGroup>    
 
-  <UsingTask TaskName="Paket.Build.Tasks.PaketRestoreTask" AssemblyFile="PaketRestoreTask.dll" />
-
   <Target Name="PaketRestore" BeforeTargets="_GenerateRestoreGraphWalkPerFramework;CollectPackageReferences" >
-    <Exec Command="$(PaketCommand) restore --project $(MSBuildProjectFullPath)" />
+  
+      <Exec Command="$(PaketCommand) restore --project $(MSBuildProjectFullPath)" />
 
-     <!-- Write out package references for NETCore -->
-    <PaketRestoreTask
-      ProjectUniqueName="$(MSBuildProjectFullPath)"
-      PackageReferences="@(PackageReference)"
-      TargetFrameworks="$(TargetFramework)">
-      <Output TaskParameter="NewPackageReferences" ItemName="PackageReference" />
-      <Output TaskParameter="AlternativeConfigFile" ItemName="RestoreConfigFile" />        
-    </PaketRestoreTask>
-   </Target>
+      <PropertyGroup>
+        <PaketReferecesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferecesFilePath>
+      </PropertyGroup>
 
-   <Target Name="FixPackRef" AfterTargets="_WalkEachTargetPerFramework" Returns="@(_PackageReferences)">
-      <!-- Write out package references for NETCore -->
-      <PaketRestoreTask
-        ProjectUniqueName="$(MSBuildProjectFullPath)"
-        PackageReferences="@(PackageReference)"
-        TargetFrameworks="$(TargetFramework)">
-        <Output TaskParameter="NewPackageReferences" ItemName="_PaketPackageReference" />
-        <Output TaskParameter="AlternativeConfigFile" ItemName="RestoreConfigFile2" />
-      </PaketRestoreTask>
+      <ReadLinesFromFile File="$(PaketReferecesFilePath)" >
+        <Output TaskParameter="Lines" ItemName="PaketReferecesFileLines"/>
+      </ReadLinesFromFile>
+
       <ItemGroup>
-        <_PackageReferences Include="%(_PaketPackageReference.Identity)">
-          <TargetFramework>$(TargetFramework)</TargetFramework>
-          <IncludeAssets></IncludeAssets>
-          <ExcludeAssets></ExcludeAssets>
-          <PrivateAssets></PrivateAssets>
-          <Version>%(_PaketPackageReference.Version)</Version>
-        </_PackageReferences>
+        <PaketReferecesFileLinesInfo Include="@(PaketReferecesFileLines)" >
+          <PackageName>$([System.String]::Copy('%(PaketReferecesFileLines.Identity)').Split(',')[0])</PackageName>
+          <PackageVersion>$([System.String]::Copy('%(PaketReferecesFileLines.Identity)').Split(',')[1])</PackageVersion>
+        </PaketReferecesFileLinesInfo>
+        <PackageReference Include="%(PaketReferecesFileLinesInfo.PackageName)">
+          <Version>%(PaketReferecesFileLinesInfo.PackageVersion)</Version>
+        </PackageReference>
       </ItemGroup>
-      
-    </Target>
 
+      <PropertyGroup>
+        <RestoreConfigFile>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).NuGet.Config</RestoreConfigFile>
+      </PropertyGroup>
+
+   </Target>
 </Project>

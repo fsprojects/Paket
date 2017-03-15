@@ -158,9 +158,6 @@ let extractBuildTask root =
     if !copiedElements then
         Path.Combine(root,".paket","Paket.Restore.targets")
     else
-        extractElement root "PaketRestoreTask.dll" |> ignore    
-        extractElement root "PaketRestoreTask.deps.json" |> ignore
-    
         let result = extractElement root "Paket.Restore.targets"
         copiedElements := true
         result

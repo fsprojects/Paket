@@ -126,7 +126,7 @@ Target "AssemblyInfo" (fun _ ->
     let fsProjs =  !! "src/**/*.fsproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
     let csProjs = !! "src/**/*.csproj" |> Seq.filter (fun s -> not <| s.Contains("preview"))
     fsProjs |> Seq.iter genFSAssemblyInfo
-    csProjs |> Seq.filter (fun s -> s.Contains "PaketRestoreTask" |> not) |> Seq.iter genCSAssemblyInfo
+    csProjs |> Seq.iter genCSAssemblyInfo
 )
 
 Target "InstallDotNetCore" (fun _ ->
