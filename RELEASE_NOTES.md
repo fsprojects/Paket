@@ -1,4 +1,4 @@
-#### 4.0.0-rc9001 - 15.03.2017
+#### 4.0.0-rc9002 - 15.03.2017
 * Make Paket compatible with DotNet SDK / MSBuild 15 / Visual Sudio 2017
 * Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
 * Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039

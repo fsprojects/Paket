@@ -17,20 +17,20 @@
       <Exec Command="$(PaketCommand) restore --project $(MSBuildProjectFullPath)" />
 
       <PropertyGroup>
-        <PaketReferecesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferecesFilePath>
+        <PaketReferencesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferencesFilePath>
       </PropertyGroup>
 
-      <ReadLinesFromFile File="$(PaketReferecesFilePath)" >
-        <Output TaskParameter="Lines" ItemName="PaketReferecesFileLines"/>
+      <ReadLinesFromFile File="$(PaketReferencesFilePath)" >
+        <Output TaskParameter="Lines" ItemName="PaketReferencesFileLines"/>
       </ReadLinesFromFile>
 
       <ItemGroup>
-        <PaketReferecesFileLinesInfo Include="@(PaketReferecesFileLines)" >
-          <PackageName>$([System.String]::Copy('%(PaketReferecesFileLines.Identity)').Split(',')[0])</PackageName>
-          <PackageVersion>$([System.String]::Copy('%(PaketReferecesFileLines.Identity)').Split(',')[1])</PackageVersion>
-        </PaketReferecesFileLinesInfo>
-        <PackageReference Include="%(PaketReferecesFileLinesInfo.PackageName)">
-          <Version>%(PaketReferecesFileLinesInfo.PackageVersion)</Version>
+        <PaketReferencesFileLinesInfo Include="@(PaketReferencesFileLines)" >
+          <PackageName>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[0])</PackageName>
+          <PackageVersion>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[1])</PackageVersion>
+        </PaketReferencesFileLinesInfo>
+        <PackageReference Include="%(PaketReferencesFileLinesInfo.PackageName)">
+          <Version>%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
         </PackageReference>
       </ItemGroup>
 
