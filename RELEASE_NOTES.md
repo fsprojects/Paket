@@ -7,7 +7,7 @@
 * Generate load scripts on install abidding to new paket.dependencies option - https://fsprojects.github.io/Paket/dependencies-file.html#Generate-load-scripts
 
 #### 3.37.0 - 15.03.2017
-* BUGFIX: auto-detect no onger causes Out of sync warning - https://github.com/fsprojects/Paket/issues/2096
+* BUGFIX: auto-detect no longer causes Out of sync warning - https://github.com/fsprojects/Paket/issues/2096
 * BUGFIX: Allow to add package when sources are splitted - https://github.com/fsprojects/Paket.VisualStudio/issues/137
 * USABILITY: Remove confusing yellow diagnostics in pack - https://github.com/fsprojects/Paket/issues/2164
 * USABILITY: Support TLS > 1.0 - https://github.com/fsprojects/Paket/issues/2174
