@@ -243,7 +243,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     let _,packageName = package.Key
                     list.Add(packageName.ToString() + "," + resolved.[package.Key].Version.ToString())
                 
-            let output = String.Join(Environment.NewLine,list)
+            let output = if list.Count = 0 then "" else String.Join(Environment.NewLine,list)
             if not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
                 File.WriteAllText(newFileName.FullName,output)
                 tracefn " - %s created" newFileName.FullName
