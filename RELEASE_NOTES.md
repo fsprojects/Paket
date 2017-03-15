@@ -1,16 +1,8 @@
-#### 3.36.5 - 13.03.2017
+#### 3.37.0 - 15.03.2017
 * BUGFIX: auto-detect no onger causes Out of sync warning - https://github.com/fsprojects/Paket/issues/2096
-
-#### 3.36.4 - 13.03.2017
-* USABILITY: Remove confusing yellow diagnostics in pack - https://github.com/fsprojects/Paket/issues/2164
-
-#### 3.36.3 - 13.03.2017
-* USABILITY: Support TLS > 1.0 - https://github.com/fsprojects/Paket/issues/2174
-
-#### 3.36.2 - 13.03.2017
 * BUGFIX: Allow to add package when sources are splitted - https://github.com/fsprojects/Paket.VisualStudio/issues/137
-
-#### 3.36.1 - 03.03.2017
+* USABILITY: Remove confusing yellow diagnostics in pack - https://github.com/fsprojects/Paket/issues/2164
+* USABILITY: Support TLS > 1.0 - https://github.com/fsprojects/Paket/issues/2174
 * USABILITY: old bootstrapper did not work
 
 #### 3.36.0 - 25.02.2017
