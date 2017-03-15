@@ -9,15 +9,21 @@ let makeScenarioPath scenario    = Path.Combine("loading-scripts", scenario)
 let paket command scenario       = paket command (makeScenarioPath scenario)
 let directPaket command scenario = directPaket command (makeScenarioPath scenario)
 let scenarioTempPath scenario    = scenarioTempPath (makeScenarioPath scenario)
-let scriptRoot scenario = DirectoryInfo(Path.Combine(scenarioTempPath scenario, "paket-files", "include-scripts"))
+let scriptRoot scenario = DirectoryInfo(Path.Combine(scenarioTempPath scenario, ".paket", "load"))
+
+let getLoadScriptDefaultFolder scenario = DirectoryInfo((scriptRoot scenario).FullName)
+let getLoadScriptFolder framework scenario = DirectoryInfo(Path.Combine((getLoadScriptDefaultFolder scenario).FullName, framework |> FrameworkDetection.Extract |> Option.get |> string))
 
 let getGeneratedScriptFiles framework scenario =
-  let frameworkDir = DirectoryInfo(Path.Combine((scriptRoot scenario).FullName, framework |> FrameworkDetection.Extract |> Option.get |> string))
+  let frameworkDir = getLoadScriptFolder framework scenario
+  frameworkDir.GetFiles() |> Array.sortBy (fun f -> f.FullName)
+let getGeneratedScriptFilesDefaultFolder scenario =
+  let frameworkDir = getLoadScriptDefaultFolder scenario
   frameworkDir.GetFiles() |> Array.sortBy (fun f -> f.FullName)
 
-let getScriptContentsFailedExpectations framework scenario expectations =
+let getScriptContentsFailedExpectations (scriptFolder: DirectoryInfo) expectations =
     let files =
-        getGeneratedScriptFiles framework scenario
+        scriptFolder.GetFiles()
         |> Seq.map (fun f -> f.Name, f)
         |> dict
 
@@ -44,37 +50,41 @@ let ``simple dependencies generates expected scripts``() =
   let files = getGeneratedScriptFiles framework scenario
   let actualFiles = files |> Array.map (fun f -> f.Name) |> Array.sortBy id
   let expectedFiles = [|
-      "include.argu.csx"
-      "include.argu.fsx"
-      "include.log4net.csx"
-      "include.log4net.fsx"
-      "include.main.group.csx"
-      "include.main.group.fsx"
-      "include.nunit.csx"
-      "include.nunit.fsx"
+      "argu.csx"
+      "argu.fsx"
+      "log4net.csx"
+      "log4net.fsx"
+      "main.group.csx"
+      "main.group.fsx"
+      "nunit.csx"
+      "nunit.fsx"
   |]
   
   if not isMono then // TODO: Fix me
     Assert.AreEqual(expectedFiles,actualFiles)
+
+let assertNhibernateForFramework35IsThere scenario =
+  let expectations = [
+    "iesi.collections.csx", ["Net35/Iesi.Collections.dll"]
+    "iesi.collections.fsx", ["Net35/Iesi.Collections.dll"]
+    "nhibernate.csx", ["Net35/NHibernate.dll";"#load \"iesi.collections.csx\""]
+    "nhibernate.fsx", ["Net35/NHibernate.dll";"#load @\"iesi.collections.fsx\""]
+  ]
+  let folder = getLoadScriptDefaultFolder scenario
+  let failures = getScriptContentsFailedExpectations folder expectations
+
+  if not (Seq.isEmpty failures) then
+    Assert.Fail (failures |> String.concat Environment.NewLine)
+
 
 [<Test;Category("scriptgen")>]
 let ``framework specified``() = 
   let scenario = "framework-specified"
   paket "install" scenario |> ignore
 
-  directPaket "generate-include-scripts" scenario |> ignore
+  directPaket "generate-load-scripts" scenario |> ignore
 
-  let expectations = [
-    "include.iesi.collections.csx", ["Net35/Iesi.Collections.dll"]
-    "include.iesi.collections.fsx", ["Net35/Iesi.Collections.dll"]
-    "include.nhibernate.csx", ["Net35/NHibernate.dll";"#load \"include.iesi.collections.csx\""]
-    "include.nhibernate.fsx", ["Net35/NHibernate.dll";"#load @\"include.iesi.collections.fsx\""]
-  ]
-
-  let failures = getScriptContentsFailedExpectations "net35" scenario expectations
-
-  if not (Seq.isEmpty failures) then
-    Assert.Fail (failures |> String.concat Environment.NewLine)
+  assertNhibernateForFramework35IsThere scenario
 
 [<Test; Category("scriptgen"); Ignore("group script is always generated")>]
 let ``don't generate scripts when no references are found``() = 
@@ -82,7 +92,7 @@ let ``don't generate scripts when no references are found``() =
     let scenario = "no-references"
     paket "install" scenario |> ignore
 
-    directPaket "generate-include-scripts" scenario |> ignore
+    directPaket "generate-load-scripts" scenario |> ignore
     let scriptRootDir = scriptRoot scenario
     Assert.IsFalse(scriptRootDir.Exists)
 
@@ -92,7 +102,7 @@ let ``only generates scripts for language provided`` (language : string) =
     let scenario = "single-file-type"
     paket "install" scenario |> ignore
 
-    directPaket (sprintf "generate-include-scripts type %s" language) scenario |> ignore
+    directPaket (sprintf "generate-load-scripts type %s" language) scenario |> ignore
 
     let scriptRootDir = scriptRoot scenario
     let scriptFiles = scriptRootDir.GetFiles("", SearchOption.AllDirectories)
@@ -106,7 +116,7 @@ let ``fails on wrong framework given`` () =
     paket "install" scenario |> ignore
 
     let failure = Assert.Throws (fun () ->
-        let result = directPaket "generate-include-scripts framework foo framework bar framework net45" scenario
+        let result = directPaket "generate-load-scripts framework foo framework bar framework net45" scenario
         printf "%s" result
     )
     let message = failure.ToString()
@@ -122,7 +132,7 @@ let ``fails on wrong scripttype given`` () =
     paket "install" scenario |> ignore
 
     let failure = Assert.Throws (fun () ->
-        let result = directPaket (sprintf "generate-include-scripts type foo type bar framework net45") scenario
+        let result = directPaket (sprintf "generate-load-scripts type foo type bar framework net45") scenario
         printf "%s" result
     )
     let message = failure.ToString()
@@ -136,20 +146,20 @@ let ``issue 1676 casing`` () =
     let scenario = "issue-1676"
     paket "install" scenario |> ignore
 
-    directPaket "generate-include-scripts framework net46" scenario |> ignore
+    directPaket "generate-load-scripts framework net46" scenario |> ignore
 
     let expectations = [
-        "include.entityframework.csx", [
+        "entityframework.csx", [
             "../../../packages/EntityFramework/lib/net45/EntityFramework.dll"
             "../../../packages/EntityFramework/lib/net45/EntityFramework.SqlServer.dll"
             ]
-        "include.entityframework.fsx", [
+        "entityframework.fsx", [
             "../../../packages/EntityFramework/lib/net45/EntityFramework.dll"
             "../../../packages/EntityFramework/lib/net45/EntityFramework.SqlServer.dll"
             ]
       ]
-
-    let failures = getScriptContentsFailedExpectations "net46" scenario expectations
+    let folder = getLoadScriptFolder "net46" scenario
+    let failures = getScriptContentsFailedExpectations folder expectations
 
     if not (Seq.isEmpty failures) then
         Assert.Fail (failures |> String.concat Environment.NewLine)
@@ -159,7 +169,7 @@ let ``mscorlib excluded from f# script`` () =
     let scenario = "mscorlib"
     paket "install" scenario |> ignore
 
-    directPaket "generate-include-scripts framework net46" scenario |> ignore
+    directPaket "generate-load-scripts framework net46" scenario |> ignore
 
     let scriptRootDir = scriptRoot scenario
     let hasFilesWithMsCorlib =
@@ -178,7 +188,7 @@ let ``fsharp.core excluded from f# script`` () =
     let scenario = "fsharpcore"
     paket "install" scenario |> ignore
 
-    directPaket "generate-include-scripts framework net46" scenario |> ignore
+    directPaket "generate-load-scripts framework net46" scenario |> ignore
 
     let scriptRootDir = scriptRoot scenario
     let hasFilesWithFsharpCore =
@@ -191,3 +201,16 @@ let ``fsharp.core excluded from f# script`` () =
 
     Assert.False hasFilesWithFsharpCore
 
+[<Test; Category("scriptgen dependencies")>]
+let ``generates script on install`` () =
+    let scenario = "dependencies-file-flag"
+    paket "install" scenario |> ignore
+
+    assertNhibernateForFramework35IsThere scenario
+
+[<Test; Category("scriptgen dependencies")>]
+let ``issue 2156 netstandard`` () =
+    let scenario = "issue-2156-netstandard"
+    paket "install" scenario |> ignore
+    directPaket "generate-load-scripts" scenario |> ignore
+    // note: no assert for now, I don't know what we are exactly expecting

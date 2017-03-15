@@ -15,9 +15,11 @@ open Paket.Domain
 
 #if NETSTANDARD1_6
 open System.Net.Http
+#else
+// TODO: Activate this in .NETCore 2.0
+ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
+                                        ///SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
 #endif
-
-ServicePointManager.SecurityProtocol <- SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
 
 /// Adds quotes around the string
 /// [omit]
@@ -84,10 +86,13 @@ let normalizeLocalPath (path:string) =
     else
         RelativePath path
         
-let getDirectoryInfo pathInfo root =
+let getDirectoryInfoForLocalNuGetFeed pathInfo alternativeProjectRoot root =
     match pathInfo with
     | AbsolutePath s -> DirectoryInfo s 
-    | RelativePath s -> DirectoryInfo(Path.Combine(root, s))
+    | RelativePath s ->
+        match alternativeProjectRoot with
+        | Some root -> DirectoryInfo(Path.Combine(root, s))
+        | None -> DirectoryInfo(Path.Combine(root, s))
         
 /// Creates a directory if it does not exist.
 let createDir path = 
@@ -303,8 +308,8 @@ let isMatchingOperatingSystem (operatingSystemFilter : string option) =
 let isMatchingPlatform (operatingSystemFilter : string option) =
     match operatingSystemFilter with
     | None -> true
-    | Some filter when filter = "mono" -> isMono
-    | Some filter when filter = "windows" -> not isMono
+    | Some filter when filter = "mono" -> isMonoRuntime
+    | Some filter when filter = "windows" -> not isMonoRuntime
     | _ -> isMatchingOperatingSystem operatingSystemFilter
 
 /// [omit]
@@ -968,4 +973,31 @@ module ObservableExtensions =
         let distinct (a: IObservable<'a>): IObservable<'a> =
             let seen = HashSet()
             Observable.filter seen.Add a
+
+type StringBuilder with
+
+    member self.AddLine text =
+        self.AppendLine text |> ignore
+
+    member self.AppendLinef text = Printf.kprintf self.AppendLine text
+
+[<RequireQualifiedAccess>]
+module Seq =
+    /// Unzip a seq by mapping the elements that satisfy the predicate 
+    /// into the first seq and mapping the elements that fail to satisfy the predicate
+    /// into the second seq
+    let partitionAndChoose predicate choosefn1 choosefn2 sqs =   
+        (([],[]),sqs)
+        ||> Seq.fold (fun (xs,ys) elem ->
+            if predicate elem then 
+                match choosefn1 elem with 
+                | Some x ->  (x::xs,ys) 
+                | None -> xs,ys
+            else 
+                match choosefn2 elem with
+                | Some y -> xs,y::ys 
+                | None -> xs,ys
+        ) |> fun (xs,ys) ->
+            List.rev xs :> seq<_>, List.rev ys :> seq<_>
+
 

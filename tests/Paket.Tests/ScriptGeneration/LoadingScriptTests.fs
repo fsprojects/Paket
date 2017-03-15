@@ -46,7 +46,6 @@ let ``can keep order simple dependency``() =
 
 let scriptGenInputWithNoDendency = {
     PackageName                  = Paket.Domain.PackageName "foo"
-    Framework                    = FrameworkIdentifier.DotNetFramework FrameworkVersion.V4
     PackagesOrGroupFolder        = DirectoryInfo "a"
     IncludeScriptsRootFolder     = DirectoryInfo "b"
     DependentScripts             = List.empty

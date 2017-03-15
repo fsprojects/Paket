@@ -1,5 +1,15 @@
-﻿module Paket.IntegrationTests.UpdatePackageSpecs
-
+﻿#if INTERACTIVE
+System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
+#r "../../packages/test/NUnit/lib/net45/nunit.framework.dll"
+#r "../../packages/build/FAKE/tools/Fakelib.dll"
+#r "../../packages/Chessie/lib/net40/Chessie.dll"
+#r "../../bin/paket.core.dll"
+#load "../../paket-files/test/forki/FsUnit/FsUnit.fs"
+#load "TestHelper.fs"
+open Paket.IntegrationTests.TestHelpers
+#else
+module Paket.IntegrationTests.UpdatePackageSpecs
+#endif
 open Fake
 open System
 open NUnit.Framework
@@ -144,7 +154,7 @@ let ``#1579 update allows unpinned``() =
 
     prepare scenario
     directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario |> ignore
-    directPaket "update" scenario|> ignore
+    directPaket "update -v" scenario|> ignore
 
 [<Test>]
 let ``#1501 download succeeds``() =
@@ -166,3 +176,13 @@ let ``#1635 should tell about auth issue``() =
         failwith "error expected"
     with
     | exn when exn.Message.Contains("Could not find versions for package Argu") -> ()
+
+
+#if INTERACTIVE
+;;
+let scenario = "i001579-unlisted"
+
+prepare scenario
+directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario
+directPaket "update -v" scenario
+#endif

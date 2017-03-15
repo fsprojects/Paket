@@ -106,10 +106,10 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     }
 
 /// Gets versions of the given package from local NuGet feed.
-let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, root) =
+let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, alternativeProjectRoot, root) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNugetPath
-        let di = getDirectoryInfo localNugetPath root
+        let di = getDirectoryInfoForLocalNuGetFeed localNugetPath alternativeProjectRoot root
 
         if not di.Exists then
             if isCache then
@@ -369,10 +369,10 @@ let getPackageNameFromLocalFile fileName =
     nuspec.OfficialName
 
 /// Reads direct dependencies from a nupkg file
-let getDetailsFromLocalNuGetPackage isCache root localNuGetPath (packageName:PackageName) (version:SemVerInfo) =
+let getDetailsFromLocalNuGetPackage isCache alternativeProjectRoot root localNuGetPath (packageName:PackageName) (version:SemVerInfo) =
     async {
         let localNugetPath = Utils.normalizeLocalPath localNuGetPath
-        let di = getDirectoryInfo localNugetPath root
+        let di = getDirectoryInfoForLocalNuGetFeed localNugetPath alternativeProjectRoot root
         let nupkg = findLocalPackage di.FullName packageName version
 
         fixArchive nupkg.FullName
@@ -637,7 +637,7 @@ let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets file
 /// Finds all analyzer files in a nuget package.
 let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer dlls"
 
-let rec private getPackageDetails root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails =
+let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails =
 
     let tryV2 source (nugetSource:NugetSource)  = async {
         let! result =
@@ -704,10 +704,10 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
                             return! tryV3 source nugetSource
 
                 | LocalNuGet(path,Some _) ->
-                    let! result = getDetailsFromLocalNuGetPackage true root path packageName version
+                    let! result = getDetailsFromLocalNuGetPackage true alternativeProjectRoot root path packageName version
                     return Some(source,result)
                 | LocalNuGet(path,None) ->
-                    let! result = getDetailsFromLocalNuGetPackage false root path packageName version
+                    let! result = getDetailsFromLocalNuGetPackage false alternativeProjectRoot root path packageName version
                     return Some(source,result)
             with e ->
                 verbosefn "Source '%O' exception: %O" source e
@@ -740,11 +740,11 @@ let rec private getPackageDetails root force (sources:PackageSource list) packag
       LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = nugetObject.Dependencies |> Set.ofList }
 
-let rec GetPackageDetails root force (sources:PackageSource list) groupName packageName (version:SemVerInfo) : PackageResolver.PackageDetails =
+let rec GetPackageDetails alternativeProjectRoot root force (sources:PackageSource list) groupName packageName (version:SemVerInfo) : PackageResolver.PackageDetails =
     try
-        getPackageDetails root force sources packageName version
+        getPackageDetails alternativeProjectRoot root force sources packageName version
     with
-    | _ -> getPackageDetails root true sources packageName version
+    | _ -> getPackageDetails alternativeProjectRoot root true sources packageName version
 
 let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
@@ -786,7 +786,7 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
     }
 
 /// Allows to retrieve all version no. for a package from the given sources.
-let GetVersions force root (sources, packageName:PackageName) =
+let GetVersions force alternativeProjectRoot root (sources, packageName:PackageName) =
     let trial force =
         let getVersionsFailedCacheFileName (source:PackageSource) =
             let h = source.Url |> normalizeUrl |> hash |> abs
@@ -836,8 +836,8 @@ let GetVersions force root (sources, packageName:PackageName) =
                                 }
 
                             [ resp ]
-                       | LocalNuGet(path,Some _) -> [ getAllVersionsFromLocalPath (true, path, packageName, root) ]
-                       | LocalNuGet(path,None) -> [ getAllVersionsFromLocalPath (false, path, packageName, root) ])
+                       | LocalNuGet(path,Some _) -> [ getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
+                       | LocalNuGet(path,None) -> [ getAllVersionsFromLocalPath (false, path, packageName, alternativeProjectRoot, root) ])
             |> Seq.toArray
             |> Array.map Async.Choice
             |> Async.Parallel
@@ -891,7 +891,7 @@ let GetVersions force root (sources, packageName:PackageName) =
 
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) =
+let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
     let targetFileName = Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
@@ -932,7 +932,7 @@ let DownloadPackage(root, (source : PackageSource), caches:Cache list, groupName
                 try
                     if authenticated then
                         tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
-                    let nugetPackage = GetPackageDetails root force [source] groupName packageName version
+                    let nugetPackage = GetPackageDetails alternativeProjectRoot root force [source] groupName packageName version
 
                     let downloadUri =
                         if Uri.IsWellFormedUriString(nugetPackage.DownloadLink, UriKind.Absolute) then

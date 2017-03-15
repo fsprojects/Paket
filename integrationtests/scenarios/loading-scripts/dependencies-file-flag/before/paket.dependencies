@@ -1,0 +1,4 @@
+source http://nuget.org/api/v2
+framework: net35
+generate_load_scripts: on
+nuget NHibernate ~> 3

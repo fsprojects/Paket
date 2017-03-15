@@ -1,3 +1,11 @@
+#### 4.0.0-rc9 - 14.03.2017
+* Make Paket compatible with DotNet SDK / MSBuild 15 / Visual Sudio 2017
+* Tail Recursive Package Resolution - https://github.com/fsprojects/Paket/pull/2066
+* Reorganized resolver - https://github.com/fsprojects/Paket/pull/2039
+* USABILITY: Added option to have paket restore fail on check failure - https://github.com/fsprojects/Paket/pull/1963
+* USABILITY: Collect multiple install errors before failing  - https://github.com/fsprojects/Paket/pull/2177
+* Generate load scripts on install abidding to new paket.dependencies option - https://fsprojects.github.io/Paket/dependencies-file.html#Generate-load-scripts
+
 #### 3.37.0 - 15.03.2017
 * BUGFIX: auto-detect no onger causes Out of sync warning - https://github.com/fsprojects/Paket/issues/2096
 * BUGFIX: Allow to add package when sources are splitted - https://github.com/fsprojects/Paket.VisualStudio/issues/137

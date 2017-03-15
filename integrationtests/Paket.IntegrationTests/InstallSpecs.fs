@@ -1,4 +1,16 @@
-﻿module Paket.IntegrationTests.InstallSpecs
+﻿#if INTERACTIVE
+System.IO.Directory.SetCurrentDirectory __SOURCE_DIRECTORY__
+#r "../../packages/test/NUnit/lib/net45/nunit.framework.dll"
+#r "../../packages/build/FAKE/tools/Fakelib.dll"
+#r "../../packages/Chessie/lib/net40/Chessie.dll"
+#r "../../bin/paket.core.dll"
+#load "../../paket-files/test/forki/FsUnit/FsUnit.fs"
+#load "TestHelper.fs"
+open Paket.IntegrationTests.TestHelpers
+#else
+module Paket.IntegrationTests.InstallSpecs
+#endif
+
 
 open Fake
 open System
@@ -271,38 +283,10 @@ let ``#1467 install native package into vcxproj``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1458 should install non conflicting deps from different groups only once``() = 
-    install "i001458-same-version-group" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001458-same-version-group","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001458-same-version-group","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
 let ``#1505 should install conditionals``() = 
     install "i001505-conditionals" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj.expected")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-[<Test>]
-let ``#1523 should emit correct native in mixed setting``() = 
-    install "i001523-not-true" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001523-not-true","TestPaket","TestPaket.vcxproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001523-not-true","TestPaket","TestPaket.vcxprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-    
-[<Test>]
-let ``#1523 should emit correct .NET in mixed setting``() = 
-    install "i001523-not-true" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001523-not-true","TestPaketDotNet","TestPaketDotNet.csproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001523-not-true","TestPaketDotNet","TestPaketDotNet.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -417,21 +401,6 @@ let ``#1333 should install framework refs only once``() =
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
-    
-[<Test>]
-let ``#1854 install only in corresponding folder``() =
-    install "i001854-submodules" |> ignore
-    let newFile = Path.Combine(scenarioTempPath "i001854-submodules","TopLevel","Project1.fsproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001854-submodules","TopLevel","Project1.fsprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
-
-    let newFile = Path.Combine(scenarioTempPath "i001854-submodules","Submodule","SubLevel","Project1.fsproj")
-    let oldFile = Path.Combine(originalScenarioPath "i001854-submodules","Submodule","SubLevel","Project1.fsprojtemplate")
-    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
-    let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1
 
 [<Test>]
 let ``#1779 net20 only in net461``() =
@@ -462,3 +431,9 @@ let ``#1860 faulty condition was generated`` () =
     install scenario |> ignore
     let fsprojFile = (scenarioTempPath scenario) </> "Library1" </> "Library1.fsproj" |> File.ReadAllText
     Assert.IsFalse (fsprojFile.Contains(" And ()"))
+
+
+#if INTERACTIVE
+;;
+
+#endif

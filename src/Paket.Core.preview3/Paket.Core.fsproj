@@ -1,13 +1,10 @@
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+<Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
-  </PropertyGroup>
-  <PropertyGroup>
-    <Version>1.0.0-preview3</Version>
-    <Authors>Enrico Sada</Authors>
     <PaketCoreSourcesDir>..\Paket.Core</PaketCoreSourcesDir>
   </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
@@ -43,18 +40,20 @@
     <Compile Include="$(PaketCoreSourcesDir)\PackageResolver.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Nuspec.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\InstallModel.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\ReferencesFile.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\SolutionFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\DependenciesTypes.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Parsers/DependenciesFileParser.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Files/ReferencesFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Files/SolutionFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Files/LockFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Files/TemplateFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Files/ProjectFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Files/DependenciesFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Files/PackagesConfigFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Nuget.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\NuGetV3.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\NuGetV2.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\DependenciesTypes.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\DependenciesFileParser.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\LockFile.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\TemplateFile.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\PackagesConfigFile.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\ProjectFile.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\DependenciesFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Queries.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\ScriptGeneration.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\LocalFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\DependencyChangeDetection.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\GarbageCollection.fs" />
@@ -78,30 +77,16 @@
     <Compile Include="$(PaketCoreSourcesDir)\FindReferences.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Why.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PublicAPI.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\ScriptGeneration.fs" />
   </ItemGroup>
+  
   <ItemGroup>
     <None Include="$(PaketCoreSourcesDir)\paket.template" />
     <None Include="paket.references" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk">
-      <Version>1.0.0-alpha-20161104-2</Version>
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="FSharp.NET.Sdk">
-      <Version>1.0.0-alpha-*</Version>
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
+
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);DOTNETCORE;NETSTANDARD1_5;NETSTANDARD1_6;USE_HTTP_CLIENT</DefineConstants>
   </PropertyGroup>
-  <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-compile-fsc">
-      <Version>1.0.0-preview2-020000</Version>
-    </DotNetCliToolReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

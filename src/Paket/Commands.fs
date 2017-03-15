@@ -100,7 +100,11 @@ type InstallArgs =
     | Keep_Major
     | Keep_Minor
     | Keep_Patch
+    | [<CustomCommandLine("--generate-load-scripts")>] Generate_Load_Scripts
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
+    | [<CustomCommandLine("project-root")>] Project_Root of target:string
+    | [<CustomCommandLine("load-script-framework")>] Load_Script_Framework of target:string
+    | [<CustomCommandLine("load-script-type")>] Load_Script_Type of id:string
     | Touch_Affected_Refs
 with
     interface IArgParserTemplate with
@@ -111,10 +115,14 @@ with
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
+            | Generate_Load_Scripts -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
             | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
             | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
             | Touch_Affected_Refs -> "Touches project files referencing packages which are affected, to help incremental build tools detecting the change."
+            | Project_Root _ -> "Alternative project root [only used for tooling]."
+            | Load_Script_Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore."
+            | Load_Script_Type _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
 
 type OutdatedArgs =
     | Ignore_Constraints
@@ -158,7 +166,9 @@ type RestoreArgs =
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
     | [<CustomCommandLine("--touch-affected-refs")>] Touch_Affected_Refs
     | [<CustomCommandLine("--ignore-checks")>] Ignore_Checks
+    | [<CustomCommandLine("--fail-on-checks")>] Fail_On_Checks
     | [<CustomCommandLine("group")>] Group of name:string
+    | [<Unique>] Project of file_name:string
     | [<Unique>] References_Files of file_name:string list
 with
     interface IArgParserTemplate with
@@ -169,7 +179,9 @@ with
             | Install_Only_Referenced -> "Allows to restore packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
             | Touch_Affected_Refs -> "Touches project files referencing packages which are being restored, to help incremental build tools detecting the change."
             | Ignore_Checks -> "Skips the test if paket.dependencies and paket.lock are in sync."
-            | References_Files(_) -> "Allows to restore all packages from the given paket.references files. This implies --only-referenced."
+            | Fail_On_Checks -> "Causes the restore to fail if any of the checks fail."
+            | Project(_) -> "Allows to restore dependencies for a project."
+            | References_Files(_) -> "Allows to restore all packages from the given paket.references files."
 
 type SimplifyArgs =
     | [<AltCommandLine("-i")>] Interactive
@@ -303,7 +315,7 @@ with
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
-type GenerateIncludeScriptsArgs = 
+type GenerateLoadScriptsArgs = 
     | [<CustomCommandLine("framework")>] Framework of target:string
     | [<CustomCommandLine("type")>] ScriptType of id:string
 with
@@ -352,7 +364,8 @@ type Command =
     | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResults<ShowGroupsArgs>
     | [<CustomCommandLine("pack")>]                     Pack of ParseResults<PackArgs>
     | [<CustomCommandLine("push")>]                     Push of ParseResults<PushArgs>
-    | [<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateIncludeScriptsArgs>
+    | [<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs> // backward compatibility
+    | [<CustomCommandLine("generate-load-scripts")>]    GenerateLoadScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
 with
     interface IArgParserTemplate with
@@ -377,7 +390,8 @@ with
             | ShowGroups _ -> "Shows all groups."
             | Pack _ -> "Packs all paket.template files within this repository."
             | Push _ -> "Pushes the given `.nupkg` file."
-            | GenerateIncludeScripts _ -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
+            | GenerateIncludeScripts _ -> "Obsolete, see generate-load-scripts."
+            | GenerateLoadScripts _ -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
             | Why _ -> "Prints user-friendly reason for referencing a specified package"
             | Log_File _ -> "Specify a log file for the paket process."
             | Silent -> "Suppress console output for the paket process."

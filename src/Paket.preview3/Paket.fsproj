@@ -1,12 +1,8 @@
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+<Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk">
+  
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp1.0</TargetFramework>
-  </PropertyGroup>
-  <PropertyGroup>
-    <Version>1.0.0-preview3</Version>
-    <Authors>Enrico Sada</Authors>
   </PropertyGroup>
   <!--<Win32Resource>paket.res</Win32Resource>-->
   <ItemGroup>
@@ -19,29 +15,10 @@
     <EmbeddedResource Include="embedded\PaketRestoreTask.dll" />
     <EmbeddedResource Include="embedded\Paket.Restore.targets" />-->
   </ItemGroup>
+
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.App">
-      <Version>1.0.1</Version>
-    </PackageReference>
-    <PackageReference Include="Microsoft.NET.Sdk">
-      <Version>1.0.0-alpha-20161104-2</Version>
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="FSharp.NET.Sdk">
-      <Version>1.0.0-alpha-*</Version>
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
+    <ProjectReference Include="..\Paket.Core.preview3\Paket.Core.fsproj"/>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Paket.Core.preview3\Paket.Core.fsproj">
-      <Name>Paket.Core.preview3</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <DotNetCliToolReference Include="dotnet-compile-fsc">
-      <Version>1.0.0-preview2-020000</Version>
-    </DotNetCliToolReference>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

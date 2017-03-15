@@ -46,6 +46,18 @@ let prepare scenario =
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "json")))
 
 let directPaketInPath command scenarioPath =
+    #if INTERACTIVE
+    let result =
+        ExecProcessWithLambdas (fun info ->
+          info.FileName <- paketToolPath
+          info.WorkingDirectory <- scenarioPath
+          info.Arguments <- command) 
+          (System.TimeSpan.FromMinutes 5.)
+          false
+          (printfn "%s")
+          (printfn "%s")
+    string result
+    #else
     let result =
         ExecProcessAndReturnMessages (fun info ->
           info.FileName <- paketToolPath
@@ -54,9 +66,9 @@ let directPaketInPath command scenarioPath =
     if result.ExitCode <> 0 then 
         let errors = String.Join(Environment.NewLine,result.Errors)
         printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
-        failwith errors
+        failwith errors      
     String.Join(Environment.NewLine,result.Messages)
-
+    #endif
 let directPaket command scenario =
     directPaketInPath command (scenarioTempPath scenario)
 
@@ -66,11 +78,19 @@ let paket command scenario =
     directPaket command scenario
 
 let update scenario =
+    #if INTERACTIVE
+    paket "update --verbose" scenario |> printfn "%s"
+    #else
     paket "update" scenario |> ignore
+    #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario =
+    #if INTERACTIVE
+    paket "install --verbose" scenario |> printfn "%s"
+    #else
     paket "install" scenario |> ignore
+    #endif
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let restore scenario = paket "restore" scenario |> ignore
@@ -80,4 +100,8 @@ let updateShouldFindPackageConflict packageName scenario =
         update scenario |> ignore
         failwith "No conflict was found."
     with
-    | exn when exn.Message.Contains(sprintf "Could not resolve package %s:" packageName) -> ()
+    | exn when exn.Message.Contains(sprintf "Could not resolve package %s" packageName) -> 
+        #if INTERACTIVE
+        printfn "Ninject conflict test passed"
+        #endif
+        ()

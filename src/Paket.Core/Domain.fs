@@ -168,7 +168,7 @@ type DomainMessage =
         | FileSaveError path ->
             sprintf "Unable to save file %s." path
 
-        | ConfigFileParseError -> "Unable to parse Paket configuration from packages.config."
+        | ConfigFileParseError -> "Unable to parse Paket configuration from paket.config."
 
         | PackagingConfigParseError(file,error) ->
             sprintf "Unable to parse template file %s: %s." file error
