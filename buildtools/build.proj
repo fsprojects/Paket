@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.0.2" />
+  </ItemGroup>
+</Project>
