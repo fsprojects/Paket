@@ -115,11 +115,11 @@
             executeCommand (...)
           </code>
           <div class="tip" id="521">
-            <strong>Signature:</strong> directory:DirectoryInfo -&gt; providedFrameworks:string list -&gt; providedScriptTypes:string list -&gt; unit<br />
+            <strong>Signature:</strong> groups:GroupName list -&gt; directory:DirectoryInfo -&gt; providedFrameworks:string list -&gt; providedScriptTypes:string list -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L406-406" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L408-408" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -228,14 +228,14 @@ will throw.</p>
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '527', 527)" onmouseover="showTip(event, '527', 527)">
-            generateScriptsForRootFolder scriptType
+            generateScriptsForRootFolder (...)
           </code>
           <div class="tip" id="527">
-            <strong>Signature:</strong> scriptType:ScriptType -&gt; FrameworkIdentifier -&gt; bool -&gt; DirectoryInfo -&gt; unit<br />
+            <strong>Signature:</strong> groups:GroupName list -&gt; scriptType:ScriptType -&gt; FrameworkIdentifier -&gt; bool -&gt; DirectoryInfo -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L398-398" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L400-400" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -249,7 +249,7 @@ will throw.</p>
             generateScriptsForRootFolderGeneric (...)
           </code>
           <div class="tip" id="528">
-            <strong>Signature:</strong> extension:string -&gt; scriptGenerator:(ScriptGenInput -&gt; ScriptGenResult) -&gt; scriptWriter:(FileInfo -&gt; seq&lt;ScriptPiece&gt; -&gt; unit) -&gt; filterFrameworkLibs:(seq&lt;string&gt; -&gt; seq&lt;string&gt;) -&gt; filterNuget:(string -&gt; bool) -&gt; framework:FrameworkIdentifier -&gt; isDefaultFramework:bool -&gt; rootFolder:DirectoryInfo -&gt; unit<br />
+            <strong>Signature:</strong> groups:GroupName list -&gt; extension:string -&gt; scriptGenerator:(ScriptGenInput -&gt; ScriptGenResult) -&gt; scriptWriter:(FileInfo -&gt; seq&lt;ScriptPiece&gt; -&gt; unit) -&gt; filterFrameworkLibs:(seq&lt;string&gt; -&gt; seq&lt;string&gt;) -&gt; filterNuget:(string -&gt; bool) -&gt; framework:FrameworkIdentifier -&gt; isDefaultFramework:bool -&gt; rootFolder:DirectoryInfo -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
