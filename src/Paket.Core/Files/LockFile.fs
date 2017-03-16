@@ -23,6 +23,10 @@ module LockFileSerializer =
     /// [omit]
     let serializeOptionsAsLines options = [
         if options.Strict then yield "REFERENCES: STRICT"
+        match options.Settings.GenerateLoadScripts with
+        | Some true -> yield "GENERATE-LOAD-SCRIPTS: ON"
+        | Some false -> yield "GENERATE-LOAD-SCRIPTS: OFF"
+        | None -> ()
         match options.Redirects with
         | Some true -> yield "REDIRECTS: ON"
         | Some false -> yield "REDIRECTS: OFF"
@@ -220,6 +224,7 @@ module LockFileParser =
     | ReferencesMode of bool
     | OmitContent of ContentCopySettings
     | ImportTargets of bool
+    | GenerateLoadScripts of bool option
     | FrameworkRestrictions of FrameworkRestrictions
     | CopyLocal of bool
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
@@ -252,6 +257,14 @@ module LockFileParser =
             InstallOption(Redirects(setting))
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
+        | _, String.StartsWith "GENERATE-LOAD-SCRIPTS:" trimmed -> 
+            let setting =
+                match trimmed.Trim().ToLowerInvariant() with
+                | "on" -> Some true
+                | "off" -> Some false
+                | _ -> None
+                                            
+            InstallOption(GenerateLoadScripts(setting))
         | _, String.StartsWith "COPY-CONTENT-TO-OUTPUT-DIR:" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -329,6 +342,7 @@ module LockFileParser =
         | CopyContentToOutputDir mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyContentToOutputDirectory = Some mode }}
         | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
         | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
+        | GenerateLoadScripts mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with GenerateLoadScripts = mode }}
         | ReferenceCondition condition -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ReferenceCondition = Some condition }}
         | DirectDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForDirectDependencies = strategy }
         | TransitiveDependenciesResolverStrategy strategy -> { currentGroup.Options with ResolverStrategyForTransitives = strategy }

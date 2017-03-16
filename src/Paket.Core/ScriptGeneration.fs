@@ -339,6 +339,7 @@ module ScriptGeneration =
   /// Generate a include scripts for all packages defined in paket.dependencies,
   /// if a package is ordered before its dependencies this function will throw.
   let generateScriptsForRootFolderGeneric 
+      groups
       extension 
       scriptGenerator 
       scriptWriter 
@@ -365,12 +366,13 @@ module ScriptGeneration =
 
           dependencies
           |> Map.map (fun groupName packages ->
-              let packagesOrGroupFolder =
-                  match getGroupNameAsOption groupName with
-                  | None           -> packagesFolder
-                  | Some groupName -> DirectoryInfo(Path.Combine(packagesFolder.FullName, groupName))
+              if groups = [] || List.exists ((=) groupName) groups then
+                  let packagesOrGroupFolder =
+                      match getGroupNameAsOption groupName with
+                      | None           -> packagesFolder
+                      | Some groupName -> DirectoryInfo(Path.Combine(packagesFolder.FullName, groupName))
 
-              generateScripts scriptGenerator scriptWriter getScriptFile includeScriptsRootFolder framework lockFile packagesOrGroupFolder groupName packages
+                  generateScripts scriptGenerator scriptWriter getScriptFile includeScriptsRootFolder framework lockFile packagesOrGroupFolder groupName packages
           )
           |> ignore
 
@@ -395,15 +397,15 @@ module ScriptGeneration =
         | "fsx" -> Some FSharp
         | _ -> None
 
-  let generateScriptsForRootFolder scriptType =
+  let generateScriptsForRootFolder groups scriptType =
       let scriptGenerator, scriptWriter, filterFrameworkLibs, shouldExcludeNuget =
           match scriptType with
           | CSharp -> generateCSharpScript, writeCSharpScript, id, (fun _ -> false)
           | FSharp -> generateFSharpScript, writeFSharpScript, filterFSharpFrameworkReferences, shouldExcludeNugetForFSharpScript
 
-      generateScriptsForRootFolderGeneric scriptType.Extension scriptGenerator scriptWriter filterFrameworkLibs shouldExcludeNuget
+      generateScriptsForRootFolderGeneric groups scriptType.Extension scriptGenerator scriptWriter filterFrameworkLibs shouldExcludeNuget
 
-  let executeCommand directory providedFrameworks providedScriptTypes =
+  let executeCommand groups directory providedFrameworks providedScriptTypes =
       match PaketFiles.LocateFromDirectory directory with
       | PaketFiles.JustDependencies _ -> failwith "paket.lock not found."
       | PaketFiles.DependenciesAndLock(dependenciesFile, lockFile) ->
@@ -450,10 +452,14 @@ module ScriptGeneration =
               | xs -> xs
 
           let workaround() = null |> ignore
-          for framework, isDefaultFramework in frameworksToGenerate do
-              Paket.Logging.tracefn "generating scripts for framework %s" (framework.ToString())
+          for framework, isDefaultFramework in Seq.distinct frameworksToGenerate do
+              match groups with
+              | []  -> Paket.Logging.tracefn "  - generating scripts for framework %O" framework
+              | [g] -> Paket.Logging.tracefn "  - generating scripts for framework %O in group %O" framework g
+              | _   -> Paket.Logging.tracefn "  - generating scripts for framework %O in groups: %s" framework (String.Join(", ", groups.ToString()))
+
               workaround() // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
               for scriptType in scriptTypesToGenerate do
-                  generateScriptsForRootFolder scriptType framework isDefaultFramework rootFolder
+                  generateScriptsForRootFolder groups scriptType framework isDefaultFramework rootFolder
 
       ()

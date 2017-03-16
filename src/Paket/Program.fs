@@ -309,7 +309,7 @@ let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
 
     let providedFrameworks = results.GetResults <@ GenerateLoadScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateLoadScriptsArgs.ScriptType @>
-    LoadingScripts.ScriptGeneration.executeCommand (DirectoryInfo (Directory.GetCurrentDirectory())) providedFrameworks providedScriptTypes
+    LoadingScripts.ScriptGeneration.executeCommand [] (DirectoryInfo (Directory.GetCurrentDirectory())) providedFrameworks providedScriptTypes
 
 let why (results: ParseResults<WhyArgs>) =
     let packageName = results.GetResult <@ WhyArgs.NuGet @> |> Domain.PackageName

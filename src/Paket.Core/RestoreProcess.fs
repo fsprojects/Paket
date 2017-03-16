@@ -285,5 +285,14 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             |> ignore
 
 
+    let groupsToGenerate =
+        dependenciesFile.Groups 
+        |> Seq.map (fun kvp -> kvp.Value)
+        |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
+        |> Seq.map (fun g -> g.Name)
+        |> Seq.toList
+
+    if groupsToGenerate <> [] then
+        LoadingScripts.ScriptGeneration.executeCommand groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) [] []
 
     GarbageCollection.CleanUp(root, dependenciesFile, lockFile)

@@ -9,8 +9,8 @@ open InstallProcess
 type PaketEnv = {
     RootDirectory : DirectoryInfo
     DependenciesFile : DependenciesFile
-    LockFile : option<LockFile>
-    Projects : list<ProjectFile * ReferencesFile>
+    LockFile : LockFile option
+    Projects : (ProjectFile * ReferencesFile) list
 }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]

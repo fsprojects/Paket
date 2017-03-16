@@ -232,7 +232,15 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
         |> Option.isSome
 
     if shouldGenerateScripts then
-        LoadingScripts.ScriptGeneration.executeCommand (DirectoryInfo dependenciesFile.RootPath) options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
+        let groupsToGenerate =
+          if options.Common.GenerateLoadScripts then [] else
+          dependenciesFile.Groups 
+          |> Seq.map (fun kvp -> kvp.Value)
+          |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
+          |> Seq.map (fun g -> g.Name)
+          |> Seq.toList
+
+        LoadingScripts.ScriptGeneration.executeCommand groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =

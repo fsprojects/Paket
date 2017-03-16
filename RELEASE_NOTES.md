@@ -1,3 +1,6 @@
+#### 4.0.4 - 16.03.2017
+* BUGFIX: Support load script generation in restore
+
 #### 4.0.3 - 16.03.2017
 * BUGFIX: framework: auto-detect didn't work with Paket 4 - https://github.com/fsprojects/Paket/issues/2188
 
