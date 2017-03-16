@@ -1,4 +1,4 @@
-#### 4.0.1 - 15.03.2017
+#### 4.0.2 - 16.03.2017
 * Handle empty references files for .NET Core
 
 #### 4.0.0 - 15.03.2017
