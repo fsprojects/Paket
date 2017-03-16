@@ -137,10 +137,10 @@ type NugetConfig =
 type NugetEnv = 
     { RootDirectory : DirectoryInfo
       NuGetConfig : NugetConfig
-      NuGetConfigFiles : list<FileInfo>
-      NuGetProjectFiles : list<ProjectFile * NugetPackagesConfig option>
-      NuGetTargets : option<FileInfo>
-      NuGetExe : option<FileInfo> }
+      NuGetConfigFiles : FileInfo list
+      NuGetProjectFiles : (ProjectFile * NugetPackagesConfig option) list
+      NuGetTargets : FileInfo option
+      NuGetExe : FileInfo option }
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module NugetEnv = 
