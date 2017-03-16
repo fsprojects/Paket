@@ -37,7 +37,7 @@
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
-    <StartArguments>restore</StartArguments>
+    <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\temp\canopy</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

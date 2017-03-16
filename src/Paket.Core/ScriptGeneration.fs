@@ -238,6 +238,7 @@ module ScriptGeneration =
           Some (groupName.ToString())
 
   let generateGroupScript
+    groups
     (lockFile                  : LockFile)
     (getScriptFile             : GroupName -> FileInfo)
     (writeScript               : FileInfo -> ScriptPiece seq -> unit)
@@ -251,17 +252,18 @@ module ScriptGeneration =
           let mainGroupName = Constants.MainDependencyGroup.ToString()
           let mainGroupKey = Constants.MainDependencyGroup.GetCompareString()
           for group, nuget, _ in Queries.getAllInstalledPackagesFromLockFile lockFile do
-            if not (filterNuget nuget) then
-              if group = mainGroupKey || group = mainGroupName then
-                  mainGroupSeen := true
+            if groups = [] || List.exists ((=) (GroupName group)) groups then
+                if not (filterNuget nuget) then
+                  if group = mainGroupKey || group = mainGroupName then
+                      mainGroupSeen := true
 
-              let model = Queries.getInstalledPackageModel lockFile (QualifiedPackageName.FromStrings(Some group, nuget))
-              let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f)
-              let syslibs = model.GetFrameworkAssembliesLazy.Value
-              yield group, (libs, syslibs |> Set.toSeq)
+                  let model = Queries.getInstalledPackageModel lockFile (QualifiedPackageName.FromStrings(Some group, nuget))
+                  let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f)
+                  let syslibs = model.GetFrameworkAssembliesLazy.Value
+                  yield group, (libs, syslibs |> Set.toSeq)
 
-          if not !mainGroupSeen then
-            yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
+          if not !mainGroupSeen && groups = [] then
+              yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
         }
         |> Seq.groupBy fst
         |> Seq.map (fun (group, items) -> group, items |> Seq.map snd)
@@ -381,7 +383,7 @@ module ScriptGeneration =
               let fileName = (sprintf "%s.group.%s" (group.GetCompareString()) extension).ToLowerInvariant()
               FileInfo(Path.Combine(folder.FullName, fileName))
         
-          generateGroupScript lockFile getGroupFile scriptWriter filterFrameworkLibs filterNuget framework
+          generateGroupScript groups lockFile getGroupFile scriptWriter filterFrameworkLibs filterNuget framework
 
   type ScriptType =
   | CSharp
@@ -454,9 +456,9 @@ module ScriptGeneration =
           let workaround() = null |> ignore
           for framework, isDefaultFramework in Seq.distinct frameworksToGenerate do
               match groups with
-              | []  -> Paket.Logging.tracefn "  - generating scripts for framework %O" framework
-              | [g] -> Paket.Logging.tracefn "  - generating scripts for framework %O in group %O" framework g
-              | _   -> Paket.Logging.tracefn "  - generating scripts for framework %O in groups: %s" framework (String.Join(", ", groups.ToString()))
+              | []  -> Paket.Logging.tracefn "Generating load scripts for framework %O" framework
+              | [g] -> Paket.Logging.tracefn "Generating load scripts for framework %O in group %O" framework g
+              | _   -> Paket.Logging.tracefn "Generating load scripts for framework %O in groups: %s" framework (String.Join(", ", groups.ToString()))
 
               workaround() // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
               for scriptType in scriptTypesToGenerate do

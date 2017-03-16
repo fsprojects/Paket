@@ -1,4 +1,4 @@
-#### 4.0.4 - 16.03.2017
+#### 4.0.5 - 16.03.2017
 * BUGFIX: Support load script generation in restore
 
 #### 4.0.3 - 16.03.2017
