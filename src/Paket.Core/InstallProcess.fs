@@ -9,13 +9,10 @@ open Paket.BindingRedirects
 open Paket.ModuleResolver
 open Paket.PackageResolver
 open System.IO
-open System.Reflection
 open Paket.PackageSources
 open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Collections.Generic
-open Xml
-open System.Xml
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -25,7 +22,7 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
         |> Seq.filter (fun kv -> defaultArg (snd kv.Value).IncludeVersionInPath false)
         |> Seq.map (fun kv ->
             { NugetPackage.Id = (snd kv.Key).ToString()
-              Version = fst kv.Value
+              VersionRange = VersionRange.Specific (fst kv.Value)
               TargetFramework = None })
         |> Seq.toList
 

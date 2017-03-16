@@ -404,6 +404,16 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
             DependenciesFile(fileName, filteredGroups, filteredLines)
 
+    member this.Add(groupName, packageName,versionRange:VersionRange,installSettings : InstallSettings) =
+        let version = 
+            match versionRange with
+            | vr when vr = VersionRange.AtLeast "0" -> ""
+            | VersionRange.Minimum v -> ">= " + string v
+            | VersionRange.Specific v -> string v
+            | _ -> ""
+
+        this.Add(groupName, packageName,version,installSettings)
+
     member this.Add(groupName, packageName,version:string,?installSettings : InstallSettings) =
         let installSettings = defaultArg installSettings InstallSettings.Default
         if this.HasPackage(groupName, packageName) && String.IsNullOrWhiteSpace version then 

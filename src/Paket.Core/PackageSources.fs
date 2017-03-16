@@ -243,6 +243,6 @@ let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStrea
 
 type NugetPackage = {
     Id : string
-    Version : SemVerInfo
+    VersionRange : VersionRange
     TargetFramework : string option
 }

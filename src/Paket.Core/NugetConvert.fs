@@ -214,13 +214,9 @@ module ConvertResultR =
           PaketEnv = paketEnv
           SolutionFiles = solutionFiles }
 
-let createPackageRequirement sources (packageName, version, restrictions) dependenciesFileName = 
+let createPackageRequirement sources (packageName, versionRange, restrictions) dependenciesFileName = 
      { Name = PackageName packageName
-       VersionRequirement =
-            if version = "" then
-                VersionRequirement(VersionRange.Minimum SemVer.Zero, PreReleaseStatus.No)
-            else
-                VersionRequirement(VersionRange.Exactly version, PreReleaseStatus.No)
+       VersionRequirement = VersionRequirement(versionRange, PreReleaseStatus.No)
        ResolverStrategyForDirectDependencies = None
        ResolverStrategyForTransitives = None
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
@@ -252,31 +248,33 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             if List.length versions > 1 then 
               traceWarnfn message name versions
 
-    findWarnings (List.map (fun p -> p.Version) >> List.distinct >> List.map string) 
+    findWarnings (List.choose (fun p -> match p.VersionRange with Specific v -> Some v | _ -> None) >> List.distinct >> List.map string) 
         "Package %s is referenced multiple times in different versions: %A. Paket will choose the latest one." 
     findWarnings (List.map (fun p -> p.TargetFramework) >> List.distinct >> List.choose id >> List.map string) 
         "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."
 
     let latestVersions = 
-        findDistinctPackages (List.map (fun p -> p.Version, p.TargetFramework) >> List.distinct)
+        findDistinctPackages (List.map (fun p -> p.VersionRange, p.TargetFramework) >> List.distinct)
         |> List.map (fun (name, versions) ->
             let latestVersion, _ = versions |> List.maxBy fst
             let restrictions =
                 match versions with
                 | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.collect Requirements.parseRestrictions 
                 | _ -> []
-            name, string latestVersion, restrictions)
+            name, latestVersion, restrictions)
 
     let packages = 
         match nugetEnv.NuGetExe with 
-        | Some _ -> ("NuGet.CommandLine","",[]) :: latestVersions
+        | Some _ -> ("NuGet.CommandLine",VersionRange.AtLeast "0",[]) :: latestVersions
         | _ -> latestVersions
 
     let read() =
         let addPackages dependenciesFile =
             packages
-            |> List.map (fun (name, v, restrictions) -> Constants.MainDependencyGroup, PackageName name, v, { InstallSettings.Default with FrameworkRestrictions = FrameworkRestrictionList restrictions})
-            |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,version,installSettings) -> dependenciesFile.Add(groupName, packageName,version,installSettings)) dependenciesFile
+            |> List.map (fun (name, vr, restrictions) -> 
+                Constants.MainDependencyGroup, PackageName name, vr, { InstallSettings.Default with FrameworkRestrictions = FrameworkRestrictionList restrictions})
+            |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,versionRange,installSettings) -> 
+                dependenciesFile.Add(groupName, packageName,versionRange,installSettings)) dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
             |> ok
@@ -306,8 +304,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
             let packageLines =
                 packages 
-                |> List.map (fun (name,v,restr) -> 
-                    let vr = createPackageRequirement sources (name, v, FrameworkRestrictionList restr) dependenciesFileName
+                |> List.map (fun (name,vr,restr) -> 
+                    let vr = createPackageRequirement sources (name, vr, FrameworkRestrictionList restr) dependenciesFileName
                     DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray
@@ -339,7 +337,11 @@ let convertProjects nugetEnv =
             |> Option.map (fun x -> x.Packages) 
             |> Option.toList 
             |> List.concat 
-            |> List.map (fun p -> p.Id, p.Version)
+            |> List.choose (fun p -> 
+                match p.VersionRange with
+                | VersionRange.Specific v -> Some(p.Id, v)
+                | _ -> None )
+
         project.ReplaceNuGetPackagesFile()
         project.RemoveNuGetTargetsEntries()
         project.RemoveNugetAnalysers(packagesAndIds)

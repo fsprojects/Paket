@@ -5,9 +5,7 @@ open System
 open System.IO
 open System.Xml
 open Paket.Xml
-open Paket.Domain
 open Paket.PackageSources  // NugetPackage moved there
-open Chessie.ErrorHandling
 
 let Read fileName = 
     let file = FileInfo fileName
@@ -18,7 +16,7 @@ let Read fileName =
     
     [for node in doc.SelectNodes("//package") ->
         { NugetPackage.Id = node.Attributes.["id"].Value
-          Version = SemVer.Parse node.Attributes.["version"].Value 
+          VersionRange = VersionRange.Specific (SemVer.Parse node.Attributes.["version"].Value)
           TargetFramework = 
             node 
             |> getAttribute "targetFramework" 
@@ -28,13 +26,16 @@ let Serialize (packages: NugetPackage seq) =
     if Seq.isEmpty packages then "" else
     let packages = 
         packages 
-        |> Seq.map (fun p -> 
-            let framework = 
-                match p.TargetFramework with
-                | Some tf -> sprintf "targetFramework=\"%s\" " (tf.Replace(">= ",""))
-                | _ -> ""
+        |> Seq.choose (fun p -> 
+            match p.VersionRange with
+            | VersionRange.Specific v ->
+                let framework = 
+                    match p.TargetFramework with
+                    | Some tf -> sprintf "targetFramework=\"%s\" " (tf.Replace(">= ",""))
+                    | _ -> ""
 
-            sprintf """  <package id="%s" version="%O" %s/>""" p.Id p.Version framework)
+                Some (sprintf """  <package id="%s" version="%O" %s/>""" p.Id v framework)
+            | _ -> None)
 
     sprintf """<?xml version="1.0" encoding="utf-8"?>
 <packages>

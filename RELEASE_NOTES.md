@@ -1,3 +1,6 @@
+#### 4.0.6 - 16.03.2017
+* BUGFIX: Convert from nuget with wildcard version - https://github.com/fsprojects/Paket/issues/2185
+
 #### 4.0.5 - 16.03.2017
 * BUGFIX: Support load script generation in restore
 

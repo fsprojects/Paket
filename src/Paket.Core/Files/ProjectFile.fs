@@ -1369,12 +1369,20 @@ module ProjectFile =
     let dotNetCorePackages (projectFile: ProjectFile) =
         packageReferencesNoPrivateAssets projectFile
         |> List.map (fun node ->
-                           {NugetPackage.Id = node |> getAttribute "Include" |> Option.get
-                            Version = match node |> getAttribute "Version" with
-                                      | Some version -> version
-                                      | None -> node |> getNode "Version" |> (fun n -> n.Value.InnerText)
-                                      |> Paket.SemVer.Parse
-                            TargetFramework = None })
+            let versionRange =
+                let v = 
+                    match node |> getAttribute "Version" with
+                    | Some version -> version
+                    | None -> node |> getNode "Version" |> (fun n -> n.Value.InnerText)
+                
+                if v.Contains "*" then
+                    VersionRange.AtLeast (v.Replace("*","0"))
+                else
+                    VersionRange.Exactly v
+
+            { NugetPackage.Id = node |> getAttribute "Include" |> Option.get
+              VersionRange = versionRange
+              TargetFramework = None })
 
 type ProjectFile with
 

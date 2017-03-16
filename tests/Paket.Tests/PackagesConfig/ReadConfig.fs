@@ -12,4 +12,4 @@ let ``can read xunit.visualstudio.packages.config``() =
 
     config.Id |> shouldEqual "xunit.runner.visualstudio"
     config.TargetFramework |> shouldEqual None
-    config.Version |> shouldEqual (SemVer.Parse "2.0.1")
+    config.VersionRange |> shouldEqual (VersionRange.Specific (SemVer.Parse "2.0.1"))
