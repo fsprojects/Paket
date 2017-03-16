@@ -24,7 +24,7 @@
         <Output TaskParameter="Lines" ItemName="PaketReferencesFileLines"/>
       </ReadLinesFromFile>
 
-      <ItemGroup Condition="$([System.IO.File]::Exists($(PaketReferencesFilePath)))" >
+      <ItemGroup Condition=" '@(PaketReferencesFileLines)' != '' " >
         <PaketReferencesFileLinesInfo Include="@(PaketReferencesFileLines)" >
           <PackageName>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[0])</PackageName>
           <PackageVersion>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[1])</PackageVersion>
