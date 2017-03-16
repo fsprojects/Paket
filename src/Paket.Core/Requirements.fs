@@ -449,6 +449,7 @@ let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestriction
     match list1,list2 with 
     | FrameworkRestrictionList [], AutoDetectFramework -> AutoDetectFramework
     | AutoDetectFramework, FrameworkRestrictionList [] -> AutoDetectFramework
+    | AutoDetectFramework, AutoDetectFramework -> AutoDetectFramework
     | FrameworkRestrictionList list1 , FrameworkRestrictionList list2 ->
         let filtered =
             match list1, list2 with

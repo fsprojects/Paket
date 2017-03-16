@@ -1,3 +1,6 @@
+#### 4.0.3 - 16.03.2017
+* BUGFIX: framework: auto-detect didn't work with Paket 4 - https://github.com/fsprojects/Paket/issues/2188
+
 #### 4.0.2 - 16.03.2017
 * Handle empty references files for .NET Core
 
