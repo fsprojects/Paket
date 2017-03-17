@@ -1,3 +1,6 @@
+#### 4.0.7 - 17.03.2017
+* USABILITY: Write out if package is transitive or not
+
 #### 4.0.6 - 16.03.2017
 * BUGFIX: Convert from nuget with wildcard version - https://github.com/fsprojects/Paket/issues/2185
 

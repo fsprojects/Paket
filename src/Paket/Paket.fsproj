@@ -37,8 +37,8 @@
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
-    <StartArguments>convert-from-nuget</StartArguments>
-    <StartWorkingDirectory>D:\temp\netcore</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>D:\temp\canopy</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -68,8 +68,8 @@
     <StartWorkingDirectory>D:\temp\unlisted</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\temp\PaketWithProblem1</StartWorkingDirectory>
-    <StartArguments>pack output temp -v</StartArguments>
-    <StartWorkingDirectory>D:\temp\PaketRepro</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>D:\temp\canopy</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

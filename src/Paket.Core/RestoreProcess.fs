@@ -238,10 +238,20 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
             for kv in groups do
                 let hull = lockFile.GetPackageHull(kv.Key,referencesFile)
+                let allDirectPackages =
+                    match referencesFile.Groups |> Map.tryFind kv.Key with
+                    | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
+                    | None -> Set.empty
 
                 for package in hull do
                     let _,packageName = package.Key
-                    list.Add(packageName.ToString() + "," + resolved.[package.Key].Version.ToString())
+                    let direct = allDirectPackages.Contains packageName
+                    let line =
+                        packageName.ToString() + "," + 
+                        resolved.[package.Key].Version.ToString() + "," + 
+                        (if direct then "Direct" else "Transitive")
+
+                    list.Add line
                 
             let output = String.Join(Environment.NewLine,list)
             if output = "" then
