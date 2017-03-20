@@ -13,6 +13,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             public const string PaketReleasesLatestUrl = "https://github.com/fsprojects/Paket/releases/latest";
             public const string PaketReleasesUrl = "https://github.com/fsprojects/Paket/releases";
             public const string PaketExeDownloadUrlTemplate = "https://github.com/fsprojects/Paket/releases/download/{0}/paket.exe";
+            public const string PaketCheckSumDownloadUrlTemplate = "https://github.com/fsprojects/Paket/releases/download/{0}/paket-sha256.txt";
         }
 
         private IWebRequestProxy WebRequestProxy { get; set; }
@@ -113,5 +114,13 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
+        protected override void DownloadHashFileCore(string latestVersion)
+        {
+            var url = String.Format(Constants.PaketCheckSumDownloadUrlTemplate, latestVersion);
+            ConsoleImpl.WriteInfo("Starting download from {0}", url);
+
+            var tmpFile = BootstrapperHelper.GetTempFile("paket-sha256.txt");
+            WebRequestProxy.DownloadFile(url, tmpFile);
+        }
     }
 }

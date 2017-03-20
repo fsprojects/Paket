@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using Paket.Bootstrapper.HelperProxies;
+using System.Security.Cryptography;
 
 namespace Paket.Bootstrapper.DownloadStrategies
 {
@@ -52,7 +53,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
         {
             var cached = Path.Combine(_paketCacheDir, latestVersion, "paket.exe");
 
-            if (!FileSystemProxy.FileExists(cached))
+            if (!FileSystemProxy.FileExists(cached) || !ValidateHash(latestVersion, cached))
             {
                 ConsoleImpl.WriteInfo("Version {0} not found in cache.", latestVersion);
 
@@ -67,6 +68,18 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 ConsoleImpl.WriteInfo("Copying version {0} from cache.", latestVersion);
                 ConsoleImpl.WriteTrace("{0} -> {1}", cached, target);
                 FileSystemProxy.CopyFile(cached, target, true);
+            }
+        }
+
+        protected override void DownloadHashFileCore(string latestVersion)
+        {
+            var cached = Path.Combine(_paketCacheDir, latestVersion, "paket-sha256.txt");
+
+            if (!FileSystemProxy.FileExists(cached))
+            {
+                ConsoleImpl.WriteInfo("Caching hash file of version {0} not found in cache.", latestVersion);
+
+                EffectiveStrategy.DownloadHashFile(latestVersion);
             }
         }
 
@@ -99,6 +112,30 @@ namespace Paket.Bootstrapper.DownloadStrategies
                     }
                 })
                 .FirstOrDefault() ?? "0";
+        }
+
+        private bool ValidateHash(string version, string paketFile)
+        {
+            var cached = Path.Combine(_paketCacheDir, version, "paket-sha256.txt");
+
+            if (!File.Exists(cached))
+            {
+                return true;
+            }
+
+            var text = File.ReadAllLines(cached).Select(i => i.Split(' '));
+            var dict = text.ToDictionary(i => i[1], i => i[0]);
+
+            var expectedHash = dict["paket.exe"];
+
+            using (var stream = File.OpenRead(paketFile))
+            {
+                var sha = new SHA256Managed();
+                byte[] checksum = sha.ComputeHash(stream);
+                var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
+
+                return expectedHash == hash;
+            }
         }
     }
 }

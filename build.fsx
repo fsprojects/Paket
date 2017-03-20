@@ -14,6 +14,7 @@ open Fake.UserInputHelper
 open System
 open System.IO
 open Fake.Testing.NUnit3
+open System.Security.Cryptography
 
 // --------------------------------------------------------------------------------------
 // START TODO: Provide project-specific details below
@@ -322,6 +323,8 @@ let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.J
 Target "MergePaketTool" (fun _ ->
     CreateDir buildMergedDir
 
+    let paketFile = buildMergedDir @@ "paket.exe"
+
     let toPack =
         mergeLibs
         |> List.map (fun l -> buildDir @@ l)
@@ -330,10 +333,16 @@ Target "MergePaketTool" (fun _ ->
     let result =
         ExecProcess (fun info ->
             info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "paket.exe") toPack
+            info.Arguments <- sprintf "/verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion paketFile toPack
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."
+
+    use stream = File.OpenRead(paketFile)
+    use sha = new SHA256Managed()
+    let checksum = sha.ComputeHash(stream)
+    let hash = BitConverter.ToString(checksum).Replace("-", String.Empty)
+    File.WriteAllText(buildMergedDir @@ "paket-sha256.txt", sprintf "%s paket.exe" hash)            
 )
 
 Target "MergePowerShell" (fun _ ->
@@ -562,6 +571,7 @@ Target "ReleaseGitHub" (fun _ ->
     createClient user pw
     |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes 
     |> uploadFile "./bin/merged/paket.exe"
+    |> uploadFile "./bin/merged/paket-sha256.txt"
     |> uploadFile "./bin/paket.bootstrapper.exe"
     |> uploadFile ".paket/paket.targets"
     |> uploadFile ".paket/Paket.Restore.targets"
