@@ -15,6 +15,8 @@ namespace Paket.Bootstrapper.HelperProxies
         void ExtractToDirectory(string zipFile, string targetLocation);
         DateTime GetLastWriteTime(string filename);
         void Touch(string filename);
+        IEnumerable<string> ReadAllLines(string filename);
+        Stream OpenRead(string filename);
 
         void CreateDirectory(string path);
         IEnumerable<string> GetDirectories(string path);

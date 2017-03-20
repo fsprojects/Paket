@@ -118,23 +118,28 @@ namespace Paket.Bootstrapper.DownloadStrategies
         {
             var cached = Path.Combine(_paketCacheDir, version, "paket-sha256.txt");
 
-            if (!File.Exists(cached))
+            if (!FileSystemProxy.FileExists(cached))
             {
                 return true;
             }
 
-            var text = File.ReadAllLines(cached).Select(i => i.Split(' '));
-            var dict = text.ToDictionary(i => i[1], i => i[0]);
+            var dict = FileSystemProxy.ReadAllLines(cached)
+                                      .Select(i => i.Split(' '))
+                                      .ToDictionary(i => i[1], i => i[0]);
 
-            var expectedHash = dict["paket.exe"];
+            string expectedHash;
+            if (!dict.TryGetValue("paket.exe", out expectedHash))
+            {
+                return true;
+            }
 
-            using (var stream = File.OpenRead(paketFile))
+            using (var stream = FileSystemProxy.OpenRead(paketFile))
             {
                 var sha = new SHA256Managed();
                 byte[] checksum = sha.ComputeHash(stream);
                 var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
 
-                return expectedHash == hash;
+                return string.Equals(expectedHash, hash, StringComparison.OrdinalIgnoreCase);
             }
         }
     }
