@@ -77,7 +77,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
             if (!FileSystemProxy.FileExists(cached))
             {
-                ConsoleImpl.WriteInfo("Caching hash file of version {0} not found in cache.", latestVersion);
+                ConsoleImpl.WriteInfo("Hash file of version {0} not found in cache.", latestVersion);
 
                 EffectiveStrategy.DownloadHashFile(latestVersion);
             }
@@ -116,26 +116,30 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         private bool ValidateHash(string version, string paketFile)
         {
-            var cached = Path.Combine(_paketCacheDir, version, "paket-sha256.txt");
+            var hashFile = Path.Combine(_paketCacheDir, version, "paket-sha256.txt");
 
-            if (!FileSystemProxy.FileExists(cached))
+            if (!FileSystemProxy.FileExists(hashFile))
             {
+                ConsoleImpl.WriteInfo("No hash file of version {0} found in cache.", version);
+
                 return true;
             }
 
-            var dict = FileSystemProxy.ReadAllLines(cached)
+            var dict = FileSystemProxy.ReadAllLines(hashFile)
                                       .Select(i => i.Split(' '))
                                       .ToDictionary(i => i[1], i => i[0]);
 
             string expectedHash;
             if (!dict.TryGetValue("paket.exe", out expectedHash))
             {
-                return true;
+                FileSystemProxy.DeleteFile(hashFile);
+
+                throw new InvalidDataException("Paket hash file is corrupted");
             }
 
             using (var stream = FileSystemProxy.OpenRead(paketFile))
+            using (var sha = new SHA256Managed())
             {
-                var sha = new SHA256Managed();
                 byte[] checksum = sha.ComputeHash(stream);
                 var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
 

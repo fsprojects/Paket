@@ -120,7 +120,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         protected override void DownloadHashFileCore(string latestVersion)
         {
-            // TODO: implement get hash file
+            _effectiveStrategy.DownloadHashFile(latestVersion);
         }
     }
 }
