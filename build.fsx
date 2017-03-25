@@ -196,12 +196,15 @@ Target "CleanDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
+Target "MSBuildRestore" (fun _ ->
+    !! solutionFile
+    |> MSBuildReleaseExt "" [] "Restore"
+    |> ignore
+)
+
 Target "Build" (fun _ ->
     !! solutionFile
-    |> MSBuildReleaseExt "" [
-        // "VisualStudioVersion", "14.0"
-        // "ToolsVersion"       , "14.0"  
-    ] "Rebuild"
+    |> MSBuildReleaseExt "" [] "Rebuild"
     |> ignore
 )
 
@@ -222,19 +225,17 @@ Target "DotnetRestoreTools" (fun _ ->
     DotNetCli.Restore (fun c ->
         { c with
             Project = currentDirectory </> "tools" </> "tools.fsproj"
-            // ToolPath = dotnetExePath 
+            ToolPath = dotnetExePath 
         })
 )
 
 Target "DotnetRestore" (fun _ ->
-    // netcoreFiles
-    !! "src/**.preview?/*.fsproj"
-    ++ "Paket.sln"
+    netcoreFiles
     |> Seq.iter (fun proj ->
         DotNetCli.Restore (fun c ->
             { c with
                 Project = proj
-                // ToolPath = dotnetExePath
+                ToolPath = dotnetExePath
             })
     )
 )
@@ -245,7 +246,7 @@ Target "DotnetBuild" (fun _ ->
         DotNetCli.Build (fun c ->
             { c with
                 Project = proj
-                // ToolPath = dotnetExePath
+                ToolPath = dotnetExePath
             })
     )
 )
@@ -256,7 +257,7 @@ Target "DotnetPackage" (fun _ ->
         DotNetCli.Pack (fun c ->
             { c with
                 Project = proj
-                // ToolPath = dotnetExePath
+                ToolPath = dotnetExePath
                 AdditionalArgs = [(sprintf "-o %s" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
             })
     )
@@ -581,9 +582,10 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
-//   =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
+  =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
+  ==> "MSBuildRestore"
   ==> "Build"
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("BuildPowerShell", not isMono)
