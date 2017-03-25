@@ -2,7 +2,7 @@ os: Visual Studio 2017
 init:
   - git config --global core.autocrlf input
 build_script:
-  - cmd: build.cmd RunIntegrationTests
+  - cmd: build.cmd RunIntegrationTests DISABLE_NETCORE
 test: off
 version: 0.0.1.{build}
 artifacts:
