@@ -197,9 +197,7 @@ Target "CleanDocs" (fun _ ->
 // Build library & test project
 
 Target "MSBuildRestore" (fun _ ->
-    !! solutionFile
-    |> MSBuildReleaseExt "" [] "Restore"
-    |> ignore
+    build (fun p -> {p with RestorePackagesFlag=true}) solutionFile
 )
 
 Target "Build" (fun _ ->
