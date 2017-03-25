@@ -199,8 +199,8 @@ Target "CleanDocs" (fun _ ->
 Target "Build" (fun _ ->
     !! solutionFile
     |> MSBuildReleaseExt "" [
-            "VisualStudioVersion", "14.0"
-            "ToolsVersion"       , "14.0"  
+            "VisualStudioVersion", "15.0"
+            "ToolsVersion"       , "15.0"  
     ] "Rebuild"
     |> ignore
 )
