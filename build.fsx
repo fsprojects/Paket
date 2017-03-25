@@ -199,8 +199,8 @@ Target "CleanDocs" (fun _ ->
 Target "Build" (fun _ ->
     !! solutionFile
     |> MSBuildReleaseExt "" [
-            "VisualStudioVersion", "15.0"
-            "ToolsVersion"       , "15.0"  
+            // "VisualStudioVersion", "14.0"
+            // "ToolsVersion"       , "14.0"  
     ] "Rebuild"
     |> ignore
 )
@@ -581,7 +581,7 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
-  =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
+//   =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
   ==> "Build"
