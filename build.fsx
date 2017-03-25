@@ -198,8 +198,9 @@ Target "CleanDocs" (fun _ ->
 
 let projs =
     let notPreview = fun (s:string) -> not <| s.Contains "preview"
-    !! "src/**/*.fsproj"
-    ++ "src/**/*.csproj"
+    // !! "src/**/*.fsproj"
+    // ++ "src/**/*.csproj"
+    !! "src/**/Paket.Core.fsproj"
     |> Seq.filter notPreview
 
 Target "MSBuildRestore" (fun _ ->
