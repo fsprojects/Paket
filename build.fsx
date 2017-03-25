@@ -199,8 +199,8 @@ Target "CleanDocs" (fun _ ->
 Target "Build" (fun _ ->
     !! solutionFile
     |> MSBuildReleaseExt "" [
-            // "VisualStudioVersion", "14.0"
-            // "ToolsVersion"       , "14.0"  
+        // "VisualStudioVersion", "14.0"
+        // "ToolsVersion"       , "14.0"  
     ] "Rebuild"
     |> ignore
 )
@@ -222,7 +222,7 @@ Target "DotnetRestoreTools" (fun _ ->
     DotNetCli.Restore (fun c ->
         { c with
             Project = currentDirectory </> "tools" </> "tools.fsproj"
-            ToolPath = dotnetExePath 
+            // ToolPath = dotnetExePath 
         })
 )
 
@@ -234,7 +234,7 @@ Target "DotnetRestore" (fun _ ->
         DotNetCli.Restore (fun c ->
             { c with
                 Project = proj
-                ToolPath = dotnetExePath
+                // ToolPath = dotnetExePath
             })
     )
 )
@@ -245,7 +245,7 @@ Target "DotnetBuild" (fun _ ->
         DotNetCli.Build (fun c ->
             { c with
                 Project = proj
-                ToolPath = dotnetExePath
+                // ToolPath = dotnetExePath
             })
     )
 )
@@ -256,7 +256,7 @@ Target "DotnetPackage" (fun _ ->
         DotNetCli.Pack (fun c ->
             { c with
                 Project = proj
-                ToolPath = dotnetExePath
+                // ToolPath = dotnetExePath
                 AdditionalArgs = [(sprintf "-o %s" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
             })
     )
