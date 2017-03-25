@@ -227,7 +227,9 @@ Target "DotnetRestoreTools" (fun _ ->
 )
 
 Target "DotnetRestore" (fun _ ->
-    netcoreFiles
+    // netcoreFiles
+    !! "src/**.preview?/*.fsproj"
+    ++ "Paket.sln"
     |> Seq.iter (fun proj ->
         DotNetCli.Restore (fun c ->
             { c with
