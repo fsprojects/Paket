@@ -197,7 +197,7 @@ Target "CleanDocs" (fun _ ->
 // Build library & test project
 
 Target "MSBuildRestore" (fun _ ->
-    build (fun p -> {p with RestorePackagesFlag=true}) solutionFile
+    build (fun p -> {p with RestorePackagesFlag=true; Targets=["Restore"]}) solutionFile
 )
 
 Target "Build" (fun _ ->
