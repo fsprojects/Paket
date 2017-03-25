@@ -196,16 +196,19 @@ Target "CleanDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
-Target "MSBuildRestore" (fun _ ->
-    let notPreview = fun (s:string) -> not <| s.Contains("preview")
+let projs =
+    let notPreview = fun (s:string) -> not <| s.Contains "preview"
     !! "src/**/*.fsproj"
     ++ "src/**/*.csproj"
     |> Seq.filter notPreview
+
+Target "MSBuildRestore" (fun _ ->
+    projs
     |> Seq.iter (build (fun p -> {p with RestorePackagesFlag=true; Targets=["Restore"]}))
 )
 
 Target "Build" (fun _ ->
-    !! solutionFile
+    projs
     |> MSBuildReleaseExt "" [] "Rebuild"
     |> ignore
 )
