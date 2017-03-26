@@ -121,7 +121,7 @@ with
             | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
             | Touch_Affected_Refs -> "Touches project files referencing packages which are affected, to help incremental build tools detecting the change."
             | Project_Root _ -> "Alternative project root [only used for tooling]."
-            | Load_Script_Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore."
+            | Load_Script_Framework _ -> "Framework identifier to generate scripts for, such as net45 or net4."
             | Load_Script_Type _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
 
 type OutdatedArgs =
