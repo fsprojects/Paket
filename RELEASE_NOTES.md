@@ -1,3 +1,6 @@
+#### 4.0.8 - 27.03.2017
+* BUGFIX: Out-of-Sync check should work with auto-detection of framework settings
+
 #### 4.0.7 - 17.03.2017
 * USABILITY: Write out if package is transitive or not
 

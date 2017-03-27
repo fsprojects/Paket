@@ -37,8 +37,8 @@
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\temp\canopy</StartWorkingDirectory>
+    <StartArguments>restore</StartArguments>
+    <StartWorkingDirectory>D:\temp\watchr2</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -68,8 +68,8 @@
     <StartWorkingDirectory>D:\temp\unlisted</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\temp\PaketWithProblem1</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\temp\canopy</StartWorkingDirectory>
+    <StartArguments>restore</StartArguments>
+    <StartWorkingDirectory>D:\temp\watchr2</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
