@@ -1,5 +1,6 @@
 #### 4.0.11 - 28.03.2017
 * BUGFIX: Better framework node detection
+* BUGFIX: Better redirects for project dependent references files
 
 #### 4.0.10 - 28.03.2017
 * USABILITY: Convert packages that do not have version specified

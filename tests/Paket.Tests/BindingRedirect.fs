@@ -258,9 +258,10 @@ let rootPath = @"C:/rootpath/" |> toSafePath
 let ``project file containing paket.references is marked for binding redirect``() =
     let mockGetFiles =
         buildMockGetFiles
-            [ (@"C:/rootpath/", "paket.references"), [ @"C:/rootpath/source/paket.references" ]
+            [ (@"C:/rootpath/", "*.references"), [ @"C:/rootpath/source/paket.references" ]
               (@"C:/rootpath/source", "*proj"), [ @"C:/rootpath/source/Project.fsproj" ]
             ]
+
     getProjectFilesWithPaketReferences mockGetFiles rootPath
     |> shouldEqual [ @"C:/rootpath/source/Project.fsproj" |> toSafePath ]
 
