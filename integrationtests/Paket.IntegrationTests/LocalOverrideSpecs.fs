@@ -41,7 +41,9 @@ let ``#1633 paket.local local git override``() =
         (Path.Combine (scenarioTempPath scenario, "paket.local"))
         "[build-command]" 
         (if isUnix then "build.sh NuGet" else "build.cmd NuGet") 
+
     directPaket "restore" scenario |> ignore
+
     let doc = new XmlDocument()
     Path.Combine(
         scenarioTempPath scenario,

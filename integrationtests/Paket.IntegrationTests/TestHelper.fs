@@ -69,6 +69,7 @@ let directPaketInPath command scenarioPath =
         failwith errors      
     String.Join(Environment.NewLine,result.Messages)
     #endif
+
 let directPaket command scenario =
     directPaketInPath command (scenarioTempPath scenario)
 
