@@ -1,3 +1,6 @@
+#### 4.0.10 - 28.03.2017
+* USABILITY: Convert packages that do not have version specified
+
 #### 4.0.9 - 28.03.2017
 * COSMETICS: Use latest FSharp.Core
 

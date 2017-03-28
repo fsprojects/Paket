@@ -1373,7 +1373,10 @@ module ProjectFile =
                 let v = 
                     match node |> getAttribute "Version" with
                     | Some version -> version
-                    | None -> node |> getNode "Version" |> (fun n -> n.Value.InnerText)
+                    | None ->
+                        match node |> getNode "Version" with
+                        | Some n -> n.InnerText
+                        | None -> "*"
                 
                 if v.Contains "*" then
                     VersionRange.AtLeast (v.Replace("*","0"))
