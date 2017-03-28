@@ -1,3 +1,6 @@
+#### 4.0.9 - 28.03.2017
+* COSMETICS: Use latest FSharp.Core
+
 #### 4.0.8 - 27.03.2017
 * BUGFIX: Out-of-Sync check should work with auto-detection of framework settings
 
