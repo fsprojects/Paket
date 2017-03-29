@@ -207,62 +207,6 @@ let ``#1270 redirects from references``() =
     config.Contains AlphaFS |> shouldEqual false
     config |> shouldContainText ``Newtonsoft.Json.Schema``
     config.Contains ``Newtonsoft.Json`` |> shouldEqual false
-    
-[<Test>]
-let ``#1248 redirects off``() = 
-    paket "install" "i001248-redirects-off" |> ignore
-    let path = Path.Combine(scenarioTempPath "i001248-redirects-off")
-    let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary", "app.config")
-    let originalPath = Path.Combine(originalScenarioPath "i001248-redirects-off")
-    let originalConfigPath = Path.Combine(originalPath, "MyClassLibrary", "MyClassLibrary", "app.config")
-
-    let config = File.ReadAllText(configPath)
-    let originalConfig = File.ReadAllText(originalConfigPath)
-
-    config |> shouldEqual originalConfig
-    
-[<Test>]
-let ``#1248 redirects off for main only``() = 
-    paket "install" "i001248-redirects-off" |> ignore
-    let path = Path.Combine(scenarioTempPath "i001248-redirects-off")
-    let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary2", "app.config")
-
-    let ``FSharp.Core`` = """<assemblyIdentity name="FSharp.Core" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />"""
-    let AlphaFS = """<assemblyIdentity name="AlphaFS" publicKeyToken="4d31a58f7d7ad5c9" culture="neutral" />"""
-    let ``Newtonsoft.Json`` = """<assemblyIdentity name="Newtonsoft.Json" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
-    let ``Newtonsoft.Json.Schema`` = """<assemblyIdentity name="Newtonsoft.Json.Schema" publicKeyToken="30ad4fe6b2a6aeed" culture="neutral" />"""
-
-    let config = File.ReadAllText(configPath)
-
-    config |> shouldContainText ``FSharp.Core``
-    config |> shouldContainText AlphaFS
-    config.Contains ``Newtonsoft.Json`` |> shouldEqual false
-    config.Contains ``Newtonsoft.Json.Schema`` |> shouldEqual false
-    
-[<Test>]
-let ``#1248 redirects off with --redirects``() = 
-    paket "install --redirects" "i001248-redirects-off" |> ignore
-    let path = Path.Combine(scenarioTempPath "i001248-redirects-off")
-    let configPath = Path.Combine(path, "MyClassLibrary", "MyClassLibrary", "app.config")
-    let originalPath = Path.Combine(originalScenarioPath "i001248-redirects-off")
-    let originalConfigPath = Path.Combine(originalPath, "MyClassLibrary", "MyClassLibrary", "app.config")
-
-    let config = File.ReadAllText(configPath)
-    let originalConfig = File.ReadAllText(originalConfigPath)
-
-    config |> shouldEqual originalConfig
-
-[<Test>]
-let ``#1544 redirects off``() = 
-    install "i001544-redirects" |> ignore
-    let path = Path.Combine(scenarioTempPath "i001544-redirects")
-    let configPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config")
-    let originalConfigPath = Path.Combine(path, "BindingRedirectPaketBug", "App.config.expected")
-
-    let config = File.ReadAllText(configPath) |> normalizeLineEndings
-    let originalConfig = File.ReadAllText(originalConfigPath) |> normalizeLineEndings
-
-    config |> shouldEqual originalConfig
 
 [<Test>]
 let ``#1574 redirects GAC``() = 
