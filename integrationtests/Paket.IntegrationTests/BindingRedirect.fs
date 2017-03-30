@@ -158,21 +158,6 @@ let ``#1218 install should replace paket's binding redirects with required only`
 
 
 [<Test>]
-let ``#1248 install should replace paket's binding redirects with required only and keep stable``() = 
-    paket "install --redirects --clean-redirects --createnewbindingfiles" "i001248-stable-redirect" |> ignore
-
-    let originalConfig2Path = Path.Combine(originalScenarioPath "i001248-stable-redirect", "Project2", "app.config")
-    
-    let config2Path = Path.Combine(scenarioTempPath "i001248-stable-redirect", "Project2", "app.config")
-    
-    let originalConfig2 = File.ReadAllText(originalConfig2Path)
-    let config2 = File.ReadAllText(config2Path)
-
-    config2
-    |> normalizeLineEndings
-    |> shouldEqual (normalizeLineEndings originalConfig2)
-
-[<Test>]
 let ``#1270 force redirects``() = 
     paket "install --createnewbindingfiles" "i001270-force-redirects" |> ignore
     let path = Path.Combine(scenarioTempPath "i001270-force-redirects")
