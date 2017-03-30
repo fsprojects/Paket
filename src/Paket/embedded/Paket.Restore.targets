@@ -40,9 +40,16 @@
 
   </Target>
 
-  <Target Name="PaketOverrideNuspec" AfterTargets="GenerateNuspec">
+  <Target Name="PaketDisableDirectPack" AfterTargets="_IntermediatePack" BeforeTargets="GenerateNuspec" >
+    <PropertyGroup>
+      <ContinuePackingAfterGeneratingNuspec>false</ContinuePackingAfterGeneratingNuspec>
+    </PropertyGroup>
+  </Target>
+  
+  <Target Name="PaketOverrideNuspec" AfterTargets="GenerateNuspec" >
     <PropertyGroup>
       <PaketReferencesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferencesFilePath>
+      <ContinuePackingAfterGeneratingNuspec>true</ContinuePackingAfterGeneratingNuspec>
     </PropertyGroup>
 
     <ItemGroup>
@@ -50,7 +57,52 @@
     </ItemGroup>
 
     <Exec Command='$(PaketCommand) fix-nuspec file "@(_NuspecFiles)" references-file "$(PaketReferencesFilePath)" ' />
-
+    
+    <ConvertToAbsolutePath Condition="@(_NuspecFiles) != ''" Paths="@(_NuspecFiles)">
+      <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
+    </ConvertToAbsolutePath>
+    
+    <!-- Call Pack -->
+    <PackTask PackItem="$(PackProjectInputFile)"
+              PackageFiles="@(_PackageFiles)"
+              PackageFilesToExclude="@(_PackageFilesToExclude)"
+              PackageVersion="$(PackageVersion)"
+              PackageId="$(PackageId)"
+              Title="$(Title)"
+              Authors="$(Authors)"
+              Description="$(Description)"
+              Copyright="$(Copyright)"
+              RequireLicenseAcceptance="$(PackageRequireLicenseAcceptance)"
+              LicenseUrl="$(PackageLicenseUrl)"
+              ProjectUrl="$(PackageProjectUrl)"
+              IconUrl="$(PackageIconUrl)"
+              ReleaseNotes="$(PackageReleaseNotes)"
+              Tags="$(PackageTags)"
+              TargetPathsToAssemblies="@(_TargetPathsToAssemblies->'%(FinalOutputPath)')"
+              TargetPathsToSymbols="@(_TargetPathsToSymbols)"
+              TargetFrameworks="@(_TargetFrameworks)"
+              AssemblyName="$(AssemblyName)"
+              PackageOutputPath="$(PackageOutputAbsolutePath)"
+              IncludeSymbols="$(IncludeSymbols)"
+              IncludeSource="$(IncludeSource)"
+              PackageTypes="$(PackageType)"
+              IsTool="$(IsTool)"
+              RepositoryUrl="$(RepositoryUrl)"
+              RepositoryType="$(RepositoryType)"
+              SourceFiles="@(_SourceFiles->Distinct())"
+              NoPackageAnalysis="$(NoPackageAnalysis)"
+              MinClientVersion="$(MinClientVersion)"
+              Serviceable="$(Serviceable)"
+              AssemblyReferences="@(_References)"
+              ContinuePackingAfterGeneratingNuspec="$(ContinuePackingAfterGeneratingNuspec)"
+              NuspecOutputPath="$(BaseIntermediateOutputPath)"
+              IncludeBuildOutput="$(IncludeBuildOutput)"
+              BuildOutputFolder="$(BuildOutputTargetFolder)"
+              ContentTargetFolders="$(ContentTargetFolders)"
+              RestoreOutputPath="$(RestoreOutputAbsolutePath)"
+              NuspecFile="$(NuspecFileAbsolutePath)"
+              NuspecBasePath="$(NuspecBasePath)"
+              NuspecProperties="$(NuspecProperties)"/>
   </Target>
 
 </Project>

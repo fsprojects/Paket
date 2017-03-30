@@ -1,4 +1,4 @@
-#### 4.1.0 - 30.03.2017
+#### 4.1.1 - 30.03.2017
 * Support for dotnet pack
 * BUGFIX: Handle empty references files for .NET Core
 * BUGFIX: Better framework node detection
