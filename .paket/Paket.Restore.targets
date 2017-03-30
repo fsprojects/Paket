@@ -68,6 +68,7 @@
               PackageFilesToExclude="@(_PackageFilesToExclude)"
               PackageVersion="$(PackageVersion)"
               PackageId="$(PackageId)"
+              Title="$(Title)"
               Authors="$(Authors)"
               Description="$(Description)"
               Copyright="$(Copyright)"
@@ -99,7 +100,9 @@
               BuildOutputFolder="$(BuildOutputTargetFolder)"
               ContentTargetFolders="$(ContentTargetFolders)"
               RestoreOutputPath="$(RestoreOutputAbsolutePath)"
-              NuspecFile="$(NuspecFileAbsolutePath)"/>
+              NuspecFile="$(NuspecFileAbsolutePath)"
+              NuspecBasePath="$(NuspecBasePath)"
+              NuspecProperties="$(NuspecProperties)"/>
   </Target>
 
 </Project>
