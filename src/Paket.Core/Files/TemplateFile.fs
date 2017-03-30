@@ -120,6 +120,14 @@ type ProjectCoreInfo =
           Description = None
           Symbols = false }
 
+    member self.ToCoreInfo (Id:string): CompleteCoreInfo =
+        {   Id      = Id
+            Version = self.Version
+            Authors = defaultArg self.Authors []
+            Description = defaultArg self.Description String.Empty
+            Symbols = self.Symbols}
+
+
 type OptionalPackagingInfo =
     { Title : string option
       Owners : string list
