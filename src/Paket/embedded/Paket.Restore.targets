@@ -61,14 +61,13 @@
     <ConvertToAbsolutePath Condition="@(_NuspecFiles) != ''" Paths="@(_NuspecFiles)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />
     </ConvertToAbsolutePath>
-    
+
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
               PackageFiles="@(_PackageFiles)"
               PackageFilesToExclude="@(_PackageFilesToExclude)"
               PackageVersion="$(PackageVersion)"
               PackageId="$(PackageId)"
-              Title="$(Title)"
               Authors="$(Authors)"
               Description="$(Description)"
               Copyright="$(Copyright)"
@@ -100,9 +99,7 @@
               BuildOutputFolder="$(BuildOutputTargetFolder)"
               ContentTargetFolders="$(ContentTargetFolders)"
               RestoreOutputPath="$(RestoreOutputAbsolutePath)"
-              NuspecFile="$(NuspecFileAbsolutePath)"
-              NuspecBasePath="$(NuspecBasePath)"
-              NuspecProperties="$(NuspecProperties)"/>
+              NuspecFile="$(NuspecFileAbsolutePath)"/>
   </Target>
 
 </Project>
