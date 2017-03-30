@@ -1782,3 +1782,51 @@ type ProjectFile with
         |> Seq.collect getCompileRefs
         |> Seq.map getCompileItem
         |> Seq.collect getRealItems
+
+
+    member self.GetTemplateMetadata () =
+        let prop name = self.GetProperty name
+        
+        let propOr name value =
+            defaultArg (self.GetProperty name) value
+        
+        let propMap name value fn =
+            defaultArg (self.GetProperty name|>Option.map fn) value
+        
+        let tryBool = Boolean.TryParse>>function true, value-> value| _ -> false
+        
+        let splitString = String.split[|';'|]>>List.ofArray
+
+        let coreInfo : ProjectCoreInfo = {
+            Id = prop "id" 
+            Version = propMap "version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
+            Authors = propMap "Authors" None (splitString>>Some)
+            Description = prop "Description" 
+            Symbols = propMap "Symbols" false tryBool
+        }
+        let optionalInfo =  {
+            Title = prop "Title"
+            Owners = propMap "Owners" [] (String.split[|';'|]>>List.ofArray)
+            ReleaseNotes = prop "ReleaseNores"
+            Summary = prop "Summary"
+            Language = prop "Langauge"
+            ProjectUrl = prop "ProjectUrl"
+            IconUrl = prop "IconUrl"
+            LicenseUrl = prop "LicenseUrl"
+            Copyright = prop  "Copyright" 
+            RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
+            Tags = propMap "Tags" [] splitString
+            DevelopmentDependency = propMap "DevelopmentDependency" false tryBool
+            Dependencies = [] //propOr "Dependencies" []
+            ExcludedDependencies = Set.empty //propOr "ExcludedDependencies" 
+            ExcludedGroups = Set.empty // propOr "ExcludedGroups" Set.empty
+            References = [] //propOr "References" []
+            FrameworkAssemblyReferences = [] //propOr "FrameworkAssemblyReferences" []
+            Files = [] //propMap "Files" [] splitString
+            FilesExcluded = [] //propMap  "FilesExcluded" [] splitString
+            IncludePdbs = propMap "IncludePdbs" true tryBool
+            IncludeReferencedProjects = propMap "IncludeReferencedProjects" true tryBool
+        }
+        
+        (coreInfo, optionalInfo)
+        
