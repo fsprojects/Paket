@@ -235,6 +235,17 @@ with
             | Source(_) -> "Allows to specify the package source feed."
             | MaxResults(_) -> "Maximum number of results."
 
+            
+type FixNuspecArgs =
+    | [<CustomCommandLine("file")>] File of text:string
+    | [<CustomCommandLine("references-file")>] ReferencesFile of text:string
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | File(_) -> "FileName of the nuspec file."
+            | ReferencesFile(_) -> "FileName of the nuspec file."
+
 type ShowInstalledPackagesArgs =
     | All
     | [<CustomCommandLine("project")>] Project of string
@@ -360,6 +371,7 @@ type Command =
     | [<CustomCommandLine("update")>]                   Update of ParseResults<UpdateArgs>
     | [<CustomCommandLine("find-packages")>]            FindPackages of ParseResults<FindPackagesArgs>
     | [<CustomCommandLine("find-package-versions")>]    FindPackageVersions of ParseResults<FindPackageVersionsArgs>
+    | [<CustomCommandLine("fix-nuspec")>]               FixNuspec of ParseResults<FixNuspecArgs>
     | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResults<ShowInstalledPackagesArgs>
     | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResults<ShowGroupsArgs>
     | [<CustomCommandLine("pack")>]                     Pack of ParseResults<PackArgs>
@@ -386,6 +398,7 @@ with
             | Update _ -> "Update one or all dependencies to their latest version and update projects."
             | FindPackages _ -> "Allows to search for packages."
             | FindPackageVersions _ -> "Allows to search for package versions."
+            | FixNuspec _ -> "Allows to patch a nuspec with the correct dependencies."
             | ShowInstalledPackages _ -> "Shows all installed top-level packages."
             | ShowGroups _ -> "Shows all groups."
             | Pack _ -> "Packs all paket.template files within this repository."

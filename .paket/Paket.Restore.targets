@@ -38,5 +38,19 @@
         <RestoreConfigFile>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).NuGet.Config</RestoreConfigFile>
       </PropertyGroup>
 
-   </Target>
+  </Target>
+
+  <Target Name="PaketOverrideNuspec" AfterTargets="GenerateNuspec">
+    <PropertyGroup>
+        <PaketReferencesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferencesFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_NuspecFiles Include="$(BaseIntermediateOutputPath)*.nuspec"/>
+    </ItemGroup>
+
+    <Exec Command='$(PaketCommand) fix-nuspec file "@(_NuspecFiles)" references-file "$(PaketReferencesFilePath)" ' />
+
+  </Target>
+
 </Project>

@@ -4,39 +4,53 @@
     <IsPaketRestoreTargetsFileLoaded>true</IsPaketRestoreTargetsFileLoaded>
     <PaketToolsPath>$(MSBuildThisFileDirectory)</PaketToolsPath>
     <MonoPath Condition="'$(MonoPath)' == '' And Exists('/Library/Frameworks/Mono.framework/Commands/mono')">/Library/Frameworks/Mono.framework/Commands/mono</MonoPath>
-    <MonoPath Condition="'$(MonoPath)' == ''">mono</MonoPath> 
+    <MonoPath Condition="'$(MonoPath)' == ''">mono</MonoPath>
     <!-- Paket command -->
     <PaketExePath Condition=" '$(PaketExePath)' == '' AND Exists('$(PaketRootPath)paket.exe')">$(PaketRootPath)paket.exe</PaketExePath>
     <PaketExePath Condition=" '$(PaketExePath)' == '' ">$(PaketToolsPath)paket.exe</PaketExePath>
     <PaketCommand Condition=" '$(OS)' == 'Windows_NT'">"$(PaketExePath)"</PaketCommand>
     <PaketCommand Condition=" '$(OS)' != 'Windows_NT' ">$(MonoPath) --runtime=v4.0.30319 "$(PaketExePath)"</PaketCommand>
-  </PropertyGroup>    
+  </PropertyGroup>
 
   <Target Name="PaketRestore" BeforeTargets="_GenerateRestoreGraphWalkPerFramework;CollectPackageReferences" >
-  
-      <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" ' />
 
-      <PropertyGroup>
-        <PaketReferencesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferencesFilePath>
-      </PropertyGroup>
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" ' />
 
-      <ReadLinesFromFile File="$(PaketReferencesFilePath)" >
-        <Output TaskParameter="Lines" ItemName="PaketReferencesFileLines"/>
-      </ReadLinesFromFile>
+    <PropertyGroup>
+      <PaketReferencesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferencesFilePath>
+    </PropertyGroup>
 
-      <ItemGroup Condition=" '@(PaketReferencesFileLines)' != '' " >
-        <PaketReferencesFileLinesInfo Include="@(PaketReferencesFileLines)" >
-          <PackageName>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[0])</PackageName>
-          <PackageVersion>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[1])</PackageVersion>
-        </PaketReferencesFileLinesInfo>
-        <PackageReference Include="%(PaketReferencesFileLinesInfo.PackageName)">
-          <Version>%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
-        </PackageReference>
-      </ItemGroup>
+    <ReadLinesFromFile File="$(PaketReferencesFilePath)" >
+      <Output TaskParameter="Lines" ItemName="PaketReferencesFileLines"/>
+    </ReadLinesFromFile>
 
-      <PropertyGroup>
-        <RestoreConfigFile>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).NuGet.Config</RestoreConfigFile>
-      </PropertyGroup>
+    <ItemGroup Condition=" '@(PaketReferencesFileLines)' != '' " >
+      <PaketReferencesFileLinesInfo Include="@(PaketReferencesFileLines)" >
+        <PackageName>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[0])</PackageName>
+        <PackageVersion>$([System.String]::Copy('%(PaketReferencesFileLines.Identity)').Split(',')[1])</PackageVersion>
+      </PaketReferencesFileLinesInfo>
+      <PackageReference Include="%(PaketReferencesFileLinesInfo.PackageName)">
+        <Version>%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
+      </PackageReference>
+    </ItemGroup>
 
-   </Target>
+    <PropertyGroup>
+      <RestoreConfigFile>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).NuGet.Config</RestoreConfigFile>
+    </PropertyGroup>
+
+  </Target>
+
+  <Target Name="PaketOverrideNuspec" AfterTargets="GenerateNuspec">
+    <PropertyGroup>
+      <PaketReferencesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferencesFilePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_NuspecFiles Include="$(BaseIntermediateOutputPath)*.nuspec"/>
+    </ItemGroup>
+
+    <Exec Command='$(PaketCommand) fix-nuspec file "@(_NuspecFiles)" references-file "$(PaketReferencesFilePath)" ' />
+
+  </Target>
+
 </Project>
