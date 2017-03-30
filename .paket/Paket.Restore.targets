@@ -49,7 +49,7 @@
       <_NuspecFiles Include="$(BaseIntermediateOutputPath)*.nuspec"/>
     </ItemGroup>
 
-    <Exec Command='$(PaketCommand) fix-nuspec file "@(_NuspecFiles)" references-file "$(PaketReferencesFilePath)" ' />
+    
 
   </Target>
 
