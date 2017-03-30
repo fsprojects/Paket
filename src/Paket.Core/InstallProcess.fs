@@ -405,7 +405,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 match dict.TryGetValue packageName with
                 | true,v' -> 
                     if v' = v then false else
-                    errors.Add <| sprintf "Package %O is referenced in different versions in %s" packageName project.FileName
+                    errors.Add <| sprintf "Package %O is referenced in different versions in %s (%O vs %O), check the lock-file." packageName project.FileName v' v
                     false
                 | _ ->
                     dict.Add(packageName,v)
