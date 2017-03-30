@@ -318,8 +318,9 @@ let fixNuspec silent (results : ParseResults<_>) =
             
             traverse doc
 
-            doc.Save(nuspecFileName)
+            use fileStream = File.Open(nuspecFileName, FileMode.Create)
 
+            doc.Save(fileStream)
 
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
