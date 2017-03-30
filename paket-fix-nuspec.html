@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Editor support
+    <title>paket fix-nuspec
 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
@@ -56,80 +56,37 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Editor-support" class="anchor" href="#Editor-support">Editor support</a></h1>
-<h2><a name="Atom" class="anchor" href="#Atom">Atom</a></h2>
-<ul>
-<li>Project site: <a href="http://ionide.io">http://ionide.io</a></li>
-<li>Repository: <a href="https://github.com/ionide/ionide-paket">https://github.com/ionide/ionide-paket</a></li>
-<li>Status: Released</li>
-<li>Installation: Available in <a href="https://atom.io/packages/paket">Atom's plugin manager</a></li>
-<li>
-Features:
-<ul>
-<li>Syntax highlighting for <code>paket.dependencies</code></li>
-<li>Paket commands available in Atom's Command Palette</li>
-</ul>
-</li>
-</ul>
-<a href="img/paket-add-atom.gif"><img src="img/paket-add-atom.gif" alt="paket add command in Atom" title="paket add command in Atom" width="500"></a>
-<h2><a name="Emacs" class="anchor" href="#Emacs">Emacs</a></h2>
-<ul>
-<li>Project site: <a href="https://github.com/zzdtri/paket.el">https://github.com/zzdtri/paket.el</a></li>
-<li>Status: In Development</li>
-<li>
-Features:
-<ul>
-<li><code>paket.dependencies</code> buffer supports commands like add, remove, install, ...</li>
-</ul>
-</li>
-</ul>
-<a href="img/paket-add-emacs.gif"><img src="img/paket-add-emacs.gif" alt="paket add command in Emacs" title="paket add command in Emacs" width="500"></a>
-<h2><a name="Visual-Studio" class="anchor" href="#Visual-Studio">Visual Studio</a></h2>
-<ul>
-<li>Project site: <a href="https://github.com/fsprojects/Paket.VisualStudio">https://github.com/fsprojects/Paket.VisualStudio</a></li>
-<li>Status: In Development</li>
-<li>Installation: Available in <a href="https://visualstudiogallery.msdn.microsoft.com/ce104917-e8b3-4365-9490-8432c6e75c36">Visual Studio Gallery</a></li>
-<li>
-Features:
-<ul>
-<li>Solution Explorer Extensions for Paket files</li>
-<li>Paket commands in Solution Explorer menu</li>
-<li>IntelliSense in <code>paket.dependencies</code> and <code>paket.references</code></li>
-</ul>
-</li>
-</ul>
-<a href="img/paket.visualstudio.png"><img src="img/paket.visualstudio.png" alt="Paket in VisualStudio" title="Paket in VisualStudio" width="500"></a>
-<h2><a name="Xamarin-Studio" class="anchor" href="#Xamarin-Studio">Xamarin Studio</a></h2>
-<ul>
-<li>Project site: <a href="https://github.com/mrward/monodevelop-paket-addin">https://github.com/mrward/monodevelop-paket-addin</a></li>
-<li>Status: In Development</li>
-<li>Installation: Available in the <a href="http://addins.monodevelop.com/">MonoDevelop addin repository</a></li>
-<li>
-Features:
-<ul>
-<li>View dependencies and referenced NuGet packages in the Solution window</li>
-<li>Execute Paket commands from the Solution window</li>
-<li>Syntax highlighting for all Paket files</li>
-<li>Code completion whilst editing the paket.dependencies file</li>
-<li>Integrates with Xamarin Studio's unified search</li>
-</ul>
-</li>
-</ul>
-<a href="img/paket-xamarin-studio.png"><img src="img/paket-xamarin-studio.png" alt="Paket in Xamarin Studio" title="Paket in Xamarin Studio" width="500"></a>
-<h2><a name="VS-Code" class="anchor" href="#VS-Code">VS Code</a></h2>
-<ul>
-<li>Project site: <a href="http://ionide.io">http://ionide.io</a></li>
-<li>Repository: <a href="https://github.com/ionide/ionide-vscode-paket">https://github.com/ionide/ionide-vscode-paket</a></li>
-<li>Status: Released</li>
-<li>Installation: Available in <a href="https://marketplace.visualstudio.com/items/Ionide.Ionide-Paket">Visual Studio Marketplace</a></li>
-<li>
-Features:
-<ul>
-<li>Paket commands available in VS Code's Command Palette</li>
-</ul>
-</li>
-</ul>
-<a href="img/paket-vscode.gif"><img src="img/paket-vscode.gif" alt="paket in VS Code" title="paket in VSCode" width="500"></a>
+<h1><a name="paket-fix-nuspec" class="anchor" href="#paket-fix-nuspec">paket fix-nuspec</a></h1>
+<p>Allows to patch a nuspec with the correct dependencies.</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="console">paket fix-nuspec [--help] [file &lt;text&gt;] [references-file &lt;text&gt;]
+</code></pre></td></tr></table>
+<p>OPTIONS:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
+<span class="l">9: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">file</span> <span class="o">&lt;</span><span class="i">text</span><span class="o">&gt;</span>           <span class="i">FileName</span> <span class="k">of</span> <span class="i">the</span> <span class="i">nuspec</span> <span class="i">file</span><span class="o">.</span>
+<span class="i">references</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">text</span><span class="o">&gt;</span>
+                      <span class="i">FileName</span> <span class="k">of</span> <span class="i">the</span> <span class="i">nuspec</span> <span class="i">file</span><span class="o">.</span>
+<span class="o">--</span><span class="i">verbose</span>, <span class="o">-</span><span class="i">v</span>         <span class="i">Enable</span> <span class="i">verbose</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
+<span class="o">--</span><span class="i">log</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">a</span> <span class="i">log</span> <span class="i">file</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
+<span class="o">--</span><span class="i">silent</span>, <span class="o">-</span><span class="i">s</span>          <span class="i">Suppress</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
+<span class="o">--</span><span class="i">version</span>             <span class="i">Display</span> <span class="i">the</span> <span class="i">version</span><span class="o">.</span>
+<span class="o">--</span><span class="i">from</span><span class="o">-</span><span class="i">bootstrapper</span>   <span class="i">Call</span> <span class="i">coming</span> <span class="i">from</span> <span class="i">the</span> <span class="o">&#39;</span><span class="o">--</span><span class="i">run&#39;</span> <span class="i">feature</span> <span class="k">of</span> <span class="i">the</span> <span class="i">bootstrapper</span><span class="o">.</span>
+<span class="o">--</span><span class="i">help</span>                <span class="i">display</span> <span class="i">this</span> <span class="i">list</span> <span class="k">of</span> <span class="i">options</span><span class="o">.</span>
+</code></pre></td>
+</tr>
+</table>
+<p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
+<p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
 
 
         </div>
