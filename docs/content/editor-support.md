@@ -54,6 +54,6 @@
 * Status: Released
 * Installation: Available in [Visual Studio Marketplace](https://marketplace.visualstudio.com/items/Ionide.Ionide-Paket)
 * Features:
-  * Paket commands available in Atom's Command Palette
+  * Paket commands available in VS Code's Command Palette
 
 <a href="img/paket-vscode.gif"><img src="img/paket-vscode.gif" alt="paket in VS Code" title="paket in VSCode" width="500"></a>
