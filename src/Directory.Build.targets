@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <BuildDependsOn>EmbedPaketFiles;$(BuildDependsOn)</BuildDependsOn>
+  </PropertyGroup>
+  <Target Name="EmbedPaketFiles">
+    <ItemGroup>
+      <EmbeddedFiles Include="@(Compile)" Condition="$([System.String]::Copy('%(Identity)').Contains('paket-files'))" />
+    </ItemGroup>
+    <CreateProperty Value="@(EmbeddedFiles)">  
+      <Output TaskParameter="Value" PropertyName="embed" />  
+    </CreateProperty>
+  </Target>
+</Project>

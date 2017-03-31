@@ -1,11 +1,8 @@
 <Project>
   <PropertyGroup>
     <DebugType>portable</DebugType>
-    <!--<SourceLinkCreate>true</SourceLinkCreate>-->
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.GitHub" Version="2.1.0-b439" PrivateAssets="all" />
-    <DotNetCliToolReference Include="dotnet-sourcelink-git" Version="2.1.0-b439" />
-    <DotNetCliToolReference Include="dotnet-sourcelink" Version="2.1.0-b439" />
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.1.0" PrivateAssets="all" />
   </ItemGroup>
 </Project>
