@@ -1,3 +1,6 @@
+#### 4.1.4 - 31.03.2017
+* BUGFIX: Workaround for TFS dependency resolution - https://github.com/fsprojects/Paket/pull/2214
+
 #### 4.1.3 - 30.03.2017
 * Support for dotnet pack
 * BUGFIX: Handle empty references files for .NET Core
