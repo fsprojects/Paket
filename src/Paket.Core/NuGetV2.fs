@@ -265,6 +265,9 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
             return parseODataDetails(url,nugetURL,packageName,version,raw)
     }
 
+let urlSimilarToTfsOrVsts url = 
+    String.containsIgnoreCase "visualstudio.com" url || (String.containsIgnoreCase "/_packaging/" url && String.containsIgnoreCase "/nuget/v" url)
+
 /// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let queryPackagesProtocol (packageName:PackageName) = 
@@ -293,8 +296,9 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
     async {
         try
             let! result = getDetailsFromNuGetViaODataFast auth nugetURL packageName version
-            if String.containsIgnoreCase "visualstudio.com" nugetURL && result.Dependencies.IsEmpty then
+            if urlSimilarToTfsOrVsts nugetURL && result.Dependencies.IsEmpty then
                 // TODO: There is a bug in VSTS, so we can't trust this protocol. Remvoe when VSTS is fixed
+                // TODO: TFS has the same bug
                 return! queryPackagesProtocol packageName
             else
                 return result
@@ -679,7 +683,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                 match source with
                 | NuGetV2 nugetSource ->
                     return! tryV2 source nugetSource
-                | NuGetV3 nugetSource when nugetSource.Url.Contains("pkgs.visualstudio.com")  ->
+                | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
                     match NuGetV3.calculateNuGet2Path nugetSource.Url with
                     | Some url ->
                         let nugetSource : NugetSource =
