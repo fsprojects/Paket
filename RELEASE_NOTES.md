@@ -1,17 +1,14 @@
-#### 4.0.7 - 17.03.2017
-* USABILITY: Write out if package is transitive or not
-
-#### 4.0.6 - 16.03.2017
+#### 4.1.3 - 30.03.2017
+* Support for dotnet pack
+* BUGFIX: Handle empty references files for .NET Core
+* BUGFIX: Better framework node detection
+* BUGFIX: Better redirects for project dependent references files
+* BUGFIX: Out-of-Sync check should work with auto-detection of framework settings
 * BUGFIX: Convert from nuget with wildcard version - https://github.com/fsprojects/Paket/issues/2185
-
-#### 4.0.5 - 16.03.2017
 * BUGFIX: Support load script generation in restore
-
-#### 4.0.3 - 16.03.2017
 * BUGFIX: framework: auto-detect didn't work with Paket 4 - https://github.com/fsprojects/Paket/issues/2188
-
-#### 4.0.2 - 16.03.2017
-* Handle empty references files for .NET Core
+* USABILITY: Convert packages that do not have version specified
+* COSMETICS: Use latest FSharp.Core
 
 #### 4.0.0 - 15.03.2017
 * Make Paket compatible with DotNet SDK / MSBuild 15 / Visual Sudio 2017

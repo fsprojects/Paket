@@ -1,16 +1,16 @@
 ﻿module Paket.DependencyChangeDetection
 
-open Paket.Domain
 open Paket.Requirements
 open Paket.PackageResolver
-open Logging
 
 let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFile:LockFile,strict) =
     let allTransitives groupName = lockFile.GetTransitiveDependencies groupName
     let hasChanged groupName transitives (newRequirement:PackageRequirement) (originalPackage:ResolvedPackage) =
         let settingsChanged() =
             if newRequirement.Settings <> originalPackage.Settings then
-                if newRequirement.Settings.FrameworkRestrictions <> originalPackage.Settings.FrameworkRestrictions then
+                if newRequirement.Settings = { originalPackage.Settings with FrameworkRestrictions = AutoDetectFramework } then
+                    false
+                elif newRequirement.Settings.FrameworkRestrictions <> originalPackage.Settings.FrameworkRestrictions then
                     transitives |> Seq.contains originalPackage.Name |> not
                 else true
             else false

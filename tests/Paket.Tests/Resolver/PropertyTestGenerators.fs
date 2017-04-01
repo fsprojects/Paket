@@ -1,4 +1,4 @@
-﻿module Resovler.PropertyTestGenerators
+﻿module Resolver.PropertyTestGenerators
 
 open Paket
 open NUnit.Framework

@@ -212,8 +212,6 @@ module ProjectFile =
         node.InnerText <- text
         node
 
-    open System.Text
-
     let getReservedProperties (projectFile:ProjectFile) =
         let projectFileInfo = FileInfo projectFile.FileName
         let directoryNoRoot = Regex.Replace(projectFileInfo.FullName, "^.:\\\\?", "")
@@ -618,6 +616,7 @@ module ProjectFile =
                 let isManualNode = ref false
                 for child in node.ChildNodes do
                     if child.Name = "HintPath" then isFrameworkNode := false
+                    if child.Name = "Private" then isFrameworkNode := false
                     if child.Name = "Paket" && String.equalsIgnoreCase child.InnerText "false" then 
                         isManualNode := true
 
@@ -1373,7 +1372,10 @@ module ProjectFile =
                 let v = 
                     match node |> getAttribute "Version" with
                     | Some version -> version
-                    | None -> node |> getNode "Version" |> (fun n -> n.Value.InnerText)
+                    | None ->
+                        match node |> getNode "Version" with
+                        | Some n -> n.InnerText
+                        | None -> "*"
                 
                 if v.Contains "*" then
                     VersionRange.AtLeast (v.Replace("*","0"))

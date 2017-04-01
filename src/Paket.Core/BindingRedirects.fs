@@ -89,14 +89,19 @@ let private projectFiles = [ ".csproj"; ".vbproj"; ".fsproj"; ".wixproj"; ".npro
 let private toLower (s:string) = s.ToLower()
 let private isAppOrWebConfig = configFiles.Contains << (Path.GetFileNameWithoutExtension >> toLower)
 let private isDotNetProject = projectFiles.Contains << (Path.GetExtension >> toLower)
+
 let internal getConfig getFiles directory  =
     getFiles(directory, "*.config", SearchOption.AllDirectories)
     |> Seq.tryFind isAppOrWebConfig
+
 let internal getProjectFilesWithPaketReferences getFiles rootPath  =
-    getFiles(rootPath, Constants.ReferencesFile, SearchOption.AllDirectories)
-    |> Seq.map Path.GetDirectoryName
+    getFiles(rootPath, "*.references", SearchOption.AllDirectories)
+    |> Seq.choose (fun f -> 
+        let fi = FileInfo(f)
+        if fi.Name.EndsWith Constants.ReferencesFile then Some fi.Directory.FullName else None)
     |> Seq.choose(fun directory -> getFiles(directory, "*proj", SearchOption.TopDirectoryOnly) |> Seq.tryFind (Path.GetExtension >> isDotNetProject))
     |> Seq.toList
+
 let private getExistingConfigFiles getFiles rootPath = 
     getFiles(rootPath, "*.config", SearchOption.AllDirectories)
     |> Seq.filter isAppOrWebConfig
@@ -151,9 +156,8 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
     nsManager.AddNamespace("bindings", bindingNs)
     config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
     |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))
-    |> List.ofSeq
-    |> List.filter (fun e -> isFirstGroup && (cleanBindingRedirects || isMarked e) && libIsContained e)
-    |> List.iter (fun e -> e.Remove())
+    |> Seq.filter (fun e -> isFirstGroup && (cleanBindingRedirects || isMarked e) && libIsContained e)
+    |> Seq.iter (fun e -> e.Remove())
 
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
@@ -191,4 +195,4 @@ let getPublicKeyToken (assembly:Mono.Cecil.AssemblyDefinition) =
     ||> Array.fold(fun state b -> state + b.ToString("X2"))
     |> function
     | "" -> None
-    | token -> Some <| token.ToLower()
+    | token -> Some (token.ToLower())
