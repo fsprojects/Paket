@@ -202,9 +202,17 @@ Target "MSBuildRestore" (fun _ ->
 )
 
 Target "Build" (fun _ ->
-    !! solutionFile
-    |> MSBuildReleaseExt "" [] "Rebuild"
-    |> ignore
+    if isMono then
+        !! solutionFile
+        |> MSBuildReleaseExt "" [
+                "VisualStudioVersion", "14.0"
+                "ToolsVersion"       , "14.0"  
+        ] "Rebuild"
+        |> ignore
+    else
+        !! solutionFile
+        |> MSBuildReleaseExt "" [] "Rebuild"
+        |> ignore
 )
 
 
