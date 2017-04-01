@@ -4,7 +4,8 @@
   </PropertyGroup>
   <Target Name="EmbedPaketFiles">
     <ItemGroup>
-      <EmbeddedFiles Include="@(Compile)" Condition="$([System.String]::Copy('%(Identity)').Contains('paket-files'))" />
+      <EmbeddedFiles Include="$([System.IO.Path]::GetFullPath('%(Compile.Identity)'))"
+        Condition="$([System.String]::Copy('%(Identity)').Contains('paket-files'))" />
     </ItemGroup>
     <CreateProperty Value="@(EmbeddedFiles)">  
       <Output TaskParameter="Value" PropertyName="embed" />  
