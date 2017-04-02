@@ -620,6 +620,7 @@ type InstallSettings =
                 CopyContentToOutputDirectory = self.CopyContentToOutputDirectory ++ other.CopyContentToOutputDirectory
                 ReferenceCondition = self.ReferenceCondition ++ other.ReferenceCondition
                 Excludes = self.Excludes @ other.Excludes
+                CreateBindingRedirects = self.CreateBindingRedirects ++ other.CreateBindingRedirects
                 IncludeVersionInPath = self.IncludeVersionInPath ++ other.IncludeVersionInPath
         }
 

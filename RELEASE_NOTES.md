@@ -1,3 +1,6 @@
+#### 4.1.5 - 02.04.2017
+* BUGFIX: Detect changes in redirects settings
+
 #### 4.1.4 - 31.03.2017
 * BUGFIX: Workaround for TFS dependency resolution - https://github.com/fsprojects/Paket/pull/2214
 
