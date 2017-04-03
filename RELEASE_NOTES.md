@@ -1,3 +1,6 @@
+#### 4.1.6 - 02.04.2017
+* BUGFIX: Fix to handle weird malformed portable-only libraries - https://github.com/fsprojects/Paket/pull/2215
+
 #### 4.1.5 - 02.04.2017
 * BUGFIX: Detect changes in redirects settings
 
