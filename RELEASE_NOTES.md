@@ -1,3 +1,6 @@
+#### 4.1.7 - 06.04.2017
+* BUGFIX: Make Paket.Restore.targets be called in more situations
+
 #### 4.1.6 - 02.04.2017
 * BUGFIX: Fix to handle weird malformed portable-only libraries - https://github.com/fsprojects/Paket/pull/2215
 

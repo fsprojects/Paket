@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60
 		LICENSE.txt = LICENSE.txt
 		paket.dependencies = paket.dependencies
 		paket.lock = paket.lock
+		.paket\Paket.Restore.targets = .paket\Paket.Restore.targets
 		nuget\paket.template = nuget\paket.template
 		README.md = README.md
 		RELEASE_NOTES.md = RELEASE_NOTES.md
