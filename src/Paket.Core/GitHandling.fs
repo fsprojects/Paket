@@ -5,6 +5,8 @@ open System.IO
 open Paket.Logging
 open Paket
 
+let paketCheckoutTag = "paket/lock"
+
 type GitLinkOrigin =
 | RemoteGitOrigin of string
 | LocalGitOrigin  of string
@@ -122,7 +124,7 @@ let getHash repoFolder commitish =
     with
     | _ -> None
 
-let getCurrentHash repoFolder = 
+let getCurrentHash repoFolder =
     getHash repoFolder "HEAD"
 
 let getHashFromRemote url branch =
@@ -156,12 +158,14 @@ let fetchCache repoCacheFolder cloneUrl =
     with
     | exn -> failwithf "Fetching the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message
 
-let updateCache repoCacheFolder tempBranchName cloneUrl commit =
-    fetchCache repoCacheFolder cloneUrl 
+let tagCommitForCheckout repoFolder commit =
     try
-        CommandHelper.runSimpleGitCommand repoCacheFolder ("branch -f " + tempBranchName + " " + commit) |> ignore
+        CommandHelper.runSimpleGitCommand repoFolder (sprintf "tag -f %s %s" paketCheckoutTag commit) |> ignore
     with
-    | exn -> failwithf "Updating the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message
+    | exn -> failwithf "Updating the git cache at %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message
+
+let checkoutTaggedCommit repoFolder =
+    CommandHelper.runSimpleGitCommand repoFolder ("checkout " + paketCheckoutTag) |> ignore
 
 let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
     try
@@ -179,6 +183,8 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
             CommandHelper.runSimpleGitCommand repoFolder ("remote add upstream " + quote cloneUrl) |> ignore
 
         tracefn "Setting %s to %s" repoFolder commit
-        CommandHelper.runSimpleGitCommand repoFolder ("reset --hard " + commit) |> ignore
+        tagCommitForCheckout repoFolder commit
+        checkoutTaggedCommit repoFolder
+
     with
     | exn -> failwithf "Checkout to %s failed.%sMessage: %s" repoFolder Environment.NewLine exn.Message

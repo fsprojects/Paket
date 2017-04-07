@@ -150,7 +150,7 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
 
 
 let rec DirectoryCopy(sourceDirName, destDirName, copySubDirs) =
-    let dir = new DirectoryInfo(sourceDirName)
+    let dir = DirectoryInfo(sourceDirName)
     let dirs = dir.GetDirectories()
 
     if not <| Directory.Exists(destDirName) then
@@ -180,9 +180,7 @@ let downloadRemoteFiles(remoteFile:ResolvedSourceFile,destination) = async {
         let repoFolder = Path.Combine(destination,remoteFile.Project)
         let cacheCloneUrl = "file:///" + repoCacheFolder
 
-        let branchName = sprintf "b%d" <| (repoFolder |> hash |> abs)
-
-        Paket.Git.Handling.updateCache repoCacheFolder branchName cloneUrl remoteFile.Commit
+        Paket.Git.Handling.fetchCache repoCacheFolder cloneUrl
         Paket.Git.Handling.checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl remoteFile.Commit
 
         match remoteFile.Command with
