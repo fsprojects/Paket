@@ -147,12 +147,12 @@ let fetchCache repoCacheFolder cloneUrl =
             if not <| Directory.Exists Constants.GitRepoCacheFolder then
                 Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
-            CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone " + quote cloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone --mirror " + quote cloneUrl + " " + quote repoCacheFolder) |> ignore
         else
             CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + quote cloneUrl) |> ignore
-            verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder 
-        
-        CommandHelper.runSimpleGitCommand repoCacheFolder "fetch -f --tags" |> ignore
+            verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder
+
+        CommandHelper.runSimpleGitCommand repoCacheFolder "remote update --prune" |> ignore
     with
     | exn -> failwithf "Fetching the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message
 
