@@ -171,16 +171,15 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
     try
         // checkout to local folder
         if Directory.Exists repoFolder then
-            CommandHelper.runSimpleGitCommand repoFolder ("remote set-url origin " + quote cacheCloneUrl) |> ignore
-            verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder 
-            CommandHelper.runSimpleGitCommand repoFolder "fetch origin -f" |> ignore
+            verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder
+            CommandHelper.runSimpleGitCommand repoFolder (sprintf "fetch --tags --prune %s +refs/heads/*:refs/remotes/origin/*" <| quote cacheCloneUrl) |> ignore
         else
             let destination = DirectoryInfo(repoFolder).Parent.FullName
             if not <| Directory.Exists destination then
                 Directory.CreateDirectory destination |> ignore
             verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
-            CommandHelper.runSimpleGitCommand destination ("clone " + quote cacheCloneUrl) |> ignore
-            CommandHelper.runSimpleGitCommand repoFolder ("remote add upstream " + quote cloneUrl) |> ignore
+            CommandHelper.runSimpleGitCommand destination (sprintf "clone %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
+            CommandHelper.runSimpleGitCommand repoFolder (sprintf "remote set-url origin %s" <| quote cloneUrl) |> ignore
 
         tracefn "Setting %s to %s" repoFolder commit
         tagCommitForCheckout repoFolder commit
