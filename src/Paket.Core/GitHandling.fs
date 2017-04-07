@@ -158,6 +158,20 @@ let fetchCache repoCacheFolder cloneUrl =
     with
     | exn -> failwithf "Fetching the git cache at %s failed.%sMessage: %s" repoCacheFolder Environment.NewLine exn.Message
 
+let checkForUncommittedChanges repoFolder =
+    try
+        tracefn "Checking for uncommitted changes in %s" repoFolder
+        CommandHelper.gitCommand repoFolder "diff-index --quiet HEAD --" |> ignore
+    with
+    | exn -> failwithf "It seems there are uncommitted changes in the repository. The changes must be committed/discarded first.%sMessage: %s" Environment.NewLine exn.Message
+
+let checkForCommitsMadeInDetachedHeadState repoFolder =
+    try
+        tracefn "Checking for commits made in detached HEAD state in %s" repoFolder
+        CommandHelper.gitCommand repoFolder "name-rev --no-undefined HEAD --" |> ignore
+    with
+    | exn -> failwithf "It seems that some commits would become unreachable after checkout. Create branch for the commits or reset them first and try again.%sMessage: %s" Environment.NewLine exn.Message
+
 let tagCommitForCheckout repoFolder commit =
     try
         CommandHelper.runSimpleGitCommand repoFolder (sprintf "tag -f %s %s" paketCheckoutTag commit) |> ignore
@@ -180,6 +194,9 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
             verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
             CommandHelper.runSimpleGitCommand destination (sprintf "clone %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
             CommandHelper.runSimpleGitCommand repoFolder (sprintf "remote set-url origin %s" <| quote cloneUrl) |> ignore
+
+        checkForUncommittedChanges repoFolder
+        checkForCommitsMadeInDetachedHeadState repoFolder
 
         tracefn "Setting %s to %s" repoFolder commit
         tagCommitForCheckout repoFolder commit
