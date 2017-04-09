@@ -50,8 +50,7 @@ let parseRestrictions failImmediatly (text:string) =
             if verbose then
                 (fun s ->
                     traceError s
-                    traceVerbose Environment.StackTrace
-                )
+                    traceVerbose Environment.StackTrace)
             else traceError
     let text =
         // workaround missing spaces

@@ -82,8 +82,7 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
             | Some pr ->
                 let t = t.Value
                 let t = { t with Settings = lockFile.GetGroup(groupName).Options.Settings + t.Settings }
-                yield groupName, name, getChanges groupName transitives pr t// then 
-                //    yield groupName, name // Modified
+                yield groupName, name, getChanges groupName transitives pr t // Modified
             | _ -> yield groupName, name, [PackageNotFoundInDependenciesFile] // Removed
         ]
         |> List.filter (fun (_,_, changes) -> changes.Length > 0)

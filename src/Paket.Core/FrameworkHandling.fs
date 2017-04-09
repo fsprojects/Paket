@@ -365,8 +365,8 @@ module FrameworkDetection =
                 | "netstandard14" -> Some(DotNetStandard DotNetStandardVersion.V1_4)
                 | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | "netstandard16" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
-                | "netcore10" | "netcoreapp10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
-                | "netcore11" | "netcoreapp11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
+                | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
+                | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
                 | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
                 | _ -> None
             result)
