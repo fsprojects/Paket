@@ -181,7 +181,7 @@ type FrameworkIdentifier =
         | UAP v -> "uap" + v.ShortString()
         | XamarinMac -> "xamarinmac"
         | Windows v -> "win" + v
-        | WindowsPhoneSilverlight v -> "wp" + v.Replace("v","").Replace(".","")
+        | WindowsPhoneSilverlight v -> "wp" + v
         | WindowsPhoneApp v -> "wpa" + v
         | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
 
@@ -350,8 +350,8 @@ module FrameworkDetection =
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
                 | "win8" | "windows8" | "win80" | "netcore45" | "win" | "winv45" -> Some (Windows "v4.5")
                 | "win81" | "windows81"  | "netcore46" | "netcore451" | "winv451" -> Some (Windows "v4.5.1")
-                | "wp7" | "wp70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
-                | "wp71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
+                | "wp7" | "wp70" | "wpv7" | "wpv70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhoneSilverlight "v7.0")
+                | "wp71" | "wpv71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhoneSilverlight "v7.1")
                 | "wpa00" | "wpa" | "wpa81" | "wpav81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp "v8.1")
                 | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhoneSilverlight "v8.0")
                 | "wp81"  | "wpv81" -> Some (WindowsPhoneSilverlight "v8.1")
