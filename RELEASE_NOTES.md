@@ -1,3 +1,6 @@
+#### 4.1.8 - 09.04.2017
+* BUGFIX: Improved output of the outdated warning and fix underlying bug - https://github.com/fsprojects/Paket/pull/2223
+
 #### 4.1.7 - 06.04.2017
 * BUGFIX: Make Paket.Restore.targets be called in more situations
 
