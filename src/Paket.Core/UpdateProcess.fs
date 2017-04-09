@@ -109,7 +109,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
                     dependenciesFile.Groups
                     |> Map.filter hasChanges
 
-                nuGetChanges,groups
+                nuGetChanges |> Set.map (fun (f,s,_) -> f,s), groups
 
         let preferredVersions = 
             DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)

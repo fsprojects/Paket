@@ -274,7 +274,7 @@ module LockFileParser =
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
                                             
             InstallOption(CopyContentToOutputDir(setting))
-        | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(FrameworkRestrictionList (trimmed.Trim() |> Requirements.parseRestrictions)))
+        | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(FrameworkRestrictionList (trimmed.Trim() |> Requirements.parseRestrictions true)))
         | _, String.StartsWith "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
         | _, String.StartsWith "CONTENT:" trimmed -> 
             let setting =
