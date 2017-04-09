@@ -181,7 +181,7 @@ type FrameworkIdentifier =
         | UAP v -> "uap" + v.ShortString()
         | XamarinMac -> "xamarinmac"
         | Windows v -> "win" + v
-        | WindowsPhoneSilverlight v -> "wp" + v
+        | WindowsPhoneSilverlight v -> "wp" + v.Replace("v","").Replace(".","")
         | WindowsPhoneApp v -> "wpa" + v
         | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
 
