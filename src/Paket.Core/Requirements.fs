@@ -4,7 +4,6 @@ open System
 open Paket
 open Paket.Domain
 open Paket.PackageSources
-open Paket.Logging
 
 [<RequireQualifiedAccess>]
 type FrameworkRestriction = 
@@ -42,16 +41,7 @@ let getRestrictionList (frameworkRestrictions:FrameworkRestrictions) =
     | FrameworkRestrictionList list -> list
     | AutoDetectFramework -> failwith "The framework restriction could not be determined."
 
-let parseRestrictions failImmediatly (text:string) =
-    let handleError =
-        if failImmediatly then
-            failwith
-        else
-            if verbose then
-                (fun s ->
-                    traceError s
-                    traceVerbose Environment.StackTrace)
-            else traceError
+let parseRestrictions(text:string) =
     let text =
         // workaround missing spaces
         text.Replace("<=","<= ").Replace(">=",">= ").Replace("=","= ")
@@ -70,17 +60,13 @@ let parseRestrictions failImmediatly (text:string) =
         | None -> 
                 if PlatformMatching.extractPlatforms framework |> List.isEmpty |> not then
                     yield FrameworkRestriction.Portable framework
-                else
-                    handleError <| sprintf "Could not parse framework '%s'. Try to update or install again or report a paket bug." framework
         | Some x -> 
             if operatorSplit.[0] = ">=" then
                 if operatorSplit.Length < 4 then
                     yield FrameworkRestriction.AtLeast x
                 else
-                    let item = operatorSplit.[3]
-                    match FrameworkDetection.Extract(item) with
-                    | None ->
-                        handleError <| sprintf "Could not parse second framework of between operator '%s'. Try to update or install again or report a paket bug." item
+                    match FrameworkDetection.Extract(operatorSplit.[3]) with
+                    | None -> ()
                     | Some y -> yield FrameworkRestriction.Between(x,y)
             else
                 yield FrameworkRestriction.Exactly x]
@@ -654,7 +640,7 @@ type InstallSettings =
                 | _ -> None
               FrameworkRestrictions =
                 match getPair "framework" with
-                | Some s -> FrameworkRestrictionList(parseRestrictions true s)
+                | Some s -> FrameworkRestrictionList(parseRestrictions s)
                 | _ -> FrameworkRestrictionList []
               OmitContent =
                 match getPair "content" with

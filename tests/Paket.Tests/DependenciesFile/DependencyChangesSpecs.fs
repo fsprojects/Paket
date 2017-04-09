@@ -61,7 +61,7 @@ nuget Castle.Windsor-log4net"""
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
    
-    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions(cfg,lockFile)
     newDependencies
     |> Map.filter (fun k v -> not <| changedDependencies.Contains(k))
@@ -98,7 +98,7 @@ nuget NUnit"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
    
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     let expected =
@@ -146,7 +146,7 @@ nuget Castle.Windsor-log4net >= 3.3.0"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
    
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     let expected =
@@ -193,7 +193,7 @@ nuget Castle.Windsor-log4net >= 3.4.0"""
 
     let cfg = DependenciesFile.FromCode(after)
     let lockFile = LockFile.Parse("",toLines lockFileData)
-    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true) |> Set.map (fun (g,p,_) -> g, p)
+    let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
    
     let newDependencies = DependencyChangeDetection.GetPreferredNuGetVersions (cfg,lockFile)
     newDependencies
@@ -297,7 +297,7 @@ nuget Caliburn.Micro !~> 2.0.2"""
     let lockFile = LockFile.Parse("",toLines lockFileData)
     let changedDependencies = DependencyChangeDetection.findNuGetChangesInDependenciesFile(cfg,lockFile,true)
     changedDependencies.Count |> shouldEqual 1
-    (changedDependencies |> Seq.head) |> shouldEqual (Constants.MainDependencyGroup, PackageName "Caliburn.Micro",[Paket.DependencyChangeDetection.DependencyChangeType.PackageNotFoundInLockFile])
+    (changedDependencies |> Seq.head) |> shouldEqual (Constants.MainDependencyGroup, PackageName "Caliburn.Micro")
 
 [<Test>]
 let ``should detect if nothing changes in github dependency``() = 

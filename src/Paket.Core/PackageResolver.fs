@@ -651,7 +651,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
 
     let rec step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
 
-        let inline fuseConflicts currentConflict priorConflictSteps =
+        let fuseConflicts currentConflict priorConflictSteps =
             match currentConflict, priorConflictSteps with
             | currentConflict, (lastConflict,lastStep,lastRequirement,lastCompatibleVersions,lastFlags)::priorConflictSteps -> 
                 let continueConflict = 

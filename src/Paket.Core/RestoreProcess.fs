@@ -193,13 +193,11 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             LocalFile.overrideLockFile localFile lockFile,localFile,true
 
     if not hasLocalFile && not ignoreChecks then
-        let hasAnyChanges,nugetChanges,remoteFilechanges,hasChanges = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
+        let hasAnyChanges,_,_,_ = DependencyChangeDetection.GetChanges(dependenciesFile,lockFile,false)
 
         let checkResponse = if failOnChecks then failwithf else traceWarnfn
         if hasAnyChanges then 
             checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
-            for (group, package, changes) in nugetChanges do
-                traceWarnfn "Changes %A were detected in %s/%s" changes (group.ToString()) (package.ToString())
 
     let groups =
         match group with

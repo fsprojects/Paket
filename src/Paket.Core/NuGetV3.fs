@@ -245,7 +245,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                     let targetFramework =
                         match targetFramework with
                         | null -> []
-                        | x -> Requirements.parseRestrictions false x
+                        | x -> Requirements.parseRestrictions x
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
         let unlisted =
