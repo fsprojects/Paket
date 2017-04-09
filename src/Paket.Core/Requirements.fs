@@ -4,6 +4,7 @@ open System
 open Paket
 open Paket.Domain
 open Paket.PackageSources
+open Paket.Logging
 
 [<RequireQualifiedAccess>]
 type FrameworkRestriction = 
@@ -60,13 +61,17 @@ let parseRestrictions(text:string) =
         | None -> 
                 if PlatformMatching.extractPlatforms framework |> List.isEmpty |> not then
                     yield FrameworkRestriction.Portable framework
+                else
+                    traceErrorfn "Could not parse framework '%s'. Try to update or install again or report a paket bug." framework
         | Some x -> 
             if operatorSplit.[0] = ">=" then
                 if operatorSplit.Length < 4 then
                     yield FrameworkRestriction.AtLeast x
                 else
-                    match FrameworkDetection.Extract(operatorSplit.[3]) with
-                    | None -> ()
+                    let item = operatorSplit.[3]
+                    match FrameworkDetection.Extract(item) with
+                    | None ->
+                        traceErrorfn "Could not parse second framework of between operator '%s'. Try to update or install again or report a paket bug." item
                     | Some y -> yield FrameworkRestriction.Between(x,y)
             else
                 yield FrameworkRestriction.Exactly x]
