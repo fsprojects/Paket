@@ -259,7 +259,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             let latestVersion, _ = versions |> List.maxBy fst
             let restrictions =
                 match versions with
-                | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.collect Requirements.parseRestrictions 
+                | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.collect (Requirements.parseRestrictions false)
                 | _ -> []
             name, latestVersion, restrictions)
 

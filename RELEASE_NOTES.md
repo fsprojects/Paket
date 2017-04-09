@@ -1,13 +1,8 @@
-#### 4.1.9 - 06.04.2017
+#### 4.2.0 - 09.04.2017
+* BUGFIX: Improved output of the outdated warning and fix underlying bug - https://github.com/fsprojects/Paket/pull/2223
 * BUGFIX: Make Paket.Restore.targets be called in more situations
-
-#### 4.1.6 - 02.04.2017
 * BUGFIX: Fix to handle weird malformed portable-only libraries - https://github.com/fsprojects/Paket/pull/2215
-
-#### 4.1.5 - 02.04.2017
 * BUGFIX: Detect changes in redirects settings
-
-#### 4.1.4 - 31.03.2017
 * BUGFIX: Workaround for TFS dependency resolution - https://github.com/fsprojects/Paket/pull/2214
 
 #### 4.1.3 - 30.03.2017

@@ -124,7 +124,9 @@ type ReferencesFile =
 
     static member FromFile(fileName : string) =
         let lines = File.ReadAllLines(fileName)
-        { ReferencesFile.FromLines lines with FileName = fileName }
+        try
+            { ReferencesFile.FromLines lines with FileName = fileName }
+        with e -> raise <| new Exception(sprintf "Could not parse reference file '%s': %s" fileName e.Message, e)
 
     member this.AddNuGetReference(groupName, packageName : PackageName, copyLocal: bool,  importTargets: bool, frameworkRestrictions, includeVersionInPath, omitContent : bool, createBindingRedirects, referenceCondition) =
         let package: PackageInstallSettings =
