@@ -75,12 +75,6 @@
     <tbody>
         <tr>
           <td class="type-name">
-            <a href="paket-dependencychangedetection-dependencychangetype.html">DependencyChangeType</a>
-          </td>
-          <td class="xmldoc"></td>
-        </tr>
-        <tr>
-          <td class="type-name">
             <a href="paket-dependencychangedetection-remotefilechange.html">RemoteFileChange</a>
           </td>
           <td class="xmldoc"></td>
@@ -103,11 +97,11 @@
             findNuGetChangesInDependenciesFile (...)
           </code>
           <div class="tip" id="69">
-            <strong>Signature:</strong> (dependenciesFile:DependenciesFile * lockFile:LockFile * strict:bool) -&gt; Set&lt;GroupName * PackageName * DependencyChangeType list&gt;<br />
+            <strong>Signature:</strong> (dependenciesFile:DependenciesFile * lockFile:LockFile * strict:bool) -&gt; Set&lt;GroupName * PackageName&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyChangeDetection.fs#L20-20" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyChangeDetection.fs#L6-6" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -125,7 +119,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyChangeDetection.fs#L161-161" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyChangeDetection.fs#L138-138" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -139,11 +133,11 @@
             GetChanges (...)
           </code>
           <div class="tip" id="71">
-            <strong>Signature:</strong> (dependenciesFile:DependenciesFile * lockFile:LockFile * strict:bool) -&gt; bool * Set&lt;GroupName * PackageName * DependencyChangeType list&gt; * Set&lt;GroupName * RemoteFileChange&gt; * (GroupName -&gt; &#39;a -&gt; bool)<br />
+            <strong>Signature:</strong> (dependenciesFile:DependenciesFile * lockFile:LockFile * strict:bool) -&gt; bool * Set&lt;GroupName * PackageName&gt; * Set&lt;GroupName * RemoteFileChange&gt; * (GroupName -&gt; &#39;a -&gt; bool)<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyChangeDetection.fs#L217-217" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyChangeDetection.fs#L194-194" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -161,7 +155,7 @@
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyChangeDetection.fs#L205-205" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/DependencyChangeDetection.fs#L182-182" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
