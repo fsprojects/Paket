@@ -1,3 +1,6 @@
+#### 4.2.1 - 10.04.2017
+* BUGFIX: Check if a references file exists on disk - https://github.com/fsprojects/Paket/pull/2224
+
 #### 4.2.0 - 09.04.2017
 * BUGFIX: Improved output of the outdated warning and fix underlying bug - https://github.com/fsprojects/Paket/pull/2223
 * BUGFIX: Make Paket.Restore.targets be called in more situations
