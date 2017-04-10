@@ -124,27 +124,15 @@ let findAllReferencesFiles root =
     let findRefFile (p:ProjectFile) =
         match p.FindReferencesFile() with
         | Some fileName -> 
-                try
-                    ok <| (p, ReferencesFile.FromFile fileName)
-                with _ ->
-                    fail <| ReferencesFileParseError (FileInfo fileName)
+            try
+                Some(ok <| (p, ReferencesFile.FromFile fileName))
+            with _ ->
+                Some(fail <| (ReferencesFileParseError (FileInfo fileName)))
         | None ->
-            let fileName = 
-                let fi = FileInfo(p.FileName)
-                Path.Combine(fi.Directory.FullName,Constants.ReferencesFile)
-
-            ok <| (p, ReferencesFile.New fileName)
-    
-    let refFileExistsOnDisk (result:Result<(ProjectFile * ReferencesFile), DomainMessage>) =
-        result
-        |>
-        either
-            (fun ((_, referenceFile), _) -> File.Exists(referenceFile.FileName))
-            (fun (_) -> true)
-
+            None
+            
     ProjectFile.FindAllProjects root
-    |> Array.map findRefFile
-    |> Array.filter( fun result -> refFileExistsOnDisk result )
+    |> Array.choose findRefFile
     |> collect
 
 let copiedElements = ref false
