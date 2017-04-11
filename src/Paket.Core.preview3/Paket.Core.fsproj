@@ -41,6 +41,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\Nuspec.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\InstallModel.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\DependenciesTypes.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\CiString.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Parsers/DependenciesFileParser.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Files/ReferencesFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Files/SolutionFile.fs" />
