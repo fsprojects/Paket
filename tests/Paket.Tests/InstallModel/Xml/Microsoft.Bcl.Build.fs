@@ -4,9 +4,11 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open Paket.Domain
+open Paket.TestHelpers
 
 [<Test>]
 let ``should not install targets node for Microsoft.Bcl.Build``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Microsoft.Bcl.Build", SemVer.Parse "1.0.21", [],
             [ ],

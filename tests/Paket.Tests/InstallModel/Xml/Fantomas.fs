@@ -18,6 +18,7 @@ let expected = """
 
 [<Test>]
 let ``should generate Xml for Fantomas 1.5``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -55,6 +56,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
 
 [<Test>]
 let ``should generate full Xml for Fantomas 1.5``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -76,6 +78,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
 
 [<Test>]
 let ``should not generate full Xml for Fantomas 1.5 if not referenced``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -112,6 +115,7 @@ let fullDocWithRefernceCondition = """<?xml version="1.0" encoding="utf-8"?>
 
 [<Test>]
 let ``should generate full Xml with reference condition for Fantomas 1.5``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -153,6 +157,7 @@ let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0"
 let ``should generate full Xml with reference condition and framework restrictions without msbuild warning``() =
     // msbuild triggers a warning MSB4130 when we leave out the quotes around $(LEGACY) and add the condition at the end
     // It seems like the warning is triggered when there is an "Or" without parentheses somewhere
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
             [ FrameworkRestriction.Exactly (FrameworkIdentifier.XamariniOS)

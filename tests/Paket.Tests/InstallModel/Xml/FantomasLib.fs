@@ -18,6 +18,7 @@ let expected = """
 
 [<Test>]
 let ``should generate Xml for Fantomas 1.5``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\Lib\FantomasLib.dll" 

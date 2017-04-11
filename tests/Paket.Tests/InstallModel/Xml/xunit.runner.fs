@@ -60,6 +60,7 @@ let disabledChooseNode = """<?xml version="1.0" encoding="utf-16"?>
 
 [<Test>]
 let ``should not generate Xml for xunit.runner.visualstudio 2.0.0 if import is disabled``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", [],[],
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 

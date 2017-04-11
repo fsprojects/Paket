@@ -3,6 +3,7 @@
 open Paket
 open NUnit.Framework
 open FsUnit
+open Paket.TestHelpers
 
 let TestData: obj[][] = 
     [|
@@ -31,6 +32,7 @@ let TestData: obj[][] =
 [<Test>]
 [<TestCaseSource("TestData")>]
 let ``should detect the correct framework on test projects`` projectFile expectedProfile expectedProfileString expectedTargetFramework =
+    ensureDir()
     let p = ProjectFile.TryLoad("./ProjectFile/TestData/" + projectFile).Value
     p.GetTargetProfile() |> shouldEqual expectedProfile
     p.GetTargetProfile().ToString() |> shouldEqual expectedProfileString
