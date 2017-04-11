@@ -605,26 +605,28 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                     traceWarnfn "Could not download license for %O %O from %s.%s    %s" packageName version licenseUrl Environment.NewLine exn.Message
     }
 
-
-let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
+let private getFilesMatching targetFolder searchPattern subFolderName filesDescriptionForVerbose =
     let files =
         let dir = DirectoryInfo(targetFolder)
         let path = Path.Combine(dir.FullName.ToLower(), subFolderName)
         if dir.Exists then
             dir.GetDirectories()
             |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
-            |> Array.collect (fun dir -> dir.GetFiles("*.*", SearchOption.AllDirectories))
+            |> Array.collect (fun dir -> dir.GetFiles(searchPattern, SearchOption.AllDirectories))
         else
             [||]
 
     if Logging.verbose then
         if Array.isEmpty files then
-            verbosefn "No %s found in %s" filesDescriptionForVerbose targetFolder
+            verbosefn "No %s found in %s matching %s" filesDescriptionForVerbose targetFolder searchPattern
         else
             let s = String.Join(Environment.NewLine + "  - ",files |> Array.map (fun l -> l.FullName))
-            verbosefn "%s found in %s:%s  - %s" filesDescriptionForVerbose targetFolder Environment.NewLine s
+            verbosefn "%s found in %s matching %s:%s  - %s" filesDescriptionForVerbose targetFolder searchPattern Environment.NewLine s
 
     files
+
+let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
+    getFilesMatching targetFolder "*.*" subFolderName filesDescriptionForVerbose
 
 /// Finds all libraries in a nuget package.
 let GetLibFiles(targetFolder) =
@@ -639,7 +641,7 @@ let GetLibFiles(targetFolder) =
 let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets files"
 
 /// Finds all analyzer files in a nuget package.
-let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer dlls"
+let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
 
 let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails =
 
