@@ -91,9 +91,9 @@ let ``should generate Xml for System.Security.Cryptography.Algorithms in CSharp 
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,chooseNode,_,_ = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,true,None)
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,true,KnownTargetProfiles.AllProfiles,None)
     let result =
-      chooseNode
+      ctx.ChooseNodes
       |> (fun n -> n.Head.OuterXml)
       |> normalizeXml
     result |> shouldEqual (normalizeXml expected)

@@ -37,19 +37,21 @@ let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() =
             [],
               Nuspec.All)
     
-    let propsNodes,targetsNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    chooseNode.Head.OuterXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyReferenceNodes)
 
-    let currentXML = propertyChooseNode.OuterXml |> normalizeXml
+    let currentXML = ctx.FrameworkSpecificPropertyChooseNode.OuterXml |> normalizeXml
     currentXML
     |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
-    
-    propsNodes |> Seq.length |> shouldEqual 1
-    targetsNodes |> Seq.length |> shouldEqual 0
 
-    (propsNodes |> Seq.head).OuterXml
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 1
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
+
+    (ctx.FrameworkSpecificPropsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)
 
@@ -65,13 +67,13 @@ let ``should not generate Xml for xunit.runner.visualstudio 2.0.0 if import is d
               [],
               Nuspec.All)
     
-    let propertyNodes,targetsNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,false,None)
-    chooseNode.Head.OuterXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,false,KnownTargetProfiles.AllProfiles,None)
+    ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyReferenceNodes)
 
-    propertyChooseNode.OuterXml
+    ctx.FrameworkSpecificPropertyChooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml disabledChooseNode)
     
-    propertyNodes |> Seq.length |> shouldEqual 0
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0

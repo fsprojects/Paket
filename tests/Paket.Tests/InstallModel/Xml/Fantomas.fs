@@ -27,12 +27,13 @@ let ``should generate Xml for Fantomas 1.5``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    let propertyNodes,targetsNodes,chooseNode,additionalNode, _ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    chooseNode.Head.OuterXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
     
-    propertyNodes |> Seq.length |> shouldEqual 0
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
 
 
 let emptyDoc = """<?xml version="1.0" encoding="utf-8"?>

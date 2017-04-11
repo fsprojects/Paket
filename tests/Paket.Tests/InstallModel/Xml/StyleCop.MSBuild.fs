@@ -23,15 +23,18 @@ let ``should generate Xml for StyleCop.MSBuild``() =
 
     model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" 
     
-    let propsNodes,targetsNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
     
-    propertyChooseNode.OuterXml
+    ctx.FrameworkSpecificPropertyChooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyPropertyNameNodes)
         
-    propsNodes |> Seq.length |> shouldEqual 0
-    targetsNodes |> Seq.length |> shouldEqual 1
 
-    (targetsNodes |> Seq.head).OuterXml
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 1
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
+
+    (ctx.FrameworkSpecificTargetsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)

@@ -34,8 +34,8 @@ let ``should generate Xml for codecracker.CSharp``() =
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>() ,Map.empty,Some true,true,None)
-    analyzerNodes
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>() ,Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.AnalyzersNode
     |> (fun n -> n.OuterXml)
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedCsharp)
@@ -55,8 +55,8 @@ let ``should generate Xml for codecracker.CSharp in VisualBasic project``() =
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    analyzerNodes
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.AnalyzersNode
     |> (fun n -> n.OuterXml)
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedEmpty)
@@ -86,8 +86,8 @@ let ``should generate Xml for codecracker.VisualBasic``() =
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    analyzerNodes
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.AnalyzersNode
     |> (fun n -> n.OuterXml)
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedVb)
