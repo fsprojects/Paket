@@ -2,6 +2,7 @@
 * BUGFIX: Import .props/.targets better - https://github.com/fsprojects/Paket/pull/2234
 * BUGFIX: on't download boostrapper in auto-restore magic mode - https://github.com/fsprojects/Paket/pull/2235
 * BUGFIX: Only include dlls in analyzers - https://github.com/fsprojects/Paket/pull/2236
+* USABILITY: Fix rotating app.config entries when generating redirects - https://github.com/fsprojects/Paket/pull/2230
 
 #### 4.3.0 - 10.04.2017
 * BUGFIX: Check if a references file exists on disk - https://github.com/fsprojects/Paket/pull/2224
