@@ -1,3 +1,6 @@
+#### 4.3.2 - 12.04.2017
+* BUGFIX: on't download boostrapper in auto-restore magic mode - https://github.com/fsprojects/Paket/pull/2235
+
 #### 4.3.1 - 12.04.2017
 * BUGFIX: Only include dlls in analyzers - https://github.com/fsprojects/Paket/pull/2236
 
