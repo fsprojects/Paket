@@ -92,9 +92,9 @@ let config (results : ParseResults<_>) =
 let validateAutoRestore (results : ParseResults<_>) =
     results.GetAllResults().Length = 1
 
-let autoRestore (results : ParseResults<_>) =
+let autoRestore (fromBootstrapper:bool) (results : ParseResults<_>) =
     match results.GetResult <@ Flags @> with
-    | On -> Dependencies.Locate().TurnOnAutoRestore()
+    | On -> Dependencies.Locate().TurnOnAutoRestore(fromBootstrapper)
     | Off -> Dependencies.Locate().TurnOffAutoRestore()
 
 let convert (fromBootstrapper:bool) (results : ParseResults<_>) =
@@ -429,7 +429,7 @@ let main() =
             | ConvertFromNuget r -> processCommand silent (convert fromBootstrapper) r
             | FindRefs r -> processCommand silent findRefs r
             | Init r -> processCommand silent (init fromBootstrapper) r
-            | AutoRestore r -> processWithValidation silent validateAutoRestore autoRestore r
+            | AutoRestore r -> processWithValidation silent validateAutoRestore (autoRestore fromBootstrapper) r
             | Install r -> processCommand silent install r
             | Outdated r -> processCommand silent outdated r
             | Remove r -> processCommand silent remove r
