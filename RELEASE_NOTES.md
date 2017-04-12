@@ -1,7 +1,6 @@
-#### 4.3.2 - 12.04.2017
+#### 4.4.0 - 12.04.2017
+* BUGFIX: Import .props/.targets better - https://github.com/fsprojects/Paket/pull/2234
 * BUGFIX: on't download boostrapper in auto-restore magic mode - https://github.com/fsprojects/Paket/pull/2235
-
-#### 4.3.1 - 12.04.2017
 * BUGFIX: Only include dlls in analyzers - https://github.com/fsprojects/Paket/pull/2236
 
 #### 4.3.0 - 10.04.2017
