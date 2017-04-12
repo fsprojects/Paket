@@ -350,10 +350,14 @@ type Dependencies(dependenciesFileName: string) =
                 )
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
-    member this.TurnOnAutoRestore(): unit =
+    member this.TurnOnAutoRestore(fromBootstrapper: bool): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> VSIntegration.TurnOnAutoRestore false |> this.Process)
+            fun () -> VSIntegration.TurnOnAutoRestore fromBootstrapper |> this.Process)
+
+    /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
+    member this.TurnOnAutoRestore(): unit =
+        this.TurnOnAutoRestore(false)
 
     /// Removes paket.targets file and Import section from project files.
     member this.TurnOffAutoRestore(): unit =
