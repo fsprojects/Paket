@@ -1,3 +1,6 @@
+#### 4.3.1 - 12.04.2017
+* BUGFIX: Only include dlls in analyzers - https://github.com/fsprojects/Paket/pull/2236
+
 #### 4.3.0 - 10.04.2017
 * BUGFIX: Check if a references file exists on disk - https://github.com/fsprojects/Paket/pull/2224
 
