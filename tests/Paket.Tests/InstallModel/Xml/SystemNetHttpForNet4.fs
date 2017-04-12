@@ -37,6 +37,7 @@ let expected = """
 
 [<Test>]
 let ``should generate Xml for System.Net.Http 2.2.8``() = 
+    ensureDir()
     let model =     
         InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))],
             [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
@@ -69,7 +70,7 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
               [],
               Nuspec.All)
 
-    let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None) 
-    let currentXML = chooseNode.Head.OuterXml |> normalizeXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None) 
+    let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
     currentXML
     |> shouldEqual (normalizeXml expected)

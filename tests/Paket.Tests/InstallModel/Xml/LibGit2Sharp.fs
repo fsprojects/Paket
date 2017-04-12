@@ -44,18 +44,20 @@ let ``should generate Xml for LibGit2Sharp 2.0.0``() =
     
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll"
 
-    let propertyNodes,targetsNodes,chooseNode,propertyChooseNode,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    chooseNode.Head.OuterXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedReferenceNodes)
 
-    propertyChooseNode.OuterXml
+    ctx.FrameworkSpecificPropertyChooseNode.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
 
-    propertyNodes |> Seq.length |> shouldEqual 1
-    targetsNodes |> Seq.length |> shouldEqual 0
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 1
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
 
-    (propertyNodes |> Seq.head).OuterXml
+    (ctx.FrameworkSpecificPropsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)

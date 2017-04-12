@@ -18,6 +18,7 @@ let expected = """
 
 [<Test>]
 let ``should generate Xml for Fantomas 1.5``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -27,12 +28,13 @@ let ``should generate Xml for Fantomas 1.5``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
     
-    let propertyNodes,targetsNodes,chooseNode,additionalNode, _ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    chooseNode.Head.OuterXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
     
-    propertyNodes |> Seq.length |> shouldEqual 0
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
 
 
 let emptyDoc = """<?xml version="1.0" encoding="utf-8"?>
@@ -54,6 +56,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
 
 [<Test>]
 let ``should generate full Xml for Fantomas 1.5``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -75,6 +78,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
 
 [<Test>]
 let ``should not generate full Xml for Fantomas 1.5 if not referenced``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -111,6 +115,7 @@ let fullDocWithRefernceCondition = """<?xml version="1.0" encoding="utf-8"?>
 
 [<Test>]
 let ``should generate full Xml with reference condition for Fantomas 1.5``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\lib\FantomasLib.dll" 
@@ -152,6 +157,7 @@ let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0"
 let ``should generate full Xml with reference condition and framework restrictions without msbuild warning``() =
     // msbuild triggers a warning MSB4130 when we leave out the quotes around $(LEGACY) and add the condition at the end
     // It seems like the warning is triggered when there is an "Or" without parentheses somewhere
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
             [ FrameworkRestriction.Exactly (FrameworkIdentifier.XamariniOS)

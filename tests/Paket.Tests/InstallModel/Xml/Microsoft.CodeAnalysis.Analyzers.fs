@@ -36,8 +36,8 @@ let ``should generate Xml for Microsoft.CodeAnalysis.Analyzers in CSharp project
     ensureDir()
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    analyzerNodes
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.AnalyzersNode
     |> (fun n -> n.OuterXml)
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedCs)
@@ -57,8 +57,8 @@ let ``should generate Xml for RefactoringEssentials in VisualBasic project``() =
     ensureDir()
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    analyzerNodes
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.AnalyzersNode
     |> (fun n -> n.OuterXml)
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedVb)
@@ -77,8 +77,8 @@ let ``should generate Xml for Microsoft.CodeAnalysis.Analyzers 1.0.0-rc2``() =
     ensureDir()
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let _,_,_,_,analyzerNodes = project.Value.GenerateXml(oldModel, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    analyzerNodes
+    let ctx = project.Value.GenerateXml(oldModel, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.AnalyzersNode
     |> (fun n -> n.OuterXml)
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedEmpty)

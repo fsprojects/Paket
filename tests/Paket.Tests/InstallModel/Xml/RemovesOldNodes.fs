@@ -9,6 +9,7 @@ open Paket.Requirements
 
 [<Test>]
 let ``should generate Xml for Fuchu 0.4``() = 
+    ensureDir()
     let p = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyWithOldStuff.fsprojtest").Value
     let empty = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     p.RemovePaketNodes()
