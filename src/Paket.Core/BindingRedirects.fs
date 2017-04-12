@@ -156,8 +156,9 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
     nsManager.AddNamespace("bindings", bindingNs)
     config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
     |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))
-    |> Seq.filter (fun e -> isFirstGroup && (cleanBindingRedirects || isMarked e) && libIsContained e)
-    |> Seq.iter (fun e -> e.Remove())
+    |> List.ofSeq // strict evaluation, as otherwise e.Remove() also changes the order!
+    |> List.filter (fun e -> isFirstGroup && (cleanBindingRedirects || isMarked e) && libIsContained e)
+    |> List.iter (fun e -> e.Remove())
 
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
