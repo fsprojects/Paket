@@ -345,37 +345,37 @@ module NuspecExtensions =
         static member Create (Id:string, templatePath:string, lockFile, currentVersion, packages) =
             match TemplateFile.Load (templatePath, lockFile, currentVersion, packages) with
             | {Contents = CompleteInfo (coreInfo, optionalInfo)} ->
-                nuspecDoc ({coreInfo with Id = Id}, optionalInfo)
+                Id + ".nuspec", nuspecDoc ({coreInfo with Id = Id}, optionalInfo)
             | {Contents = ProjectInfo(projectInfo, optionalInfo) } ->
-                nuspecDoc (projectInfo.ToCoreInfo Id, optionalInfo)
-            |> string
+                Id + ".nuspec", nuspecDoc (projectInfo.ToCoreInfo Id, optionalInfo)
+            
 
         static member FromProject (projectPath:string, dependenciesPath:string) = 
-            let (>>=) opt fn = opt |> Option.bind fn
-            
             let dependencies = DependenciesFile.ReadFromFile dependenciesPath
             let lockFile = (DependenciesFile.FindLockfile dependenciesPath).FullName |> LockFile.LoadFrom
-            ProjectFile.TryLoad projectPath >>= fun project ->
-            project.FindReferencesFile () >>= fun refsPath ->
-            let references = ReferencesFile.FromFile refsPath
+            match ProjectFile.TryLoad projectPath  with
+            | None -> failwithf "unable to load project from path '%s'" projectPath
+            | Some project ->
+                let packages =
+                    project.FindReferencesFile ()
+                    |> Option.map (fun refsPath ->
+                        let references = ReferencesFile.FromFile refsPath
+                        references.Groups |> Seq.collect (fun kvp -> 
+                        kvp.Value.NugetPackages |> List.choose (fun pkg -> 
+                            dependencies.TryGetPackage(kvp.Key,pkg.Name)
+                            |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement)))
+                        |> List.ofSeq
+                    ) |> Option.defaultValue []
+                let projectInfo, optionalInfo = project.GetTemplateMetadata ()
 
-            let packages = 
-                references.Groups |> Seq.collect (fun kvp -> 
-                kvp.Value.NugetPackages |> List.choose (fun pkg -> 
-                    dependencies.TryGetPackage(kvp.Key,pkg.Name)
-                    |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement)))
-                |> List.ofSeq
+                let optionalInfo = 
+                    { optionalInfo with
+                        Dependencies = packages @ optionalInfo.Dependencies
+                    }
+                let name = Path.GetFileNameWithoutExtension project.Name
+                // TODO - this might be the point to add in some info from the
+                // lock and dependencies fiels that weren't in the project file
+                name + ".nuspec", nuspecDoc (projectInfo.ToCoreInfo name, optionalInfo )
             
-            let projectInfo, optionalInfo = project.GetTemplateMetadata ()
-
-            let optionalInfo = 
-                { optionalInfo with
-                    Dependencies = packages @ optionalInfo.Dependencies
-                }
-            let name = Path.GetFileNameWithoutExtension project.Name
-            // TODO - this might be the point to add in some info from the
-            // lock and dependencies fiels that weren't in the project file
-            nuspecDoc (projectInfo.ToCoreInfo name, optionalInfo )
-            |> string |> Some
        
             

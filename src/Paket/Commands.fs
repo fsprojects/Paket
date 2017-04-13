@@ -250,11 +250,13 @@ with
 type GenerateNuspecArgs =
     | [<CustomCommandLine "project">][<Mandatory>] Project of project:string
     | [<CustomCommandLine "dependencies">][<Mandatory>] DependenciesFile of dependenciesPath:string
+    | [<CustomCommandLine "output">][<Mandatory>] Output of output:string
     interface IArgParserTemplate with
         member this.Usage =
             match this with
             | Project _ -> "Project to generate a nuspec file for."
             | DependenciesFile _ -> "'paket.dependencies' file used to populate the generated nuspec file."
+            | Output _ -> "Output directory to save generated nuspec to"
 
 type ShowInstalledPackagesArgs =
     | All
