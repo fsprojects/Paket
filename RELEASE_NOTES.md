@@ -1,3 +1,19 @@
+#### 4.4.0 - 12.04.2017
+* BUGFIX: Import .props/.targets better - https://github.com/fsprojects/Paket/pull/2234
+* BUGFIX: Don't download boostrapper in auto-restore magic mode - https://github.com/fsprojects/Paket/pull/2235
+* BUGFIX: Only include dlls in analyzers - https://github.com/fsprojects/Paket/pull/2236
+* USABILITY: Fix rotating app.config entries when generating redirects - https://github.com/fsprojects/Paket/pull/2230
+
+#### 4.3.0 - 10.04.2017
+* BUGFIX: Check if a references file exists on disk - https://github.com/fsprojects/Paket/pull/2224
+
+#### 4.2.0 - 09.04.2017
+* BUGFIX: Improved output of the outdated warning and fix underlying bug - https://github.com/fsprojects/Paket/pull/2223
+* BUGFIX: Make Paket.Restore.targets be called in more situations
+* BUGFIX: Fix to handle weird malformed portable-only libraries - https://github.com/fsprojects/Paket/pull/2215
+* BUGFIX: Detect changes in redirects settings
+* BUGFIX: Workaround for TFS dependency resolution - https://github.com/fsprojects/Paket/pull/2214
+
 #### 4.1.3 - 30.03.2017
 * Support for dotnet pack
 * BUGFIX: Handle empty references files for .NET Core

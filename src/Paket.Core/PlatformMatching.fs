@@ -7,7 +7,7 @@ let MaxPenalty = 1000000
 
 let inline split (path : string) = 
     path.Split('+')
-    |> Array.map (fun s -> s.Replace("portable-", ""))
+    |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(s, "portable\\d*-",""))
     
 let extractPlatforms = memoize (fun path  -> split path |> Array.choose FrameworkDetection.Extract |> Array.toList)
 

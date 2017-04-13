@@ -16,6 +16,7 @@ let expected = """
 
 [<Test>]
 let ``should generate Xml for framework references and empty libs``() = 
+    ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "TempPkg", SemVer.Parse "0.1", [],
             [  ],
@@ -23,7 +24,7 @@ let ``should generate Xml for framework references and empty libs``() =
               [],
               Nuspec.Load("Nuspec/EmptyLibs.nuspec"))
     
-    let _,targetsNodes,chooseNode,_,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    chooseNode.Head.OuterXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

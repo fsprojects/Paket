@@ -102,7 +102,7 @@ type AutoRestoreCmdlet() =
                     yield Flags(AutoRestoreFlags.Off)
             ]
             |> parser.ToParseResults
-            |> Program.autoRestore
+            |> Program.autoRestore false
         } |> processWithLogging x
 
 [<Cmdlet("Paket", "Config")>]

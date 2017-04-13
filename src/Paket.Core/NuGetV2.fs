@@ -265,6 +265,9 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
             return parseODataDetails(url,nugetURL,packageName,version,raw)
     }
 
+let urlSimilarToTfsOrVsts url = 
+    String.containsIgnoreCase "visualstudio.com" url || (String.containsIgnoreCase "/_packaging/" url && String.containsIgnoreCase "/nuget/v" url)
+
 /// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let queryPackagesProtocol (packageName:PackageName) = 
@@ -293,8 +296,9 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
     async {
         try
             let! result = getDetailsFromNuGetViaODataFast auth nugetURL packageName version
-            if String.containsIgnoreCase "visualstudio.com" nugetURL && result.Dependencies.IsEmpty then
+            if urlSimilarToTfsOrVsts nugetURL && result.Dependencies.IsEmpty then
                 // TODO: There is a bug in VSTS, so we can't trust this protocol. Remvoe when VSTS is fixed
+                // TODO: TFS has the same bug
                 return! queryPackagesProtocol packageName
             else
                 return result
@@ -601,26 +605,28 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                     traceWarnfn "Could not download license for %O %O from %s.%s    %s" packageName version licenseUrl Environment.NewLine exn.Message
     }
 
-
-let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
+let private getFilesMatching targetFolder searchPattern subFolderName filesDescriptionForVerbose =
     let files =
         let dir = DirectoryInfo(targetFolder)
         let path = Path.Combine(dir.FullName.ToLower(), subFolderName)
         if dir.Exists then
             dir.GetDirectories()
             |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
-            |> Array.collect (fun dir -> dir.GetFiles("*.*", SearchOption.AllDirectories))
+            |> Array.collect (fun dir -> dir.GetFiles(searchPattern, SearchOption.AllDirectories))
         else
             [||]
 
     if Logging.verbose then
         if Array.isEmpty files then
-            verbosefn "No %s found in %s" filesDescriptionForVerbose targetFolder
+            verbosefn "No %s found in %s matching %s" filesDescriptionForVerbose targetFolder searchPattern
         else
             let s = String.Join(Environment.NewLine + "  - ",files |> Array.map (fun l -> l.FullName))
-            verbosefn "%s found in %s:%s  - %s" filesDescriptionForVerbose targetFolder Environment.NewLine s
+            verbosefn "%s found in %s matching %s:%s  - %s" filesDescriptionForVerbose targetFolder searchPattern Environment.NewLine s
 
     files
+
+let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
+    getFilesMatching targetFolder "*.*" subFolderName filesDescriptionForVerbose
 
 /// Finds all libraries in a nuget package.
 let GetLibFiles(targetFolder) =
@@ -635,7 +641,7 @@ let GetLibFiles(targetFolder) =
 let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets files"
 
 /// Finds all analyzer files in a nuget package.
-let GetAnalyzerFiles(targetFolder) = getFiles targetFolder "analyzers" "analyzer dlls"
+let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
 
 let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails =
 
@@ -679,7 +685,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                 match source with
                 | NuGetV2 nugetSource ->
                     return! tryV2 source nugetSource
-                | NuGetV3 nugetSource when nugetSource.Url.Contains("pkgs.visualstudio.com")  ->
+                | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
                     match NuGetV3.calculateNuGet2Path nugetSource.Url with
                     | Some url ->
                         let nugetSource : NugetSource =

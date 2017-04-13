@@ -164,17 +164,19 @@ let ``should generate Xml for SQLite``() =
                 Nuspec.All)
 
 
-    let propsNodes,targetsNodes,chooseNode,propertyDefinitionNodes,_ = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,None)
-    let currentXML = chooseNode.Head.OuterXml |> normalizeXml
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
     currentXML |> shouldEqual (normalizeXml expectedReferenceNodes)
 
-    let currentPropertyXML = propertyDefinitionNodes.OuterXml |> normalizeXml
+    let currentPropertyXML = ctx.FrameworkSpecificPropertyChooseNode.OuterXml |> normalizeXml
     currentPropertyXML
     |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
 
-    propsNodes |> Seq.length |> shouldEqual 0
-    targetsNodes |> Seq.length |> shouldEqual 1
+    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 1
+    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
 
-    let currentTargetsXML = (targetsNodes |> Seq.head).OuterXml |> normalizeXml
+    let currentTargetsXML = (ctx.FrameworkSpecificTargetsNodes |> Seq.head).OuterXml |> normalizeXml
     currentTargetsXML
     |> shouldEqual (normalizeXml expectedPropertyNodes)

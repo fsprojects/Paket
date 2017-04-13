@@ -156,8 +156,9 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
     nsManager.AddNamespace("bindings", bindingNs)
     config.XPathSelectElements("//bindings:assemblyBinding", nsManager)
     |> Seq.collect (fun e -> e.Elements(XName.Get("dependentAssembly", bindingNs)))
-    |> Seq.filter (fun e -> isFirstGroup && (cleanBindingRedirects || isMarked e) && libIsContained e)
-    |> Seq.iter (fun e -> e.Remove())
+    |> List.ofSeq // strict evaluation, as otherwise e.Remove() also changes the order!
+    |> List.filter (fun e -> isFirstGroup && (cleanBindingRedirects || isMarked e) && libIsContained e)
+    |> List.iter (fun e -> e.Remove())
 
     let config = Seq.fold setRedirect config bindingRedirects
     indentAssemblyBindings config
@@ -170,19 +171,19 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
 /// Applies a set of binding redirects to all .config files in a specific folder.
 let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects rootPath allKnownLibs bindingRedirects =
     let applyBindingRedirects projectFile =
-        let bindingRedirects = bindingRedirects projectFile
+        let bindingRedirects = bindingRedirects projectFile |> Seq.toList
         let path = Path.GetDirectoryName projectFile.FileName
         match getConfig Directory.GetFiles path with
         | Some c -> Some c
         | None -> 
-            match createNewBindingFiles, Seq.isEmpty bindingRedirects with
+            match createNewBindingFiles, List.isEmpty bindingRedirects with
             | true, false ->
                 let config = createAppConfigInDirectory path
                 addConfigFileToProject projectFile
                 Some config
             | _ -> None
         |> Option.iter (applyBindingRedirects isFirstGroup cleanBindingRedirects allKnownLibs bindingRedirects)
-
+    
     rootPath
     |> getProjectFilesWithPaketReferences Directory.GetFiles
     |> Seq.map ProjectFile.TryLoad

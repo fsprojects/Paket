@@ -41,6 +41,7 @@ let calculateNuGet3Path(nugetUrl:string) =
     | "http://www.nuget.org/api/v2" -> Some "http://api.nuget.org/v3/index.json"
     | "https://www.nuget.org/api/v2" -> Some "https://api.nuget.org/v3/index.json"
     | url when url.EndsWith("/nuget/v2") && url.Contains("pkgs.visualstudio.com") -> Some (url.Replace("/nuget/v2","/nuget/v3/index.json"))
+    | url when url.EndsWith("/nuget/v2") && url.Contains("/_packaging/") -> Some (url.Replace("/nuget/v2","/nuget/v3/index.json"))  // TFS
     | url when url.EndsWith("api/v2") && url.Contains("visualstudio.com") -> Some (url.Replace("api/v2","api/v3/index.json"))
     | url when url.EndsWith("api/v2") && url.Contains("myget.org") -> Some (url.Replace("api/v2","api/v3/index.json"))
     | url when url.EndsWith("v3/index.json") -> Some url
@@ -244,7 +245,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                     let targetFramework =
                         match targetFramework with
                         | null -> []
-                        | x -> Requirements.parseRestrictions x
+                        | x -> Requirements.parseRestrictions false x
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
         let unlisted =

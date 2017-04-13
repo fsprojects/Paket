@@ -654,7 +654,17 @@ module ProjectFile =
         |> List.sortBy (fun lib -> lib.Path)
         |> createAnalyzersNode
 
-    let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool option) (importTargets:bool) (referenceCondition:string option) (project:ProjectFile) =
+    type XmlContext = {
+        GlobalPropsNodes : XmlElement list
+        GlobalTargetsNodes : XmlElement list
+        FrameworkSpecificPropsNodes : XmlElement list
+        FrameworkSpecificTargetsNodes : XmlElement list
+        ChooseNodes : XmlElement list
+        FrameworkSpecificPropertyChooseNode : XmlElement
+        AnalyzersNode : XmlElement
+    }
+
+    let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool option) (importTargets:bool) (referenceCondition:string option) (allTargetProfiles:Set<TargetProfile>) (project:ProjectFile) : XmlContext =
         let references = 
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -711,7 +721,6 @@ module ProjectFile =
             let propertyNames =
                 references
                 |> Seq.choose (fun lib ->
-                    if not importTargets then None else
                     match lib with
                     | Reference.Library _ -> None
                     | Reference.FrameworkAssemblyReference _ -> None
@@ -779,10 +788,18 @@ module ProjectFile =
                                 [lowerCondition,createItemGroup !assemblyTargets frameworkAssemblies,true
                                  condition,createItemGroup libFolder.Targets rest,false]
                         )
-
-        let targetsFileConditions =
-            model.TargetsFileFolders
-            |> List.sortBy (fun lib -> lib.Name)
+                        
+        // global targets are targets, that are either directly in the /build folder,
+        // or, if there is a framework-restriction, specific to the framework(s).
+        // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package). 
+        let globalTargets, frameworkSpecificTargets =
+            if not importTargets then List.empty, List.empty else
+            let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Name)
+            sortedTargets
+            |> List.partition (fun lib -> allTargetProfiles = set lib.Targets )
+        
+        let frameworkSpecificTargetsFileConditions =
+            frameworkSpecificTargets
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup lib.Files.References)
 
         let chooseNodes =
@@ -827,8 +844,8 @@ module ProjectFile =
                 | false,true -> [chooseNode2]
                 | false,false -> [createNode "Choose" project]
 
-        let propertyNames,propertyChooseNode =
-            match targetsFileConditions with
+        let frameworkSpecificPropertyNames,frameworkSpecificPropertyChooseNode =
+            match frameworkSpecificTargetsFileConditions with
             |  ["$(TargetFrameworkIdentifier) == 'true'",(propertyNames,propertyGroup)] ->
                 [propertyNames], createNode "Choose" project
             |  ["true",(propertyNames,propertyGroup)] ->
@@ -837,7 +854,7 @@ module ProjectFile =
                 let propertyChooseNode = createNode "Choose" project
 
                 let containsProperties = ref false
-                targetsFileConditions
+                frameworkSpecificTargetsFileConditions
                 |> List.map (fun (condition,(propertyNames,propertyGroup)) ->
                     let finalCondition = if condition = "" || condition.Length > 3000 || condition = "$(TargetFrameworkIdentifier) == 'true'" then "1 == 1" else condition
                     let whenNode = 
@@ -849,19 +866,19 @@ module ProjectFile =
                     whenNode)
                 |> List.iter(fun node -> propertyChooseNode.AppendChild node |> ignore)
                 
-                (targetsFileConditions |> List.map (fun (_,(propertyNames,_)) -> propertyNames)),
+                (frameworkSpecificTargetsFileConditions |> List.map (fun (_,(propertyNames,_)) -> propertyNames)),
                 (if !containsProperties then propertyChooseNode else createNode "Choose" project)
                 
 
-        let propsNodes = 
-            propertyNames
+        let frameworkSpecificPropsNodes = 
+            frameworkSpecificPropertyNames
             |> Seq.concat
             |> Seq.distinctBy (fun (x,_,_) -> x)
             |> Seq.filter (fun (propertyName,path,buildPath) -> String.endsWithIgnoreCase "props" propertyName)
             |> Seq.map (fun (propertyName,path,buildPath) -> 
                 let fileName = 
                     match propertyName with
-                    | _ when propertyChooseNode.ChildNodes.Count = 0 -> path
+                    | _ when frameworkSpecificPropertyChooseNode.ChildNodes.Count = 0 -> path
                     | name when String.endsWithIgnoreCase "props" name  -> sprintf "%s$(%s).props" buildPath propertyName 
                     | _ -> failwithf "Unknown .props filename %s" propertyName
 
@@ -871,15 +888,15 @@ module ProjectFile =
                 |> addAttribute "Label" "Paket")
             |> Seq.toList
 
-        let targetsNodes = 
-            propertyNames
+        let frameworkSpecificTargetsNodes = 
+            frameworkSpecificPropertyNames
             |> Seq.concat
             |> Seq.distinctBy (fun (x,_,_) -> x)
             |> Seq.filter (fun (propertyName,path,buildPath) -> String.endsWithIgnoreCase "props" propertyName  |> not)
             |> Seq.map (fun (propertyName,path,buildPath) -> 
                 let fileName = 
                     match propertyName with
-                    | _ when propertyChooseNode.ChildNodes.Count = 0 -> path
+                    | _ when frameworkSpecificPropertyChooseNode.ChildNodes.Count = 0 -> path
                     | name when String.endsWithIgnoreCase  "targets" name ->
                         sprintf "%s$(%s).targets" buildPath propertyName
                     | _ -> failwithf "Unknown .targets filename %s" propertyName
@@ -890,9 +907,45 @@ module ProjectFile =
                 |> addAttribute "Label" "Paket")
             |> Seq.toList
         
+        let globalPropsNodes =
+            globalTargets
+            |> Seq.collect (fun t -> t.Files.References)
+            |> Seq.map (fun t -> t.Path)
+            |> Seq.distinct
+            |> Seq.filter (fun t -> String.endsWithIgnoreCase ".props" t)
+            |> Seq.map (createRelativePath project.FileName)
+            |> Seq.map (fun fileName ->
+                createNode "Import" project
+                |> addAttribute "Project" fileName
+                |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
+                |> addAttribute "Label" "Paket")
+            |> Seq.toList
+        
+        let globalTargetsNodes =
+            globalTargets
+            |> Seq.collect (fun t -> t.Files.References)
+            |> Seq.map (fun t -> t.Path)
+            |> Seq.distinct
+            |> Seq.filter (fun t -> String.endsWithIgnoreCase ".targets" t)
+            |> Seq.map (createRelativePath project.FileName)
+            |> Seq.map (fun fileName ->
+                createNode "Import" project
+                |> addAttribute "Project" fileName
+                |> addAttribute "Condition" (sprintf "Exists('%s')" fileName)
+                |> addAttribute "Label" "Paket")
+            |> Seq.toList
+
         let analyzersNode = generateAnalyzersXml model project
 
-        propsNodes,targetsNodes,chooseNodes,propertyChooseNode,analyzersNode
+        {
+            GlobalTargetsNodes = globalTargetsNodes
+            GlobalPropsNodes = globalPropsNodes
+            FrameworkSpecificPropsNodes = frameworkSpecificPropsNodes
+            FrameworkSpecificTargetsNodes = frameworkSpecificTargetsNodes
+            ChooseNodes = chooseNodes
+            FrameworkSpecificPropertyChooseNode = frameworkSpecificPropertyChooseNode
+            AnalyzersNode = analyzersNode
+        } : XmlContext
 
     let removePaketNodes (project:ProjectFile) = 
         deletePaketNodes "Analyzer" project
@@ -968,29 +1021,31 @@ module ProjectFile =
 
 
         let findInsertSpot() =
-            let j = ref 0
-            while !j < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!j].OuterXml.ToString()) do
-                incr j
+            // nuget inserts properties directly at the top, and targets directly at the end.
+            // our inserts depend on $(TargetFrameworkVersion), which may be set either from another import, or directly in the project file.
+            let mutable iProp = 0
+            while iProp < project.ProjectNode.ChildNodes.Count && String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[iProp].OuterXml.ToString()) do
+                iProp <- iProp + 1
 
-            let k = ref !j
-            while !k < project.ProjectNode.ChildNodes.Count &&
-                (String.startsWithIgnoreCase  "<PropertyGroup" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) ||
-                 (String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
-                  not (String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString()) &&
-                       String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[!k].OuterXml.ToString())))) do
-                incr k
+            let mutable iTarget = iProp
+            while iTarget < project.ProjectNode.ChildNodes.Count &&
+                (String.startsWithIgnoreCase  "<PropertyGroup" (project.ProjectNode.ChildNodes.[iTarget].OuterXml.ToString()) ||
+                 (String.startsWithIgnoreCase  "<import" (project.ProjectNode.ChildNodes.[iTarget].OuterXml.ToString()) &&
+                  not (String.containsIgnoreCase "label" (project.ProjectNode.ChildNodes.[iTarget].OuterXml.ToString()) &&
+                       String.containsIgnoreCase "paket" (project.ProjectNode.ChildNodes.[iTarget].OuterXml.ToString())))) do
+                iTarget <- iTarget + 1
 
-            let l = ref !k
-            while !l < project.ProjectNode.ChildNodes.Count do
-                let node = project.ProjectNode.ChildNodes.[!l].OuterXml.ToString()
+            let mutable l = iTarget
+            while l < project.ProjectNode.ChildNodes.Count do
+                let node = project.ProjectNode.ChildNodes.[l].OuterXml.ToString()
                 if String.startsWithIgnoreCase  "<import" node && 
                    (String.containsIgnoreCase "microsoft.csharp.targets" node || 
                      String.containsIgnoreCase "microsoft.fsharp.targets" node ||
                      String.containsIgnoreCase "fsharptargetspath" node)
                 then
-                    k := !l + 1
-                incr l
-            !j,!k
+                    iTarget <- l + 1
+                l <- l + 1
+            iProp,iTarget
 
         let usedFrameworkLibs = HashSet<TargetProfile*string>()
 
@@ -1023,10 +1078,11 @@ module ProjectFile =
                 | _ -> ()
 
             let importTargets = defaultArg installSettings.ImportTargets true
-
-            generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal importTargets installSettings.ReferenceCondition project)
-        |> Seq.iter (fun (propsNodes,targetsNodes,chooseNodes,propertyChooseNode, analyzersNode) ->
-            for chooseNode in chooseNodes do
+            
+            let allFrameworks = applyRestrictionsToTargets restrictionList KnownTargetProfiles.AllProfiles
+            generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal importTargets installSettings.ReferenceCondition (set allFrameworks) project)
+        |> Seq.iter (fun ctx ->
+            for chooseNode in ctx.ChooseNodes do
                 let i = ref (project.ProjectNode.ChildNodes.Count-1)
                 while 
                   !i >= 0 && 
@@ -1043,37 +1099,46 @@ module ProjectFile =
                     if chooseNode.ChildNodes.Count > 0 then
                         project.ProjectNode.InsertAfter(chooseNode,node) |> ignore
 
-                let j,k = findInsertSpot()
+                // global props are inserted at the top of the file
+                ctx.GlobalPropsNodes
+                |> Seq.iter (project.ProjectNode.PrependChild >> ignore)
+
+                // global targets are just inserted at the end of the file
+                ctx.GlobalTargetsNodes
+                |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
+
+                // framework specific props/targets reference specific msbuild properties, so they need to be inserted later
+                let iProp,iTarget = findInsertSpot()
 
                 let addProps() =
-                    if j = 0 then
-                        propsNodes
+                    if iProp = 0 then
+                        ctx.FrameworkSpecificPropsNodes
                         |> Seq.iter (project.ProjectNode.PrependChild >> ignore)
                     else
-                        propsNodes
-                        |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,project.ProjectNode.ChildNodes.[j-1]) |> ignore)
+                        ctx.FrameworkSpecificPropsNodes
+                        |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,project.ProjectNode.ChildNodes.[iProp-1]) |> ignore)
             
-                if propertyChooseNode.ChildNodes.Count > 0 then
-                    if k = 0 then
-                        project.ProjectNode.AppendChild propertyChooseNode |> ignore
+                if ctx.FrameworkSpecificPropertyChooseNode.ChildNodes.Count > 0 then
+                    if iTarget = 0 then
+                        project.ProjectNode.AppendChild ctx.FrameworkSpecificPropertyChooseNode |> ignore
 
-                        propsNodes
+                        ctx.FrameworkSpecificPropsNodes
                         |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
                     else
-                        let node = project.ProjectNode.ChildNodes.[k-1]
+                        let node = project.ProjectNode.ChildNodes.[iTarget-1]
                     
-                        propsNodes
+                        ctx.FrameworkSpecificPropsNodes
                         |> Seq.iter (fun n -> project.ProjectNode.InsertAfter(n,node) |> ignore)
 
-                        project.ProjectNode.InsertAfter(propertyChooseNode,node) |> ignore
+                        project.ProjectNode.InsertAfter(ctx.FrameworkSpecificPropertyChooseNode,node) |> ignore
                 else
                    addProps()
 
-                targetsNodes
+                ctx.FrameworkSpecificTargetsNodes
                 |> Seq.iter (project.ProjectNode.AppendChild >> ignore)
 
-                if analyzersNode.ChildNodes.Count > 0 then
-                    project.ProjectNode.AppendChild analyzersNode |> ignore
+                if ctx.AnalyzersNode.ChildNodes.Count > 0 then
+                    project.ProjectNode.AppendChild ctx.AnalyzersNode |> ignore
             )
 
 
@@ -1418,7 +1483,7 @@ type ProjectFile with
 
     member this.DeleteCustomModelNodes(model:InstallModel) = ProjectFile.deleteCustomModelNodes model this
 
-    member this.GenerateXml(model, usedFrameworkLibs:HashSet<TargetProfile*string>, aliases, copyLocal, importTargets, referenceCondition) = ProjectFile.generateXml model usedFrameworkLibs aliases copyLocal importTargets referenceCondition this
+    member this.GenerateXml(model, usedFrameworkLibs:HashSet<TargetProfile*string>, aliases, copyLocal, importTargets, allTargetProfiles:#seq<TargetProfile>, referenceCondition) = ProjectFile.generateXml model usedFrameworkLibs aliases copyLocal importTargets referenceCondition (set allTargetProfiles) this
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 
