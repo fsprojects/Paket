@@ -127,6 +127,8 @@ type InstallModel =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module InstallModel =
+    // A lot of insights can be gained from https://github.com/NuGet/NuGet.Client/blob/85731166154d0818d79a19a6d2417de6aa851f39/src/NuGet.Core/NuGet.Packaging/ContentModel/ManagedCodeConventions.cs#L385-L505
+    // if you read this update the hash ;)
     open Logging
 
     let emptyModel packageName packageVersion =
@@ -139,13 +141,14 @@ module InstallModel =
           LicenseUrl = None }
 
     let getReferenceFolders (installModel: InstallModel) =
-        installModel.LegacyReferenceFileFolders @
-        (installModel.NewReferenceFileFolders
-         |> List.choose (fun r ->
-            match installModel.LegacyReferenceFileFolders |> List.tryFind (fun r2 -> r2.Targets = r.Targets) with
-            | None -> Some r
-            | _ -> None))
+        if installModel.NewReferenceFileFolders.IsEmpty then
+          installModel.LegacyReferenceFileFolders
+        else installModel.NewReferenceFileFolders
 
+    let getLibraryFolders (installModel: InstallModel) =
+        if installModel.NewReferenceFileFolders.IsEmpty then
+          installModel.LegacyReferenceFileFolders
+        else installModel.NewReferenceFileFolders
 
     let extractRefFolder packageName (path:string) =
         let path = path.Replace("\\", "/").ToLower()
