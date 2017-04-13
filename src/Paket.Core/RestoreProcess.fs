@@ -33,11 +33,12 @@ let CopyToCaches force caches fileName =
             if verbose then
                 traceWarnfn "Could not copy %s to cache %s%s%s" fileName cache.Location Environment.NewLine exn.Message)
 
+/// returns - package, libs files, props files, targets files, analyzers files
 let private extractPackage caches package alternativeProjectRoot root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
         let! fileName,folder = NuGetV2.DownloadPackage(alternativeProjectRoot, root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
         CopyToCaches force caches fileName
-        return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+        return package, NuGetV2.GetLibFiles folder, NuGetV2.GetPropsFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
     }
 
     async { 
@@ -55,6 +56,7 @@ let private extractPackage caches package alternativeProjectRoot root source gro
     }
 
 /// Downloads and extracts a package.
+/// returns - package, libs files, props files, targets files, analyzers files
 let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package : ResolvedPackage, localOverride) = 
     async { 
         let v = package.Version
@@ -89,7 +91,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                 CopyToCaches force caches nupkg.FullName
 
                 let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
-                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
+                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetPropsFiles folder, NuGetV2.GetTargetsFiles folder, NuGetV2.GetAnalyzerFiles folder
         }
 
         // manipulate overridenFile after package extraction

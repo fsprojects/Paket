@@ -146,6 +146,7 @@ type OptionalPackagingInfo =
       ExcludedGroups : Set<GroupName>
       References : string list
       FrameworkAssemblyReferences : string list
+      /// (src * target) list
       Files : (string * string) list
       FilesExcluded : string list 
       IncludePdbs : bool 
