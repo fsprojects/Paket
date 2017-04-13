@@ -10,8 +10,6 @@ open System.Xml
 
 module internal NupkgWriter =
 
-
-
     let nuspecId = "nuspec"
     let corePropsId = "coreProp"
     let contentTypePath = "[Content_Types].xml"
@@ -352,16 +350,7 @@ module NuspecExtensions =
                 nuspecDoc (projectInfo.ToCoreInfo Id, optionalInfo)
             |> string
 
-        
-        //static member FromTemplate (templatePath:string) (dependenciesPath:string) = 
-        //    let dependencies = DependenciesFile.ReadFromFile dependenciesPath
-        //    let lockFile = (DependenciesFile.FindLockfile dependenciesPath).FullName |> LockFile.LoadFrom
-            
-
-        static member FromProject (projectPath:string) (dependenciesPath:string) = 
-            printfn "Project - %s" projectPath
-            printfn "Dependencies - %s" dependenciesPath
-
+        static member FromProject (projectPath:string, dependenciesPath:string) = 
             let (>>=) opt fn = opt |> Option.bind fn
             
             let dependencies = DependenciesFile.ReadFromFile dependenciesPath
