@@ -72,6 +72,7 @@ type VersionRange =
 
             from + " " + _to
 
+
 type VersionRequirement =
 | VersionRequirement of VersionRange * PreReleaseStatus
     /// Checks wether the given version is in the version range
@@ -213,6 +214,12 @@ type VersionRequirement =
         let range = parseRange text
 
         VersionRequirement(range,!prereleases)
+
+
+    static member TryParse text =
+        try VersionRequirement.Parse text |> Some
+        with _ -> None
+
 
     /// Formats a VersionRequirement in NuGet syntax
     member this.FormatInNuGetSyntax() =

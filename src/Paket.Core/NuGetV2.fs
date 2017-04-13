@@ -638,10 +638,13 @@ let GetLibFiles(targetFolder) =
     |> Array.append runtimeLibs
 
 /// Finds all targets files in a nuget package.
-let GetTargetsFiles(targetFolder) = getFiles targetFolder "build" ".targets files"
+let GetTargetsFiles targetFolder = getFiles targetFolder "build" ".targets files"
+
+/// Finds all props files in a nuget package 
+let GetPropsFiles targetFolder = getFiles targetFolder "build" ".props files"
 
 /// Finds all analyzer files in a nuget package.
-let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
+let GetAnalyzerFiles targetFolder = getFiles targetFolder "analyzers" "analyzer dlls"
 
 let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails =
 

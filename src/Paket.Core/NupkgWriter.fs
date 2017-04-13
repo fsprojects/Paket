@@ -1,15 +1,16 @@
 ﻿namespace Paket
+open System
+open System.IO
+open System.Xml.Linq
+open System.IO.Compression
+open Paket
+open System.Text
+open System.Text.RegularExpressions
+open System.Xml
 
 module internal NupkgWriter =
 
-    open System
-    open System.IO
-    open System.Xml.Linq
-    open System.IO.Compression
-    open Paket
-    open System.Text
-    open System.Text.RegularExpressions
-    open System.Xml
+
 
     let nuspecId = "nuspec"
     let corePropsId = "coreProp"
@@ -339,6 +340,7 @@ module internal NupkgWriter =
 
         outputPath
 
+[<AutoOpen>]
 module NuspecExtensions = 
     open NupkgWriter
 
@@ -352,9 +354,18 @@ module NuspecExtensions =
                 nuspecDoc (projectInfo.ToCoreInfo Id, optionalInfo)
             |> string
 
+        
+        //static member FromTemplate (templatePath:string) (dependenciesPath:string) = 
+        //    let dependencies = DependenciesFile.ReadFromFile dependenciesPath
+        //    let lockFile = (DependenciesFile.FindLockfile dependenciesPath).FullName |> LockFile.LoadFrom
+            
 
-        static member FromProject (projectPath:string) (dependenciesPath:string)= 
+        static member FromProject (projectPath:string) (dependenciesPath:string) = 
+            printfn "Project - %s" projectPath
+            printfn "Dependencies - %s" dependenciesPath
+
             let (>>=) opt fn = opt |> Option.bind fn
+            
             let dependencies = DependenciesFile.ReadFromFile dependenciesPath
             let lockFile = (DependenciesFile.FindLockfile dependenciesPath).FullName |> LockFile.LoadFrom
             ProjectFile.TryLoad projectPath >>= fun project ->
@@ -362,23 +373,22 @@ module NuspecExtensions =
             let references = ReferencesFile.FromFile refsPath
 
             let packages = 
-                references.Groups |> Seq.map (fun kvp -> 
-                kvp.Value.NugetPackages |> List.map (fun pkg -> 
-                    match  dependencies.GetPackage(kvp.Key,pkg.Name).VersionRequirement with
-                    | VersionRequirement (VersionRange.Maximum     version,_)
-                    | VersionRequirement (VersionRange.GreaterThan version,_)
-                    | VersionRequirement (VersionRange.LessThan version,_)
-                    | VersionRequirement (VersionRange.Maximum version,_)
-                    | VersionRequirement (VersionRange.Minimum version,_)
-                    | VersionRequirement (VersionRange.Range (_,version,_,_),_)
-                    | VersionRequirement (VersionRange.Specific version,_)
-                    | VersionRequirement (VersionRange.OverrideAll version,_) -> pkg.Name,version)
-                |> Map.ofSeq)
+                references.Groups |> Seq.collect (fun kvp -> 
+                kvp.Value.NugetPackages |> List.choose (fun pkg -> 
+                    dependencies.TryGetPackage(kvp.Key,pkg.Name)
+                    |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement)))
+                |> List.ofSeq
             
             let projectInfo, optionalInfo = project.GetTemplateMetadata ()
+
+            let optionalInfo = 
+                { optionalInfo with
+                    Dependencies = packages @ optionalInfo.Dependencies
+                }
+            let name = Path.GetFileNameWithoutExtension project.Name
             // TODO - this might be the point to add in some info from the
             // lock and dependencies fiels that weren't in the project file
-            nuspecDoc (projectInfo.ToCoreInfo project.Name, optionalInfo )
+            nuspecDoc (projectInfo.ToCoreInfo name, optionalInfo )
             |> string |> Some
        
             
