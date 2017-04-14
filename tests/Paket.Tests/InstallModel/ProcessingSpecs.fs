@@ -48,23 +48,24 @@ let ``should understand libuv in runtimes``() =
     model.GetLibReferences(SinglePlatform (Runtimes("win7-x64"))) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
 
 [<Test>]
-let ``should understand reference folder``() = 
-    let model = 
-      emptymodel.AddReferences 
+let ``should understand reference folder``() =
+    let model =
+      emptymodel.AddReferences
        ([ @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
           @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-          @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll" ] |> fromLegacyList @"..\System.Security.Cryptography.Algorithms\")
+          @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll" ]
+          |> fromLegacyList @"..\System.Security.Cryptography.Algorithms\")
 
     let refs = model.GetLibReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    
+
     let refs = model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V3_5))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    
+
     let refs = model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
@@ -365,15 +366,16 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
 let ``should handle lib install of MicrosoftBcl``() = 
     let model =
         emptymodel.AddReferences(
-            [ @"..\Microsoft.Net.Http\lib\monoandroid\_._"
+            ([ @"..\Microsoft.Net.Http\lib\monoandroid\_._"
 
-              @"..\Microsoft.Net.Http\lib\monotouch\_._"
-
+               @"..\Microsoft.Net.Http\lib\monotouch\_._"
+               @"..\Microsoft.Net.Http\lib\net45\_._"
+             ] |> fromLegacyList @"..\Microsoft.Net.Http\") @
+            ([
               @"..\Microsoft.Bcl\lib\net40\System.IO.dll"
               @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll"
               @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll"
 
-              @"..\Microsoft.Net.Http\lib\net45\_._"
 
               @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll"
               @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll"
@@ -395,8 +397,8 @@ let ``should handle lib install of MicrosoftBcl``() =
               @"..\Microsoft.Bcl\lib\wp8\_._"
               @"..\Microsoft.Bcl\lib\wpa81\_._"
               @"..\Microsoft.Bcl\lib\portable-net451+win81\_._"
-              @"..\Microsoft.Bcl\lib\portable-net451+win81+wpa81\_._"
-               ] |> fromLegacyList @"..\Microsoft.Bcl\").FilterBlackList()
+              @"..\Microsoft.Bcl\lib\portable-net451+win81+wpa81\_._"]
+             |> fromLegacyList @"..\Microsoft.Bcl\")).FilterBlackList()
 
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll"
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4)) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
