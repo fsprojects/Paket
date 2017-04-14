@@ -16,34 +16,6 @@ type DotNetStandardVersion =
     | V1_5
     | V1_6
     | V2_0
-    member private this.NumKey =
-        match this with
-        | V1_0 -> 0
-        | V1_1 -> 1
-        | V1_2 -> 2
-        | V1_3 -> 3
-        | V1_4 -> 4
-        | V1_5 -> 5
-        | V1_6 -> 6
-        | V2_0 -> 7
-    static member private FromNum num =
-        match num with
-        | 0 -> V1_0
-        | 1 -> V1_1
-        | 2 -> V1_2
-        | 3 -> V1_3
-        | 4 -> V1_4
-        | 5 -> V1_5
-        | 6 -> V1_6
-        | 7 -> V2_0
-        | _   -> failwithf "'%i' has no corresponding framework version" num
-    
-    static member (<->) (lower:DotNetStandardVersion,upper:DotNetStandardVersion) =
-        if lower.NumKey < upper.NumKey then
-            [ lower.NumKey .. upper.NumKey ] |> List.map DotNetStandardVersion.FromNum
-        else
-            [ lower.NumKey .. -1 .. upper.NumKey ] |> List.map DotNetStandardVersion.FromNum
-
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
@@ -85,53 +57,7 @@ type FrameworkVersion =
     | V4_6_2
     | V4_6_3
     | V4_7
-    | V5_0
-    member private self.NumKey = 
-        match self with
-        | V1        -> 0
-        | V1_1      -> 1
-        | V2        -> 2
-        | V3        -> 3
-        | V3_5      -> 4
-        | V4_Client -> 5
-        | V4        -> 6
-        | V4_5      -> 7
-        | V4_5_1    -> 8
-        | V4_5_2    -> 9
-        | V4_5_3    -> 10
-        | V4_6      -> 11
-        | V4_6_1    -> 12
-        | V4_6_2    -> 13
-        | V4_6_3    -> 14
-        | V4_7      -> 15
-        | V5_0      -> 16
-    static member private FromNum num = 
-        match num with
-        |  0  -> V1        
-        |  1  -> V1_1      
-        |  2  -> V2        
-        |  3  -> V3        
-        |  4  -> V3_5      
-        |  5  -> V4_Client 
-        |  6  -> V4        
-        |  7  -> V4_5      
-        |  8  -> V4_5_1    
-        |  9  -> V4_5_2    
-        |  10 -> V4_5_3    
-        |  11 -> V4_6      
-        |  12 -> V4_6_1    
-        |  13 -> V4_6_2    
-        |  14 -> V4_6_3    
-        |  15 -> V4_7      
-        |  16 -> V5_0
-        | _   -> failwithf "'%i' has no corresponding framework version" num
-
-    static member (<->) (lower:FrameworkVersion,upper:FrameworkVersion) =
-        if lower.NumKey < upper.NumKey then
-            [ lower.NumKey .. upper.NumKey ] |> List.map FrameworkVersion.FromNum
-        else
-            [ lower.NumKey .. -1 .. upper.NumKey ] |> List.map FrameworkVersion.FromNum
-
+    | V5_0          
     override this.ToString() =
         match this with
         | V1        -> "v1.0"
@@ -171,29 +97,6 @@ type FrameworkVersion =
         | FrameworkVersion.V4_6_3 -> "463"
         | FrameworkVersion.V4_7 -> "47"
         | FrameworkVersion.V5_0 -> "50"
-
-    member this.NetStandardCompatible =
-        match this with
-        | FrameworkVersion.V1         
-        | FrameworkVersion.V1_1       
-        | FrameworkVersion.V2         
-        | FrameworkVersion.V3         
-        | FrameworkVersion.V3_5       
-        | FrameworkVersion.V4_Client  
-        | FrameworkVersion.V4        -> []
-        | FrameworkVersion.V4_5      -> [ DotNetStandardVersion.V1_1 ]
-        | FrameworkVersion.V4_5_1    -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_2 
-        | FrameworkVersion.V4_5_2    -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_2 
-        | FrameworkVersion.V4_5_3    -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_2 
-        | FrameworkVersion.V4_6      -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_3
-        | FrameworkVersion.V4_6_1    -> (DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_4) @ [DotNetStandardVersion.V2_0]
-        | FrameworkVersion.V4_6_2    -> (DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_5) @ [DotNetStandardVersion.V2_0]
-        | FrameworkVersion.V4_6_3    -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V2_0
-        | FrameworkVersion.V4_7      -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V2_0
-        | FrameworkVersion.V5_0      -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_3
-
-    
-
 
 [<RequireQualifiedAccess>]
 /// The UAP version.
@@ -387,31 +290,6 @@ type FrameworkIdentifier =
         | _ -> false
     
     /// TODO: some notion of an increasing/decreasing sequence of FrameworkIdentitifers, so that Between(bottom, top) constraints can enumerate the list
-
-    member private x.CompatibleUpto (?topFramework, ?topStandard, ?topCore) =
-        [   match topFramework with
-            | None -> () | Some framework -> yield! framework  <-> FrameworkVersion.V1 |> List.map DotNetFramework
-            match topStandard with
-            | None -> () | Some standard -> yield! standard <-> DotNetStandardVersion.V1_0 |> List.map DotNetStandard 
-            match topCore with
-            | None -> () | Some core -> yield! core <->  DotNetCoreVersion.V1_0 |> List.map DotNetCore
-        ]
-            
-    member private x.CompatibleUpto (topStandard) =
-        [  yield! topStandard <-> DotNetStandardVersion.V1_0 |> List.map DotNetStandard ]
-    
-    member private x.CompatibleUpto (topCore) =
-        [   yield! topCore <-> DotNetCoreVersion.V1_0 |> List.map DotNetCore ]
-
-
-    member private self.ExpandSupportedPlatforms (xs:FrameworkIdentifier list) =
-        let expand frameworkId =
-            match frameworkId with 
-            | DotNetFramework x -> self.CompatibleUpto x
-            | DotNetStandard x -> self.CompatibleUpto x
-            | DotNetCore x -> self.CompatibleUpto x
-            | _ -> []
-        xs |> List.collect expand
 
     member x.IsCompatible y = 
         x = y || 
