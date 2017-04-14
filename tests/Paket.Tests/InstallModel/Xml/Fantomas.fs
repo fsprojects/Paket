@@ -16,18 +16,20 @@ let expected = """
   </Reference>
 </ItemGroup>"""
 
+let fromLegacyList = Paket.InstallModel.ProcessingSpecs.fromLegacyList
+
 [<Test>]
 let ``should generate Xml for Fantomas 1.5``() = 
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll" 
-              @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ],
+            [ @"..\Fantomas\lib\FantomasLib.dll"
+              @"..\Fantomas\lib\FSharp.Core.dll"
+              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
+
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
     ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
@@ -59,13 +61,13 @@ let ``should generate full Xml for Fantomas 1.5``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll" 
-              @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ],
+            [ @"..\Fantomas\lib\FantomasLib.dll"
+              @"..\Fantomas\lib\FSharp.Core.dll"
+              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
+
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model,[])] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,InstallSettings.Default)] |> Map.ofSeq
@@ -81,13 +83,13 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll" 
-              @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ],
+            [ @"..\Fantomas\lib\FantomasLib.dll"
+              @"..\Fantomas\lib\FSharp.Core.dll"
+              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
+
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model,[])] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "blub")), (InstallSettings.Default,InstallSettings.Default) ] |> Map.ofSeq
@@ -118,13 +120,13 @@ let ``should generate full Xml with reference condition for Fantomas 1.5``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll" 
-              @"..\Fantomas\lib\FSharp.Core.dll" 
-              @"..\Fantomas\lib\Fantomas.exe" ],
+            [ @"..\Fantomas\lib\FantomasLib.dll"
+              @"..\Fantomas\lib\FSharp.Core.dll"
+              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
+
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
     let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model,[])] |> Map.ofSeq
     let settings =
@@ -162,7 +164,7 @@ let ``should generate full Xml with reference condition and framework restrictio
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
             [ FrameworkRestriction.Exactly (FrameworkIdentifier.XamariniOS)
               FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid)],
-            [ @"..\Fantomas\lib\portable-net45+win8\FantomasLib.dll" ],
+            [ @"..\Fantomas\lib\portable-net45+win8\FantomasLib.dll" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.All)

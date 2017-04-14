@@ -23,7 +23,7 @@ let ``should generate Xml for Fantomas 1.5``() =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
             [ @"..\Fantomas\Lib\FantomasLib.dll" 
               @"..\Fantomas\Lib\FSharp.Core.dll" 
-              @"..\Fantomas\Lib\Fantomas.exe" ],
+              @"..\Fantomas\Lib\Fantomas.exe" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])

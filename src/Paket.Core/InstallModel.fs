@@ -6,6 +6,11 @@ open Paket.Domain
 open Paket.Requirements
 open Logging
 
+// An unparsed file in the nuget package -> still need to inspect the path for further information. After parsing an entry will be part of a "LibFolder" for example.
+type UnparsedPackageFile =
+    { FullPath : string
+      PathWithinPackage : string }
+
 [<RequireQualifiedAccess>]
 type Reference =
     | Library of string
@@ -150,18 +155,18 @@ module InstallModel =
           installModel.LegacyReferenceFileFolders
         else installModel.NewReferenceFileFolders
 
-    let extractRefFolder packageName (path:string) =
-        let path = path.Replace("\\", "/").ToLower()
+    let extractRefFolder packageName (path:UnparsedPackageFile) =
+        let path = path.FullPath.Replace("\\", "/").ToLower()
         Utils.extractPath ("ref", packageName, path)
 
-    let extractLibFolder packageName (path:string) =
-        let path = path.Replace("\\", "/").ToLower()
+    let extractLibFolder packageName (path:UnparsedPackageFile) =
+        let path = path.FullPath.Replace("\\", "/").ToLower()
         if path.Contains "runtimes" then
             Utils.extractPath ("runtimes", packageName, path)
         else
             Utils.extractPath ("lib", packageName, path)
 
-    let extractBuildFolder packageName path = Utils.extractPath ("build", packageName, path)
+    let extractBuildFolder packageName (path:UnparsedPackageFile) = Utils.extractPath ("build", packageName, path.FullPath)
 
     let mapFolders mapfn (installModel:InstallModel) =
         { installModel with
@@ -217,7 +222,7 @@ module InstallModel =
         else
             this
 
-    let calcLibFoldersG extract packageName libs =
+    let calcLibFoldersG extract packageName (libs:UnparsedPackageFile list) =
        libs
         |> List.choose (extract packageName)
         |> List.distinct
@@ -229,33 +234,33 @@ module InstallModel =
     let calcLibFolders = calcLibFoldersG extractLibFolder
     let calcRefFolders = calcLibFoldersG extractRefFolder
 
-    let addFileToFolder (path:LibFolder) (file:string) (folders:LibFolder list) (addfn: string -> InstallFiles -> InstallFiles) =
+    let addFileToFolder (path:LibFolder) (file:UnparsedPackageFile) (folders:LibFolder list) (addfn: string -> InstallFiles -> InstallFiles) =
         folders
         |> List.map (fun p ->
             if p.Name <> path.Name then p else
-            { p with Files = addfn file p.Files })
+            { p with Files = addfn file.FullPath p.Files })
 
-    let private addPackageFile (path:LibFolder) (file:string) references (this:InstallModel) : InstallModel =
+    let private addPackageFile (path:LibFolder) (file:UnparsedPackageFile) references (this:InstallModel) : InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists file.EndsWith list
+            | NuspecReferences.Explicit list -> List.exists file.FullPath.EndsWith list
 
         if not install then this else
         { this with
             LegacyReferenceFileFolders = addFileToFolder path file this.LegacyReferenceFileFolders InstallFiles.addReference }
 
-    let private addPackageRefFile (path:LibFolder) (file:string) references (this:InstallModel) : InstallModel =
+    let private addPackageRefFile (path:LibFolder) (file:UnparsedPackageFile) references (this:InstallModel) : InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists file.EndsWith list
+            | NuspecReferences.Explicit list -> List.exists file.FullPath.EndsWith list
 
         if not install then this else
         { this with
             NewReferenceFileFolders = addFileToFolder path file this.NewReferenceFileFolders InstallFiles.addReference }
 
-    let addLibReferences libs references (installModel:InstallModel) : InstallModel =
+    let addLibReferences (libs:UnparsedPackageFile seq) references (installModel:InstallModel) : InstallModel =
         let libs = libs |> Seq.toList
         let libFolders = calcLibFolders installModel.PackageName libs
         let refFolders = calcRefFolders installModel.PackageName libs
@@ -272,16 +277,16 @@ module InstallModel =
         let newState = addItem extractLibFolder addPackageFile (fun i -> i.LegacyReferenceFileFolders) { installModel with LegacyReferenceFileFolders = libFolders }
         addItem extractRefFolder addPackageRefFile (fun i -> i.NewReferenceFileFolders) { newState with NewReferenceFileFolders = refFolders }
 
-    let addAnalyzerFiles (analyzerFiles:string seq) (installModel:InstallModel)  : InstallModel =
+    let addAnalyzerFiles (analyzerFiles:UnparsedPackageFile seq) (installModel:InstallModel)  : InstallModel =
         let analyzerLibs =
             analyzerFiles
-            |> Seq.map (fun file -> FileInfo file |> AnalyzerLib.FromFile)
+            |> Seq.map (fun file -> FileInfo file.FullPath |> AnalyzerLib.FromFile)
             |> List.ofSeq
 
         { installModel with Analyzers = installModel.Analyzers @ analyzerLibs}
 
 
-    let rec addTargetsFile (path:LibFolder)  (file:string) (installModel:InstallModel) :InstallModel =
+    let rec addTargetsFile (path:LibFolder)  (file:UnparsedPackageFile) (installModel:InstallModel) :InstallModel =
         { installModel with
             TargetsFileFolders = addFileToFolder path file installModel.TargetsFileFolders InstallFiles.addTargetsFile
         }
@@ -312,7 +317,7 @@ module InstallModel =
 
         let model =
             if List.isEmpty installModel.LegacyReferenceFileFolders then
-                let folders = calcLibFolders installModel.PackageName ["lib/Default.dll"]
+                let folders = calcLibFolders installModel.PackageName [{ FullPath ="lib/Default.dll"; PathWithinPackage = "lib/Default.dll" }]
                 { installModel with LegacyReferenceFileFolders = folders }
             else
                 installModel
@@ -383,7 +388,7 @@ module InstallModel =
                     |> List.map applRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])  }
 
-    let rec addTargetsFiles (targetsFiles:string list) (this:InstallModel) : InstallModel =
+    let rec addTargetsFiles (targetsFiles:UnparsedPackageFile list) (this:InstallModel) : InstallModel =
         let targetsFileFolders =
             targetsFiles
             |> List.choose (extractBuildFolder this.PackageName)
@@ -412,7 +417,7 @@ module InstallModel =
         if String.IsNullOrWhiteSpace url then model
         else  { model with LicenseUrl = Some url }
 
-    let createFromLibs packageName packageVersion frameworkRestrictions libs targetsFiles analyzerFiles (nuspec:Nuspec) =
+    let createFromLibs packageName packageVersion frameworkRestrictions (libs:UnparsedPackageFile seq) targetsFiles analyzerFiles (nuspec:Nuspec) =
         emptyModel packageName packageVersion
         |> addLibReferences libs nuspec.References
         |> addTargetsFiles targetsFiles
@@ -471,5 +476,5 @@ type InstallModel with
 
     member this.RemoveIfCompletelyEmpty() = InstallModel.removeIfCompletelyEmpty this
 
-    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestriction list, libs, targetsFiles, analyzerFiles, nuspec : Nuspec) =
+    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestriction list, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
         InstallModel.createFromLibs packageName packageVersion frameworkRestrictions libs targetsFiles analyzerFiles nuspec

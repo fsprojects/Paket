@@ -8,6 +8,8 @@ open Paket.Domain
 open Paket.Requirements
 open Paket.InstallModel
 
+let fromLegacyList = Paket.InstallModel.ProcessingSpecs.fromLegacyList
+
 let expectedReferenceNodes = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v2.0' Or $(TargetFrameworkVersion) == 'v3.0' Or $(TargetFrameworkVersion) == 'v3.5')">
@@ -90,6 +92,7 @@ let ``should extract lib folders for SQLite``() =
          @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll"]
+        |> fromLegacyList @"..\System.Data.SQLite.Core\"
 
     let model =
        libs 
@@ -105,6 +108,7 @@ let ``should calc lib folders for SQLite``() =
          @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll"]
+        |> fromLegacyList @"..\System.Data.SQLite.Core\"
 
     let model = calcLibFolders (PackageName "System.Data.SQLite.Core") libs 
     let folder = model |> List.item 2
@@ -118,6 +122,7 @@ let ``should init model for SQLite``() =
          @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll"]
+        |> fromLegacyList @"..\System.Data.SQLite.Core\"
 
     let model =
         emptyModel (PackageName "System.Data.SQLite.Core") (SemVer.Parse "3.8.2")
@@ -135,11 +140,13 @@ let ``should generate model for SQLite``() =
             [ @"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"
-              @"..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll"],
+              @"..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll"]
+            |> fromLegacyList @"..\System.Data.SQLite.Core\",
             [ @"..\System.Data.SQLite.Core\build\net20\System.Data.SQLite.Core.targets"
               @"..\System.Data.SQLite.Core\build\net40\System.Data.SQLite.Core.targets"
               @"..\System.Data.SQLite.Core\build\net45\System.Data.SQLite.Core.targets"
-              @"..\System.Data.SQLite.Core\build\net451\System.Data.SQLite.Core.targets" ],
+              @"..\System.Data.SQLite.Core\build\net451\System.Data.SQLite.Core.targets" ]
+            |> fromLegacyList @"..\System.Data.SQLite.Core\",
             [],
                 Nuspec.All)
 
@@ -155,11 +162,13 @@ let ``should generate Xml for SQLite``() =
             [ @"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"
-              @"..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll"],
+              @"..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll"]
+            |> fromLegacyList @"..\System.Data.SQLite.Core\",
             [ @"..\System.Data.SQLite.Core\build\net20\System.Data.SQLite.Core.targets"
               @"..\System.Data.SQLite.Core\build\net40\System.Data.SQLite.Core.targets"
               @"..\System.Data.SQLite.Core\build\net45\System.Data.SQLite.Core.targets"
-              @"..\System.Data.SQLite.Core\build\net451\System.Data.SQLite.Core.targets" ],
+              @"..\System.Data.SQLite.Core\build\net451\System.Data.SQLite.Core.targets" ]
+            |> fromLegacyList @"..\System.Data.SQLite.Core\",
             [],
                 Nuspec.All)
 

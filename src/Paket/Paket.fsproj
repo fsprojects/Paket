@@ -36,8 +36,8 @@
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
-    <StartArguments>convert-from-nuget</StartArguments>
-    <StartWorkingDirectory>c:\users\lr\documents\visual studio 2017\Projects\PaketTest</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>C:\PROJ\paket.test\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
