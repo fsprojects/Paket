@@ -508,7 +508,7 @@ let isTargetMatchingRestrictions =
             restrictions
             |> List.exists (fun restriction ->
                     match restriction with
-                    | FrameworkRestriction.Exactly (Native("","")) -> 
+                    | FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform)) -> 
                         match pf with 
                         | Native(_) -> true 
                         | _ -> false

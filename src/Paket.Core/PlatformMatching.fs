@@ -205,10 +205,10 @@ let getTargetCondition (target:TargetProfile) =
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
         | UAP(version) ->"$(TargetPlatformIdentifier) == 'UAP'", sprintf "$(TargetPlatformVersion.StartsWith('%O'))" version
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
-        | Native("","") -> "true", ""
-        | Native("",bits) -> (sprintf "'$(Platform)'=='%s'" bits), ""
+        | Native(NoBuildMode,NoPlatform) -> "true", ""
+        | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
         //| Runtimes(platform) -> failwithf "Runtime dependencies are unsupported in project files."
-        | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile bits), ""
+        | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
 let getCondition (referenceCondition:string option) (allTargets: TargetProfile list list) (targets : TargetProfile list) =
@@ -244,12 +244,12 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile l
             | _ -> target)
 
     let conditions =
-        if targets = [ SinglePlatform(Native("", "")) ] then 
+        if targets = [ SinglePlatform(Native(NoBuildMode,NoPlatform)) ] then 
             targets
         else 
             targets 
             |> List.filter (function
-                           | SinglePlatform(Native("", "")) -> false
+                           | SinglePlatform(Native(NoBuildMode,NoPlatform)) -> false
                            //| SinglePlatform(Runtimes(_)) -> false
                            | SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)) ->
                                 targets |> List.contains (SinglePlatform(DotNetFramework(FrameworkVersion.V4))) |> not

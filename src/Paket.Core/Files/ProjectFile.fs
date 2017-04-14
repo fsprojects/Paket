@@ -753,8 +753,8 @@ module ProjectFile =
 
         // handle legacy conditions
         let conditions =
-            ((model.GetReferenceFolders() |> List.sortBy (fun libFolder -> libFolder.Name)) @
-                netCoreRestricted.CompileRefFolders |> List.sortBy (fun libFolder -> libFolder.Name))
+            ((model.GetReferenceFolders() |> List.sortBy (fun libFolder -> libFolder.Path)) @
+                netCoreRestricted.CompileRefFolders |> List.sortBy (fun libFolder -> libFolder.Path))
             |> List.collect (fun libFolder ->
                 match libFolder with
                 //| x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> []  // TODO: Add reference to custom task instead
@@ -796,7 +796,7 @@ module ProjectFile =
                                 [lowerCondition,createItemGroup !assemblyTargets frameworkAssemblies,true
                                  condition,createItemGroup libFolder.Targets rest,false]
                         )
-                        
+
         // global targets are targets, that are either directly in the /build folder,
         // or, if there is a framework-restriction, specific to the framework(s).
         // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package). 
@@ -805,7 +805,7 @@ module ProjectFile =
             let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Name)
             sortedTargets
             |> List.partition (fun lib -> allTargetProfiles = set lib.Targets )
-        
+
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup lib.Files.References)
@@ -997,14 +997,6 @@ module ProjectFile =
         match getTargetFrameworkProfile project with
         | Some profile when profile = "Client" ->
             SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)
-        | Some profile when profile = "Unity Web v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Web)
-        | Some profile when profile = "Unity Micro v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Micro)
-        | Some profile when profile = "Unity Subset v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Subset)
-        | Some profile when profile = "Unity Full v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Full)
         | Some profile when String.IsNullOrWhiteSpace profile |> not ->
             KnownTargetProfiles.FindPortableProfile profile
         | _ ->
