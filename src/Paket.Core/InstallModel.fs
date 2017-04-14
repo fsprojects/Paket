@@ -131,38 +131,54 @@ type InstallModel =
 
 module FolderScanner =
     // Stolen and modifed to our needs from http://www.fssnip.net/4I/title/sscanf-parsing-with-format-strings
-    open System
-    open System.Text
     open System.Text.RegularExpressions
     open Microsoft.FSharp.Reflection
 
-    let check f x = if f x then x
-                    else failwithf "format failure \"%s\"" x
+    type ParseResult<'t> =
+        | ParseSucceeded of 't
+        | ParseError of string
+    module ParseResult =
+        let bind f r =
+            match r with
+            | ParseSucceeded res -> f res
+            | ParseError err -> ParseError err
+        let map f r =
+            r |> bind (fun r -> ParseSucceeded (f r))
+        let box r =
+            r |> map box
 
-    let parseDecimal x = Decimal.Parse(x, System.Globalization.CultureInfo.InvariantCulture)
+    let toParseResult error (wasSuccess, result) =
+        if wasSuccess then ParseSucceeded result
+        else ParseError error
+
+    let check errorMsg f x =
+        if f x then ParseSucceeded x
+        else ParseError (errorMsg)
+
+    let parseDecimal x = Decimal.TryParse(x, Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture)
 
     let parsers = dict [
-                     'b', Boolean.Parse >> box
-                     'd', int >> box
-                     'i', int >> box
-                     's', box
-                     'u', uint32 >> int >> box
-                     'x', check (String.forall Char.IsLower) >> ((+) "0x") >> int >> box
-                     'X', check (String.forall Char.IsUpper) >> ((+) "0x") >> int >> box
-                     'o', ((+) "0o") >> int >> box
-                     'e', float >> box // no check for correct format for floats
-                     'E', float >> box
-                     'f', float >> box
-                     'F', float >> box
-                     'g', float >> box
-                     'G', float >> box
-                     'M', parseDecimal >> box
-                     'c', char >> box
+                     'b', Boolean.TryParse >> toParseResult "Could not parse bool (b)" >> ParseResult.box
+                     'd', Int32.TryParse >> toParseResult "Could not parse int (d)" >> ParseResult.box
+                     'i', Int32.TryParse >> toParseResult "Could not parse int (i)" >> ParseResult.box
+                     's', (fun s -> ParseSucceeded s) >> ParseResult.box
+                     'u', UInt32.TryParse >> toParseResult "could not parse uint (u)" >> ParseResult.map int >> ParseResult.box
+                     'x', check "could not parse int (x)" (String.forall Char.IsLower) >> ParseResult.map ((+) "0x") >> ParseResult.bind (Int32.TryParse >> toParseResult "Could not parse int (0x via x)") >> ParseResult.box
+                     'X', check "could not parse int (X)" (String.forall Char.IsUpper) >> ParseResult.map ((+) "0x") >> ParseResult.bind (Int32.TryParse >> toParseResult "Could not parse int (0x via X)") >> ParseResult.box
+                     'o', ((+) "0o") >> Int32.TryParse >> toParseResult "Could not parse int (0o)" >> ParseResult.box
+                     'e', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box // no check for correct format for floats
+                     'E', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'f', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'F', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'g', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'G', Double.TryParse >> toParseResult "Could not parse float (e)" >> ParseResult.box
+                     'M', parseDecimal >> toParseResult "Could not parse decimal (m)" >> ParseResult.box
+                     'c', check "Could not parse character (c)" (String.length >> (=) 1) >> ParseResult.map char >> ParseResult.box
+                     'A', (fun s -> ParseSucceeded s) >> ParseResult.box
                     ]
-
-    //let advancedParsers = dict [
-    //    "",
-    //]
+    type AdvancedScanner =
+      { Name : string
+        Parser : string -> ParseResult<obj> }
 
     // array of all possible formatters, i.e. [|"%b"; "%d"; ...|]
     let separators =
@@ -170,43 +186,135 @@ module FolderScanner =
        |> Seq.map (fun c -> "%" + sprintf "%c" c)
        |> Seq.toArray
 
-
     // Creates a list of formatter characters from a format string,
     // for example "(%s,%d)" -> ['s', 'd']
     let rec getFormatters xs =
        match xs with
        | '%'::'%'::xr -> getFormatters xr
-       //| '%'::'A'::xr -> getFormatters xr
        | '%'::x::xr -> if parsers.ContainsKey x then x::getFormatters xr
                        else failwithf "Unknown formatter %%%c" x
        | x::xr -> getFormatters xr
        | [] -> []
+    type private ScanResult =
+       | ScanSuccess of obj[]
+       | ScanRegexFailure of stringToScan:string * regex:string
+       | ScanParserFailure of error:string
+    let private sscanfHelper (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
+        let formatStr = pf.Value.Replace("%%", "%")
+        let constants = formatStr.Split(separators, StringSplitOptions.None)
+        let regexString = "^" + String.Join("(.*?)", constants |> Array.map Regex.Escape) + "$"
+        let regex = Regex(regexString)
+        let formatters = pf.Value.ToCharArray() // need original string here (possibly with "%%"s)
+                        |> Array.toList |> getFormatters
+        let matchres = regex.Match(s)
+        if not matchres.Success then ScanRegexFailure(s, regexString)
+        else
+            let groups =
+                matchres.Groups
+                |> Seq.cast<Group>
+                |> Seq.skip 1
+            let results =
+                (groups, formatters)
+                ||> Seq.map2 (fun g f -> g.Value |> parsers.[f])
+                |> Seq.toArray
+            match results |> Seq.choose (fun r -> match r with ParseError error -> Some error | _ -> None) |> Seq.tryHead with
+            | Some error ->
+                ScanParserFailure error
+            | None ->
+                ScanSuccess (results |> Seq.map (function ParseSucceeded res -> res | ParseError _ -> failwithf "Should not happen here") |> Seq.toArray)
 
+    let inline toGenericTuple<'t> (matches:obj[]) =
+        if matches.Length = 1 then matches.[0] :?> 't
+        else if matches.Length = 0 then Unchecked.defaultof<'t>
+        else FSharpValue.MakeTuple(matches, typeof<'t>) :?> 't
+
+    let trySscanf (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
+        //raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
+        match sscanfHelper pf s with
+        | ScanSuccess matches -> toGenericTuple matches |> Some
+        | _ -> None
+
+    let inline private handleErrors s r =
+        match r with
+        | ScanSuccess matches -> toGenericTuple matches
+        | ScanRegexFailure (s, regexString) -> raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
+        | ScanParserFailure e -> raise <| FormatException(sprintf "Unable to parse string '%s' with parser: %s" s e)
 
     let sscanf (pf:PrintfFormat<_,_,_,_,'t>) s : 't =
-      let formatStr = pf.Value.Replace("%%", "%")
-      let constants = formatStr.Split(separators, StringSplitOptions.None)
-      let regex = Regex("^" + String.Join("(.*?)", constants |> Array.map Regex.Escape) + "$")
-      let formatters = pf.Value.ToCharArray() // need original string here (possibly with "%%"s)
-                       |> Array.toList |> getFormatters
-      let groups =
-        regex.Match(s).Groups
-        |> Seq.cast<Group>
-        |> Seq.skip 1
-      let matches =
-        (groups, formatters)
-        ||> Seq.map2 (fun g f -> g.Value |> parsers.[f])
-        |> Seq.toArray
+        sscanfHelper pf s
+        |> handleErrors s
 
-      if matches.Length = 1 then matches.[0] :?> 't
-      else FSharpValue.MakeTuple(matches, typeof<'t>) :?> 't
+    let private findSpecifiers = Regex(@"%(?<formatSpec>.)({(?<inside>.*?)})?")
+
+    // Extends the syntax of the format string with %A{scanner}, and uses the corresponding named scanner from the advancedScanners parameter.
+    let private sscanfExtHelper (advancedScanners:AdvancedScanner seq) (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
+        let scannerMap =
+            advancedScanners
+            |> Seq.map (fun s -> s.Name, s)
+            |> dict
+        // replace advanced scanning formatters "%A{name}"
+        let matches =
+            findSpecifiers.Matches(pf.Value)
+            |> Seq.cast<Match>
+            |> Seq.map (fun m ->
+                let formatSpec = m.Groups.["formatSpec"].Value
+                let scannerName = m.Groups.["inside"].Value
+                formatSpec, scannerName, m.Value, m.Index)
+            |> Seq.toList
+        let advancedFormatters =
+            matches
+            |> Seq.filter (fun (formatSpec, scannerName, _, _) ->
+                formatSpec <> "%")
+            |> Seq.map (fun (formatSpec, scannerName, _, _) ->
+                if formatSpec = "A" then
+                    if System.String.IsNullOrWhiteSpace scannerName then
+                        None
+                    else Some scannerMap.[scannerName]
+                else None)
+
+        let replacedFormatString =
+            matches
+            |> List.rev // start replacing on the back, this way indices are correct
+            |> Seq.fold (fun (currentFormatterString:string) (formatSpec, scannerName, originalValue, index) ->
+                let replacement =
+                    match formatSpec with
+                    | "A" -> "%A"
+                    | _ -> originalValue
+                currentFormatterString.Substring(0, index) + replacement + currentFormatterString.Substring(index + originalValue.Length)) pf.Value
+
+        match sscanfHelper (PrintfFormat<_,_,_,_,'t> replacedFormatString) s with
+        | ScanSuccess objResults ->
+            let results =
+                (objResults, advancedFormatters)
+                ||> Seq.map2 (fun r a -> match a with Some p -> p.Parser (string r) | None -> ParseSucceeded r)
+                |> Seq.toArray
+            match results |> Seq.choose (fun r -> match r with ParseError error -> Some error | _ -> None) |> Seq.tryHead with
+            | Some error ->
+                ScanParserFailure error
+            | None ->
+                ScanSuccess (results |> Seq.map (function ParseSucceeded res -> res | ParseError _ -> failwithf "Should not happen here") |> Seq.toArray)
+        | _ as s -> s
+
+    let trySscanfExt advancedScanners (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
+        //raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
+        match sscanfExtHelper advancedScanners pf s with
+        | ScanSuccess matches -> toGenericTuple matches |> Some
+        | _ -> None
+
+    let sscanfExt advancedScanners (pf:PrintfFormat<_,_,_,_,'t>) s : 't =
+        sscanfExtHelper advancedScanners pf s
+        |> handleErrors s
 
     // some basic testing
     //let (a,b) = sscanf "(%%%s,%M)" "(%hello, 4.53)"
     //let (x,y,z) = sscanf "%s-%s-%s" "test-this-string"
     //let (c,d,e,f,g,h,i) = sscanf "%b-%d-%i,%u,%x,%X,%o" "false-42--31,13,ff,FF,42"
     //let (j,k,l,m,n,o,p) = sscanf "%f %F %g %G %e %E %c" "1 2.1 3.4 .3 43.2e32 0 f"
-    //let (t:string, asdfy: obj) = sscanf "%A %A" "asdas"
+    //let t = trySscanf "test%s" "test123"
+    //let t2 = sscanf "test%s" "invalid"
+    //let (blub:Guid option) = trySscanfExt [ { Name = "tbf"; Parser = fun s -> Guid.NewGuid() |> box } ] "test%A{tbf}" "6"
+    //let (blub2:Guid) = sscanfExt [ { Name = "tbf"; Parser = fun s -> Guid.NewGuid() |> box } ] "test%A{tbf}" "6"
+    //let testParserError = trySscanf "test%d" "testasd"
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module InstallModel =
