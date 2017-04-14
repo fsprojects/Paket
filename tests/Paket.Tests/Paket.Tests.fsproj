@@ -97,6 +97,7 @@
     <Compile Include="UtilsSpecs.fs" />
     <Compile Include="TemplateFileParsing.fs" />
     <Compile Include="NuspecWriterSpecs.fs" />
+    <Compile Include="FrameworkCompatibilitySpecs.fs" />
     <Compile Include="RestrictionFilterSpecs.fs" />
     <Compile Include="RestrictionApplicationSpecs.fs" />
     <Compile Include="PackageProcessSpecs.fs" />

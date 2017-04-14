@@ -361,23 +361,23 @@ module InstallModel =
         match restrictions with
         | [] -> installModel
         | restrictions ->
-            let applRestriction folder =
+            let applyRestriction folder =
                 { folder with Targets = applyRestrictionsToTargets restrictions folder.Targets}
 
             { installModel with 
                 LegacyReferenceFileFolders = 
                     installModel.LegacyReferenceFileFolders
-                    |> List.map applRestriction
+                    |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> []) 
 
                 NewReferenceFileFolders = 
                     installModel.NewReferenceFileFolders
-                    |> List.map applRestriction
+                    |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> []) 
 
                 TargetsFileFolders = 
                     installModel.TargetsFileFolders
-                    |> List.map applRestriction
+                    |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])  }
 
     let rec addTargetsFiles (targetsFiles:string list) (this:InstallModel) : InstallModel =

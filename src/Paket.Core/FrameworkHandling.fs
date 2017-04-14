@@ -3,6 +3,68 @@
 open System.IO
 open System
 
+
+/// The .NET Standard version.
+// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
+[<RequireQualifiedAccess>]
+type DotNetStandardVersion = 
+    | V1_0
+    | V1_1
+    | V1_2
+    | V1_3
+    | V1_4
+    | V1_5
+    | V1_6
+    | V2_0
+    member private this.NumKey =
+        match this with
+        | V1_0 -> 0
+        | V1_1 -> 1
+        | V1_2 -> 2
+        | V1_3 -> 3
+        | V1_4 -> 4
+        | V1_5 -> 5
+        | V1_6 -> 6
+        | V2_0 -> 7
+    static member private FromNum num =
+        match num with
+        | 0 -> V1_0
+        | 1 -> V1_1
+        | 2 -> V1_2
+        | 3 -> V1_3
+        | 4 -> V1_4
+        | 5 -> V1_5
+        | 6 -> V1_6
+        | 7 -> V2_0
+        | _   -> failwithf "'%i' has no corresponding framework version" num
+    
+    static member (<->) (lower:DotNetStandardVersion,upper:DotNetStandardVersion) =
+        if lower.NumKey < upper.NumKey then
+            [ lower.NumKey .. upper.NumKey ] |> List.map DotNetStandardVersion.FromNum
+        else
+            [ lower.NumKey .. -1 .. upper.NumKey ] |> List.map DotNetStandardVersion.FromNum
+
+    override this.ToString() =
+        match this with
+        | V1_0 -> "v1.0"
+        | V1_1 -> "v1.1"
+        | V1_2 -> "v1.2"
+        | V1_3 -> "v1.3"
+        | V1_4 -> "v1.4"
+        | V1_5 -> "v1.5"
+        | V1_6 -> "v1.6"
+        | V2_0 -> "v2.0"
+    member this.ShortString() =
+        match this with
+        | DotNetStandardVersion.V1_0 -> "10"
+        | DotNetStandardVersion.V1_1 -> "11"
+        | DotNetStandardVersion.V1_2 -> "12"
+        | DotNetStandardVersion.V1_3 -> "13"
+        | DotNetStandardVersion.V1_4 -> "14"
+        | DotNetStandardVersion.V1_5 -> "15"
+        | DotNetStandardVersion.V1_6 -> "16"
+        | DotNetStandardVersion.V2_0 -> "20"
+
 [<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
@@ -110,66 +172,28 @@ type FrameworkVersion =
         | FrameworkVersion.V4_7 -> "47"
         | FrameworkVersion.V5_0 -> "50"
 
-[<RequireQualifiedAccess>]
-/// The .NET Standard version.
-// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
-type DotNetStandardVersion = 
-    | V1_0
-    | V1_1
-    | V1_2
-    | V1_3
-    | V1_4
-    | V1_5
-    | V1_6
-    | V2_0
-    member private this.NumKey =
+    member this.NetStandardCompatible =
         match this with
-        | V1_0 -> 0
-        | V1_1 -> 1
-        | V1_2 -> 2
-        | V1_3 -> 3
-        | V1_4 -> 4
-        | V1_5 -> 5
-        | V1_6 -> 6
-        | V2_0 -> 7
-    static member private FromNum num =
-        match num with
-        | 0 -> V1_0
-        | 1 -> V1_1
-        | 2 -> V1_2
-        | 3 -> V1_3
-        | 4 -> V1_4
-        | 5 -> V1_5
-        | 6 -> V1_6
-        | 7 -> V2_0
-        | _   -> failwithf "'%i' has no corresponding framework version" num
-    
-    static member (<->) (lower:DotNetStandardVersion,upper:DotNetStandardVersion) =
-        if lower.NumKey < upper.NumKey then
-            [ lower.NumKey .. upper.NumKey ] |> List.map DotNetStandardVersion.FromNum
-        else
-            [ lower.NumKey .. -1 .. upper.NumKey ] |> List.map DotNetStandardVersion.FromNum
+        | FrameworkVersion.V1         
+        | FrameworkVersion.V1_1       
+        | FrameworkVersion.V2         
+        | FrameworkVersion.V3         
+        | FrameworkVersion.V3_5       
+        | FrameworkVersion.V4_Client  
+        | FrameworkVersion.V4        -> []
+        | FrameworkVersion.V4_5      -> [ DotNetStandardVersion.V1_1 ]
+        | FrameworkVersion.V4_5_1    -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_2 
+        | FrameworkVersion.V4_5_2    -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_2 
+        | FrameworkVersion.V4_5_3    -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_2 
+        | FrameworkVersion.V4_6      -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_3
+        | FrameworkVersion.V4_6_1    -> (DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_4) @ [DotNetStandardVersion.V2_0]
+        | FrameworkVersion.V4_6_2    -> (DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_5) @ [DotNetStandardVersion.V2_0]
+        | FrameworkVersion.V4_6_3    -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V2_0
+        | FrameworkVersion.V4_7      -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V2_0
+        | FrameworkVersion.V5_0      -> DotNetStandardVersion.V1_1 <-> DotNetStandardVersion.V1_3
 
-    override this.ToString() =
-        match this with
-        | V1_0 -> "v1.0"
-        | V1_1 -> "v1.1"
-        | V1_2 -> "v1.2"
-        | V1_3 -> "v1.3"
-        | V1_4 -> "v1.4"
-        | V1_5 -> "v1.5"
-        | V1_6 -> "v1.6"
-        | V2_0 -> "v2.0"
-    member this.ShortString() =
-        match this with
-        | DotNetStandardVersion.V1_0 -> "10"
-        | DotNetStandardVersion.V1_1 -> "11"
-        | DotNetStandardVersion.V1_2 -> "12"
-        | DotNetStandardVersion.V1_3 -> "13"
-        | DotNetStandardVersion.V1_4 -> "14"
-        | DotNetStandardVersion.V1_5 -> "15"
-        | DotNetStandardVersion.V1_6 -> "16"
-        | DotNetStandardVersion.V2_0 -> "20"
+    
+
 
 [<RequireQualifiedAccess>]
 /// The UAP version.
@@ -282,20 +306,6 @@ type FrameworkIdentifier =
         | WindowsPhoneApp v -> "wpa" + v
         | Silverlight v -> "sl" + v.Replace("v","").Replace(".","")
 
-    member private x.CompatibleUpto (?topFramework, ?topStandard, ?topCore) =
-        [   match topFramework with
-            | None -> () | Some framework -> yield! framework  <-> FrameworkVersion.V1 |> List.map DotNetFramework
-            match topStandard with
-            | None -> () | Some standard -> yield! standard <-> DotNetStandardVersion.V1_0 |> List.map DotNetStandard 
-            match topCore with
-            | None -> () | Some core -> yield! core <->  DotNetCoreVersion.V1_0 |> List.map DotNetCore
-        ]
-            
-    member private x.CompatibleUpto (topStandard) =
-        [  yield! topStandard <-> DotNetStandardVersion.V1_0 |> List.map DotNetStandard ]
-    
-    member private x.CompatibleUpto (topCore) =
-        [   yield! topCore <-> DotNetCoreVersion.V1_0 |> List.map DotNetCore ]
 
     // returns a list of compatible platforms that this platform also supports
     member x.SupportedPlatforms =
@@ -378,6 +388,31 @@ type FrameworkIdentifier =
     
     /// TODO: some notion of an increasing/decreasing sequence of FrameworkIdentitifers, so that Between(bottom, top) constraints can enumerate the list
 
+    member private x.CompatibleUpto (?topFramework, ?topStandard, ?topCore) =
+        [   match topFramework with
+            | None -> () | Some framework -> yield! framework  <-> FrameworkVersion.V1 |> List.map DotNetFramework
+            match topStandard with
+            | None -> () | Some standard -> yield! standard <-> DotNetStandardVersion.V1_0 |> List.map DotNetStandard 
+            match topCore with
+            | None -> () | Some core -> yield! core <->  DotNetCoreVersion.V1_0 |> List.map DotNetCore
+        ]
+            
+    member private x.CompatibleUpto (topStandard) =
+        [  yield! topStandard <-> DotNetStandardVersion.V1_0 |> List.map DotNetStandard ]
+    
+    member private x.CompatibleUpto (topCore) =
+        [   yield! topCore <-> DotNetCoreVersion.V1_0 |> List.map DotNetCore ]
+
+
+    member private self.ExpandSupportedPlatforms (xs:FrameworkIdentifier list) =
+        let expand frameworkId =
+            match frameworkId with 
+            | DotNetFramework x -> self.CompatibleUpto x
+            | DotNetStandard x -> self.CompatibleUpto x
+            | DotNetCore x -> self.CompatibleUpto x
+            | _ -> []
+        xs |> List.collect expand
+
     member x.IsCompatible y = 
         x = y || 
           (x.SupportedPlatforms |> Seq.exists (fun x' -> x' = y && not (x'.IsSameCategoryAs x))) || 
@@ -414,7 +449,7 @@ type FrameworkIdentifier =
 
 module FrameworkDetection =
     open Logging
-
+    /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
     let Extract =
         memoize 
           (fun (path:string) ->
