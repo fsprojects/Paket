@@ -37,8 +37,10 @@ let ``should generate Xml for LibGit2Sharp 2.0.0``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "LibGit2Sharp", SemVer.Parse "0.21", [],
-            [ @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll" ],
-            [ @"..\LibGit2Sharp\build\net40\LibGit2Sharp.props" ],
+            [ @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll" ]
+            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\LibGit2Sharp\",
+            [ @"..\LibGit2Sharp\build\net40\LibGit2Sharp.props" ]
+            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\LibGit2Sharp\",
             [],
               Nuspec.All)
     

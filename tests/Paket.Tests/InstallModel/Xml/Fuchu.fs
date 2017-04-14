@@ -21,9 +21,9 @@ let ``should generate Xml for Fuchu 0.4``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fuchu", SemVer.Parse "0.4.0", [],
-            [ @"..\Fuchu\lib\Fuchu.dll" 
-              @"..\Fuchu\lib\Fuchu.XML" 
-              @"..\Fuchu\lib\Fuchu.pdb" ],
+            [ @"..\Fuchu\lib\Fuchu.dll"
+              @"..\Fuchu\lib\Fuchu.XML"
+              @"..\Fuchu\lib\Fuchu.pdb" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fuchu\",
               [],
               [],
               Nuspec.All)

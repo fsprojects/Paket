@@ -73,7 +73,6 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
             let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" lockFile.RootPath groupFolder packageName packageName)
             let nuspec = Nuspec.Load nuspec.FullName
             let files = NuGetV2.GetLibFiles(folder.FullName)
-            let files = files |> Array.map (fun fi -> fi.FullName)
             InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
 
 let resolveFrameworkForScriptGeneration (dependencies: DependenciesFile) = lazy (

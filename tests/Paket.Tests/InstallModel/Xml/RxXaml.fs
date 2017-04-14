@@ -91,13 +91,14 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Rx-XAML", SemVer.Parse "2.2.4", [],
-            [ @"..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll" 
-              @"..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll" 
-              @"..\Rx-XAML\lib\portable-win81+wpa81\System.Reactive.Windows.Threading.dll" 
-              @"..\Rx-XAML\lib\sl5\System.Reactive.Windows.Threading.dll" 
-              @"..\Rx-XAML\lib\windows8\System.Reactive.Windows.Threading.dll" 
-              @"..\Rx-XAML\lib\windowsphone8\System.Reactive.Windows.Threading.dll" 
-              @"..\Rx-XAML\lib\windowsphone71\System.Reactive.Windows.Threading.dll" ],
+            [ @"..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll"
+              @"..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll"
+              @"..\Rx-XAML\lib\portable-win81+wpa81\System.Reactive.Windows.Threading.dll"
+              @"..\Rx-XAML\lib\sl5\System.Reactive.Windows.Threading.dll"
+              @"..\Rx-XAML\lib\windows8\System.Reactive.Windows.Threading.dll"
+              @"..\Rx-XAML\lib\windowsphone8\System.Reactive.Windows.Threading.dll"
+              @"..\Rx-XAML\lib\windowsphone71\System.Reactive.Windows.Threading.dll" ]
+            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Rx-XAML\",
                [],
                [],
                { References = NuspecReferences.All

@@ -33,7 +33,8 @@ let ``should generate Xml for xunit.runner.visualstudio 2.0.0``() =
     let model =
         InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", [],[],
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
-              @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ],
+              @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ]
+            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\xunit.runner.visualstudio\",
             [],
               Nuspec.All)
     
@@ -64,10 +65,11 @@ let ``should not generate Xml for xunit.runner.visualstudio 2.0.0 if import is d
     let model =
         InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", [],[],
             [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
-              @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ],
+              @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ]
+            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\xunit.runner.visualstudio\",
               [],
               Nuspec.All)
-    
+
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,false,KnownTargetProfiles.AllProfiles,None)
     ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml

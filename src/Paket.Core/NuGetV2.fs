@@ -613,6 +613,8 @@ let private getFilesMatching targetFolder searchPattern subFolderName filesDescr
             dir.GetDirectories()
             |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
             |> Array.collect (fun dir -> dir.GetFiles(searchPattern, SearchOption.AllDirectories))
+            |> Array.map (fun file ->
+                { UnparsedPackageFile.FullPath = file.FullName; UnparsedPackageFile.PathWithinPackage = file.FullName.Substring(dir.FullName.Length) })
         else
             [||]
 
@@ -620,7 +622,7 @@ let private getFilesMatching targetFolder searchPattern subFolderName filesDescr
         if Array.isEmpty files then
             verbosefn "No %s found in %s matching %s" filesDescriptionForVerbose targetFolder searchPattern
         else
-            let s = String.Join(Environment.NewLine + "  - ",files |> Array.map (fun l -> l.FullName))
+            let s = String.Join(Environment.NewLine + "  - ",files |> Array.map (fun l -> l.FullPath))
             verbosefn "%s found in %s matching %s:%s  - %s" filesDescriptionForVerbose targetFolder searchPattern Environment.NewLine s
 
     files

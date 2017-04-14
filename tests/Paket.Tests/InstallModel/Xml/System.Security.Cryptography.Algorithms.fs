@@ -69,26 +69,27 @@ let ``should generate Xml for System.Security.Cryptography.Algorithms in CSharp 
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "System.Security.Cryptography.Algorithms", SemVer.Parse "1.2.0", [],
-            [ @"..\System.Security.Cryptography.Algorithms\lib\net46\System.Security.Cryptography.Algorithms.dll" 
-              @"..\System.Security.Cryptography.Algorithms\lib\net461\System.Security.Cryptography.Algorithms.dll" 
-              @"..\System.Security.Cryptography.Algorithms\lib\net463\System.Security.Cryptography.Algorithms.dll" 
-              @"..\System.Security.Cryptography.Algorithms\ref\net46\System.Security.Cryptography.Algorithms.dll" 
-              @"..\System.Security.Cryptography.Algorithms\ref\net461\System.Security.Cryptography.Algorithms.dll" 
-              @"..\System.Security.Cryptography.Algorithms\ref\net463\System.Security.Cryptography.Algorithms.dll" 
-              @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.3\System.Security.Cryptography.Algorithms.dll" 
-              @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.4\System.Security.Cryptography.Algorithms.dll" 
+            [ @"..\System.Security.Cryptography.Algorithms\lib\net46\System.Security.Cryptography.Algorithms.dll"
+              @"..\System.Security.Cryptography.Algorithms\lib\net461\System.Security.Cryptography.Algorithms.dll"
+              @"..\System.Security.Cryptography.Algorithms\lib\net463\System.Security.Cryptography.Algorithms.dll"
+              @"..\System.Security.Cryptography.Algorithms\ref\net46\System.Security.Cryptography.Algorithms.dll"
+              @"..\System.Security.Cryptography.Algorithms\ref\net461\System.Security.Cryptography.Algorithms.dll"
+              @"..\System.Security.Cryptography.Algorithms\ref\net463\System.Security.Cryptography.Algorithms.dll"
+              @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.3\System.Security.Cryptography.Algorithms.dll"
+              @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.4\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-              
+
               @"..\System.Security.Cryptography.Algorithms\runtimes\unix\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net461\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net463\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\netcore50\System.Security.Cryptography.Algorithms.dll"
-              @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll" ],
+              @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll" ]
+            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\System.Security.Cryptography.Algorithms\",
             [],
             [],
             Nuspec.All)
-    
+
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
     let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,true,KnownTargetProfiles.AllProfiles,None)

@@ -22,7 +22,8 @@ let ``should generate Xml for GitInfoPlanter2.0.0``() =
     let model =
         InstallModel.CreateFromLibs(PackageName "GitInfoPlanter", SemVer.Parse "0.21", [],
             [ ],
-            [ @"..\GitInfoPlanter\build\GitInfoPlanter.targets" ],
+            [ @"..\GitInfoPlanter\build\GitInfoPlanter.targets" ]
+            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\GitInfoPlanter\",
             [],
               Nuspec.All)
 
