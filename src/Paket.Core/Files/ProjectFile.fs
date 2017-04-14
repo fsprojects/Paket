@@ -744,12 +744,20 @@ module ProjectFile =
             model.GetReferenceFolders()
             |> List.map (fun lib -> lib.Targets)
 
+        // Just in case anyone wants to compile FOR netcore in the old format...
+        // I don't think there is anyone actually using this part, but it's there for backwards compat.
+        let netCoreRestricted =
+            model.ApplyFrameworkRestrictions
+                [ FrameworkRestriction.AtLeast (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_0);
+                  FrameworkRestriction.AtLeast (FrameworkIdentifier.DotNetCore DotNetCoreVersion.V1_0) ]
+
+        // handle legacy conditions
         let conditions =
-            model.GetReferenceFolders()
-            |> List.sortBy (fun libFolder -> libFolder.Name)
-            |> List.collect (fun libFolder -> 
+            ((model.GetReferenceFolders() |> List.sortBy (fun libFolder -> libFolder.Name)) @
+                netCoreRestricted.CompileRefFolders |> List.sortBy (fun libFolder -> libFolder.Name))
+            |> List.collect (fun libFolder ->
                 match libFolder with
-                | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> []  // TODO: Add reference to custom task instead
+                //| x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> []  // TODO: Add reference to custom task instead
                 | _ -> 
                     match PlatformMatching.getCondition referenceCondition allTargets libFolder.Targets with
                     | "" -> []
@@ -796,7 +804,7 @@ module ProjectFile =
             if not importTargets then List.empty, List.empty else
             let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Name)
             sortedTargets
-            |> List.partition (fun lib -> (set lib.Targets).IsSupersetOf allTargetProfiles)
+            |> List.partition (fun lib -> allTargetProfiles = set lib.Targets )
         
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
@@ -1021,7 +1029,7 @@ module ProjectFile =
 
     let updateReferences
             rootPath
-            (completeModel: Map<GroupName*PackageName,_*InstallModel*FrameworkRestriction list>) 
+            (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (directPackages : Map<GroupName*PackageName,_*InstallSettings>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) 
             (project:ProjectFile) =
@@ -1061,12 +1069,12 @@ module ProjectFile =
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.GetCompareString(), packName.GetCompareString())
         |> Seq.map (fun kv -> 
-            deleteCustomModelNodes (sndOf3 kv.Value) project
+            deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
             let restrictionList = installSettings.FrameworkRestrictions |> getRestrictionList
 
             let projectModel =
-                (sndOf3 kv.Value)
+                (snd kv.Value)
                     .ApplyFrameworkRestrictions(restrictionList)
                     .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
@@ -1087,7 +1095,7 @@ module ProjectFile =
 
             let importTargets = defaultArg installSettings.ImportTargets true
             
-            let allFrameworks = applyRestrictionsToTargets ((thirdOf3 kv.Value)) (KnownTargetProfiles.AllDotNetStandardProfiles @ KnownTargetProfiles.AllDotNetProfiles)
+            let allFrameworks = applyRestrictionsToTargets restrictionList KnownTargetProfiles.AllProfiles
             generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal importTargets installSettings.ReferenceCondition (set allFrameworks) project)
         |> Seq.iter (fun ctx ->
             for chooseNode in ctx.ChooseNodes do
@@ -1790,51 +1798,3 @@ type ProjectFile with
         |> Seq.collect getCompileRefs
         |> Seq.map getCompileItem
         |> Seq.collect getRealItems
-
-
-    member self.GetTemplateMetadata () =
-        let prop name = self.GetProperty name
-        
-        let propOr name value =
-            defaultArg (self.GetProperty name) value
-        
-        let propMap name value fn =
-            defaultArg (self.GetProperty name|>Option.map fn) value
-        
-        let tryBool = Boolean.TryParse>>function true, value-> value| _ -> false
-        
-        let splitString = String.split[|';'|]>>List.ofArray
-
-        let coreInfo : ProjectCoreInfo = {
-            Id = prop "id" 
-            Version = propMap "version" (Some(SemVer.Parse "0.0.1")) (SemVer.Parse>>Some)
-            Authors = propMap "Authors" None (splitString>>Some)
-            Description = prop "Description" 
-            Symbols = propMap "Symbols" false tryBool
-        }
-        let optionalInfo =  {
-            Title = prop "Title"
-            Owners = propMap "Owners" [] (String.split[|';'|]>>List.ofArray)
-            ReleaseNotes = prop "ReleaseNores"
-            Summary = prop "Summary"
-            Language = prop "Langauge"
-            ProjectUrl = prop "ProjectUrl"
-            IconUrl = prop "IconUrl"
-            LicenseUrl = prop "LicenseUrl"
-            Copyright = prop  "Copyright" 
-            RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
-            Tags = propMap "Tags" [] splitString
-            DevelopmentDependency = propMap "DevelopmentDependency" false tryBool
-            Dependencies = [] //propOr "Dependencies" []
-            ExcludedDependencies = Set.empty //propOr "ExcludedDependencies" 
-            ExcludedGroups = Set.empty // propOr "ExcludedGroups" Set.empty
-            References = [] //propOr "References" []
-            FrameworkAssemblyReferences = [] //propOr "FrameworkAssemblyReferences" []
-            Files = [] //propMap "Files" [] splitString
-            FilesExcluded = [] //propMap  "FilesExcluded" [] splitString
-            IncludePdbs = propMap "IncludePdbs" true tryBool
-            IncludeReferencedProjects = propMap "IncludeReferencedProjects" true tryBool
-        }
-        
-        (coreInfo, optionalInfo)
-        

@@ -614,7 +614,7 @@ let private getFilesMatching targetFolder searchPattern subFolderName filesDescr
             |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
             |> Array.collect (fun dir -> dir.GetFiles(searchPattern, SearchOption.AllDirectories))
             |> Array.map (fun file ->
-                { UnparsedPackageFile.FullPath = file.FullName; UnparsedPackageFile.PathWithinPackage = file.FullName.Substring(dir.FullName.Length) })
+                { UnparsedPackageFile.FullPath = file.FullName; UnparsedPackageFile.PathWithinPackage = file.FullName.Substring(dir.FullName.Length + 1).Replace("\\", "/") })
         else
             [||]
 

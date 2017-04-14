@@ -36,8 +36,8 @@
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\paket.test\</StartWorkingDirectory>
+    <StartArguments>install --createnewbindingfiles</StartArguments>
+    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i001270-force-redirects\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

@@ -7,6 +7,7 @@ open Paket.TestHelpers
 open Paket.Domain
 open Paket.Requirements
 open Paket.InstallModel
+open Paket.PlatformMatching
 
 let fromLegacyList = Paket.InstallModel.ProcessingSpecs.fromLegacyList
 
@@ -80,13 +81,16 @@ let expectedPropertyNodes = """
 
 [<Test>]
 let ``can get supported target profile``()=
-    let profiles = PlatformMatching.getSupportedTargetProfiles  ["net20"; "net40"; "net45"; "net451"; "netstandard14" ]
-    let folder = profiles |> Seq.item 2 
-    folder.Key |> shouldEqual "net45"
+    let profiles =
+        ["net20"; "net40"; "net45"; "net451"; "netstandard14" ]
+        |> List.map extractPlatforms
+        |> PlatformMatching.getSupportedTargetProfiles
+    let folder = profiles |> Seq.item 2
+    folder.Key |> shouldEqual (extractPlatforms "net45")
     folder.Value |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 [<Test>]
-let ``should extract lib folders for SQLite``() = 
+let ``should extract lib folders for SQLite``() =
     let libs =
         [@"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
@@ -95,14 +99,16 @@ let ``should extract lib folders for SQLite``() =
         |> fromLegacyList @"..\System.Data.SQLite.Core\"
 
     let model =
-       libs 
-        |> List.choose (extractLibFolder (PackageName "System.Data.SQLite.Core"))
-        |> List.distinct 
+       libs
+        |> List.choose getCompileLibAssembly
+        |> List.distinct
 
-    model |> shouldEqual ["net20"; "net40"; "net45"; "net451"]
+    model
+    |> List.map (fun m -> m.Path.Name)
+    |> shouldEqual ["net20"; "net40"; "net45"; "net451"]
 
 [<Test>]
-let ``should calc lib folders for SQLite``() = 
+let ``should calc lib folders for SQLite``() =
     let libs =
         [@"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
@@ -110,13 +116,13 @@ let ``should calc lib folders for SQLite``() =
          @"..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll"]
         |> fromLegacyList @"..\System.Data.SQLite.Core\"
 
-    let model = calcLibFolders (PackageName "System.Data.SQLite.Core") libs 
+    let model = calcLegacyReferenceLibFolders libs
     let folder = model |> List.item 2
     folder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 
 [<Test>]
-let ``should init model for SQLite``() = 
+let ``should init model for SQLite``() =
     let libs =
         [@"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
          @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
@@ -128,13 +134,13 @@ let ``should init model for SQLite``() =
         emptyModel (PackageName "System.Data.SQLite.Core") (SemVer.Parse "3.8.2")
         |> addLibReferences libs Nuspec.All.References
 
-    let libFolder = model.LegacyReferenceFileFolders |> List.item 2
+    let libFolder = model.CompileLibFolders |> List.item 2
     libFolder.Name |> shouldEqual "net45"
     libFolder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 
 [<Test>]
-let ``should generate model for SQLite``() = 
+let ``should generate model for SQLite``() =
     let model =
         InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", [],
             [ @"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
@@ -150,12 +156,12 @@ let ``should generate model for SQLite``() =
             [],
                 Nuspec.All)
 
-    let libFolder = model.LegacyReferenceFileFolders |> List.item 2
+    let libFolder = model.CompileLibFolders |> List.item 2
     libFolder.Name |> shouldEqual "net45"
     libFolder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 [<Test>]
-let ``should generate Xml for SQLite``() = 
+let ``should generate Xml for SQLite``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", [],

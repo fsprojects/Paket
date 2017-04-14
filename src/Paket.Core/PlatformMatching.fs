@@ -5,26 +5,40 @@ open System
 [<Literal>]
 let MaxPenalty = 1000000
 
-let inline split (path : string) = 
+type ParsedPlatformPath =
+  { Name : string
+    Platforms : FrameworkIdentifier list }
+  static member Empty = { Name = ""; Platforms = [] }
+
+let inline split (path : string) =
     path.Split('+')
     |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(s, "portable\\d*-",""))
-    
-let extractPlatforms = memoize (fun path  -> split path |> Array.choose FrameworkDetection.Extract |> Array.toList)
+
+let extractPlatforms = memoize (fun path -> { Name = path; Platforms = split path |> Array.choose FrameworkDetection.Extract |> Array.toList })
 
 let knownInPortable =
   KnownTargetProfiles.AllPortableProfiles 
   |> List.collect snd
   |> List.distinct
 
-let extractAndTryGetProfile = memoize (fun path ->
-    let platforms = extractPlatforms path
+let tryGetProfile platforms =
     let filtered =
-      platforms
+      platforms.Platforms
       |> List.filter (fun p -> knownInPortable |> Seq.exists ((=) p))
       |> List.sort
 
     KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> List.sort >> (=) filtered)
-    |> Option.map PortableProfile)
+    |> Option.map PortableProfile
+
+//let extractAndTryGetProfile = memoize (fun path ->
+//    let platforms = extractPlatforms path
+//    let filtered =
+//      platforms.Platforms
+//      |> List.filter (fun p -> knownInPortable |> Seq.exists ((=) p))
+//      |> List.sort
+//
+//    KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> List.sort >> (=) filtered)
+//    |> Option.map PortableProfile)
 
 let getPlatformPenalty =
     let rec getPlatformPenalty alreadyChecked (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
@@ -48,27 +62,27 @@ let getPlatformPenalty =
 
 let getPathPenalty =
     memoize 
-      (fun (path:string,platform:FrameworkIdentifier) ->
-        if String.IsNullOrWhiteSpace path then
+      (fun (path:ParsedPlatformPath,platform:FrameworkIdentifier) ->
+        if String.IsNullOrWhiteSpace path.Name then
             match platform with
             | Native(_) -> MaxPenalty // an empty path is considered incompatible with native targets            
             | _ -> 500 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
         else
-            extractPlatforms path
+            path.Platforms
             |> List.map (fun target -> getPlatformPenalty(platform,target))
             |> List.append [ MaxPenalty ]
             |> List.min)
 
 // Checks wether a list of target platforms is supported by this path and with which penalty. 
-let getPenalty (requiredPlatforms:FrameworkIdentifier list) (path:string) =
+let getPenalty (requiredPlatforms:FrameworkIdentifier list) (path:ParsedPlatformPath) =
     requiredPlatforms
     |> List.sumBy (fun p -> getPathPenalty(path,p))
 
-type PathPenalty = (string * int)
+type PathPenalty = (ParsedPlatformPath * int)
 
 let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
-    let platformCount1 = (extractPlatforms (fst p1)).Length
-    let platformCount2 = (extractPlatforms (fst p2)).Length
+    let platformCount1 = (fst p1).Platforms.Length
+    let platformCount2 = (fst p2).Platforms.Length
 
     // prefer full framework over portable
     if platformCount1 = 1 && platformCount2 > 1 then
@@ -107,14 +121,14 @@ let platformsSupport =
 
 
 let findBestMatch = 
-    let rec findBestMatch (paths : string list, targetProfile : TargetProfile) = 
+    let rec findBestMatch (paths : ParsedPlatformPath list, targetProfile : TargetProfile) = 
         let requiredPlatforms = 
             match targetProfile with
             | PortableProfile(_, platforms) -> platforms
             | SinglePlatform(platform) -> [ platform ]
 
         let supported =
-            paths 
+            paths
             |> List.map (fun path -> path, (getPenalty requiredPlatforms path))
             |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
             |> List.sortWith comparePaths
@@ -123,7 +137,7 @@ let findBestMatch =
 
         let findBestPortableMatch findPenalty (portableProfile:TargetProfile) paths =
             paths
-            |> Seq.tryFind (fun p -> extractAndTryGetProfile p = Some portableProfile)
+            |> Seq.tryFind (fun p -> tryGetProfile p = Some portableProfile)
             |> Option.map (fun p -> p, findPenalty)
 
         match supported with
@@ -140,18 +154,18 @@ let findBestMatch =
                         None
                 | _ -> None)
             |> List.distinct
-            |> List.sortBy (fun (x, pen) -> pen, (extractPlatforms x).Length) // prefer portable platform with less platforms
+            |> List.sortBy (fun (x, pen) -> pen, x.Platforms.Length) // prefer portable platform with less platforms
             |> List.map fst
             |> List.tryHead
         | path -> path
 
-    memoize (fun (paths : string list,targetProfile : TargetProfile) -> findBestMatch(paths,targetProfile))
+    memoize (fun (paths : ParsedPlatformPath list,targetProfile : TargetProfile) -> findBestMatch(paths,targetProfile))
 
 // For a given list of paths and target profiles return tuples of paths with their supported target profiles.
 // Every target profile will only be listed for own path - the one that best supports it. 
 let getSupportedTargetProfiles =    
     memoize 
-        (fun (paths : string list) ->
+        (fun (paths : ParsedPlatformPath list) ->
             KnownTargetProfiles.AllProfiles
             |> List.choose (fun target ->
                 match findBestMatch(paths,target) with
@@ -193,7 +207,7 @@ let getTargetCondition (target:TargetProfile) =
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
         | Native("","") -> "true", ""
         | Native("",bits) -> (sprintf "'$(Platform)'=='%s'" bits), ""
-        | Runtimes(platform) -> failwithf "Runtime dependencies are unsupported in project files."
+        //| Runtimes(platform) -> failwithf "Runtime dependencies are unsupported in project files."
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile bits), ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
@@ -236,7 +250,7 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile l
             targets 
             |> List.filter (function
                            | SinglePlatform(Native("", "")) -> false
-                           | SinglePlatform(Runtimes(_)) -> false
+                           //| SinglePlatform(Runtimes(_)) -> false
                            | SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)) ->
                                 targets |> List.contains (SinglePlatform(DotNetFramework(FrameworkVersion.V4))) |> not
                            | _ -> true)

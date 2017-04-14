@@ -13,7 +13,7 @@ let fromLegacyList (prefix:string) l =
     l
     |> List.map (fun (i:string) ->
         if i.StartsWith prefix then
-            { FullPath = i; PathWithinPackage = i.Substring(prefix.Length) }
+            { FullPath = i; PathWithinPackage = i.Substring(prefix.Length).Replace("\\", "/") }
         else failwithf "Expected '%s' to start with '%s'" i prefix)
 
 [<Test>]
@@ -21,7 +21,7 @@ let ``should create empty model with net40, net45 ...``() =
     let model = emptymodel.AddReferences ([ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] |> fromLegacyList @"..\Rx-Main\")
 
     let targets =
-        model.LegacyReferenceFileFolders
+        model.CompileLibFolders
         |> List.map (fun folder -> folder.Targets)
         |> List.concat
 
@@ -41,11 +41,11 @@ let ``should understand lib in lib.dll``() =
 
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\FunScript.TypeScript\lib\net40\FunScript.TypeScript.Binding.lib.dll"
 
-[<Test>]
-let ``should understand libuv in runtimes``() = 
-    let model = emptymodel.AddReferences ([ @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll" ] |> fromLegacyList @"..\Microsoft.AspNetCore.Server.Kestrel\")
-
-    model.GetLibReferences(SinglePlatform (Runtimes("win7-x64"))) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
+//[<Test>]
+//let ``should understand libuv in runtimes``() = 
+//    let model = emptymodel.AddReferences ([ @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll" ] |> fromLegacyList @"..\Microsoft.AspNetCore.Server.Kestrel\")
+//
+//    model.GetLibReferences(SinglePlatform (Runtimes("win7-x64"))) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
 
 [<Test>]
 let ``should understand reference folder``() =
@@ -56,42 +56,79 @@ let ``should understand reference folder``() =
           @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll" ]
           |> fromLegacyList @"..\System.Security.Cryptography.Algorithms\")
 
-    let refs = model.GetLibReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
+    let refs = model.GetLegacyReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+    let refs = model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V3_5))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+    let refs = model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+    let refs = model.GetCompileReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
-    let refs = model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V3_5))
+    let refs = model.GetCompileReferences(SinglePlatform (DotNetFramework FrameworkVersion.V3_5))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
-    let refs = model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
+    let refs = model.GetCompileReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\net35\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
-    let model = 
-      emptymodel.AddReferences 
+    let model =
+      emptymodel.AddReferences
        ([ @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
           @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
           @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll" ] |> fromLegacyList @"..\System.Security.Cryptography.Algorithms\")
 
-    let refs = model.GetLibReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
-    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
-    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    
-    let refs = model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
+    let refs = model.GetLegacyReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
-[<Test>]
-let ``should understand aot in runtimes``() = 
-    let model = emptymodel.AddReferences ([ @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll" ] |> fromLegacyList @"..\packages\System.Diagnostics.Contracts\")
+    let refs = model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
-    model.GetLibReferences(SinglePlatform (Runtimes("aot"))) |> shouldContain @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll"
+    let refs = model.GetCompileReferences(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+    let refs = model.GetCompileReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+    let refs = model.GetRuntimeLibraries(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+    let refs = model.GetRuntimeLibraries(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    // TODO: This is kind of broken for now -> the correct results depends on the runtime we want to get the runtime libraries for
+    // therefore GetRuntimeLibraries needs an additional parameter...
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+//[<Test>]
+//let ``should understand aot in runtimes``() = 
+//    let model = emptymodel.AddReferences ([ @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll" ] |> fromLegacyList @"..\packages\System.Diagnostics.Contracts\")
+//
+//    model.GetLibReferences(SinglePlatform (Runtimes("aot"))) |> shouldContain @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll"
 
 
 [<Test>]
@@ -192,7 +229,7 @@ let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() =
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll"
 
               @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" ] |> fromLegacyList @"..\Microsoft.Net.Http\lib\")
+              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" ] |> fromLegacyList @"..\Microsoft.Net.Http\")
 
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V3_5)) |> shouldNotContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
 
@@ -510,7 +547,7 @@ let ``should not install tools``() =
               @"..\FAKE\tools\FakeLib.dll"
               @"..\FAKE\tools\Fake.SQL.dll" ] |> fromLegacyList @"..\FAKE\")
 
-    model.LegacyReferenceFileFolders
+    model.CompileLibFolders
     |> Seq.forall (fun folder -> folder.Files.References.IsEmpty)
     |> shouldEqual true
 
@@ -650,7 +687,7 @@ let ``should keep net20 if nothing better is available``() =
     |> shouldEqual [ ]
 
 [<Test>]
-let ``prefer net20 over empty folder``() = 
+let ``prefer net20 over empty folder``() =
     let model =
         InstallModel.CreateFromLibs
             (PackageName "EPPlus", SemVer.Parse "4.0.5",
