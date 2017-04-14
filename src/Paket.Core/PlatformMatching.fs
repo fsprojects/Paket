@@ -30,16 +30,6 @@ let tryGetProfile platforms =
     KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> List.sort >> (=) filtered)
     |> Option.map PortableProfile
 
-//let extractAndTryGetProfile = memoize (fun path ->
-//    let platforms = extractPlatforms path
-//    let filtered =
-//      platforms.Platforms
-//      |> List.filter (fun p -> knownInPortable |> Seq.exists ((=) p))
-//      |> List.sort
-//
-//    KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> List.sort >> (=) filtered)
-//    |> Option.map PortableProfile)
-
 let getPlatformPenalty =
     let rec getPlatformPenalty alreadyChecked (targetPlatform:FrameworkIdentifier) (packagePlatform:FrameworkIdentifier) =
         if packagePlatform = targetPlatform then
