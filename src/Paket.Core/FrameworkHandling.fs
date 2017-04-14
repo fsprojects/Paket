@@ -284,18 +284,18 @@ type FrameworkIdentifier =
 
     member private x.CompatibleUpto (?topFramework, ?topStandard, ?topCore) =
         [   match topFramework with
-            | None -> () | Some framework -> yield! FrameworkVersion.V1 <-> framework |> List.map DotNetFramework
+            | None -> () | Some framework -> yield! framework  <-> FrameworkVersion.V1 |> List.map DotNetFramework
             match topStandard with
-            | None -> () | Some standard -> yield! DotNetStandardVersion.V1_0 <-> standard |> List.map DotNetStandard 
+            | None -> () | Some standard -> yield! standard <-> DotNetStandardVersion.V1_0 |> List.map DotNetStandard 
             match topCore with
-            | None -> () | Some core -> yield! DotNetCoreVersion.V1_0 <-> core |> List.map DotNetCore
+            | None -> () | Some core -> yield! core <->  DotNetCoreVersion.V1_0 |> List.map DotNetCore
         ]
             
     member private x.CompatibleUpto (topStandard) =
-        [  yield! DotNetStandardVersion.V1_0 <-> topStandard |> List.map DotNetStandard ]
+        [  yield! topStandard <-> DotNetStandardVersion.V1_0 |> List.map DotNetStandard ]
     
     member private x.CompatibleUpto (topCore) =
-        [   yield! DotNetCoreVersion.V1_0 <-> topCore |> List.map DotNetCore ]
+        [   yield! topCore <-> DotNetCoreVersion.V1_0 |> List.map DotNetCore ]
 
     // returns a list of compatible platforms that this platform also supports
     member x.SupportedPlatforms =
@@ -309,35 +309,35 @@ type FrameworkIdentifier =
         | XamarinMac -> [ ]
         | UAP UAPVersion.V10 -> [ ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
-        | DotNetFramework FrameworkVersion.V1_1 -> x.CompatibleUpto FrameworkVersion.V1 
-        | DotNetFramework FrameworkVersion.V2 -> x.CompatibleUpto FrameworkVersion.V1_1 
-        | DotNetFramework FrameworkVersion.V3 -> x.CompatibleUpto FrameworkVersion.V2 
-        | DotNetFramework FrameworkVersion.V3_5 -> x.CompatibleUpto FrameworkVersion.V3 
-        | DotNetFramework FrameworkVersion.V4_Client -> x.CompatibleUpto FrameworkVersion.V3_5 
-        | DotNetFramework FrameworkVersion.V4 -> x.CompatibleUpto FrameworkVersion.V4_Client 
-        | DotNetFramework FrameworkVersion.V4_5 -> x.CompatibleUpto (FrameworkVersion.V4, DotNetStandardVersion.V1_1)
-        | DotNetFramework FrameworkVersion.V4_5_1 -> x.CompatibleUpto (FrameworkVersion.V4_5  , DotNetStandardVersion.V1_2)
-        | DotNetFramework FrameworkVersion.V4_5_2 -> x.CompatibleUpto (FrameworkVersion.V4_5_1, DotNetStandardVersion.V1_2)
-        | DotNetFramework FrameworkVersion.V4_5_3 -> x.CompatibleUpto (FrameworkVersion.V4_5_2, DotNetStandardVersion.V1_2)
-        | DotNetFramework FrameworkVersion.V4_6 -> x.CompatibleUpto (FrameworkVersion.V4_5_3, DotNetStandardVersion.V1_3)
-        | DotNetFramework FrameworkVersion.V4_6_1 -> x.CompatibleUpto (FrameworkVersion.V4_6, DotNetStandardVersion.V2_0 )
-        | DotNetFramework FrameworkVersion.V4_6_2 -> x.CompatibleUpto (FrameworkVersion.V4_6_1, DotNetStandardVersion.V2_0 )
-        | DotNetFramework FrameworkVersion.V4_6_3 -> x.CompatibleUpto (FrameworkVersion.V4_6_2, DotNetStandardVersion.V2_0 )
-        | DotNetFramework FrameworkVersion.V4_7 -> x.CompatibleUpto (FrameworkVersion.V4_6_3, DotNetStandardVersion.V2_0 )
-        | DotNetFramework FrameworkVersion.V5_0 -> x.CompatibleUpto (FrameworkVersion.V4_6_2, DotNetStandardVersion.V1_5 )
+        | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
+        | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
+        | DotNetFramework FrameworkVersion.V3 -> [ DotNetFramework FrameworkVersion.V2 ]
+        | DotNetFramework FrameworkVersion.V3_5 -> [ DotNetFramework FrameworkVersion.V3 ]
+        | DotNetFramework FrameworkVersion.V4_Client -> [ DotNetFramework FrameworkVersion.V3_5 ]
+        | DotNetFramework FrameworkVersion.V4 -> [ DotNetFramework FrameworkVersion.V4_Client ]
+        | DotNetFramework FrameworkVersion.V4_5 -> [ DotNetFramework FrameworkVersion.V4; DotNetStandard DotNetStandardVersion.V1_1 ]
+        | DotNetFramework FrameworkVersion.V4_5_1 -> [ DotNetFramework FrameworkVersion.V4_5; DotNetStandard DotNetStandardVersion.V1_2 ]
+        | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1; DotNetStandard DotNetStandardVersion.V1_2 ]
+        | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2; DotNetStandard DotNetStandardVersion.V1_2 ]
+        | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3; DotNetStandard DotNetStandardVersion.V1_3 ]
+        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4; DotNetStandard DotNetStandardVersion.V2_0 ]
+        | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1; DotNetStandard DotNetStandardVersion.V1_5 ]
+        | DotNetFramework FrameworkVersion.V4_6_3 -> [ DotNetFramework FrameworkVersion.V4_6_2; DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetFramework FrameworkVersion.V4_7 -> [ DotNetFramework FrameworkVersion.V4_6_3; DotNetStandard DotNetStandardVersion.V2_0 ]
+        | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_2; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
         | DotNetStandard DotNetStandardVersion.V1_0 -> [  ]
-        | DotNetStandard DotNetStandardVersion.V1_1 -> x.CompatibleUpto  DotNetStandardVersion.V1_0 
-        | DotNetStandard DotNetStandardVersion.V1_2 -> x.CompatibleUpto  DotNetStandardVersion.V1_1 
-        | DotNetStandard DotNetStandardVersion.V1_3 -> x.CompatibleUpto  DotNetStandardVersion.V1_2 
-        | DotNetStandard DotNetStandardVersion.V1_4 -> x.CompatibleUpto  DotNetStandardVersion.V1_3 
-        | DotNetStandard DotNetStandardVersion.V1_5 -> x.CompatibleUpto  DotNetStandardVersion.V1_4 
-        | DotNetStandard DotNetStandardVersion.V1_6 -> x.CompatibleUpto  DotNetStandardVersion.V1_5 
-        | DotNetStandard DotNetStandardVersion.V2_0 -> x.CompatibleUpto  DotNetStandardVersion.V1_6 
-        | DotNetCore DotNetCoreVersion.V1_0 -> x.CompatibleUpto  DotNetStandardVersion.V1_6
-        | DotNetCore DotNetCoreVersion.V1_1 -> x.CompatibleUpto (topCore=DotNetCoreVersion.V1_0, topStandard=DotNetStandardVersion.V1_6)
-        | DotNetCore DotNetCoreVersion.V2_0 -> x.CompatibleUpto (topCore=DotNetCoreVersion.V1_1, topStandard=DotNetStandardVersion.V2_0)
+        | DotNetStandard DotNetStandardVersion.V1_1 -> [ DotNetStandard DotNetStandardVersion.V1_0 ]
+        | DotNetStandard DotNetStandardVersion.V1_2 -> [ DotNetStandard DotNetStandardVersion.V1_1 ]
+        | DotNetStandard DotNetStandardVersion.V1_3 -> [ DotNetStandard DotNetStandardVersion.V1_2 ]
+        | DotNetStandard DotNetStandardVersion.V1_4 -> [ DotNetStandard DotNetStandardVersion.V1_3 ]
+        | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
+        | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
+        | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetCore DotNetCoreVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetCore DotNetCoreVersion.V1_1 -> [ DotNetCore DotNetCoreVersion.V1_0 ]
+        | DotNetCore DotNetCoreVersion.V2_0 -> [ DotNetCore DotNetCoreVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -354,7 +354,6 @@ type FrameworkIdentifier =
         | Windows _ -> [ Windows "v4.5.1" ]
         | WindowsPhoneApp _ -> [ WindowsPhoneApp "v8.1" ]
         | WindowsPhoneSilverlight _ -> [ WindowsPhoneSilverlight "v8.1" ]
-
     /// Return if the parameter is of the same framework category (dotnet, windows phone, silverlight, ...)
     member x.IsSameCategoryAs y =
         match (x, y) with
@@ -444,6 +443,7 @@ module FrameworkDetection =
                 | "net461" -> Some (DotNetFramework FrameworkVersion.V4_6_1)
                 | "net462" -> Some (DotNetFramework FrameworkVersion.V4_6_2)
                 | "net463" -> Some (DotNetFramework FrameworkVersion.V4_6_3)
+                | "net47" -> Some (DotNetFramework FrameworkVersion.V4_7)
                 | "uap100" -> Some (UAP UAPVersion.V10)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid44" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50" | "monoandroid60" | "monoandroid70" -> Some MonoAndroid
