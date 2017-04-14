@@ -33,7 +33,7 @@ let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
 <Import Project="..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props" Condition="Exists('..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
 [<Test>]
-let ``should generate Xml for LibGit2Sharp 2.0.0``() = 
+let ``should generate Xml for LibGit2Sharp 2.0.0``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "LibGit2Sharp", SemVer.Parse "0.21", [],
@@ -43,7 +43,7 @@ let ``should generate Xml for LibGit2Sharp 2.0.0``() =
             |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\LibGit2Sharp\",
             [],
               Nuspec.All)
-    
+
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)) |> shouldContain @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll"
 
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
