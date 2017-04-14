@@ -135,7 +135,7 @@ let ``should init model for SQLite``() =
         |> addLibReferences libs Nuspec.All.References
 
     let libFolder = model.CompileLibFolders |> List.item 2
-    libFolder.Name |> shouldEqual "net45"
+    libFolder.Path.Name |> shouldEqual "net45"
     libFolder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 
@@ -157,7 +157,7 @@ let ``should generate model for SQLite``() =
                 Nuspec.All)
 
     let libFolder = model.CompileLibFolders |> List.item 2
-    libFolder.Name |> shouldEqual "net45"
+    libFolder.Path.Name |> shouldEqual "net45"
     libFolder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 [<Test>]

@@ -5,6 +5,7 @@ open System.IO
 open Paket.Domain
 open Paket.Requirements
 open Logging
+open PlatformMatching
 
 // An unparsed file in the nuget package -> still need to inspect the path for further information. After parsing an entry will be part of a "LibFolder" for example.
 type UnparsedPackageFile =
@@ -88,7 +89,7 @@ type RuntimeIdentifier =
     static member Any = { Rid = "any" }
 /// Represents a subfolder of a nuget package that provides files (content, references, etc) for one or more Target Profiles.  This is a logical representation of the 'net45' folder in a NuGet package, for example.
 type LibFolder =
-    { Name : string
+    { Path : ParsedPlatformPath
       Targets : TargetProfile list
       Files : InstallFiles }
 
@@ -368,13 +369,31 @@ module InstallModel =
             |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = RuntimeIdentifier.Any }))
 
     let getCompileLibAssembly (p:UnparsedPackageFile) =
-        (trySscanf "lib/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Tfm * string) option)
-        |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = RuntimeIdentifier.Any })
+        // %s because 'native' uses subfolders...
+        (trySscanf "lib/%A{tfm}/%s" p.PathWithinPackage : (Tfm * string) option)
+        |> Option.map (fun (l,path) ->
+            if l.Name = "native" && l.Platforms = [ FrameworkIdentifier.Native(NoBuildMode,NoPlatform) ] then
+                // We need some special logic to detect the platform
+                let path = path.ToLowerInvariant()
+                let newPlatform =
+                    if path.Contains "/x86/" then Win32 else
+                    if path.Contains "/arm/" then Arm else
+                    if path.Contains "/x64/" then X64 else
+                    if path.Contains "/address-model-32" then UnknownPlatform "address-model-32" else
+                    if path.Contains "/address-model-64" then UnknownPlatform "address-model-64" else
+                    NoPlatform
+                let newBuildMode =
+                    if path.Contains "/release/" then Release else
+                    if path.Contains "/debug/" then Debug else
+                    NoBuildMode
+                { Path = { l with Platforms = [ FrameworkIdentifier.Native(newBuildMode,newPlatform) ]}; File = p; Runtime = RuntimeIdentifier.Any }
+            else
+            { Path = l; File = p; Runtime = RuntimeIdentifier.Any })
         |> Option.orElseWith (fun _ ->
             (trySscanf "lib/%A{noSeperator}" p.PathWithinPackage : string option)
             |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = RuntimeIdentifier.Any }))
 
-    let getNativeLibraries (p:UnparsedPackageFile) =
+    let getRuntimeLibrary (p:UnparsedPackageFile) =
         (trySscanf "runtimes/%A{rid}/nativeassets/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Rid * Tfm * string) option)
         |> Option.map (fun (rid, l,_) -> { Path = l; File = p; Runtime = rid })
         |> Option.orElseWith (fun _ ->
@@ -477,10 +496,10 @@ module InstallModel =
         libs
         |> List.choose parsePackage
         |> List.map (fun p -> p.Path)
-        |> List.distinctBy (fun f -> f.Name)
+        |> List.distinct //By (fun f -> f.Platforms)
         |> List.sort
         |> PlatformMatching.getSupportedTargetProfiles
-        |> Seq.map (fun entry -> { Name = entry.Key.Name; Targets = entry.Value; Files = InstallFiles.empty })
+        |> Seq.map (fun entry -> { Path = entry.Key; Targets = entry.Value; Files = InstallFiles.empty })
         |> Seq.toList
 
     let calcLegacyReferenceLibFolders = calcLibFoldersG getCompileLibAssembly
@@ -491,7 +510,7 @@ module InstallModel =
     let addFileToFolder (path:LibFolder) (file:UnparsedPackageFile) (folders:LibFolder list) (addfn: string -> InstallFiles -> InstallFiles) =
         folders
         |> List.map (fun p ->
-            if p.Name <> path.Name then p else
+            if p.Path <> path.Path then p else
             { p with Files = addfn file.FullPath p.Files })
 
     let private addPackageLegacyLibFile (path:LibFolder) (file:UnparsedPackageFile) references (this:InstallModel) : InstallModel =
@@ -534,7 +553,7 @@ module InstallModel =
           List.fold (fun (model:InstallModel) file ->
               match extract file with
               | Some (folderName:FrameworkDependentFile) ->
-                  match List.tryFind (fun (folder:LibFolder) -> folder.Name = folderName.Path.Name) (getFolder model) with
+                  match List.tryFind (fun (folder:LibFolder) -> folder.Path = folderName.Path) (getFolder model) with
                   | Some path -> addFunc path file references model
                   | _ -> model
               | None -> model) initialState libs
@@ -671,13 +690,13 @@ module InstallModel =
             |> List.map (fun p -> p.Path)
             |> List.distinct
             |> PlatformMatching.getSupportedTargetProfiles
-            |> Seq.map (fun entry -> { Name = entry.Key.Name; Targets = List.ofSeq entry.Value; Files = InstallFiles.empty })
+            |> Seq.map (fun entry -> { Path = entry.Key; Targets = List.ofSeq entry.Value; Files = InstallFiles.empty })
             |> Seq.toList
 
         List.fold (fun model file ->
             match getMsbuildFile file with
             | Some folderName ->
-                match List.tryFind (fun (folder:LibFolder) -> folder.Name = folderName.Path.Name) model.TargetsFileFolders with
+                match List.tryFind (fun (folder:LibFolder) -> folder.Path = folderName.Path) model.TargetsFileFolders with
                 | Some path -> addTargetsFile path file model
                 | _ -> model
             | None -> model) { this with TargetsFileFolders = targetsFileFolders } targetsFiles

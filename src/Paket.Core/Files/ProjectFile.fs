@@ -753,8 +753,8 @@ module ProjectFile =
 
         // handle legacy conditions
         let conditions =
-            ((model.GetReferenceFolders() |> List.sortBy (fun libFolder -> libFolder.Name)) @
-                netCoreRestricted.CompileRefFolders |> List.sortBy (fun libFolder -> libFolder.Name))
+            ((model.GetReferenceFolders() |> List.sortBy (fun libFolder -> libFolder.Path)) @
+                netCoreRestricted.CompileRefFolders |> List.sortBy (fun libFolder -> libFolder.Path))
             |> List.collect (fun libFolder ->
                 match libFolder with
                 //| x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> []  // TODO: Add reference to custom task instead
@@ -802,9 +802,10 @@ module ProjectFile =
         // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package). 
         let globalTargets, frameworkSpecificTargets =
             if not importTargets then List.empty, List.empty else
-            let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Name)
-            sortedTargets
-            |> List.partition (fun lib -> allTargetProfiles = set lib.Targets )
+            let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Path)
+            //sortedTargets
+            //|> List.partition (fun lib -> allTargetProfiles = set lib.Targets )
+            ([] : LibFolder list), sortedTargets
 
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
