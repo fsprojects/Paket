@@ -753,8 +753,8 @@ module ProjectFile =
 
         // handle legacy conditions
         let conditions =
-            ((model.GetReferenceFolders() |> List.sortBy (fun libFolder -> libFolder.Path)) @
-                netCoreRestricted.CompileRefFolders |> List.sortBy (fun libFolder -> libFolder.Path))
+            (model.GetReferenceFolders() @ netCoreRestricted.CompileRefFolders)
+            |> List.sortBy (fun libFolder -> libFolder.Path)
             |> List.collect (fun libFolder ->
                 match libFolder with
                 //| x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> []  // TODO: Add reference to custom task instead
