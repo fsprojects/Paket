@@ -22,6 +22,7 @@ type FrameworkVersion =
     | V4_6_1
     | V4_6_2
     | V4_6_3
+    | V4_7
     | V5_0
     override this.ToString() =
         match this with
@@ -40,6 +41,7 @@ type FrameworkVersion =
         | V4_6_1 -> "v4.6.1"
         | V4_6_2 -> "v4.6.2"
         | V4_6_3 -> "v4.6.3"
+        | V4_7 -> "v4.7"
         | V5_0 -> "v5.0"
 
     member this.ShortString() =
@@ -59,6 +61,7 @@ type FrameworkVersion =
         | FrameworkVersion.V4_6_1 -> "461"
         | FrameworkVersion.V4_6_2 -> "462"
         | FrameworkVersion.V4_6_3 -> "463"
+        | FrameworkVersion.V4_7 -> "47"
         | FrameworkVersion.V5_0 -> "50"
 
 [<RequireQualifiedAccess>]
@@ -72,6 +75,7 @@ type DotNetStandardVersion =
     | V1_4
     | V1_5
     | V1_6
+    | V2_0
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
@@ -81,7 +85,7 @@ type DotNetStandardVersion =
         | V1_4 -> "v1.4"
         | V1_5 -> "v1.5"
         | V1_6 -> "v1.6"
-
+        | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
         | DotNetStandardVersion.V1_0 -> "10"
@@ -91,6 +95,7 @@ type DotNetStandardVersion =
         | DotNetStandardVersion.V1_4 -> "14"
         | DotNetStandardVersion.V1_5 -> "15"
         | DotNetStandardVersion.V1_6 -> "16"
+        | DotNetStandardVersion.V2_0 -> "20"
 
 [<RequireQualifiedAccess>]
 /// The UAP version.
@@ -112,15 +117,17 @@ type UAPVersion =
 type DotNetCoreVersion = 
     | V1_0
     | V1_1
+    | V2_0
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
         | V1_1 -> "v1.1"
-
+        | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
         | DotNetCoreVersion.V1_0 -> "10"
         | DotNetCoreVersion.V1_1 -> "11"
+        | DotNetCoreVersion.V2_0 -> "20"
 
 module KnownAliases =
     let Data =
@@ -209,9 +216,10 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1; DotNetStandard DotNetStandardVersion.V1_2 ]
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2; DotNetStandard DotNetStandardVersion.V1_2 ]
         | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3; DotNetStandard DotNetStandardVersion.V1_3 ]
-        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4 ]
+        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetFramework FrameworkVersion.V4_6_3 -> [ DotNetFramework FrameworkVersion.V4_6_2; DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetFramework FrameworkVersion.V4_7 -> [ DotNetFramework FrameworkVersion.V4_6_3; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_2; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
@@ -222,8 +230,10 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V1_4 -> [ DotNetStandard DotNetStandardVersion.V1_3 ]
         | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
         | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
+        | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_1 -> [ DotNetCore DotNetCoreVersion.V1_0 ]
+        | DotNetCore DotNetCoreVersion.V2_0 -> [ DotNetCore DotNetCoreVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -365,8 +375,10 @@ module FrameworkDetection =
                 | "netstandard14" -> Some(DotNetStandard DotNetStandardVersion.V1_4)
                 | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | "netstandard16" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
+                | "netstandard20" -> Some(DotNetStandard DotNetStandardVersion.V2_0)
                 | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
                 | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
+                | "netcore20" -> Some (DotNetCore DotNetCoreVersion.V2_0)
                 | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
                 | _ -> None
             result)
@@ -466,8 +478,8 @@ type TargetProfile =
             | _ -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" // Use Portable259 as default
 
 module KnownTargetProfiles =
-    let DotNetFrameworkVersions =
-       [FrameworkVersion.V1
+    let DotNetFrameworkVersions = [
+        FrameworkVersion.V1
         FrameworkVersion.V1_1
         FrameworkVersion.V2
         FrameworkVersion.V3
@@ -481,7 +493,9 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_6
         FrameworkVersion.V4_6_1
         FrameworkVersion.V4_6_2
-        FrameworkVersion.V4_6_3]
+        FrameworkVersion.V4_6_3
+        FrameworkVersion.V4_7
+    ]
 
     let DotNetFrameworkIdentifiers =
        DotNetFrameworkVersions
@@ -491,22 +505,27 @@ module KnownTargetProfiles =
        DotNetFrameworkIdentifiers
        |> List.map SinglePlatform
 
-    let DotNetStandardVersions =
-       [DotNetStandardVersion.V1_0
+    let DotNetStandardVersions = [
+        DotNetStandardVersion.V1_0
         DotNetStandardVersion.V1_1
         DotNetStandardVersion.V1_2
         DotNetStandardVersion.V1_3
         DotNetStandardVersion.V1_4
         DotNetStandardVersion.V1_5
-        DotNetStandardVersion.V1_6]
+        DotNetStandardVersion.V1_6
+        DotNetStandardVersion.V2_0
+    ]
         
 
     let DotNetStandardProfiles =
        DotNetStandardVersions
        |> List.map (DotNetStandard >> SinglePlatform)
        
-    let DotNetCoreVersions =
-       [DotNetCoreVersion.V1_0 ]
+    let DotNetCoreVersions = [
+        DotNetCoreVersion.V1_0
+        DotNetCoreVersion.V1_1
+        DotNetCoreVersion.V2_0
+    ]
        
     let DotNetCoreProfiles =
        DotNetCoreVersions
