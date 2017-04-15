@@ -803,9 +803,10 @@ module ProjectFile =
         let globalTargets, frameworkSpecificTargets =
             if not importTargets then List.empty, List.empty else
             let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Path)
-            //sortedTargets
-            //|> List.partition (fun lib -> allTargetProfiles = set lib.Targets )
-            ([] : LibFolder list), sortedTargets
+            sortedTargets
+            //|> List.partition (fun lib -> allTargetProfiles = set lib.Path.Targets )
+            |> List.partition (fun lib -> "" = lib.Path.Name )
+            //([] : LibFolder list), sortedTargets
 
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
