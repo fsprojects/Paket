@@ -154,13 +154,15 @@ let getFileEncoding path =
     | _ -> Encoding.ASCII
 
 /// [omit]
-let inline createRelativePath root path = 
+let createRelativePath root (path:string) = 
+    let path = Path.GetFullPath path
     let basePath = 
         if String.IsNullOrEmpty root then Directory.GetCurrentDirectory() + string Path.DirectorySeparatorChar
         else root
-    
+
     let uri = Uri basePath
-    uri.MakeRelativeUri(Uri path).ToString().Replace("/", "\\").Replace("%20", " ")
+    let relative = uri.MakeRelativeUri(Uri path).ToString().Replace("/", "\\").Replace("%20", " ")
+    relative
 
 /// The path of the "Program Files" folder - might be x64 on x64 machine
 let ProgramFiles = Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles
