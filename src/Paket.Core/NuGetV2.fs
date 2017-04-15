@@ -608,13 +608,15 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
 let private getFilesMatching targetFolder searchPattern subFolderName filesDescriptionForVerbose =
     let files =
         let dir = DirectoryInfo(targetFolder)
+        let dirFullPath = Path.GetFullPath targetFolder
         let path = Path.Combine(dir.FullName.ToLower(), subFolderName)
         if dir.Exists then
             dir.GetDirectories()
             |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
             |> Array.collect (fun dir -> dir.GetFiles(searchPattern, SearchOption.AllDirectories))
             |> Array.map (fun file ->
-                { UnparsedPackageFile.FullPath = file.FullName; UnparsedPackageFile.PathWithinPackage = file.FullName.Substring(dir.FullName.Length + 1).Replace("\\", "/") })
+                let fullPath = Path.GetFullPath file.FullName;
+                { UnparsedPackageFile.FullPath = fullPath; UnparsedPackageFile.PathWithinPackage = fullPath.Substring(dirFullPath.Length + 1).Replace("\\", "/") })
         else
             [||]
 
