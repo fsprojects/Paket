@@ -151,11 +151,10 @@ let getFileEncoding path =
 
 /// [omit]
 let createRelativePath root (path:string) =
-    let root = Path.GetFullPath root
     let path = Path.GetFullPath path
     let basePath =
         if String.IsNullOrEmpty root then Directory.GetCurrentDirectory() + string Path.DirectorySeparatorChar
-        else root
+        else Path.GetFullPath root
 
     let uri = Uri basePath
     let relative = uri.MakeRelativeUri(Uri path).ToString().Replace("/", "\\").Replace("%20", " ")
