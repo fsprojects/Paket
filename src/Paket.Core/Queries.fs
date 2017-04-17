@@ -75,6 +75,32 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
             let files = NuGetV2.GetLibFiles(folder.FullName)
             InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
 
+let getRuntimeGraph (lockFile: LockFile) (groupName:GroupName) =
+    lockFile.Groups
+    |> Map.tryFind groupName
+    |> Option.toList
+    |> Seq.collect (fun group -> group.Resolution |> Map.toSeq)
+    |> Seq.map snd
+    |> Seq.choose (fun p ->
+        let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString()
+        let runtimeJson = sprintf "%s/packages%s/%O/runtime.json" lockFile.RootPath groupFolder p.Name
+        if File.Exists runtimeJson then Some runtimeJson
+        else None)
+    |> Seq.map File.ReadAllText
+    |> Seq.map RuntimeGraphParser.readRuntimeGraph
+    |> RuntimeGraph.mergeSeq
+
+let getRuntimePackages (rid) (lockFile:LockFile) (groupName:GroupName) =
+    let g = getRuntimeGraph lockFile groupName
+
+    lockFile.Groups
+    |> Map.tryFind groupName
+    |> Option.toList
+    |> Seq.collect (fun group -> group.Resolution |> Map.toSeq)
+    |> Seq.map snd
+    |> Seq.collect (fun p -> RuntimeGraph.findRuntimeDependencies rid p.Name g)
+    |> Seq.toList
+
 let resolveFrameworkForScriptGeneration (dependencies: DependenciesFile) = lazy (
     dependencies.Groups
         |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
