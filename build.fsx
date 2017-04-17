@@ -94,6 +94,8 @@ let stable =
     | Some stable -> stable
     | _ -> release
 
+failwithf "%A %A" release.AssemblyVersion release.NugetVersion
+
 let genFSAssemblyInfo (projectPath) =
     let projectName = System.IO.Path.GetFileNameWithoutExtension(projectPath)
     let folderName = System.IO.Path.GetFileName(System.IO.Path.GetDirectoryName(projectPath))
