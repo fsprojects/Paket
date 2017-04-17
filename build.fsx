@@ -186,7 +186,10 @@ Target "InstallDotNetCore" (fun _ ->
 // Clean build results
 
 Target "Clean" (fun _ ->
-    CleanDirs [buildDir; tempDir]
+    !! "src/**/obj"
+    ++ buildDir 
+    ++ tempDir
+    |> CleanDirs 
 )
 
 Target "CleanDocs" (fun _ ->
