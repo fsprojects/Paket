@@ -111,6 +111,7 @@
     <Compile Include="RemoteUpload.fs" />
     <Compile Include="PackageResolver.fs" />
     <Compile Include="Nuspec.fs" />
+    <Compile Include="RuntimeGraph.fs" />
     <Compile Include="InstallModel.fs" />
     <Compile Include="DependenciesTypes.fs" />
     <Compile Include="Parsers/DependenciesFileParser.fs" />

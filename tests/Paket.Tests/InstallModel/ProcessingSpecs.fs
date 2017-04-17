@@ -112,12 +112,12 @@ let ``should understand reference folder``() =
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
-    let refs = model.GetRuntimeLibraries(SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
+    let refs = model.GetRuntimeLibraries null null (SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
-    let refs = model.GetRuntimeLibraries(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
+    let refs = model.GetRuntimeLibraries null null(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     // TODO: This is kind of broken for now -> the correct results depends on the runtime we want to get the runtime libraries for
     // therefore GetRuntimeLibraries needs an additional parameter...

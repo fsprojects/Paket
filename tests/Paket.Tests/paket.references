@@ -1,6 +1,7 @@
 FSharp.Core
 Chessie
 
+
 group Test
   NUnit
   NUnit3TestAdapter
