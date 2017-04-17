@@ -27,6 +27,7 @@ type RuntimeDescription =
 type RuntimeGraph =
    { Supports : Map<CompatibilityProfileName, CompatibilityProfile>
      Runtimes : Map<Rid, RuntimeDescription> }
+   static member Empty = { Supports = Map.empty; Runtimes = Map.empty }
 
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
@@ -144,4 +145,41 @@ module RuntimeGraph =
     let merge (r1:RuntimeGraph) (r2:RuntimeGraph) =
        { Supports = Map.merge mergeCompatibility r1.Supports r2.Supports
          Runtimes = Map.merge mergeDescription r1.Runtimes r2.Runtimes }
+
+    let mergeSeq s =
+        s |> Seq.fold merge RuntimeGraph.Empty
+
+    let getInheritanceList (rid:Rid) (g:RuntimeGraph) =
+        let rec getListRec currentList toInspect =
+            match toInspect with
+            | rid :: rest ->
+                if List.contains rid currentList then
+                    getListRec currentList rest
+                else
+                    let desc = g.Runtimes.[rid]
+                    let filtered = desc.InheritedRids |> List.filter (fun inh -> not (List.contains inh currentList))
+                    let newList = currentList @ filtered
+                    let toInspect = rest @ filtered
+                    getListRec newList toInspect
+            | _ -> currentList
+
+        getListRec [rid] [rid]
+
+    let getKnownRids (g:RuntimeGraph) =
+        g.Runtimes |> Map.toSeq |> Seq.map fst
+
+    let areCompatible projectRid assetRid g =
+        g
+        |> getInheritanceList projectRid
+        |> List.contains assetRid
+
+    let findRuntimeDependencies rid packageName g =
+        getInheritanceList rid g
+        |> Seq.choose (fun r ->
+            match g.Runtimes |> Map.tryFind r with
+            | Some desc ->
+                desc.RuntimeDependencies |> Map.tryFind packageName
+            | None -> None)
+        |> Seq.tryHead
+        |> Option.defaultValue []
 
