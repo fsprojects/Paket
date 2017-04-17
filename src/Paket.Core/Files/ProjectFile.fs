@@ -797,16 +797,13 @@ module ProjectFile =
                                  condition,createItemGroup libFolder.Targets rest,false]
                         )
 
-        // global targets are targets, that are either directly in the /build folder,
-        // or, if there is a framework-restriction, specific to the framework(s).
+        // global targets are targets, that are either directly in the /build folder.
         // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package). 
         let globalTargets, frameworkSpecificTargets =
             if not importTargets then List.empty, List.empty else
             let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Path)
             sortedTargets
-            //|> List.partition (fun lib -> allTargetProfiles = set lib.Path.Targets )
-            |> List.partition (fun lib -> "" = lib.Path.Name )
-            //([] : LibFolder list), sortedTargets
+            |> List.partition (fun lib -> "" = lib.Path.Name)
 
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
