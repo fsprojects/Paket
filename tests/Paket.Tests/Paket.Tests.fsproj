@@ -364,6 +364,7 @@
     <None Include="paket.references" />
     <Content Include="App.config" />
     <Compile Include="ScriptGeneration\LoadingScriptTests.fs" />
+    <Compile Include="RuntimeGraphTests.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
