@@ -445,7 +445,7 @@ module InstallModel =
             getLegacyReferences target installModel
         else results
 
-    let getRuntimeLibraries (target : TargetProfile) (installModel:InstallModel) =
+    let getRuntimeLibraries graph rid (target : TargetProfile) (installModel:InstallModel) =
         getFileFolders target (installModel.RuntimeLibFolders) (function Reference.Library lib -> Some lib | _ -> None)
         |> Seq.cache
 
@@ -730,7 +730,7 @@ type InstallModel with
     member this.GetLibReferences target = InstallModel.getLegacyReferences target this
     member this.GetLegacyReferences target = InstallModel.getLegacyReferences target this
     member this.GetCompileReferences target = InstallModel.getCompileReferences target this
-    member this.GetRuntimeLibraries target = InstallModel.getRuntimeLibraries target this
+    member this.GetRuntimeLibraries graph rid target = InstallModel.getRuntimeLibraries graph rid target this
 
     [<Obsolete("usually this should not be used, use GetLegacyReferences for the full .net and GetCompileReferences for dotnetcore")>]
     member this.GetLibReferences frameworkIdentifier = InstallModel.getLegacyPlatformReferences frameworkIdentifier this
