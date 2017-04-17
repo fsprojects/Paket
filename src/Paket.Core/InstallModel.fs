@@ -679,7 +679,7 @@ module InstallModel =
 
                 RuntimeLibFolders =
                     installModel.RuntimeLibFolders
-                    |> List.map applRestriction
+                    |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])
 
                 TargetsFileFolders =
