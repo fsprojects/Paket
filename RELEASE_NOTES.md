@@ -1,3 +1,8 @@
+#### 4.4.1 - 17.04.2017
+* Support Netstandard 2.0
+* Support Netframework 4.7
+* Support Netcore 2.0
+
 #### 4.4.0 - 12.04.2017
 * BUGFIX: Import .props/.targets better - https://github.com/fsprojects/Paket/pull/2234
 * BUGFIX: Don't download boostrapper in auto-restore magic mode - https://github.com/fsprojects/Paket/pull/2235
