@@ -96,3 +96,17 @@ let ``Check if we can parse runtime rids``() =
             []
             |> Map.ofSeq
         }
+
+[<Test>]
+let ``Check if we can merge two graphs``() =
+    let r1 = RuntimeGraphParser.readRuntimeGraph rids
+    let r2 = RuntimeGraphParser.readRuntimeGraph supportAndDeps
+    let merged = RuntimeGraph.merge r1 r2
+    let win = merged.Runtimes.[Rid.Of "win"]
+    win.InheritedRids
+        |> shouldEqual [ Rid.Of "any" ]
+    win.RuntimeDependencies
+        |> shouldEqual
+             ([ PackageName "Microsoft.Win32.Primitives", [ PackageName "runtime.win.Microsoft.Win32.Primitives", VersionRequirement.VersionRequirement (VersionRange.Minimum (SemVer.Parse "4.3.0"), PreReleaseStatus.No) ]
+                PackageName "System.Runtime.Extensions", [ PackageName "runtime.win.System.Runtime.Extensions", VersionRequirement.VersionRequirement (VersionRange.Minimum (SemVer.Parse "4.3.0"), PreReleaseStatus.No) ]
+              ] |> Map.ofSeq)
