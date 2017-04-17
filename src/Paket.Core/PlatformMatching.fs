@@ -204,11 +204,11 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile l
     let grouped,targets =
         ([],targets)
         |> CheckIfFullyInGroup "true" (fun _ -> true)
-        |> CheckIfFullyInGroup ".NETFramework" (fun x -> match x with | SinglePlatform(DotNetFramework(_)) -> true | _ -> false)
-        |> CheckIfFullyInGroup ".NETCore" (fun x -> match x with | SinglePlatform(Windows(_)) -> true | _ -> false)
-        |> CheckIfFullyInGroup "Silverlight" (fun x -> match x with |SinglePlatform(Silverlight(_)) -> true | _ -> false)
-        |> CheckIfFullyInGroup "WindowsPhoneApp" (fun x -> match x with | SinglePlatform(WindowsPhoneApp(_)) -> true | _ -> false)
-        |> CheckIfFullyInGroup "WindowsPhone" (fun x -> match x with | SinglePlatform(WindowsPhoneSilverlight(_)) -> true | _ -> false)
+        |> CheckIfFullyInGroup ".NETFramework" (function SinglePlatform (DotNetFramework _) -> true | _ -> false)
+        |> CheckIfFullyInGroup ".NETCore" (function SinglePlatform (Windows _) -> true | _ -> false)
+        |> CheckIfFullyInGroup "Silverlight" (function SinglePlatform (Silverlight _) -> true | _ -> false)
+        |> CheckIfFullyInGroup "WindowsPhoneApp" (function SinglePlatform (WindowsPhoneApp _) -> true | _ -> false)
+        |> CheckIfFullyInGroup "WindowsPhone" (function SinglePlatform (WindowsPhoneSilverlight _) -> true | _ -> false)
 
     let targets =
         targets 

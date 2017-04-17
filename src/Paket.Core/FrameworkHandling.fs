@@ -3,6 +3,40 @@
 open System.IO
 open System
 
+
+/// The .NET Standard version.
+// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
+[<RequireQualifiedAccess>]
+type DotNetStandardVersion = 
+    | V1_0
+    | V1_1
+    | V1_2
+    | V1_3
+    | V1_4
+    | V1_5
+    | V1_6
+    | V2_0
+    override this.ToString() =
+        match this with
+        | V1_0 -> "v1.0"
+        | V1_1 -> "v1.1"
+        | V1_2 -> "v1.2"
+        | V1_3 -> "v1.3"
+        | V1_4 -> "v1.4"
+        | V1_5 -> "v1.5"
+        | V1_6 -> "v1.6"
+        | V2_0 -> "v2.0"
+    member this.ShortString() =
+        match this with
+        | DotNetStandardVersion.V1_0 -> "10"
+        | DotNetStandardVersion.V1_1 -> "11"
+        | DotNetStandardVersion.V1_2 -> "12"
+        | DotNetStandardVersion.V1_3 -> "13"
+        | DotNetStandardVersion.V1_4 -> "14"
+        | DotNetStandardVersion.V1_5 -> "15"
+        | DotNetStandardVersion.V1_6 -> "16"
+        | DotNetStandardVersion.V2_0 -> "20"
+
 [<RequireQualifiedAccess>]
 /// The Framework version.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
@@ -22,25 +56,27 @@ type FrameworkVersion =
     | V4_6_1
     | V4_6_2
     | V4_6_3
-    | V5_0
+    | V4_7
+    | V5_0          
     override this.ToString() =
         match this with
-        | V1 -> "v1.0"
-        | V1_1 -> "v1.1"
-        | V2 -> "v2.0"
-        | V3 -> "v3.0"
-        | V3_5 -> "v3.5"
+        | V1        -> "v1.0"
+        | V1_1      -> "v1.1"
+        | V2        -> "v2.0"
+        | V3        -> "v3.0"
+        | V3_5      -> "v3.5"
         | V4_Client -> "v4.0"
-        | V4 -> "v4.0"
-        | V4_5 -> "v4.5"
-        | V4_5_1 -> "v4.5.1"
-        | V4_5_2 -> "v4.5.2"
-        | V4_5_3 -> "v4.5.3"
-        | V4_6 -> "v4.6"
-        | V4_6_1 -> "v4.6.1"
-        | V4_6_2 -> "v4.6.2"
-        | V4_6_3 -> "v4.6.3"
-        | V5_0 -> "v5.0"
+        | V4        -> "v4.0"
+        | V4_5      -> "v4.5"
+        | V4_5_1    -> "v4.5.1"
+        | V4_5_2    -> "v4.5.2"
+        | V4_5_3    -> "v4.5.3"
+        | V4_6      -> "v4.6"
+        | V4_6_1    -> "v4.6.1"
+        | V4_6_2    -> "v4.6.2"
+        | V4_6_3    -> "v4.6.3"
+        | V4_7      -> "v4.7"
+        | V5_0      -> "v5.0"
 
     member this.ShortString() =
         match this with
@@ -59,38 +95,8 @@ type FrameworkVersion =
         | FrameworkVersion.V4_6_1 -> "461"
         | FrameworkVersion.V4_6_2 -> "462"
         | FrameworkVersion.V4_6_3 -> "463"
+        | FrameworkVersion.V4_7 -> "47"
         | FrameworkVersion.V5_0 -> "50"
-
-[<RequireQualifiedAccess>]
-/// The .NET Standard version.
-// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
-type DotNetStandardVersion = 
-    | V1_0
-    | V1_1
-    | V1_2
-    | V1_3
-    | V1_4
-    | V1_5
-    | V1_6
-    override this.ToString() =
-        match this with
-        | V1_0 -> "v1.0"
-        | V1_1 -> "v1.1"
-        | V1_2 -> "v1.2"
-        | V1_3 -> "v1.3"
-        | V1_4 -> "v1.4"
-        | V1_5 -> "v1.5"
-        | V1_6 -> "v1.6"
-
-    member this.ShortString() =
-        match this with
-        | DotNetStandardVersion.V1_0 -> "10"
-        | DotNetStandardVersion.V1_1 -> "11"
-        | DotNetStandardVersion.V1_2 -> "12"
-        | DotNetStandardVersion.V1_3 -> "13"
-        | DotNetStandardVersion.V1_4 -> "14"
-        | DotNetStandardVersion.V1_5 -> "15"
-        | DotNetStandardVersion.V1_6 -> "16"
 
 [<RequireQualifiedAccess>]
 /// The UAP version.
@@ -112,15 +118,33 @@ type UAPVersion =
 type DotNetCoreVersion = 
     | V1_0
     | V1_1
+    | V2_0
+    member private this.NumKey =
+        match this with
+        | V1_0 -> 0
+        | V1_1 -> 1
+        | V2_0 -> 2
+    static member private FromNum num =
+        match num with
+        | 0 -> V1_0
+        | 1 -> V1_1
+        | 2 -> V2_0
+        | _   -> failwithf "'%i' has no corresponding framework version" num
+    static member (<->) (lower:DotNetCoreVersion,upper:DotNetCoreVersion) =
+        if lower.NumKey < upper.NumKey then
+            [ lower.NumKey .. upper.NumKey ] |> List.map DotNetCoreVersion.FromNum
+        else
+            [ lower.NumKey .. -1 .. upper.NumKey ] |> List.map DotNetCoreVersion.FromNum
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
         | V1_1 -> "v1.1"
-
+        | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
         | DotNetCoreVersion.V1_0 -> "10"
         | DotNetCoreVersion.V1_1 -> "11"
+        | DotNetCoreVersion.V2_0 -> "20"
 
 module KnownAliases =
     let Data =
@@ -209,9 +233,10 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1; DotNetStandard DotNetStandardVersion.V1_2 ]
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2; DotNetStandard DotNetStandardVersion.V1_2 ]
         | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3; DotNetStandard DotNetStandardVersion.V1_3 ]
-        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4 ]
+        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetFramework FrameworkVersion.V4_6_3 -> [ DotNetFramework FrameworkVersion.V4_6_2; DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetFramework FrameworkVersion.V4_7 -> [ DotNetFramework FrameworkVersion.V4_6_3; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_2; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
@@ -222,8 +247,10 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V1_4 -> [ DotNetStandard DotNetStandardVersion.V1_3 ]
         | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
         | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
+        | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_1 -> [ DotNetCore DotNetCoreVersion.V1_0 ]
+        | DotNetCore DotNetCoreVersion.V2_0 -> [ DotNetCore DotNetCoreVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -240,7 +267,6 @@ type FrameworkIdentifier =
         | Windows _ -> [ Windows "v4.5.1" ]
         | WindowsPhoneApp _ -> [ WindowsPhoneApp "v8.1" ]
         | WindowsPhoneSilverlight _ -> [ WindowsPhoneSilverlight "v8.1" ]
-
     /// Return if the parameter is of the same framework category (dotnet, windows phone, silverlight, ...)
     member x.IsSameCategoryAs y =
         match (x, y) with
@@ -301,7 +327,7 @@ type FrameworkIdentifier =
 
 module FrameworkDetection =
     open Logging
-
+    /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
     let Extract =
         memoize 
           (fun (path:string) ->
@@ -330,6 +356,7 @@ module FrameworkDetection =
                 | "net461" -> Some (DotNetFramework FrameworkVersion.V4_6_1)
                 | "net462" -> Some (DotNetFramework FrameworkVersion.V4_6_2)
                 | "net463" -> Some (DotNetFramework FrameworkVersion.V4_6_3)
+                | "net47" -> Some (DotNetFramework FrameworkVersion.V4_7)
                 | "uap100" -> Some (UAP UAPVersion.V10)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid44" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50" | "monoandroid60" | "monoandroid70" -> Some MonoAndroid
@@ -365,8 +392,10 @@ module FrameworkDetection =
                 | "netstandard14" -> Some(DotNetStandard DotNetStandardVersion.V1_4)
                 | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | "netstandard16" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
+                | "netstandard20" -> Some(DotNetStandard DotNetStandardVersion.V2_0)
                 | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
                 | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
+                | "netcore20" -> Some (DotNetCore DotNetCoreVersion.V2_0)
                 | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
                 | _ -> None
             result)
@@ -466,8 +495,8 @@ type TargetProfile =
             | _ -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" // Use Portable259 as default
 
 module KnownTargetProfiles =
-    let DotNetFrameworkVersions =
-       [FrameworkVersion.V1
+    let DotNetFrameworkVersions = [
+        FrameworkVersion.V1
         FrameworkVersion.V1_1
         FrameworkVersion.V2
         FrameworkVersion.V3
@@ -481,7 +510,9 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_6
         FrameworkVersion.V4_6_1
         FrameworkVersion.V4_6_2
-        FrameworkVersion.V4_6_3]
+        FrameworkVersion.V4_6_3
+        FrameworkVersion.V4_7
+    ]
 
     let DotNetFrameworkIdentifiers =
        DotNetFrameworkVersions
@@ -491,22 +522,27 @@ module KnownTargetProfiles =
        DotNetFrameworkIdentifiers
        |> List.map SinglePlatform
 
-    let DotNetStandardVersions =
-       [DotNetStandardVersion.V1_0
+    let DotNetStandardVersions = [
+        DotNetStandardVersion.V1_0
         DotNetStandardVersion.V1_1
         DotNetStandardVersion.V1_2
         DotNetStandardVersion.V1_3
         DotNetStandardVersion.V1_4
         DotNetStandardVersion.V1_5
-        DotNetStandardVersion.V1_6]
+        DotNetStandardVersion.V1_6
+        DotNetStandardVersion.V2_0
+    ]
         
 
     let DotNetStandardProfiles =
        DotNetStandardVersions
        |> List.map (DotNetStandard >> SinglePlatform)
        
-    let DotNetCoreVersions =
-       [DotNetCoreVersion.V1_0 ]
+    let DotNetCoreVersions = [
+        DotNetCoreVersion.V1_0
+        DotNetCoreVersion.V1_1
+        DotNetCoreVersion.V2_0
+    ]
        
     let DotNetCoreProfiles =
        DotNetCoreVersions
