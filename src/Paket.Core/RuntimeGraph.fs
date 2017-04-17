@@ -34,7 +34,7 @@ open Newtonsoft.Json.Linq
 module RuntimeGraphParser =
     open System.Collections.Generic
 
-    (* 
+    (*
 { "uwp.10.0.app": {
       "uap10.0": [
         "win10-x86",
@@ -114,7 +114,34 @@ module RuntimeGraphParser =
     let readRuntimeGraph (s:string) =
         readRuntimeGraphJ (JObject.Parse(s))
 
+module Map =
+    let merge (f:'b -> 'b -> 'b) (m1:Map<'a,'b>) (m2:Map<'a,'b>) =
+        m1
+        |> Map.toSeq
+        |> Seq.append (m2 |> Map.toSeq)
+        |> Seq.groupBy (fst)
+        |> Seq.map (fun (k, g) ->
+            match g |> Seq.map snd |> Seq.toList with
+            | [ a; b ] -> k, f a b
+            | [ a ] -> k, a
+            | _ -> failwithf "This should never happen")
+        |> Map.ofSeq
+
 module RuntimeGraph =
-    let read json =
-        ()
+    let mergeCompatibility (s1:CompatibilityProfile) (s2:CompatibilityProfile) =
+       assert (s1.Name = s2.Name)
+       { Name = s1.Name
+         Supported =
+            Map.merge (@) s1.Supported s2.Supported
+            |> Map.map (fun _ l -> List.distinct l) }
+    let mergeDescription (d1:RuntimeDescription) (d2:RuntimeDescription) =
+       assert (d1.Rid = d2.Rid)
+       { Rid = d1.Rid
+         InheritedRids = d1.InheritedRids @ d2.InheritedRids |> List.distinct
+         RuntimeDependencies =
+            Map.merge (@) d1.RuntimeDependencies d2.RuntimeDependencies
+            |> Map.map (fun _ l -> List.distinct l) }
+    let merge (r1:RuntimeGraph) (r2:RuntimeGraph) =
+       { Supports = Map.merge mergeCompatibility r1.Supports r2.Supports
+         Runtimes = Map.merge mergeDescription r1.Runtimes r2.Runtimes }
 
