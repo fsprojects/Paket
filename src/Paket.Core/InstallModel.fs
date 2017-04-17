@@ -204,11 +204,14 @@ module FolderScanner =
        | ScanSuccess of obj[]
        | ScanRegexFailure of stringToScan:string * regex:string
        | ScanParserFailure of error:string
-    let private sscanfHelper (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
+    type ScanOptions =
+        { IgnoreCase : bool }
+        static member Default = { IgnoreCase = false }
+    let private sscanfHelper (opts:ScanOptions) (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
         let formatStr = pf.Value.Replace("%%", "%")
         let constants = formatStr.Split(separators, StringSplitOptions.None)
         let regexString = "^" + String.Join("(.*?)", constants |> Array.map Regex.Escape) + "$"
-        let regex = Regex(regexString)
+        let regex = Regex(regexString, if opts.IgnoreCase then RegexOptions.IgnoreCase else RegexOptions.None)
         let formatters = pf.Value.ToCharArray() // need original string here (possibly with "%%"s)
                         |> Array.toList |> getFormatters
         let matchres = regex.Match(s)
@@ -233,9 +236,9 @@ module FolderScanner =
         else if matches.Length = 0 then Unchecked.defaultof<'t>
         else FSharpValue.MakeTuple(matches, typeof<'t>) :?> 't
 
-    let trySscanf (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
+    let trySscanf opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
         //raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
-        match sscanfHelper pf s with
+        match sscanfHelper opts pf s with
         | ScanSuccess matches -> toGenericTuple matches |> Some
         | _ -> None
 
@@ -245,14 +248,14 @@ module FolderScanner =
         | ScanRegexFailure (s, regexString) -> raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
         | ScanParserFailure e -> raise <| FormatException(sprintf "Unable to parse string '%s' with parser: %s" s e)
 
-    let sscanf (pf:PrintfFormat<_,_,_,_,'t>) s : 't =
-        sscanfHelper pf s
+    let sscanf opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't =
+        sscanfHelper opts pf s
         |> handleErrors s
 
     let private findSpecifiers = Regex(@"%(?<formatSpec>.)({(?<inside>.*?)})?")
 
     // Extends the syntax of the format string with %A{scanner}, and uses the corresponding named scanner from the advancedScanners parameter.
-    let private sscanfExtHelper (advancedScanners:AdvancedScanner seq) (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
+    let private sscanfExtHelper (advancedScanners:AdvancedScanner seq) opts (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
         let scannerMap =
             advancedScanners
             |> Seq.map (fun s -> s.Name, s)
@@ -287,7 +290,7 @@ module FolderScanner =
                     | _ -> originalValue
                 currentFormatterString.Substring(0, index) + replacement + currentFormatterString.Substring(index + originalValue.Length)) pf.Value
 
-        match sscanfHelper (PrintfFormat<_,_,_,_,'t> replacedFormatString) s with
+        match sscanfHelper opts (PrintfFormat<_,_,_,_,'t> replacedFormatString) s with
         | ScanSuccess objResults ->
             let results =
                 (objResults, advancedFormatters)
@@ -300,14 +303,14 @@ module FolderScanner =
                 ScanSuccess (results |> Array.map (function ParseSucceeded res -> res | ParseError _ -> failwithf "Should not happen here"))
         | _ as s -> s
 
-    let trySscanfExt advancedScanners (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
+    let trySscanfExt advancedScanners opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't option =
         //raise <| FormatException(sprintf "Unable to scan string '%s' with regex '%s'" s regexString)
-        match sscanfExtHelper advancedScanners pf s with
+        match sscanfExtHelper advancedScanners opts pf s with
         | ScanSuccess matches -> toGenericTuple matches |> Some
         | _ -> None
 
-    let sscanfExt advancedScanners (pf:PrintfFormat<_,_,_,_,'t>) s : 't =
-        sscanfExtHelper advancedScanners pf s
+    let sscanfExt advancedScanners opts (pf:PrintfFormat<_,_,_,_,'t>) s : 't =
+        sscanfExtHelper advancedScanners opts pf s
         |> handleErrors s
 
     // some basic testing
@@ -347,7 +350,8 @@ module InstallModel =
             FolderScanner.AdvancedScanner.Parser = PlatformMatching.extractPlatforms >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }
           { FolderScanner.AdvancedScanner.Name = "rid";
             FolderScanner.AdvancedScanner.Parser = (fun rid -> { Rid = rid }) >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }]
-    let trySscanf pf s = FolderScanner.trySscanfExt scanners pf s
+    let trySscanf pf s =
+        FolderScanner.trySscanfExt scanners { FolderScanner.ScanOptions.Default with IgnoreCase = true } pf s
 
     type FrameworkDependentFile =
       { Path : Tfm
