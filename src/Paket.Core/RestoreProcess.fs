@@ -110,7 +110,7 @@ let internal restore (alternativeProjectRoot, root, groupName, sources, caches, 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
         let! _ = lockFile.Groups.[groupName].Resolution
-                 |> Map.filter (fun name _ -> packages.Contains name)
+                 |> Map.filter (fun name r -> packages.Contains name)
                  |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
                  |> Async.Parallel
         return ()

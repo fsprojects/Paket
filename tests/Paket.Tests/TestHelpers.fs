@@ -98,9 +98,12 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
-let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF) =
+let ResolveWithGraphR(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF, getRuntimeGraph) =
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
-    dependenciesFile.Resolve(true,getSha1,getVersionsF,getPackageDetailsF,(fun _ _ -> None),groups,UpdateMode.UpdateAll)
+    dependenciesFile.Resolve(true,getSha1,getVersionsF,getPackageDetailsF,getRuntimeGraph,groups,UpdateMode.UpdateAll)
+
+let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF) =
+    ResolveWithGraphR(dependenciesFile,getSha1,getVersionsF, getPackageDetailsF, (fun _ _ -> None))
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 
