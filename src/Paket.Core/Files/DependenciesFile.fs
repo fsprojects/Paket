@@ -247,6 +247,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Settings = group.Options.Settings })
                         |> Seq.toList
 
+                    // TODO: We might want a way here to tell the resolver:
+                    // "We don't really want Package A, but if you need it take Version X (from our resolution above)"
+                    // Maybe we can actually do this by modifying the "getVersionF" callback?
                     let runtimeResolution =
                         PackageResolver.Resolve(
                             getVersionF,
