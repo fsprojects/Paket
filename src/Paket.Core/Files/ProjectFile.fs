@@ -744,12 +744,20 @@ module ProjectFile =
             model.GetReferenceFolders()
             |> List.map (fun lib -> lib.Targets)
 
+        // Just in case anyone wants to compile FOR netcore in the old format...
+        // I don't think there is anyone actually using this part, but it's there for backwards compat.
+        let netCoreRestricted =
+            model.ApplyFrameworkRestrictions
+                [ FrameworkRestriction.AtLeast (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_0);
+                  FrameworkRestriction.AtLeast (FrameworkIdentifier.DotNetCore DotNetCoreVersion.V1_0) ]
+
+        // handle legacy conditions
         let conditions =
-            model.GetReferenceFolders()
-            |> List.sortBy (fun libFolder -> libFolder.Name)
-            |> List.collect (fun libFolder -> 
+            (model.GetReferenceFolders() @ netCoreRestricted.CompileRefFolders)
+            |> List.sortBy (fun libFolder -> libFolder.Path)
+            |> List.collect (fun libFolder ->
                 match libFolder with
-                | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> []  // TODO: Add reference to custom task instead
+                //| x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> []  // TODO: Add reference to custom task instead
                 | _ -> 
                     match PlatformMatching.getCondition referenceCondition allTargets libFolder.Targets with
                     | "" -> []
@@ -788,16 +796,15 @@ module ProjectFile =
                                 [lowerCondition,createItemGroup !assemblyTargets frameworkAssemblies,true
                                  condition,createItemGroup libFolder.Targets rest,false]
                         )
-                        
-        // global targets are targets, that are either directly in the /build folder,
-        // or, if there is a framework-restriction, specific to the framework(s).
+
+        // global targets are targets, that are either directly in the /build folder.
         // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package). 
         let globalTargets, frameworkSpecificTargets =
             if not importTargets then List.empty, List.empty else
-            let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Name)
+            let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Path)
             sortedTargets
-            |> List.partition (fun lib -> allTargetProfiles = set lib.Targets )
-        
+            |> List.partition (fun lib -> "" = lib.Path.Name)
+
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup lib.Files.References)

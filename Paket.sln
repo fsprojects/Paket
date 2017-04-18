@@ -1,6 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26228.10
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
@@ -90,6 +92,13 @@ EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Paket.IntegrationTests", "integrationtests\Paket.IntegrationTests\Paket.IntegrationTests.fsproj", "{7234B9B4-8CF5-4E68-AA29-050C087B9246}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{5DCD4F38-7632-4C3F-90B1-222CDD502C18}"
+	ProjectSection(SolutionItems) = preProject
+		.paket\paket.exe.config = .paket\paket.exe.config
+		.paket\Paket.Restore.targets = .paket\Paket.Restore.targets
+		.paket\paket.targets = .paket\paket.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{29E6EF21-D8C8-495D-84C7-7A6416C1E25F}"
 	ProjectSection(SolutionItems) = preProject
 		.paket\paket.exe.config = .paket\paket.exe.config
 		.paket\Paket.Restore.targets = .paket\Paket.Restore.targets

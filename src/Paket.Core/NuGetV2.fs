@@ -608,11 +608,15 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
 let private getFilesMatching targetFolder searchPattern subFolderName filesDescriptionForVerbose =
     let files =
         let dir = DirectoryInfo(targetFolder)
+        let dirFullPath = Path.GetFullPath targetFolder
         let path = Path.Combine(dir.FullName.ToLower(), subFolderName)
         if dir.Exists then
             dir.GetDirectories()
             |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
             |> Array.collect (fun dir -> dir.GetFiles(searchPattern, SearchOption.AllDirectories))
+            |> Array.map (fun file ->
+                let fullPath = Path.GetFullPath file.FullName;
+                { UnparsedPackageFile.FullPath = fullPath; UnparsedPackageFile.PathWithinPackage = fullPath.Substring(dirFullPath.Length + 1).Replace("\\", "/") })
         else
             [||]
 
@@ -620,7 +624,7 @@ let private getFilesMatching targetFolder searchPattern subFolderName filesDescr
         if Array.isEmpty files then
             verbosefn "No %s found in %s matching %s" filesDescriptionForVerbose targetFolder searchPattern
         else
-            let s = String.Join(Environment.NewLine + "  - ",files |> Array.map (fun l -> l.FullName))
+            let s = String.Join(Environment.NewLine + "  - ",files |> Array.map (fun l -> l.FullPath))
             verbosefn "%s found in %s matching %s:%s  - %s" filesDescriptionForVerbose targetFolder searchPattern Environment.NewLine s
 
     files

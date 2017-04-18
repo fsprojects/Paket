@@ -9,7 +9,7 @@ open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3')">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
     <ItemGroup>
       <Reference Include="System.Spatial">
         <HintPath>..\..\..\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
@@ -43,7 +43,7 @@ let ``should generate Xml for System.Spatial``() =
               @"..\System.Spatial\lib\sl4\de\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\sl4\es\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\sl4\zh-Hans\System.Spatial.resources.dll" 
-            ],[],[],Nuspec.All)
+            ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\System.Spatial\",[],[],Nuspec.All)
     
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
     let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml

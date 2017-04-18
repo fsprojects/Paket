@@ -18,7 +18,7 @@ let model =
                 [".."; "Microsoft.CodeAnalysis.Analyzers"; "analyzers"; "dotnet"; "cs"; "Microsoft.CodeAnalysis.CSharp.Analyzers.dll"] |> toPath
                 [".."; "Microsoft.CodeAnalysis.Analyzers"; "analyzers"; "dotnet"; "vb"; "Microsoft.CodeAnalysis.Analyzers.dll"] |> toPath
                 [".."; "Microsoft.CodeAnalysis.Analyzers"; "analyzers"; "dotnet"; "vb"; "Microsoft.CodeAnalysis.VisualBasic.Analyzers.dll"] |> toPath
-            ],
+            ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList ([".."; "Microsoft.CodeAnalysis.Analyzers"; ""] |> toPath),
             Nuspec.All)
 
 let expectedCs = """

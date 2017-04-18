@@ -2,6 +2,41 @@
 
 open System.IO
 open System
+open System.Diagnostics
+
+
+/// The .NET Standard version.
+// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
+[<RequireQualifiedAccess>]
+type DotNetStandardVersion = 
+    | V1_0
+    | V1_1
+    | V1_2
+    | V1_3
+    | V1_4
+    | V1_5
+    | V1_6
+    | V2_0
+    override this.ToString() =
+        match this with
+        | V1_0 -> "v1.0"
+        | V1_1 -> "v1.1"
+        | V1_2 -> "v1.2"
+        | V1_3 -> "v1.3"
+        | V1_4 -> "v1.4"
+        | V1_5 -> "v1.5"
+        | V1_6 -> "v1.6"
+        | V2_0 -> "v2.0"
+    member this.ShortString() =
+        match this with
+        | DotNetStandardVersion.V1_0 -> "10"
+        | DotNetStandardVersion.V1_1 -> "11"
+        | DotNetStandardVersion.V1_2 -> "12"
+        | DotNetStandardVersion.V1_3 -> "13"
+        | DotNetStandardVersion.V1_4 -> "14"
+        | DotNetStandardVersion.V1_5 -> "15"
+        | DotNetStandardVersion.V1_6 -> "16"
+        | DotNetStandardVersion.V2_0 -> "20"
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
@@ -22,25 +57,27 @@ type FrameworkVersion =
     | V4_6_1
     | V4_6_2
     | V4_6_3
-    | V5_0
+    | V4_7
+    | V5_0          
     override this.ToString() =
         match this with
-        | V1 -> "v1.0"
-        | V1_1 -> "v1.1"
-        | V2 -> "v2.0"
-        | V3 -> "v3.0"
-        | V3_5 -> "v3.5"
+        | V1        -> "v1.0"
+        | V1_1      -> "v1.1"
+        | V2        -> "v2.0"
+        | V3        -> "v3.0"
+        | V3_5      -> "v3.5"
         | V4_Client -> "v4.0"
-        | V4 -> "v4.0"
-        | V4_5 -> "v4.5"
-        | V4_5_1 -> "v4.5.1"
-        | V4_5_2 -> "v4.5.2"
-        | V4_5_3 -> "v4.5.3"
-        | V4_6 -> "v4.6"
-        | V4_6_1 -> "v4.6.1"
-        | V4_6_2 -> "v4.6.2"
-        | V4_6_3 -> "v4.6.3"
-        | V5_0 -> "v5.0"
+        | V4        -> "v4.0"
+        | V4_5      -> "v4.5"
+        | V4_5_1    -> "v4.5.1"
+        | V4_5_2    -> "v4.5.2"
+        | V4_5_3    -> "v4.5.3"
+        | V4_6      -> "v4.6"
+        | V4_6_1    -> "v4.6.1"
+        | V4_6_2    -> "v4.6.2"
+        | V4_6_3    -> "v4.6.3"
+        | V4_7      -> "v4.7"
+        | V5_0      -> "v5.0"
 
     member this.ShortString() =
         match this with
@@ -59,38 +96,8 @@ type FrameworkVersion =
         | FrameworkVersion.V4_6_1 -> "461"
         | FrameworkVersion.V4_6_2 -> "462"
         | FrameworkVersion.V4_6_3 -> "463"
+        | FrameworkVersion.V4_7 -> "47"
         | FrameworkVersion.V5_0 -> "50"
-
-[<RequireQualifiedAccess>]
-/// The .NET Standard version.
-// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
-type DotNetStandardVersion = 
-    | V1_0
-    | V1_1
-    | V1_2
-    | V1_3
-    | V1_4
-    | V1_5
-    | V1_6
-    override this.ToString() =
-        match this with
-        | V1_0 -> "v1.0"
-        | V1_1 -> "v1.1"
-        | V1_2 -> "v1.2"
-        | V1_3 -> "v1.3"
-        | V1_4 -> "v1.4"
-        | V1_5 -> "v1.5"
-        | V1_6 -> "v1.6"
-
-    member this.ShortString() =
-        match this with
-        | DotNetStandardVersion.V1_0 -> "10"
-        | DotNetStandardVersion.V1_1 -> "11"
-        | DotNetStandardVersion.V1_2 -> "12"
-        | DotNetStandardVersion.V1_3 -> "13"
-        | DotNetStandardVersion.V1_4 -> "14"
-        | DotNetStandardVersion.V1_5 -> "15"
-        | DotNetStandardVersion.V1_6 -> "16"
 
 [<RequireQualifiedAccess>]
 /// The UAP version.
@@ -112,15 +119,33 @@ type UAPVersion =
 type DotNetCoreVersion = 
     | V1_0
     | V1_1
+    | V2_0
+    member private this.NumKey =
+        match this with
+        | V1_0 -> 0
+        | V1_1 -> 1
+        | V2_0 -> 2
+    static member private FromNum num =
+        match num with
+        | 0 -> V1_0
+        | 1 -> V1_1
+        | 2 -> V2_0
+        | _   -> failwithf "'%i' has no corresponding framework version" num
+    static member (<->) (lower:DotNetCoreVersion,upper:DotNetCoreVersion) =
+        if lower.NumKey < upper.NumKey then
+            [ lower.NumKey .. upper.NumKey ] |> List.map DotNetCoreVersion.FromNum
+        else
+            [ lower.NumKey .. -1 .. upper.NumKey ] |> List.map DotNetCoreVersion.FromNum
     override this.ToString() =
         match this with
         | V1_0 -> "v1.0"
         | V1_1 -> "v1.1"
-
+        | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
         | DotNetCoreVersion.V1_0 -> "10"
         | DotNetCoreVersion.V1_1 -> "11"
+        | DotNetCoreVersion.V2_0 -> "20"
 
 module KnownAliases =
     let Data =
@@ -142,6 +167,33 @@ module KnownAliases =
          " ", "" ]
         |> List.map (fun (p,r) -> p.ToLower(),r.ToLower())
 
+type BuildMode =
+    | Debug
+    | Release
+    | NoBuildMode
+    | UnknownBuildMode of string
+    member x.AsString =
+        match x with
+        | Debug -> "Debug"
+        | Release -> "Release"
+        | NoBuildMode -> ""
+        | UnknownBuildMode s -> s
+    override x.ToString() = x.AsString
+
+type Platform =
+    | Arm
+    | X64
+    | Win32
+    | NoPlatform
+    | UnknownPlatform of string
+    member x.AsString =
+        match x with
+        | Arm -> "arm"
+        | X64 -> "x64"
+        | Win32 -> "Win32"
+        | NoPlatform -> ""
+        | UnknownPlatform s -> s
+    override x.ToString() = x.AsString
 
 /// Framework Identifier type.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
@@ -155,8 +207,8 @@ type FrameworkIdentifier =
     | MonoAndroid
     | MonoTouch
     | MonoMac
-    | Native of string * string
-    | Runtimes of string 
+    | Native of BuildMode * Platform
+    //| Runtimes of string 
     | XamariniOS
     | XamarinMac
     | Windows of string
@@ -176,7 +228,7 @@ type FrameworkIdentifier =
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
         | Native(_) -> "native"
-        | Runtimes(_) -> "runtimes"
+        //| Runtimes(_) -> "runtimes"
         | XamariniOS -> "xamarinios"
         | UAP v -> "uap" + v.ShortString()
         | XamarinMac -> "xamarinmac"
@@ -193,7 +245,7 @@ type FrameworkIdentifier =
         | MonoTouch -> [ ]
         | MonoMac -> [ ]
         | Native(_) -> [ ]
-        | Runtimes(_) -> [ ]
+        //| Runtimes(_) -> [ ]
         | XamariniOS -> [ ]
         | XamarinMac -> [ ]
         | UAP UAPVersion.V10 -> [ ]
@@ -209,9 +261,10 @@ type FrameworkIdentifier =
         | DotNetFramework FrameworkVersion.V4_5_2 -> [ DotNetFramework FrameworkVersion.V4_5_1; DotNetStandard DotNetStandardVersion.V1_2 ]
         | DotNetFramework FrameworkVersion.V4_5_3 -> [ DotNetFramework FrameworkVersion.V4_5_2; DotNetStandard DotNetStandardVersion.V1_2 ]
         | DotNetFramework FrameworkVersion.V4_6 -> [ DotNetFramework FrameworkVersion.V4_5_3; DotNetStandard DotNetStandardVersion.V1_3 ]
-        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4 ]
+        | DotNetFramework FrameworkVersion.V4_6_1 -> [ DotNetFramework FrameworkVersion.V4_6; DotNetStandard DotNetStandardVersion.V1_4; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V4_6_2 -> [ DotNetFramework FrameworkVersion.V4_6_1; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DotNetFramework FrameworkVersion.V4_6_3 -> [ DotNetFramework FrameworkVersion.V4_6_2; DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetFramework FrameworkVersion.V4_7 -> [ DotNetFramework FrameworkVersion.V4_6_3; DotNetStandard DotNetStandardVersion.V2_0 ]
         | DotNetFramework FrameworkVersion.V5_0 -> [ DotNetFramework FrameworkVersion.V4_6_2; DotNetStandard DotNetStandardVersion.V1_5 ]
         | DNX _ -> [ ]
         | DNXCore _ -> [ ]
@@ -222,8 +275,10 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V1_4 -> [ DotNetStandard DotNetStandardVersion.V1_3 ]
         | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
         | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
+        | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_1 -> [ DotNetCore DotNetCoreVersion.V1_0 ]
+        | DotNetCore DotNetCoreVersion.V2_0 -> [ DotNetCore DotNetCoreVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -240,7 +295,6 @@ type FrameworkIdentifier =
         | Windows _ -> [ Windows "v4.5.1" ]
         | WindowsPhoneApp _ -> [ WindowsPhoneApp "v8.1" ]
         | WindowsPhoneSilverlight _ -> [ WindowsPhoneSilverlight "v8.1" ]
-
     /// Return if the parameter is of the same framework category (dotnet, windows phone, silverlight, ...)
     member x.IsSameCategoryAs y =
         match (x, y) with
@@ -253,7 +307,7 @@ type FrameworkIdentifier =
         | DNXCore _, DNXCore _ -> true
         | MonoAndroid _, MonoAndroid _ -> true
         | MonoMac _, MonoMac _ -> true
-        | Runtimes _, Runtimes _ -> true
+        //| Runtimes _, Runtimes _ -> true
         | MonoTouch _, MonoTouch _ -> true
         | Windows _, Windows _ -> true
         | WindowsPhoneApp _, WindowsPhoneApp _ -> true
@@ -301,7 +355,7 @@ type FrameworkIdentifier =
 
 module FrameworkDetection =
     open Logging
-
+    /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
     let Extract =
         memoize 
           (fun (path:string) ->
@@ -314,7 +368,7 @@ module FrameworkDetection =
             // Each time the parsing is changed, NuGetPackageCache.CurrentCacheVersion should be bumped.
             let result = 
                 match path with
-                | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
+                //| x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
                 | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
                 | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
                 | "net20" | "net2" | "net" | "net20-full" | "net20-client" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
@@ -330,21 +384,22 @@ module FrameworkDetection =
                 | "net461" -> Some (DotNetFramework FrameworkVersion.V4_6_1)
                 | "net462" -> Some (DotNetFramework FrameworkVersion.V4_6_2)
                 | "net463" -> Some (DotNetFramework FrameworkVersion.V4_6_3)
+                | "net47" -> Some (DotNetFramework FrameworkVersion.V4_7)
                 | "uap100" -> Some (UAP UAPVersion.V10)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
                 | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid44" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50" | "monoandroid60" | "monoandroid70" -> Some MonoAndroid
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
-                | "native/x86/debug" -> Some(Native("Debug","Win32"))
-                | "native/x64/debug" -> Some(Native("Debug","x64"))
-                | "native/arm/debug" -> Some(Native("Debug","arm"))
-                | "native/x86/release" -> Some(Native("Release","Win32"))
-                | "native/x64/release" -> Some(Native("Release","x64"))
-                | "native/arm/release" -> Some(Native("Release","arm"))
-                | "native/address-model-32" -> Some(Native("","Win32"))
-                | "native/address-model-64" -> Some(Native("","x64"))
-                | "native" -> Some(Native("",""))
+                | "native/x86/debug" -> Some(Native(Debug,Win32))
+                | "native/x64/debug" -> Some(Native(Debug,X64))
+                | "native/arm/debug" -> Some(Native(Debug,Arm))
+                | "native/x86/release" -> Some(Native(Release,Win32))
+                | "native/x64/release" -> Some(Native(Release,X64))
+                | "native/arm/release" -> Some(Native(Release,Arm))
+                | "native/address-model-32" -> Some(Native(NoBuildMode,Win32))
+                | "native/address-model-64" -> Some(Native(NoBuildMode,X64))
+                | "native" -> Some(Native(NoBuildMode,NoPlatform))
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
@@ -365,8 +420,10 @@ module FrameworkDetection =
                 | "netstandard14" -> Some(DotNetStandard DotNetStandardVersion.V1_4)
                 | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | "netstandard16" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
+                | "netstandard20" -> Some(DotNetStandard DotNetStandardVersion.V2_0)
                 | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
                 | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
+                | "netcore20" -> Some (DotNetCore DotNetCoreVersion.V2_0)
                 | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
                 | _ -> None
             result)
@@ -466,8 +523,8 @@ type TargetProfile =
             | _ -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" // Use Portable259 as default
 
 module KnownTargetProfiles =
-    let DotNetFrameworkVersions =
-       [FrameworkVersion.V1
+    let DotNetFrameworkVersions = [
+        FrameworkVersion.V1
         FrameworkVersion.V1_1
         FrameworkVersion.V2
         FrameworkVersion.V3
@@ -481,7 +538,9 @@ module KnownTargetProfiles =
         FrameworkVersion.V4_6
         FrameworkVersion.V4_6_1
         FrameworkVersion.V4_6_2
-        FrameworkVersion.V4_6_3]
+        FrameworkVersion.V4_6_3
+        FrameworkVersion.V4_7
+    ]
 
     let DotNetFrameworkIdentifiers =
        DotNetFrameworkVersions
@@ -491,22 +550,27 @@ module KnownTargetProfiles =
        DotNetFrameworkIdentifiers
        |> List.map SinglePlatform
 
-    let DotNetStandardVersions =
-       [DotNetStandardVersion.V1_0
+    let DotNetStandardVersions = [
+        DotNetStandardVersion.V1_0
         DotNetStandardVersion.V1_1
         DotNetStandardVersion.V1_2
         DotNetStandardVersion.V1_3
         DotNetStandardVersion.V1_4
         DotNetStandardVersion.V1_5
-        DotNetStandardVersion.V1_6]
+        DotNetStandardVersion.V1_6
+        DotNetStandardVersion.V2_0
+    ]
         
 
     let DotNetStandardProfiles =
        DotNetStandardVersions
        |> List.map (DotNetStandard >> SinglePlatform)
        
-    let DotNetCoreVersions =
-       [DotNetCoreVersion.V1_0 ]
+    let DotNetCoreVersions = [
+        DotNetCoreVersion.V1_0
+        DotNetCoreVersion.V1_1
+        DotNetCoreVersion.V2_0
+    ]
        
     let DotNetCoreProfiles =
        DotNetCoreVersions
@@ -609,30 +673,31 @@ module KnownTargetProfiles =
        DotNetCoreProfiles
 
     let AllNativeProfiles =
-        [ Native("","")
-          Native("","Win32")
-          Native("","x64")
-          Native("Debug","Win32")
-          Native("Debug","arm")
-          Native("Debug","x64")
-          Native("Release","Win32")
-          Native("Release","x64")
-          Native("Release","arm")]
+        [ Native(NoBuildMode,NoPlatform)
+          Native(NoBuildMode,Win32)
+          Native(NoBuildMode,X64)
+          Native(NoBuildMode,Arm)
+          Native(Debug,Win32)
+          Native(Debug,Arm)
+          Native(Debug,X64)
+          Native(Release,Win32)
+          Native(Release,X64)
+          Native(Release,Arm)]
 
-    let AllRuntimes =
-        [ Runtimes("win7-x64")
-          Runtimes("win7-x86")
-          Runtimes("win7-arm")
-          Runtimes("debian-x64")
-          Runtimes("aot")
-          Runtimes("win")
-          Runtimes("linux")
-          Runtimes("unix")
-          Runtimes("osx") ]
+    //let AllRuntimes =
+    //    [ Runtimes("win7-x64")
+    //      Runtimes("win7-x86")
+    //      Runtimes("win7-arm")
+    //      Runtimes("debian-x64")
+    //      Runtimes("aot")
+    //      Runtimes("win")
+    //      Runtimes("linux")
+    //      Runtimes("unix")
+    //      Runtimes("osx") ]
 
-    let AllProfiles = 
-        (AllNativeProfiles |> List.map SinglePlatform) @ 
-          (AllRuntimes |> List.map SinglePlatform) @
+    let AllProfiles =
+        (AllNativeProfiles |> List.map SinglePlatform) @
+          //(AllRuntimes |> List.map SinglePlatform) @
           AllDotNetStandardProfiles @
           AllDotNetProfiles
 

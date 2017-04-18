@@ -61,7 +61,7 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3')">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
@@ -108,7 +108,7 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v1.2' Or $(TargetFrameworkVersion) == 'v1.3' Or $(TargetFrameworkVersion) == 'v1.4' Or $(TargetFrameworkVersion) == 'v1.5' Or $(TargetFrameworkVersion) == 'v1.6')) Or ($(TargetFrameworkIdentifier) == '.NETCoreApp' And $(TargetFrameworkVersion) == 'v1.0') Or ($(TargetFrameworkProfile) == 'Profile7') Or ($(TargetFrameworkProfile) == 'Profile44')">
+  <When Condition="($(TargetFrameworkIdentifier) == '.NETStandard' And ($(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v1.2' Or $(TargetFrameworkVersion) == 'v1.3' Or $(TargetFrameworkVersion) == 'v1.4' Or $(TargetFrameworkVersion) == 'v1.5' Or $(TargetFrameworkVersion) == 'v1.6' Or $(TargetFrameworkVersion) == 'v2.0')) Or ($(TargetFrameworkIdentifier) == '.NETCoreApp' And ($(TargetFrameworkVersion) == 'v1.0' Or $(TargetFrameworkVersion) == 'v1.1' Or $(TargetFrameworkVersion) == 'v2.0')) Or ($(TargetFrameworkProfile) == 'Profile7') Or ($(TargetFrameworkProfile) == 'Profile44')">
     <ItemGroup>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll</HintPath>
@@ -154,40 +154,40 @@ let expected = """
 
 [<Test>]
 let ``should generate Xml for System.Net.Http 2.2.8``() =
-    ensureDir() 
-    let model =     
+    ensureDir()
+    let model =
         InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [],
-            [ 
-              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll" 
-              
-              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll" 
+            [
+              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
+              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll"
+
+              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Extensions.dll" 
+              @"..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
-                     
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
-              
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll" 
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll" 
+              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"
+              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"
+              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll"
+
+              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll"
+              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"
+
+              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll"
+              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll"
-                            
-              @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll" 
+
+              @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll" 
+              @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"
-              
-              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" 
-              ],
+
+              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll"
+              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll"
+              ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Microsoft.Net.Http\",
               [],
               [],
               Nuspec.All)

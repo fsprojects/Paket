@@ -38,34 +38,34 @@ let expected = """
 [<Test>]
 let ``should generate Xml for System.Net.Http 2.2.8``() = 
     ensureDir()
-    let model =     
+    let model =
         InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))],
-            [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll" 
-              
-              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll" 
+            [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
+              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll" 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
-                     
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll" 
-              
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll" 
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll" 
+              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll"
+              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll"
+
+              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"
+              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"
+              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll"
+
+              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll"
+              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"
+
+              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll"
+              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll"
-                            
-              @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll" 
+
+              @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll" 
+              @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"
-              
-              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll" 
-              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ],
+
+              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll"
+              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Microsoft.Net.Http\",
               [],
               [],
               Nuspec.All)
