@@ -82,6 +82,8 @@ In `strict` mode it will **only** reference *direct* dependencies.
     nuget Newtonsoft.Json ~> 6.0
     nuget UnionArgParser ~> 0.7
 
+Note that the resolution phase is not affected by this flag, it will still resolve, lock and download all transitive references.
+
 ### Framework restrictions
 
 Sometimes you don't want to generate dependencies for older framework versions. You can control this in the [`paket.dependencies` file](dependencies-file.html):
