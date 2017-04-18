@@ -168,7 +168,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member __.FileName = fileName
     member __.Lines = textRepresentation
 
-    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,_>, updateMode) =
+    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, getPackageRuntimeGraph, groupsToResolve:Map<GroupName,_>, updateMode) =
         let resolveGroup groupName _ =
             let group = this.GetGroup groupName
 
@@ -221,15 +221,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let runtimeGraph =
                         resolved
                         |> Map.toSeq |> Seq.map snd
-                        // 1. downloading packages into cache
-                        |> Seq.map (fun package -> package, NuGetV2.DownloadPackage (None, "C:\FakeRoot", package.Source, [], groupName, package.Name, package.Version, false, false, false) |> Async.RunSynchronously)
-                        |> Seq.map (fun (p, (targetFileName, _)) -> p,targetFileName)
-                        |> Seq.map (fun (package, t) -> package, NuGetV2.ExtractPackageToUserFolder (t, package.Name, package.Version, null) |> Async.RunSynchronously)
-                        // 2. Get runtime graph
-                        |> Seq.choose (fun (package, extracted) ->
-                            let runtime = Path.Combine(extracted, "runtime.json")
-                            if File.Exists runtime then Some (runtime) else None)
-                        |> Seq.map RuntimeGraphParser.readRuntimeGraph
+                        |> Seq.choose (getPackageRuntimeGraph groupName)
                         |> RuntimeGraph.mergeSeq
                     // 3. Resolve runtime deps and add it to the resolution
                     let rids = RuntimeGraph.getKnownRids runtimeGraph
@@ -264,7 +256,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     // Combine with existing resolution and mark runtime packages.
                     // TODO: Warn if a package is part of both resolutions?
                     // TODO: Warn if a runtime package contains a runtime.json? -> We don't download them here :/
-                    match resolution with
+                    match runtimeResolution with
                     | Resolution.Ok runtimeResolved ->
                         let mapped =
                             runtimeResolved
