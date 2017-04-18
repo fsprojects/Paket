@@ -159,7 +159,7 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
-        let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
+        let! (package, files, _propsFiles, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let targetsFiles = targetsFiles |> Array.toList
         let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions |> getRestrictionList, files, targetsFiles, analyzerFiles, nuspec)
