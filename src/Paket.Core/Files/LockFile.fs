@@ -409,7 +409,9 @@ module LockFileParser =
                                       Dependencies = Set.empty
                                       Unlisted = false
                                       Settings = settings
-                                      Version = SemVer.Parse version } :: currentGroup.Packages }::otherGroups
+                                      Version = SemVer.Parse version
+                                      // TODO: write stuff into the lockfile and read it here
+                                      IsRuntimeDependency = false } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
                     let version,settings = parsePackage v
