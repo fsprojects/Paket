@@ -7,6 +7,7 @@ open Domain
 
 // Example files can be found in the packages "Microsoft.NETCore.Platforms 1.1.0" and "Microsoft.NETCore.Targets 1.1.0"
 
+/// The runtime identifiert for a specific runtime. Should be treated as a black box in combination with the operations defined on the RuntimeGraph
 type Rid =
     private { Rid : string }
     static member Of s = { Rid = s }
@@ -15,15 +16,18 @@ type Rid =
 
 type CompatibilityProfileName = string
 
+/// A compatibility profile identifies which RIDs are compatible with what FrameworkIdentifier (TargetFrameworkMoniker/tfm in NuGet world)
 type CompatibilityProfile =
   { Name : CompatibilityProfileName
     Supported : Map<FrameworkIdentifier, Rid list> }
 
+/// The description for a particular RID, indicates inherited (compatible) RIDs and runtime dependencies for this RID.
 type RuntimeDescription =
   { Rid : Rid
     InheritedRids : Rid list
     RuntimeDependencies : Map<PackageName, (PackageName * VersionRequirement) list> }
 
+/// The runtime graph consolidating compatibility informations across the different RIDs
 type RuntimeGraph =
    { Supports : Map<CompatibilityProfileName, CompatibilityProfile>
      Runtimes : Map<Rid, RuntimeDescription> }
@@ -32,6 +36,7 @@ type RuntimeGraph =
 open Newtonsoft.Json
 open Newtonsoft.Json.Linq
 
+/// A module for parsing runtime.json files contained in various packages.
 module RuntimeGraphParser =
     open System.Collections.Generic
 
@@ -128,6 +133,7 @@ module Map =
             | _ -> failwithf "This should never happen")
         |> Map.ofSeq
 
+// Defines common operations on the runtime graph
 module RuntimeGraph =
     open PackageResolver
 
@@ -144,13 +150,14 @@ module RuntimeGraph =
          RuntimeDependencies =
             Map.merge (@) d1.RuntimeDependencies d2.RuntimeDependencies
             |> Map.map (fun _ l -> List.distinct l) }
+    /// merge two runtime graphs
     let merge (r1:RuntimeGraph) (r2:RuntimeGraph) =
        { Supports = Map.merge mergeCompatibility r1.Supports r2.Supports
          Runtimes = Map.merge mergeDescription r1.Runtimes r2.Runtimes }
-
+    /// merge a sequence of runtime graphs
     let mergeSeq s =
         s |> Seq.fold merge RuntimeGraph.Empty
-
+    /// get the list of compatible RIDs for the given RID. Most compatible are near the head. The list contains the given RID in the HEAD
     let getInheritanceList (rid:Rid) (g:RuntimeGraph) =
         let rec getListRec currentList toInspect =
             match toInspect with
@@ -166,15 +173,16 @@ module RuntimeGraph =
             | _ -> currentList
 
         getListRec [rid] [rid]
-
+    /// get a list of RIDs in no particular order which are part of this runtime graph
     let getKnownRids (g:RuntimeGraph) =
         g.Runtimes |> Map.toSeq |> Seq.map fst
-
+    /// calculates whether the given assetRid is compatible with the given projectRid.
+    /// consider a project targeting projectRid, this returns true if an asset with assetRid is comaptible.
     let areCompatible projectRid assetRid g =
         g
         |> getInheritanceList projectRid
         |> List.contains assetRid
-
+    /// return runtime depenendencies for the given package and runtime
     let findRuntimeDependencies rid packageName g =
         getInheritanceList rid g
         |> Seq.choose (fun r ->
@@ -186,7 +194,7 @@ module RuntimeGraph =
         |> Option.defaultValue []
 
     open System.IO
-
+    /// Downloads the given package into the nuget cache and read its runtime.json.
     let getRuntimeGraphFromNugetCache groupName (package:ResolvedPackage) =
         // 1. downloading packages into cache
         let targetFileName, _ =
