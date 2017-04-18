@@ -6,22 +6,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
-      <Paket>True</Paket>
-      <Link>Globbing.fs</Link>
-    </Compile>
+    <Compile Include="$(PaketCoreSourcesDir)\Common\AssemblyInfo.fs" />
+    
+    <Compile Include="$(PaketCoreSourcesDir)\Common\CustomAssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
       <Paket>True</Paket>
-      <Link>AssemblyReader.fs</Link>
+      <Link>Common\AssemblyReader.fs</Link>
     </Compile>
-    <Compile Include="$(PaketCoreSourcesDir)\Async.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\AssemblyInfo.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\CustomAssemblyInfo.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\Domain.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\Logging.fsi" />
-    <Compile Include="$(PaketCoreSourcesDir)\Logging.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\Constants.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\Utils.fs" />
+    <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
+      <Paket>True</Paket>
+      <Link>Common\Globbing.fs</Link>
+    </Compile>
+    <Compile Include="$(PaketCoreSourcesDir)\Common\Async.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\Domain.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\Logging.fsi" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\Logging.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\Constants.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\Utils.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\SemVer.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\VersionRange.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Xml.fs" />
