@@ -37,8 +37,8 @@
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i001467-cpp-native\temp</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i000051-resolve-pessimistic\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
