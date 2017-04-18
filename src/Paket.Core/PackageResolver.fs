@@ -70,12 +70,13 @@ type PackageDetails = {
 /// Represents data about resolved packages
 [<StructuredFormatDisplay "{Display}">]
 type ResolvedPackage = {
-    Name         : PackageName
-    Version      : SemVerInfo
-    Dependencies : DependencySet
-    Unlisted     : bool
-    Settings     : InstallSettings
-    Source       : PackageSource
+    Name                : PackageName
+    Version             : SemVerInfo
+    Dependencies        : DependencySet
+    Unlisted            : bool
+    IsRuntimeDependency : bool
+    Settings            : InstallSettings
+    Source              : PackageSource
 } with
     override this.ToString () = sprintf "%O %O" this.Name this.Version
 
@@ -377,12 +378,13 @@ let private explorePackageConfig getPackageDetailsF  (pkgConfig:PackageConfig) =
                 | _ -> dependency.Settings
             |> fun x -> x.AdjustWithSpecialCases packageDetails.Name
         Some
-            {   Name         = packageDetails.Name
-                Version      = version
-                Dependencies = filteredDependencies
-                Unlisted     = packageDetails.Unlisted
-                Settings     = { settings with FrameworkRestrictions = newRestrictions }
-                Source       = packageDetails.Source
+            {   Name                = packageDetails.Name
+                Version             = version
+                Dependencies        = filteredDependencies
+                Unlisted            = packageDetails.Unlisted
+                Settings            = { settings with FrameworkRestrictions = newRestrictions }
+                Source              = packageDetails.Source
+                IsRuntimeDependency = false
             }
     with
     | exn ->
