@@ -7,10 +7,7 @@ open Paket.Requirements
 open Logging
 open PlatformMatching
 
-// An unparsed file in the nuget package -> still need to inspect the path for further information. After parsing an entry will be part of a "LibFolder" for example.
-type UnparsedPackageFile =
-    { FullPath : string
-      PathWithinPackage : string }
+type UnparsedPackageFile = Paket.NuGet.UnparsedPackageFile
 
 [<RequireQualifiedAccess>]
 type Reference =

@@ -13,7 +13,7 @@ let fromLegacyList (prefix:string) l =
     l
     |> List.map (fun (i:string) ->
         if i.StartsWith prefix then
-            { FullPath = i; PathWithinPackage = i.Substring(prefix.Length).Replace("\\", "/") }
+            { Paket.NuGet.UnparsedPackageFile.FullPath = i; Paket.NuGet.UnparsedPackageFile.PathWithinPackage = i.Substring(prefix.Length).Replace("\\", "/") }
         else failwithf "Expected '%s' to start with '%s'" i prefix)
 
 [<Test>]
