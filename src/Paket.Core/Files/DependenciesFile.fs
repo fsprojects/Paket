@@ -267,9 +267,16 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             updateMode)
 
                     // Combine with existing resolution and mark runtime packages.
-                    // Warn if a package is part of both resolutions
-                    // Warn if a runtime package contains a runtime.json
-                    resolution
+                    // TODO: Warn if a package is part of both resolutions?
+                    // TODO: Warn if a runtime package contains a runtime.json? -> We don't download them here :/
+                    match resolution with
+                    | Resolution.Ok runtimeResolved ->
+                        let mapped =
+                            runtimeResolved
+                            |> Map.map (fun _ v -> { v with IsRuntimeDependency = true })
+                        Map.merge (fun p1 p2 -> failwithf "same package '%A' in runtime and regular resolution" p1) resolved mapped
+                        |> Resolution.Ok
+                    | _ -> resolution
                 | Resolution.Conflict _ -> resolution
 
             { ResolvedPackages = resolution
