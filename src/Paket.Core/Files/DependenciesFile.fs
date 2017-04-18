@@ -223,11 +223,12 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 match resolution with
                 | Resolution.Ok resolved ->
                     // runtime resolution step
-                    let runtimeGraph =
+                    let runtimeGraph = // setting this variable to empty is the fastest way to disable runtime deps resolution
                         resolved
                         |> Map.toSeq |> Seq.map snd
                         |> Seq.choose (getPackageRuntimeGraph groupName)
                         |> RuntimeGraph.mergeSeq
+                        //RuntimeGraph.Empty
                     // 3. Resolve runtime deps and add it to the resolution
                     let rids = RuntimeGraph.getKnownRids runtimeGraph
                     let runtimeDeps =

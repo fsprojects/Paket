@@ -203,7 +203,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
             getSha1
             getVersionsF
             (NuGetV2.GetPackageDetails alternativeProjectRoot root force)
-            (RuntimeGraph.getRuntimeGraphFromNugetCache)
+            (RuntimeGraph.getRuntimeGraphFromNugetCache root)
             oldLockFile 
             dependenciesFile 
             updateMode

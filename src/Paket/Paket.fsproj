@@ -37,7 +37,7 @@
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i000051-resolve-pessimistic\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i001494-download\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

@@ -195,10 +195,10 @@ module RuntimeGraph =
 
     open System.IO
     /// Downloads the given package into the nuget cache and read its runtime.json.
-    let getRuntimeGraphFromNugetCache groupName (package:ResolvedPackage) =
+    let getRuntimeGraphFromNugetCache root groupName (package:ResolvedPackage) =
         // 1. downloading packages into cache
         let targetFileName, _ =
-            NuGetV2.DownloadPackage (None, "C:\FakeRoot", package.Source, [], groupName, package.Name, package.Version, false, false, false)
+            NuGetV2.DownloadPackage (None, root, package.Source, [], groupName, package.Name, package.Version, false, false, false)
             |> Async.RunSynchronously
 
         let extractedDir = NuGetV2.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, null) |> Async.RunSynchronously
