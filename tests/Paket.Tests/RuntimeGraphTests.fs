@@ -134,6 +134,11 @@ let ``Check that runtime dependencies are saved as such in the lockfile`` () =
           "MyRuntimeDependency", "4.0.1", [], RuntimeGraph.Empty ]
         |> OfGraphWithRuntimeDeps
 
+    let expectedLockFile = """NUGET
+  remote: http://www.nuget.org/api/v2
+    MyDependency (4.0)
+    MyRuntimeDependency (4.0.1) - isRuntimeDependency: true"""
+
     let depsFile = DependenciesFile.FromCode("""source http://www.nuget.org/api/v2
 nuget MyDependency""")
     let lockFile, resolution =
@@ -151,6 +156,10 @@ nuget MyDependency""")
     result
     |> Seq.sortBy (fun (t,_,_) ->t)
     |> shouldEqual expected
+
+    lockFile.GetGroup(Constants.MainDependencyGroup).Resolution
+    |> LockFileSerializer.serializePackages depsFile.Groups.[Constants.MainDependencyGroup].Options
+    |> shouldEqual (normalizeLineEndings expectedLockFile)
 
 [<Test>]
 let ``Check that runtime dependencies we don't use are ignored`` () =
@@ -189,4 +198,24 @@ nuget MyDependency""")
 
     result
     |> Seq.sortBy (fun (t,_,_) ->t)
+    |> shouldEqual expected
+
+[<Test>]
+let ``Check that runtime dependencies are loaded from the lockfile`` () =
+    let lockFile = """NUGET
+  remote: http://www.nuget.org/api/v2
+    MyDependency (4.0)
+    MyRuntimeDependency (4.0.1) - isRuntimeDependency: true"""
+
+    let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
+    let packages = List.rev lockFile.Packages
+
+    let expected =
+        [("MyDependency","4.0", false);
+        ("MyRuntimeDependency","4.0.1", true)]
+        |> List.sortBy (fun (t,_,_) ->t)
+
+    packages
+    |> List.map (fun r -> string r.Name, string r.Version, r.IsRuntimeDependency)
+    |> List.sortBy (fun (t,_,_) ->t)
     |> shouldEqual expected
