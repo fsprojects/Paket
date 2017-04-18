@@ -201,6 +201,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             if String.IsNullOrWhiteSpace fileName |> not then
                 RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
 
+            // Step 1 Package resolution
             let resolution =
                 PackageResolver.Resolve(
                     getVersionF, 
@@ -211,6 +212,60 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     group.Options.Settings.FrameworkRestrictions,
                     remoteDependencies @ group.Packages |> Set.ofList,
                     updateMode)
+
+            // Step 2 Runtime package resolution, see https://github.com/fsprojects/Paket/pull/2255
+            let runtimeResolution =
+                match resolution with
+                | Resolution.Ok resolved ->
+                    // runtime resolution step
+                    let runtimeGraph =
+                        resolved
+                        |> Map.toSeq |> Seq.map snd
+                        // 1. downloading packages into cache
+                        |> Seq.map (fun package -> package, NuGetV2.DownloadPackage (None, "C:\FakeRoot", package.Source, [], groupName, package.Name, package.Version, false, false, false) |> Async.RunSynchronously)
+                        |> Seq.map (fun (p, (targetFileName, _)) -> p,targetFileName)
+                        |> Seq.map (fun (package, t) -> package, NuGetV2.ExtractPackageToUserFolder (t, package.Name, package.Version, null) |> Async.RunSynchronously)
+                        // 2. Get runtime graph
+                        |> Seq.choose (fun (package, extracted) ->
+                            let runtime = Path.Combine(extracted, "runtime.json")
+                            if File.Exists runtime then Some (runtime) else None)
+                        |> Seq.map RuntimeGraphParser.readRuntimeGraph
+                        |> RuntimeGraph.mergeSeq
+                    // 3. Resolve runtime deps and add it to the resolution
+                    let rids = RuntimeGraph.getKnownRids runtimeGraph
+                    let runtimeDeps =
+                        resolved
+                        |> Map.toSeq |> Seq.map snd
+                        |> Seq.collect (fun p ->
+                            rids
+                            |> Seq.collect(fun rid -> RuntimeGraph.findRuntimeDependencies rid p.Name runtimeGraph))
+                        |> Seq.map (fun (name, versionReq) ->
+                            { Name = name
+                              VersionRequirement = versionReq
+                              ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
+                              ResolverStrategyForTransitives = Some ResolverStrategy.Max
+                              Parent = PackageRequirementSource.DependenciesFile fileName
+                              Graph = []
+                              Sources = group.Sources
+                              Settings = group.Options.Settings })
+                        |> Seq.toList
+
+                    let runtimeResolution =
+                        PackageResolver.Resolve(
+                            getVersionF,
+                            getPackageDetailsF,
+                            groupName,
+                            group.Options.ResolverStrategyForDirectDependencies,
+                            group.Options.ResolverStrategyForTransitives,
+                            group.Options.Settings.FrameworkRestrictions,
+                            runtimeDeps |> Set.ofList,
+                            updateMode)
+
+                    // Combine with existing resolution and mark runtime packages.
+                    // Warn if a package is part of both resolutions
+                    // Warn if a runtime package contains a runtime.json
+                    resolution
+                | Resolution.Conflict _ -> resolution
 
             { ResolvedPackages = resolution
               ResolvedSourceFiles = remoteFiles }

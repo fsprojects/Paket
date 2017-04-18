@@ -121,6 +121,9 @@
     <Compile Include="InstallModel.fs" />
     <Compile Include="DependenciesTypes.fs" />
     <Compile Include="Parsers/DependenciesFileParser.fs" />
+    <Compile Include="Nuget.fs" />
+    <Compile Include="NuGetV3.fs" />
+    <Compile Include="NuGetV2.fs" />
     <Compile Include="Files/ReferencesFile.fs" />
     <Compile Include="Files/SolutionFile.fs" />
     <Compile Include="Files/LockFile.fs" />
@@ -128,9 +131,6 @@
     <Compile Include="Files/ProjectFile.fs" />
     <Compile Include="Files/DependenciesFile.fs" />
     <Compile Include="Files/PackagesConfigFile.fs" />
-    <Compile Include="Nuget.fs" />
-    <Compile Include="NuGetV3.fs" />
-    <Compile Include="NuGetV2.fs" />
     <Compile Include="Queries.fs" />
     <Compile Include="ScriptGeneration.fs" />
     <Compile Include="LocalFile.fs" />
