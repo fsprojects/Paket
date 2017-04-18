@@ -197,7 +197,6 @@ let getTargetCondition (target:TargetProfile) =
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
         | Native(NoBuildMode,NoPlatform) -> "true", ""
         | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
-        //| Runtimes(platform) -> failwithf "Runtime dependencies are unsupported in project files."
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
     | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
 
@@ -240,7 +239,6 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile l
             targets 
             |> List.filter (function
                            | SinglePlatform(Native(NoBuildMode,NoPlatform)) -> false
-                           //| SinglePlatform(Runtimes(_)) -> false
                            | SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)) ->
                                 targets |> List.contains (SinglePlatform(DotNetFramework(FrameworkVersion.V4))) |> not
                            | _ -> true)
