@@ -84,22 +84,22 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
+    <Compile Include="Common\AssemblyInfo.fs" />
+    <Compile Include="Common\CustomAssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
       <Paket>True</Paket>
-      <Link>AssemblyReader.fs</Link>
+      <Link>Common\AssemblyReader.fs</Link>
     </Compile>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
-      <Link>Globbing.fs</Link>
+      <Link>Common\Globbing.fs</Link>
     </Compile>
-    <Compile Include="Async.fs" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="CustomAssemblyInfo.fs" />
-    <Compile Include="Logging.fsi" />
-    <Compile Include="Domain.fs" />
-    <Compile Include="Logging.fs" />
-    <Compile Include="Constants.fs" />
-    <Compile Include="Utils.fs" />
+    <Compile Include="Common\Async.fs" />
+    <Compile Include="Common\Domain.fs" />
+    <Compile Include="Common\Logging.fsi" />
+    <Compile Include="Common\Logging.fs" />
+    <Compile Include="Common\Constants.fs" />
+    <Compile Include="Common\Utils.fs" />
     <Compile Include="SemVer.fs" />
     <Compile Include="VersionRange.fs" />
     <Compile Include="Xml.fs" />
