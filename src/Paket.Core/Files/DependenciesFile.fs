@@ -266,7 +266,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         let mapped =
                             runtimeResolved
                             |> Map.map (fun _ v -> { v with IsRuntimeDependency = true })
-                        Map.merge (fun p1 p2 -> failwithf "same package '%A' in runtime and regular resolution" p1) resolved mapped
+                        Map.merge (fun p1 p2 ->
+                            if p1.Version = p2.Version then
+                                p1
+                            else
+                            failwithf "same package '%A' in runtime '%A' and regular '%A' resolution with different versions" p1.Name p1.Version p2.Version) resolved mapped
                         |> Resolution.Ok
                     | _ -> resolution
                 | Resolution.Conflict _ -> resolution
