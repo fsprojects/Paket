@@ -130,7 +130,7 @@ let private addConfigFileToProject project =
         project.Save(false))
 
 /// Applies a set of binding redirects to a single configuration file.
-let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLibs:Reference seq) bindingRedirects (configFilePath:string) =
+let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLibNames:string seq) bindingRedirects (configFilePath:string) =
     let config = 
         try
             XDocument.Load(configFilePath, LoadOptions.PreserveWhitespace)
@@ -147,9 +147,9 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
 
     let libIsContained e =
         let haystack = e.ToString().ToLower()
-        allKnownLibs 
+        allKnownLibNames 
         |> Seq.exists (fun b -> 
-            let needle = (sprintf "name=\"%s\"" b.ReferenceName).ToLower()
+            let needle = (sprintf "name=\"%s\"" b).ToLower()
             haystack.Contains needle)
 
     let nsManager = XmlNamespaceManager(NameTable());
@@ -169,7 +169,7 @@ let private applyBindingRedirects isFirstGroup cleanBindingRedirects (allKnownLi
         config.Save(f, SaveOptions.DisableFormatting)
 
 /// Applies a set of binding redirects to all .config files in a specific folder.
-let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects rootPath allKnownLibs bindingRedirects =
+let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects rootPath allKnownLibNames bindingRedirects =
     let applyBindingRedirects projectFile =
         let bindingRedirects = bindingRedirects projectFile |> Seq.toList
         let path = Path.GetDirectoryName projectFile.FileName
@@ -182,7 +182,7 @@ let applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindin
                 addConfigFileToProject projectFile
                 Some config
             | _ -> None
-        |> Option.iter (applyBindingRedirects isFirstGroup cleanBindingRedirects allKnownLibs bindingRedirects)
+        |> Option.iter (applyBindingRedirects isFirstGroup cleanBindingRedirects allKnownLibNames bindingRedirects)
     
     rootPath
     |> getProjectFilesWithPaketReferences Directory.GetFiles
