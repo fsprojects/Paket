@@ -129,6 +129,8 @@ module Map =
         |> Map.ofSeq
 
 module RuntimeGraph =
+    open PackageResolver
+
     let mergeCompatibility (s1:CompatibilityProfile) (s2:CompatibilityProfile) =
        assert (s1.Name = s2.Name)
        { Name = s1.Name
@@ -183,3 +185,16 @@ module RuntimeGraph =
         |> Seq.tryHead
         |> Option.defaultValue []
 
+    open System.IO
+
+    let getRuntimeGraphFromNugetCache groupName (package:ResolvedPackage) =
+        // 1. downloading packages into cache
+        let targetFileName, _ =
+            NuGetV2.DownloadPackage (None, "C:\FakeRoot", package.Source, [], groupName, package.Name, package.Version, false, false, false)
+            |> Async.RunSynchronously
+
+        let extractedDir = NuGetV2.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, null) |> Async.RunSynchronously
+        // 2. Get runtime graph
+        let runtime = Path.Combine(extractedDir, "runtime.json")
+        if File.Exists runtime then Some (runtime) else None
+        |> Option.map RuntimeGraphParser.readRuntimeGraph

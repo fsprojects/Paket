@@ -83,7 +83,7 @@ let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail
 
 let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF) =
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
-    dependenciesFile.Resolve(true,getSha1,getVersionsF,getPackageDetailsF,groups,UpdateMode.UpdateAll)
+    dependenciesFile.Resolve(true,getSha1,getVersionsF,getPackageDetailsF,(fun _ _ -> None),groups,UpdateMode.UpdateAll)
 
 let getVersion (resolved:ResolvedPackage) = resolved.Version.ToString()
 
