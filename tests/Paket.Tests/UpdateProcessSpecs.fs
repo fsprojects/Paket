@@ -46,7 +46,7 @@ let getLockFile lockFileData = LockFile.Parse("",toLines lockFileData)
 let lockFile = lockFileData |> getLockFile
 
 let selectiveUpdateFromGraph graph force lockFile depsFile updateMode restriction =
-    selectiveUpdate force noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) (fun _ _ -> None) lockFile depsFile updateMode restriction
+    selectiveUpdate force noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) (GetRuntimeGraphFromGraph graph) lockFile depsFile updateMode restriction
 
 [<Test>]
 let ``SelectiveUpdate does not update any package when it is neither updating all nor selective updating``() = 

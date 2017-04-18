@@ -67,12 +67,13 @@ source "http://www.nuget.org/api/v2"
 nuget Microsoft.AspNet.Mvc >= 6.0.0 lowest_matching: true
 """
 
-let graph2 = [
-    "Microsoft.AspNet.Mvc","6.0.0",[]
-    "Microsoft.AspNet.Mvc","6.0.1",[]
-    "Microsoft.AspNet.Mvc","6.0.13",[]
-    "Microsoft.AspNet.Mvc","5.2.3",[]
-]
+let graph2 = 
+    OfSimpleGraph [
+        "Microsoft.AspNet.Mvc","6.0.0",[]
+        "Microsoft.AspNet.Mvc","6.0.1",[]
+        "Microsoft.AspNet.Mvc","6.0.13",[]
+        "Microsoft.AspNet.Mvc","5.2.3",[]
+    ]
 
 [<Test>]
 let ``should resolve config with min requirement``() = 
