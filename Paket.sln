@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.25420.1
 # Visual Studio 15
 VisualStudioVersion = 15.0.26228.10
+# Visual Studio 15
+VisualStudioVersion = 15.0.26228.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{A6A6AF7D-D6E3-442D-9B1E-58CC91879BE1}"
 EndProject
@@ -99,6 +101,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{29E6EF
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{5DCD4F38-7632-4C3F-90B1-222CDD502C18}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{29E6EF21-D8C8-495D-84C7-7A6416C1E25F}"
 	ProjectSection(SolutionItems) = preProject
 		.paket\paket.exe.config = .paket\paket.exe.config
 		.paket\Paket.Restore.targets = .paket\Paket.Restore.targets
