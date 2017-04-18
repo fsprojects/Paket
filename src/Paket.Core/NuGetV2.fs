@@ -940,6 +940,23 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
             elif not force && getFromCache caches then
                 ()
             else
+                match source with
+                | LocalNuGet(path,_) ->
+                    let path = Utils.normalizeLocalPath path
+                    let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root
+                    let nupkg = findLocalPackage di.FullName packageName version
+
+                    //caches
+                    //|> Seq.iter (fun cache ->
+                    //    try
+                    //        CopyToCache(cache,nupkg.FullName,force)
+                    //    with
+                    //    | exn ->
+                    //        if verbose then
+                    //            traceWarnfn "Could not copy %s to cache %s%s%s" nupkg.FullName cache.Location Environment.NewLine exn.Message)
+
+                    File.Copy(nupkg.FullName,targetFileName)
+                | _ ->
                 // discover the link on the fly
                 let downloadUrl = ref ""
                 try

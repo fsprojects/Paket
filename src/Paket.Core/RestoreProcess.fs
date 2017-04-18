@@ -65,6 +65,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
         let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
         let force = if (localOverride || overridenFile.Exists) then true else force
         let! result = async {
+            // TODO: Cleanup - Download gets a source and should be able to handle LocalNuGet as well, so this is duplicated
             match package.Source with
             | NuGetV2 _ | NuGetV3 _ -> 
                 let source = 
