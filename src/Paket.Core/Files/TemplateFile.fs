@@ -120,6 +120,14 @@ type ProjectCoreInfo =
           Description = None
           Symbols = false }
 
+    member self.ToCoreInfo (Id:string): CompleteCoreInfo =
+        {   Id      = Id
+            Version = self.Version
+            Authors = defaultArg self.Authors []
+            Description = defaultArg self.Description String.Empty
+            Symbols = self.Symbols}
+
+
 type OptionalPackagingInfo =
     { Title : string option
       Owners : string list
@@ -138,6 +146,7 @@ type OptionalPackagingInfo =
       ExcludedGroups : Set<GroupName>
       References : string list
       FrameworkAssemblyReferences : string list
+      /// (src * target) list
       Files : (string * string) list
       FilesExcluded : string list 
       IncludePdbs : bool 

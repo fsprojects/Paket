@@ -165,6 +165,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         | Some g -> g.Packages |> List.exists (fun p -> p.Name = name)
 
     member __.GetPackage (groupName, name : PackageName) = groups.[groupName].Packages |> List.find (fun p -> p.Name = name)
+    
+    member self.TryGetPackage (groupName, name : PackageName) =
+        try self.GetPackage (groupName,name) |> Some
+        with _ -> None
+
     member __.FileName = fileName
     member __.Lines = textRepresentation
 
