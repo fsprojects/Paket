@@ -12,6 +12,11 @@ open Chessie.ErrorHandling
 open Newtonsoft.Json
 open System
 
+// An unparsed file in the nuget package -> still need to inspect the path for further information. After parsing an entry will be part of a "LibFolder" for example.
+type UnparsedPackageFile =
+    { FullPath : string
+      PathWithinPackage : string }
+
 module NuGetConfig =
     open System.Text
     
