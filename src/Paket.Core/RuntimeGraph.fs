@@ -13,6 +13,7 @@ type Rid =
     static member Of s = { Rid = s }
     static member Parse s = Rid.Of s
     override x.ToString () = x.Rid
+    static member Any = { Rid = "any" }
 
 type CompatibilityProfileName = string
 
