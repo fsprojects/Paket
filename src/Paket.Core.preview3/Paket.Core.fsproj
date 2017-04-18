@@ -39,9 +39,13 @@
     <Compile Include="$(PaketCoreSourcesDir)\RemoteUpload.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PackageResolver.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Nuspec.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\RuntimeGraph.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\InstallModel.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\DependenciesTypes.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Parsers/DependenciesFileParser.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Nuget.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\NuGetV3.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\NuGetV2.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Files/ReferencesFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Files/SolutionFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Files/LockFile.fs" />
@@ -49,9 +53,6 @@
     <Compile Include="$(PaketCoreSourcesDir)\Files/ProjectFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Files/DependenciesFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Files/PackagesConfigFile.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\Nuget.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\NuGetV3.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\NuGetV2.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Queries.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\ScriptGeneration.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\LocalFile.fs" />
