@@ -4,6 +4,7 @@ open Paket
 open NUnit.Framework
 open FsUnit
 open Paket.Domain
+open Paket.TestHelpers
 
 let supportAndDeps = """
 {
@@ -110,3 +111,82 @@ let ``Check if we can merge two graphs``() =
              ([ PackageName "Microsoft.Win32.Primitives", [ PackageName "runtime.win.Microsoft.Win32.Primitives", VersionRequirement.VersionRequirement (VersionRange.Minimum (SemVer.Parse "4.3.0"), PreReleaseStatus.No) ]
                 PackageName "System.Runtime.Extensions", [ PackageName "runtime.win.System.Runtime.Extensions", VersionRequirement.VersionRequirement (VersionRange.Minimum (SemVer.Parse "4.3.0"), PreReleaseStatus.No) ]
               ] |> Map.ofSeq)
+
+[<Test>]
+let ``Check that runtime dependencies are saved as such in the lockfile`` () =
+    let lockFileData = """ """
+    let getLockFile lockFileData = LockFile.Parse("",toLines lockFileData)
+    let lockFile = lockFileData |> getLockFile
+
+    let graph =
+        [ "MyDependency", "3.2.0", [], RuntimeGraph.Empty
+          "MyDependency", "3.3.3", [], RuntimeGraph.Empty
+          "MyDependency", "4.0.0", [], RuntimeGraphParser.readRuntimeGraph """{
+  "runtimes": {
+    "win": {
+      "MyDependency": {
+        "MyRuntimeDependency": "4.0.0"
+      }
+    }
+  }
+}"""
+          "MyRuntimeDependency", "4.0.0", [], RuntimeGraph.Empty
+          "MyRuntimeDependency", "4.0.1", [], RuntimeGraph.Empty ]
+        |> OfGraphWithRuntimeDeps
+
+    let depsFile = DependenciesFile.FromCode("""source http://www.nuget.org/api/v2
+nuget MyDependency""")
+    let lockFile, resolution =
+        UpdateProcess.selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) (GetRuntimeGraphFromGraph graph) lockFile depsFile PackageResolver.UpdateMode.Install SemVerUpdateMode.NoRestriction
+
+    let result =
+        lockFile.GetGroupedResolution()
+        |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version, resolved.IsRuntimeDependency))
+
+    let expected =
+        [("MyDependency","4.0.0", false);
+        ("MyRuntimeDependency","4.0.1", true)]
+        |> Seq.sortBy (fun (t,_,_) ->t)
+
+    result
+    |> Seq.sortBy (fun (t,_,_) ->t)
+    |> shouldEqual expected
+
+[<Test>]
+let ``Check that runtime dependencies we don't use are ignored`` () =
+    let lockFileData = """ """
+    let getLockFile lockFileData = LockFile.Parse("",toLines lockFileData)
+    let lockFile = lockFileData |> getLockFile
+
+    let graph =
+        [ "MyDependency", "3.2.0", [], RuntimeGraph.Empty
+          "MyDependency", "3.3.3", [], RuntimeGraph.Empty
+          "MyDependency", "4.0.0", [], RuntimeGraphParser.readRuntimeGraph """{
+  "runtimes": {
+    "win": {
+      "SomePackage": {
+        "MyRuntimeDependency": "4.0.0"
+      }
+    }
+  }
+}"""
+          "MyRuntimeDependency", "4.0.0", [], RuntimeGraph.Empty
+          "MyRuntimeDependency", "4.0.1", [], RuntimeGraph.Empty ]
+        |> OfGraphWithRuntimeDeps
+
+    let depsFile = DependenciesFile.FromCode("""source http://www.nuget.org/api/v2
+nuget MyDependency""")
+    let lockFile, resolution =
+        UpdateProcess.selectiveUpdate true noSha1 (VersionsFromGraph graph) (PackageDetailsFromGraph graph) (GetRuntimeGraphFromGraph graph) lockFile depsFile PackageResolver.UpdateMode.Install SemVerUpdateMode.NoRestriction
+
+    let result =
+        lockFile.GetGroupedResolution()
+        |> Seq.map (fun (KeyValue (_,resolved)) -> (string resolved.Name, string resolved.Version, resolved.IsRuntimeDependency))
+
+    let expected =
+        [("MyDependency","4.0.0", false)]
+        |> Seq.sortBy (fun (t,_,_) ->t)
+
+    result
+    |> Seq.sortBy (fun (t,_,_) ->t)
+    |> shouldEqual expected

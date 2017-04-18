@@ -11,32 +11,39 @@ open Paket.Domain
 
 type GraphDependency = string * VersionRequirement * FrameworkRestrictions
 
-type DependencyGraph = list<string * string * (GraphDependency) list>
+type DependencyGraph = list<string * string * (GraphDependency) list * RuntimeGraph>
 
 let OfSimpleGraph (g:seq<string * string * (string * VersionRequirement) list>) : DependencyGraph =
   g
   |> Seq.map (fun (x, y, (rqs)) ->
-    x, y, rqs |> List.map (fun (a,b) -> (a, b, FrameworkRestrictionList [])))
+    x, y, rqs |> List.map (fun (a,b) -> (a, b, FrameworkRestrictionList [])), RuntimeGraph.Empty)
   |> Seq.toList
 
 let OfGraphWithRestriction (g:seq<string * string * (string * VersionRequirement * FrameworkRestrictions) list>) : DependencyGraph =
   g
   |> Seq.map (fun (x, y, (rqs)) ->
-    x, y, rqs |> List.map (fun (a,b,c) -> (a, b, c)))
+    x, y, rqs |> List.map (fun (a,b,c) -> (a, b, c)), RuntimeGraph.Empty)
   |> Seq.toList
 
 let GraphOfNuspecs (g:seq<string>) : DependencyGraph =
   g
   |> Seq.map (fun nuspecText ->
     let nspec = Nuspec.Load("in-memory", nuspecText)
-    nspec.OfficialName, nspec.Version, nspec.Dependencies |> List.map (fun (a,b,c) -> a.GetCompareString(), b, c))
+    nspec.OfficialName, nspec.Version, nspec.Dependencies |> List.map (fun (a,b,c) -> a.GetCompareString(), b, c), RuntimeGraph.Empty)
   |> Seq.toList
+
+let OfGraphWithRuntimeDeps (g:seq<string * string * (string * VersionRequirement) list * RuntimeGraph>) : DependencyGraph =
+  g
+  |> Seq.map (fun (x, y, rqs, run) ->
+    x, y, rqs |> List.map (fun (a,b) -> (a, b, FrameworkRestrictionList [])), run)
+  |> Seq.toList
+
 
 let PackageDetailsFromGraph (graph : DependencyGraph) sources groupName (package:PackageName) (version:SemVerInfo) = 
     let name,dependencies = 
         graph
-        |> Seq.filter (fun (p, v, _) -> (PackageName p) = package && SemVer.Parse v = version)
-        |> Seq.map (fun (n, _, d) -> PackageName n,d |> List.map (fun (x,y,z) -> PackageName x,y,z))
+        |> Seq.filter (fun (p, v, _, _) -> (PackageName p) = package && SemVer.Parse v = version)
+        |> Seq.map (fun (n, _, d, _) -> PackageName n,d |> List.map (fun (x,y,z) -> PackageName x,y,z))
         |> Seq.head
 
     { Name = name
@@ -49,14 +56,24 @@ let PackageDetailsFromGraph (graph : DependencyGraph) sources groupName (package
 let VersionsFromGraph (graph : DependencyGraph) sources resolverStrategy groupName packageName = 
     let versions =
         graph
-        |> Seq.filter (fun (p, _, _) -> (PackageName p) = packageName)
-        |> Seq.map (fun (_, v, _) -> SemVer.Parse v)
+        |> Seq.filter (fun (p, _, _, _) -> (PackageName p) = packageName)
+        |> Seq.map (fun (_, v, _, _) -> SemVer.Parse v)
         |> Seq.toList
         |> List.map (fun v -> v,sources)
 
     match resolverStrategy with
     | ResolverStrategy.Max -> List.sortDescending versions
     | ResolverStrategy.Min -> List.sort versions
+
+let GetRuntimeGraphFromGraph (graph : DependencyGraph) groupName (package:ResolvedPackage) =
+    graph
+    |> Seq.filter (fun (p, v, _, r) -> (PackageName p) = package.Name && SemVer.Parse v = package.Version)
+    |> Seq.map (fun (_, _, _, r) -> r)
+    |> RuntimeGraph.mergeSeq
+    // Properly returning None here makes the tests datastructures unneccessary complex.
+    // It doesn't really matter because Empty is used anyway if all return "None", which is the same as merging a lot of Emtpy graphs...
+    |> Some
+
 
 let VersionsFromGraphAsSeq (graph : DependencyGraph) sources resolverStrategy groupName packageName = 
    VersionsFromGraph graph sources resolverStrategy groupName packageName

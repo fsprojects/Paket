@@ -188,7 +188,8 @@ module RuntimeGraph =
         |> Seq.choose (fun r ->
             match g.Runtimes |> Map.tryFind r with
             | Some desc ->
-                desc.RuntimeDependencies |> Map.tryFind packageName
+                let result = desc.RuntimeDependencies |> Map.tryFind packageName
+                result
             | None -> None)
         |> Seq.tryHead
         |> Option.defaultValue []

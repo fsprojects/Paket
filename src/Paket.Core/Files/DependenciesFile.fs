@@ -279,7 +279,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     | _ -> resolution
                 | Resolution.Conflict _ -> resolution
 
-            { ResolvedPackages = resolution
+            { ResolvedPackages = runtimeResolution
               ResolvedSourceFiles = remoteFiles }
 
         groupsToResolve
