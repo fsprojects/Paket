@@ -748,7 +748,7 @@ module ProjectFile =
 
         // handle legacy conditions
         let conditions =
-            (model.GetReferenceFolders() @ (List.map (LibFolder.map (fun refs -> { ReferenceOrLibraryFolder.empty with Libraries = refs })) netCoreRestricted.CompileRefFolders))
+            (model.GetReferenceFolders() @ (List.map (FrameworkFolder.map (fun refs -> { ReferenceOrLibraryFolder.empty with Libraries = refs })) netCoreRestricted.CompileRefFolders))
             |> List.sortBy (fun libFolder -> libFolder.Path)
             |> List.collect (fun libFolder ->
                 match libFolder with
