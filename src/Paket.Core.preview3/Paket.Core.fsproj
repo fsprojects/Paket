@@ -80,7 +80,6 @@
     <Compile Include="$(PaketCoreSourcesDir)\Packaging\PackageMetaData.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Packaging\PackageProcess.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PublicAPI.fs" />
-    <None Include="$(PaketCoreSourcesDir)\paket.template" />
   </ItemGroup>
   
   <ItemGroup>

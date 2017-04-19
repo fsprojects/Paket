@@ -9,24 +9,37 @@ open PlatformMatching
 open ProviderImplementation.AssemblyReader.Utils.SHA1
 
 type UnparsedPackageFile = Paket.NuGet.UnparsedPackageFile
-
+type Tfm = PlatformMatching.ParsedPlatformPath
+//type Rid = Paket.Rid
+type FrameworkDependentFile =
+  { Path : Tfm
+    File : UnparsedPackageFile
+    Runtime : Rid option }
 type Library =
     { Name : string
-      Path : string }
+      Path : string
+      PathWithinPackage : string }
 module Library =
-    let ofFile (f:UnparsedPackageFile) =
-        let fi = FileInfo(normalizePath f.FullPath)
+    let ofFile (f:FrameworkDependentFile) =
+        let fi = FileInfo(normalizePath f.File.FullPath)
         let name = fi.Name.Replace(fi.Extension, "")
-        { Name = name; Path = f.FullPath }
+        { Name = name; Path = f.File.FullPath; PathWithinPackage = f.File.PathWithinPackage }
+
+type RuntimeLibrary =
+    { Library : Library
+      Rid : Rid option }
+module RuntimeLibrary =
+    let ofFile (f:FrameworkDependentFile) =
+        { Library = Library.ofFile f; Rid = f.Runtime }
 
 type MsBuildFile =
     { Name : string
       Path : string }
 module MsBuildFile =
-    let ofFile (f:UnparsedPackageFile) =
-        let fi = FileInfo(normalizePath f.FullPath)
+    let ofFile (f:FrameworkDependentFile) =
+        let fi = FileInfo(normalizePath f.File.FullPath)
         let name = fi.Name.Replace(fi.Extension, "")
-        { Name = name; Path = f.FullPath }
+        { Name = name; Path = f.File.FullPath }
 
 type FrameworkReference =
     { Name : string }
@@ -45,7 +58,7 @@ module ReferenceOrLibraryFolder =
       { old with ReferenceOrLibraryFolder.FrameworkReferences = Set.add item old.FrameworkReferences }
 
 /// Represents a subfolder of a nuget package that provides files (content, references, etc) for one or more Target Profiles.  This is a logical representation of the 'net45' folder in a NuGet package, for example.
-type LibFolder<'T> =
+type FrameworkFolder<'T> =
     { Path : ParsedPlatformPath
       Targets : TargetProfile list
       FolderContents : 'T  }
@@ -54,8 +67,8 @@ type LibFolder<'T> =
         this.Targets
         |> List.choose (function SinglePlatform t -> Some t | _ -> None)
 
-module LibFolder =
-    let map f (l:LibFolder<_>) =
+module FrameworkFolder =
+    let map f (l:FrameworkFolder<_>) =
         { Path = l.Path
           Targets = l.Targets
           FolderContents = f l.FolderContents }
@@ -89,10 +102,11 @@ type AnalyzerLib =
 type InstallModel =
     { PackageName : PackageName
       PackageVersion : SemVerInfo
-      CompileLibFolders : LibFolder<ReferenceOrLibraryFolder> list
-      CompileRefFolders : LibFolder<Library Set> list
-      RuntimeLibFolders : LibFolder<Library Set> list
-      TargetsFileFolders : LibFolder<MsBuildFile Set> list
+      CompileLibFolders : FrameworkFolder<ReferenceOrLibraryFolder> list
+      CompileRefFolders : FrameworkFolder<Library Set> list
+      RuntimeAssemblyFolders : FrameworkFolder<RuntimeLibrary Set> list
+      RuntimeLibFolders : FrameworkFolder<RuntimeLibrary Set> list
+      TargetsFileFolders : FrameworkFolder<MsBuildFile Set> list
       Analyzers: AnalyzerLib list
       LicenseUrl: string option }
 
@@ -299,6 +313,7 @@ module InstallModel =
           CompileLibFolders = []
           CompileRefFolders = []
           RuntimeLibFolders = []
+          RuntimeAssemblyFolders = []
           TargetsFileFolders = []
           Analyzers = []
           LicenseUrl = None }
@@ -315,24 +330,19 @@ module InstallModel =
     let trySscanf pf s =
         FolderScanner.trySscanfExt scanners { FolderScanner.ScanOptions.Default with IgnoreCase = true } pf s
 
-    type FrameworkDependentFile =
-      { Path : Tfm
-        File : UnparsedPackageFile
-        Runtime : Rid }
-
     let getCompileRefAssembly (p:UnparsedPackageFile) =
         (trySscanf "ref/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Tfm * string) option)
-        |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = Rid.Any })
+        |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = None })
 
     let getRuntimeAssembly (p:UnparsedPackageFile) =
         (trySscanf "lib/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Tfm * string) option)
-        |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = Rid.Any })
+        |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = None })
         |> Option.orElseWith (fun _ ->
             (trySscanf "runtimes/%A{rid}/lib/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Rid * Tfm * string) option)
-            |> Option.map (fun (rid, l, _) -> { Path = l; File = p; Runtime = rid }))
+            |> Option.map (fun (rid, l, _) -> { Path = l; File = p; Runtime = Some rid }))
         |> Option.orElseWith (fun _ ->
             (trySscanf "lib/%A{noSeperator}" p.PathWithinPackage : string option)
-            |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = Rid.Any }))
+            |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
     let getCompileLibAssembly (p:UnparsedPackageFile) =
         // %s because 'native' uses subfolders...
@@ -352,26 +362,26 @@ module InstallModel =
                     if path.Contains "/release/" then Release else
                     if path.Contains "/debug/" then Debug else
                     NoBuildMode
-                { Path = { l with Platforms = [ FrameworkIdentifier.Native(newBuildMode,newPlatform) ]}; File = p; Runtime = Rid.Any }
+                { Path = { l with Platforms = [ FrameworkIdentifier.Native(newBuildMode,newPlatform) ]}; File = p; Runtime = None }
             else
-            { Path = l; File = p; Runtime = Rid.Any })
+            { Path = l; File = p; Runtime = None })
         |> Option.orElseWith (fun _ ->
             (trySscanf "lib/%A{noSeperator}" p.PathWithinPackage : string option)
-            |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = Rid.Any }))
+            |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
     let getRuntimeLibrary (p:UnparsedPackageFile) =
         (trySscanf "runtimes/%A{rid}/nativeassets/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Rid * Tfm * string) option)
-        |> Option.map (fun (rid, l,_) -> { Path = l; File = p; Runtime = rid })
+        |> Option.map (fun (rid, l,_) -> { Path = l; File = p; Runtime = Some rid })
         |> Option.orElseWith (fun _ ->
             (trySscanf "runtimes/%A{rid}/native/%A{noSeperator}" p.PathWithinPackage : (Rid * string) option)
-            |> Option.map (fun (rid, _) -> { Path = Tfm.Empty; File = p; Runtime = rid }))
+            |> Option.map (fun (rid, _) -> { Path = Tfm.Empty; File = p; Runtime = Some rid }))
 
     let getMsbuildFile (p:UnparsedPackageFile) =
         (trySscanf "build/%A{tfm}/%A{noSeperator}" p.PathWithinPackage : (Tfm * string) option)
-        |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = Rid.Any })
+        |> Option.map (fun (l,_) -> { Path = l; File = p; Runtime = None })
         |> Option.orElseWith (fun _ ->
             (trySscanf "build/%A{noSeperator}" p.PathWithinPackage : string option)
-            |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = Rid.Any }))
+            |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
     //let mapFolders mapfn (installModel:InstallModel) =
     //    { installModel with
@@ -386,6 +396,11 @@ module InstallModel =
 
     let private getFileFolders (target:TargetProfile)  folderType choosefn =
         match Seq.tryFind (fun lib -> Seq.exists ((=) target) lib.Targets) folderType with
+        | Some folder -> choosefn folder.FolderContents
+        | None -> Seq.empty
+
+    let private getFileFoldersByPath (path:Tfm) (folderType:seq<FrameworkFolder<_>>) choosefn =
+        match Seq.tryFind (fun (lib:FrameworkFolder<_>) -> path = lib.Path) folderType with
         | Some folder -> choosefn folder.FolderContents
         | None -> Seq.empty
 
@@ -420,10 +435,6 @@ module InstallModel =
             getLegacyReferences target installModel
         else results
 
-    let getRuntimeLibraries graph rid (target : TargetProfile) (installModel:InstallModel) =
-        getFileFolders target (installModel.RuntimeLibFolders) (fun f -> f |> Set.toSeq)
-        |> Seq.cache
-
     let getTargetsFiles (target : TargetProfile) (installModel:InstallModel) =
         getFileFolders target installModel.TargetsFileFolders (fun f -> f |> Set.toSeq)
 
@@ -431,13 +442,13 @@ module InstallModel =
     let getLegacyPlatformReferences frameworkIdentifier installModel =
         getLegacyReferences (SinglePlatform frameworkIdentifier) installModel
 
-    let isEmpty (lib: LibFolder<Set<'T>> list) =
+    let isEmpty (lib: FrameworkFolder<Set<'T>> list) =
         lib
         |> Seq.map (fun l -> l.FolderContents)
         |> Seq.forall Set.isEmpty
     let removeIfCompletelyEmpty (this:InstallModel) =
         let foldersEmpty =
-            isEmpty this.CompileRefFolders && isEmpty this.TargetsFileFolders && isEmpty this.RuntimeLibFolders &&
+            isEmpty this.CompileRefFolders && isEmpty this.TargetsFileFolders && isEmpty this.RuntimeAssemblyFolders &&
             this.CompileLibFolders
             |> Seq.map (fun c -> c.FolderContents.Libraries |> Set.toSeq, c.FolderContents.FrameworkReferences |> Set.toSeq)
             |> Seq.forall (fun (libs, refs) -> Seq.isEmpty libs && Seq.isEmpty refs)
@@ -459,50 +470,61 @@ module InstallModel =
 
     let calcLegacyReferenceLibFolders = calcLibFoldersG ReferenceOrLibraryFolder.empty getCompileLibAssembly
     let calcReferenceFolders = calcLibFoldersG Set.empty getCompileRefAssembly
-    let calcRuntimeFolders = calcLibFoldersG Set.empty getRuntimeAssembly
+    let calcRuntimeAssemblyFolders = calcLibFoldersG Set.empty getRuntimeAssembly
+    let calcRuntimeLibraryFolders l = calcLibFoldersG Set.empty getRuntimeLibrary l
     //let calcRefFolders = calcLibFoldersG extractRefFolder
 
-    let addFileToFolder<'T, 'Item> (path:LibFolder<'T>) (file:'Item) (folders:LibFolder<'T> list) (addfn: 'Item -> 'T -> 'T) =
+    let addFileToFolder<'T, 'Item> (path:FrameworkFolder<'T>) (file:'Item) (folders:FrameworkFolder<'T> list) (addfn: 'Item -> 'T -> 'T) =
         folders
         |> List.map (fun p ->
             if p.Path <> path.Path then p else
             { p with FolderContents = addfn file p.FolderContents })
 
-    let private addPackageLegacyLibFile references (path:LibFolder<ReferenceOrLibraryFolder>) (file:UnparsedPackageFile) (this:InstallModel) : InstallModel =
+    let private addPackageLegacyLibFile references (path:FrameworkFolder<ReferenceOrLibraryFolder>) (file:FrameworkDependentFile) (this:InstallModel) : InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists file.FullPath.EndsWith list
+            | NuspecReferences.Explicit list -> List.exists file.File.FullPath.EndsWith list
         if not install then this else
         { this with
             CompileLibFolders = addFileToFolder path (Library.ofFile file) this.CompileLibFolders ReferenceOrLibraryFolder.addLibrary }
 
-    let private addPackageRefFile references (path:LibFolder<Library Set>) (file:UnparsedPackageFile) (this:InstallModel) : InstallModel =
+    let private addPackageRefFile references (path:FrameworkFolder<Library Set>) (file:FrameworkDependentFile) (this:InstallModel) : InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists file.FullPath.EndsWith list
+            | NuspecReferences.Explicit list -> List.exists file.File.FullPath.EndsWith list
 
         if not install then this else
         { this with
             CompileRefFolders = addFileToFolder path (Library.ofFile file) this.CompileRefFolders Set.add }
 
-    let private addPackageRuntimeFile references (path:LibFolder<Library Set>) (file:UnparsedPackageFile) (this:InstallModel) : InstallModel =
+    let private addPackageRuntimeAssemblyFile references (path:FrameworkFolder<RuntimeLibrary Set>) (file:FrameworkDependentFile) (this:InstallModel) : InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
-            | NuspecReferences.Explicit list -> List.exists file.FullPath.EndsWith list
+            | NuspecReferences.Explicit list -> List.exists file.File.FullPath.EndsWith list
 
         if not install then this else
         { this with
-            RuntimeLibFolders = addFileToFolder path (Library.ofFile file) this.RuntimeLibFolders Set.add }
+            RuntimeAssemblyFolders = addFileToFolder path (RuntimeLibrary.ofFile file) this.RuntimeAssemblyFolders Set.add }
+
+    let private addPackageRuntimeLibraryFile references (path:FrameworkFolder<RuntimeLibrary Set>) (file:FrameworkDependentFile) (this:InstallModel) : InstallModel =
+        let install =
+            match references with
+            | NuspecReferences.All -> true
+            | NuspecReferences.Explicit list -> List.exists file.File.FullPath.EndsWith list
+
+        if not install then this else
+        { this with
+            RuntimeLibFolders = addFileToFolder path (RuntimeLibrary.ofFile file) this.RuntimeLibFolders Set.add }
 
     let private addItem libs extract addFunc getFolder initialState =
         List.fold (fun (model:InstallModel) file ->
             match extract file with
-            | Some (folderName:FrameworkDependentFile) ->
-                match List.tryFind (fun (folder:LibFolder<_>) -> folder.Path = folderName.Path) (getFolder model) with
-                | Some path -> addFunc path file model
+            | Some (parsedFile:FrameworkDependentFile) ->
+                match List.tryFind (fun (folder:FrameworkFolder<_>) -> folder.Path = parsedFile.Path) (getFolder model) with
+                | Some path -> addFunc path parsedFile model
                 | _ -> model
             | None -> model) initialState libs
 
@@ -510,17 +532,20 @@ module InstallModel =
         let libs = libs |> Seq.toList
         let legacyLibFolders = calcLegacyReferenceLibFolders libs
         let refFolders = calcReferenceFolders libs
-        let runtimeFolders = calcRuntimeFolders libs
+        let runtimeAssemblyFolders = calcRuntimeAssemblyFolders libs
+        let runtimeLibraryFolders = calcRuntimeLibraryFolders libs
 
         { installModel with
             CompileLibFolders = legacyLibFolders
             CompileRefFolders = refFolders
-            RuntimeLibFolders = runtimeFolders }
+            RuntimeAssemblyFolders = runtimeAssemblyFolders
+            RuntimeLibFolders = runtimeLibraryFolders }
         |> addItem libs getCompileLibAssembly (addPackageLegacyLibFile references) (fun i -> i.CompileLibFolders)
         |> addItem libs getCompileRefAssembly (addPackageRefFile references) (fun i -> i.CompileRefFolders)
-        |> addItem libs getRuntimeAssembly (addPackageRuntimeFile references) (fun i -> i.RuntimeLibFolders)
+        |> addItem libs getRuntimeAssembly (addPackageRuntimeAssemblyFile references) (fun i -> i.RuntimeAssemblyFolders)
+        |> addItem libs getRuntimeLibrary (addPackageRuntimeLibraryFile references) (fun i -> i.RuntimeLibFolders)
 
-    let addAnalyzerFiles (analyzerFiles:UnparsedPackageFile seq) (installModel:InstallModel)  : InstallModel =
+    let addAnalyzerFiles (analyzerFiles:NuGet.UnparsedPackageFile seq) (installModel:InstallModel)  : InstallModel =
         let analyzerLibs =
             analyzerFiles
             |> Seq.map (fun file -> FileInfo file.FullPath |> AnalyzerLib.FromFile)
@@ -529,10 +554,70 @@ module InstallModel =
         { installModel with Analyzers = installModel.Analyzers @ analyzerLibs}
 
 
-    let rec addTargetsFile (path:LibFolder<_>)  (file:UnparsedPackageFile) (installModel:InstallModel) :InstallModel =
+    let rec addTargetsFile (path:FrameworkFolder<_>)  (file:FrameworkDependentFile) (installModel:InstallModel) :InstallModel =
         { installModel with
             TargetsFileFolders = addFileToFolder path (MsBuildFile.ofFile file) installModel.TargetsFileFolders Set.add
         }
+
+    let getAllRuntimeAssemblies (installModel:InstallModel) =
+        getAllFiles installModel.RuntimeAssemblyFolders (fun f -> f |> Set.toSeq)
+        |> Seq.cache
+
+    let getRuntimeAssemblies (graph:RuntimeGraph) (rid:Rid) (target : TargetProfile) (installModel:InstallModel) =
+        // We need to recalculate the framework association after filtering with the RID
+        let allAssemblies = installModel.RuntimeAssemblyFolders |> Seq.collect (fun f -> f.FolderContents |> Seq.map (fun c -> f.Path, c))
+        let allRids = allAssemblies |> Seq.choose (fun (_,s) -> s.Rid) |> Set.ofSeq
+        let bestMatchingRid =
+            RuntimeGraph.getInheritanceList rid graph
+            |> Seq.tryFind (fun rid -> allRids.Contains rid)
+        let filtered = allAssemblies |> Seq.filter (fun (_, a) -> a.Rid = None || a.Rid = bestMatchingRid) |> Seq.cache
+        let unParsedList = filtered |> Seq.map (fun (p, f) ->
+            { UnparsedPackageFile.FullPath = f.Library.Path; UnparsedPackageFile.PathWithinPackage = f.Library.PathWithinPackage } ) |> Seq.toList
+        let recalculated = calcRuntimeAssemblyFolders unParsedList
+        let filledFolder =
+            unParsedList
+            |> Seq.fold (fun folder (file) ->
+                let fdf = (getRuntimeAssembly file).Value
+                match List.tryFind (fun (folder:FrameworkFolder<_>) -> folder.Path = fdf.Path) (folder) with
+                | Some path -> addFileToFolder path (RuntimeLibrary.ofFile fdf) folder Set.add
+                | _ -> folder) recalculated
+
+        let tfmData =
+            getFileFolders target filledFolder (Set.toSeq)
+            |> Seq.filter (fun lib -> lib.Rid = None || lib.Rid = bestMatchingRid)
+            |> Seq.cache
+        //if allRids.Count > 0 && bestMatchingRid = None then
+        //    // No idea what this means, if this fails for you make this a warning or remove it completely.
+        //    // I added this to see if it appears in the real world...
+        //    failwithf "We found RID dependent assemblies in the package but nothing matched against '%A'" rid
+        tfmData
+
+    let getAllRuntimeLibraries (installModel:InstallModel) =
+        getAllFiles installModel.RuntimeLibFolders (fun f -> f |> Set.toSeq)
+        |> Seq.cache
+
+    let getRuntimeLibraries (graph:RuntimeGraph) (rid:Rid) (target : TargetProfile) (installModel:InstallModel) =
+        let allLibraries = getAllRuntimeLibraries installModel
+        if allLibraries |> Seq.exists (fun r -> r.Rid.IsNone) then
+            failwithf "Expected that all runtime libraries are associated with an RID."
+        let allRids = allLibraries |> Seq.choose (fun s -> s.Rid) |> Set.ofSeq
+        let bestMatchingRid =
+            RuntimeGraph.getInheritanceList rid graph
+            |> Seq.tryFind (fun rid -> allRids.Contains rid)
+        let tfmData =
+            getFileFolders target (installModel.RuntimeLibFolders) (Set.toSeq)
+            |> Seq.filter (fun lib -> lib.Rid = bestMatchingRid)
+            |> Seq.cache
+        let ridData =
+            getFileFoldersByPath Tfm.Empty installModel.RuntimeLibFolders Set.toSeq
+            |> Seq.filter (fun lib -> lib.Rid = bestMatchingRid)
+            |> Seq.cache
+        if allRids.Count > 0 && bestMatchingRid = None then
+            // No idea what this means, if this fails for you make this a warning or remove it completely.
+            // I added this to see if it appears in the real world...
+            failwithf "We found RID dependeny assemblies in the package but nothing matched against '%A'" rid
+        Seq.append tfmData ridData
+
 
     let mapFolderContents<'T> (mapfn: 'T -> 'T) folders =
         folders
@@ -545,26 +630,26 @@ module InstallModel =
     let mapCompileRefFolders mapfn (installModel:InstallModel) =
         { installModel with
             CompileRefFolders = List.map mapfn installModel.CompileRefFolders }
-    let mapRuntimeLibFolders mapfn (installModel:InstallModel) =
+    let mapRuntimeAssemblyFolders mapfn (installModel:InstallModel) =
         { installModel with
-            RuntimeLibFolders = List.map mapfn installModel.RuntimeLibFolders }
+            RuntimeAssemblyFolders = List.map mapfn installModel.RuntimeAssemblyFolders }
     let mapTargetsFileFolders mapfn (installModel:InstallModel) =
         { installModel with
             TargetsFileFolders = List.map mapfn installModel.TargetsFileFolders }
 
     let mapCompileLibFrameworkReferences mapfn (installModel:InstallModel) =
-        mapCompileLibFolders (LibFolder.map (fun l -> { l with FrameworkReferences = mapfn l.FrameworkReferences })) installModel
+        mapCompileLibFolders (FrameworkFolder.map (fun l -> { l with FrameworkReferences = mapfn l.FrameworkReferences })) installModel
     let mapCompileLibReferences mapfn (installModel:InstallModel) =
-        mapCompileLibFolders (LibFolder.map (fun l -> { l with Libraries = mapfn l.Libraries })) installModel
+        mapCompileLibFolders (FrameworkFolder.map (fun l -> { l with Libraries = mapfn l.Libraries })) installModel
     let mapCompileRefFiles mapfn (installModel:InstallModel) =
-        mapCompileRefFolders (LibFolder.map (mapfn)) installModel
-    let mapRuntimeLibFiles mapfn (installModel:InstallModel) =
-        mapRuntimeLibFolders (LibFolder.map (mapfn)) installModel
+        mapCompileRefFolders (FrameworkFolder.map (mapfn)) installModel
+    let mapRuntimeAssemblyFiles mapfn (installModel:InstallModel) =
+        mapRuntimeAssemblyFolders (FrameworkFolder.map (mapfn)) installModel
     let mapTargetsFiles mapfn (installModel:InstallModel) =
-        mapTargetsFileFolders (LibFolder.map (mapfn)) installModel
+        mapTargetsFileFolders (FrameworkFolder.map (mapfn)) installModel
 
     let addFrameworkAssemblyReference (installModel:InstallModel) (reference:FrameworkAssemblyReference) : InstallModel =
-        let referenceApplies (folder : LibFolder<_>) =
+        let referenceApplies (folder : FrameworkFolder<_>) =
             match reference.FrameworkRestrictions |> getRestrictionList with
             | [] -> true
             | restrictions ->
@@ -597,7 +682,7 @@ module InstallModel =
 
         model |> mapCompileLibFolders(fun folder ->
             if referenceApplies folder then
-                LibFolder.map (fun c -> { c with FrameworkReferences = Set.add (FrameworkReference.ofName reference.AssemblyName) c.FrameworkReferences }) folder
+                FrameworkFolder.map (fun c -> { c with FrameworkReferences = Set.add (FrameworkReference.ofName reference.AssemblyName) c.FrameworkReferences }) folder
                 //{ folder with FolderContents = { folder.FolderContents with FrameworkReferences = Set.add reference.AssemblyName  folder.FolderContents.FrameworkReferences } }
             else
                 folder)
@@ -608,13 +693,13 @@ module InstallModel =
 
 
     let filterExcludes (excludes:string list) (installModel:InstallModel) =
-        let excluded e (reference:string) =
-            reference.Contains e
+        let excluded e (pathOrName:string) =
+            pathOrName.Contains e
 
         excludes
         |> List.fold (fun (model:InstallModel) fileName ->
             model
-            |> mapCompileLibReferences (Set.filter (fun n -> n.Name |> excluded fileName |> not))
+            |> mapCompileLibReferences (Set.filter (fun n -> n.PathWithinPackage |> excluded fileName |> not))
             |> mapCompileLibFrameworkReferences (Set.filter (fun r -> r.Name |> excluded fileName |> not))
           ) installModel
 
@@ -646,8 +731,8 @@ module InstallModel =
                     |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])
 
-                RuntimeLibFolders =
-                    installModel.RuntimeLibFolders
+                RuntimeAssemblyFolders =
+                    installModel.RuntimeAssemblyFolders
                     |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])
 
@@ -703,6 +788,7 @@ type InstallModel with
     member this.GetLibReferences target = InstallModel.getLegacyReferences target this
     member this.GetLegacyReferences target = InstallModel.getLegacyReferences target this
     member this.GetCompileReferences target = InstallModel.getCompileReferences target this
+    member this.GetRuntimeAssemblies graph rid target = InstallModel.getRuntimeAssemblies graph rid target this
     member this.GetRuntimeLibraries graph rid target = InstallModel.getRuntimeLibraries graph rid target this
 
     [<Obsolete("usually this should not be used, use GetLegacyReferences for the full .net and GetCompileReferences for dotnetcore")>]
