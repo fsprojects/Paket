@@ -37,7 +37,7 @@ group Test
   nuget Moq
   nuget FSCheck
   
-  nuget NUnit
+  nuget NUnit redirects: force
   nuget NUnit.Console
   nuget NUnit3TestAdapter version_in_path: true               
   nuget FSharp.Core redirects: force
