@@ -4,7 +4,7 @@ open System
 open System.IO
 open Logging
 open Paket.Domain
-open Paket.InstallProcess
+//open Paket.InstallProcess
 open Chessie.ErrorHandling
 
 let private findReferencesFor groupName package (lockFile: LockFile) projects = trial {
