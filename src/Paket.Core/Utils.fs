@@ -287,6 +287,9 @@ let isMono =
     isUnix
 #endif
 
+let encodeURL (url:string) = url.Replace("+","%2B")
+
+
 let monoPath =
     if isMacOS && File.Exists "/Library/Frameworks/Mono.framework/Commands/mono" then
         "/Library/Frameworks/Mono.framework/Commands/mono"
@@ -488,6 +491,8 @@ let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string)
 
 #else
 
+
+
 type System.Net.WebClient with
     member x.UploadFileAsMultipart (url : Uri) filename = 
         let fileTemplate = 
@@ -517,7 +522,8 @@ let internal addHeader (client:WebClient) (headerKey:string) (headerVal:string) 
     client.Headers.Add (headerKey, headerVal)
 #endif
 
-let createWebClient (url,auth:Auth option) =
+let createWebClient (url:string,auth:Auth option) =
+    let url = encodeURL url
 #if USE_HTTP_CLIENT
     let handler =
         new HttpClientHandler(
@@ -590,6 +596,7 @@ let innerText (exn:Exception) =
 let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
+            let url = encodeURL url
             use client = createWebClient (url,auth)
             let task = client.DownloadFileTaskAsync (Uri url, filePath) |> Async.AwaitTask
             do! task
@@ -602,6 +609,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
 let getFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try
+            let url = encodeURL url
             use client = createWebClient(url,auth)
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
@@ -616,6 +624,7 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
 let getXmlFromUrl (auth:Auth option, url : string) =
     async { 
         try
+            let url = encodeURL url
             use client = createWebClient (url,auth)
             // mimic the headers sent from nuget client to odata/ endpoints
             addAcceptHeader client "application/atom+xml, application/xml"
@@ -634,6 +643,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
 let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try 
+            let url = encodeURL url
             let uri = Uri url
             use client = createWebClient (url,auth)
             
