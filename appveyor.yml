@@ -8,8 +8,8 @@ version: 0.0.1.{build}
 artifacts:
   - path: bin
     name: bin
-  - path: temp
-    name: nuget
+  - path: 'temp\*.nupkg'
+    type: NuGetPackage
 nuget:
   account_feed: false
   project_feed: true
@@ -24,11 +24,11 @@ environment:
     # second group
     - SkipNuGet: true
 
-deploy:
-  provider: NuGet
-  server: https://ci.appveyor.com/nuget/paket # remove to push to NuGet.org
-  #api_key:
-  #  secure: m49OJ7+Jdt9an3jPcTukHA==
-  #skip_symbols: false
-  #symbol_server:           # remove to push symbols to SymbolSource.org
-  artifact: /temp/.*\.nupkg/
+#deploy:
+#  provider: NuGet
+#  server: https://ci.appveyor.com/nuget/paket # remove to push to NuGet.org
+#  #api_key:
+#  #  secure: m49OJ7+Jdt9an3jPcTukHA==
+#  #skip_symbols: false
+#  #symbol_server:           # remove to push symbols to SymbolSource.org
+#  artifact: /temp/.*\.nupkg/
