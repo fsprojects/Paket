@@ -91,12 +91,8 @@ type ResolvedPackage = {
                     sprintf "  <%A - %A - %A>\n" name ver restrict)
                 |> String.Concat
             sprintf
-                "%A\n\
-                 Dependencies -\n\
-                 %s\n\
-                 Source - %A\n\
-                 Install Settings\n\
-                 %A"                self.Name deps self.Source self.Settings
+                "%A\nDependencies -\n%s\nSource - %A\nInstall Settings\n%A"                
+                    self.Name deps self.Source self.Settings
 
 type PackageResolution = Map<PackageName, ResolvedPackage>
 
@@ -553,7 +549,7 @@ type ConflictState = {
                 | Status       - %A\n\
                 | Conflicts    - %A\n\
                 | ExploreVers  - %A\n\
-                | TryRelaxed   - %A\n\
+                | TryRelaxed   - %A\n
                 | LastReport   - %A\n"                
                     self.Status conflicts explore 
                     self.TryRelaxed self.LastConflictReported
