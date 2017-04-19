@@ -159,12 +159,12 @@ let ``should understand reference folder``() =
 
 [<Test>]
 let ``should understand aot in runtimes``() = 
-    let model = emptymodel.AddReferences ([ @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll" ] |> fromLegacyList @"..\packages\System.Diagnostics.Contracts\")
+    let model = emptymodel.AddReferences ([ @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netstandard13\System.Diagnostics.Contracts.dll" ] |> fromLegacyList @"..\packages\System.Diagnostics.Contracts\")
 
     let refs =
-        model.GetRuntimeAssemblies RuntimeGraph.Empty (Rid.Of "aot") (SinglePlatform (DotNetCore DotNetCoreVersion.V1_0))
+        model.GetRuntimeAssemblies RuntimeGraph.Empty (Rid.Of "aot") (SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
         |> Seq.map (fun f -> f.Library.Path)
-    refs |> shouldContain @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll"
+    refs |> shouldContain @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netstandard13\System.Diagnostics.Contracts.dll"
 
 
 [<Test>]
