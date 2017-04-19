@@ -823,7 +823,7 @@ NUGET
       System.Threading.Timer (>= 4.3) - framework: >= net451, >= netstandard12
       System.Xml.ReaderWriter (>= 4.3) - framework: >= netstandard10
       System.Xml.XDocument (>= 4.3) - framework: >= netstandard10
-    NUnit (3.6.1)
+    NUnit (3.6.1) - redirects: force
       NETStandard.Library (>= 1.6) - framework: >= net463, >= netstandard16
       System.Runtime.Loader (>= 4.0) - framework: >= net463, >= netstandard16
     NUnit.Console (3.6.1)
