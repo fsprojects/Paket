@@ -44,11 +44,12 @@ let ``should understand lib in lib.dll``() =
     model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\FunScript.TypeScript\lib\net40\FunScript.TypeScript.Binding.lib.dll"
 
-//[<Test>]
-//let ``should understand libuv in runtimes``() = 
-//    let model = emptymodel.AddReferences ([ @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll" ] |> fromLegacyList @"..\Microsoft.AspNetCore.Server.Kestrel\")
-//
-//    model.GetLibReferences(SinglePlatform (Runtimes("win7-x64"))) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
+[<Test>]
+let ``should understand libuv in runtimes``() = 
+    let model = emptymodel.AddReferences ([ @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll" ] |> fromLegacyList @"..\Microsoft.AspNetCore.Server.Kestrel\")
+
+    model.GetRuntimeLibraries RuntimeGraph.Empty (Rid.Of "win7-x64") (SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+       |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
 
 [<Test>]
 let ``should understand reference folder``() =
@@ -135,28 +136,35 @@ let ``should understand reference folder``() =
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
-    // TODO:
-    //let refs =
-    //    model.GetRuntimeAssemblies RuntimeGraph.Empty null (SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
-    //    |> Seq.map (fun f -> f.Path)
-    //refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
-    //refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    //refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    //
-    //let refs =
-    //    model.GetRuntimeAssemblies null null(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
-    //    |> Seq.map (fun f -> f.Path)
-    //refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
-    //// TODO: This is kind of broken for now -> the correct results depends on the runtime we want to get the runtime libraries for
-    //// therefore GetRuntimeLibraries needs an additional parameter...
-    //refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    //refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    let refs =
+        model.GetRuntimeAssemblies RuntimeGraph.Empty (Rid.Of "win") (SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
+        |> Seq.map (fun f -> f.Library.Path)
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
-//[<Test>]
-//let ``should understand aot in runtimes``() = 
-//    let model = emptymodel.AddReferences ([ @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll" ] |> fromLegacyList @"..\packages\System.Diagnostics.Contracts\")
-//
-//    model.GetLibReferences(SinglePlatform (Runtimes("aot"))) |> shouldContain @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netcore50\System.Diagnostics.Contracts.dll"
+    let refs =
+        model.GetRuntimeAssemblies RuntimeGraph.Empty (Rid.Of "win") (SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
+        |> Seq.map (fun f -> f.Library.Path)
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+    let refs =
+        model.GetRuntimeAssemblies RuntimeGraph.Empty (Rid.Of "unix") (SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
+        |> Seq.map (fun f -> f.Library.Path)
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+
+[<Test>]
+let ``should understand aot in runtimes``() = 
+    let model = emptymodel.AddReferences ([ @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netstandard13\System.Diagnostics.Contracts.dll" ] |> fromLegacyList @"..\packages\System.Diagnostics.Contracts\")
+
+    let refs =
+        model.GetRuntimeAssemblies RuntimeGraph.Empty (Rid.Of "aot") (SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
+        |> Seq.map (fun f -> f.Library.Path)
+    refs |> shouldContain @"..\packages\System.Diagnostics.Contracts\runtimes\aot\lib\netstandard13\System.Diagnostics.Contracts.dll"
 
 
 [<Test>]

@@ -601,9 +601,7 @@ module ProjectFile =
     let getCustomModelNodes(model:InstallModel) (project:ProjectFile)  =
         let libs : string Set =
             (model.GetAllLegacyReferenceAndFrameworkReferenceNames())
-            //model.GetLibReferencesLazy.Force()
-            //|> Set.map (fun lib -> lib.ReferenceName)
-       
+
         getCustomReferenceAndFrameworkNodes project
         |> List.filter (fun node -> 
             let libName = node.Attributes.["Include"].InnerText.Split(',').[0]
@@ -675,11 +673,6 @@ module ProjectFile =
         let createItemGroup (targets:TargetProfile list) (frameworkReferences:FrameworkReference list) (libraries:Library list) = 
             let itemGroup = createNode "ItemGroup" project
 
-            //let refOrder (r:Reference) =
-            //    match r with
-            //    | Reference.FrameworkAssemblyReference _ -> 0
-            //    | Reference.Library _ -> 1
-            //    | _ -> 2
             for ref in frameworkReferences |> List.sortBy (fun f -> f.Name) do
                 createNode "Reference" project
                 |> addAttribute "Include" ref.Name
@@ -748,7 +741,7 @@ module ProjectFile =
 
         // handle legacy conditions
         let conditions =
-            (model.GetReferenceFolders() @ (List.map (LibFolder.map (fun refs -> { ReferenceOrLibraryFolder.empty with Libraries = refs })) netCoreRestricted.CompileRefFolders))
+            (model.GetReferenceFolders() @ (List.map (FrameworkFolder.map (fun refs -> { ReferenceOrLibraryFolder.empty with Libraries = refs })) netCoreRestricted.CompileRefFolders))
             |> List.sortBy (fun libFolder -> libFolder.Path)
             |> List.collect (fun libFolder ->
                 match libFolder with
@@ -776,12 +769,6 @@ module ProjectFile =
                         else
                             let specialFrameworkAssemblies, rest =
                                 frameworkReferences |> List.partition (fun fr -> duplicates.Contains fr.Name)
-                            //let frameworkAssemblies,rest = 
-                            //    references
-                            //    |> List.partition (fun lib -> 
-                            //        match lib with
-                            //        | Reference.FrameworkAssemblyReference frameworkAssembly -> duplicates.Contains lib
-                            //        | _ -> false)
 
                             match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
                             | "" -> [condition,createItemGroup libFolder.Targets rest libraries,false]
