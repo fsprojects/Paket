@@ -1,5 +1,11 @@
-#### 4.6.3 - 24.04.2017
-* Unity3d version support - https://github.com/fsprojects/Paket/pull/2268
+#### 5.0.0-alpha001 - 19.04.2017
+* Fix dotnetcore integration.
+  * Paket now properly understands runtime and reference assemblies
+  * Paket now understands the runtime graph and restores runtime dependencies
+  * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
+* New command `paket generate-nuspec`
+* BREAKS: `InstallModel` API
+* BUGFIX: Improved C++ support
 
 #### 4.6.1 - 24.04.2017
 * Support for SourceLink v2 - https://github.com/fsprojects/Paket/pull/2200

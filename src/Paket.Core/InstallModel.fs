@@ -91,7 +91,8 @@ type InstallModel =
       PackageVersion : SemVerInfo
       CompileLibFolders : LibFolder<ReferenceOrLibraryFolder> list
       CompileRefFolders : LibFolder<Library Set> list
-      RuntimeLibFolders : LibFolder<Library Set> list
+      //RuntimeLibFolders : LibFolder<Library Set> list
+      RuntimeAssemblyFolders : LibFolder<Library Set> list
       TargetsFileFolders : LibFolder<MsBuildFile Set> list
       Analyzers: AnalyzerLib list
       LicenseUrl: string option }
@@ -298,7 +299,8 @@ module InstallModel =
           PackageVersion = packageVersion
           CompileLibFolders = []
           CompileRefFolders = []
-          RuntimeLibFolders = []
+          //RuntimeLibFolders = []
+          RuntimeAssemblyFolders = []
           TargetsFileFolders = []
           Analyzers = []
           LicenseUrl = None }
@@ -420,8 +422,8 @@ module InstallModel =
             getLegacyReferences target installModel
         else results
 
-    let getRuntimeLibraries graph rid (target : TargetProfile) (installModel:InstallModel) =
-        getFileFolders target (installModel.RuntimeLibFolders) (fun f -> f |> Set.toSeq)
+    let getRuntimeAssemblies graph rid (target : TargetProfile) (installModel:InstallModel) =
+        getFileFolders target (installModel.RuntimeAssemblyFolders) (fun f -> f |> Set.toSeq)
         |> Seq.cache
 
     let getTargetsFiles (target : TargetProfile) (installModel:InstallModel) =
@@ -437,7 +439,7 @@ module InstallModel =
         |> Seq.forall Set.isEmpty
     let removeIfCompletelyEmpty (this:InstallModel) =
         let foldersEmpty =
-            isEmpty this.CompileRefFolders && isEmpty this.TargetsFileFolders && isEmpty this.RuntimeLibFolders &&
+            isEmpty this.CompileRefFolders && isEmpty this.TargetsFileFolders && isEmpty this.RuntimeAssemblyFolders &&
             this.CompileLibFolders
             |> Seq.map (fun c -> c.FolderContents.Libraries |> Set.toSeq, c.FolderContents.FrameworkReferences |> Set.toSeq)
             |> Seq.forall (fun (libs, refs) -> Seq.isEmpty libs && Seq.isEmpty refs)
@@ -459,7 +461,7 @@ module InstallModel =
 
     let calcLegacyReferenceLibFolders = calcLibFoldersG ReferenceOrLibraryFolder.empty getCompileLibAssembly
     let calcReferenceFolders = calcLibFoldersG Set.empty getCompileRefAssembly
-    let calcRuntimeFolders = calcLibFoldersG Set.empty getRuntimeAssembly
+    let calcRuntimeAssemblyFolders = calcLibFoldersG Set.empty getRuntimeAssembly
     //let calcRefFolders = calcLibFoldersG extractRefFolder
 
     let addFileToFolder<'T, 'Item> (path:LibFolder<'T>) (file:'Item) (folders:LibFolder<'T> list) (addfn: 'Item -> 'T -> 'T) =
@@ -487,7 +489,7 @@ module InstallModel =
         { this with
             CompileRefFolders = addFileToFolder path (Library.ofFile file) this.CompileRefFolders Set.add }
 
-    let private addPackageRuntimeFile references (path:LibFolder<Library Set>) (file:UnparsedPackageFile) (this:InstallModel) : InstallModel =
+    let private addPackageRuntimeAssemblyFile references (path:LibFolder<Library Set>) (file:UnparsedPackageFile) (this:InstallModel) : InstallModel =
         let install =
             match references with
             | NuspecReferences.All -> true
@@ -495,7 +497,7 @@ module InstallModel =
 
         if not install then this else
         { this with
-            RuntimeLibFolders = addFileToFolder path (Library.ofFile file) this.RuntimeLibFolders Set.add }
+            RuntimeAssemblyFolders = addFileToFolder path (Library.ofFile file) this.RuntimeAssemblyFolders Set.add }
 
     let private addItem libs extract addFunc getFolder initialState =
         List.fold (fun (model:InstallModel) file ->
@@ -510,15 +512,15 @@ module InstallModel =
         let libs = libs |> Seq.toList
         let legacyLibFolders = calcLegacyReferenceLibFolders libs
         let refFolders = calcReferenceFolders libs
-        let runtimeFolders = calcRuntimeFolders libs
+        let runtimeAssemblyFolders = calcRuntimeAssemblyFolders libs
 
         { installModel with
             CompileLibFolders = legacyLibFolders
             CompileRefFolders = refFolders
-            RuntimeLibFolders = runtimeFolders }
+            RuntimeAssemblyFolders = runtimeAssemblyFolders }
         |> addItem libs getCompileLibAssembly (addPackageLegacyLibFile references) (fun i -> i.CompileLibFolders)
         |> addItem libs getCompileRefAssembly (addPackageRefFile references) (fun i -> i.CompileRefFolders)
-        |> addItem libs getRuntimeAssembly (addPackageRuntimeFile references) (fun i -> i.RuntimeLibFolders)
+        |> addItem libs getRuntimeAssembly (addPackageRuntimeAssemblyFile references) (fun i -> i.RuntimeAssemblyFolders)
 
     let addAnalyzerFiles (analyzerFiles:UnparsedPackageFile seq) (installModel:InstallModel)  : InstallModel =
         let analyzerLibs =
@@ -545,9 +547,9 @@ module InstallModel =
     let mapCompileRefFolders mapfn (installModel:InstallModel) =
         { installModel with
             CompileRefFolders = List.map mapfn installModel.CompileRefFolders }
-    let mapRuntimeLibFolders mapfn (installModel:InstallModel) =
+    let mapRuntimeAssemblyFolders mapfn (installModel:InstallModel) =
         { installModel with
-            RuntimeLibFolders = List.map mapfn installModel.RuntimeLibFolders }
+            RuntimeAssemblyFolders = List.map mapfn installModel.RuntimeAssemblyFolders }
     let mapTargetsFileFolders mapfn (installModel:InstallModel) =
         { installModel with
             TargetsFileFolders = List.map mapfn installModel.TargetsFileFolders }
@@ -558,8 +560,8 @@ module InstallModel =
         mapCompileLibFolders (LibFolder.map (fun l -> { l with Libraries = mapfn l.Libraries })) installModel
     let mapCompileRefFiles mapfn (installModel:InstallModel) =
         mapCompileRefFolders (LibFolder.map (mapfn)) installModel
-    let mapRuntimeLibFiles mapfn (installModel:InstallModel) =
-        mapRuntimeLibFolders (LibFolder.map (mapfn)) installModel
+    let mapRuntimeAssemblyFiles mapfn (installModel:InstallModel) =
+        mapRuntimeAssemblyFolders (LibFolder.map (mapfn)) installModel
     let mapTargetsFiles mapfn (installModel:InstallModel) =
         mapTargetsFileFolders (LibFolder.map (mapfn)) installModel
 
@@ -646,8 +648,8 @@ module InstallModel =
                     |> List.map applRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])
 
-                RuntimeLibFolders =
-                    installModel.RuntimeLibFolders
+                RuntimeAssemblyFolders =
+                    installModel.RuntimeAssemblyFolders
                     |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])
 
@@ -703,6 +705,8 @@ type InstallModel with
     member this.GetLibReferences target = InstallModel.getLegacyReferences target this
     member this.GetLegacyReferences target = InstallModel.getLegacyReferences target this
     member this.GetCompileReferences target = InstallModel.getCompileReferences target this
+    member this.GetRuntimeAssemblies graph rid target = InstallModel.getRuntimeAssemblies graph rid target this
+    // TODO: 
     member this.GetRuntimeLibraries graph rid target = InstallModel.getRuntimeLibraries graph rid target this
 
     [<Obsolete("usually this should not be used, use GetLegacyReferences for the full .net and GetCompileReferences for dotnetcore")>]
