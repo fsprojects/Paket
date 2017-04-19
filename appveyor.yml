@@ -13,9 +13,20 @@ artifacts:
 nuget:
   account_feed: false
   project_feed: true
+
+environment:
+  # these variables are common to all jobs
+  #common_var1: value1
+
+  matrix:
+    # first group
+    - SkipIntegrationTests: true
+    # second group
+    - SkipNuGet: true
+
 deploy:
   provider: NuGet
-  #server:                  # remove to push to NuGet.org
+  server: https://ci.appveyor.com/nuget/paket # remove to push to NuGet.org
   #api_key:
   #  secure: m49OJ7+Jdt9an3jPcTukHA==
   #skip_symbols: false

@@ -610,8 +610,8 @@ Target "All" DoNothing
   ==> "MergePaketTool"
   =?> ("MergePowerShell", not isMono)
   ==> "SignAssemblies"
-  ==> "NuGet"
-  =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE")
+  =?> ("NuGet", not <| hasBuildParam "SkipNuGet")
+  =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
   ==> "BuildPackage"
 
 "CleanDocs"
