@@ -10,7 +10,6 @@ open ProviderImplementation.AssemblyReader.Utils.SHA1
 
 type UnparsedPackageFile = Paket.NuGet.UnparsedPackageFile
 type Tfm = PlatformMatching.ParsedPlatformPath
-//type Rid = Paket.Rid
 type FrameworkDependentFile =
   { Path : Tfm
     File : UnparsedPackageFile
@@ -110,6 +109,8 @@ type InstallModel =
       Analyzers: AnalyzerLib list
       LicenseUrl: string option }
 
+// TODO: This should move to its own module (maybe even a external library?)
+// The tests below really should be unit tests...
 module FolderScanner =
     // Stolen and modifed to our needs from http://www.fssnip.net/4I/title/sscanf-parsing-with-format-strings
     open System.Text.RegularExpressions
@@ -383,17 +384,6 @@ module InstallModel =
             (trySscanf "build/%A{noSeperator}" p.PathWithinPackage : string option)
             |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
-    //let mapFolders mapfn (installModel:InstallModel) =
-    //    { installModel with
-    //        CompileLibFolders = List.map mapfn installModel.CompileLibFolders
-    //        CompileRefFolders = List.map mapfn installModel.CompileRefFolders
-    //        RuntimeLibFolders = List.map mapfn installModel.RuntimeLibFolders
-    //        TargetsFileFolders   = List.map mapfn installModel.TargetsFileFolders  }
-    //
-    //let mapFiles mapfn (installModel:InstallModel) =
-    //    installModel
-    //    |> mapFolders (fun folder -> { folder with Files = mapfn folder.Files })
-
     let private getFileFolders (target:TargetProfile)  folderType choosefn =
         match Seq.tryFind (fun lib -> Seq.exists ((=) target) lib.Targets) folderType with
         | Some folder -> choosefn folder.FolderContents
@@ -472,7 +462,6 @@ module InstallModel =
     let calcReferenceFolders = calcLibFoldersG Set.empty getCompileRefAssembly
     let calcRuntimeAssemblyFolders = calcLibFoldersG Set.empty getRuntimeAssembly
     let calcRuntimeLibraryFolders l = calcLibFoldersG Set.empty getRuntimeLibrary l
-    //let calcRefFolders = calcLibFoldersG extractRefFolder
 
     let addFileToFolder<'T, 'Item> (path:FrameworkFolder<'T>) (file:'Item) (folders:FrameworkFolder<'T> list) (addfn: 'Item -> 'T -> 'T) =
         folders
@@ -586,10 +575,7 @@ module InstallModel =
             getFileFolders target filledFolder (Set.toSeq)
             |> Seq.filter (fun lib -> lib.Rid = None || lib.Rid = bestMatchingRid)
             |> Seq.cache
-        //if allRids.Count > 0 && bestMatchingRid = None then
-        //    // No idea what this means, if this fails for you make this a warning or remove it completely.
-        //    // I added this to see if it appears in the real world...
-        //    failwithf "We found RID dependent assemblies in the package but nothing matched against '%A'" rid
+
         tfmData
 
     let getAllRuntimeLibraries (installModel:InstallModel) =
@@ -683,7 +669,6 @@ module InstallModel =
         model |> mapCompileLibFolders(fun folder ->
             if referenceApplies folder then
                 FrameworkFolder.map (fun c -> { c with FrameworkReferences = Set.add (FrameworkReference.ofName reference.AssemblyName) c.FrameworkReferences }) folder
-                //{ folder with FolderContents = { folder.FolderContents with FrameworkReferences = Set.add reference.AssemblyName  folder.FolderContents.FrameworkReferences } }
             else
                 folder)
 
@@ -752,11 +737,6 @@ module InstallModel =
         this
         |> mapCompileLibReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
         |> mapCompileLibFrameworkReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
-        //let inline mapfn (files:InstallFiles) =
-        //    { files with
-        //        References = files.References |> Set.filter (fun reference -> Set.contains reference.ReferenceName references |> not)
-        //    }
-        //mapFiles mapfn this
 
     let addLicense url (model: InstallModel) =
         if String.IsNullOrWhiteSpace url then model
@@ -780,10 +760,6 @@ type InstallModel with
     [<Obsolete("usually this should not be used")>]
     member this.GetReferenceFolders() = InstallModel.getCompileLibFolders this
 
-    //member this.MapFolders mapfn = InstallModel.mapFolders mapfn this
-
-    //member this.MapFiles mapfn = InstallModel.mapFiles mapfn this
-
     [<Obsolete("usually this should not be used, use GetLegacyReferences for the full .net and GetCompileReferences/GetRuntimeLibraries for dotnetcore")>]
     member this.GetLibReferences target = InstallModel.getLegacyReferences target this
     member this.GetLegacyReferences target = InstallModel.getLegacyReferences target this
@@ -802,16 +778,6 @@ type InstallModel with
         this.GetAllLegacyFrameworkReferences() |> Seq.map (fun r -> r.Name)
         |> Seq.append (this.GetAllLegacyReferences() |> Seq.map (fun r -> r.Name))
         |> Set.ofSeq
-    //[<Obsolete("usually this should not be used, use GetLegacyFrameworkAssembliesLazy for the full .net and remove this call for dotnetcore (dnc has no reference assemblies)")>]
-    //member this.GetFrameworkAssembliesLazy =  InstallModel.getLegacyFrameworkAssembliesLazy this
-    //member this.GetLegacyFrameworkAssembliesLazy =  InstallModel.getLegacyFrameworkAssembliesLazy this
-
-    //[<Obsolete("usually this should not be used, use GetLegacyReferencesLazy for the full .net and GetCompileReferencesLazy for dotnetcore")>]
-    //member this.GetLibReferencesLazy = InstallModel.getLegacyReferencesLazy this
-    //member this.GetLegacyReferencesLazy = InstallModel.getLegacyReferencesLazy this
-    //member this.GetCompileReferencesLazy = InstallModel.getReferencesLazy this
-    //
-    //member this.GetTargetsFilesLazy =  InstallModel.getTargetsFilesLazy this
 
     [<Obsolete("usually this should not be used, use CalcLegacyReferencesFolders for the full .net and CalcReferencesFolders for dotnetcore")>]
     member this.CalcLibFolders libs = InstallModel.calcLegacyReferenceLibFolders libs

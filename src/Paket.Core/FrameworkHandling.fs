@@ -666,6 +666,10 @@ module KnownTargetProfiles =
     let AllDotNetStandardProfiles =
        DotNetStandardProfiles @
        DotNetCoreProfiles
+       // only used in "should understand aot in runtimes" test
+       // We don't support that anymore, if we add this here paket will create corresponding
+       // XML elements to compile for DNXCore...
+       //[SinglePlatform (DNXCore FrameworkVersion.V5_0)]
 
     let AllNativeProfiles =
         [ Native(NoBuildMode,NoPlatform)
