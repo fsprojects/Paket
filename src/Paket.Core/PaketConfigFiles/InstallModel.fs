@@ -586,10 +586,10 @@ module InstallModel =
             getFileFolders target filledFolder (Set.toSeq)
             |> Seq.filter (fun lib -> lib.Rid = None || lib.Rid = bestMatchingRid)
             |> Seq.cache
-        //if allRids.Count > 0 && bestMatchingRid = None then
-        //    // No idea what this means, if this fails for you make this a warning or remove it completely.
-        //    // I added this to see if it appears in the real world...
-        //    failwithf "We found RID dependent assemblies in the package but nothing matched against '%A'" rid
+        if verbose && allRids.Count > 0 && bestMatchingRid = None then
+            // No idea what this means, if this fails for you make this a warning or remove it completely.
+            // I added this to see if it appears in the real world...
+            printfn "We found RID dependency libraries in the package '%A'-'%A' but nothing matched against '%A'" installModel.PackageName installModel.PackageVersion rid
         tfmData
 
     let getAllRuntimeLibraries (installModel:InstallModel) =
@@ -612,10 +612,10 @@ module InstallModel =
             getFileFoldersByPath Tfm.Empty installModel.RuntimeLibFolders Set.toSeq
             |> Seq.filter (fun lib -> lib.Rid = bestMatchingRid)
             |> Seq.cache
-        if allRids.Count > 0 && bestMatchingRid = None then
+        if verbose && allRids.Count > 0 && bestMatchingRid = None then
             // No idea what this means, if this fails for you make this a warning or remove it completely.
             // I added this to see if it appears in the real world...
-            failwithf "We found RID dependeny assemblies in the package but nothing matched against '%A'" rid
+            printfn "We found RID dependency assemblies in the package '%A'-'%A' but nothing matched against '%A'" installModel.PackageName installModel.PackageVersion rid
         Seq.append tfmData ridData
 
 
