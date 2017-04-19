@@ -12,9 +12,10 @@ source "http://www.nuget.org/api/v2"  username: "user" password: "pass"
 nuget "Castle.Windsor-log4net" "~> 3.2"
 """
 
-let graph = [
-    "Castle.Windsor-log4net","3.2",[]
-]
+let graph =
+    OfSimpleGraph [
+        "Castle.Windsor-log4net","3.2",[]
+    ]
 
 let expected = """NUGET
   remote: http://www.nuget.org/api/v2

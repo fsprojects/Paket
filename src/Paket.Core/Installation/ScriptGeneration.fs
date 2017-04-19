@@ -58,6 +58,7 @@ module PackageAndAssemblyResolution =
       let dllFiles =
         installModel
         |> InstallModel.getLegacyReferences (SinglePlatform framework)
+        |> Seq.map (fun l -> l.Path)
         |> Seq.map (fun path -> AssemblyDefinition.ReadAssembly path, FileInfo(path))
         |> dict
 
@@ -77,9 +78,8 @@ module PackageAndAssemblyResolution =
         then List.empty
         else
           installModel
-          |> InstallModel.getLegacyFrameworkAssembliesLazy
-          |> force
-          |> Set.toList
+          |> InstallModel.getAllLegacyFrameworkReferences
+          |> Seq.toList
 
 module ScriptGeneration =
   open PackageAndAssemblyResolution
@@ -258,9 +258,9 @@ module ScriptGeneration =
                       mainGroupSeen := true
 
                   let model = Queries.getInstalledPackageModel lockFile (QualifiedPackageName.FromStrings(Some group, nuget))
-                  let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f)
-                  let syslibs = model.GetFrameworkAssembliesLazy.Value
-                  yield group, (libs, syslibs |> Set.toSeq)
+                  let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f.Path)
+                  let syslibs = model.GetAllLegacyFrameworkReferences()
+                  yield group, (libs, syslibs)
 
           if not !mainGroupSeen && groups = [] then
               yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
@@ -271,7 +271,7 @@ module ScriptGeneration =
       for group, libs in all do
         let assemblies, frameworkLibs =
           Seq.foldBack (fun (l,r) (pl, pr) -> Seq.concat [pl ; l], Seq.concat [pr ; r]) libs (Seq.empty, Seq.empty)
-          |> fun (l,r) -> Seq.distinct l, Seq.distinct r |> filterFrameworkAssemblies
+          |> fun (l,r) -> Seq.distinct l, Seq.distinct r |> Seq.map (fun ref -> ref.Name) |> filterFrameworkAssemblies
         
         let assemblies = 
           let assemblyFilePerAssemblyDef = 
@@ -323,7 +323,7 @@ module ScriptGeneration =
             PackageName                  = installModel.PackageName
             PackagesOrGroupFolder        = packagesOrGroupFolder
             IncludeScriptsRootFolder     = includeScriptsRootFolder
-            FrameworkReferences          = getFrameworkReferencesWithinPackage framework installModel
+            FrameworkReferences          = getFrameworkReferencesWithinPackage framework installModel |> List.map (fun ref -> ref.Name)
             OrderedDllReferences         = dllFiles
             DependentScripts             = dependencies
           }

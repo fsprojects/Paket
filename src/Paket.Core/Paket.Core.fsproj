@@ -9,7 +9,7 @@
     <RootNamespace>Paket</RootNamespace>
     <AssemblyName>Paket.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
+    <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <Name>Paket</Name>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -63,6 +63,11 @@
         <FSharpTargetsPath>$(MSBuildProgramFiles32)\Microsoft SDKs\F#\4.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
       </PropertyGroup>
     </When>
+    <When Condition="$(TargetFSharpCoreVersion) &gt;= 4.4.1.0 AND $(TargetFSharpCoreVersion) &lt; 4.4.1.0 ">
+      <PropertyGroup>
+        <FSharpTargetsPath>$(MSBuildProgramFiles32)\Microsoft SDKs\F#\4.1\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </When>
     <Otherwise>
       <PropertyGroup>
         <FSharpTargetsPath>$(MSBuildProgramFiles32)\Microsoft SDKs\F#\4.1\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
@@ -79,79 +84,81 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
+    <None Include="paket.references" />
+    <Compile Include="Common\AssemblyInfo.fs" />
+    <Compile Include="Common\CustomAssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
       <Paket>True</Paket>
-      <Link>AssemblyReader.fs</Link>
+      <Link>Common\AssemblyReader.fs</Link>
     </Compile>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
-      <Link>Globbing.fs</Link>
+      <Link>Common\Globbing.fs</Link>
     </Compile>
-    <Compile Include="Async.fs" />
-    <Compile Include="AssemblyInfo.fs" />
-    <Compile Include="CustomAssemblyInfo.fs" />
-    <Compile Include="Logging.fsi" />
-    <Compile Include="Domain.fs" />
-    <Compile Include="Logging.fs" />
-    <Compile Include="Constants.fs" />
-    <Compile Include="Utils.fs" />
-    <Compile Include="SemVer.fs" />
-    <Compile Include="VersionRange.fs" />
-    <Compile Include="Xml.fs" />
-    <Compile Include="GitCommandHelper.fs" />
-    <Compile Include="GitHandling.fs" />
-    <Compile Include="ConfigFile.fs" />
-    <Compile Include="Cache.fs" />
-    <Compile Include="Cultures.fs" />
-    <Compile Include="PackageSources.fs" />
-    <Compile Include="FrameworkHandling.fs" />
-    <Compile Include="PlatformMatching.fs" />
-    <Compile Include="Requirements.fs" />
-    <Compile Include="ModuleResolver.fs" />
-    <Compile Include="RemoteDownload.fs" />
-    <Compile Include="RemoteUpload.fs" />
-    <Compile Include="PackageResolver.fs" />
-    <Compile Include="Nuspec.fs" />
-    <Compile Include="InstallModel.fs" />
-    <Compile Include="DependenciesTypes.fs" />
-    <Compile Include="Parsers/DependenciesFileParser.fs" />
-    <Compile Include="Files/ReferencesFile.fs" />
-    <Compile Include="Files/SolutionFile.fs" />
-    <Compile Include="Files/LockFile.fs" />
-    <Compile Include="Files/TemplateFile.fs" />
-    <Compile Include="Files/ProjectFile.fs" />
-    <Compile Include="Files/DependenciesFile.fs" />
-    <Compile Include="Files/PackagesConfigFile.fs" />
-    <Compile Include="Nuget.fs" />
-    <Compile Include="NuGetV3.fs" />
-    <Compile Include="NuGetV2.fs" />
-    <Compile Include="Queries.fs" />
-    <Compile Include="ScriptGeneration.fs" />
-    <Compile Include="LocalFile.fs" />
-    <Compile Include="DependencyChangeDetection.fs" />
-    <Compile Include="GarbageCollection.fs" />
-    <Compile Include="RestoreProcess.fs" />
-    <Compile Include="BindingRedirects.fs" />
-    <Compile Include="NupkgWriter.fs" />
-    <Compile Include="ProcessOptions.fs" />
-    <Compile Include="DependencyModel.fs" />
-    <Compile Include="InstallProcess.fs" />
-    <Compile Include="UpdateProcess.fs" />
-    <Compile Include="RemoveProcess.fs" />
-    <Compile Include="AddProcess.fs" />
-    <Compile Include="PackageMetaData.fs" />
-    <Compile Include="PackageProcess.fs" />
-    <Compile Include="Environment.fs" />
-    <Compile Include="Releases.fs" />
-    <Compile Include="Simplifier.fs" />
-    <Compile Include="VSIntegration.fs" />
-    <Compile Include="NugetConvert.fs" />
-    <Compile Include="FindOutdated.fs" />
-    <Compile Include="FindReferences.fs" />
-    <Compile Include="Why.fs" />
+    <Compile Include="Common\Async.fs" />
+    <Compile Include="Common\Domain.fs" />
+    <Compile Include="Common\Logging.fsi" />
+    <Compile Include="Common\Logging.fs" />
+    <Compile Include="Common\Constants.fs" />
+    <Compile Include="Common\Utils.fs" />
+    <Compile Include="Common\Xml.fs" />
+    <Compile Include="Versioning\SemVer.fs" />
+    <Compile Include="Versioning\VersionRange.fs" />
+    <Compile Include="Versioning\FrameworkHandling.fs" />
+    <Compile Include="Versioning\PlatformMatching.fs" />
+    <Compile Include="Versioning\ConfigFile.fs" />
+    <Compile Include="Versioning\Cache.fs" />
+    <Compile Include="Versioning\PackageSources.fs" />
+    <Compile Include="Versioning\Requirements.fs" />
+    <Compile Include="Dependencies\GitCommandHelper.fs" />
+    <Compile Include="Dependencies\GitHandling.fs" />
+    <Compile Include="Dependencies\ModuleResolver.fs" />
+    <Compile Include="Dependencies\RemoteDownload.fs" />
+    <Compile Include="Dependencies\RemoteUpload.fs" />
+    <Compile Include="Dependencies\DependenciesTypes.fs" />
+    <Compile Include="Dependencies\PackageResolver.fs" />
+    <Compile Include="Dependencies\Nuspec.fs" />
+    <Compile Include="Dependencies\Nuget.fs" />
+    <Compile Include="Dependencies\NuGetV3.fs" />
+    <Compile Include="Dependencies\NuGetV2.fs" />
+    <Compile Include="Dependencies\DependenciesFileParser.fs" />
+    <Compile Include="PaketConfigFiles\RuntimeGraph.fs" />
+    <Compile Include="PaketConfigFiles\InstallModel.fs" />
+    <Compile Include="PaketConfigFiles\ReferencesFile.fs" />
+    <Compile Include="PaketConfigFiles/SolutionFile.fs" />
+    <Compile Include="PaketConfigFiles/LockFile.fs" />
+    <Compile Include="PaketConfigFiles/TemplateFile.fs" />
+    <Compile Include="PaketConfigFiles\Cultures.fs" />
+    <Compile Include="PaketConfigFiles\ProjectFile.fs" />
+    <Compile Include="PaketConfigFiles/DependenciesFile.fs" />
+    <Compile Include="PaketConfigFiles/PackagesConfigFile.fs" />
+    <Compile Include="PaketConfigFiles\LocalFile.fs" />
+    <Compile Include="Installation\ProcessOptions.fs" />
+    <Compile Include="Installation\DataModel.fs" />
+    <Compile Include="Installation\BindingRedirects.fs" />
+    <Compile Include="Installation\DependencyChangeDetection.fs" />
+    <Compile Include="Installation\Queries.fs" />
+    <Compile Include="Installation\ScriptGeneration.fs" />
+    <Compile Include="Installation\GarbageCollection.fs" />
+    <Compile Include="Installation\RestoreProcess.fs" />
+    <Compile Include="Installation\InstallProcess.fs" />
+    <Compile Include="Installation\UpdateProcess.fs" />
+    <Compile Include="PackageAnalysis\Environment.fs" />
+    <Compile Include="PackageAnalysis\FindOutdated.fs" />
+    <Compile Include="PackageAnalysis\FindReferences.fs" />
+    <Compile Include="PackageAnalysis\DependencyModel.fs" />
+    <Compile Include="PackageAnalysis\Simplifier.fs" />
+    <Compile Include="PackageAnalysis\Why.fs" />
+    <Compile Include="PackageManagement\Releases.fs" />
+    <Compile Include="PackageManagement\VSIntegration.fs" />
+    <Compile Include="PackageManagement\AddProcess.fs" />
+    <Compile Include="PackageManagement\NugetConvert.fs" />
+    <Compile Include="PackageManagement\RemoveProcess.fs" />
+    <Compile Include="Packaging\NupkgWriter.fs" />
+    <Compile Include="Packaging\PackageMetaData.fs" />
+    <Compile Include="Packaging\PackageProcess.fs" />
     <Compile Include="PublicAPI.fs" />
     <None Include="paket.template" />
-    <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

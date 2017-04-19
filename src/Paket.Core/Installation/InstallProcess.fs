@@ -199,7 +199,7 @@ let brokenDeps = HashSet<_>()
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
 let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects cleanBindingRedirects
-                                  root groupName findDependencies allKnownLibs 
+                                  root groupName findDependencies allKnownLibNames 
                                   (projectCache: Dictionary<string, ProjectFile option>) 
                                   extractedPackages =
 
@@ -263,12 +263,12 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
                 |> Seq.collect (fun (_,profile) ->
                     model.GetLibReferences profile
                     |> Seq.map (fun x -> x, redirects, profile)))
-            |> Seq.groupBy (fun (p,_,profile) -> profile,FileInfo(p).Name)
+            |> Seq.groupBy (fun (p,_,profile) -> profile,FileInfo(p.Path).Name)
             |> Seq.choose(fun (_,librariesForPackage) ->
                 librariesForPackage
                 |> Seq.choose(fun (library,redirects,profile) ->
                     try
-                        let assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(library)
+                        let assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(library.Path)
                         Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.MainModule.AssemblyReferences, redirects, profile)
                     with _ -> None)
                 |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.Name.Version)
@@ -303,7 +303,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
               Culture = None })
         |> Seq.sort
 
-    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibs bindingRedirects
+    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibNames bindingRedirects
 
 let installForDotnetSDK root (project:ProjectFile) = 
     let paketTargetsPath = RestoreProcess.extractBuildTask(root)
@@ -494,9 +494,9 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 | true -> Some true
                 | false -> None
 
-            let allKnownLibs =
+            let allKnownLibNames =
                 model
-                |> Seq.map (fun kv -> (snd kv.Value).GetLibReferencesLazy.Force())
+                |> Seq.map (fun kv -> (snd kv.Value).GetAllLegacyReferenceAndFrameworkReferenceNames())
                 |> Set.unionMany
 
             for g in lockFile.Groups do
@@ -518,7 +518,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     (FileInfo project.FileName).Directory.FullName 
                     g.Key 
                     lockFile.GetAllDependenciesOf
-                    allKnownLibs
+                    allKnownLibNames
                     projectCache
                 first := false
 

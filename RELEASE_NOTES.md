@@ -1,3 +1,13 @@
+#### 5.0.0-alpha001 - 19.04.2017
+* Fix dotnetcore integration.
+  * Paket now properly understands runtime and reference assemblies
+  * Paket now understands the runtime graph and restores runtime dependencies
+  * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
+* New command `paket generate-nuspec`
+* BREAKS: `InstallModel` API
+* BUGFIX: Improved C++ support
+
+
 #### 4.4.1 - 17.04.2017
 * Support Netstandard 2.0
 * Support Netframework 4.7

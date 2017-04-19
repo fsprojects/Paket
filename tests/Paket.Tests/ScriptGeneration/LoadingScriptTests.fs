@@ -19,13 +19,15 @@ let testData =
               Paket.Requirements.FrameworkRestrictions.AutoDetectFramework)
         PackageResolver.ResolvedPackage.Unlisted = false
         PackageResolver.ResolvedPackage.Settings = Requirements.InstallSettings.Default
-        PackageResolver.ResolvedPackage.Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None } }
+        PackageResolver.ResolvedPackage.Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None }
+        PackageResolver.IsRuntimeDependency = false }
       { Name = PackageName("other")
         Version = SemVer.Parse "1.0.0"
         Dependencies = Set.empty
         Unlisted = false
         Settings = Requirements.InstallSettings.Default
-        Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None } }
+        Source = PackageSources.PackageSource.NuGetV2 { Url = ""; Authentication = None }
+        IsRuntimeDependency = false }
     ]
     
 [<Test>]

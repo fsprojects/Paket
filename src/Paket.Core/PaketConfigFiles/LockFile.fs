@@ -107,7 +107,12 @@ module LockFileSerializer =
                             { package.Settings with FrameworkRestrictions = FrameworkRestrictionList [] }
                         else
                             package.Settings
-                      let s = settings.ToString().ToLower()
+                      let s =
+                        // add "isRuntimeDependency"
+                        match package.IsRuntimeDependency, settings.ToString().ToLower() with
+                        | true, "" -> "isRuntimeDependency: true"
+                        | true, s -> s + ", isRuntimeDependency: true"
+                        | _, s -> s
 
                       if s = "" then 
                         yield sprintf "    %O %s" package.Name versionStr 
@@ -359,7 +364,14 @@ module LockFileParser =
                     ("framework: " + parts.[1])
                 else
                     parts.[1]
-            parts.[0],InstallSettings.Parse(optionsString)
+            let isRuntimeDependency, optionsString =
+                if optionsString.EndsWith ", isRuntimeDependency: true" then
+                    true, optionsString.Substring(0, optionsString.Length - ", isRuntimeDependency: true".Length)
+                elif optionsString.EndsWith "isRuntimeDependency: true" then
+                    assert (optionsString = "isRuntimeDependency: true")
+                    true, ""
+                else false, optionsString
+            parts.[0],isRuntimeDependency,InstallSettings.Parse(optionsString)
 
         ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
         ||> Seq.fold(fun state line ->
@@ -394,7 +406,7 @@ module LockFileParser =
                 | NugetPackage details ->
                     match currentGroup.RemoteUrl with
                     | Some remote -> 
-                        let package,settings = parsePackage details
+                        let package,isRuntimeDependency,settings = parsePackage details
                         let parts' = package.Split ' '
                         let version = 
                             if parts'.Length < 2 then
@@ -409,10 +421,13 @@ module LockFileParser =
                                       Dependencies = Set.empty
                                       Unlisted = false
                                       Settings = settings
-                                      Version = SemVer.Parse version } :: currentGroup.Packages }::otherGroups
+                                      Version = SemVer.Parse version
+                                      // TODO: write stuff into the lockfile and read it here
+                                      IsRuntimeDependency = isRuntimeDependency } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
-                    let version,settings = parsePackage v
+                    let version,isRuntimeDependency,settings = parsePackage v
+                    assert (not isRuntimeDependency)
                     if currentGroup.LastWasPackage then
                         match currentGroup.Packages with
                         | currentPackage :: otherPackages -> 

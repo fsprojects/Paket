@@ -65,6 +65,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
         let overridenFile = FileInfo(Path.Combine(targetDir, "paket.overriden"))
         let force = if (localOverride || overridenFile.Exists) then true else force
         let! result = async {
+            // TODO: Cleanup - Download gets a source and should be able to handle LocalNuGet as well, so this is duplicated
             match package.Source with
             | NuGetV2 _ | NuGetV3 _ -> 
                 let source = 
@@ -109,7 +110,7 @@ let internal restore (alternativeProjectRoot, root, groupName, sources, caches, 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
         let! _ = lockFile.Groups.[groupName].Resolution
-                 |> Map.filter (fun name _ -> packages.Contains name)
+                 |> Map.filter (fun name r -> packages.Contains name)
                  |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
                  |> Async.Parallel
         return ()

@@ -70,12 +70,13 @@ type PackageDetails = {
 /// Represents data about resolved packages
 [<StructuredFormatDisplay "{Display}">]
 type ResolvedPackage = {
-    Name         : PackageName
-    Version      : SemVerInfo
-    Dependencies : DependencySet
-    Unlisted     : bool
-    Settings     : InstallSettings
-    Source       : PackageSource
+    Name                : PackageName
+    Version             : SemVerInfo
+    Dependencies        : DependencySet
+    Unlisted            : bool
+    IsRuntimeDependency : bool
+    Settings            : InstallSettings
+    Source              : PackageSource
 } with
     override this.ToString () = sprintf "%O %O" this.Name this.Version
 
@@ -90,12 +91,8 @@ type ResolvedPackage = {
                     sprintf "  <%A - %A - %A>\n" name ver restrict)
                 |> String.Concat
             sprintf
-                "%A\n\
-                 Dependencies -\n\
-                 %s\n\
-                 Source - %A\n\
-                 Install Settings\n\
-                 %A"                self.Name deps self.Source self.Settings
+                "%A\nDependencies -\n%s\nSource - %A\nInstall Settings\n%A"                
+                    self.Name deps self.Source self.Settings
 
 type PackageResolution = Map<PackageName, ResolvedPackage>
 
@@ -377,12 +374,13 @@ let private explorePackageConfig getPackageDetailsF  (pkgConfig:PackageConfig) =
                 | _ -> dependency.Settings
             |> fun x -> x.AdjustWithSpecialCases packageDetails.Name
         Some
-            {   Name         = packageDetails.Name
-                Version      = version
-                Dependencies = filteredDependencies
-                Unlisted     = packageDetails.Unlisted
-                Settings     = { settings with FrameworkRestrictions = newRestrictions }
-                Source       = packageDetails.Source
+            {   Name                = packageDetails.Name
+                Version             = version
+                Dependencies        = filteredDependencies
+                Unlisted            = packageDetails.Unlisted
+                Settings            = { settings with FrameworkRestrictions = newRestrictions }
+                Source              = packageDetails.Source
+                IsRuntimeDependency = false
             }
     with
     | exn ->
@@ -551,7 +549,7 @@ type ConflictState = {
                 | Status       - %A\n\
                 | Conflicts    - %A\n\
                 | ExploreVers  - %A\n\
-                | TryRelaxed   - %A\n\
+                | TryRelaxed   - %A\n
                 | LastReport   - %A\n"                
                     self.Status conflicts explore 
                     self.TryRelaxed self.LastConflictReported

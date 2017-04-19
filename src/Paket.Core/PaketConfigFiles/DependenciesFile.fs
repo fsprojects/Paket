@@ -173,7 +173,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
     member __.FileName = fileName
     member __.Lines = textRepresentation
 
-    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, groupsToResolve:Map<GroupName,_>, updateMode) =
+    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, getPackageRuntimeGraph, groupsToResolve:Map<GroupName,_>, updateMode) =
         let resolveGroup groupName _ =
             let group = this.GetGroup groupName
 
@@ -206,6 +206,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             if String.IsNullOrWhiteSpace fileName |> not then
                 RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
 
+            // Step 1 Package resolution
             let resolution =
                 PackageResolver.Resolve(
                     getVersionF, 
@@ -217,7 +218,68 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     remoteDependencies @ group.Packages |> Set.ofList,
                     updateMode)
 
-            { ResolvedPackages = resolution
+            // Step 2 Runtime package resolution, see https://github.com/fsprojects/Paket/pull/2255
+            let runtimeResolution =
+                match resolution with
+                | Resolution.Ok resolved ->
+                    // runtime resolution step
+                    let runtimeGraph = // setting this variable to empty is the fastest way to disable runtime deps resolution
+                        resolved
+                        |> Map.toSeq |> Seq.map snd
+                        |> Seq.choose (getPackageRuntimeGraph groupName)
+                        |> RuntimeGraph.mergeSeq
+                        //RuntimeGraph.Empty
+                    // 3. Resolve runtime deps and add it to the resolution
+                    let rids = RuntimeGraph.getKnownRids runtimeGraph
+                    let runtimeDeps =
+                        resolved
+                        |> Map.toSeq |> Seq.map snd
+                        |> Seq.collect (fun p ->
+                            rids
+                            |> Seq.collect(fun rid -> RuntimeGraph.findRuntimeDependencies rid p.Name runtimeGraph))
+                        |> Seq.map (fun (name, versionReq) ->
+                            { Name = name
+                              VersionRequirement = versionReq
+                              ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
+                              ResolverStrategyForTransitives = Some ResolverStrategy.Max
+                              Parent = PackageRequirementSource.DependenciesFile fileName
+                              Graph = []
+                              Sources = group.Sources
+                              Settings = group.Options.Settings })
+                        |> Seq.toList
+
+                    // TODO: We might want a way here to tell the resolver:
+                    // "We don't really want Package A, but if you need it take Version X (from our resolution above)"
+                    // Maybe we can actually do this by modifying the "getVersionF" callback?
+                    let runtimeResolution =
+                        PackageResolver.Resolve(
+                            getVersionF,
+                            getPackageDetailsF,
+                            groupName,
+                            group.Options.ResolverStrategyForDirectDependencies,
+                            group.Options.ResolverStrategyForTransitives,
+                            group.Options.Settings.FrameworkRestrictions,
+                            runtimeDeps |> Set.ofList,
+                            updateMode)
+
+                    // Combine with existing resolution and mark runtime packages.
+                    // TODO: Warn if a package is part of both resolutions?
+                    // TODO: Warn if a runtime package contains a runtime.json? -> We don't download them here :/
+                    match runtimeResolution with
+                    | Resolution.Ok runtimeResolved ->
+                        let mapped =
+                            runtimeResolved
+                            |> Map.map (fun _ v -> { v with IsRuntimeDependency = true })
+                        Map.merge (fun p1 p2 ->
+                            if p1.Version = p2.Version then
+                                p1
+                            else
+                            failwithf "same package '%A' in runtime '%A' and regular '%A' resolution with different versions" p1.Name p1.Version p2.Version) resolved mapped
+                        |> Resolution.Ok
+                    | _ -> resolution
+                | Resolution.Conflict _ -> resolution
+
+            { ResolvedPackages = runtimeResolution
               ResolvedSourceFiles = remoteFiles }
 
         groupsToResolve

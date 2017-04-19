@@ -38,7 +38,7 @@
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i001467-cpp-native\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i001145-excludes\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

@@ -10,7 +10,7 @@ open Chessie.ErrorHandling
 open Paket.Logging
 open InstallProcess
 
-let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
+let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
     let allVersions = Dictionary<PackageName*PackageSources.PackageSource list,(SemVerInfo * (PackageSources.PackageSource list)) list>()
     let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName : seq<SemVerInfo * PackageSources.PackageSource list> =
         let key = packageName,sources
@@ -134,7 +134,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF (lockFil
 
         getVersionsF,getPackageDetailsF,groups
 
-    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, groupsToUpdate, updateMode)
+    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, getRuntimeGraphFromPackage, groupsToUpdate, updateMode)
 
     let groups = 
         dependenciesFile.Groups
@@ -203,6 +203,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
             getSha1
             getVersionsF
             (NuGetV2.GetPackageDetails alternativeProjectRoot root force)
+            (RuntimeGraph.getRuntimeGraphFromNugetCache root)
             oldLockFile 
             dependenciesFile 
             updateMode

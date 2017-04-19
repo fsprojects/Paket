@@ -940,6 +940,14 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
             elif not force && getFromCache caches then
                 ()
             else
+                match source with
+                | LocalNuGet(path,_) ->
+                    let path = Utils.normalizeLocalPath path
+                    let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root
+                    let nupkg = findLocalPackage di.FullName packageName version
+
+                    File.Copy(nupkg.FullName,targetFileName)
+                | _ ->
                 // discover the link on the fly
                 let downloadUrl = ref ""
                 try
