@@ -59,12 +59,12 @@
     <Compile Include="$(PaketCoreSourcesDir)\Installation\DataModel.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\BindingRedirects.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\DependencyChangeDetection.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\Installation\Queries.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\ScriptGeneration.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\GarbageCollection.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\RestoreProcess.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\InstallProcess.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\UpdateProcess.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PackageAnalysis\Queries.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PackageAnalysis\Environment.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PackageAnalysis\FindOutdated.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PackageAnalysis\FindReferences.fs" />
