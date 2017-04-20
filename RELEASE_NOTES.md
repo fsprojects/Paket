@@ -1,6 +1,7 @@
-#### 4.4.3 - 20.04.2017
+#### 4.5.0 - 20.04.2017
 * Support Netstandard 2.0, Netframework 4.7, Netcore 2.0
 * Encode '+' in Urls
+* Fix nuspec version attributes so that nuget.org is happy
 
 #### 4.4.0 - 12.04.2017
 * BUGFIX: Import .props/.targets better - https://github.com/fsprojects/Paket/pull/2234
