@@ -5,6 +5,9 @@ open System.IO
 open NUnit.Framework
 open FsUnit
 open System.Text.RegularExpressions
+open System.Xml
+open System.Xml.Linq
+open System.Xml.XPath
 open Paket
 
 [<Test>]
@@ -235,3 +238,29 @@ let ``#1783 generates binding redirect when assembly with different version of m
     
     config |> shouldContainText ``FSharp.Core``
     config |> shouldContainText ``Newtonsoft.Json``
+
+[<Test>]
+let ``#2228 retains order of redirects``() = 
+
+    let scenario = "i002228-redirect-order"
+
+    update scenario |> ignore
+
+    let redirectNames (configPathRoot:string) = 
+        let bindingNs = "urn:schemas-microsoft-com:asm.v1"
+        let xpath = "//bindings:assemblyBinding/bindings:dependentAssembly/bindings:assemblyIdentity"
+        
+        let nsManager = XmlNamespaceManager(NameTable());
+        nsManager.AddNamespace("bindings", bindingNs)
+        
+        let configPath = Path.Combine(Path.Combine configPathRoot, "ConsoleApp1", "app.config")
+        let configXml = XDocument.Load(configPath, LoadOptions.None)
+ 
+        configXml.XPathSelectElements(xpath, nsManager) 
+        |> Seq.map  (fun e -> e.Attribute(XName.Get("name")).Value) 
+        |> Seq.toList
+ 
+    let redirectsBefore = redirectNames (originalScenarioPath scenario)
+    let redirectsAfter = redirectNames (scenarioTempPath scenario)
+
+    redirectsBefore |> shouldEqual redirectsAfter 
