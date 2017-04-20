@@ -253,7 +253,7 @@ let ``#2228 retains order of redirects``() =
         let nsManager = XmlNamespaceManager(NameTable());
         nsManager.AddNamespace("bindings", bindingNs)
         
-        let configPath = Path.Combine(Path.Combine configPathRoot, "ConsoleApp1", "app.config")
+        let configPath = Path.Combine(Path.Combine configPathRoot, "ConsoleApp1", "App.config")
         let configXml = XDocument.Load(configPath, LoadOptions.None)
  
         configXml.XPathSelectElements(xpath, nsManager) 
