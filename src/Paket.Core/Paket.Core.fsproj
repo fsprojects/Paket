@@ -136,12 +136,12 @@
     <Compile Include="Installation\DataModel.fs" />
     <Compile Include="Installation\BindingRedirects.fs" />
     <Compile Include="Installation\DependencyChangeDetection.fs" />
-    <Compile Include="Installation\Queries.fs" />
     <Compile Include="Installation\ScriptGeneration.fs" />
     <Compile Include="Installation\GarbageCollection.fs" />
     <Compile Include="Installation\RestoreProcess.fs" />
     <Compile Include="Installation\InstallProcess.fs" />
     <Compile Include="Installation\UpdateProcess.fs" />
+    <Compile Include="PackageAnalysis\Queries.fs" />
     <Compile Include="PackageAnalysis\Environment.fs" />
     <Compile Include="PackageAnalysis\FindOutdated.fs" />
     <Compile Include="PackageAnalysis\FindReferences.fs" />

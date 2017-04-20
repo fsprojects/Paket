@@ -4,10 +4,7 @@ open System
 open System.IO
 open Paket
 open Paket.Domain
-open Paket.Queries
 open Mono.Cecil
-
-
 
 
 module PackageAndAssemblyResolution =
@@ -260,16 +257,16 @@ module ScriptGeneration =
             let mainGroupName = Constants.MainDependencyGroup.ToString ()
             let mainGroupKey = Constants.MainDependencyGroup.GetCompareString ()
 
-            for group, nuget, _ in Queries.getAllInstalledPackagesFromLockFile lockFile do
-                if groups = [] || List.exists ((=) (GroupName group)) groups then
-                    if not (filterNuget nuget) then
-                        if group = mainGroupKey || group = mainGroupName then
+            for group, nuget, _ in lockFile.InstalledPackages do
+                if groups = [] || List.exists ((=)  group) groups then
+                    if not (filterNuget (string nuget)) then
+                        if group.GetCompareString() = mainGroupKey || group.ToString() = mainGroupName then
                             mainGroupSeen := true
 
-                        let model = Queries.getInstalledPackageModel lockFile (QualifiedPackageName.FromStrings(Some group, nuget))
+                        let model = lockFile.GetInstalledPackageModel (QualifiedPackageName.FromStrings(Some(string group),string nuget))
                         let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f.Path)
                         let syslibs = model.GetAllLegacyFrameworkReferences()
-                        yield group, (libs, syslibs)
+                        yield (string group), (libs, syslibs)
 
             if not !mainGroupSeen && groups = [] then
                   yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
@@ -324,7 +321,7 @@ module ScriptGeneration =
             let scriptFile = getScriptFile groupName package.Name
             let groupName = getGroupNameAsOption groupName
             let dependencies = package.Dependencies |> Seq.map fst' |> Seq.choose knownIncludeScripts.TryFind |> List.ofSeq
-            let installModel = Queries.getInstalledPackageModel lockFile (QualifiedPackageName.FromStrings(groupName, package.Name.ToString()))
+            let installModel = lockFile.GetInstalledPackageModel (QualifiedPackageName.FromStrings(groupName, package.Name.ToString()))
             let dllFiles = getDllsWithinPackage framework installModel
 
             let scriptInfo = {
@@ -355,9 +352,9 @@ module ScriptGeneration =
         (framework: FrameworkIdentifier) 
         isDefaultFramework 
         (rootFolder: DirectoryInfo) =
-        match Queries.PaketFiles.LocateFromDirectory rootFolder with
-        | Queries.PaketFiles.JustDependencies _ -> failwith "paket.lock file not found"
-        | Queries.PaketFiles.DependenciesAndLock(dependenciesFile, lockFile) ->
+        match PaketFiles.LocateFromDirectory rootFolder with
+        | PaketFiles.JustDependencies _ -> failwith "paket.lock file not found"
+        | PaketFiles.DependenciesAndLock(dependenciesFile, lockFile) ->
       
             let dependencies = getPackageOrderFromDependenciesFile (FileInfo(lockFile.FileName))
       
@@ -415,8 +412,8 @@ module ScriptGeneration =
         | PaketFiles.JustDependencies _ -> failwith "paket.lock not found."
         | PaketFiles.DependenciesAndLock(dependenciesFile, lockFile) ->
             let rootFolder = DirectoryInfo(dependenciesFile.RootPath)
-            let frameworksForDependencyGroups = Queries.resolveFrameworkForScriptGeneration dependenciesFile
-            let environmentFramework = Queries.resolveEnvironmentFrameworkForScriptGeneration
+            let frameworksForDependencyGroups = dependenciesFile.ResolveFrameworksForScriptGeneration()
+            let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
 
             let tupleMap f v = (v, f v)
             let failOnMismatch toParse parsed f message =

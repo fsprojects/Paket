@@ -171,6 +171,14 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         with _ -> None
 
     member __.FileName = fileName
+    member __.FileInfo = FileInfo fileName 
+
+    /// Directory info for the parent of this paket.dependencies file
+    member this.DirectoryInfo = this.FileInfo.Directory 
+
+    /// The full path of the directory that containes this paket.dependencies file
+    member this.Directory = this.DirectoryInfo.FullName
+
     member __.Lines = textRepresentation
 
     member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, getPackageRuntimeGraph, groupsToResolve:Map<GroupName,_>, updateMode) =
@@ -588,3 +596,35 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
           )
         |> Seq.concat
     )
+
+
+type PaketFiles = 
+    | JustDependencies    of DependenciesFile
+    | DependenciesAndLock of DependenciesFile * LockFile
+
+    static member LocateFromDirectory (directory: DirectoryInfo) =
+        let rec findInPath (dir:DirectoryInfo , withError) =
+            let path = Path.Combine (dir.FullName, Constants.DependenciesFileName)
+            if File.Exists path then path else
+            match dir.Parent with
+            | null ->
+                if withError then
+                    failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.\n\
+                               If you have already run 'paket.init' then ensure that '%s' is located in the top level directory of your repository.\n\
+                               Like this:\n\
+                               -    MySourceDir\n\
+                               -        .paket\n\
+                               -        paket.dependencies\n" 
+                        Constants.DependenciesFileName Constants.DependenciesFileName 
+                else
+                    Constants.DependenciesFileName
+            | _ -> findInPath(dir.Parent, withError)
+
+        let dependenciesFile = findInPath (directory,true) |> DependenciesFile.ReadFromFile
+            
+        let file = dependenciesFile.FindLockfile()
+        if file.Exists then
+            let lockFile = file.FullName |> LockFile.LoadFrom
+            DependenciesAndLock(dependenciesFile, lockFile)
+        else
+            JustDependencies dependenciesFile

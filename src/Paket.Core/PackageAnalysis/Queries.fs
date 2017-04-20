@@ -5,38 +5,6 @@ open System.IO
 open System
 
 
-type PaketFiles = 
-| JustDependencies    of DependenciesFile
-| DependenciesAndLock of DependenciesFile * LockFile
-    with
-        static member LocateFromDirectory (directory: DirectoryInfo) =
-            let rec findInPath (dir:DirectoryInfo , withError) =
-                        let path = Path.Combine(dir.FullName,Constants.DependenciesFileName)
-                        if File.Exists(path) then
-                            path
-                        else
-                            let parent = dir.Parent
-                            match parent with
-                            | null ->
-                                if withError then
-                                    failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.%sIf you have already run 'paket.init' then ensure that '%s' is located in the top level directory of your repository.%sLike this:%sMySourceDir%s  .paket%s  paket.dependencies" 
-                                      Constants.DependenciesFileName Environment.NewLine Constants.DependenciesFileName Environment.NewLine Environment.NewLine Environment.NewLine Environment.NewLine
-                                else
-                                    Constants.DependenciesFileName
-                            | _ -> findInPath(parent, withError)
-
-            let dependenciesFile = 
-                findInPath(directory,true)
-                |> DependenciesFile.ReadFromFile
-            
-            
-            let file = dependenciesFile.FindLockfile()
-            if file.Exists then
-                let lockFile = file.FullName |> LockFile.LoadFrom
-                PaketFiles.DependenciesAndLock(dependenciesFile, lockFile)
-            else
-                PaketFiles.JustDependencies dependenciesFile
-
 let getLockFileFromDependenciesFile dependenciesFileName =
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     LockFile.LoadFrom lockFileName.FullName
