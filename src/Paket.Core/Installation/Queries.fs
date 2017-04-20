@@ -4,15 +4,6 @@ open Domain
 open System.IO
 open System
 
-type QualifiedPackageName = QualifiedPackageName of GroupName * PackageName
-    with
-        static member FromStrings (groupName: string option, packageName: string) =
-            let groupName = 
-                match groupName with
-                | None -> Constants.MainDependencyGroup
-                | Some name -> GroupName name
-            let packageName = PackageName packageName
-            QualifiedPackageName(groupName, packageName)
 
 type PaketFiles = 
 | JustDependencies    of DependenciesFile

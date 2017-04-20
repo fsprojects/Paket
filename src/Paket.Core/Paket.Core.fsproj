@@ -95,9 +95,9 @@
       <Link>Common\Globbing.fs</Link>
     </Compile>
     <Compile Include="Common\Async.fs" />
-    <Compile Include="Common\Domain.fs" />
     <Compile Include="Common\Logging.fsi" />
     <Compile Include="Common\Logging.fs" />
+    <Compile Include="Common\Domain.fs" />
     <Compile Include="Common\Constants.fs" />
     <Compile Include="Common\Utils.fs" />
     <Compile Include="Common\Xml.fs" />

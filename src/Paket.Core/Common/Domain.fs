@@ -34,30 +34,6 @@ type PackageName =
 /// Function to convert a string into a NuGet package name
 let PackageName(name:string) = PackageName.PackageName(name.Trim(),name.ToLowerInvariant().Trim())
 
-// Represents a filter of normalized package names
-[<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
-type PackageFilter =
-| PackageName of PackageName
-| PackageFilter of string
-
-    member this.Match (packageName : PackageName) =
-        match this with
-        | PackageName name -> name = packageName
-        | PackageFilter f ->
-            let regex =
-                Regex("^" + f + "$",
-                    RegexOptions.Compiled 
-                    ||| RegexOptions.CultureInvariant 
-                    ||| RegexOptions.IgnoreCase)
-
-            regex.IsMatch (packageName.GetCompareString())
-
-    static member ofName name = PackageFilter.PackageName name
-
-    override this.ToString() =
-        match this with
-        | PackageName name -> name.ToString()
-        | PackageFilter filter -> filter
 
 /// Represents a normalized group name
 [<System.Diagnostics.DebuggerDisplay("{Item2}")>]
@@ -91,6 +67,46 @@ let GroupName(name:string) =
     match name.ToLowerInvariant().Trim() with
     | "lib" | "runtimes" -> invalidArg "name" (sprintf "It is not allowed to use '%s' as group name." name)
     | id -> GroupName.GroupName(name.Trim(), id)
+
+let [<Literal>] MainGroup = "Main"
+
+type QualifiedPackageName = 
+    | QualifiedPackageName of GroupName * PackageName
+    static member FromStrings (groupName: string option, packageName: string) =
+        let groupName = 
+            match groupName with
+            | None 
+            | Some "" -> GroupName MainGroup
+            | Some name -> GroupName name
+        let packageName = PackageName packageName
+        QualifiedPackageName (groupName, packageName)
+
+
+// Represents a filter of normalized package names
+[<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
+type PackageFilter =
+| PackageName of PackageName
+| PackageFilter of string
+
+    member this.Match (packageName : PackageName) =
+        match this with
+        | PackageName name -> name = packageName
+        | PackageFilter f ->
+            let regex =
+                Regex("^" + f + "$",
+                    RegexOptions.Compiled 
+                    ||| RegexOptions.CultureInvariant 
+                    ||| RegexOptions.IgnoreCase)
+
+            regex.IsMatch (packageName.GetCompareString())
+
+    static member ofName name = PackageFilter.PackageName name
+
+    override this.ToString() =
+        match this with
+        | PackageName name -> name.ToString()
+        | PackageFilter filter -> filter
+
 
 type DomainMessage = 
     | DirectoryDoesntExist of DirectoryInfo
