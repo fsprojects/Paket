@@ -17,17 +17,17 @@ let expected = """
 </ItemGroup>"""
 
 [<Test>]
-let ``should generate Xml for Fantomas 1.5``() = 
+let ``should generate Xml for Fantomas 1.5``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\Lib\FantomasLib.dll" 
-              @"..\Fantomas\Lib\FSharp.Core.dll" 
-              @"..\Fantomas\Lib\Fantomas.exe" ],
+            [ @"..\Fantomas\Lib\FantomasLib.dll"
+              @"..\Fantomas\Lib\FSharp.Core.dll"
+              @"..\Fantomas\Lib\Fantomas.exe" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fantomas\",
               [],
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
-    
+
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some false,true,KnownTargetProfiles.AllProfiles,None)
     ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml

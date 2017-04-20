@@ -57,7 +57,7 @@ module PackageAndAssemblyResolution =
     let getDllsWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
       let dllFiles =
         installModel
-        |> InstallModel.getLibReferences (SinglePlatform framework)
+        |> InstallModel.getLegacyReferences (SinglePlatform framework)
         |> Seq.map (fun path -> AssemblyDefinition.ReadAssembly path, FileInfo(path))
         |> dict
 
@@ -77,7 +77,7 @@ module PackageAndAssemblyResolution =
         then List.empty
         else
           installModel
-          |> InstallModel.getFrameworkAssembliesLazy
+          |> InstallModel.getLegacyFrameworkAssembliesLazy
           |> force
           |> Set.toList
 

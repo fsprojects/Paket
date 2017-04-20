@@ -18,7 +18,7 @@ let ``should generate Xml for StyleCop.MSBuild``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "StyleCop.MSBuild", SemVer.Parse "4.7.49.1", [],[],
-            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ],
+            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\StyleCop.MSBuild\",
             [],
               Nuspec.All)
 
@@ -32,10 +32,10 @@ let ``should generate Xml for StyleCop.MSBuild``() =
         
 
     ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 1
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
     ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 1
 
-    (ctx.FrameworkSpecificTargetsNodes |> Seq.head).OuterXml
+    (ctx.GlobalTargetsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)
