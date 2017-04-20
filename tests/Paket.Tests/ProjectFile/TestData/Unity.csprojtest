@@ -7,8 +7,8 @@
     <ProjectGuid>{1F76D195-1C08-4A5B-82CF-601F5A53A63E}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VDimensions.UnityEngine</RootNamespace>
-    <AssemblyName>VDimensions.UnityEngine</AssemblyName>
+    <RootNamespace>Unity</RootNamespace>
+    <AssemblyName>Unity</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
