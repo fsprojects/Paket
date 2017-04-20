@@ -10,6 +10,10 @@
 # Xamarin Studio / monodevelop user-specific
 *.userprefs
 
+# Visual Studio and VS Code
+/.vs/
+/.vscode/
+
 # Build results
 
 [Dd]ebug/
