@@ -438,7 +438,7 @@ module ScriptGeneration =
                 failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
 
                 if not (Seq.isEmpty targetFrameworkList) then 
-                targetFrameworkList |> Seq.ofList
+                    targetFrameworkList |> Seq.ofList
                 elif not (Seq.isEmpty frameworksForDependencyGroups.Value) then 
                     // if paket.dependencies evaluate to single framework, consider it as default
                     let isDefaultFramework = Seq.length frameworksForDependencyGroups.Value = 1
