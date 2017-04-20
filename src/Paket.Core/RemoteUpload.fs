@@ -63,7 +63,6 @@ let Push maxTrials url apiKey packageFileName =
                     use reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8)
                     let text = reader.ReadToEnd()
                     tracefnVerbose "Response body was: %s" text
-                    tracefnVerbose "Response: %A" response
                 | _ -> ()
                 traceWarnfn "Could not push %s: %s" packageFileName exn.Message
                 push (trial + 1)
