@@ -251,6 +251,7 @@ type FrameworkIdentifier =
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
         | Native(_) -> "native"
+        | Runtimes(_) -> "runtimes"
         | XamariniOS -> "xamarinios"
         | UAP v -> "uap" + v.ShortString()
         | XamarinMac -> "xamarinmac"
@@ -267,6 +268,7 @@ type FrameworkIdentifier =
         | MonoTouch -> [ ]
         | MonoMac -> [ ]
         | Native(_) -> [ ]
+        | Runtimes(_) -> [ ]
         | XamariniOS -> [ ]
         | XamarinMac -> [ ]
         | UAP UAPVersion.V10 -> [ ]
@@ -333,6 +335,7 @@ type FrameworkIdentifier =
         | DNXCore _, DNXCore _ -> true
         | MonoAndroid _, MonoAndroid _ -> true
         | MonoMac _, MonoMac _ -> true
+        | Runtimes _, Runtimes _ -> true
         | MonoTouch _, MonoTouch _ -> true
         | Windows _, Windows _ -> true
         | WindowsPhoneApp _, WindowsPhoneApp _ -> true
@@ -412,6 +415,7 @@ module FrameworkDetection =
             // Each time the parsing is changed, NuGetPackageCache.CurrentCacheVersion should be bumped.
             let result = 
                 match path with
+                | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
                 | "net35-Unity Web v3.5" ->  Some (DotNetUnity DotNetUnityVersion.V3_5_Web)
                 | "net35-Unity Micro v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Micro)
                 | "net35-Unity Subset v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Subset)
@@ -747,8 +751,20 @@ module KnownTargetProfiles =
           Native(Release,X64)
           Native(Release,Arm)]
 
-    let AllProfiles =
-        (AllNativeProfiles |> List.map SinglePlatform) @
+    let AllRuntimes =
+        [ Runtimes("win7-x64")
+          Runtimes("win7-x86")
+          Runtimes("win7-arm")
+          Runtimes("debian-x64")
+          Runtimes("aot")
+          Runtimes("win")
+          Runtimes("linux")
+          Runtimes("unix")
+          Runtimes("osx") ]
+
+    let AllProfiles = 
+        (AllNativeProfiles |> List.map SinglePlatform) @ 
+          (AllRuntimes |> List.map SinglePlatform) @
           AllDotNetStandardProfiles @
           AllDotNetProfiles
 
