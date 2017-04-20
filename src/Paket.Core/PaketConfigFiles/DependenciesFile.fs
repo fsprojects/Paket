@@ -570,3 +570,21 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     /// Find the matching lock file to a dependencies file
     member this.FindLockfile() = DependenciesFile.FindLockfile this.FileName
+
+
+    member this.ResolveFrameworksForScriptGeneration () = lazy (
+        this.Groups
+        |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
+        |> Seq.map(fun restrictions ->
+            match restrictions with
+            | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
+            | Paket.Requirements.FrameworkRestrictionList list ->
+                list |> Seq.collect (function
+                | Paket.Requirements.FrameworkRestriction.Exactly framework
+                | Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
+                | Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
+                | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
+                )
+          )
+        |> Seq.concat
+    )

@@ -776,19 +776,18 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
         usedPackages
 
-    member this.GetDependencyLookupTable() = 
-        groups
-        |> Seq.map (fun kv ->
-                kv.Value.Resolution
-                |> Seq.map (fun kv' -> 
-                                (kv.Key,kv'.Key),
-                                this.GetAllDependenciesOf(kv.Key,kv'.Value.Name,this.FileName)
-                                |> Set.ofSeq
-                                |> Set.remove kv'.Value.Name))
-        |> Seq.concat
-        |> Map.ofSeq
 
-    member this.GetPackageHullSafe(referencesFile,groupName) =
+    member this.GetDependencyLookupTable () = 
+        groups |> Seq.map (fun kv ->
+            kv.Value.Resolution |> Seq.map (fun kv' -> 
+                (kv.Key,kv'.Key),
+                this.GetAllDependenciesOf(kv.Key,kv'.Value.Name,this.FileName)
+                    |> Set.ofSeq
+                    |> Set.remove kv'.Value.Name
+        )) |> Seq.concat |> Map.ofSeq
+
+
+    member this.GetPackageHullSafe (referencesFile, groupName) =
         match referencesFile.Groups |> Map.tryFind groupName with
         | None -> Result.Succeed(Set.empty)
         | Some group ->
@@ -798,5 +797,31 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                 |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName.ToString(), package.Name)))
             |> collect
             |> lift (Seq.concat >> Set.ofSeq)
+
+
+    member this.GetInstalledPackageModel (QualifiedPackageName(groupName, packageName)) =
+        match this.Groups |> Map.tryFind groupName with
+        | None -> failwithf "Group %O can't be found in paket.lock." groupName
+        | Some group ->
+            match group.Resolution.TryFind(packageName) with
+            | None -> failwithf "Package %O is not installed in group %O." packageName groupName
+            | Some resolvedPackage ->
+                let packageName = resolvedPackage.Name
+                let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString()
+                let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
+                let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
+                let nuspec = Nuspec.Load nuspec.FullName
+                let files = NuGetV2.GetLibFiles(folder.FullName)
+                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
     
+
+    /// Returns a list of packages inside the lockfile with their group and version number
+    member this.InstalledPackages =
+        let listPackages (packages: KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
+            packages |> Seq.map (fun kv ->
+                let groupName,packageName = kv.Key
+                groupName, packageName, kv.Value.Version
+            ) |> Seq.toList
+
+        this.GetGroupedResolution () |> listPackages
     
