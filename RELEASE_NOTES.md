@@ -1,4 +1,4 @@
-#### 4.4.2 - 20.04.2017
+#### 4.4.3 - 20.04.2017
 * Support Netstandard 2.0, Netframework 4.7, Netcore 2.0
 * Encode '+' in Urls
 
