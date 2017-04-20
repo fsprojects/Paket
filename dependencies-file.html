@@ -157,6 +157,7 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 <span class="k">nuget</span> Newtonsoft.Json <span class="o">~&gt;</span> <span class="n">6.0</span>
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
+<p>Note that the resolution phase is not affected by this flag, it will still resolve, lock and download all transitive references.</p>
 <h3><a name="Framework-restrictions" class="anchor" href="#Framework-restrictions">Framework restrictions</a></h3>
 <p>Sometimes you don't want to generate dependencies for older framework versions. You can control this in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
