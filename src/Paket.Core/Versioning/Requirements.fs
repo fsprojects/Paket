@@ -503,7 +503,6 @@ let isTargetMatchingRestrictions =
     memoize <| fun (restrictions:FrameworkRestriction list, target) ->
         if List.isEmpty restrictions then true else
         match target with
-        //| SinglePlatform (Runtimes _ ) -> true
         | SinglePlatform pf ->
             restrictions
             |> List.exists (fun restriction ->

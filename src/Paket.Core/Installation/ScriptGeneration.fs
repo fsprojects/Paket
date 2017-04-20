@@ -296,19 +296,4 @@ module ScriptGeneration =
         scriptData
     
 
-    let constructScriptsFromDisk groups directory providedFrameworks providedScriptTypes =
-        match PaketFiles.LocateFromDirectory directory with
-        | PaketFiles.JustDependencies _ -> failwith "paket.lock not found."
-        | PaketFiles.DependenciesAndLock (dependenciesFile, lockFile) ->
-            let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
-            let frameworks = 
-                if providedFrameworks = [] then [environmentFramework.Value.ToString()] else providedFrameworks
-            
-            // TODO - this I/O and package crawl/loading work should possibly be extracted out
-            frameworks |> List.iter (fun fw ->
-                DirectoryInfo(dependenciesFile.RootPath</>".paket"</>"load"</>fw).Create()
-            )
 
-            let depCache = DependencyCache(dependenciesFile,lockFile)
-            groups |> Seq.iter (depCache.SetupGroup>>ignore)
-            constructScriptsFromData depCache groups frameworks providedScriptTypes

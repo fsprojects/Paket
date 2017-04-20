@@ -200,13 +200,23 @@ type Dependencies(dependenciesFileName: string) =
             providedScriptTypes = defaultArg providedScriptTypes [],
             alternativeProjectRoot = None)
 
-    static member GenerateLoadScriptData () =
-        LoadingScripts.ScriptGeneration.constructScriptsFromDisk [] (DirectoryInfo (Directory.GetCurrentDirectory())) List.empty List.empty
 
-    static member GenerateLoadScripts () =
-        Dependencies.GenerateLoadScriptData () |> Seq.iter (fun sd -> 
+    static member GenerateLoadScriptData (groups:string list) (frameworks:string list) (scriptTypes:string list) =
+        let depsUtil = Dependencies.Locate()
+        let dependenciesFile = depsUtil.GetDependenciesFile()
+        let lockFile = depsUtil.GetLockFile() 
+        let depCache = DependencyCache (dependenciesFile,lockFile)
+        LoadingScripts.ScriptGeneration.constructScriptsFromData depCache (groups|>List.map GroupName) frameworks scriptTypes
+
+
+    static member GenerateLoadScripts (groups:string list) (frameworks:string list) (scriptTypes:string list)  =
+        Dependencies.GenerateLoadScriptData groups frameworks scriptTypes 
+        |> Seq.iter (fun sd -> 
             let rootDir = Dependencies.Locate().RootDirectory
-            printfn "creadted - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
+            let scriptPath = Path.Combine (rootDir.FullName , sd.PartialPath)
+            let scriptDir = Path.GetDirectoryName scriptPath |> Path.GetFullPath |> DirectoryInfo
+            scriptDir.Create()
+            printfn "created - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
             sd.Save rootDir
         )
 

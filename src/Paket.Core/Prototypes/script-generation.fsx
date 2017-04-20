@@ -12,7 +12,7 @@ let printSqs sqs = sqs |> Seq.iter (printfn "%A")
 
 
 let paketRoot =
-    @"C:\Users\jared\Github\Forks\Paket\integrationtests\scenarios\loading-scripts\simple-dependencies\temp"
+    @"C:\Users\jared\Github\Forks\Paket\integrationtests\scenarios\loading-scripts\fsharpcore\temp\"
 
 let rootInfo = DirectoryInfo paketRoot
 
@@ -30,14 +30,13 @@ let refs = depCache.GetOrderedReferences Constants.MainDependencyGroup targetFra
 
 ;;
 
-let gens = ScriptGeneration.constructScriptsFromData depCache [] ["net45"] ["fsx"] |> List.ofSeq
+let gens = ScriptGeneration.constructScriptsFromData depCache [] ["net46"] ["fsx"] |> List.ofSeq
 ;;
 gens |> Seq.map (fun x -> 
     (Path.Combine(rootInfo.FullName,x.PartialPath)) + "\n\n" +
     (x.Render rootInfo) + "\n\n ---------------- \n\n")
 |> printSqs
 ;;
-let gensdsk = ScriptGeneration.constructScriptsFromDisk [ Constants.MainDependencyGroup ] (DirectoryInfo paketRoot)  ["net45"] ["fsx"] |> List.ofSeq
 
 ;;
 //printSqs gens
