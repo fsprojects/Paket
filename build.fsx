@@ -187,6 +187,9 @@ Target "InstallDotNetCore" (fun _ ->
 
 Target "Clean" (fun _ ->
     !! "src/**/obj"
+    ++ "src/**/bin"
+    ++ "tests/**/obj"
+    ++ "tests/**/bin"
     ++ buildDir 
     ++ tempDir
     |> CleanDirs 
@@ -315,7 +318,7 @@ Target "QuickTest" (fun _ ->
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 20. })
 )
-
+"Clean" ==> "QuickTest"
 
 Target "RunIntegrationTests" (fun _ ->
     !! integrationTestAssemblies
