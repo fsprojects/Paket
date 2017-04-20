@@ -307,9 +307,10 @@ Target "RunTests" (fun _ ->
 
 Target "QuickTest" (fun _ ->
 
-    !! "src\Paket.Core\Paket.Core.fsproj"
-    |> MSBuildRelease "" "Rebuild"
-    |> ignore
+    [   "src/Paket.Core/Paket.Core.fsproj"
+        "tests/Paket.Tests/Paket.Tests.fsproj"
+    ]   |> MSBuildRelease "" "Rebuild"
+        |> ignore
 
     !! testAssemblies
     |> NUnit3 (fun p ->
