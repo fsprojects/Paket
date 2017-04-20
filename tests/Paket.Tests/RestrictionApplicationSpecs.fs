@@ -24,6 +24,15 @@ module TestTargetProfiles =
 
     let DotNetFrameworkProfiles = DotNetFrameworkVersions |> List.map dotnet
 
+    let DotNetUnityVersions = [
+        DotNetUnityVersion.V3_5_Full
+        DotNetUnityVersion.V3_5_Subset
+        DotNetUnityVersion.V3_5_Micro
+        DotNetUnityVersion.V3_5_Web
+    ]
+
+    let DotNetUnityProfiles = DotNetUnityVersions |> List.map (DotNetUnity >> SinglePlatform)
+
     let WindowsProfiles =
        [SinglePlatform(Windows "v4.5")
         SinglePlatform(Windows "v4.5.1")]
@@ -44,6 +53,7 @@ module TestTargetProfiles =
        WindowsProfiles @ 
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
+       DotNetUnityProfiles @
        [SinglePlatform(MonoAndroid)
         SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
