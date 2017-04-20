@@ -68,8 +68,8 @@
     <StartWorkingDirectory>D:\temp\unlisted</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\temp\PaketWithProblem1</StartWorkingDirectory>
-    <StartArguments>push file D:\code\Paket\temp\Paket.Core.4.4.3.nupkg apikey 6cfcf909-7b5a-417d-a706-d1a1ab9b4b9e -v</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\temp</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>D:\temp\paketRestoreBug</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

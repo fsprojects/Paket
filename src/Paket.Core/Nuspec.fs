@@ -27,7 +27,7 @@ module internal NuSpecParserHelper =
         let version = 
             match node |> getAttribute "version" with
             | Some version -> VersionRequirement.Parse version
-            | None ->         VersionRequirement.Parse "0"
+            | None ->  VersionRequirement.Parse "0"
 
         let parent = node.ParentNode 
         match parent.Name, parent |> getAttribute "targetFramework" with
