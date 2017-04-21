@@ -794,7 +794,34 @@ type InstallModel with
     [<Obsolete("usually this should not be used, use GetLegacyReferences for the full .net and GetCompileReferences for dotnetcore")>]
     member this.GetLibReferences frameworkIdentifier = InstallModel.getLegacyPlatformReferences frameworkIdentifier this
 
-    member this.GetTargetsFiles target = InstallModel.getTargetsFiles target this
+    member this.GetLibReferenceFiles frameworkIdentifier = 
+        InstallModel.getLegacyPlatformReferences frameworkIdentifier this
+        |> Seq.map (fun lib -> FileInfo lib.Path)
+
+    member this.GetLegacyAndCompileReferences target =
+        Seq.append 
+            (this.GetLegacyReferences target)
+            (this.GetCompileReferences target)
+
+
+    member this.GetLegacyReferenceFiles  target =
+        InstallModel.getLegacyReferences target this
+        |> Seq.map (fun lib -> FileInfo lib.Path)
+
+
+    member this.GetCompileReferenceFiles target = 
+        InstallModel.getCompileReferences target this
+        |> Seq.map (fun lib -> FileInfo lib.Path)
+
+
+    member this.GetLegacyAndCompileReferenceFiles target =
+        Seq.append 
+            (this.GetLegacyReferenceFiles target)
+            (this.GetCompileReferenceFiles target)
+
+
+    member this.GetTargetsFiles target = 
+        InstallModel.getTargetsFiles target this
 
     member this.GetAllLegacyFrameworkReferences () = InstallModel.getAllLegacyFrameworkReferences this
     member this.GetAllLegacyReferences () = InstallModel.getAllLegacyReferences this

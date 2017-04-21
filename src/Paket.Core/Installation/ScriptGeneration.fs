@@ -96,10 +96,10 @@ module PackageAndAssemblyResolution =
 module ScriptGeneration =
 
     type PathCombine = PathCombine with
-        static member (?<-) (_,dir:DirectoryInfo,framework:FrameworkIdentifier) =  Path.Combine (dir.FullName, string framework)
-        static member (?<-) (_,dir:DirectoryInfo,group:GroupName) =  Path.Combine (dir.FullName, string group)
-        static member (?<-) (_,dir:DirectoryInfo,path:string) =  Path.Combine(dir.FullName,path)
-        static member (?<-) (_,dir:DirectoryInfo,file:FileInfo) =  Path.Combine(dir.FullName,file.Name)
+        static member (?<-) (_,dir:DirectoryInfo,framework:FrameworkIdentifier) =  Path.Combine (dir.Name, string framework)
+        static member (?<-) (_,dir:DirectoryInfo,group:GroupName) =  Path.Combine (dir.Name, string group)
+        static member (?<-) (_,dir:DirectoryInfo,path:string) =  Path.Combine(dir.Name,path)
+        static member (?<-) (_,dir:DirectoryInfo,file:FileInfo) =  Path.Combine(dir.Name,file.Name)
         static member (?<-) (_,path:string,framework:FrameworkIdentifier) = Path.Combine(path, string framework)
         static member (?<-) (_,path:string,group:GroupName) =  Path.Combine (path, string group)
         static member (?<-) (_,path1:string,path2:string) =  Path.Combine (path1, path2)
@@ -110,22 +110,22 @@ module ScriptGeneration =
     let inline (</>) p1 p2 = (?<-) PathCombine p1 p2
 
     open PackageAndAssemblyResolution
+    open System.Collections.Generic
+    open System.Text.RegularExpressions
   
     type ScriptType =
-        | CSharp
-        | FSharp
-        member x.Extension =
-            match x with
-            | CSharp -> "csx"
+        | CSharp | FSharp
+        member x.Extension = x |> function 
+            | CSharp -> "csx" 
             | FSharp -> "fsx"
-        static member TryCreate s = 
-            match s with
-            | "csx" -> Some CSharp
-            | "fsx" -> Some FSharp
+        
+        static member TryCreate = function
+            | "csx" -> Some CSharp 
+            | "fsx" -> Some FSharp 
             | _ -> None
 
 
-    type Reference =
+    type ReferenceType =
         | Assembly  of FileInfo
         | Framework of string
         | LoadScript of FileInfo
@@ -140,12 +140,10 @@ module ScriptGeneration =
         OrderedDllReferences     : FileInfo list
     }
 
-
     type ScriptGenResult = 
         | DoNotGenerate
-        | Generate of lines : Reference list
+        | Generate of lines : ReferenceType list
 
-    
     type ScriptContent = {
         Lang : ScriptType 
         Path : FileInfo 
@@ -190,13 +188,14 @@ module ScriptGeneration =
         | [] -> DoNotGenerate
         | xs -> Generate xs
 
-    let renderScript (scriptType:ScriptType) (scriptFile:FileInfo) (input:Reference seq) =
-        // create a relative path from the directory of the script to the dll or script to load
+
+    let renderScript (scriptType:ScriptType) (scriptFile:FileInfo) (input:ReferenceType seq) =
+        // create a relative pathReferenceType directory of the script to the dll or script to load
         let relativePath (scriptFile: FileInfo) (libFile: FileInfo) =
             (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
         
         // create the approiate load string for the target resource
-        let refString (reference:Reference)  = 
+        let refString (reference:ReferenceType)  = 
             match reference, scriptType with
             | Assembly file, _ ->
                  sprintf """#r "%s" """ <| relativePath scriptFile file
@@ -213,67 +212,116 @@ module ScriptGeneration =
             Text = text
         }
 
+    type RawScript = {
+        ReferenceLocations : FileInfo seq
+        FrameworkReferences : FrameworkReference seq 
+    }
 
-    let getScriptFolder (rootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName) (folderForDefaultFramework: bool) =
-        let group = if groupName = Constants.MainDependencyGroup then String.Empty else (string groupName)
-        let framework = if folderForDefaultFramework then String.Empty else string framework
-        DirectoryInfo (rootFolder </> framework </> group)
+    type GenPrep () =
+        let cache = Dictionary<GroupName,RawScript ResizeArray> ()
+        let assemblies = Dictionary<GroupName,FileInfo HashSet> ()
+        let frameworkLibs = Dictionary<GroupName,FrameworkReference HashSet> ()
+        // helper function to accumulate a distinct set of framework libraries
+        // and assembly references during lockfile exploration
+        let accum (dict:Dictionary<_,HashSet<_>>) groupName elms =  
+            elms |> Seq.iter (fun elm ->
+            if dict.ContainsKey groupName then 
+                dict.[groupName].Add elm |> ignore
+            else 
+                let set = HashSet() in set.Add elm |> ignore
+                dict.[groupName] <- set
+            )
+        let retrieve (dict:Dictionary<GroupName,'a>) key =
+            if dict.ContainsKey key 
+            then dict.[key] :> seq<_>
+            else Seq.empty
+        
+        member __.Item 
+            with get idx = 
+                if cache.ContainsKey idx 
+                then cache.[idx] :> seq<_>
+                else Seq.empty
 
+            and set groupName (reflocs:FileInfo seq, framelocs:FrameworkReference seq) =
+                accum  assemblies  groupName reflocs
+                accum frameworkLibs groupName framelocs
+                let data = { 
+                    ReferenceLocations = reflocs
+                    FrameworkReferences = framelocs 
+                } 
+                if cache.ContainsKey groupName then 
+                    cache.[groupName].Add data
+                else 
+                let arr = ResizeArray() in arr.Add data 
+                cache.Add (groupName, arr)
+        
+        member __.Assemblies
+            with get groupName = retrieve assemblies groupName
 
-    let getScriptFile (rootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName)  (folderForDefaultFramework: bool) (package: PackageName) (extension: string) =
-        let folder = getScriptFolder rootFolder framework groupName folderForDefaultFramework
-        FileInfo <| sprintf "%s.%s"  folder.FullName extension
+        member __.FrameworkLibs 
+            with get groupName = retrieve frameworkLibs groupName
 
+        member __.Groups = cache |> Seq.map (fun x -> x.Key) 
+    
 
-    let generateGroupScript
-        (scriptType : ScriptType)
-        (groups : GroupName list)
-        (lockFile : LockFile)
-        (getScriptFile : GroupName -> FileInfo)
-        (framework : FrameworkIdentifier) =
+    type PaketContext = {
+        Dependencies : DependenciesFile
+        LockFile : LockFile
+        Groups : GroupName list
+        DefaultFramework : bool * FrameworkIdentifier
+        RootDir : DirectoryInfo
+        ScriptType : ScriptType
+    }
+
+    let generateGroupScript (context:PaketContext as ctx) (getScriptFile: GroupName -> FileInfo)  =
+        
+        let scriptType, groups, rootFolder, dependenciesFile, lockFile = 
+            ctx.ScriptType, ctx.Groups, ctx.RootDir, ctx.Dependencies, ctx.LockFile
+
+        let isDefaultFramework, framework = ctx.DefaultFramework
 
         let filterNuget nuget =
             match scriptType, nuget with
-            | FSharp, "FSharp.Core" -> true
-            | _ ,_ -> false
+            | FSharp, "FSharp.Core" -> true | _ ,_ -> false
 
-        let all = 
-          seq {
-            let mainGroupSeen = ref false
-            let mainGroupName = Constants.MainDependencyGroup.ToString ()
-            let mainGroupKey = Constants.MainDependencyGroup.GetCompareString ()
-            
-            for group, nuget, _ in lockFile.InstalledPackages do
-                if groups = [] || List.exists ((=) group) groups then
-                    if not (filterNuget <| string nuget) then
-                        if group.GetCompareString() = mainGroupKey || (string group) = mainGroupName then
-                            mainGroupSeen := true
+        let mainGroupName = Constants.MainDependencyGroup.Name
+        let mainGroupKey = Constants.MainDependencyGroup.CompareString
 
-                        let qualifiedPackage = (QualifiedPackageName.FromStrings(Some (string group), string nuget))
-                        let model = lockFile.GetInstalledPackageModel  qualifiedPackage
+        let exploreLock installedPackages =
+            let rec loop mainGroupSeen  (genPrep:GenPrep) (installedPackages:(GroupName * PackageName * SemVerInfo) list ) =
+                match installedPackages with 
+                |(group,nuget,_ver)::pkgs  
+                    when List.exists ((=) group) context.Groups || groups = []  ->
+                    
+                    let mainGroupSeen = 
+                        (not (filterNuget nuget.Name)) && 
+                        (group.CompareString = mainGroupKey || group.Name = mainGroupName)
 
-                        let libs = 
-                            model.GetLibReferences framework 
-                            |> Seq.map (fun f -> FileInfo f.Path)
+                    let qualifiedPackage = QualifiedPackageName (group,nuget)
+                    let model = lockFile.GetInstalledPackageModel  qualifiedPackage
+                    let libs = model.GetLibReferenceFiles framework
 
-                        let syslibs = model.GetAllLegacyFrameworkReferences()
-                        yield string group, (libs, syslibs)
+                    let syslibs = model.GetAllLegacyFrameworkReferences ()
+                    genPrep.[group] <- (libs,syslibs)
+                    loop mainGroupSeen genPrep  pkgs
+                | _hd::pkgs -> 
+                    loop mainGroupSeen genPrep  pkgs
+                | [] -> 
+                    if mainGroupSeen then genPrep else 
+                    // If we haven't explored the main group add it to ensure generation 
+                    genPrep.[Constants.MainDependencyGroup]  <- (Seq.empty, Seq.empty)
+                    genPrep
+            loop false  (GenPrep ()) installedPackages
+   
+        let genprep = exploreLock lockFile.InstalledPackages
 
-            if not !mainGroupSeen && groups = [] then
-                  yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
-          } |> Seq.groupBy fst
-            |> Seq.map (fun (group, items) -> group, items |> Seq.map snd)
-      
-        [ for group, libs in all -> 
-            let assemblies, frameworkLibs =
-                (libs,  (Seq.empty, Seq.empty))
-                ||> Seq.foldBack (fun (l,r) (pl, pr) -> Seq.concat [pl ; l], Seq.concat [pr ; r]) 
-                |> fun (l,r) -> Seq.distinct l, Seq.distinct r |> Seq.map (fun ref -> ref.Name) (*|> filterFrameworkAssemblies*)
-        
+        genprep.Groups |> Seq.map (fun group ->
+
             let assemblies = 
                 let assemblyFilePerAssemblyDef = 
-                    assemblies
-                    |> Seq.map (fun (f:FileInfo) -> AssemblyDefinition.ReadAssembly f.FullName, f)
+                    genprep.Assemblies group
+                    |> Seq.map (fun (f:FileInfo) -> 
+                        AssemblyDefinition.ReadAssembly(f.FullName:string), f)
                     |> dict
 
                 assemblyFilePerAssemblyDef.Keys
@@ -281,57 +329,79 @@ module ScriptGeneration =
                 |> PackageAndAssemblyResolution.getDllOrder
                 |> Seq.map (assemblyFilePerAssemblyDef.TryGetValue >> snd)
 
-            let scriptFile = getScriptFile (GroupName group)
-            frameworkLibs |> Seq.iter (fun x -> Logging.tracefn "frameworkLib - %A" x)
-            assemblies |> Seq.iter (fun x -> Logging.tracefn "assembly - %A" x)
-            [   if not (shouldExcludeFrameworkAssemblies framework) then
-                    for a in frameworkLibs do
-                        yield Reference.Framework a
-                for a in assemblies do
-                    yield Reference.Assembly a
-            ] |> renderScript scriptType scriptFile
-        ]
-  
+            let scriptFile = getScriptFile group
+
+            let assemblyRefs = 
+                assemblies |> Seq.map ReferenceType.Assembly 
+
+            let frameworkRefs = 
+                genprep.FrameworkLibs group 
+                |> Seq.map (fun x ->  ReferenceType.Framework x.Name)
+
+            Seq.append assemblyRefs  frameworkRefs 
+            |> renderScript scriptType scriptFile
+        )
+
     /// Generate a include scripts for all packages defined in paket.dependencies,
     /// if a package is ordered before its dependencies this function will throw.
-    let generateScriptsForRootFolder
-        (scriptType:ScriptType)
-        groups
-        (framework: FrameworkIdentifier) 
-        isDefaultFramework 
-        (rootFolder: DirectoryInfo) 
-        (dependenciesFile:DependenciesFile)
-        (lockFile:LockFile) =
-        let fst' (a,_,_) = a
+    let generateScriptsForRootFolder (context:PaketContext as ctx) =
+        
+        let scriptType, groups, rootFolder, dependenciesFile, lockFile = 
+            ctx.ScriptType, ctx.Groups, ctx.RootDir, ctx.Dependencies, ctx.LockFile
+        let isDefaultFramework, framework = ctx.DefaultFramework
 
-        let dependencies = getPackageOrderFromLockFile lockFile
+        // -- LOAD SCRIPT FORMATTING POINT --
         let packagesFolder = rootFolder </>  Constants.PackagesFolderName
+        
+        // -- LOAD SCRIPT FORMATTING POINT --
         let loadScriptsRootFolder = 
             DirectoryInfo (dependenciesFile.DirectoryInfo </> Constants.PaketFolderName </> "load")
+
+        // -- LOAD SCRIPT FORMATTING POINT --
+        let getGroupFile group = 
+            let folder = 
+                let group = if group = Constants.MainDependencyGroup then String.Empty else (string group)
+                let framework = if isDefaultFramework then String.Empty else string framework
+                DirectoryInfo (rootFolder </> framework </> group)
+            let fileName = (sprintf "%s.group.%s" (string group) scriptType.Extension).ToLowerInvariant()
+            FileInfo (folder </> fileName)
+        
+        // -- LOAD SCRIPT FORMATTING POINT --
+        let packagesOrGroupFolder groupName =
+            if groupName = Constants.MainDependencyGroup then DirectoryInfo packagesFolder
+            else let x = packagesFolder </> groupName in DirectoryInfo x
+       
+       // -- LOAD SCRIPT FORMATTING POINT --
+        let scriptFolder groupName (package: PackageResolver.ResolvedPackage) =
+            let group = if groupName = Constants.MainDependencyGroup then String.Empty else (string groupName)
+            let framework = if isDefaultFramework then String.Empty else string framework
+            DirectoryInfo (rootFolder </> framework </> packagesOrGroupFolder groupName </> package.Name)
+
+        // -- LOAD SCRIPT FORMATTING POINT --
+        let scriptFile (scriptFolder:DirectoryInfo) =
+            FileInfo <| sprintf "%s.%s"  scriptFolder.FullName ScriptType.FSharp.Extension
+                    
+
+        let dependencies = getPackageOrderFromLockFile lockFile
 
         let scriptContent =
             dependencies |> Map.map (fun groupName packages ->
                 if groups = [] || List.exists ((=) groupName) groups then
 
-                    let packagesOrGroupFolder =
-                        if groupName = Constants.MainDependencyGroup then DirectoryInfo packagesFolder
-                        else let x = packagesFolder </> groupName in DirectoryInfo x
+                    let packagesOrGroupFolder = packagesOrGroupFolder groupName
                     
                     // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
                     ((Map.empty,[]),packages)
                     ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,_>*_) (package: PackageResolver.ResolvedPackage) ->
                         
-                        let scriptFolder  =
-                            let group = if groupName = Constants.MainDependencyGroup then String.Empty else (string groupName)
-                            let framework = if isDefaultFramework then String.Empty else string framework
-                            DirectoryInfo (rootFolder </> framework </> packagesOrGroupFolder </> package.Name)
+                        let scriptFolder = scriptFolder groupName  package
 
-                        let scriptFile =
-                            FileInfo <| sprintf "%s.%s"  scriptFolder.FullName ScriptType.FSharp.Extension
+                        let scriptFile = scriptFile scriptFolder
                     
                         let dependencies = 
-                            package.Dependencies |> Seq.map fst' 
-                            |> Seq.choose knownIncludeScripts.TryFind |> List.ofSeq
+                            package.Dependencies 
+                            |> Seq.choose (fun (x,_,_) -> knownIncludeScripts.TryFind x)
+                            |> List.ofSeq
 
                         let installModel = 
                             (QualifiedPackageName.FromStrings(Some groupName.Name, package.Name.ToString()))
@@ -362,12 +432,7 @@ module ScriptGeneration =
                 else []
             ) |> Seq.collect (fun x -> x.Value)
 
-        let getGroupFile group = 
-            let folder = getScriptFolder loadScriptsRootFolder framework group isDefaultFramework
-            let fileName = (sprintf "%s.group.%s" (string group) scriptType.Extension).ToLowerInvariant()
-            FileInfo (folder </> fileName)
-        
-        generateGroupScript scriptType groups lockFile getGroupFile framework
+        generateGroupScript context getGroupFile 
 
 
     let constructScriptsFromData groups (dependenciesFile:DependenciesFile) (lockFile:LockFile) providedFrameworks providedScriptTypes =
@@ -390,19 +455,20 @@ module ScriptGeneration =
         // default framework will get generated under root folder rather than framework specific subfolder
         let frameworksToGenerate =
             // specified frameworks are never considered default
-            let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract |> List.map (fun f -> f, false)
+            let targetFrameworkList = 
+                providedFrameworks |> List.choose FrameworkDetection.Extract 
+                |> List.map (fun f -> f, false)
 
             failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
 
             if not (Seq.isEmpty targetFrameworkList) then 
-                targetFrameworkList |> Seq.ofList
+                targetFrameworkList :> seq<_>
             elif not (Seq.isEmpty frameworksForDependencyGroups.Value) then 
                 // if paket.dependencies evaluate to single framework, consider it as default
                 let isDefaultFramework = Seq.length frameworksForDependencyGroups.Value = 1
                 frameworksForDependencyGroups.Value |> Seq.map (fun f -> f, isDefaultFramework)
                   
-            else
-                // environment framework is default
+            else // environment framework is default
                 Seq.singleton (environmentFramework.Value, true)
 
         let scriptTypesToGenerate =
@@ -416,20 +482,31 @@ module ScriptGeneration =
 
         let workaround () = null |> ignore
         let scriptData =
-            [ for framework, isDefaultFramework in Seq.distinct frameworksToGenerate ->
-                match groups with
-                | []  -> Logging.tracefn "Generating load scripts for framework %O" framework
-                | [g] -> Logging.tracefn "Generating load scripts for framework %O in group %O" framework g
-                | _   -> Logging.tracefn "Generating load scripts for framework %O in groups: %s" framework (String.Join(", ", groups.ToString()))
+            seq{  
+                for framework, isDefaultFramework in Seq.distinct frameworksToGenerate ->
+                let msg =
+                    match groups with
+                    | []  -> framework.ToString ()
+                    | [g] -> sprintf "%O in group %O" framework g
+                    | _   -> sprintf "%O in groups: %s" framework (String.Join(", ", groups.ToString()))
+
+                Logging.tracefn "Generating load scripts for framework %s" msg
 
                 workaround () // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
-                [ for scriptType in scriptTypesToGenerate ->
-                    generateScriptsForRootFolder scriptType  groups framework isDefaultFramework rootFolder dependenciesFile lockFile
-                ] |> List.concat
-            ] |> List.concat
+                seq{ 
+                    for scriptType in scriptTypesToGenerate ->
+                    generateScriptsForRootFolder {
+                        ScriptType = scriptType  
+                        RootDir = rootFolder 
+                        Groups = groups 
+                        DefaultFramework = isDefaultFramework,framework
+                        Dependencies = dependenciesFile 
+                        LockFile = lockFile
+                    }
+                } |> Seq.concat
+            } |> Seq.concat
         scriptData
     
-
 
     let constructScriptsFromDisk groups directory providedFrameworks providedScriptTypes =
         match PaketFiles.LocateFromDirectory directory with
