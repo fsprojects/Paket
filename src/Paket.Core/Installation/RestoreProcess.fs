@@ -304,6 +304,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         |> Seq.toList
 
     if groupsToGenerate <> [] then
-        LoadingScripts.ScriptGeneration.executeCommand groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) [] []
-
+        (LoadingScripts.ScriptGeneration.constructScriptsFromDisk groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) [] [])
+        |> Seq.iter (fun sd -> sd.Save ())
     GarbageCollection.CleanUp(root, dependenciesFile, lockFile)

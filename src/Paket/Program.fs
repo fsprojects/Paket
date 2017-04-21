@@ -374,8 +374,8 @@ let push (results : ParseResults<_>) =
 let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks = results.GetResults <@ GenerateLoadScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateLoadScriptsArgs.ScriptType @>
-    LoadingScripts.ScriptGeneration.executeCommand [] (DirectoryInfo (Directory.GetCurrentDirectory())) providedFrameworks providedScriptTypes
-
+    LoadingScripts.ScriptGeneration.constructScriptsFromDisk [] (DirectoryInfo (Directory.GetCurrentDirectory())) providedFrameworks providedScriptTypes
+    |> Seq.iter (fun sd -> sd.Save())
 
 let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     let projectFile = results.GetResult <@ GenerateNuspecArgs.Project @>

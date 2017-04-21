@@ -241,7 +241,8 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
           |> Seq.map (fun g -> g.Name)
           |> Seq.toList
 
-        LoadingScripts.ScriptGeneration.executeCommand groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
+        LoadingScripts.ScriptGeneration.constructScriptsFromDisk groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
+        |> Seq.iter (fun x -> x.Save())
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =

@@ -15,11 +15,12 @@ let getLoadScriptDefaultFolder scenario = DirectoryInfo((scriptRoot scenario).Fu
 let getLoadScriptFolder framework scenario = DirectoryInfo(Path.Combine((getLoadScriptDefaultFolder scenario).FullName, framework |> FrameworkDetection.Extract |> Option.get |> string))
 
 let getGeneratedScriptFiles framework scenario =
-  let frameworkDir = getLoadScriptFolder framework scenario
-  frameworkDir.GetFiles() |> Array.sortBy (fun f -> f.FullName)
+    let frameworkDir = getLoadScriptFolder framework scenario
+    frameworkDir.GetFiles() |> Array.sortBy (fun f -> f.FullName)
+
 let getGeneratedScriptFilesDefaultFolder scenario =
-  let frameworkDir = getLoadScriptDefaultFolder scenario
-  frameworkDir.GetFiles() |> Array.sortBy (fun f -> f.FullName)
+    let frameworkDir = getLoadScriptDefaultFolder scenario
+    frameworkDir.GetFiles() |> Array.sortBy (fun f -> f.FullName)
 
 let getScriptContentsFailedExpectations (scriptFolder: DirectoryInfo) expectations =
     let files =

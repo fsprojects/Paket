@@ -551,7 +551,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName false newLines)
 
-    member this.RootPath = FileInfo(fileName).Directory.FullName
+    member this.RootPath = 
+        if String.IsNullOrWhiteSpace fileName then String.Empty 
+        else FileInfo(fileName).Directory.FullName
 
     override __.ToString() = String.Join(Environment.NewLine, textRepresentation |> Array.skipWhile String.IsNullOrWhiteSpace)
 

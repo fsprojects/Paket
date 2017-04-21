@@ -49,11 +49,25 @@ module PackageAndAssemblyResolution =
 
 
     let getPackageOrderFromLockFile (lockFile:LockFile) =
-        
-        let lockFile = LockFileParser.Parse (System.IO.File.ReadAllLines lockFile.FileName)
-        lockFile
-        |> Seq.map (fun p -> p.GroupName, getPackageOrderResolvedPackage p.Packages)
-        |> Map.ofSeq
+        //let lockFile = LockFileParser.Parse (System.IO.File.ReadAllLines lockFile.FileName)
+        let resolution = lockFile.GetGroupedResolution()
+        //let groups,packages,resolvedPackages & trips =
+        //    (([],[],[]),resolution)
+        //    ||> Seq.fold (fun (gs,ps,rs) p -> 
+        //        let (group,package,resolvedPackage ) = fst p.Key,snd p.Key , p.Value
+        //        group::gs,package::ps,resolvedPackage::rs
+        //    )
+        resolution
+        |> Seq.groupBy (fun p -> let (g,_) = p.Key in g)
+        |> Seq.map (fun (group,sqs) -> 
+            let packages = sqs |> Seq.map(fun x -> x.Value) |> List.ofSeq
+            group, getPackageOrderResolvedPackage packages
+        ) |> Map.ofSeq
+
+        ////let lockFile = LockFileParser.Parse (System.IO.File.ReadAllLines lockFile.FileName)
+        //lockFile
+        //|> Seq.map (fun p -> p.GroupName, getPackageOrderResolvedPackage p.Packages)
+        //|> Map.ofSeq
 
 
     let getDllOrder (dllFiles : AssemblyDefinition list) =
@@ -147,8 +161,20 @@ module ScriptGeneration =
         | DoNotGenerate
         | Generate of lines : Reference list
 
+    
+    type ScriptContent = {
+        Lang : ScriptType 
+        Path : FileInfo 
+        Text : string
+    } with
+        member self.Save () = 
+            async {
+                self.Path.Directory.Create ()
+                File.WriteAllText (self.Path.FullName, self.Text)
+            } |> Async.Start
 
-    let writeScript (scriptType:ScriptType) (scriptFile:FileInfo) (input:Reference seq) =
+
+    let renderScript (scriptType:ScriptType) (scriptFile:FileInfo) (input:Reference seq) =
         // create a relative path from the directory of the script to the dll or script to load
         let relativePath (scriptFile: FileInfo) (libFile: FileInfo) =
             (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
@@ -166,8 +192,13 @@ module ScriptGeneration =
                  sprintf """#r "%s" """ name
         
         let text = input |> Seq.map refString |> String.concat "\n"
-        scriptFile.Directory.Create()
-        File.WriteAllText(scriptFile.FullName, text)
+        //scriptFile.Directory.Create()
+        //File.WriteAllText(scriptFile.FullName, text)
+        {   Lang = scriptType
+            Path = scriptFile
+            Text = text
+        }
+
 
     let shouldExcludeNugetForFSharpScript nuget =
         match nuget with
@@ -210,12 +241,12 @@ module ScriptGeneration =
     let getScriptFolder (rootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName) (folderForDefaultFramework: bool) =
         let group = if groupName = Constants.MainDependencyGroup then String.Empty else (string groupName)
         let framework = if folderForDefaultFramework then String.Empty else string framework
-        rootFolder </> framework </> group
+        DirectoryInfo (rootFolder </> framework </> group)
 
 
     let getScriptFile (rootFolder: DirectoryInfo) (framework: FrameworkIdentifier) (groupName: GroupName)  (folderForDefaultFramework: bool) (package: PackageName) (extension: string) =
         let folder = getScriptFolder rootFolder framework groupName folderForDefaultFramework
-        FileInfo <| sprintf "%s.%s"  folder extension
+        FileInfo <| sprintf "%s.%s"  folder.FullName extension
 
 
     let generateGroupScript
@@ -244,9 +275,9 @@ module ScriptGeneration =
 
                         let model = lockFile.GetInstalledPackageModel (QualifiedPackageName.FromStrings(Some (string group), string nuget))
                         //let libs = model.GetLibReferences(framework) |> Seq.map (fun f -> FileInfo f.Path)
-                        let libs = model.GetCompileReferences (SinglePlatform framework) |> Seq.map (fun f -> FileInfo f.Path)
+                        let libs = model.GetLibReferences framework |> Seq.map (fun f -> FileInfo f.Path)
                         let syslibs = model.GetAllLegacyFrameworkReferences()
-                        yield group.GetCompareString(), (libs, syslibs)
+                        yield string group, (libs, syslibs)
 
             if not !mainGroupSeen && groups = [] then
                   yield mainGroupKey, (Seq.empty, Seq.empty) // Always generate Main group
@@ -254,7 +285,7 @@ module ScriptGeneration =
             |> Seq.groupBy fst
             |> Seq.map (fun (group, items) -> group, items |> Seq.map snd)
       
-        for group, libs in all do
+        [ for group, libs in all -> 
             let assemblies, frameworkLibs =
                 (libs,  (Seq.empty, Seq.empty))
                 ||> Seq.foldBack (fun (l,r) (pl, pr) -> Seq.concat [pl ; l], Seq.concat [pr ; r]) 
@@ -272,14 +303,15 @@ module ScriptGeneration =
                 |> Seq.map (assemblyFilePerAssemblyDef.TryGetValue >> snd)
 
             let scriptFile = getScriptFile (GroupName group)
-        
+            frameworkLibs |> Seq.iter (fun x -> Logging.tracefn "frameworkLib - %A" x)
+            assemblies |> Seq.iter (fun x -> Logging.tracefn "assembly - %A" x)
             [   if not (shouldExcludeFrameworkAssemblies framework) then
                     for a in frameworkLibs do
                         yield Reference.Framework a
                 for a in assemblies do
                     yield Reference.Assembly a
-            ]
-            |> writeScript scriptType scriptFile
+            ] |> renderScript scriptType scriptFile
+        ]
   
     /// Generate a include scripts for all packages defined in paket.dependencies,
     /// if a package is ordered before its dependencies this function will throw.
@@ -296,64 +328,130 @@ module ScriptGeneration =
         let dependencies = getPackageOrderFromLockFile lockFile
         let packagesFolder = rootFolder </>  Constants.PackagesFolderName
         let loadScriptsRootFolder = 
-            dependenciesFile.DirectoryInfo </> Constants.PaketFolderName </> "load"
+            DirectoryInfo (dependenciesFile.DirectoryInfo </> Constants.PaketFolderName </> "load")
 
         let getScriptFile groupName packageName =
-            getScriptFile (DirectoryInfo loadScriptsRootFolder) framework groupName isDefaultFramework packageName scriptType.Extension
+            getScriptFile loadScriptsRootFolder framework groupName isDefaultFramework packageName scriptType.Extension
+        
+        let scriptContent =
+            dependencies
+            |> Map.map (fun groupName packages ->
+                if groups = [] || List.exists ((=) groupName) groups then
 
-        dependencies
-        |> Map.map (fun groupName packages ->
-            if groups = [] || List.exists ((=) groupName) groups then
-                let packagesOrGroupFolder =
-                    if groupName = Constants.MainDependencyGroup then packagesFolder
-                    else packagesFolder </> groupName
+                    let packagesOrGroupFolder =
+                        if groupName = Constants.MainDependencyGroup then DirectoryInfo packagesFolder
+                        else let x = packagesFolder </> groupName in DirectoryInfo x
                     
-                // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
-                (Map.empty,packages)
-                ||> Seq.fold (fun (knownIncludeScripts: Map<_,_>) (package: PackageResolver.ResolvedPackage) ->
+                    // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
+                    ((Map.empty,[]),packages)
+                    ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,_>*_) (package: PackageResolver.ResolvedPackage) ->
                         
-                    let scriptFile = getScriptFile groupName package.Name
+                        let scriptFile = getScriptFile groupName package.Name
                         
-                    let groupName = 
-                        if groupName = Constants.MainDependencyGroup then Some (string groupName) else None
+                        let groupName = 
+                            if groupName = Constants.MainDependencyGroup then Some (string groupName) else None
                         
-                    let dependencies = 
-                        package.Dependencies |> Seq.map fst' 
-                        |> Seq.choose knownIncludeScripts.TryFind |> List.ofSeq
+                        let dependencies = 
+                            package.Dependencies |> Seq.map fst' 
+                            |> Seq.choose knownIncludeScripts.TryFind |> List.ofSeq
                         
-                    let installModel = 
-                        (QualifiedPackageName.FromStrings(groupName, package.Name.ToString()))
-                        |> lockFile.GetInstalledPackageModel
+                        let installModel = 
+                            (QualifiedPackageName.FromStrings(groupName, package.Name.ToString()))
+                            |> lockFile.GetInstalledPackageModel
                         
-                    let dllFiles = 
-                        getDllsWithinPackage framework installModel
+                        let dllFiles = 
+                            getDllsWithinPackage framework installModel
 
-                    let scriptInfo = {
-                        PackageName                  = installModel.PackageName
-                        PackagesOrGroupFolder        = DirectoryInfo packagesOrGroupFolder
-                        IncludeScriptsRootFolder     = DirectoryInfo loadScriptsRootFolder 
-                        FrameworkReferences          = getFrameworkReferencesWithinPackage framework installModel |> List.map (fun ref -> ref.Name)
-                        OrderedDllReferences         = dllFiles
-                        DependentScripts             = dependencies
-                    }
+                        let scriptInfo = {
+                            PackageName                  = installModel.PackageName
+                            PackagesOrGroupFolder        = packagesOrGroupFolder
+                            IncludeScriptsRootFolder     = loadScriptsRootFolder 
+                            FrameworkReferences          = getFrameworkReferencesWithinPackage framework installModel |> List.map (fun ref -> ref.Name)
+                            OrderedDllReferences         = dllFiles
+                            DependentScripts             = dependencies
+                        }
 
-                    match generateScript scriptType scriptInfo with
-                    | DoNotGenerate -> knownIncludeScripts
-                    | Generate pieces -> 
-                    writeScript scriptType scriptFile pieces
-                    knownIncludeScripts |> Map.add package.Name scriptFile
-                ) |> ignore
-        ) |> ignore
+                        match generateScript scriptType scriptInfo with
+                        | DoNotGenerate -> 
+                            (knownIncludeScripts,scriptFiles)
+                        | Generate pieces -> 
+                            let knownScripts = knownIncludeScripts |> Map.add package.Name scriptFile
+                            let rendered = (renderScript scriptType scriptFile pieces)::scriptFiles
+                            (knownScripts, rendered)
+                    ) |> fun (_,sfs) -> sfs 
+                else []
+            ) |> Seq.collect (fun x -> x.Value)
 
         let getGroupFile group = 
-            let folder = getScriptFolder (DirectoryInfo loadScriptsRootFolder) framework group isDefaultFramework
+            let folder = getScriptFolder loadScriptsRootFolder framework group isDefaultFramework
             let fileName = (sprintf "%s.group.%s" (string group) scriptType.Extension).ToLowerInvariant()
             FileInfo (folder </> fileName)
         
         generateGroupScript scriptType groups lockFile getGroupFile framework
 
 
-    let executeCommand groups directory providedFrameworks providedScriptTypes =
+    let constructScriptsFromData groups (dependenciesFile:DependenciesFile) (lockFile:LockFile) providedFrameworks providedScriptTypes =
+        let rootFolder = DirectoryInfo dependenciesFile.RootPath
+        let frameworksForDependencyGroups = dependenciesFile.ResolveFrameworksForScriptGeneration()
+        let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
+
+        let tupleMap f v = (v, f v)
+        let failOnMismatch toParse parsed f message =
+            if List.length toParse <> List.length parsed then
+                toParse
+                |> Seq.map (tupleMap f)
+                |> Seq.filter (snd >> Option.isNone)
+                |> Seq.map fst
+                |> String.concat ", "
+                |> sprintf "%s: %s. Cannot generate include scripts." message
+                |> failwith
+
+        // prepare list of frameworks to generate, paired with "is default framework"
+        // default framework will get generated under root folder rather than framework specific subfolder
+        let frameworksToGenerate =
+            // specified frameworks are never considered default
+            let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract |> List.map (fun f -> f, false)
+
+            failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
+
+            if not (Seq.isEmpty targetFrameworkList) then 
+                targetFrameworkList |> Seq.ofList
+            elif not (Seq.isEmpty frameworksForDependencyGroups.Value) then 
+                // if paket.dependencies evaluate to single framework, consider it as default
+                let isDefaultFramework = Seq.length frameworksForDependencyGroups.Value = 1
+                frameworksForDependencyGroups.Value |> Seq.map (fun f -> f, isDefaultFramework)
+                  
+            else
+                // environment framework is default
+                Seq.singleton (environmentFramework.Value, true)
+
+        let scriptTypesToGenerate =
+            let parsedScriptTypes = providedScriptTypes |> List.choose ScriptType.TryCreate
+
+            failOnMismatch providedScriptTypes parsedScriptTypes ScriptType.TryCreate "Unrecognized Script Type(s)"
+
+            match parsedScriptTypes with
+            | [] -> [CSharp; FSharp]
+            | xs -> xs
+
+        let workaround () = null |> ignore
+        let scriptData =
+            [ for framework, isDefaultFramework in Seq.distinct frameworksToGenerate ->
+                match groups with
+                | []  -> Logging.tracefn "Generating load scripts for framework %O" framework
+                | [g] -> Logging.tracefn "Generating load scripts for framework %O in group %O" framework g
+                | _   -> Logging.tracefn "Generating load scripts for framework %O in groups: %s" framework (String.Join(", ", groups.ToString()))
+
+                workaround () // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
+                [ for scriptType in scriptTypesToGenerate ->
+                    generateScriptsForRootFolder scriptType  groups framework isDefaultFramework rootFolder dependenciesFile lockFile
+                ] |> List.concat
+            ] |> List.concat
+        scriptData
+    
+
+
+    let constructScriptsFromDisk groups directory providedFrameworks providedScriptTypes =
         match PaketFiles.LocateFromDirectory directory with
         | PaketFiles.JustDependencies _ -> failwith "paket.lock not found."
         | PaketFiles.DependenciesAndLock (dependenciesFile, lockFile) ->
@@ -361,53 +459,5 @@ module ScriptGeneration =
             let frameworksForDependencyGroups = dependenciesFile.ResolveFrameworksForScriptGeneration()
             let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
 
-            let tupleMap f v = (v, f v)
-            let failOnMismatch toParse parsed f message =
-                if List.length toParse <> List.length parsed then
-                    toParse
-                    |> Seq.map (tupleMap f)
-                    |> Seq.filter (snd >> Option.isNone)
-                    |> Seq.map fst
-                    |> String.concat ", "
-                    |> sprintf "%s: %s. Cannot generate include scripts." message
-                    |> failwith
-
-            // prepare list of frameworks to generate, paired with "is default framework"
-            // default framework will get generated under root folder rather than framework specific subfolder
-            let frameworksToGenerate =
-                // specified frameworks are never considered default
-                let targetFrameworkList = providedFrameworks |> List.choose FrameworkDetection.Extract |> List.map (fun f -> f, false)
-
-                failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
-
-                if not (Seq.isEmpty targetFrameworkList) then 
-                    targetFrameworkList |> Seq.ofList
-                elif not (Seq.isEmpty frameworksForDependencyGroups.Value) then 
-                    // if paket.dependencies evaluate to single framework, consider it as default
-                    let isDefaultFramework = Seq.length frameworksForDependencyGroups.Value = 1
-                    frameworksForDependencyGroups.Value |> Seq.map (fun f -> f, isDefaultFramework)
-                  
-                else
-                    // environment framework is default
-                    Seq.singleton (environmentFramework.Value, true)
-
-            let scriptTypesToGenerate =
-                let parsedScriptTypes = providedScriptTypes |> List.choose ScriptType.TryCreate
-
-                failOnMismatch providedScriptTypes parsedScriptTypes ScriptType.TryCreate "Unrecognized Script Type(s)"
-
-                match parsedScriptTypes with
-                | [] -> [CSharp; FSharp]
-                | xs -> xs
-
-            let workaround() = null |> ignore
-            for framework, isDefaultFramework in Seq.distinct frameworksToGenerate do
-                match groups with
-                | []  -> Logging.tracefn "Generating load scripts for framework %O" framework
-                | [g] -> Logging.tracefn "Generating load scripts for framework %O in group %O" framework g
-                | _   -> Logging.tracefn "Generating load scripts for framework %O in groups: %s" framework (String.Join(", ", groups.ToString()))
-
-                workaround() // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
-                for scriptType in scriptTypesToGenerate do
-                    generateScriptsForRootFolder scriptType  groups framework isDefaultFramework rootFolder dependenciesFile lockFile
+            constructScriptsFromData groups dependenciesFile lockFile providedFrameworks providedScriptTypes
 
