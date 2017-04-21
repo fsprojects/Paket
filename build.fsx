@@ -321,15 +321,34 @@ Target "QuickTest" (fun _ ->
 )
 "Clean" ==> "QuickTest"
 
+Target "QuickIntegrationTests" (fun _ ->
+    [   "src/Paket.Core/Paket.Core.fsproj"
+        "src/Paket/Paket.fsproj"
+        "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
+    ]   |> MSBuildDebug "" "Rebuild"
+        |> ignore
+    
+    
+    !! integrationTestAssemblies    
+    |> NUnit3 (fun p ->
+        { p with
+            ShadowCopy = false
+            Where = "cat==scriptgen"
+            WorkingDir = "tests/Paket.Tests"
+            TimeOut = TimeSpan.FromMinutes 40. })
+)
+"Clean" ==> "QuickIntegrationTests" 
+
+
 Target "RunIntegrationTests" (fun _ ->
-    !! integrationTestAssemblies
+    !! integrationTestAssemblies    
     |> NUnit3 (fun p ->
         { p with
             ShadowCopy = false
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 40. })
 )
-
+"Clean" ==> "Build" ==> "RunIntegrationTests" 
 
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
