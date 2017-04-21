@@ -1,0 +1,6 @@
+redirects: force
+source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json
+nuget Log4Net 1.2.10
+nuget NUnit
