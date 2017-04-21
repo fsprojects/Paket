@@ -4,13 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>e789c72a-5cfd-436b-8ef1-61aa2852a89f</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Paket.Tests</RootNamespace>
     <AssemblyName>Paket.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <Name>Paket.Tests</Name>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -41,34 +39,35 @@
     <DocumentationFile>bin\Release\Paket.Tests.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
   </PropertyGroup>
   <Choose>
+    <When Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\4.1\Framework\v4.0\Microsoft.FSharp.Targets')">
+      <PropertyGroup>
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\4.1\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </When>
     <When Condition="'$(VisualStudioVersion)' != '11.0' and Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets')">
       <PropertyGroup>
         <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
       </PropertyGroup>
     </When>
-    <When Condition="$(TargetFSharpCoreVersion) &gt;= 4.3.0.0 AND $(TargetFSharpCoreVersion) &lt; 4.3.1.0 ">
+    <When Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\4.0\Framework\v4.0\Microsoft.FSharp.Targets')">
       <PropertyGroup>
-        <FSharpTargetsPath>$(MSBuildProgramFiles32)\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\4.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
       </PropertyGroup>
     </When>
-    <When Condition="$(TargetFSharpCoreVersion) &gt;= 4.3.1.0 AND $(TargetFSharpCoreVersion) &lt; 4.4.0.0 ">
+    <When Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets')">
       <PropertyGroup>
-        <FSharpTargetsPath>$(MSBuildProgramFiles32)\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.1\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
       </PropertyGroup>
     </When>
-    <When Condition="$(TargetFSharpCoreVersion) &gt;= 4.4.0.0 AND $(TargetFSharpCoreVersion) &lt; 4.4.1.0 ">
+    <When Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')">
       <PropertyGroup>
-        <FSharpTargetsPath>$(MSBuildProgramFiles32)\Microsoft SDKs\F#\4.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
       </PropertyGroup>
     </When>
-    <Otherwise>
-      <PropertyGroup>
-        <FSharpTargetsPath>$(MSBuildProgramFiles32)\Microsoft SDKs\F#\4.1\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
-      </PropertyGroup>
-    </Otherwise>
   </Choose>
   <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -80,27 +79,47 @@
   -->
   <Import Project="$(SolutionDir)\.paket\paket.targets" />
   <ItemGroup>
+    <None Include="paket.references" />
     <Compile Include="..\..\paket-files\test\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
     </Compile>
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelpers.fs" />
-    <Compile Include="GroupNameSpecs.fs" />
-    <Compile Include="SemVerSpecs.fs" />
-    <Compile Include="ConfigFileSpecs.fs" />
-    <Compile Include="NugetVersionRangeParserSpecs.fs" />
-    <Compile Include="NugetVersionRangeSerializerSpecs.fs" />
-    <Compile Include="DependencySetSpecs.fs" />
-    <Compile Include="BindingRedirect.fs" />
-    <Compile Include="ExtractPackageSpecs.fs" />
     <Compile Include="UtilsSpecs.fs" />
-    <Compile Include="TemplateFileParsing.fs" />
-    <Compile Include="NuspecWriterSpecs.fs" />
-    <Compile Include="FrameworkCompatibilitySpecs.fs" />
-    <Compile Include="RestrictionFilterSpecs.fs" />
-    <Compile Include="RestrictionApplicationSpecs.fs" />
-    <Compile Include="PackageProcessSpecs.fs" />
+    <Compile Include="Versioning\SemVerSpecs.fs" />
+    <Compile Include="Versioning\FrameworkCompatibilitySpecs.fs" />
+    <Compile Include="Versioning\ExtractPackageSpecs.fs" />
+    <Compile Include="Versioning\NugetVersionRangeSerializerSpecs.fs" />
+    <Compile Include="Versioning\NugetVersionRangeParserSpecs.fs" />
+    <Compile Include="Versioning\ConfigFileSpecs.fs" />
+    <Compile Include="Versioning\FilterVersionSpecs.fs" />
+    <Compile Include="Versioning\RestrictionFilterSpecs.fs" />
+    <Compile Include="Versioning\RestrictionApplicationSpecs.fs" />
+    <Compile Include="Versioning\DependencySetSpecs.fs" />
+    <None Include="NuspecSamples\EmptyLibs.nuspec" />
+    <None Include="NuspecSamples\Fantomas.nuspec" />
+    <None Include="NuspecSamples\FluentAssertions.nuspec" />
+    <None Include="NuspecSamples\FluentAssertions4.nuspec" />
+    <None Include="NuspecSamples\FSharp.Data.nuspec" />
+    <None Include="NuspecSamples\FSharp.Data.Prerelease.nuspec" />
+    <None Include="NuspecSamples\FSharp.Data.SqlClient.nuspec" />
+    <None Include="NuspecSamples\FSharp.Data.SqlEnumProvider.nuspec" />
+    <None Include="NuspecSamples\FsXaml.Wpf.nuspec" />
+    <None Include="NuspecSamples\LiteGuard.Source.nuspec" />
+    <None Include="NuspecSamples\log4net.nuspec" />
+    <None Include="NuspecSamples\MathNet.Numerics.FSharp.nuspec" />
+    <None Include="NuspecSamples\MathNet.Numerics.nuspec" />
+    <None Include="NuspecSamples\Microsoft.AspNetCore.Antiforgery.nuspec" />
+    <None Include="NuspecSamples\Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec" />
+    <None Include="NuspecSamples\Microsoft.Framework.Logging.nuspec" />
+    <None Include="NuspecSamples\Microsoft.Net.Http.nuspec" />
+    <None Include="NuspecSamples\Octokit.nuspec" />
+    <None Include="NuspecSamples\RazorEngine.nuspec" />
+    <None Include="NuspecSamples\ReadOnlyCollectionExtensions.nuspec" />
+    <None Include="NuspecSamples\WindowsAzure.Storage.nuspec" />
+    <None Include="NuspecSamples\EasyNetQ.nuspec" />
+    <Compile Include="NuspecSamples\NuspecSpecs.fs" />
     <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -109,75 +128,10 @@
     </Content>
     <Compile Include="PackagesConfig\ReadConfig.fs" />
     <Compile Include="PackagesConfig\WriteConfig.fs" />
-    <Compile Include="UpdateProcessSpecs.fs" />
-    <Compile Include="RemotePushUrlSpecs.fs" />
-    <Content Include="Nuspec\FSharp.Data.nuspec">
+    <Content Include="JSON-LD\Rx-PlatformServices.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Nuspec\FSharp.Data.Prerelease.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\Octokit.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\Fantomas.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\Microsoft.Net.Http.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\RazorEngine.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\FsXaml.Wpf.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\EmptyLibs.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\log4net.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\FSharp.Data.SqlEnumProvider.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\ReadOnlyCollectionExtensions.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\FluentAssertions.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\FluentAssertions4.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\FSharp.Data.SqlClient.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\MathNet.Numerics.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\MathNet.Numerics.FSharp.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\WindowsAzure.Storage.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\LiteGuard.Source.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\EasyNetQ.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\Microsoft.Framework.Logging.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\Microsoft.AspNetCore.Antiforgery.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Nuspec\Microsoft.AspNetCore.Mvc.ViewFeatures.nuspec">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="Nuspec\NuspecSpecs.fs" />
+    <Compile Include="JSON-LD\JSONLDSpecs.fs" />
     <Content Include="NuGetOData\Fantomas.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -222,11 +176,6 @@
     <Content Include="NuGetConfig\ConfigWithDisabledFeedFromUpstream.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="JSON-LD\Rx-PlatformServices.json">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Compile Include="JSON-LD\JSONLDSpecs.fs" />
-    <Compile Include="FilterVersionSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRangeSpecs.fs" />
     <Compile Include="DependenciesFile\VersionRequirementSpecs.fs" />
     <Compile Include="DependenciesFile\ParserSpecs.fs" />
@@ -234,6 +183,8 @@
     <Compile Include="DependenciesFile\AddPackageSpecs.fs" />
     <Compile Include="DependenciesFile\RemovePackageSpecs.fs" />
     <Compile Include="DependenciesFile\DependencyChangesSpecs.fs" />
+    <Compile Include="DependenciesFile\GroupNameSpecs.fs" />
+    <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
     <Compile Include="Resolver\DependencyGraphSpecs.fs" />
     <Compile Include="Resolver\SimpleDependenciesSpecs.fs" />
     <Compile Include="Resolver\CyclicGraphSpecs.fs" />
@@ -363,11 +314,15 @@
     <Compile Include="InstallModel\Penalty\PenaltySpecs.fs" />
     <Compile Include="InstallModel\Penalty\FrameworkConditionsSpecs.fs" />
     <Compile Include="InstallModel\AnalyzerSpecs.fs" />
-    <Compile Include="DependencyModel\ProjectDependencySpecs.fs" />
-    <None Include="paket.references" />
-    <Content Include="App.config" />
+    <Compile Include="InstallModel\UpdateProcessSpecs.fs" />
+    <Compile Include="InstallModel\BindingRedirect.fs" />
+    <Compile Include="InstallModel\RuntimeGraphTests.fs" />
+    <Compile Include="Packaging\PackageProcessSpecs.fs" />
+    <Compile Include="Packaging\NuspecWriterSpecs.fs" />
+    <Compile Include="Packaging\TemplateFileParsing.fs" />
+    <Compile Include="Packaging\RemotePushUrlSpecs.fs" />
     <Compile Include="ScriptGeneration\LoadingScriptTests.fs" />
-    <Compile Include="RuntimeGraphTests.fs" />
+    <Content Include="App.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

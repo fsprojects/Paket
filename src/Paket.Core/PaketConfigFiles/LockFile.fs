@@ -558,9 +558,13 @@ module LockFileParser =
 
 /// Allows to parse and analyze paket.lock files.
 type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
+    let fileName = if isNull fileName then String.Empty else fileName
     member __.Groups = groups
     member __.FileName = fileName
-    member __.RootPath = FileInfo(fileName).Directory.FullName
+    member __.RootPath = 
+        try FileInfo(fileName).Directory.FullName
+        with _ -> String.Empty
+
     member this.GetGroup groupName =
         match this.Groups |> Map.tryFind groupName with
         | Some g -> g

@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Paket.Tests</RootNamespace>
     <AssemblyName>Paket.IntegrationTests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <TargetFSharpCoreVersion>4.4.0.0</TargetFSharpCoreVersion>
     <Name>Paket.Tests</Name>
     <TargetFrameworkProfile />

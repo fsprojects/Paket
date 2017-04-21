@@ -133,7 +133,6 @@ let ``Can generate script contents from lockfile info``() =
 
     let generated = 
         getPackageOrderFromLockFile lockFile
-        //|> Seq.collect (fun x ->  x.Value |> Seq.map (fun y -> x.Key, y))
         |> Map.map (fun  groupName packages -> 
             // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
             ((Map.empty,[]),packages)
