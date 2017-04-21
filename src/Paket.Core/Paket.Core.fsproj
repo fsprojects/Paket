@@ -133,7 +133,6 @@
     <Compile Include="PaketConfigFiles/PackagesConfigFile.fs" />
     <Compile Include="PaketConfigFiles\LocalFile.fs" />
     <Compile Include="Installation\ProcessOptions.fs" />
-    <Compile Include="Installation\DataModel.fs" />
     <Compile Include="Installation\BindingRedirects.fs" />
     <Compile Include="Installation\DependencyChangeDetection.fs" />
     <Compile Include="Installation\ScriptGeneration.fs" />

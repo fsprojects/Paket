@@ -8,22 +8,28 @@ open System.Text.RegularExpressions
 [<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
 [<CustomEquality; CustomComparison>]
 type PackageName =
-| PackageName of Name:string * CompareString:string
+| PackageName of name:string * compareString:string
+    
+    member self.Name = 
+       self |> function PackageName (name=n) -> n
+    
+    member self.CompareString = 
+       self |> function PackageName (compareString=c) -> c
 
     member this.GetCompareString() =
         match this with
-        | PackageName(_,id) -> id
-
+        | PackageName (_,id) -> id
+        
     override this.ToString() = 
         match this with
-        | PackageName(name,_) -> name
+        | PackageName (name,_) -> name
 
-    override this.Equals(that) = 
+    override this.Equals that = 
         match that with
         | :? PackageName as that -> this.GetCompareString() = that.GetCompareString()
         | _ -> false
 
-    override this.GetHashCode() = hash (this.GetCompareString())
+    override this.GetHashCode () = hash this.CompareString
 
     interface System.IComparable with
        member this.CompareTo that = 
@@ -39,7 +45,13 @@ let PackageName(name:string) = PackageName.PackageName(name.Trim(),name.ToLowerI
 [<System.Diagnostics.DebuggerDisplay("{Item2}")>]
 [<CustomEquality; CustomComparison>]
 type GroupName =
-| GroupName of Name:string * CompareString:string
+| GroupName of name:string * compareString:string
+
+   member self.Name = 
+       self |> function GroupName (name=n) -> n
+    
+    member self.CompareString = 
+       self |> function GroupName (compareString=c) -> c
 
     member this.GetCompareString() =
         match this with
@@ -71,7 +83,14 @@ let GroupName(name:string) =
 let [<Literal>] MainGroup = "Main"
 
 type QualifiedPackageName = 
-    | QualifiedPackageName of Group:GroupName * Package:PackageName
+    | QualifiedPackageName of group:GroupName * package:PackageName
+
+    member self.Package = 
+       self |> function QualifiedPackageName (package=p) -> p
+    
+    member self.Group = 
+       self |> function QualifiedPackageName (group=g) -> g
+
     static member FromStrings (groupName: string option, packageName: string) =
         let groupName = 
             match groupName with

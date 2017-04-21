@@ -11,13 +11,17 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "project", "project", "{BF60BC93-E09B-4E5F-9D85-95A519479D54}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
 		.travis.yml = .travis.yml
 		appveyor.yml = appveyor.yml
 		build.cmd = build.cmd
 		build.fsx = build.fsx
 		build.sh = build.sh
 		docs\tools\generate.fsx = docs\tools\generate.fsx
+		global.json = global.json
 		LICENSE.txt = LICENSE.txt
+		NuGet.Config = NuGet.Config
 		paket.dependencies = paket.dependencies
 		paket.lock = paket.lock
 		.paket\Paket.Restore.targets = .paket\Paket.Restore.targets

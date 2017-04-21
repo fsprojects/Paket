@@ -216,14 +216,15 @@ module LockFileSerializer =
 
 module LockFileParser =
 
-    type ParseState =
-        { GroupName : GroupName
-          RepositoryType : string option
-          RemoteUrl :string option
-          Packages : ResolvedPackage list
-          SourceFiles : ResolvedSourceFile list
-          LastWasPackage : bool
-          Options: InstallOptions }
+    type ParseState = { 
+        GroupName : GroupName
+        RepositoryType : string option
+        RemoteUrl :string option
+        Packages : ResolvedPackage list
+        SourceFiles : ResolvedSourceFile list
+        LastWasPackage : bool
+        Options: InstallOptions 
+    }
 
     type private ParserOption =
     | ReferencesMode of bool

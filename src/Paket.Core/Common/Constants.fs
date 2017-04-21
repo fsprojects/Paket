@@ -33,7 +33,7 @@ let [<Literal>] ProjectDefaultNameSpace   = "http://schemas.microsoft.com/develo
 let [<Literal>] ProjectDefaultNameSpaceCore  = "http://schemas.microsoft.com/developer/msbuild/2003"
 
 #if DOTNETCORE
-module internal Environment =
+module Environment =
     type SpecialFolder =
         | ApplicationData
         | UserProfile
@@ -70,7 +70,8 @@ let AppDataFolder =
     getEnvDir Environment.SpecialFolder.ApplicationData 
     |> Option.defaultValue (
         let fallback = Path.GetFullPath ".paket"
-        Logging.traceWarnfn "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead" fallback
+        Logging.traceWarnfn 
+            "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead" fallback
         fallback
     )
 
@@ -84,7 +85,8 @@ let LocalRootForTempData =
     )|> Option.defaultValue (
         let fallback = Path.GetFullPath ".paket"
         Logging.traceWarnfn 
-            "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead" fallback
+            "Could not detect a root for our (user specific) temporary files.\
+             Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead" fallback
         fallback
     )
 
@@ -113,8 +115,8 @@ let NuGetCacheFolder =
         Some di.FullName
     ) |> Option.orElse (
         getEnvDir Environment.SpecialFolder.LocalApplicationData
-        |> Option.bind (fun userhome ->
-            let di = DirectoryInfo (Path.Combine (userhome, "Nuget", "Cache"))
+        |> Option.bind (fun appData ->
+            let di = DirectoryInfo (Path.Combine (appData, "Nuget", "Cache"))
             if not di.Exists then
                 di.Create ()
             Some di.FullName
