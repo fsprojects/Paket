@@ -259,7 +259,7 @@ module LockFileParser =
                 | "off" -> Some false
                 | _ -> None
 
-            InstallOption(Redirects(setting))
+            InstallOption (Redirects setting)
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "GENERATE-LOAD-SCRIPTS:" trimmed -> 
@@ -269,7 +269,7 @@ module LockFileParser =
                 | "off" -> Some false
                 | _ -> None
                                             
-            InstallOption(GenerateLoadScripts(setting))
+            InstallOption (GenerateLoadScripts setting)
         | _, String.StartsWith "COPY-CONTENT-TO-OUTPUT-DIR:" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -278,7 +278,7 @@ module LockFileParser =
                 | "preserve_newest" -> CopyToOutputDirectorySettings.PreserveNewest
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
                                             
-            InstallOption(CopyContentToOutputDir(setting))
+            InstallOption (CopyContentToOutputDir setting)
         | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(FrameworkRestrictionList (trimmed.Trim() |> Requirements.parseRestrictions true)))
         | _, String.StartsWith "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
         | _, String.StartsWith "CONTENT:" trimmed -> 
@@ -288,7 +288,7 @@ module LockFileParser =
                 | "once" -> ContentCopySettings.OmitIfExisting
                 | _ -> ContentCopySettings.Overwrite
 
-            InstallOption(OmitContent(setting))
+            InstallOption (OmitContent setting)
         | _, String.StartsWith "STRATEGY:" trimmed -> 
             let setting =
                 match trimmed.Trim().ToLowerInvariant() with

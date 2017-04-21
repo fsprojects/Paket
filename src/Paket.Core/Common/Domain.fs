@@ -6,9 +6,9 @@ open System.Text.RegularExpressions
 
 /// Represents a NuGet package name
 [<System.Diagnostics.DebuggerDisplay("{ToString()}")>]
-[<CustomEquality;CustomComparison>]
+[<CustomEquality; CustomComparison>]
 type PackageName =
-| PackageName of string * string
+| PackageName of Name:string * CompareString:string
 
     member this.GetCompareString() =
         match this with
@@ -37,17 +37,17 @@ let PackageName(name:string) = PackageName.PackageName(name.Trim(),name.ToLowerI
 
 /// Represents a normalized group name
 [<System.Diagnostics.DebuggerDisplay("{Item2}")>]
-[<CustomEquality;CustomComparison>]
+[<CustomEquality; CustomComparison>]
 type GroupName =
-| GroupName of string * string
+| GroupName of Name:string * CompareString:string
 
     member this.GetCompareString() =
         match this with
-        | GroupName(_,id) -> id
+        | GroupName (_,id) -> id
 
-    override this.ToString() = 
+    override this.ToString () = 
         match this with
-        | GroupName(name,_) -> name
+        | GroupName (name,_) -> name
 
     override this.Equals(that) = 
         match that with
@@ -71,7 +71,7 @@ let GroupName(name:string) =
 let [<Literal>] MainGroup = "Main"
 
 type QualifiedPackageName = 
-    | QualifiedPackageName of GroupName * PackageName
+    | QualifiedPackageName of Group:GroupName * Package:PackageName
     static member FromStrings (groupName: string option, packageName: string) =
         let groupName = 
             match groupName with

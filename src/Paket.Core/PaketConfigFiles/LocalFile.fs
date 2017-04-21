@@ -4,9 +4,10 @@ open Paket.Domain
 open Paket.ModuleResolver
 open Paket.PackageSources
 
-type OverriddenPackage =
-    { Name : PackageName
-      Group : GroupName }
+type OverriddenPackage = { 
+    Name : PackageName
+    Group : GroupName 
+}
 
 type LocalOverride =
     | LocalSourceOverride of package: OverriddenPackage * devSource: PackageSource * version: Option<SemVerInfo>
@@ -14,7 +15,6 @@ type LocalOverride =
 
 type LocalFile = LocalFile of devSourceOverrides: LocalOverride list
 
-[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module LocalFile =
     open System
 
@@ -106,20 +106,21 @@ module LocalFile =
                 Git.Handling.extractUrlParts s
             let restriction = VersionRestriction.Concrete (defaultArg branch "master")
             let sha = 
-                RemoteDownload.getSHA1OfBranch (GitLink(cloneUrl)) owner project restriction None 
+                RemoteDownload.getSHA1OfBranch (GitLink cloneUrl) owner project restriction None 
                 |> Async.RunSynchronously
 
-            let remoteFile =
-                { ResolvedSourceFile.Commit = sha
-                  Owner = owner
-                  Origin = GitLink(cloneUrl)
-                  Project = project
-                  Dependencies = Set.empty
-                  Command = buildCommand
-                  OperatingSystemRestriction = operatingSystemRestriction
-                  PackagePath = packagePath
-                  Name = "" 
-                  AuthKey = None }
+            let remoteFile = { 
+                ResolvedSourceFile.Commit = sha
+                Owner = owner
+                Origin = GitLink cloneUrl
+                Project = project
+                Dependencies = Set.empty
+                Command = buildCommand
+                OperatingSystemRestriction = operatingSystemRestriction
+                PackagePath = packagePath
+                Name = "" 
+                AuthKey = None 
+            }
 
             let packagesPath = 
                 match packagePath with

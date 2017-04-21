@@ -57,61 +57,70 @@ module internal Environment =
 
 let MainDependencyGroup = GroupName "Main"
 
-let private toOption s = if String.IsNullOrEmpty s then None else Some s 
+let getEnVar variable = 
+    let envar = Environment.GetEnvironmentVariable variable
+    if String.IsNullOrEmpty envar then None else Some envar
+
+let getEnvDir specialPath =
+    let dir = Environment.GetFolderPath specialPath 
+    if String.IsNullOrEmpty dir then None else Some dir
+
+
 let AppDataFolder =
-  match Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) |> toOption with 
-  | Some s -> s 
-  | None -> 
-    let fallback = Path.GetFullPath (".paket")
-    Logging.traceWarnfn "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead" fallback
-    fallback
+    getEnvDir Environment.SpecialFolder.ApplicationData 
+    |> Option.defaultValue (
+        let fallback = Path.GetFullPath ".paket"
+        Logging.traceWarnfn "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead" fallback
+        fallback
+    )
 
 let PaketConfigFolder   = Path.Combine(AppDataFolder, "Paket")
 let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 
 let LocalRootForTempData =
-  match Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) |> toOption with
-  | Some s -> s
-  | None ->
-    match Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) |> toOption with
-    | Some s -> s
-    | None ->
-      let fallback = Path.GetFullPath (".paket")
-      Logging.traceWarnfn "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead" fallback
-      fallback
+    getEnvDir Environment.SpecialFolder.UserProfile 
+    |> Option.orElse (
+        getEnvDir Environment.SpecialFolder.LocalApplicationData 
+    )|> Option.defaultValue (
+        let fallback = Path.GetFullPath ".paket"
+        Logging.traceWarnfn 
+            "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead" fallback
+        fallback
+    )
 
 let GitRepoCacheFolder = Path.Combine(LocalRootForTempData,".paket","git","db")
 
 let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
+
 let UserNuGetPackagesFolder = 
-    match Environment.GetEnvironmentVariable(GlobalPackagesFolderEnvironmentKey) |> toOption with
-    | Some path ->
-        path.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
-    | None ->
-        Path.Combine(LocalRootForTempData,".nuget","packages")
+    getEnVar GlobalPackagesFolderEnvironmentKey 
+    |> Option.map (fun path ->
+        path.Replace (Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
+    ) |> Option.defaultValue(
+        Path.Combine (LocalRootForTempData,".nuget","packages")
+    )
 
 /// The magic unpublished date is 1900-01-01T00:00:00
 let MagicUnlistingDate = DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8.)).DateTime
 
 /// The NuGet cache folder.
 let NuGetCacheFolder =
-    match Environment.GetEnvironmentVariable("NuGetCachePath")
-          |> toOption with
-    | Some cachePath ->
-        let di = DirectoryInfo(cachePath)
-        if not di.Exists then
-            di.Create()
-        di.FullName
-    | None ->
-        match Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) 
-              |> toOption with
-        | Some appData ->
-          let di = DirectoryInfo(Path.Combine(Path.Combine(appData, "NuGet"), "Cache"))
-          if not di.Exists then
-              di.Create()
-          di.FullName
-        | None ->
-          let fallback = Path.GetFullPath (".paket")
-          Logging.traceWarnfn "Could not find LocalApplicationData folder, try to set the 'LocalAppData' environment variable. Using '%s' instead" fallback
-          fallback
-      
+    // 
+    getEnVar "NuGetCachePath" 
+    |> Option.bind (fun cachePath ->
+        let di = DirectoryInfo cachePath
+        if not di.Exists then di.Create()
+        Some di.FullName
+    ) |> Option.orElse (
+        getEnvDir Environment.SpecialFolder.LocalApplicationData
+        |> Option.bind (fun userhome ->
+            let di = DirectoryInfo (Path.Combine (userhome, "Nuget", "Cache"))
+            if not di.Exists then
+                di.Create ()
+            Some di.FullName
+    ))|> Option.defaultValue (
+        let fallback = Path.GetFullPath ".paket"
+        Logging.traceWarnfn 
+            "Could not find LocalApplicationData folder, try to set the 'LocalAppData' environment variable. Using '%s' instead" fallback
+        fallback
+    )

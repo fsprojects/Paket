@@ -8,10 +8,10 @@ type CacheType =
     | AllVersions
     | CurrentVersion
 
-type Cache = 
-    { Location : string
-      CacheType : CacheType option }
-
+type Cache = { 
+    Location : string
+    CacheType : CacheType option 
+} with
     member this.BaseOnRoot root = 
         if Path.IsPathRooted this.Location && not(String.IsNullOrWhiteSpace root) then 
             this 
@@ -38,20 +38,21 @@ type Cache =
             | true, x -> kvPairs.Remove key |> ignore; Some x
             | _ -> None
 
-        let settings =
-            { Location = normalizeFeedUrl source
-              CacheType = 
+        let settings = { 
+            Location = normalizeFeedUrl source
+            CacheType = 
                 match getPair "versions" with
                 | Some "current" -> Some CacheType.CurrentVersion
                 | Some "all" -> Some CacheType.AllVersions
-                | _ -> None }
+                | _ -> None 
+        }
 
         for kv in kvPairs do
             failwithf "Unknown package settings %s: %s" kv.Key kv.Value
 
         settings
 
-[<CompilationRepresentation (CompilationRepresentationFlags.ModuleSuffix)>]
+
 module Cache =
     let private lockObj = System.Object()
     let mutable private inaccessibleCaches = Set.empty<Cache>

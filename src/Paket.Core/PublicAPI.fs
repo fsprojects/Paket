@@ -200,11 +200,15 @@ type Dependencies(dependenciesFileName: string) =
             providedScriptTypes = defaultArg providedScriptTypes [],
             alternativeProjectRoot = None)
 
-    static member GenerateLoadScripts() =
-        LoadingScripts.ScriptGeneration.executeCommand [] (DirectoryInfo (Directory.GetCurrentDirectory())) List.empty List.empty
+    static member GenerateLoadScriptData () =
+        LoadingScripts.ScriptGeneration.constructScriptsFromDisk [] (DirectoryInfo (Directory.GetCurrentDirectory())) List.empty List.empty
+
+    static member GenerateLoadScripts () =
+        Dependencies.GenerateLoadScriptData () |> Seq.iter (fun sd -> sd.Save())
 
     /// Updates all dependencies.
-    member this.Update(force: bool): unit = this.Update(force, false, false, false)
+    member this.Update(force: bool): unit = 
+        this.Update(force, false, false, false)
 
     /// Updates all dependencies.
     member this.Update(force: bool, withBindingRedirects:bool, cleanBindingRedirects: bool, createNewBindingFiles:bool): unit =
@@ -214,11 +218,15 @@ type Dependencies(dependenciesFileName: string) =
     member this.Update(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.Update(
-                        dependenciesFileName,
-                        { UpdaterOptions.Default with
-                            Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
-                            NoInstall = installAfter |> not }))
+            fun () -> 
+            UpdateProcess.Update(
+                dependenciesFileName,
+                    { UpdaterOptions.Default with
+                        Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
+                        NoInstall = installAfter |> not 
+                    }
+            )
+        )
 
     /// Updates dependencies in single group.
     member this.UpdateGroup(groupName, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode:SemVerUpdateMode, touchAffectedRefs): unit =
