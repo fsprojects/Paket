@@ -133,3 +133,5 @@ let normalizeXml(text:string) =
 let toPath elems = System.IO.Path.Combine(elems |> Seq.toArray)
 
 let ensureDir () = System.Environment.CurrentDirectory <-  NUnit.Framework.TestContext.CurrentContext.TestDirectory
+
+let printSqs sqs = sqs |> Seq.iter (printfn "%A")
