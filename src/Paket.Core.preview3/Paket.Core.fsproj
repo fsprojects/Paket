@@ -1,21 +1,18 @@
 <Project Sdk="FSharp.NET.Sdk;Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netstandard1.6</TargetFramework>
     <PaketCoreSourcesDir>..\Paket.Core</PaketCoreSourcesDir>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="$(PaketCoreSourcesDir)\Common\AssemblyInfo.fs" />
-    
     <Compile Include="$(PaketCoreSourcesDir)\Common\CustomAssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
       <Paket>True</Paket>
-      <Link>Common\AssemblyReader.fs</Link>
+      <Link>AssemblyReader.fs</Link>
     </Compile>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
-      <Link>Common\Globbing.fs</Link>
+      <Link>Globbing.fs</Link>
     </Compile>
     <Compile Include="$(PaketCoreSourcesDir)\Common\Async.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Domain.fs" />
@@ -79,16 +76,14 @@
     <Compile Include="$(PaketCoreSourcesDir)\Packaging\PackageMetaData.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Packaging\PackageProcess.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PublicAPI.fs" />
+    <Content Include="app.config" />
   </ItemGroup>
-  
   <ItemGroup>
     <None Include="$(PaketCoreSourcesDir)\paket.template" />
     <None Include="paket.references" />
   </ItemGroup>
-
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);DOTNETCORE;NETSTANDARD1_5;NETSTANDARD1_6;USE_HTTP_CLIENT</DefineConstants>
   </PropertyGroup>
-
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

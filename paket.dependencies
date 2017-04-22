@@ -1,12 +1,13 @@
 source https://nuget.org/api/v2
+content: none
 
 nuget Newtonsoft.Json redirects: force
 nuget Argu prerelease
-nuget FSharp.Core redirects: force
+nuget FSharp.Core redirects: force, 
 nuget Chessie >= 0.6
 nuget Mono.Cecil prerelease
 
-nuget FSharp.NET.Sdk      
+nuget FSharp.NET.Sdk  content: none  
 nuget System.Diagnostics.TraceSource 
 nuget System.Diagnostics.FileVersionInfo 
 nuget System.Xml.XDocument 
@@ -21,7 +22,7 @@ github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
 
 group Build
-
+  content: none
   source https://nuget.org/api/v2
   
   nuget FAKE prerelease
@@ -31,7 +32,7 @@ group Build
   github fsharp/FAKE modules/Octokit/Octokit.fsx
 
 group Test
-
+  content: none
   source https://nuget.org/api/v2
 
   nuget Moq
@@ -40,6 +41,6 @@ group Test
   nuget NUnit redirects: force
   nuget NUnit.Console
   nuget NUnit3TestAdapter version_in_path: true               
-  nuget FSharp.Core redirects: force
+  nuget FSharp.Core redirects: force, content: none
 
   github forki/FsUnit FsUnit.fs
