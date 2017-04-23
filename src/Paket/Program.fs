@@ -265,63 +265,67 @@ let fixNuspec silent (results : ParseResults<_>) =
     | None ->
         failwithf "Please specify the nuspec file with the 'file' parameter."
 
-    | Some nuspecFileName -> 
-        if not (File.Exists nuspecFileName) then
-            failwithf "Specified file '%s' does not exist." nuspecFileName
-        
-        let nuspecText = File.ReadAllText nuspecFileName
+    | Some nuspecFileNames ->
+        // if multiple, msbuild will join them via ';'
+        let fileNameSplits = nuspecFileNames.Split([|';'|])
+        for nuspecFileName in fileNameSplits do
+            if not (File.Exists nuspecFileName) then
+                failwithf "Specified file '%s' does not exist." nuspecFileName
 
-        let doc = 
-            try
-                let doc = Xml.XmlDocument()
-                doc.LoadXml nuspecText
-                doc
-            with
-            | exn -> failwithf "Could not parse nuspec file '%s'.%sMessage: %s" nuspecFileName Environment.NewLine exn.Message
-        
-        match results.TryGetResult <@ FixNuspecArgs.ReferencesFile @> with
-        | None ->
-            failwithf "Please specify the references-file with the 'references-file' parameter."
+        for nuspecFileName in fileNameSplits do
+            let nuspecText = File.ReadAllText nuspecFileName
 
-        | Some referencesFileName -> 
-            if not (File.Exists referencesFileName) then
-                failwithf "Specified references-file '%s' does not exist." referencesFileName
+            let doc =
+                try
+                    let doc = Xml.XmlDocument()
+                    doc.LoadXml nuspecText
+                    doc
+                with
+                | exn -> failwithf "Could not parse nuspec file '%s'.%sMessage: %s" nuspecFileName Environment.NewLine exn.Message
 
-            let referencesText = File.ReadAllLines referencesFileName
-            let transitiveReferences = 
-                referencesText 
-                |> Array.map (fun l -> l.Split [|','|])
-                |> Array.choose (fun x -> 
-                    if x.[2] = "Transitive" then
-                        Some x.[0]
-                    else
-                        None)
-                |> Set.ofArray
-            
-            let rec traverse (parent:XmlNode) =
-                let nodesToRemove = System.Collections.Generic.List<_>()
-                for node in parent.ChildNodes do
-                    if node.Name = "dependency" then
-                        let packageName = 
-                            match node.Attributes.["id"] with
-                            | null -> ""
-                            | x -> x.InnerText
+            match results.TryGetResult <@ FixNuspecArgs.ReferencesFile @> with
+            | None ->
+                failwithf "Please specify the references-file with the 'references-file' parameter."
 
-                        if transitiveReferences.Contains packageName then
-                            nodesToRemove.Add node |> ignore
-                
-                if nodesToRemove.Count = 0 then
+            | Some referencesFileName ->
+                if not (File.Exists referencesFileName) then
+                    failwithf "Specified references-file '%s' does not exist." referencesFileName
+
+                let referencesText = File.ReadAllLines referencesFileName
+                let transitiveReferences =
+                    referencesText
+                    |> Array.map (fun l -> l.Split [|','|])
+                    |> Array.choose (fun x ->
+                        if x.[2] = "Transitive" then
+                            Some x.[0]
+                        else
+                            None)
+                    |> Set.ofArray
+
+                let rec traverse (parent:XmlNode) =
+                    let nodesToRemove = System.Collections.Generic.List<_>()
                     for node in parent.ChildNodes do
-                        traverse node
-                else
-                    for node in nodesToRemove do
-                        parent.RemoveChild node |> ignore
-            
-            traverse doc
+                        if node.Name = "dependency" then
+                            let packageName = 
+                                match node.Attributes.["id"] with
+                                | null -> ""
+                                | x -> x.InnerText
 
-            use fileStream = File.Open(nuspecFileName, FileMode.Create)
+                            if transitiveReferences.Contains packageName then
+                                nodesToRemove.Add node |> ignore
 
-            doc.Save(fileStream)
+                    if nodesToRemove.Count = 0 then
+                        for node in parent.ChildNodes do
+                            traverse node
+                    else
+                        for node in nodesToRemove do
+                            parent.RemoveChild node |> ignore
+
+                traverse doc
+
+                use fileStream = File.Open(nuspecFileName, FileMode.Create)
+
+                doc.Save(fileStream)
 
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
