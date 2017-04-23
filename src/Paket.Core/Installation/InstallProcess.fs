@@ -190,7 +190,7 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
             if packages.Contains(groupName,packageName) then
                 yield async {
                     let! (groupName,packageName), (package,model) = CreateInstallModel(alternativeProjectRoot, root,groupName,sources,caches,force,resolvedPackage)
-                    return (groupName,packageName), (package,model, getRestrictionList depFileGroupRestrictions)
+                    return (groupName,packageName), (package,model, getRestrictionList lockFileGroupRestrictions)
                 }
         |]
         |> Async.Parallel
