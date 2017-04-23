@@ -1008,7 +1008,7 @@ module ProjectFile =
 
     let updateReferences
             rootPath
-            (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
+            (completeModel: Map<GroupName*PackageName,_*InstallModel*FrameworkRestriction list>) 
             (directPackages : Map<GroupName*PackageName,_*InstallSettings>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) 
             (project:ProjectFile) =
@@ -1048,12 +1048,12 @@ module ProjectFile =
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.GetCompareString(), packName.GetCompareString())
         |> Seq.map (fun kv -> 
-            deleteCustomModelNodes (snd kv.Value) project
+            deleteCustomModelNodes (sndOf3 kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
             let restrictionList = installSettings.FrameworkRestrictions |> getRestrictionList
 
             let projectModel =
-                (snd kv.Value)
+                (sndOf3 kv.Value)
                     .ApplyFrameworkRestrictions(restrictionList)
                     .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
@@ -1074,7 +1074,7 @@ module ProjectFile =
 
             let importTargets = defaultArg installSettings.ImportTargets true
             
-            let allFrameworks = applyRestrictionsToTargets restrictionList KnownTargetProfiles.AllProfiles
+            let allFrameworks = applyRestrictionsToTargets ((thirdOf3 kv.Value)) KnownTargetProfiles.AllProfiles
             generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal importTargets installSettings.ReferenceCondition (set allFrameworks) project)
         |> Seq.iter (fun ctx ->
             for chooseNode in ctx.ChooseNodes do

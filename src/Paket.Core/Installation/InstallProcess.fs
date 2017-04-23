@@ -161,9 +161,11 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
-        let! (package, files, _propsFiles, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
+        let! (package, files, targetsFiles, analyzerFiles) = RestoreProcess.ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
-        let targetsFiles = targetsFiles |> Array.toList
+        let files = files |> Array.map (fun fi -> fi.FullName)
+        let targetsFiles = targetsFiles |> Array.map (fun fi -> fi.FullName) |> Array.toList
+        let analyzerFiles = analyzerFiles |> Array.map (fun fi -> fi.FullName)
         let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions |> getRestrictionList, files, targetsFiles, analyzerFiles, nuspec)
         return (groupName,package.Name), (package,model)
     }
@@ -176,13 +178,21 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
              RemoteDownload.DownloadSourceFiles(root, kv.Key, force, files)
 
     lockFile.Groups
-    |> Seq.map (fun kv' -> 
-        let sources = dependenciesFile.Groups.[kv'.Key].Sources
-        let caches = dependenciesFile.Groups.[kv'.Key].Caches
-        kv'.Value.Resolution
-        |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv.Value))
-        |> Seq.toArray
+    |> Seq.map (fun kv' ->
+        let groupName, lockFileGroup = kv'.Key, kv'.Value
+        let depFileGroup = dependenciesFile.Groups.[groupName]
+        let sources = depFileGroup.Sources
+        let caches = depFileGroup.Caches
+        let depFileGroupRestrictions = depFileGroup.Options.Settings.FrameworkRestrictions
+        let lockFileGroupRestrictions = lockFileGroup.Options.Settings.FrameworkRestrictions
+        [| for kv in lockFileGroup.Resolution do
+            let packageName, resolvedPackage = kv.Key, kv.Value
+            if packages.Contains(groupName,packageName) then
+                yield async {
+                    let! (groupName,packageName), (package,model) = CreateInstallModel(alternativeProjectRoot, root,groupName,sources,caches,force,resolvedPackage)
+                    return (groupName,packageName), (package,model, getRestrictionList depFileGroupRestrictions)
+                }
+        |]
         |> Async.Parallel
         |> Async.RunSynchronously)
     |> Seq.concat
@@ -201,7 +211,7 @@ let brokenDeps = HashSet<_>()
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
 let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects cleanBindingRedirects
-                                  root groupName findDependencies allKnownLibNames 
+                                  root groupName findDependencies allKnownLibs 
                                   (projectCache: Dictionary<string, ProjectFile option>) 
                                   extractedPackages =
 
@@ -265,12 +275,12 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
                 |> Seq.collect (fun (_,profile) ->
                     model.GetLibReferences profile
                     |> Seq.map (fun x -> x, redirects, profile)))
-            |> Seq.groupBy (fun (p,_,profile) -> profile,FileInfo(p.Path).Name)
+            |> Seq.groupBy (fun (p,_,profile) -> profile,FileInfo(p).Name)
             |> Seq.choose(fun (_,librariesForPackage) ->
                 librariesForPackage
                 |> Seq.choose(fun (library,redirects,profile) ->
                     try
-                        let assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(library.Path)
+                        let assembly = Mono.Cecil.AssemblyDefinition.ReadAssembly(library)
                         Some (assembly, BindingRedirects.getPublicKeyToken assembly, assembly.MainModule.AssemblyReferences, redirects, profile)
                     with _ -> None)
                 |> Seq.sortBy(fun (assembly,_,_,_,_) -> assembly.Name.Version)
@@ -305,7 +315,7 @@ let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects c
               Culture = None })
         |> Seq.sort
 
-    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibNames bindingRedirects
+    applyBindingRedirectsToFolder isFirstGroup createNewBindingFiles cleanBindingRedirects root allKnownLibs bindingRedirects
 
 let installForDotnetSDK root (project:ProjectFile) = 
     let paketTargetsPath = RestoreProcess.extractBuildTask(root)
@@ -347,7 +357,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
                     let package = 
                         match model |> Map.tryFind (kv.Key, ps.Name) with
-                        | Some (p,_) -> Choice1Of2 p
+                        | Some (p,_,_) -> Choice1Of2 p
                         | None -> Choice2Of2 <| sprintf " - %s uses NuGet package %O, but it was not found in the paket.lock file in group %O.%s" referenceFile.FileName ps.Name kv.Key (lockFile.CheckIfPackageExistsInAnyGroup ps.Name)
 
                     match group, package with
@@ -496,9 +506,9 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 | true -> Some true
                 | false -> None
 
-            let allKnownLibNames =
+            let allKnownLibs =
                 model
-                |> Seq.map (fun kv -> (snd kv.Value).GetAllLegacyReferenceAndFrameworkReferenceNames())
+                |> Seq.map (fun kv -> (sndOf3 kv.Value).GetLibReferencesLazy.Force())
                 |> Set.unionMany
 
             for g in lockFile.Groups do
@@ -511,7 +521,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         |> Map.tryFind (snd kv.Key)
                         |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
-                    (snd kv.Value,packageRedirects))
+                    (sndOf3 kv.Value,packageRedirects))
                 |> applyBindingRedirects 
                     !first 
                     options.CreateNewBindingFiles
@@ -520,7 +530,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     (FileInfo project.FileName).Directory.FullName 
                     g.Key 
                     lockFile.GetAllDependenciesOf
-                    allKnownLibNames
+                    allKnownLibs
                     projectCache
                 first := false
 
