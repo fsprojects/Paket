@@ -29,9 +29,10 @@ let ``should generate Xml for codecracker.CSharp``() =
               [
                 [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "cs"; "CodeCracker.CSharp.dll"] |> toPath
                 [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "cs"; "CodeCracker.Common.dll"] |> toPath
-              ],
+              ]
+              |> Paket.InstallModel.ProcessingSpecs.fromLegacyList ([".."; "codecracker.CSharp"; ""] |> toPath),
               Nuspec.All)
-    
+
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
     let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>() ,Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
@@ -50,7 +51,7 @@ let ``should generate Xml for codecracker.CSharp in VisualBasic project``() =
               [
                 [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "cs"; "CodeCracker.CSharp.dll"] |> toPath
                 [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "cs"; "CodeCracker.Common.dll"] |> toPath
-              ],
+              ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList ([".."; "codecracker.CSharp"; ""] |> toPath),
               Nuspec.All)
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")
@@ -81,9 +82,9 @@ let ``should generate Xml for codecracker.VisualBasic``() =
               [
                 [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "vb"; "CodeCracker.VisualBasic.dll"] |> toPath
                 [".."; "codecracker.CSharp"; "analyzers"; "dotnet"; "vb"; "CodeCracker.Common.dll"] |> toPath
-              ],
+              ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList ([".."; "codecracker.CSharp"; ""] |> toPath),
               Nuspec.All)
-    
+
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")
     Assert.IsTrue(project.IsSome)
     let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)

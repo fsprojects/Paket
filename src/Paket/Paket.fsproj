@@ -37,8 +37,8 @@
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
-    <StartArguments>convert-from-nuget</StartArguments>
-    <StartWorkingDirectory>c:\users\lr\documents\visual studio 2017\Projects\PaketTest</StartWorkingDirectory>
+    <StartArguments>fix-nuspec file "obj\Fake.1.0.0-alpha-10.nuspec;obj\Fake.netcore.1.0.0-alpha-10.nuspec" references-file "C:\PROJ\FAKE\src\app\Fake.netcore/obj/Fake.netcore.fsproj.references"</StartArguments>
+    <StartWorkingDirectory>C:\PROJ\FAKE\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

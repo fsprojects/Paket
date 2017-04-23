@@ -197,9 +197,10 @@ source https://www.myget.org/F/ravendb3/
 nuget RavenDB.Client == 3.0.3498-Unstable
  """
 
-let graph2 = [
-    "RavenDB.Client","3.0.3498-Unstable",[]
-]
+let graph2 =
+    OfSimpleGraph [
+        "RavenDB.Client","3.0.3498-Unstable",[]
+    ]
 
 let expected2 = """NUGET
   remote: https://www.myget.org/F/ravendb3

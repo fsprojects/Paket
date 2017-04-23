@@ -16,9 +16,10 @@ source "http://www.nuget.org/api/v2"
 nuget "Castle.Windsor-log4net" "~> 3.2"
 """
 
-let graph1 = [
-    "Castle.Windsor-log4net","3.2",[]
-]
+let graph1 =
+    OfSimpleGraph [
+        "Castle.Windsor-log4net","3.2",[]
+    ]
 
 let expected1 = """REFERENCES: STRICT
 COPY-LOCAL: FALSE
@@ -43,9 +44,10 @@ source "http://www.nuget.org/api/v2"
 nuget "Microsoft.SqlServer.Types"
 """
 
-let graph2 = [
-    "Microsoft.SqlServer.Types","1.0",[]
-]
+let graph2 =
+    OfSimpleGraph [
+        "Microsoft.SqlServer.Types","1.0",[]
+    ]
 
 let expected2 = """IMPORT-TARGETS: FALSE
 CONTENT: NONE
@@ -67,9 +69,10 @@ source "http://www.nuget.org/api/v2"
 nuget "Microsoft.SqlServer.Types"
 """
 
-let graph3 = [
-    "Microsoft.SqlServer.Types","1.0",[]
-]
+let graph3 = 
+    OfSimpleGraph [
+        "Microsoft.SqlServer.Types","1.0",[]
+    ]
 
 let expected3 = """REDIRECTS: ON
 NUGET
@@ -178,7 +181,6 @@ nuget NLog.Contrib
         "NLog.Contrib","1.0.0",["NLog",DependenciesFileParser.parseVersionRequirement ">= 1.0.1"]
       ]
 
-    
     let expected = """FRAMEWORK: >= NET40
 NUGET
   remote: https://www.nuget.org/api/v2

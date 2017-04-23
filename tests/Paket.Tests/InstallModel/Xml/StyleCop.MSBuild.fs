@@ -18,11 +18,12 @@ let ``should generate Xml for StyleCop.MSBuild``() =
     ensureDir()
     let model =
         InstallModel.CreateFromLibs(PackageName "StyleCop.MSBuild", SemVer.Parse "4.7.49.1", [],[],
-            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ],
+            [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\StyleCop.MSBuild\",
             [],
               Nuspec.All)
 
-    model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2)) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" 
+    model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2))
+        |> Seq.map (fun f -> f.Path) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" 
     
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
     
@@ -32,10 +33,10 @@ let ``should generate Xml for StyleCop.MSBuild``() =
         
 
     ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 1
+    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
     ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
+    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 1
 
-    (ctx.FrameworkSpecificTargetsNodes |> Seq.head).OuterXml
+    (ctx.GlobalTargetsNodes |> Seq.head).OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedPropertyNodes)

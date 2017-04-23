@@ -370,11 +370,21 @@ let push (results : ParseResults<_>) =
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
-let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
 
+let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks = results.GetResults <@ GenerateLoadScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateLoadScriptsArgs.ScriptType @>
     LoadingScripts.ScriptGeneration.executeCommand [] (DirectoryInfo (Directory.GetCurrentDirectory())) providedFrameworks providedScriptTypes
+
+
+let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
+    let projectFile = results.GetResult <@ GenerateNuspecArgs.Project @>
+    let dependencies = results.GetResult <@ GenerateNuspecArgs.DependenciesFile @>
+    let output = defaultArg  (results.TryGetResult <@ GenerateNuspecArgs.Output @>) (Directory.GetCurrentDirectory())
+    let filename, nuspec = Nuspec.FromProject(projectFile,dependencies) 
+    let nuspecString = nuspec.ToString()
+    File.WriteAllText (Path.Combine (output,filename), nuspecString)
+
 
 let why (results: ParseResults<WhyArgs>) =
     let packageName = results.GetResult <@ WhyArgs.NuGet @> |> Domain.PackageName
@@ -445,6 +455,7 @@ let main() =
             | Push r -> processCommand silent push r
             | GenerateIncludeScripts r -> traceWarn "please use generate-load-scripts" ; processCommand silent generateLoadScripts r
             | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
+            | GenerateNuspec r -> processCommand silent generateNuspec r
             | Why r -> processCommand silent why r
             // global options; list here in order to maintain compiler warnings
             // in case of new subcommands added

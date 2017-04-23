@@ -246,6 +246,18 @@ with
             | File(_) -> "FileName of the nuspec file."
             | ReferencesFile(_) -> "FileName of the nuspec file."
 
+
+type GenerateNuspecArgs =
+    | [<CustomCommandLine "project">][<Mandatory>] Project of project:string
+    | [<CustomCommandLine "dependencies">][<Mandatory>] DependenciesFile of dependenciesPath:string
+    | [<CustomCommandLine "output">][<Mandatory>] Output of output:string
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Project _ -> "Project to generate a nuspec file for."
+            | DependenciesFile _ -> "'paket.dependencies' file used to populate the generated nuspec file."
+            | Output _ -> "Output directory to save generated nuspec to"
+
 type ShowInstalledPackagesArgs =
     | All
     | [<CustomCommandLine("project")>] Project of string
@@ -372,6 +384,7 @@ type Command =
     | [<CustomCommandLine("find-packages")>]            FindPackages of ParseResults<FindPackagesArgs>
     | [<CustomCommandLine("find-package-versions")>]    FindPackageVersions of ParseResults<FindPackageVersionsArgs>
     | [<CustomCommandLine("fix-nuspec")>]               FixNuspec of ParseResults<FixNuspecArgs>
+    | [<CustomCommandLine("generate-nuspec")>]          GenerateNuspec of ParseResults<GenerateNuspecArgs>
     | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResults<ShowInstalledPackagesArgs>
     | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResults<ShowGroupsArgs>
     | [<CustomCommandLine("pack")>]                     Pack of ParseResults<PackArgs>
@@ -399,6 +412,7 @@ with
             | FindPackages _ -> "Allows to search for packages."
             | FindPackageVersions _ -> "Allows to search for package versions."
             | FixNuspec _ -> "Allows to patch a nuspec with the correct dependencies."
+            | GenerateNuspec _ -> "Generates a default nuspec for a project including its direct dependencies."
             | ShowInstalledPackages _ -> "Shows all installed top-level packages."
             | ShowGroups _ -> "Shows all groups."
             | Pack _ -> "Packs all paket.template files within this repository."
