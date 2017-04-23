@@ -804,8 +804,8 @@ module ProjectFile =
             if not importTargets then List.empty, List.empty else
             let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Name)
             sortedTargets
-            |> List.partition (fun lib -> "" = lib.Path.Name)
-
+            |> List.partition (fun lib -> set lib.Targets |> Set.isSuperset allTargetProfiles)
+        
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup lib.Files.References)
@@ -1087,7 +1087,7 @@ module ProjectFile =
 
             let importTargets = defaultArg installSettings.ImportTargets true
             
-            let allFrameworks = applyRestrictionsToTargets ((thirdOf3 kv.Value)) KnownTargetProfiles.AllProfiles
+            let allFrameworks = applyRestrictionsToTargets ((thirdOf3 kv.Value)) (KnownTargetProfiles.AllDotNetStandardProfiles @ KnownTargetProfiles.AllDotNetProfiles)
             generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal importTargets installSettings.ReferenceCondition (set allFrameworks) project)
         |> Seq.iter (fun ctx ->
             for chooseNode in ctx.ChooseNodes do
