@@ -56,6 +56,7 @@ let private merge buildConfig buildPlatform versionFromAssembly specificVersions
                     | Some id -> traceWarnfn "No description was provided for package %A. Generating from ID and project output type." id
                     | _ -> ()
                     tryGenerateDescription packageId outputType
+
                 let execIfNone f opt =
                     match opt with
                     | None -> f ()

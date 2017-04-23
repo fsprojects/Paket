@@ -7,9 +7,13 @@
 * BREAKS: `InstallModel` API
 * BUGFIX: Improved C++ support
 
-#### 4.4.1 - 19.04.2017
+#### 4.5.1- 20.04.2017
+* BUGFIX: Fixed error when parsing version="*" - https://github.com/fsprojects/Paket/issues/2266
+
+#### 4.5.0 - 20.04.2017
 * Support Netstandard 2.0, Netframework 4.7, Netcore 2.0
 * Encode '+' in Urls
+* BUGFIX: Fix nuspec version attributes so that nuget.org is happy
 
 #### 4.4.0 - 12.04.2017
 * BUGFIX: Import .props/.targets better - https://github.com/fsprojects/Paket/pull/2234

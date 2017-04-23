@@ -135,13 +135,30 @@ type VersionRequirement =
         if String.IsNullOrWhiteSpace text || text = "null" then VersionRequirement.AllReleases else
 
         let prereleases = ref PreReleaseStatus.No
-        let analyzeVersion text =
+        let analyzeVersion operator (text:string) =
             try
-              let v = SemVer.Parse text
-              match v.PreRelease with
-              | Some _ -> prereleases := PreReleaseStatus.All
-              | _      -> prereleases := PreReleaseStatus.No
-              v
+              if text.Contains "*" then
+                  let v = SemVer.Parse (text.Replace("*","0"))
+                  match v.PreRelease with
+                  | Some _ -> prereleases := PreReleaseStatus.All
+                  | _      -> prereleases := PreReleaseStatus.No
+                  VersionRange.Minimum v
+              else
+                  let v = SemVer.Parse text
+                  match v.PreRelease with
+                  | Some _ -> prereleases := PreReleaseStatus.All
+                  | _      -> prereleases := PreReleaseStatus.No
+                  operator v
+            with
+            | exn -> failwithf "Error while parsing %s%sMessage: %s" text Environment.NewLine exn.Message
+
+        let analyzeVersionSimple (text:string) =
+            try
+                let v = SemVer.Parse (text.Replace("*","0"))
+                match v.PreRelease with
+                | Some _ -> prereleases := PreReleaseStatus.All
+                | _      -> prereleases := PreReleaseStatus.No
+                v
             with
             | exn -> failwithf "Error while parsing %s%sMessage: %s" text Environment.NewLine exn.Message
 
@@ -155,8 +172,10 @@ type VersionRequirement =
 
             let parsed =
                 if not <| text.Contains "," then
-                    if text.StartsWith "[" then Specific(text.Trim([|'['; ']'|]) |> analyzeVersion)
-                    else Minimum(analyzeVersion text)
+                    if text.StartsWith "[" then 
+                        text.Trim([|'['; ']'|]) 
+                        |> analyzeVersion Specific
+                    else analyzeVersion Minimum text
                 else
                     let fromB = parseBound text.[0]
                     let toB   = parseBound (Seq.last text)
@@ -165,7 +184,7 @@ type VersionRequirement =
                             .Trim([|'['; ']';'(';')'|])
                             .Split([|','|], StringSplitOptions.RemoveEmptyEntries)
                             |> Array.filter (String.IsNullOrWhiteSpace >> not)
-                            |> Array.map analyzeVersion
+                            |> Array.map analyzeVersionSimple
 
                     match versions.Length with
                     | 2 ->

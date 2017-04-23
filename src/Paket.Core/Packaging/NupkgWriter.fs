@@ -86,7 +86,9 @@ module internal NupkgWriter =
             let dep = XElement(ns + "dependency")
             dep.SetAttributeValue(XName.Get "id", Id)
             let version = requirement.FormatInNuGetSyntax()
-            if String.IsNullOrEmpty version then () else
+            if String.IsNullOrEmpty version then
+                dep.SetAttributeValue(XName.Get "version", "0.0")
+            else
                 dep.SetAttributeValue(XName.Get "version", version)
             dep
 
