@@ -796,7 +796,7 @@ module ProjectFile =
             if not importTargets then List.empty, List.empty else
             let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Name)
             sortedTargets
-            |> List.partition (fun lib -> set lib.Targets |> Set.isSuperset allTargetProfiles)
+            |> List.partition (fun lib -> (set lib.Targets).IsSupersetOf allTargetProfiles)
         
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
