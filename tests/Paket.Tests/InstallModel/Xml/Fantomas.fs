@@ -67,7 +67,7 @@ let ``should generate full Xml for Fantomas 1.5``() =
               Nuspec.Explicit ["FantomasLib.dll"])
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
-    let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
+    let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model,[])] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "fantoMas")), (InstallSettings.Default,InstallSettings.Default)] |> Map.ofSeq
     project.UpdateReferences(".",completeModel,used,used)
     
@@ -89,7 +89,7 @@ let ``should not generate full Xml for Fantomas 1.5 if not referenced``() =
               Nuspec.Explicit ["FantomasLib.dll"])
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
-    let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
+    let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model,[])] |> Map.ofSeq
     let used = [(Constants.MainDependencyGroup, (PackageName "blub")), (InstallSettings.Default,InstallSettings.Default) ] |> Map.ofSeq
     project.UpdateReferences(".",completeModel,used,used)
     
@@ -126,7 +126,7 @@ let ``should generate full Xml with reference condition for Fantomas 1.5``() =
               Nuspec.Explicit ["FantomasLib.dll"])
     
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
-    let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
+    let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model,[])] |> Map.ofSeq
     let settings =
         { InstallSettings.Default 
             with ReferenceCondition = Some "LEGACY" }
@@ -168,7 +168,7 @@ let ``should generate full Xml with reference condition and framework restrictio
               Nuspec.All)
 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value
-    let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model)] |> Map.ofSeq
+    let completeModel = [(Constants.MainDependencyGroup, (PackageName "Fantomas")),(model,model,[])] |> Map.ofSeq
     let settings =
         { InstallSettings.Default
             with ReferenceCondition = Some "LEGACY" }
