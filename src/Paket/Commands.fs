@@ -339,13 +339,15 @@ with
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
 type GenerateLoadScriptsArgs = 
+    | [<CustomCommandLine("groups")>] Groups of groups:string list
     | [<CustomCommandLine("framework")>] Framework of target:string
     | [<CustomCommandLine("type")>] ScriptType of id:string
 with
   interface IArgParserTemplate with
       member this.Usage = 
         match this with
-        | Framework _ -> "Framework identifier to generate scripts for, such as net4 or netcore."
+        | Groups _ -> "Groups to generate scripts for, if none are specified then generate for all groups"
+        | Framework _ -> "Framework identifier to generate scripts for, such as net45 or netstandard1.6"
         | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
   
 type WhyArgs =

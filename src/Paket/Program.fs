@@ -11,6 +11,7 @@ open Paket.Commands
 open Argu
 open PackageSources
 open System.Xml
+open Paket.Domain
 
 let private stopWatch = new Stopwatch()
 stopWatch.Start()
@@ -374,8 +375,14 @@ let push (results : ParseResults<_>) =
 let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks = results.GetResults <@ GenerateLoadScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateLoadScriptsArgs.ScriptType @>
-    LoadingScripts.ScriptGeneration.constructScriptsFromDisk [] (DirectoryInfo (Directory.GetCurrentDirectory())) providedFrameworks providedScriptTypes
-    |> Seq.iter (fun sd -> sd.Save())
+    let providedGroups = results.GetResult <@ GenerateLoadScriptsArgs.Groups @> |> List.map GroupName
+    let depUtil = Dependencies.Locate()
+    let dependenciesFile = depUtil.GetDependenciesFile()
+    let lockFile = depUtil.GetLockFile()
+    let depCache = DependencyCache(dependenciesFile,lockFile)
+    let rootDir = DirectoryInfo dependenciesFile.Directory
+    LoadingScripts.ScriptGeneration.constructScriptsFromData depCache providedGroups providedFrameworks providedScriptTypes
+    |> Seq.iter (fun sd -> sd.Save rootDir)
 
 let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     let projectFile = results.GetResult <@ GenerateNuspecArgs.Project @>

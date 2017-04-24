@@ -22,7 +22,6 @@ module ScriptGeneration =
 
     let inline (</>) p1 p2 = (?<-) PathCombine p1 p2
 
-    //open PackageAndAssemblyResolution
     open System.Collections.Generic
   
     type ScriptType =
@@ -39,7 +38,6 @@ module ScriptGeneration =
 
     type ScriptGenInput = {
         PackageName              : PackageName
-        PackagesOrGroupFolder    : DirectoryInfo
         IncludeScriptsRootFolder : DirectoryInfo
         DependentScripts         : FileInfo list
         FrameworkReferences      : string list
@@ -95,7 +93,7 @@ module ScriptGeneration =
             // create a relative pathReferenceType directory of the script to the dll or script to load
             let relativePath (scriptFile: FileInfo) (libFile: FileInfo) =
                 (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
-        
+                
             // create the approiate load string for the target resource
             let refString (reference:ReferenceType)  = 
                 match reference, self.Lang with
@@ -110,7 +108,6 @@ module ScriptGeneration =
         
             self.Input |> Seq.map refString |> String.concat "\n"
 
-
         member self.Save (directory:DirectoryInfo) = 
             async {
                 directory.Create()
@@ -118,7 +115,6 @@ module ScriptGeneration =
                 let text = self.Render directory
                 File.WriteAllText (scriptFile.FullName, text)
             } |> Async.Start
-
 
 
     type PaketContext = {
@@ -153,31 +149,26 @@ module ScriptGeneration =
                 framework </> group
             let fileName = (sprintf "%s.group.%s" (string group) scriptType.Extension).ToLowerInvariant()
             folder </> fileName
-        
-        // -- LOAD SCRIPT FORMATTING POINT --
+              
         let packagesOrGroupFolder groupName =
             if groupName = Constants.MainDependencyGroup then packagesFolder
             else packagesFolder </> groupName 
        
+
        // -- LOAD SCRIPT FORMATTING POINT --
         let scriptFolder groupName (package: PackageResolver.ResolvedPackage) =
             let group = if groupName = Constants.MainDependencyGroup then String.Empty else (string groupName)
             let framework = if isDefaultFramework then String.Empty else string framework
-            framework </> packagesOrGroupFolder groupName </> package.Name
+            loadScriptsRootFolder </> framework </> group </> package.Name
 
         // -- LOAD SCRIPT FORMATTING POINT --
         let scriptFile (scriptFolder:string) =
-            //FileInfo <| sprintf "%s.%s"  scriptFolder scriptType.Extension
             sprintf "%s.%s"  scriptFolder scriptType.Extension
                     
 
-        let dependencies = ctx.Cache.OrderedGroups()// getPackageOrderFromLockFile lockFile
-
         let scriptContent =
-            dependencies |> Map.map (fun groupName packages ->
+            ctx.Cache.OrderedGroups() |> Map.map (fun groupName packages ->
                 if groups = [] || List.exists ((=) groupName) groups then
-                    let packagesOrGroupFolder = packagesOrGroupFolder groupName
-                    
                     // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
                     ((Map.empty,[]),packages)
                     ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,string>*_) (package: PackageResolver.ResolvedPackage) ->
@@ -197,7 +188,6 @@ module ScriptGeneration =
 
                         let scriptInfo = {
                             PackageName                  = package.Name
-                            PackagesOrGroupFolder        = DirectoryInfo packagesOrGroupFolder
                             IncludeScriptsRootFolder     = DirectoryInfo loadScriptsRootFolder 
                             FrameworkReferences          = frameworkRefs
                             OrderedDllReferences         = dllFiles
@@ -294,13 +284,13 @@ module ScriptGeneration =
                 workaround () // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
                 seq{ 
                     for scriptType in scriptTypesToGenerate ->
-                    generateScriptsForRootFolder {
-                        Cache = depCache
-                        ScriptType = scriptType  
-                        RootDir = DirectoryInfo lockFile.RootPath
-                        Groups = groups 
-                        DefaultFramework = isDefaultFramework,framework
-                    }
+                        generateScriptsForRootFolder {
+                            Cache = depCache
+                            ScriptType = scriptType  
+                            RootDir = DirectoryInfo lockFile.RootPath
+                            Groups = groups 
+                            DefaultFramework = isDefaultFramework,framework
+                        }
                 } |> Seq.concat
             } |> Seq.concat
         scriptData
@@ -314,7 +304,10 @@ module ScriptGeneration =
             let frameworks = 
                 if providedFrameworks = [] then [environmentFramework.Value.ToString()] else providedFrameworks
             
-            DirectoryInfo(dependenciesFile.RootPath</>".paket"</>"load").Create()
+            // TODO - this I/O and package crawl/loading work should possibly be extracted out
+            frameworks |> List.iter (fun fw ->
+                DirectoryInfo(dependenciesFile.RootPath</>".paket"</>"load"</>fw).Create()
+            )
 
             let depCache = DependencyCache(dependenciesFile,lockFile)
             groups |> Seq.iter (depCache.SetupGroup>>ignore)

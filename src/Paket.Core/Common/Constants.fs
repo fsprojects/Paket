@@ -12,9 +12,13 @@ let [<Literal>] DotnetCoreStream          = "https://dotnet.myget.org/F/dotnet-c
 let [<Literal>] CliDepsStream             = "https://dotnet.myget.org/F/cli-deps/api/v3/index.json"
 let [<Literal>] GitHubReleasesUrl         = "https://api.github.com/repos/fsprojects/Paket/releases"
 let [<Literal>] GithubReleaseDownloadUrl  = "https://github.com/fsprojects/Paket/releases/download"
+/// 'paket.lock'
 let [<Literal>] LockFileName              = "paket.lock"
+/// 'paket.local'
 let [<Literal>] LocalFileName             = "paket.local"
+/// 'paket.dependencies'
 let [<Literal>] DependenciesFileName      = "paket.dependencies"
+/// '.paket'
 let [<Literal>] PaketFolderName           = ".paket"
 let [<Literal>] BootstrapperFileName      = "paket.bootstrapper.exe"
 let [<Literal>] PaketFileName             = "paket.exe"

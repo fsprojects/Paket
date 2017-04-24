@@ -1,3 +1,4 @@
 source https://nuget.org/api/v2
+framework:>= net40
 
 nuget EntityFramework = 6.1.0

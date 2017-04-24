@@ -52,6 +52,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\PaketConfigFiles/DependenciesFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PaketConfigFiles/PackagesConfigFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PaketConfigFiles\LocalFile.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PaketConfigFiles\DependencyCache.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\ProcessOptions.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\BindingRedirects.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Installation\DependencyChangeDetection.fs" />

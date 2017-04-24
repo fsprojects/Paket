@@ -12,7 +12,7 @@ let printSqs sqs = sqs |> Seq.iter (printfn "%A")
 
 
 let paketRoot =
-    @"C:\Users\jared\Github\Forks\Paket\integrationtests\scenarios\loading-scripts\framework-specified\temp"
+    @"C:\Users\jared\Github\Forks\Paket\integrationtests\scenarios\loading-scripts\simple-dependencies\temp"
 
 let rootInfo = DirectoryInfo paketRoot
 
@@ -24,20 +24,12 @@ let targetFramework = (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5
 
 let depCache = DependencyCache dependenciesPath
 
-//depCache.InstallModels();;
-//depCache.Nuspecs();;
+
 let refs = depCache.GetOrderedReferences Constants.MainDependencyGroup targetFramework :> seq<_>
 
 
 ;;
 
-//;;
-//try 
-//    let failgens =
-//        ScriptGeneration.constructScriptsFromData depCache [] ["foo";"bar"] ["fsx"]
-//    ()
-//with ex -> printfn "%s" ex.Message
-//let gens = 
 let gens = ScriptGeneration.constructScriptsFromData depCache [] ["net45"] ["fsx"] |> List.ofSeq
 ;;
 gens |> Seq.map (fun x -> 

@@ -202,23 +202,18 @@ Target "CleanDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
-Target "MSBuildRestore" (fun _ ->
-    !! solutionFile
-    |> Seq.iter (build (fun p -> {p with RestorePackagesFlag=true; Targets=["Restore"]}))
-)
+let msbuild14 = ProgramFilesX86</>"MSBuild"</>"14.0"</>"Bin"</>"MSBuild.exe"
+
+if isWindows && fileExists msbuild14 then
+    setEnvironVar "MSBUILD"  msbuild14
 
 Target "Build" (fun _ ->
-    if isMono then
-        !! solutionFile
-        |> MSBuildReleaseExt "" [
-                "VisualStudioVersion", "14.0"
-                "ToolsVersion"       , "14.0"  
-        ] "Rebuild"
-        |> ignore
-    else
-        !! solutionFile
-        |> MSBuildReleaseExt "" [] "Rebuild"
-        |> ignore
+    !! solutionFile
+    |> MSBuildReleaseExt "" [
+            "VisualStudioVersion", "14.0"
+            "ToolsVersion"       , "14.0"  
+    ] "Build"
+    |> ignore
 )
 
 
@@ -615,11 +610,10 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
+  ==> "Build"
   =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
-  =?> ("MSBuildRestore", not isMono)
-  ==> "Build"
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("BuildPowerShell", not isMono)
   ==> "RunTests"
