@@ -127,6 +127,7 @@
     <Compile Include="PaketConfigFiles/DependenciesFile.fs" />
     <Compile Include="PaketConfigFiles/PackagesConfigFile.fs" />
     <Compile Include="PaketConfigFiles\LocalFile.fs" />
+    <Compile Include="PaketConfigFiles\DependencyCache.fs" />
     <Compile Include="Installation\ProcessOptions.fs" />
     <Compile Include="Installation\BindingRedirects.fs" />
     <Compile Include="Installation\DependencyChangeDetection.fs" />
@@ -153,6 +154,7 @@
     <Compile Include="PublicAPI.fs" />
     <None Include="paket.template" />
     <Content Include="app.config" />
+    <None Include="Prototypes\script-generation.fsx" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />

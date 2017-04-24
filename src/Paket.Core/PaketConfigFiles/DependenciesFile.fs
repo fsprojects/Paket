@@ -96,6 +96,29 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 (0,Constants.MainDependencyGroup,None)
         found
 
+    member __.FileName = fileName
+    member __.FileInfo = 
+        try Some (FileInfo fileName )
+        with _ -> None
+
+    member __.Groups = groups
+    /// Directory info for the parent of this paket.dependencies file
+    member this.DirectoryInfo = 
+        try Some (this.FileInfo.Value.Directory)
+        with _ -> None
+
+    /// The full path of the directory that containes this paket.dependencies file
+    member this.Directory = 
+        try this.DirectoryInfo.Value.FullName
+        with _ -> String.Empty
+    
+
+    member __.Lines = textRepresentation
+
+    member this.RootPath = 
+        if String.IsNullOrWhiteSpace fileName then String.Empty 
+        else FileInfo(fileName).Directory.FullName
+
     /// Returns all direct NuGet dependencies in the given group.
     member __.GetDependenciesInGroup(groupName:GroupName) =
         match groups |> Map.tryFind groupName with
@@ -110,7 +133,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
 
-    member __.Groups = groups
+
 
     member this.SimplifyFrameworkRestrictions() = 
         let transform (dependenciesFile:DependenciesFile) (group:DependenciesGroup) =
@@ -141,14 +164,14 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 | _ ->
                     let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,commonRestrictions)
                     group.Packages
-                     |> List.fold (fun (d:DependenciesFile) package ->
-                            let oldRestrictions = package.Settings.FrameworkRestrictions |> getRestrictionList
-                            let newRestrictions = oldRestrictions |> List.filter (fun r -> commonRestrictions |> List.contains r |> not)
-                            if oldRestrictions = newRestrictions then d else
-                            let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
-                            let installSettings = { package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions }
-                            let vr = { VersionRequirement = package.VersionRequirement; ResolverStrategy = package.ResolverStrategyForDirectDependencies }
-                            d.AddAdditionalPackage(group.Name, package.Name,vr,installSettings)) newDependenciesFile
+                    |> List.fold (fun (d:DependenciesFile) package ->
+                        let oldRestrictions = package.Settings.FrameworkRestrictions |> getRestrictionList
+                        let newRestrictions = oldRestrictions |> List.filter (fun r -> commonRestrictions |> List.contains r |> not)
+                        if oldRestrictions = newRestrictions then d else
+                        let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
+                        let installSettings = { package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions }
+                        let vr = { VersionRequirement = package.VersionRequirement; ResolverStrategy = package.ResolverStrategyForDirectDependencies }
+                        d.AddAdditionalPackage(group.Name, package.Name,vr,installSettings)) newDependenciesFile
 
         this.Groups
         |> Seq.map (fun kv -> kv.Value)
@@ -170,16 +193,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         try self.GetPackage (groupName,name) |> Some
         with _ -> None
 
-    member __.FileName = fileName
-    member __.FileInfo = FileInfo fileName 
 
-    /// Directory info for the parent of this paket.dependencies file
-    member this.DirectoryInfo = this.FileInfo.Directory 
-
-    /// The full path of the directory that containes this paket.dependencies file
-    member this.Directory = this.DirectoryInfo.FullName
-
-    member __.Lines = textRepresentation
 
     member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, getPackageRuntimeGraph, groupsToResolve:Map<GroupName,_>, updateMode) =
         let resolveGroup groupName _ =
@@ -187,7 +201,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
             let resolveSourceFile (file:ResolvedSourceFile) : (PackageRequirement list * UnresolvedSource list) =
                 let remoteDependenciesFile =
-                    RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, groupName, DependenciesFile.FromCode, file)
+                    RemoteDownload.downloadDependenciesFile(force,Path.GetDirectoryName fileName, groupName, DependenciesFile.FromSource, file)
                     |> Async.RunSynchronously
 
                 // We do not support groups in reference files yet
@@ -551,9 +565,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName false newLines)
 
-    member this.RootPath = 
-        if String.IsNullOrWhiteSpace fileName then String.Empty 
-        else FileInfo(fileName).Directory.FullName
+
 
     override __.ToString() = String.Join(Environment.NewLine, textRepresentation |> Array.skipWhile String.IsNullOrWhiteSpace)
 
@@ -561,11 +573,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         File.WriteAllText(fileName, this.ToString())
         tracefn "Dependencies files saved to %s" fileName
 
-    static member FromCode(rootPath,code:string) : DependenciesFile = 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile (Path.Combine(rootPath,Constants.DependenciesFileName)) true <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+    static member FromSource(rootPath,source:string) : DependenciesFile = 
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile (Path.Combine(rootPath,Constants.DependenciesFileName)) true <| source.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
 
-    static member FromCode(code:string) : DependenciesFile = 
-        DependenciesFile(DependenciesFileParser.parseDependenciesFile "" true <| code.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
+    static member FromSource(source:string) : DependenciesFile = 
+        DependenciesFile(DependenciesFileParser.parseDependenciesFile "" true <| source.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
 
     static member ReadFromFile fileName : DependenciesFile = 
         verbosefn "Parsing %s" fileName

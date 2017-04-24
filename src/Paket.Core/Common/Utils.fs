@@ -41,6 +41,12 @@ let inline force (lz: 'a Lazy)  = lz.Force()
 let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
 let inline toLower str = (^a:(member ToLower:unit->string)str)
 
+
+let inline tryGet (key:^k) this =
+    let mutable v = Unchecked.defaultof<'v>
+    let scc = ( ^a : (member TryGetValue : 'k * ('v byref) -> bool) this, key, &v)
+    if scc then Some v else None
+
 let internal removeInvalidChars (str : string) = RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
 
 let internal memoize (f: 'a -> 'b) : 'a -> 'b =

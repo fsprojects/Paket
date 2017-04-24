@@ -47,12 +47,10 @@ module PackageAndAssemblyResolution =
 
 
     let getPackageOrderFromLockFile (lockFile:LockFile) =
-        
-        let lockFile = LockFileParser.Parse (System.IO.File.ReadAllLines lockFile.FileName)
-        lockFile
-        |> Seq.map (fun p -> p.GroupName, getPackageOrderResolvedPackage p.Packages)
+        lockFile.GetResolvedPackages ()
+        |> Seq.map (fun kvp -> kvp.Key , getPackageOrderResolvedPackage kvp.Value)
         |> Map.ofSeq
-
+        
 
     let getDllOrder (dllFiles : AssemblyDefinition list) =
         // this check saves looking at assembly metadata when we know this is not needed
@@ -255,16 +253,20 @@ module ScriptGeneration =
                 let arr = ResizeArray() in arr.Add data 
                 cache.Add (groupName, arr)
         
-        member __.Assemblies
+        member __.AllAssemblies = assemblies |> Seq.collect (fun kvp -> kvp.Value :> seq<_> ) 
+        member __.AllFrameworkLibs = frameworkLibs |> Seq.collect (fun kvp -> kvp.Value :> seq<_> ) 
+
+        member __.GroupAssemblies
             with get groupName = retrieve assemblies groupName
 
-        member __.FrameworkLibs 
+        member __.GroupFrameworkLibs 
             with get groupName = retrieve frameworkLibs groupName
 
         member __.Groups = cache |> Seq.map (fun x -> x.Key) 
     
 
     type PaketContext = {
+        Cache : DependencyCache
         Dependencies : DependenciesFile
         LockFile : LockFile
         Groups : GroupName list
@@ -273,11 +275,17 @@ module ScriptGeneration =
         ScriptType : ScriptType
     }
 
-    let generateGroupScript (context:PaketContext as ctx) (getScriptFile: GroupName -> FileInfo)  =
-        
-        let scriptType, groups, rootFolder, dependenciesFile, lockFile = 
-            ctx.ScriptType, ctx.Groups, ctx.RootDir, ctx.Dependencies, ctx.LockFile
 
+    type PackageCache = {
+        Groups : GroupName list
+        Libraries : Library list
+    }
+
+
+    let exploreLock (context:PaketContext as ctx) =
+        let scriptType, targetGroups, rootFolder, dependenciesFile, lockFile = 
+            ctx.ScriptType, ctx.Groups, ctx.RootDir, ctx.Dependencies, ctx.LockFile
+        
         let isDefaultFramework, framework = ctx.DefaultFramework
 
         let filterNuget nuget =
@@ -287,39 +295,46 @@ module ScriptGeneration =
         let mainGroupName = Constants.MainDependencyGroup.Name
         let mainGroupKey = Constants.MainDependencyGroup.CompareString
 
-        let exploreLock installedPackages =
-            let rec loop mainGroupSeen  (genPrep:GenPrep) (installedPackages:(GroupName * PackageName * SemVerInfo) list ) =
-                match installedPackages with 
-                |(group,nuget,_ver)::pkgs  
-                    when List.exists ((=) group) context.Groups || groups = []  ->
+        let rec loop mainGroupSeen  (genPrep:GenPrep) (installedPackages:(GroupName * PackageName * SemVerInfo) list ) =
+            match lockFile.InstalledPackages with 
+            |(group,nuget,_ver)::pkgs  
+                when List.exists ((=) group) targetGroups || targetGroups = []  ->
                     
-                    let mainGroupSeen = 
-                        (not (filterNuget nuget.Name)) && 
-                        (group.CompareString = mainGroupKey || group.Name = mainGroupName)
+                let mainGroupSeen = 
+                    (not (filterNuget nuget.Name)) && 
+                    (group.CompareString = mainGroupKey || group.Name = mainGroupName)
 
-                    let qualifiedPackage = QualifiedPackageName (group,nuget)
-                    let model = lockFile.GetInstalledPackageModel  qualifiedPackage
-                    let libs = model.GetLibReferenceFiles framework
+                let qualifiedPackage = QualifiedPackageName (group,nuget)
+                let model = lockFile.GetInstalledPackageModel  qualifiedPackage
+                let libs = model.GetLibReferenceFiles framework
 
-                    let syslibs = model.GetAllLegacyFrameworkReferences ()
-                    genPrep.[group] <- (libs,syslibs)
-                    loop mainGroupSeen genPrep  pkgs
-                | _hd::pkgs -> 
-                    loop mainGroupSeen genPrep  pkgs
-                | [] -> 
-                    if mainGroupSeen then genPrep else 
-                    // If we haven't explored the main group add it to ensure generation 
-                    genPrep.[Constants.MainDependencyGroup]  <- (Seq.empty, Seq.empty)
-                    genPrep
-            loop false  (GenPrep ()) installedPackages
+                let syslibs = model.GetAllLegacyFrameworkReferences ()
+                genPrep.[group] <- (libs,syslibs)
+                loop mainGroupSeen genPrep  pkgs
+            | _hd::pkgs -> 
+                loop mainGroupSeen genPrep  pkgs
+            | [] -> 
+                if mainGroupSeen then genPrep else 
+                // If we haven't explored the main group add it to ensure generation 
+                genPrep.[Constants.MainDependencyGroup]  <- (Seq.empty, Seq.empty)
+                genPrep
+        loop false  (GenPrep ()) lockFile.InstalledPackages
+
+
+    let generateGroupScript (context:PaketContext as ctx) (getScriptFile: GroupName -> FileInfo)  =
+        
+        let scriptType, groups, dependenciesFile, lockFile = 
+            ctx.ScriptType, ctx.Groups, ctx.Dependencies, ctx.LockFile
+
+        let isDefaultFramework, framework = ctx.DefaultFramework
    
-        let genprep = exploreLock lockFile.InstalledPackages
+        let genprep = exploreLock context
 
         genprep.Groups |> Seq.map (fun group ->
 
             let assemblies = 
                 let assemblyFilePerAssemblyDef = 
-                    genprep.Assemblies group
+                    genprep.GroupAssemblies group
                     |> Seq.map (fun (f:FileInfo) -> 
                         AssemblyDefinition.ReadAssembly(f.FullName:string), f)
                     |> dict
@@ -335,7 +350,7 @@ module ScriptGeneration =
                 assemblies |> Seq.map ReferenceType.Assembly 
 
             let frameworkRefs = 
-                genprep.FrameworkLibs group 
+                genprep.GroupFrameworkLibs group 
                 |> Seq.map (fun x ->  ReferenceType.Framework x.Name)
 
             Seq.append assemblyRefs  frameworkRefs 
@@ -355,7 +370,7 @@ module ScriptGeneration =
         
         // -- LOAD SCRIPT FORMATTING POINT --
         let loadScriptsRootFolder = 
-            DirectoryInfo (dependenciesFile.DirectoryInfo </> Constants.PaketFolderName </> "load")
+            DirectoryInfo (dependenciesFile.Directory </> Constants.PaketFolderName </> "load")
 
         // -- LOAD SCRIPT FORMATTING POINT --
         let getGroupFile group = 
@@ -403,9 +418,9 @@ module ScriptGeneration =
                             |> Seq.choose (fun (x,_,_) -> knownIncludeScripts.TryFind x)
                             |> List.ofSeq
 
-                        let installModel = 
-                            (QualifiedPackageName.FromStrings(Some groupName.Name, package.Name.ToString()))
-                            |> lockFile.GetInstalledPackageModel
+                        let installModel = ctx.Cache.[groupName,package]
+                            //(QualifiedPackageName.FromStrings(Some groupName.Name, package.Name.ToString()))
+                            //|> lockFile.GetInstalledPackageModel
             
                         let dllFiles =
                             installModel
@@ -435,11 +450,11 @@ module ScriptGeneration =
         generateGroupScript context getGroupFile 
 
 
-    let constructScriptsFromData groups (dependenciesFile:DependenciesFile) (lockFile:LockFile) providedFrameworks providedScriptTypes =
-        let rootFolder = DirectoryInfo dependenciesFile.RootPath
+    let constructScriptsFromData (depCache:DependencyCache) (groups:GroupName list) providedFrameworks providedScriptTypes =
+        let dependenciesFile = depCache.DependenciesFile
         let frameworksForDependencyGroups = dependenciesFile.ResolveFrameworksForScriptGeneration()
         let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
-
+        let lockFile = depCache.LockFile
         let tupleMap f v = (v, f v)
         let failOnMismatch toParse parsed f message =
             if List.length toParse <> List.length parsed then
@@ -496,8 +511,9 @@ module ScriptGeneration =
                 seq{ 
                     for scriptType in scriptTypesToGenerate ->
                     generateScriptsForRootFolder {
+                        Cache = depCache
                         ScriptType = scriptType  
-                        RootDir = rootFolder 
+                        RootDir = DirectoryInfo lockFile.RootPath
                         Groups = groups 
                         DefaultFramework = isDefaultFramework,framework
                         Dependencies = dependenciesFile 
@@ -515,6 +531,6 @@ module ScriptGeneration =
             let rootFolder = DirectoryInfo dependenciesFile.RootPath
             let frameworksForDependencyGroups = dependenciesFile.ResolveFrameworksForScriptGeneration()
             let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
-
-            constructScriptsFromData groups dependenciesFile lockFile providedFrameworks providedScriptTypes
+            let depCache = DependencyCache(dependenciesFile,lockFile)
+            constructScriptsFromData depCache groups providedFrameworks providedScriptTypes
 

@@ -575,7 +575,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
         
-
+    
     /// Gets all dependencies of the given package
     member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName,context) = 
         let group = groups.[groupName]
@@ -657,11 +657,18 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             group.Resolution
             |> Map.filter (fun name _ -> transitive.Contains name |> not)
 
-    member this.GetGroupedResolution() =
+    member this.GetGroupedResolution () =
         this.Groups
         |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv' -> (kv.Key,kv'.Key),kv'.Value))
         |> Seq.concat
         |> Map.ofSeq
+
+
+    member this.GetResolvedPackages () =
+        groups |> Map.map (fun groupName lockGroup ->
+           lockGroup.Resolution |> Seq.map (fun x -> x.Value) |> List.ofSeq
+        )
+
 
     override __.ToString() =
         String.Join
@@ -822,11 +829,9 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
     /// Returns a list of packages inside the lockfile with their group and version number
     member this.InstalledPackages =
-        let listPackages (packages: KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
-            packages |> Seq.map (fun kv ->
-                let groupName,packageName = kv.Key
-                groupName, packageName, kv.Value.Version
-            ) |> Seq.toList
+        this.GetGroupedResolution () |> Seq.map (fun kv ->
+            let groupName,packageName = kv.Key
+            groupName, packageName, kv.Value.Version
+        ) |> Seq.toList
 
-        this.GetGroupedResolution () |> listPackages
     
