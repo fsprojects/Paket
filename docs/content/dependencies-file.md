@@ -11,7 +11,6 @@ To give you an overview, consider the following `paket.dependencies` file:
     nuget NUnit ~> 2.6.3
     nuget FAKE ~> 3.4
     nuget DotNetZip >= 1.9
-    nuget SourceLink.Fake
 
     // Files from GitHub repositories
     github forki/FsUnit FsUnit.fs
@@ -27,7 +26,6 @@ The file specifies that Paket's NuGet dependencies should be downloaded from [nu
   * [NUnit](http://www.nunit.org/) in version [2.6.3 <= x < 2.7](nuget-dependencies.html#Pessimistic-version-constraint)
   * [FAKE](http://fsharp.github.io/FAKE/) in version [3.4 <= x < 4.0](nuget-dependencies.html#Pessimistic-version-constraint) as a build tool
   * [DotNetZip](http://dotnetzip.codeplex.com/) with version which is at [least 1.9](http://fsprojects.github.io/Paket/nuget-dependencies.html#Greater-than-or-equal-version-constraint)
-  * [SourceLink.Fake](https://github.com/ctaggart/SourceLink) in the latest version
   * [FSUnit.fs](https://github.com/forki/FsUnit) from GitHub.
   * Gist number [1972349](https://gist.github.com/Thorium/1972349) from GitHub Gist
   * External HTTP resource, e.g. [1n](http://www.fssnip.net/1n) from [FSSnip](http://www.fssnip.net/)

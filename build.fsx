@@ -199,13 +199,23 @@ Target "CleanDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
-Target "Build" (fun _ ->
+Target "MSBuildRestore" (fun _ ->
     !! solutionFile
-    |> MSBuildReleaseExt "" [
-            "VisualStudioVersion", "14.0"
-            "ToolsVersion"       , "14.0"  
-    ] "Rebuild"
-    |> ignore
+    |> Seq.iter (build (fun p -> {p with RestorePackagesFlag=true; Targets=["Restore"]}))
+)
+
+Target "Build" (fun _ ->
+    if isMono then
+        !! solutionFile
+        |> MSBuildReleaseExt "" [
+                "VisualStudioVersion", "14.0"
+                "ToolsVersion"       , "14.0"  
+        ] "Rebuild"
+        |> ignore
+    else
+        !! solutionFile
+        |> MSBuildReleaseExt "" [] "Rebuild"
+        |> ignore
 )
 
 
@@ -585,6 +595,7 @@ Target "All" DoNothing
   =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
+  =?> ("MSBuildRestore", not isMono)
   ==> "Build"
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("BuildPowerShell", not isMono)
