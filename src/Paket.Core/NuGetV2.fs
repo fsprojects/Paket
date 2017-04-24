@@ -940,6 +940,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                         tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
                     let nugetPackage = GetPackageDetails alternativeProjectRoot root force [source] groupName packageName version
 
+                    let encodeURL (url:string) = url.Replace("+","%2B")
                     let downloadUri =
                         if Uri.IsWellFormedUriString(nugetPackage.DownloadLink, UriKind.Absolute) then
                             Uri nugetPackage.DownloadLink
@@ -947,8 +948,8 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                             let sourceUrl =
                                 if nugetPackage.Source.Url.EndsWith("/") then nugetPackage.Source.Url
                                 else nugetPackage.Source.Url + "/"
-                            Uri(Uri sourceUrl, nugetPackage.DownloadLink)
-
+                            Uri(Uri (encodeURL sourceUrl), encodeURL nugetPackage.DownloadLink)
+                            
                     downloadUrl := downloadUri.ToString()
 
                     if authenticated && verbose then
