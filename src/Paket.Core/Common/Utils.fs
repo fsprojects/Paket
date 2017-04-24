@@ -29,9 +29,6 @@ let thirdOf3 (_,_,v) = v
 /// [omit]
 let quote (str:string) = "\"" + str.Replace("\"","\\\"") + "\""
 
-
-let inline isNotNull x = not (isNull x)
-
 let acceptXml = "application/atom+xml,application/xml"
 let acceptJson = "application/atom+json,application/json"
 
@@ -40,12 +37,6 @@ let notNullOrEmpty = not << System.String.IsNullOrEmpty
 let inline force (lz: 'a Lazy)  = lz.Force()
 let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
 let inline toLower str = (^a:(member ToLower:unit->string)str)
-
-
-let inline tryGet (key:^k) this =
-    let mutable v = Unchecked.defaultof<'v>
-    let scc = ( ^a : (member TryGetValue : 'k * ('v byref) -> bool) this, key, &v)
-    if scc then Some v else None
 
 let internal removeInvalidChars (str : string) = RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
 
@@ -163,15 +154,67 @@ let getFileEncoding path =
     | _ -> Encoding.ASCII
 
 /// [omit]
-let createRelativePath root (path:string) =
-    let path = Path.GetFullPath path
-    let basePath =
+let inline createRelativePath root path = 
+    let basePath = 
         if String.IsNullOrEmpty root then Directory.GetCurrentDirectory() + string Path.DirectorySeparatorChar
-        else Path.GetFullPath root
-
+        else root
+    
     let uri = Uri basePath
-    let relative = uri.MakeRelativeUri(Uri path).ToString().Replace("/", "\\").Replace("%20", " ")
-    relative
+    uri.MakeRelativeUri(Uri path).ToString().Replace("/", "\\").Replace("%20", " ")
+
+let getNative (path:string) =
+    if path.Contains "/native/" |> not && path.Contains "/runtimes/" |> not then "" else
+    if path.Contains "/x86/debug" then "x86/debug" else
+    if path.Contains "/x86/release" then "/x86/release" else
+    if path.Contains "/arm/debug" then "/arm/debug" else
+    if path.Contains "/arm/release" then "/arm/release" else
+    if path.Contains "/x64/debug" then "/x64/debug" else
+    if path.Contains "/x64/release" then "/x64/release" else
+    if path.Contains "/address-model-32" then "/address-model-32" else
+    if path.Contains "/address-model-64" then "/address-model-64" else
+    if path.Contains "/win7-x64" then "/win7-x64" else
+    if path.Contains "/win7-x86" then "/win7-x86" else
+    if path.Contains "/win7-arm" then "/win7-arm" else
+    if path.Contains "/debian-x64" then "/debian-x64" else
+    if path.Contains "/aot" then "/aot" else
+    if path.Contains "/osx" then "/osx" else
+    if path.Contains "/win" then "/win" else
+    if path.Contains "/linux" then "/linux" else
+    if path.Contains "/unix" then "/unix" else
+    ""
+
+let extractPath =
+    memoize <| fun (infix, packageName:PackageName, fileName : string) ->
+        let path = fileName.Replace("\\", "/").ToLower()
+        let path = if path.StartsWith "lib/" then "/" + path else path
+        let needle = sprintf "/%s/" infix
+        if path.Contains needle |> not then None else
+        let fi = FileInfo path
+        
+        let packagesPos = path.LastIndexOf "packages/"
+        let startPos =
+            if packagesPos >= 0 then
+                let packagenamePos = path.IndexOf(packageName.ToString().ToLower() + "/",packagesPos)
+                if packagenamePos >= 0 then
+                    path.IndexOf(needle,packagenamePos) + 1
+                else
+                    path.IndexOf(needle,packagesPos) + 1
+            else
+                path.LastIndexOf(needle) + 1
+        
+        let endPos = path.IndexOf('/', startPos + infix.Length + 1)
+        if startPos < 0 then None 
+        elif endPos < 0 then Some("")
+        else
+            if infix = "runtimes" then
+                Some("runtimes" + getNative path)
+            elif infix = "ref" then
+                let libPart = path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1)
+                Some libPart         
+            else
+                let nativePart = getNative path
+                let libPart = path.Substring(startPos + infix.Length + 1, endPos - startPos - infix.Length - 1)
+                Some (libPart + nativePart)
 
 /// The path of the "Program Files" folder - might be x64 on x64 machine
 let ProgramFiles = Environment.GetFolderPath Environment.SpecialFolder.ProgramFiles
@@ -712,26 +755,12 @@ let RunInLockedAccessMode(rootFolder,action) =
         releaseLock()
         reraise()
 
-
-
-[<RequireQualifiedAccess>]
 module String =
-
     let (|StartsWith|_|) prefix (input: string) =
         if input.StartsWith prefix then
             Some (input.Substring(prefix.Length))
         else None
 
-    let getLines (str: string) =
-        use reader = new StringReader(str)
-        [|  let mutable line = reader.ReadLine()
-            while isNotNull line do
-                yield line
-                line <- reader.ReadLine()
-            if str.EndsWith "\n" then   // last trailing space not returned
-                yield String.Empty      // http://stackoverflow.com/questions/19365404/stringreader-omits-trailing-linebreak
-        |]
-    
     let inline equalsIgnoreCase str1 str2 =
         String.Compare(str1,str2,StringComparison.OrdinalIgnoreCase) = 0 
 
@@ -974,5 +1003,4 @@ module Seq =
                 | None -> xs,ys
         ) |> fun (xs,ys) ->
             List.rev xs :> seq<_>, List.rev ys :> seq<_>
-
 

@@ -599,9 +599,10 @@ module ProjectFile =
         deleteIfEmpty "Choose"        project |> ignore
 
     let getCustomModelNodes(model:InstallModel) (project:ProjectFile)  =
-        let libs : string Set =
-            (model.GetAllLegacyReferenceAndFrameworkReferenceNames())
-
+        let libs =
+            model.GetLibReferencesLazy.Force()
+            |> Set.map (fun lib -> lib.ReferenceName)
+       
         getCustomReferenceAndFrameworkNodes project
         |> List.filter (fun node -> 
             let libName = node.Attributes.["Include"].InnerText.Split(',').[0]
@@ -670,60 +671,71 @@ module ProjectFile =
             |> Set.ofList
 
         let model = model.FilterReferences references
-        let createItemGroup (targets:TargetProfile list) (frameworkReferences:FrameworkReference list) (libraries:Library list) = 
+        let createItemGroup (targets:TargetProfile list) references = 
             let itemGroup = createNode "ItemGroup" project
 
-            for ref in frameworkReferences |> List.sortBy (fun f -> f.Name) do
-                createNode "Reference" project
-                |> addAttribute "Include" ref.Name
-                |> addChild (createNodeSet "Paket" "True" project)
-                |> itemGroup.AppendChild
-                |> ignore
-            for lib in libraries |> List.sortBy (fun f -> f.Name) do
-                let fi = FileInfo (normalizePath lib.Path)
-                let aliases =
-                    aliases
-                    |> Map.tryPick (fun dll alias -> if fi.Name.Equals(dll, StringComparison.OrdinalIgnoreCase) then Some(alias) else None)
+            let refOrder (r:Reference) =
+                match r with
+                | Reference.FrameworkAssemblyReference _ -> 0
+                | Reference.Library _ -> 1
+                | _ -> 2
 
-                let relativePath = createRelativePath project.FileName fi.FullName
-                let privateSettings = 
-                    match copyLocal with
-                    | Some true -> "True" 
-                    | Some false -> "False"
-                    | None -> if relativePath.Contains @"\ref\" then "False" else "True"
+            for lib in references |> List.sortBy(fun (r:Reference) -> refOrder r, r.ReferenceName) do
+                match lib with
+                | Reference.Library lib ->
+                    let fi = FileInfo (normalizePath lib)
+                    let aliases =
+                        aliases
+                        |> Map.tryPick (fun dll alias -> if fi.Name.Equals(dll, StringComparison.OrdinalIgnoreCase) then Some(alias) else None)
+                    
+                    let relativePath = createRelativePath project.FileName fi.FullName
+                    let privateSettings = 
+                        match copyLocal with
+                        | Some true -> "True" 
+                        | Some false -> "False"
+                        | None -> if relativePath.Contains @"\ref\" then "False" else "True"
 
-                if relativePath.Contains @"\native\" then createNode "NativeReference" project else createNode "Reference" project
-                |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
-                |> addChild (createNodeSet "HintPath" relativePath project)
-                |> addChild (createNodeSet "Private" privateSettings project)
-                |> addChild (createNodeSet "Paket" "True" project)
-                |> fun n ->
-                    match aliases with
-                    | None -> n
-                    | Some alias -> addChild (createNodeSet "Aliases" alias project) n
-                |> itemGroup.AppendChild
-                |> ignore
-
+                    if relativePath.Contains @"\native\" then createNode "NativeReference" project else createNode "Reference" project
+                    |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
+                    |> addChild (createNodeSet "HintPath" relativePath project)
+                    |> addChild (createNodeSet "Private" privateSettings project)
+                    |> addChild (createNodeSet "Paket" "True" project)
+                    |> fun n ->
+                        match aliases with
+                        | None -> n
+                        | Some alias -> addChild (createNodeSet "Aliases" alias project) n
+                    |> itemGroup.AppendChild
+                    |> ignore
+                | Reference.FrameworkAssemblyReference frameworkAssembly ->
+                    createNode "Reference" project
+                    |> addAttribute "Include" frameworkAssembly
+                    |> addChild (createNodeSet "Paket" "True" project)
+                    |> itemGroup.AppendChild
+                    |> ignore
+                | Reference.TargetsFile _ -> ()
             itemGroup
 
-        let createPropertyGroup (references:MsBuildFile list) = 
+        let createPropertyGroup references = 
             let propertyGroup = createNode "PropertyGroup" project
                       
             let propertyNames =
                 references
-                |> Seq.map (fun lib ->
-                    let targetsFile = lib.Path
-                    let fi = new FileInfo(normalizePath targetsFile)
-                    let propertyName = "__paket__" + fi.Name.ToString().Replace(" ","_").Replace(".","_")
-
-                    let path = createRelativePath project.FileName (fi.FullName.Replace(fi.Extension,""))
-                    let s = path.Substring(path.LastIndexOf("build\\") + 6)
-                    let node = createNode propertyName project
-                    node.InnerText <- s
-                    node
-                    |> propertyGroup.AppendChild 
-                    |> ignore
-                    propertyName,createRelativePath project.FileName fi.FullName,path.Substring(0,path.LastIndexOf("build\\") + 6))
+                |> Seq.choose (fun lib ->
+                    match lib with
+                    | Reference.Library _ -> None
+                    | Reference.FrameworkAssemblyReference _ -> None
+                    | Reference.TargetsFile targetsFile ->
+                        let fi = new FileInfo(normalizePath targetsFile)
+                        let propertyName = "__paket__" + fi.Name.ToString().Replace(" ","_").Replace(".","_")
+                        
+                        let path = createRelativePath project.FileName (fi.FullName.Replace(fi.Extension,""))
+                        let s = path.Substring(path.LastIndexOf("build\\") + 6)
+                        let node = createNode propertyName project
+                        node.InnerText <- s
+                        node
+                        |> propertyGroup.AppendChild 
+                        |> ignore
+                        Some(propertyName,createRelativePath project.FileName fi.FullName,path.Substring(0,path.LastIndexOf("build\\") + 6)))
                 |> Set.ofSeq
                     
             propertyNames,propertyGroup        
@@ -732,19 +744,12 @@ module ProjectFile =
             model.GetReferenceFolders()
             |> List.map (fun lib -> lib.Targets)
 
-        // Just in case anyone wants to compile FOR netcore in the old format...
-        // I don't think there is anyone actually using this part, but it's there for backwards compat.
-        let netCoreRestricted =
-            model.ApplyFrameworkRestrictions
-                [ FrameworkRestriction.AtLeast (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_0);
-                  FrameworkRestriction.AtLeast (FrameworkIdentifier.DotNetCore DotNetCoreVersion.V1_0) ]
-
-        // handle legacy conditions
         let conditions =
-            (model.GetReferenceFolders() @ (List.map (FrameworkFolder.map (fun refs -> { ReferenceOrLibraryFolder.empty with Libraries = refs })) netCoreRestricted.CompileRefFolders))
-            |> List.sortBy (fun libFolder -> libFolder.Path)
-            |> List.collect (fun libFolder ->
+            model.GetReferenceFolders()
+            |> List.sortBy (fun libFolder -> libFolder.Name)
+            |> List.collect (fun libFolder -> 
                 match libFolder with
+                | x when (match x.Targets with | [SinglePlatform(Runtimes(_))] -> true | _ -> false) -> []  // TODO: Add reference to custom task instead
                 | _ -> 
                     match PlatformMatching.getCondition referenceCondition allTargets libFolder.Targets with
                     | "" -> []
@@ -754,40 +759,48 @@ module ProjectFile =
                             | "$(TargetFrameworkIdentifier) == 'true'" -> "true"
                             | _ -> condition
 
-                        let frameworkReferences = libFolder.FolderContents.FrameworkReferences |> Seq.sortBy (fun (r) -> r.Name) |> Seq.toList
-                        let libraries = libFolder.FolderContents.Libraries |> Seq.sortBy (fun (r) -> r.Path) |> Seq.toList
+
+                        let references = libFolder.Files.References |> Seq.sortBy (fun (r:Reference) -> r.Path) |> Seq.toList
                         let assemblyTargets = ref libFolder.Targets
                         let duplicates = HashSet<_>()
-                        for frameworkAssembly in frameworkReferences do
-                            for t in libFolder.Targets do
-                                if not <| usedFrameworkLibs.Add(t,frameworkAssembly.Name) then
-                                    assemblyTargets := List.filter ((<>) t) !assemblyTargets
-                                    duplicates.Add frameworkAssembly.Name |> ignore
+                        for lib in references do
+                            match lib with
+                            | Reference.FrameworkAssemblyReference frameworkAssembly ->
+                                for t in libFolder.Targets do
+                                    if not <| usedFrameworkLibs.Add(t,frameworkAssembly) then
+                                        assemblyTargets := List.filter ((<>) t) !assemblyTargets
+                                        duplicates.Add lib |> ignore
+                            | _ -> ()
 
                         if !assemblyTargets = libFolder.Targets then
-                            [condition,createItemGroup libFolder.Targets frameworkReferences libraries,false]
+                            [condition,createItemGroup libFolder.Targets references,false]
                         else
-                            let specialFrameworkAssemblies, rest =
-                                frameworkReferences |> List.partition (fun fr -> duplicates.Contains fr.Name)
+                            let frameworkAssemblies,rest = 
+                                references
+                                |> List.partition (fun lib -> 
+                                    match lib with
+                                    | Reference.FrameworkAssemblyReference frameworkAssembly -> duplicates.Contains lib
+                                    | _ -> false)
 
                             match PlatformMatching.getCondition referenceCondition allTargets !assemblyTargets with
-                            | "" -> [condition,createItemGroup libFolder.Targets rest libraries,false]
+                            | "" -> [condition,createItemGroup libFolder.Targets rest,false]
                             | lowerCondition ->
-                                [lowerCondition,createItemGroup !assemblyTargets specialFrameworkAssemblies [],true
-                                 condition,createItemGroup libFolder.Targets rest libraries,false]
+                                [lowerCondition,createItemGroup !assemblyTargets frameworkAssemblies,true
+                                 condition,createItemGroup libFolder.Targets rest,false]
                         )
-
-        // global targets are targets, that are either directly in the /build folder.
+                        
+        // global targets are targets, that are either directly in the /build folder,
+        // or, if there is a framework-restriction, specific to the framework(s).
         // (ref https://docs.microsoft.com/en-us/nuget/create-packages/creating-a-package#including-msbuild-props-and-targets-in-a-package). 
         let globalTargets, frameworkSpecificTargets =
             if not importTargets then List.empty, List.empty else
-            let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Path)
+            let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Name)
             sortedTargets
-            |> List.partition (fun lib -> "" = lib.Path.Name)
-
+            |> List.partition (fun lib -> (set lib.Targets).IsSupersetOf allTargetProfiles)
+        
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
-            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup (lib.FolderContents |> List.ofSeq))
+            |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup lib.Files.References)
 
         let chooseNodes =
             match conditions with
@@ -896,7 +909,7 @@ module ProjectFile =
         
         let globalPropsNodes =
             globalTargets
-            |> Seq.collect (fun t -> t.FolderContents)
+            |> Seq.collect (fun t -> t.Files.References)
             |> Seq.map (fun t -> t.Path)
             |> Seq.distinct
             |> Seq.filter (fun t -> String.endsWithIgnoreCase ".props" t)
@@ -910,7 +923,7 @@ module ProjectFile =
         
         let globalTargetsNodes =
             globalTargets
-            |> Seq.collect (fun t -> t.FolderContents)
+            |> Seq.collect (fun t -> t.Files.References)
             |> Seq.map (fun t -> t.Path)
             |> Seq.distinct
             |> Seq.filter (fun t -> String.endsWithIgnoreCase ".targets" t)
@@ -976,6 +989,14 @@ module ProjectFile =
         match getTargetFrameworkProfile project with
         | Some profile when profile = "Client" ->
             SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)
+        | Some profile when profile = "Unity Web v3.5" ->
+            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Web)
+        | Some profile when profile = "Unity Micro v3.5" ->
+            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Micro)
+        | Some profile when profile = "Unity Subset v3.5" ->
+            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Subset)
+        | Some profile when profile = "Unity Full v3.5" ->
+            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Full)
         | Some profile when String.IsNullOrWhiteSpace profile |> not ->
             KnownTargetProfiles.FindPortableProfile profile
         | _ ->
@@ -1000,7 +1021,7 @@ module ProjectFile =
 
     let updateReferences
             rootPath
-            (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
+            (completeModel: Map<GroupName*PackageName,_*InstallModel*FrameworkRestriction list>) 
             (directPackages : Map<GroupName*PackageName,_*InstallSettings>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) 
             (project:ProjectFile) =
@@ -1040,12 +1061,12 @@ module ProjectFile =
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.GetCompareString(), packName.GetCompareString())
         |> Seq.map (fun kv -> 
-            deleteCustomModelNodes (snd kv.Value) project
+            deleteCustomModelNodes (sndOf3 kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
             let restrictionList = installSettings.FrameworkRestrictions |> getRestrictionList
 
             let projectModel =
-                (snd kv.Value)
+                (sndOf3 kv.Value)
                     .ApplyFrameworkRestrictions(restrictionList)
                     .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
@@ -1056,8 +1077,8 @@ module ProjectFile =
                     if isTargetMatchingRestrictions(restrictionList,SinglePlatform targetFramework) then
                         if projectModel.GetLibReferences targetFramework |> Seq.isEmpty then
                             let libReferences = 
-                                projectModel.GetAllLegacyReferences() // LibReferencesLazy |> force
-                                //|> Seq.filter (fun l -> match l with | Reference.Library _ -> true | _ -> false)
+                                projectModel.GetLibReferencesLazy |> force
+                                |> Seq.filter (fun l -> match l with | Reference.Library _ -> true | _ -> false)
 
                             if not (Seq.isEmpty libReferences) then
                                 traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
@@ -1066,7 +1087,7 @@ module ProjectFile =
 
             let importTargets = defaultArg installSettings.ImportTargets true
             
-            let allFrameworks = applyRestrictionsToTargets restrictionList KnownTargetProfiles.AllProfiles
+            let allFrameworks = applyRestrictionsToTargets ((thirdOf3 kv.Value)) (KnownTargetProfiles.AllDotNetStandardProfiles @ KnownTargetProfiles.AllDotNetProfiles)
             generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal importTargets installSettings.ReferenceCondition (set allFrameworks) project)
         |> Seq.iter (fun ctx ->
             for chooseNode in ctx.ChooseNodes do
