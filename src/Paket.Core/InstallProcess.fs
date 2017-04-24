@@ -13,6 +13,8 @@ open Paket.PackageSources
 open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Collections.Generic
+open Paket.ProjectFile
+open System.Diagnostics
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -176,13 +178,21 @@ let CreateModel(alternativeProjectRoot, root, force, dependenciesFile:Dependenci
              RemoteDownload.DownloadSourceFiles(root, kv.Key, force, files)
 
     lockFile.Groups
-    |> Seq.map (fun kv' -> 
-        let sources = dependenciesFile.Groups.[kv'.Key].Sources
-        let caches = dependenciesFile.Groups.[kv'.Key].Caches
-        kv'.Value.Resolution
-        |> Map.filter (fun name _ -> packages.Contains(kv'.Key,name))
-        |> Seq.map (fun kv -> CreateInstallModel(alternativeProjectRoot, root,kv'.Key,sources,caches,force,kv.Value))
-        |> Seq.toArray
+    |> Seq.map (fun kv' ->
+        let groupName, lockFileGroup = kv'.Key, kv'.Value
+        let depFileGroup = dependenciesFile.Groups.[groupName]
+        let sources = depFileGroup.Sources
+        let caches = depFileGroup.Caches
+        let depFileGroupRestrictions = depFileGroup.Options.Settings.FrameworkRestrictions
+        let lockFileGroupRestrictions = lockFileGroup.Options.Settings.FrameworkRestrictions
+        [| for kv in lockFileGroup.Resolution do
+            let packageName, resolvedPackage = kv.Key, kv.Value
+            if packages.Contains(groupName,packageName) then
+                yield async {
+                    let! (groupName,packageName), (package,model) = CreateInstallModel(alternativeProjectRoot, root,groupName,sources,caches,force,resolvedPackage)
+                    return (groupName,packageName), (package,model, getRestrictionList lockFileGroupRestrictions)
+                }
+        |]
         |> Async.Parallel
         |> Async.RunSynchronously)
     |> Seq.concat
@@ -347,7 +357,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
                     let package = 
                         match model |> Map.tryFind (kv.Key, ps.Name) with
-                        | Some (p,_) -> Choice1Of2 p
+                        | Some (p,_,_) -> Choice1Of2 p
                         | None -> Choice2Of2 <| sprintf " - %s uses NuGet package %O, but it was not found in the paket.lock file in group %O.%s" referenceFile.FileName ps.Name kv.Key (lockFile.CheckIfPackageExistsInAnyGroup ps.Name)
 
                     match group, package with
@@ -498,7 +508,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
             let allKnownLibs =
                 model
-                |> Seq.map (fun kv -> (snd kv.Value).GetLibReferencesLazy.Force())
+                |> Seq.map (fun kv -> (sndOf3 kv.Value).GetLibReferencesLazy.Force())
                 |> Set.unionMany
 
             for g in lockFile.Groups do
@@ -511,7 +521,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                         |> Map.tryFind (snd kv.Key)
                         |> Option.bind (fun p -> p.Settings.CreateBindingRedirects)
 
-                    (snd kv.Value,packageRedirects))
+                    (sndOf3 kv.Value,packageRedirects))
                 |> applyBindingRedirects 
                     !first 
                     options.CreateNewBindingFiles

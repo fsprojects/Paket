@@ -21,6 +21,10 @@ ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 |
                                         ///SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
 #endif
 
+let sndOf3 (_,v,_) = v
+let thirdOf3 (_,_,v) = v
+
+
 /// Adds quotes around the string
 /// [omit]
 let quote (str:string) = "\"" + str.Replace("\"","\\\"") + "\""
