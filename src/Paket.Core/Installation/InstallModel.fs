@@ -702,18 +702,18 @@ module InstallModel =
         match restrictions with
         | [] -> installModel
         | restrictions ->
-            let applRestriction folder =
+            let applyRestriction folder =
                 { folder with Targets = applyRestrictionsToTargets restrictions folder.Targets}
 
             { installModel with
                 CompileLibFolders =
                     installModel.CompileLibFolders
-                    |> List.map applRestriction
+                    |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])
 
                 CompileRefFolders =
                     installModel.CompileRefFolders
-                    |> List.map applRestriction
+                    |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])
 
                 RuntimeAssemblyFolders =
@@ -723,7 +723,7 @@ module InstallModel =
 
                 TargetsFileFolders =
                     installModel.TargetsFileFolders
-                    |> List.map applRestriction
+                    |> List.map applyRestriction
                     |> List.filter (fun folder -> folder.Targets <> [])  }
 
     let rec addTargetsFiles (targetsFiles:UnparsedPackageFile list) (this:InstallModel) : InstallModel =

@@ -9,6 +9,7 @@
     <RootNamespace>Paket</RootNamespace>
     <AssemblyName>Paket.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFSharpCoreVersion>4.4.1.0</TargetFSharpCoreVersion>
     <Name>Paket</Name>
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\</SolutionDir>
@@ -63,6 +64,12 @@
       </PropertyGroup>
     </When>
     <When Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets')">
+    <When Condition="$(TargetFSharpCoreVersion) &gt;= 4.4.1.0 AND $(TargetFSharpCoreVersion) &lt; 4.4.1.0 ">
+      <PropertyGroup>
+        <FSharpTargetsPath>$(MSBuildProgramFiles32)\Microsoft SDKs\F#\4.1\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
       <PropertyGroup>
         <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\3.0\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
       </PropertyGroup>
@@ -84,10 +91,12 @@
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
       <Paket>True</Paket>
       <Link>Common/AssemblyReader.fs</Link>
+      <Link>Common\AssemblyReader.fs</Link>
     </Compile>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
       <Link>Common/Globbing.fs</Link>
+      <Link>Common\Globbing.fs</Link>
     </Compile>
     <Compile Include="Common\Async.fs" />
     <Compile Include="Common\Logging.fsi" />
@@ -137,6 +146,68 @@
     <Compile Include="Installation\InstallProcess.fs" />
     <Compile Include="Installation\UpdateProcess.fs" />
     <Compile Include="PackageAnalysis\Queries.fs" />
+    <Compile Include="PackageAnalysis\Environment.fs" />
+    <Compile Include="PackageAnalysis\FindOutdated.fs" />
+    <Compile Include="PackageAnalysis\FindReferences.fs" />
+    <Compile Include="PackageAnalysis\DependencyModel.fs" />
+    <Compile Include="PackageAnalysis\Simplifier.fs" />
+    <Compile Include="PackageAnalysis\Why.fs" />
+    <Compile Include="PackageManagement\Releases.fs" />
+    <Compile Include="PackageManagement\VSIntegration.fs" />
+    <Compile Include="PackageManagement\AddProcess.fs" />
+    <Compile Include="PackageManagement\NugetConvert.fs" />
+    <Compile Include="PackageManagement\RemoveProcess.fs" />
+    <Compile Include="Packaging\NupkgWriter.fs" />
+    <Compile Include="Packaging\PackageMetaData.fs" />
+    <Compile Include="Packaging\PackageProcess.fs" />
+    <Compile Include="Common\Async.fs" />
+    <Compile Include="Common\Domain.fs" />
+    <Compile Include="Common\Logging.fsi" />
+    <Compile Include="Common\Logging.fs" />
+    <Compile Include="Common\Constants.fs" />
+    <Compile Include="Common\Utils.fs" />
+    <Compile Include="Common\Xml.fs" />
+    <Compile Include="Versioning\SemVer.fs" />
+    <Compile Include="Versioning\VersionRange.fs" />
+    <Compile Include="Versioning\FrameworkHandling.fs" />
+    <Compile Include="Versioning\PlatformMatching.fs" />
+    <Compile Include="Versioning\ConfigFile.fs" />
+    <Compile Include="Versioning\Cache.fs" />
+    <Compile Include="Versioning\PackageSources.fs" />
+    <Compile Include="Versioning\Requirements.fs" />
+    <Compile Include="Dependencies\GitCommandHelper.fs" />
+    <Compile Include="Dependencies\GitHandling.fs" />
+    <Compile Include="Dependencies\ModuleResolver.fs" />
+    <Compile Include="Dependencies\RemoteDownload.fs" />
+    <Compile Include="Dependencies\RemoteUpload.fs" />
+    <Compile Include="Dependencies\DependenciesTypes.fs" />
+    <Compile Include="Dependencies\PackageResolver.fs" />
+    <Compile Include="Dependencies\Nuspec.fs" />
+    <Compile Include="Dependencies\Nuget.fs" />
+    <Compile Include="Dependencies\NuGetV3.fs" />
+    <Compile Include="Dependencies\NuGetV2.fs" />
+    <Compile Include="Dependencies\DependenciesFileParser.fs" />
+    <Compile Include="PaketConfigFiles\RuntimeGraph.fs" />
+    <Compile Include="PaketConfigFiles\InstallModel.fs" />
+    <Compile Include="PaketConfigFiles\ReferencesFile.fs" />
+    <Compile Include="PaketConfigFiles/SolutionFile.fs" />
+    <Compile Include="PaketConfigFiles/LockFile.fs" />
+    <Compile Include="PaketConfigFiles/TemplateFile.fs" />
+    <Compile Include="PaketConfigFiles\Cultures.fs" />
+    <Compile Include="PaketConfigFiles\ProjectFile.fs" />
+    <Compile Include="PaketConfigFiles/DependenciesFile.fs" />
+    <Compile Include="PaketConfigFiles/PackagesConfigFile.fs" />
+    <Compile Include="PaketConfigFiles\LocalFile.fs" />
+    <Compile Include="Installation\ProcessOptions.fs" />
+    <Compile Include="Installation\DataModel.fs" />
+    <Compile Include="Installation\BindingRedirects.fs" />
+    <Compile Include="Installation\DependencyChangeDetection.fs" />
+    <Compile Include="Installation\Queries.fs" />
+    <Compile Include="Installation\ScriptGeneration.fs" />
+    <Compile Include="Installation\GarbageCollection.fs" />
+    <Compile Include="Installation\RestoreProcess.fs" />
+    <Compile Include="Installation\InstallProcess.fs" />
+    <Compile Include="Installation\UpdateProcess.fs" />
     <Compile Include="PackageAnalysis\Environment.fs" />
     <Compile Include="PackageAnalysis\FindOutdated.fs" />
     <Compile Include="PackageAnalysis\FindReferences.fs" />

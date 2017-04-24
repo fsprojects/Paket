@@ -68,7 +68,7 @@ let parseRestrictions failImmediatly (text:string) =
 
         match FrameworkDetection.Extract(framework) with
         | None -> 
-                if PlatformMatching.extractPlatforms framework |> List.isEmpty |> not then
+                if (PlatformMatching.extractPlatforms framework).Platforms |> List.isEmpty |> not then
                     yield FrameworkRestriction.Portable framework
                 else
                     handleError <| sprintf "Could not parse framework '%s'. Try to update or install again or report a paket bug." framework
@@ -503,12 +503,12 @@ let isTargetMatchingRestrictions =
     memoize <| fun (restrictions:FrameworkRestriction list, target) ->
         if List.isEmpty restrictions then true else
         match target with
-        | SinglePlatform (Runtimes _ ) -> true
+        //| SinglePlatform (Runtimes _ ) -> true
         | SinglePlatform pf ->
             restrictions
             |> List.exists (fun restriction ->
                     match restriction with
-                    | FrameworkRestriction.Exactly (Native("","")) -> 
+                    | FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform)) -> 
                         match pf with 
                         | Native(_) -> true 
                         | _ -> false

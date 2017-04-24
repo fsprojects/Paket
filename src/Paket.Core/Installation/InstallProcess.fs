@@ -201,7 +201,7 @@ let brokenDeps = HashSet<_>()
 
 /// Applies binding redirects for all strong-named references to all app. and web.config files.
 let private applyBindingRedirects isFirstGroup createNewBindingFiles redirects cleanBindingRedirects
-                                  root groupName findDependencies allKnownLibs 
+                                  root groupName findDependencies allKnownLibNames 
                                   (projectCache: Dictionary<string, ProjectFile option>) 
                                   extractedPackages =
 
@@ -520,7 +520,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                     (FileInfo project.FileName).Directory.FullName 
                     g.Key 
                     lockFile.GetAllDependenciesOf
-                    allKnownLibs
+                    allKnownLibNames
                     projectCache
                 first := false
 
