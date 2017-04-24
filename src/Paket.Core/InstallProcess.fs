@@ -13,6 +13,7 @@ open Paket.PackageSources
 open Paket.PackagesConfigFile
 open Paket.Requirements
 open System.Collections.Generic
+open System.Text.RegularExpressions
 
 let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*InstallSettings>) packagesConfigFileName =
     let packagesInConfigFile = PackagesConfigFile.Read packagesConfigFileName
@@ -65,16 +66,6 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
             failwithf "Package directory for package %O was not found." packageName
 
 
-let contentFileBlackList : list<(FileInfo -> bool)> = [
-    fun f -> f.Name = "_._"
-    fun f -> f.Name.EndsWith ".transform"
-    fun f -> f.Name.EndsWith ".pp"
-    fun f -> f.Name.EndsWith ".tt"
-    fun f -> f.Name.EndsWith ".ttinclude"
-    fun f -> f.Name.EndsWith ".install.xdt"
-    fun f -> f.Name.EndsWith ".uninstall.xdt"
-]
-
 let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems options =
     let contentFiles = System.Collections.Generic.HashSet<_>()
     let nuGetFileItems =
@@ -94,9 +85,39 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
             |> Seq.toList
 
         let copyContentFiles (project : ProjectFile, packagesWithContent) =
+            let contentFileBlackList : list<(FileInfo -> bool)> = [
+                fun f -> f.Name = "_._"
+                fun f -> f.Name.EndsWith ".transform"
+                fun f -> f.Name.EndsWith ".tt"
+                fun f -> f.Name.EndsWith ".ttinclude"
+                fun f -> f.Name.EndsWith ".install.xdt"
+                fun f -> f.Name.EndsWith ".uninstall.xdt" ]
             let onBlackList (fi : FileInfo) = contentFileBlackList |> List.exists (fun rule -> rule(fi))
 
             let rec copyDirContents (fromDir : DirectoryInfo, contentCopySettings, toDir : Lazy<DirectoryInfo>) =
+                let overwrite = contentCopySettings = ContentCopySettings.Overwrite
+                let copySingleFile (file: FileInfo) =
+                    let target = FileInfo(Path.Combine(toDir.Force().FullName, file.Name))
+                    contentFiles.Add(target.FullName) |> ignore
+                    if overwrite || not target.Exists then
+                        file.CopyTo(target.FullName, true)
+                    else target
+
+                let createSingleFileFromPpTemplate (file: FileInfo) =
+                    let target = FileInfo(Path.Combine(toDir.Force().FullName, file.Name.Substring(0, file.Name.Length - file.Extension.Length)))
+                    contentFiles.Add(target.FullName) |> ignore
+                    if overwrite || not target.Exists then
+                        let content = File.ReadAllText(file.FullName)
+                        let content =
+                            Regex.Replace
+                                ( content
+                                , @"\$(\w+)\$"
+                                , fun regexMatch -> project.GetProperty(regexMatch.Groups.[1].Value) |> Option.defaultValue regexMatch.Value
+                                , RegexOptions.CultureInvariant)
+                        File.WriteAllText(target.FullName, content)
+                        FileInfo(target.FullName)
+                    else target
+
                 fromDir.GetDirectories() |> Array.toList
                 |> List.collect (fun subDir -> copyDirContents(subDir, contentCopySettings, lazy toDir.Force().CreateSubdirectory(subDir.Name)))
                 |> List.append
@@ -106,13 +127,9 @@ let processContentFiles root project (usedPackages:Map<_,_>) gitRemoteItems opti
                             if onBlackList file then false else
                             if file.Name = "paket.references" then traceWarnfn "You can't use paket.references as a content file in the root of a project. Please take a look at %s" file.FullName; false else true)
                         |> List.map (fun file ->
-                            let overwrite = contentCopySettings = ContentCopySettings.Overwrite
-                            let target = FileInfo(Path.Combine(toDir.Force().FullName, file.Name))
-                            contentFiles.Add(target.FullName) |> ignore
-                            if overwrite || not target.Exists then
-                                file.CopyTo(target.FullName, true)
-                            else target))
-                
+                            match file.Extension with
+                            | ".pp" -> createSingleFileFromPpTemplate file
+                            | _ -> copySingleFile file))
 
             packagesWithContent
             |> List.collect (fun (packageDir,contentCopySettings,contentCopyToOutputSettings) -> 

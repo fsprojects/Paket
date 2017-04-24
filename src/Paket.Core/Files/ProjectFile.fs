@@ -217,20 +217,20 @@ module ProjectFile =
         let directoryNoRoot = Regex.Replace(projectFileInfo.FullName, "^.:\\\\?", "")
         [
             // Project file properties
-            "MSBuildProjectDirectory", projectFileInfo.DirectoryName
-            "MSBuildProjectDirectoryNoRoot", directoryNoRoot
-            "MSBuildProjectExtension", projectFileInfo.Extension
-            "MSBuildProjectFile", projectFileInfo.Name
-            "MSBuildProjectFullPath", projectFileInfo.FullName
-            "MSBuildProjectName", Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
+            CiString("MSBuildProjectDirectory"), projectFileInfo.DirectoryName
+            CiString("MSBuildProjectDirectoryNoRoot"), directoryNoRoot
+            CiString("MSBuildProjectExtension"), projectFileInfo.Extension
+            CiString("MSBuildProjectFile"), projectFileInfo.Name
+            CiString("MSBuildProjectFullPath"), projectFileInfo.FullName
+            CiString("MSBuildProjectName"), Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
             
             // This file properties (Potentially an Imported file)
-            "MSBuildThisFileDirectory", projectFileInfo.DirectoryName + (string Path.DirectorySeparatorChar)
-            "MSBuildThisFileDirectoryNoRoot", directoryNoRoot + (string Path.DirectorySeparatorChar)
-            "MSBuildThisFileExtension", projectFileInfo.Extension
-            "MSBuildThisFile", projectFileInfo.Name
-            "MSBuildThisFileFullPath", projectFileInfo.FullName
-            "MSBuildThisFileName", Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
+            CiString("MSBuildThisFileDirectory"), projectFileInfo.DirectoryName + (string Path.DirectorySeparatorChar)
+            CiString("MSBuildThisFileDirectoryNoRoot"), directoryNoRoot + (string Path.DirectorySeparatorChar)
+            CiString("MSBuildThisFileExtension"), projectFileInfo.Extension
+            CiString("MSBuildThisFile"), projectFileInfo.Name
+            CiString("MSBuildThisFileFullPath"), projectFileInfo.FullName
+            CiString("MSBuildThisFileName"), Path.GetFileNameWithoutExtension(projectFileInfo.FullName)
             
         ] |> Map.ofList
 
@@ -239,14 +239,15 @@ module ProjectFile =
         Map.fold (fun state key value -> Map.add key value state) first second
 
     let getPropertyWithDefaults propertyName defaultProperties (projectFile:ProjectFile) =
+        let propertyName = CiString propertyName
         let defaultProperties = appendMap defaultProperties (getReservedProperties projectFile)
 
-        let processPlaceholders (data : Map<string, string>) text =
+        let processPlaceholders (data : Map<CiString, string>) text =
             
             let getPlaceholderValue (name:string) =
                 // Change "$(Configuration)" to "Configuration",
                 // then find in the data map
-                let name = name.Substring(2, name.Length - 3)
+                let name = CiString(name.Substring(2, name.Length - 3))
                 match data.TryFind(name) with
                 | None -> ""
                 | Some s -> s
@@ -418,10 +419,9 @@ module ProjectFile =
             // to this key if it already exists in the map; so long
             // as we process nodes top-to-bottom, this matches the
             // behavior of MSBuild.
-            Map.add node.Name text data
+            data |> Map.add (CiString(node.Name)) text
 
-
-        let rec handleElement (data : Map<string, string>) (node : XmlNode) =
+        let rec handleElement (data : Map<CiString, string>) (node : XmlNode) =
 
             let handleConditionalElement data node =
                 match getAttribute "Condition" node with
@@ -457,7 +457,7 @@ module ProjectFile =
         Map.tryFind propertyName map
 
     let getProperty propertyName (projectFile:ProjectFile) =
-        getPropertyWithDefaults propertyName Map.empty<string, string> projectFile
+        getPropertyWithDefaults propertyName Map.empty<CiString, string> projectFile
 
 
 
@@ -1417,7 +1417,7 @@ module ProjectFile =
                 else
                     failwithf "Unable to find %s output path node in file %s targeting the %s platform" buildConfiguration project.FileName buildPlatform
             | x::xs ->
-                let startingData = Map.ofList [("Configuration", buildConfiguration); ("Platform", x)]
+                let startingData = Map.ofList [(CiString "Configuration", buildConfiguration); (CiString "Platform", x)]
                 [getPropertyWithDefaults "OutputPath" startingData project; getPropertyWithDefaults "OutDir" startingData project]
                 |> List.choose id
                 |> function
