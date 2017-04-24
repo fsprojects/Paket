@@ -6,6 +6,7 @@ open FsUnit
 open Paket.TestHelpers
 open Paket.Domain
 open Paket.Requirements
+open System.IO
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
@@ -39,7 +40,7 @@ let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() =
             |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\FSharp.Data.SqlClient\",
               [],
               [],
-              Nuspec.Load("Nuspec/FSharp.Data.SqlClient.nuspec"))
+              Nuspec.Load(__SOURCE_DIRECTORY__ + @"\..\..\Nuspec\FSharp.Data.SqlClient.nuspec"))
 
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
     let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml

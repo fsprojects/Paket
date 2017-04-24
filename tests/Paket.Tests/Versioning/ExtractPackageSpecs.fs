@@ -17,7 +17,7 @@ let ``should report blocked download``() =
         Directory.Delete(di,true)
     Directory.CreateDirectory(di) |> ignore
     let fileName = Path.Combine(di,"FSharp.Data.nupkg")
-    File.Copy("Nuspec/FSharp.Data.nuspec",fileName)
+    File.Copy(__SOURCE_DIRECTORY__ + @"/../Nuspec/FSharp.Data.nuspec",fileName)
     
     try
         NuGetV2.ExtractPackage(fileName,di,PackageName "FSharp.Data",SemVer.Parse("0.1.1"),true)
