@@ -20,7 +20,7 @@ let ``#1251 full installer demo``() =
     nuget FAKE
     nuget FSharp.Formatting"""
 
-    let dependenciesFile = DependenciesFile.FromCode(scenarioTempPath "i001251-installer-demo",deps)
+    let dependenciesFile = DependenciesFile.FromSource(scenarioTempPath "i001251-installer-demo",deps)
     let force = false
     let packagesToInstall = 
         // get from references file
@@ -38,7 +38,7 @@ let ``#1251 install FSharp.Collections.ParallelSeq``() =
     let deps = """source https://nuget.org/api/v2
     nuget FSharp.Collections.ParallelSeq"""
 
-    let dependenciesFile = DependenciesFile.FromCode(scenarioTempPath "i001251-installer-demo",deps)
+    let dependenciesFile = DependenciesFile.FromSource(scenarioTempPath "i001251-installer-demo",deps)
     let force = false
     let packagesToInstall = 
         // get from references file

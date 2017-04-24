@@ -30,7 +30,7 @@ NUGET
 
 [<Test>]
 let ``should generate strict lock file``() = 
-    let cfg = DependenciesFile.FromCode(config1)
+    let cfg = DependenciesFile.FromSource(config1)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph1, PackageDetailsFromGraph graph1).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected1)
@@ -57,7 +57,7 @@ NUGET
 
 [<Test>]
 let ``should generate content none lock file``() = 
-    let cfg = DependenciesFile.FromCode(configWithContent)
+    let cfg = DependenciesFile.FromSource(configWithContent)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected2)
@@ -81,7 +81,7 @@ NUGET
 
 [<Test>]
 let ``should generate redirects lock file``() = 
-    let cfg = DependenciesFile.FromCode(configWithRedirects)
+    let cfg = DependenciesFile.FromSource(configWithRedirects)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected3)
@@ -100,7 +100,7 @@ NUGET
   remote: http://www.nuget.org/api/v2
     Microsoft.SqlServer.Types (1.0)"""
 
-    let cfg = DependenciesFile.FromCode(config)
+    let cfg = DependenciesFile.FromSource(config)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
@@ -119,7 +119,7 @@ NUGET
   remote: http://www.nuget.org/api/v2
     Microsoft.SqlServer.Types (1.0)"""
 
-    let cfg = DependenciesFile.FromCode(config)
+    let cfg = DependenciesFile.FromSource(config)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
@@ -138,7 +138,7 @@ NUGET
   remote: http://www.nuget.org/api/v2
     Microsoft.SqlServer.Types (1.0)"""
 
-    let cfg = DependenciesFile.FromCode(config)
+    let cfg = DependenciesFile.FromSource(config)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
@@ -157,7 +157,7 @@ NUGET
   remote: http://www.nuget.org/api/v2
     Microsoft.SqlServer.Types (1.0)"""
 
-    let cfg = DependenciesFile.FromCode(config)
+    let cfg = DependenciesFile.FromSource(config)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
@@ -188,7 +188,7 @@ NUGET
     NLog.Contrib (1.0)
       NLog (>= 1.0.1)"""
 
-    let cfg = DependenciesFile.FromCode(config)
+    let cfg = DependenciesFile.FromSource(config)
     let group = cfg.Groups.[Constants.MainDependencyGroup]
     group.Packages.Head.Settings.FrameworkRestrictions 
     |> getRestrictionList
