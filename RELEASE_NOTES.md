@@ -1,4 +1,4 @@
-#### 4.6.0 - 24.04.2017
+#### 4.6.1 - 24.04.2017
 * Support for SourceLink v2 - https://github.com/fsprojects/Paket/pull/2200
 * BUGFIX: Framework restriction was lost for global build folder - https://github.com/fsprojects/Paket/pull/2272
 * BUGFIX: Fixed error when parsing version="*" - https://github.com/fsprojects/Paket/issues/2266
