@@ -240,9 +240,10 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
           |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
           |> Seq.map (fun g -> g.Name)
           |> Seq.toList
-
-        LoadingScripts.ScriptGeneration.constructScriptsFromDisk groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
-        |> Seq.iter (fun x -> x.Save())
+        
+        let rootDir = (DirectoryInfo dependenciesFile.RootPath) 
+        LoadingScripts.ScriptGeneration.constructScriptsFromDisk groupsToGenerate rootDir options.Common.ProvidedFrameworks options.Common.ProvidedScriptTypes
+        |> Seq.iter (fun x -> x.Save rootDir)
 
 /// Update a single package command
 let UpdatePackage(dependenciesFileName, groupName, packageName : PackageName, newVersion, options : UpdaterOptions) =

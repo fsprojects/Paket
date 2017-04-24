@@ -304,6 +304,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         |> Seq.toList
 
     if groupsToGenerate <> [] then
-        (LoadingScripts.ScriptGeneration.constructScriptsFromDisk groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) [] [])
-        |> Seq.iter (fun sd -> sd.Save ())
+        let depsCache = DependencyCache(dependenciesFile,lockFile) 
+        (LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] [])
+        //(LoadingScripts.ScriptGeneration.constructScriptsFromDisk groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) [] [])
+        |> Seq.iter (fun sd -> sd.Save (DirectoryInfo dependenciesFile.Directory))
     GarbageCollection.CleanUp(root, dependenciesFile, lockFile)

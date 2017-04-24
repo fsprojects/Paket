@@ -4,91 +4,6 @@ open System
 open System.IO
 open Paket
 open Paket.Domain
-open Mono.Cecil
-
-
-module PackageAndAssemblyResolution =
-
-    let getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) openList =
-        
-        let leafPackages =
-            openList |> List.filter (fun p ->
-                not (knownPackages.Contains(getPackageName p)) &&
-                getDependencies p |> Seq.forall (knownPackages.Contains)
-            )
-
-        let newKnownPackages =
-            (knownPackages,leafPackages)
-            ||> Seq.fold (fun state package -> state |> Set.add (getPackageName package)) 
-
-        let newState =
-            openList |> List.filter (fun p -> 
-                leafPackages |> Seq.forall (fun l -> getPackageName l <> getPackageName p)
-            )
-        leafPackages, newKnownPackages, newState
-
-
-    let getPackageOrderGeneric getPackageName getDependencies packages =
-        
-        let rec step finalList knownPackages currentPackages =
-            match currentPackages |> getLeafPackagesGeneric getPackageName getDependencies knownPackages with
-            | ([], _, _) -> finalList
-            | (leafPackages, newKnownPackages, newState) ->
-                step (leafPackages @ finalList) newKnownPackages newState
-        
-        step [] Set.empty packages
-        |> List.rev  
-
-
-    let getPackageOrderResolvedPackage =
-        getPackageOrderGeneric 
-            (fun (p:PackageResolver.ResolvedPackage) -> p.Name) 
-            (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n))
-
-
-    let getPackageOrderFromLockFile (lockFile:LockFile) =
-        lockFile.GetResolvedPackages ()
-        |> Seq.map (fun kvp -> kvp.Key , getPackageOrderResolvedPackage kvp.Value)
-        |> Map.ofSeq
-        
-
-    let getDllOrder (dllFiles : AssemblyDefinition list) =
-        // this check saves looking at assembly metadata when we know this is not needed
-        if List.length dllFiles = 1 then dllFiles  else
-        // we ignore all unknown references as they are most likely resolved on package level
-        let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
-        getPackageOrderGeneric
-            (fun (p:AssemblyDefinition) -> p.FullName)
-            (fun p -> p.MainModule.AssemblyReferences |> Seq.map (fun r -> r.FullName) |> Seq.filter (known.Contains))
-            dllFiles
-
-
-    let getDllsWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
-        let dllFiles =
-            installModel
-            |> InstallModel.getLegacyReferences (SinglePlatform framework)
-            |> Seq.map (fun l -> l.Path)
-            |> Seq.map (fun path -> AssemblyDefinition.ReadAssembly path, FileInfo(path))
-            |> dict
-
-        getDllOrder (dllFiles.Keys |> Seq.toList)
-        |> List.map (fun a -> dllFiles.[a])
-
-
-    let shouldExcludeFrameworkAssemblies =
-        // NOTE: apparently for .netcore / .netstandard we should skip framework dependencies
-        // https://github.com/fsprojects/Paket/issues/2156
-        function
-        | FrameworkIdentifier.DotNetCore _ 
-        | FrameworkIdentifier.DotNetStandard _ -> true
-        | _ -> false
-
-
-    let getFrameworkReferencesWithinPackage (framework: FrameworkIdentifier) (installModel :InstallModel) =
-        if shouldExcludeFrameworkAssemblies framework then List.empty else
-        installModel
-        |> InstallModel.getAllLegacyFrameworkReferences
-        |> Seq.toList
 
 
 module ScriptGeneration =
@@ -107,9 +22,8 @@ module ScriptGeneration =
 
     let inline (</>) p1 p2 = (?<-) PathCombine p1 p2
 
-    open PackageAndAssemblyResolution
+    //open PackageAndAssemblyResolution
     open System.Collections.Generic
-    open System.Text.RegularExpressions
   
     type ScriptType =
         | CSharp | FSharp
@@ -121,12 +35,6 @@ module ScriptGeneration =
             | "csx" -> Some CSharp 
             | "fsx" -> Some FSharp 
             | _ -> None
-
-
-    type ReferenceType =
-        | Assembly  of FileInfo
-        | Framework of string
-        | LoadScript of FileInfo
 
 
     type ScriptGenInput = {
@@ -141,17 +49,6 @@ module ScriptGeneration =
     type ScriptGenResult = 
         | DoNotGenerate
         | Generate of lines : ReferenceType list
-
-    type ScriptContent = {
-        Lang : ScriptType 
-        Path : FileInfo 
-        Text : string
-    } with
-        member self.Save () = 
-            async {
-                self.Path.Directory.Create ()
-                File.WriteAllText (self.Path.FullName, self.Text)
-            } |> Async.Start
 
 
     /// default implementation of F# include script generator
@@ -187,88 +84,45 @@ module ScriptGeneration =
         | xs -> Generate xs
 
 
-    let renderScript (scriptType:ScriptType) (scriptFile:FileInfo) (input:ReferenceType seq) =
-        // create a relative pathReferenceType directory of the script to the dll or script to load
-        let relativePath (scriptFile: FileInfo) (libFile: FileInfo) =
-            (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
+    type ScriptContent = {
+        Lang : ScriptType         
+        Input : ReferenceType seq
+        PartialPath : string
+    } with
+        member self.Render (directory:DirectoryInfo) =
+            let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
+
+            // create a relative pathReferenceType directory of the script to the dll or script to load
+            let relativePath (scriptFile: FileInfo) (libFile: FileInfo) =
+                (Uri scriptFile.FullName).MakeRelativeUri(Uri libFile.FullName).ToString()
         
-        // create the approiate load string for the target resource
-        let refString (reference:ReferenceType)  = 
-            match reference, scriptType with
-            | Assembly file, _ ->
-                 sprintf """#r "%s" """ <| relativePath scriptFile file
-            | LoadScript script, ScriptType.FSharp ->
-                 sprintf """#load @"%s" """ <| relativePath scriptFile script
-            | LoadScript script, ScriptType.CSharp ->     
-                 sprintf """#load "%s" """ <| relativePath scriptFile script
-            | Framework name,_ ->
-                 sprintf """#r "%s" """ name
+            // create the approiate load string for the target resource
+            let refString (reference:ReferenceType)  = 
+                match reference, self.Lang with
+                | Assembly file, _ ->
+                     sprintf """#r "%s" """ <| relativePath scriptFile file
+                | LoadScript script, ScriptType.FSharp ->
+                     sprintf """#load @"%s" """ <| relativePath scriptFile script
+                | LoadScript script, ScriptType.CSharp ->     
+                     sprintf """#load "%s" """ <| relativePath scriptFile script
+                | Framework name,_ ->
+                     sprintf """#r "%s" """ name
         
-        let text = input |> Seq.map refString |> String.concat "\n"
-        {   Lang = scriptType
-            Path = scriptFile
-            Text = text
-        }
+            self.Input |> Seq.map refString |> String.concat "\n"
 
-    type RawScript = {
-        ReferenceLocations : FileInfo seq
-        FrameworkReferences : FrameworkReference seq 
-    }
 
-    type GenPrep () =
-        let cache = Dictionary<GroupName,RawScript ResizeArray> ()
-        let assemblies = Dictionary<GroupName,FileInfo HashSet> ()
-        let frameworkLibs = Dictionary<GroupName,FrameworkReference HashSet> ()
-        // helper function to accumulate a distinct set of framework libraries
-        // and assembly references during lockfile exploration
-        let accum (dict:Dictionary<_,HashSet<_>>) groupName elms =  
-            elms |> Seq.iter (fun elm ->
-            if dict.ContainsKey groupName then 
-                dict.[groupName].Add elm |> ignore
-            else 
-                let set = HashSet() in set.Add elm |> ignore
-                dict.[groupName] <- set
-            )
-        let retrieve (dict:Dictionary<GroupName,'a>) key =
-            if dict.ContainsKey key 
-            then dict.[key] :> seq<_>
-            else Seq.empty
-        
-        member __.Item 
-            with get idx = 
-                if cache.ContainsKey idx 
-                then cache.[idx] :> seq<_>
-                else Seq.empty
+        member self.Save (directory:DirectoryInfo) = 
+            async {
+                directory.Create()
+                let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
+                let text = self.Render directory
+                File.WriteAllText (scriptFile.FullName, text)
+            } |> Async.Start
 
-            and set groupName (reflocs:FileInfo seq, framelocs:FrameworkReference seq) =
-                accum  assemblies  groupName reflocs
-                accum frameworkLibs groupName framelocs
-                let data = { 
-                    ReferenceLocations = reflocs
-                    FrameworkReferences = framelocs 
-                } 
-                if cache.ContainsKey groupName then 
-                    cache.[groupName].Add data
-                else 
-                let arr = ResizeArray() in arr.Add data 
-                cache.Add (groupName, arr)
-        
-        member __.AllAssemblies = assemblies |> Seq.collect (fun kvp -> kvp.Value :> seq<_> ) 
-        member __.AllFrameworkLibs = frameworkLibs |> Seq.collect (fun kvp -> kvp.Value :> seq<_> ) 
 
-        member __.GroupAssemblies
-            with get groupName = retrieve assemblies groupName
-
-        member __.GroupFrameworkLibs 
-            with get groupName = retrieve frameworkLibs groupName
-
-        member __.Groups = cache |> Seq.map (fun x -> x.Key) 
-    
 
     type PaketContext = {
         Cache : DependencyCache
-        Dependencies : DependenciesFile
-        LockFile : LockFile
         Groups : GroupName list
         DefaultFramework : bool * FrameworkIdentifier
         RootDir : DirectoryInfo
@@ -276,138 +130,57 @@ module ScriptGeneration =
     }
 
 
-    type PackageCache = {
-        Groups : GroupName list
-        Libraries : Library list
-    }
-
-
-    let exploreLock (context:PaketContext as ctx) =
-        let scriptType, targetGroups, rootFolder, dependenciesFile, lockFile = 
-            ctx.ScriptType, ctx.Groups, ctx.RootDir, ctx.Dependencies, ctx.LockFile
-        
-        let isDefaultFramework, framework = ctx.DefaultFramework
-
-        let filterNuget nuget =
-            match scriptType, nuget with
-            | FSharp, "FSharp.Core" -> true | _ ,_ -> false
-
-        let mainGroupName = Constants.MainDependencyGroup.Name
-        let mainGroupKey = Constants.MainDependencyGroup.CompareString
-
-        let rec loop mainGroupSeen  (genPrep:GenPrep) (installedPackages:(GroupName * PackageName * SemVerInfo) list ) =
-            match lockFile.InstalledPackages with 
-            |(group,nuget,_ver)::pkgs  
-                when List.exists ((=) group) targetGroups || targetGroups = []  ->
-                    
-                let mainGroupSeen = 
-                    (not (filterNuget nuget.Name)) && 
-                    (group.CompareString = mainGroupKey || group.Name = mainGroupName)
-
-                let qualifiedPackage = QualifiedPackageName (group,nuget)
-                let model = lockFile.GetInstalledPackageModel  qualifiedPackage
-                let libs = model.GetLibReferenceFiles framework
-
-                let syslibs = model.GetAllLegacyFrameworkReferences ()
-                genPrep.[group] <- (libs,syslibs)
-                loop mainGroupSeen genPrep  pkgs
-            | _hd::pkgs -> 
-                loop mainGroupSeen genPrep  pkgs
-            | [] -> 
-                if mainGroupSeen then genPrep else 
-                // If we haven't explored the main group add it to ensure generation 
-                genPrep.[Constants.MainDependencyGroup]  <- (Seq.empty, Seq.empty)
-                genPrep
-        loop false  (GenPrep ()) lockFile.InstalledPackages
-
-
-    let generateGroupScript (context:PaketContext as ctx) (getScriptFile: GroupName -> FileInfo)  =
-        
-        let scriptType, groups, dependenciesFile, lockFile = 
-            ctx.ScriptType, ctx.Groups, ctx.Dependencies, ctx.LockFile
-
-        let isDefaultFramework, framework = ctx.DefaultFramework
-   
-        let genprep = exploreLock context
-
-        genprep.Groups |> Seq.map (fun group ->
-
-            let assemblies = 
-                let assemblyFilePerAssemblyDef = 
-                    genprep.GroupAssemblies group
-                    |> Seq.map (fun (f:FileInfo) -> 
-                        AssemblyDefinition.ReadAssembly(f.FullName:string), f)
-                    |> dict
-
-                assemblyFilePerAssemblyDef.Keys
-                |> Seq.toList
-                |> PackageAndAssemblyResolution.getDllOrder
-                |> Seq.map (assemblyFilePerAssemblyDef.TryGetValue >> snd)
-
-            let scriptFile = getScriptFile group
-
-            let assemblyRefs = 
-                assemblies |> Seq.map ReferenceType.Assembly 
-
-            let frameworkRefs = 
-                genprep.GroupFrameworkLibs group 
-                |> Seq.map (fun x ->  ReferenceType.Framework x.Name)
-
-            Seq.append assemblyRefs  frameworkRefs 
-            |> renderScript scriptType scriptFile
-        )
-
     /// Generate a include scripts for all packages defined in paket.dependencies,
     /// if a package is ordered before its dependencies this function will throw.
     let generateScriptsForRootFolder (context:PaketContext as ctx) =
         
-        let scriptType, groups, rootFolder, dependenciesFile, lockFile = 
-            ctx.ScriptType, ctx.Groups, ctx.RootDir, ctx.Dependencies, ctx.LockFile
+        let scriptType, groups, dependenciesFile, lockFile = 
+            ctx.ScriptType, ctx.Groups, ctx.Cache.DependenciesFile, ctx.Cache.LockFile
         let isDefaultFramework, framework = ctx.DefaultFramework
 
         // -- LOAD SCRIPT FORMATTING POINT --
-        let packagesFolder = rootFolder </>  Constants.PackagesFolderName
+        let packagesFolder =Constants.PackagesFolderName
         
         // -- LOAD SCRIPT FORMATTING POINT --
         let loadScriptsRootFolder = 
-            DirectoryInfo (dependenciesFile.Directory </> Constants.PaketFolderName </> "load")
+            Constants.PaketFolderName </> "load"
 
         // -- LOAD SCRIPT FORMATTING POINT --
         let getGroupFile group = 
             let folder = 
                 let group = if group = Constants.MainDependencyGroup then String.Empty else (string group)
                 let framework = if isDefaultFramework then String.Empty else string framework
-                DirectoryInfo (rootFolder </> framework </> group)
+                framework </> group
             let fileName = (sprintf "%s.group.%s" (string group) scriptType.Extension).ToLowerInvariant()
-            FileInfo (folder </> fileName)
+            folder </> fileName
         
         // -- LOAD SCRIPT FORMATTING POINT --
         let packagesOrGroupFolder groupName =
-            if groupName = Constants.MainDependencyGroup then DirectoryInfo packagesFolder
-            else let x = packagesFolder </> groupName in DirectoryInfo x
+            if groupName = Constants.MainDependencyGroup then packagesFolder
+            else packagesFolder </> groupName 
        
        // -- LOAD SCRIPT FORMATTING POINT --
         let scriptFolder groupName (package: PackageResolver.ResolvedPackage) =
             let group = if groupName = Constants.MainDependencyGroup then String.Empty else (string groupName)
             let framework = if isDefaultFramework then String.Empty else string framework
-            DirectoryInfo (rootFolder </> framework </> packagesOrGroupFolder groupName </> package.Name)
+            framework </> packagesOrGroupFolder groupName </> package.Name
 
         // -- LOAD SCRIPT FORMATTING POINT --
-        let scriptFile (scriptFolder:DirectoryInfo) =
-            FileInfo <| sprintf "%s.%s"  scriptFolder.FullName ScriptType.FSharp.Extension
+        let scriptFile (scriptFolder:string) =
+            //FileInfo <| sprintf "%s.%s"  scriptFolder scriptType.Extension
+            sprintf "%s.%s"  scriptFolder scriptType.Extension
                     
 
-        let dependencies = getPackageOrderFromLockFile lockFile
+        let dependencies = ctx.Cache.OrderedGroups()// getPackageOrderFromLockFile lockFile
 
         let scriptContent =
             dependencies |> Map.map (fun groupName packages ->
                 if groups = [] || List.exists ((=) groupName) groups then
-
                     let packagesOrGroupFolder = packagesOrGroupFolder groupName
                     
                     // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
                     ((Map.empty,[]),packages)
-                    ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,_>*_) (package: PackageResolver.ResolvedPackage) ->
+                    ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,string>*_) (package: PackageResolver.ResolvedPackage) ->
                         
                         let scriptFolder = scriptFolder groupName  package
 
@@ -417,21 +190,16 @@ module ScriptGeneration =
                             package.Dependencies 
                             |> Seq.choose (fun (x,_,_) -> knownIncludeScripts.TryFind x)
                             |> List.ofSeq
+                            |> List.map FileInfo
 
-                        let installModel = ctx.Cache.[groupName,package]
-                            //(QualifiedPackageName.FromStrings(Some groupName.Name, package.Name.ToString()))
-                            //|> lockFile.GetInstalledPackageModel
-            
-                        let dllFiles =
-                            installModel
-                            |> InstallModel.getLegacyReferences (SinglePlatform framework)
-                            |> Seq.map (fun l -> FileInfo l.Path) |> List.ofSeq
+                        let dllFiles = ctx.Cache.GetOrderedPackageReferences groupName package.Name framework
+                        let frameworkRefs = ctx.Cache.GetOrderedFrameworkReferences groupName package.Name framework|> List.map (fun ref -> ref.Name)
 
                         let scriptInfo = {
                             PackageName                  = package.Name
-                            PackagesOrGroupFolder        = packagesOrGroupFolder
-                            IncludeScriptsRootFolder     = loadScriptsRootFolder 
-                            FrameworkReferences          = getFrameworkReferencesWithinPackage framework installModel |> List.map (fun ref -> ref.Name)
+                            PackagesOrGroupFolder        = DirectoryInfo packagesOrGroupFolder
+                            IncludeScriptsRootFolder     = DirectoryInfo loadScriptsRootFolder 
+                            FrameworkReferences          = frameworkRefs
                             OrderedDllReferences         = dllFiles
                             DependentScripts             = dependencies
                         }
@@ -441,13 +209,29 @@ module ScriptGeneration =
                             (knownIncludeScripts,scriptFiles)
                         | Generate pieces -> 
                             let knownScripts = knownIncludeScripts |> Map.add package.Name scriptFile
-                            let rendered = (renderScript scriptType scriptFile pieces)::scriptFiles
+                            let rendered =  
+                                {   PartialPath = scriptFile
+                                    Lang = scriptType
+                                    Input = pieces 
+                                } ::scriptFiles
                             (knownScripts, rendered)
                     ) |> fun (_,sfs) -> sfs 
                 else []
             ) |> Seq.collect (fun x -> x.Value)
 
-        generateGroupScript context getGroupFile 
+        let isDefaultFramework, framework = ctx.DefaultFramework
+        
+        let content =
+            ctx.Groups |> Seq.map (fun group ->
+                let scriptFile = getGroupFile  group
+                let pieces = ctx.Cache.GetOrderedReferences group framework
+                
+                {   PartialPath = scriptFile
+                    Lang = ctx.ScriptType 
+                    Input = pieces 
+                } : ScriptContent
+            )
+        Seq.append scriptContent content
 
 
     let constructScriptsFromData (depCache:DependencyCache) (groups:GroupName list) providedFrameworks providedScriptTypes =
@@ -516,8 +300,6 @@ module ScriptGeneration =
                         RootDir = DirectoryInfo lockFile.RootPath
                         Groups = groups 
                         DefaultFramework = isDefaultFramework,framework
-                        Dependencies = dependenciesFile 
-                        LockFile = lockFile
                     }
                 } |> Seq.concat
             } |> Seq.concat
@@ -528,9 +310,13 @@ module ScriptGeneration =
         match PaketFiles.LocateFromDirectory directory with
         | PaketFiles.JustDependencies _ -> failwith "paket.lock not found."
         | PaketFiles.DependenciesAndLock (dependenciesFile, lockFile) ->
-            let rootFolder = DirectoryInfo dependenciesFile.RootPath
-            let frameworksForDependencyGroups = dependenciesFile.ResolveFrameworksForScriptGeneration()
             let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
+            let frameworks = 
+                if providedFrameworks = [] then [environmentFramework.Value.ToString()] else providedFrameworks
+            
+            DirectoryInfo(dependenciesFile.RootPath</>".paket"</>"load").Create()
+
             let depCache = DependencyCache(dependenciesFile,lockFile)
-            constructScriptsFromData depCache groups providedFrameworks providedScriptTypes
+            groups |> Seq.iter (depCache.SetupGroup>>ignore)
+            constructScriptsFromData depCache groups frameworks providedScriptTypes
 

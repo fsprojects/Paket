@@ -204,7 +204,11 @@ type Dependencies(dependenciesFileName: string) =
         LoadingScripts.ScriptGeneration.constructScriptsFromDisk [] (DirectoryInfo (Directory.GetCurrentDirectory())) List.empty List.empty
 
     static member GenerateLoadScripts () =
-        Dependencies.GenerateLoadScriptData () |> Seq.iter (fun sd -> sd.Save())
+        Dependencies.GenerateLoadScriptData () |> Seq.iter (fun sd -> 
+            let rootDir = Dependencies.Locate().RootDirectory
+            printfn "creadted - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
+            sd.Save rootDir
+        )
 
     /// Updates all dependencies.
     member this.Update(force: bool): unit = 
