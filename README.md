@@ -55,8 +55,8 @@ The [MIT license][6]
 
 - [@forki](https://github.com/forki)
 - [@agross](https://github.com/agross)
-- [@mavnn](https://github.com/mavnn)
-- [@mexx](https://github.com/mexx)
+- [@cloudroutine](https://github.com/cloudroutine)
+- [@matthid](https://github.com/matthid)
 - [@isaacabraham](https://github.com/isaacabraham)
 - [@theimowski](https://github.com/theimowski)
 
