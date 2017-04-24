@@ -322,6 +322,9 @@
     <None Include="ProjectFile\TestData\LocalizedLib.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\Unity.csprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />

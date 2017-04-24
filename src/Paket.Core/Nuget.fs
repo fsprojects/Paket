@@ -51,7 +51,7 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "3.36"
+    static member CurrentCacheVersion = "3.37"
 
 let inline normalizeUrl(url:string) = url.Replace("https://","http://").Replace("www.","")
 
