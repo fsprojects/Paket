@@ -213,10 +213,12 @@ type Dependencies(dependenciesFileName: string) =
         Dependencies.GenerateLoadScriptData groups frameworks scriptTypes 
         |> Seq.iter (fun sd -> 
             let rootDir = Dependencies.Locate().RootDirectory
+            Directory.CreateDirectory <| Path.Combine (Constants.PaketFolderName,"load") |> ignore
             let scriptPath = Path.Combine (rootDir.FullName , sd.PartialPath)
+            tracefn "scriptpath - %s" scriptPath
             let scriptDir = Path.GetDirectoryName scriptPath |> Path.GetFullPath |> DirectoryInfo
             scriptDir.Create()
-            printfn "created - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
+            tracefn "created - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
             sd.Save rootDir
         )
 

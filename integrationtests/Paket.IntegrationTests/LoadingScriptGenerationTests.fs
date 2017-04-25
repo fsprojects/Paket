@@ -46,7 +46,7 @@ let ``simple dependencies generates expected scripts``() =
   let framework = "net4"
   paket "install" scenario |> ignore
 
-  directPaket (sprintf "generate-include-scripts framework %s" framework) scenario |> ignore
+  directPaket (sprintf "generate-load-scripts framework %s" framework) scenario |> ignore
   
   let files = getGeneratedScriptFiles framework scenario
   let actualFiles = files |> Array.map (fun f -> f.Name) |> Array.sortBy id
@@ -63,6 +63,7 @@ let ``simple dependencies generates expected scripts``() =
   
   if not isMonoRuntime then // TODO: Fix me
     Assert.AreEqual(expectedFiles,actualFiles)
+
 
 let assertNhibernateForFramework35IsThere scenario =
   let expectations = [
@@ -87,6 +88,7 @@ let ``framework specified``() =
 
   assertNhibernateForFramework35IsThere scenario
 
+
 [<Test; Category("scriptgen"); Ignore("group script is always generated")>]
 let ``don't generate scripts when no references are found``() = 
     (* The deps file for this scenario just includes FAKE, which has no lib or framework references, so no script should be generated for it. *)
@@ -96,6 +98,7 @@ let ``don't generate scripts when no references are found``() =
     directPaket "generate-load-scripts" scenario |> ignore
     let scriptRootDir = scriptRoot scenario
     Assert.IsFalse(scriptRootDir.Exists)
+
 
 [<TestCase("csx");TestCase("fsx")>]
 [<Test;Category("scriptgen")>]
@@ -110,6 +113,7 @@ let ``only generates scripts for language provided`` (language : string) =
     let allMatching = scriptFiles |> Array.map (fun fi -> fi.Extension) |> Array.forall ((=) language)
     Assert.IsTrue(allMatching)
      
+
 [<Test; Category("scriptgen")>]
 let ``fails on wrong framework given`` () =
     let scenario = "wrong-args"
@@ -125,6 +129,7 @@ let ``fails on wrong framework given`` () =
     Assert.IsTrue(message.Contains "Cannot generate include scripts.")
     Assert.IsTrue(message.Contains "Unrecognized Framework(s)")
     Assert.IsTrue(message.Contains "foo, bar")
+
 
 [<Test; Category("scriptgen")>]
 let ``fails on wrong scripttype given`` () =
@@ -142,6 +147,7 @@ let ``fails on wrong scripttype given`` () =
     Assert.IsTrue(message.Contains "Unrecognized Script Type(s)")
     Assert.IsTrue(message.Contains "foo, bar")
 
+
 [<Test; Category("scriptgen")>]
 let ``issue 1676 casing`` () =
     let scenario = "issue-1676"
@@ -158,12 +164,14 @@ let ``issue 1676 casing`` () =
             "../../../packages/EntityFramework/lib/net45/EntityFramework.dll"
             "../../../packages/EntityFramework/lib/net45/EntityFramework.SqlServer.dll"
             ]
-      ]
+    ]
     let folder = getLoadScriptFolder "net46" scenario
+    printfn "folder - %s" folder.FullName
     let failures = getScriptContentsFailedExpectations folder expectations
 
     if not (Seq.isEmpty failures) then
         Assert.Fail (failures |> String.concat Environment.NewLine)
+
 
 [<Test; Category("scriptgen")>]
 let ``mscorlib excluded from f# script`` () =

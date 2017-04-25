@@ -109,12 +109,11 @@ module ScriptGeneration =
             self.Input |> Seq.map refString |> String.concat "\n"
 
         member self.Save (directory:DirectoryInfo) = 
-            async {
-                directory.Create()
-                let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
-                let text = self.Render directory
-                File.WriteAllText (scriptFile.FullName, text)
-            } |> Async.Start
+            directory.Create()
+            let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
+            scriptFile.Directory.Create()
+            let text = self.Render directory
+            File.WriteAllText (scriptFile.FullName, text)
 
 
     type PaketContext = {

@@ -316,26 +316,10 @@ Target "QuickTest" (fun _ ->
 )
 "Clean" ==> "QuickTest"
 
-Target "QuickIntegrationTests" (fun _ ->
-    [   "src/Paket.Core/Paket.Core.fsproj"
-        "src/Paket/Paket.fsproj"
-        "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
-    ]   |> MSBuildDebug "" "Rebuild"
-        |> ignore
-    
-    
-    !! integrationTestAssemblies    
-    |> NUnit3 (fun p ->
-        { p with
-            ShadowCopy = false
-            Where = "cat==scriptgen"
-            WorkingDir = "tests/Paket.Tests"
-            TimeOut = TimeSpan.FromMinutes 40. })
-)
-"Clean" ==> "QuickIntegrationTests" 
 
 
-Target "RunIntegrationTests" (fun _ ->
+
+Target "RunIntegrationTests" (fun _ ->    
     !! integrationTestAssemblies    
     |> NUnit3 (fun p ->
         { p with
@@ -366,6 +350,26 @@ Target "MergePaketTool" (fun _ ->
 
     if result <> 0 then failwithf "Error during ILRepack execution."
 )
+
+Target "QuickIntegrationBuild" (fun _ ->
+    [   "src/Paket.Core/Paket.Core.fsproj"
+        "src/Paket/Paket.fsproj"
+        "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
+    ]   |> MSBuildDebug "" "Rebuild"
+        |> ignore
+)
+
+Target "QuickIntegrationTests" (fun _ ->
+    !! integrationTestAssemblies    
+    |> NUnit3 (fun p ->
+        { p with
+            ShadowCopy = false
+            Where = "cat==scriptgen"
+            WorkingDir = "tests/Paket.Tests"
+            TimeOut = TimeSpan.FromMinutes 40. })
+)
+"Clean" ==> "QuickIntegrationBuild" ==> "MergePaketTool" ==> "QuickIntegrationTests" 
+
 
 Target "MergePowerShell" (fun _ ->
     CreateDir buildMergedDirPS
@@ -603,6 +607,8 @@ Target "ReleaseGitHub" (fun _ ->
 Target "Release" DoNothing
 Target "BuildPackage" DoNothing
 Target "BuildCore" DoNothing
+Target "AllDocs" DoNothing
+Target "AllTests" DoNothing
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
 
@@ -615,21 +621,36 @@ Target "All" DoNothing
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
   ==> "BuildCore"
 
+
 "Clean"
   ==> "AssemblyInfo"
   ==> "Build"
   =?> ("BuildPowerShell", not isMono)
   <=> "BuildCore"
+ 
+
+"Build"
   ==> "RunTests"
+  ==> "MergePaketTool"
+  =?> ("RunIntegrationTests", not <| hasBuildParam "SkipIntegrationTests")
+  ==> "AllTests"  
+ 
+
+"Build"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
   =?> ("GenerateDocs",isLocalBuild && not isMono)
-  ==> "All"
   =?> ("ReleaseDocs",isLocalBuild && not isMono)
+  ==> "AllDocs"
+
+
+//"AllTests"
+//  ==> "AllDocs"
+//  ==> "All"
+
 
 "All"
-  =?> ("RunIntegrationTests", not <| hasBuildParam "SkipIntegrationTests")
-  ==> "MergePaketTool"
   =?> ("MergePowerShell", not isMono)
+  
   ==> "SignAssemblies"
   =?> ("NuGet", not <| hasBuildParam "SkipNuGet")
   =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")

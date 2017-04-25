@@ -12,14 +12,14 @@ let printSqs sqs = sqs |> Seq.iter (printfn "%A")
 
 
 let paketRoot =
-    @"C:\Users\jared\Github\Forks\Paket\integrationtests\scenarios\loading-scripts\fsharpcore\temp\"
+    @"C:\Users\jared\Github\Forks\Paket\integrationtests\scenarios\loading-scripts\framework-specified\temp"
 
 let rootInfo = DirectoryInfo paketRoot
 
 let dependenciesPath =  paketRoot </> "paket.dependencies"
 let packageRoot =  paketRoot </> "packages"
 let loadRoot = paketRoot </> ".paket"</>"load"
-
+let loadRootInfo = DirectoryInfo loadRoot
 let targetFramework = (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5)
 
 let depCache = DependencyCache dependenciesPath
@@ -37,7 +37,9 @@ gens |> Seq.map (fun x ->
     (x.Render rootInfo) + "\n\n ---------------- \n\n")
 |> printSqs
 ;;
-
+loadRootInfo.Create();;
+;;
+gens |> Seq.iter (fun sc -> sc.Save rootInfo)
 ;;
 //printSqs gens
 //;;
