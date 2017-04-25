@@ -1,3 +1,6 @@
+#### 4.8.0 - 25.04.2017
+* Bootstrapper: Made pushing changes from Git dependency repositories easier - https://github.com/fsprojects/Paket/pull/2226
+
 #### 4.7.0 - 25.04.2017
 * Bootstrapper: Support NugetSource app-setting key - https://github.com/fsprojects/Paket/pull/2229
 * Unity3d support - https://github.com/fsprojects/Paket/pull/2268
