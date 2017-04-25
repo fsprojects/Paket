@@ -89,11 +89,11 @@
     <Compile Include="Common\CustomAssemblyInfo.fs" />
     <Compile Include="..\..\paket-files\fsprojects\FSharp.TypeProviders.StarterPack\src\AssemblyReader.fs">
       <Paket>True</Paket>
-      <Link>Common\AssemblyReader.fs</Link>
+      <Link>Common/AssemblyReader.fs</Link>
     </Compile>
     <Compile Include="..\..\paket-files\fsharp\FAKE\src\app\FakeLib\Globbing\Globbing.fs">
       <Paket>True</Paket>
-      <Link>Common\Globbing.fs</Link>
+      <Link>Common/Globbing.fs</Link>
     </Compile>
     <Compile Include="Common\Async.fs" />
     <Compile Include="Common\Logging.fsi" />
@@ -156,7 +156,7 @@
     <Compile Include="PackageManagement\RemoveProcess.fs" />
     <Compile Include="Packaging\NupkgWriter.fs" />
     <Compile Include="Packaging\PackageMetaData.fs" />
-    <Compile Include="Packaging\PackageProcess.fs" />  
+    <Compile Include="Packaging\PackageProcess.fs" />
     <Compile Include="PublicAPI.fs" />
     <None Include="paket.template" />
     <Content Include="app.config" />
