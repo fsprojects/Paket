@@ -613,7 +613,6 @@ Target "All" DoNothing
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
-
   ==> "BuildCore"
 
 "Clean"
