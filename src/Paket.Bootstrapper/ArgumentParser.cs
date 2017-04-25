@@ -30,6 +30,7 @@ namespace Paket.Bootstrapper
         {
             public const string PreferNuget = "PreferNuget";
             public const string ForceNuget = "ForceNuget";
+            public const string NugetSource = "NugetSource";
             public const string PaketVersion = "PaketVersion";
             public const string Prerelease = "Prerelease";
         }
@@ -125,6 +126,11 @@ namespace Paket.Bootstrapper
             if (appSettings.IsTrue(AppSettingKeys.Prerelease))
             {
                 options.DownloadArguments.IgnorePrerelease = false;
+            }
+            var nugetSource = appSettings.GetKey(AppSettingKeys.NugetSource);
+            if (nugetSource != null)
+            {
+                options.DownloadArguments.NugetSource = nugetSource;
             }
         }
 
