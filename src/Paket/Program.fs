@@ -375,14 +375,9 @@ let push (results : ParseResults<_>) =
 let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks = results.GetResults <@ GenerateLoadScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateLoadScriptsArgs.ScriptType @>
-    let providedGroups = defaultArg (results.TryGetResult<@ GenerateLoadScriptsArgs.Groups @>) [] |> List.map GroupName
-    let depUtil = Dependencies.Locate()
-    let dependenciesFile = depUtil.GetDependenciesFile()
-    let lockFile = depUtil.GetLockFile()
-    let depCache = DependencyCache(dependenciesFile,lockFile)
-    let rootDir = DirectoryInfo dependenciesFile.Directory
-    LoadingScripts.ScriptGeneration.constructScriptsFromData depCache providedGroups providedFrameworks providedScriptTypes
-    |> Seq.iter (fun sd -> sd.Save rootDir)
+    let providedGroups = defaultArg (results.TryGetResult<@ GenerateLoadScriptsArgs.Groups @>) [] 
+    Dependencies.GenerateLoadScripts providedGroups providedFrameworks providedScriptTypes
+
 
 let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     let projectFile = results.GetResult <@ GenerateNuspecArgs.Project @>
