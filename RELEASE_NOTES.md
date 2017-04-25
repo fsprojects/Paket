@@ -1,5 +1,6 @@
-#### 4.6.3 - 24.04.2017
-* Unity3d version support - https://github.com/fsprojects/Paket/pull/2268
+#### 4.7.0 - 25.04.2017
+* Bootstrapper: Support NugetSource app-setting key - https://github.com/fsprojects/Paket/pull/2229
+* Unity3d support - https://github.com/fsprojects/Paket/pull/2268
 
 #### 4.6.1 - 24.04.2017
 * Support for SourceLink v2 - https://github.com/fsprojects/Paket/pull/2200
