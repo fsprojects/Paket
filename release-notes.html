@@ -55,9 +55,14 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="4-8-0-25-04-2017" class="anchor" href="#4-8-0-25-04-2017">4.8.0 - 25.04.2017</a></h4>
+<h4><a name="4-8-1-25-04-2017" class="anchor" href="#4-8-1-25-04-2017">4.8.1 - 25.04.2017</a></h4>
 <ul>
-<li>Bootstrapper: Made pushing changes from Git dependency repositories easier - <a href="https://github.com/fsprojects/Paket/pull/2226">https://github.com/fsprojects/Paket/pull/2226</a></li>
+<li>
+BREAKING CHANGE: Made pushing changes from Git dependency repositories easier - <a href="https://github.com/fsprojects/Paket/pull/2226">https://github.com/fsprojects/Paket/pull/2226</a>
+<ul>
+<li>Paket now clones git dependencies as bare repositories and configures clones under <code>paket-files</code> differently. Because of these incompatible changes, it is necessary to manually clear Paket local temp directory (under <code>%USERPROFILE%\.paket\git\db</code>) and respective <code>paket-files</code> directories after upgrading.</li>
+</ul>
+</li>
 </ul>
 <h4><a name="4-7-0-25-04-2017" class="anchor" href="#4-7-0-25-04-2017">4.7.0 - 25.04.2017</a></h4>
 <ul>
