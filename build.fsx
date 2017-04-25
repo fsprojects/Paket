@@ -602,20 +602,25 @@ Target "ReleaseGitHub" (fun _ ->
 
 Target "Release" DoNothing
 Target "BuildPackage" DoNothing
-
+Target "BuildCore" DoNothing
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
 
 Target "All" DoNothing
 
 "Clean"
-  ==> "AssemblyInfo"
-  ==> "Build"
   =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
+
+  ==> "BuildCore"
+
+"Clean"
+  ==> "AssemblyInfo"
+  ==> "Build"
   =?> ("BuildPowerShell", not isMono)
+  <=> "BuildCore"
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
   =?> ("GenerateDocs",isLocalBuild && not isMono)
