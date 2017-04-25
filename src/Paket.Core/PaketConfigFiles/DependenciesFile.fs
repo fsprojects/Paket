@@ -134,6 +134,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         | None -> ""
 
 
+
     member this.SimplifyFrameworkRestrictions() = 
         let transform (dependenciesFile:DependenciesFile) (group:DependenciesGroup) =
             let getRestrictionList =
@@ -591,3 +592,53 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     /// Find the matching lock file to a dependencies file
     member this.FindLockfile() = DependenciesFile.FindLockfile this.FileName
+
+
+    member this.ResolveFrameworksForScriptGeneration () = lazy (
+        this.Groups
+        |> Seq.map (fun f -> f.Value.Options.Settings.FrameworkRestrictions)
+        |> Seq.map(fun restrictions ->
+            match restrictions with
+            | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
+            | Paket.Requirements.FrameworkRestrictionList list ->
+                list |> Seq.collect (function
+                | Paket.Requirements.FrameworkRestriction.Exactly framework
+                | Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
+                | Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
+                | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
+                )
+          )
+        |> Seq.concat
+    )
+
+
+type PaketFiles = 
+    | JustDependencies    of DependenciesFile
+    | DependenciesAndLock of DependenciesFile * LockFile
+
+    static member LocateFromDirectory (directory: DirectoryInfo) =
+        let rec findInPath (dir:DirectoryInfo , withError) =
+            let path = Path.Combine (dir.FullName, Constants.DependenciesFileName)
+            if File.Exists path then path else
+            match dir.Parent with
+            | null ->
+                if withError then
+                    failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.\n\
+                               If you have already run 'paket.init' then ensure that '%s' is located in the top level directory of your repository.\n\
+                               Like this:\n\
+                               -    MySourceDir\n\
+                               -        .paket\n\
+                               -        paket.dependencies\n" 
+                        Constants.DependenciesFileName Constants.DependenciesFileName 
+                else
+                    Constants.DependenciesFileName
+            | _ -> findInPath(dir.Parent, withError)
+
+        let dependenciesFile = findInPath (directory,true) |> DependenciesFile.ReadFromFile
+            
+        let file = dependenciesFile.FindLockfile()
+        if file.Exists then
+            let lockFile = file.FullName |> LockFile.LoadFrom
+            DependenciesAndLock(dependenciesFile, lockFile)
+        else
+            JustDependencies dependenciesFile

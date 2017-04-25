@@ -392,17 +392,6 @@ let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     let nuspecString = nuspec.ToString()
     File.WriteAllText (Path.Combine (output,filename), nuspecString)
 
-
-
-let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
-    let projectFile = results.GetResult <@ GenerateNuspecArgs.Project @>
-    let dependencies = results.GetResult <@ GenerateNuspecArgs.DependenciesFile @>
-    let output = defaultArg  (results.TryGetResult <@ GenerateNuspecArgs.Output @>) (Directory.GetCurrentDirectory())
-    let filename, nuspec = Nuspec.FromProject(projectFile,dependencies) 
-    let nuspecString = nuspec.ToString()
-    File.WriteAllText (Path.Combine (output,filename), nuspecString)
-
-
 let why (results: ParseResults<WhyArgs>) =
     let packageName = results.GetResult <@ WhyArgs.NuGet @> |> Domain.PackageName
     let groupName = 

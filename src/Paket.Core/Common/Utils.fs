@@ -29,20 +29,23 @@ let thirdOf3 (_,_,v) = v
 /// [omit]
 let quote (str:string) = "\"" + str.Replace("\"","\\\"") + "\""
 
+
+let inline isNotNull x = not (isNull x)
+
 let acceptXml = "application/atom+xml,application/xml"
 let acceptJson = "application/atom+json,application/json"
 
 let notNullOrEmpty = not << System.String.IsNullOrEmpty
 
-let inline tryGet key this =
-    let mutable v = Unchecked.defaultof<'v>
-    let scc = ( ^a : (member TryGetValue : 'k * ('v byref) -> bool) this, key, &v)
-    if scc then Some v else None
-
-
 let inline force (lz: 'a Lazy)  = lz.Force()
 let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
 let inline toLower str = (^a:(member ToLower:unit->string)str)
+
+
+let inline tryGet (key:^k) this =
+    let mutable v = Unchecked.defaultof<'v>
+    let scc = ( ^a : (member TryGetValue : 'k * ('v byref) -> bool) this, key, &v)
+    if scc then Some v else None
 
 let internal removeInvalidChars (str : string) = RegularExpressions.Regex.Replace(str, "[:@\,]", "_")
 
@@ -709,12 +712,26 @@ let RunInLockedAccessMode(rootFolder,action) =
         releaseLock()
         reraise()
 
+
+
+[<RequireQualifiedAccess>]
 module String =
+
     let (|StartsWith|_|) prefix (input: string) =
         if input.StartsWith prefix then
             Some (input.Substring(prefix.Length))
         else None
 
+    let getLines (str: string) =
+        use reader = new StringReader(str)
+        [|  let mutable line = reader.ReadLine()
+            while isNotNull line do
+                yield line
+                line <- reader.ReadLine()
+            if str.EndsWith "\n" then   // last trailing space not returned
+                yield String.Empty      // http://stackoverflow.com/questions/19365404/stringreader-omits-trailing-linebreak
+        |]
+    
     let inline equalsIgnoreCase str1 str2 =
         String.Compare(str1,str2,StringComparison.OrdinalIgnoreCase) = 0 
 

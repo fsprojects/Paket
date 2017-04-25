@@ -147,6 +147,28 @@ type DotNetCoreVersion =
         | DotNetCoreVersion.V1_1 -> "11"
         | DotNetCoreVersion.V2_0 -> "20"
 
+[<RequireQualifiedAccess>]
+/// The Framework version.
+// Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
+type DotNetUnityVersion = 
+    | V3_5_Web
+    | V3_5_Micro
+    | V3_5_Subset
+    | V3_5_Full
+    override this.ToString() =
+        match this with
+        | V3_5_Web    -> "net35-Unity Web v3.5"
+        | V3_5_Micro  -> "net35-Unity Micro v3.5"
+        | V3_5_Subset -> "net35-Unity Subset v3.5"
+        | V3_5_Full   -> "net35-Unity Full v3.5"
+
+    member this.ShortString() =
+        match this with
+        | DotNetUnityVersion.V3_5_Web -> "35-Unity Web v3.5"
+        | DotNetUnityVersion.V3_5_Micro -> "35-Unity Micro v3.5"
+        | DotNetUnityVersion.V3_5_Subset -> "35-Unity Subset v3.5"
+        | DotNetUnityVersion.V3_5_Full -> "35-Unity Full v3.5"
+
 module KnownAliases =
     let Data =
         [".net", "net"
@@ -204,6 +226,7 @@ type FrameworkIdentifier =
     | DNXCore of FrameworkVersion
     | DotNetStandard of DotNetStandardVersion
     | DotNetCore of DotNetCoreVersion
+    | DotNetUnity of DotNetUnityVersion
     | MonoAndroid
     | MonoTouch
     | MonoMac
@@ -223,6 +246,7 @@ type FrameworkIdentifier =
         | DNXCore v -> "dnxcore" + v.ShortString()
         | DotNetStandard v -> "netstandard" + v.ShortString()
         | DotNetCore v -> "netcore" + v.ShortString()
+        | DotNetUnity v -> "net" + v.ShortString()
         | MonoAndroid -> "monoandroid"
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
@@ -276,6 +300,10 @@ type FrameworkIdentifier =
         | DotNetCore DotNetCoreVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_1 -> [ DotNetCore DotNetCoreVersion.V1_0 ]
         | DotNetCore DotNetCoreVersion.V2_0 -> [ DotNetCore DotNetCoreVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
+        | DotNetUnity DotNetUnityVersion.V3_5_Full -> [ ]
+        | DotNetUnity DotNetUnityVersion.V3_5_Subset -> [ ]
+        | DotNetUnity DotNetUnityVersion.V3_5_Micro -> [ ]
+        | DotNetUnity DotNetUnityVersion.V3_5_Web -> [ ]
         | Silverlight "v3.0" -> [ ]
         | Silverlight "v4.0" -> [ Silverlight "v3.0" ]
         | Silverlight "v5.0" -> [ Silverlight "v4.0" ]
@@ -299,6 +327,7 @@ type FrameworkIdentifier =
         | DotNetFramework _, DotNetFramework _ -> true
         | DotNetStandard _, DotNetStandard _ -> true
         | DotNetCore _, DotNetCore _ -> true
+        | DotNetUnity _, DotNetUnity _ -> true
         | Silverlight _, Silverlight _ -> true
         | DNX _, DNX _ -> true
         | DNXCore _, DNXCore _ -> true
@@ -350,6 +379,25 @@ type FrameworkIdentifier =
     member x.IsBetween(a,b) = x.IsAtLeast a && x.IsAtMost b
 
 module FrameworkDetection =
+
+    /// Used for script generation
+    let resolveEnvironmentFramework = lazy (
+        // HACK: resolve .net version based on environment
+        // list of match is incomplete / inaccurate
+    #if DOTNETCORE
+        // Environment.Version is not supported
+        //dunno what is used for, using a default
+        DotNetFramework (FrameworkVersion.V4_5)
+    #else
+        let version = Environment.Version
+        match version.Major, version.Minor, version.Build, version.Revision with
+        | 4, 0, 30319, 42000 -> DotNetFramework (FrameworkVersion.V4_6)
+        | 4, 0, 30319, _ -> DotNetFramework (FrameworkVersion.V4_5)
+        | _ -> DotNetFramework (FrameworkVersion.V4_5) // paket.exe is compiled for framework 4.5
+    #endif
+        )
+
+
     open Logging
     /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
     let Extract =
@@ -364,6 +412,10 @@ module FrameworkDetection =
             // Each time the parsing is changed, NuGetPackageCache.CurrentCacheVersion should be bumped.
             let result = 
                 match path with
+                | "net35-Unity Web v3.5" ->  Some (DotNetUnity DotNetUnityVersion.V3_5_Web)
+                | "net35-Unity Micro v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Micro)
+                | "net35-Unity Subset v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Subset)
+                | "net35-Unity Full v3.5" -> Some (DotNetUnity DotNetUnityVersion.V3_5_Full)
                 | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
                 | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
                 | "net20" | "net2" | "net" | "net20-full" | "net20-client" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
@@ -566,6 +618,13 @@ module KnownTargetProfiles =
         DotNetCoreVersion.V1_1
         DotNetCoreVersion.V2_0
     ]
+
+    let DotNetUnityVersions = [
+        DotNetUnityVersion.V3_5_Full
+        DotNetUnityVersion.V3_5_Subset
+        DotNetUnityVersion.V3_5_Micro
+        DotNetUnityVersion.V3_5_Web
+    ]
        
     let DotNetCoreProfiles =
        DotNetCoreVersions
@@ -574,6 +633,10 @@ module KnownTargetProfiles =
     let WindowsProfiles =
        [SinglePlatform(Windows "v4.5")
         SinglePlatform(Windows "v4.5.1")]
+
+    let DotNetUnityProfiles = 
+       DotNetUnityVersions
+       |> List.map (DotNetUnity >> SinglePlatform)
 
     let SilverlightProfiles =
        [SinglePlatform(Silverlight "v3.0")
@@ -652,6 +715,7 @@ module KnownTargetProfiles =
 
     let AllDotNetProfiles =
        DotNetFrameworkProfiles @ 
+       DotNetUnityProfiles @ 
        WindowsProfiles @ 
        UAPProfiles @
        SilverlightProfiles @
