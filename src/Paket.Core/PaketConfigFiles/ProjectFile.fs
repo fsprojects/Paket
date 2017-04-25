@@ -783,16 +783,8 @@ module ProjectFile =
             if not importTargets then List.empty, List.empty else
             let sortedTargets = model.TargetsFileFolders |> List.sortBy (fun lib -> lib.Path)
             sortedTargets
-<<<<<<< HEAD:src/Paket.Core/PaketConfigFiles/ProjectFile.fs
-            |> List.partition (fun lib -> (set lib.Targets).IsSupersetOf allTargetProfiles)
-        
-||||||| merged common ancestors
-            |> List.partition (fun lib -> allTargetProfiles = set lib.Targets )
-        
-=======
             |> List.partition (fun lib -> "" = lib.Path.Name)
 
->>>>>>> fix_dotnetcore:src/Paket.Core/PaketConfigFiles/ProjectFile.fs
         let frameworkSpecificTargetsFileConditions =
             frameworkSpecificTargets
             |> List.map (fun lib -> PlatformMatching.getCondition referenceCondition allTargets lib.Targets,createPropertyGroup (lib.FolderContents |> List.ofSeq))
@@ -984,14 +976,6 @@ module ProjectFile =
         match getTargetFrameworkProfile project with
         | Some profile when profile = "Client" ->
             SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)
-        | Some profile when profile = "Unity Web v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Web)
-        | Some profile when profile = "Unity Micro v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Micro)
-        | Some profile when profile = "Unity Subset v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Subset)
-        | Some profile when profile = "Unity Full v3.5" ->
-            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Full)
         | Some profile when String.IsNullOrWhiteSpace profile |> not ->
             KnownTargetProfiles.FindPortableProfile profile
         | _ ->
@@ -1016,7 +1000,7 @@ module ProjectFile =
 
     let updateReferences
             rootPath
-            (completeModel: Map<GroupName*PackageName,_*InstallModel*FrameworkRestriction list>) 
+            (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
             (directPackages : Map<GroupName*PackageName,_*InstallSettings>) 
             (usedPackages : Map<GroupName*PackageName,_*InstallSettings>) 
             (project:ProjectFile) =
@@ -1056,12 +1040,12 @@ module ProjectFile =
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
         |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.GetCompareString(), packName.GetCompareString())
         |> Seq.map (fun kv -> 
-            deleteCustomModelNodes (sndOf3 kv.Value) project
+            deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
             let restrictionList = installSettings.FrameworkRestrictions |> getRestrictionList
 
             let projectModel =
-                (sndOf3 kv.Value)
+                (snd kv.Value)
                     .ApplyFrameworkRestrictions(restrictionList)
                     .FilterExcludes(installSettings.Excludes)
                     .RemoveIfCompletelyEmpty()
@@ -1082,7 +1066,7 @@ module ProjectFile =
 
             let importTargets = defaultArg installSettings.ImportTargets true
             
-            let allFrameworks = applyRestrictionsToTargets ((thirdOf3 kv.Value)) (KnownTargetProfiles.AllDotNetStandardProfiles @ KnownTargetProfiles.AllDotNetProfiles)
+            let allFrameworks = applyRestrictionsToTargets restrictionList KnownTargetProfiles.AllProfiles
             generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal importTargets installSettings.ReferenceCondition (set allFrameworks) project)
         |> Seq.iter (fun ctx ->
             for chooseNode in ctx.ChooseNodes do
@@ -1784,11 +1768,6 @@ type ProjectFile with
         |> this.ProjectsWithoutTemplates
         |> Seq.collect getCompileRefs
         |> Seq.map getCompileItem
-<<<<<<< HEAD:src/Paket.Core/PaketConfigFiles/ProjectFile.fs
-        |> Seq.collect getRealItems
-||||||| merged common ancestors
-        |> Seq.collect getRealItems
-=======
         |> Seq.collect getRealItems
 
 
@@ -1838,4 +1817,3 @@ type ProjectFile with
         
         (coreInfo, optionalInfo)
         
->>>>>>> fix_dotnetcore:src/Paket.Core/PaketConfigFiles/ProjectFile.fs

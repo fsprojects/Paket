@@ -216,14 +216,15 @@ module LockFileSerializer =
 
 module LockFileParser =
 
-    type ParseState =
-        { GroupName : GroupName
-          RepositoryType : string option
-          RemoteUrl :string option
-          Packages : ResolvedPackage list
-          SourceFiles : ResolvedSourceFile list
-          LastWasPackage : bool
-          Options: InstallOptions }
+    type ParseState = { 
+        GroupName : GroupName
+        RepositoryType : string option
+        RemoteUrl :string option
+        Packages : ResolvedPackage list
+        SourceFiles : ResolvedSourceFile list
+        LastWasPackage : bool
+        Options: InstallOptions 
+    }
 
     type private ParserOption =
     | ReferencesMode of bool
@@ -259,7 +260,7 @@ module LockFileParser =
                 | "off" -> Some false
                 | _ -> None
 
-            InstallOption(Redirects(setting))
+            InstallOption (Redirects setting)
         | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.StartsWith "GENERATE-LOAD-SCRIPTS:" trimmed -> 
@@ -269,7 +270,7 @@ module LockFileParser =
                 | "off" -> Some false
                 | _ -> None
                                             
-            InstallOption(GenerateLoadScripts(setting))
+            InstallOption (GenerateLoadScripts setting)
         | _, String.StartsWith "COPY-CONTENT-TO-OUTPUT-DIR:" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
@@ -278,7 +279,7 @@ module LockFileParser =
                 | "preserve_newest" -> CopyToOutputDirectorySettings.PreserveNewest
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
                                             
-            InstallOption(CopyContentToOutputDir(setting))
+            InstallOption (CopyContentToOutputDir setting)
         | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(FrameworkRestrictionList (trimmed.Trim() |> Requirements.parseRestrictions true)))
         | _, String.StartsWith "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
         | _, String.StartsWith "CONTENT:" trimmed -> 
@@ -288,7 +289,7 @@ module LockFileParser =
                 | "once" -> ContentCopySettings.OmitIfExisting
                 | _ -> ContentCopySettings.Overwrite
 
-            InstallOption(OmitContent(setting))
+            InstallOption (OmitContent setting)
         | _, String.StartsWith "STRATEGY:" trimmed -> 
             let setting =
                 match trimmed.Trim().ToLowerInvariant() with
@@ -557,9 +558,13 @@ module LockFileParser =
 
 /// Allows to parse and analyze paket.lock files.
 type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
+    let fileName = if isNull fileName then String.Empty else fileName
     member __.Groups = groups
     member __.FileName = fileName
-    member __.RootPath = FileInfo(fileName).Directory.FullName
+    member __.RootPath = 
+        try FileInfo(fileName).Directory.FullName
+        with _ -> String.Empty
+
     member this.GetGroup groupName =
         match this.Groups |> Map.tryFind groupName with
         | Some g -> g
@@ -570,7 +575,7 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
         
-
+    
     /// Gets all dependencies of the given package
     member this.GetAllNormalizedDependenciesOf(groupName,package:PackageName,context) = 
         let group = groups.[groupName]
@@ -652,11 +657,18 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
             group.Resolution
             |> Map.filter (fun name _ -> transitive.Contains name |> not)
 
-    member this.GetGroupedResolution() =
+    member this.GetGroupedResolution () =
         this.Groups
         |> Seq.map (fun kv -> kv.Value.Resolution |> Seq.map (fun kv' -> (kv.Key,kv'.Key),kv'.Value))
         |> Seq.concat
         |> Map.ofSeq
+
+
+    member this.GetResolvedPackages () =
+        groups |> Map.map (fun groupName lockGroup ->
+           lockGroup.Resolution |> Seq.map (fun x -> x.Value) |> List.ofSeq
+        )
+
 
     override __.ToString() =
         String.Join
@@ -776,19 +788,18 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
         usedPackages
 
-    member this.GetDependencyLookupTable() = 
-        groups
-        |> Seq.map (fun kv ->
-                kv.Value.Resolution
-                |> Seq.map (fun kv' -> 
-                                (kv.Key,kv'.Key),
-                                this.GetAllDependenciesOf(kv.Key,kv'.Value.Name,this.FileName)
-                                |> Set.ofSeq
-                                |> Set.remove kv'.Value.Name))
-        |> Seq.concat
-        |> Map.ofSeq
 
-    member this.GetPackageHullSafe(referencesFile,groupName) =
+    member this.GetDependencyLookupTable () = 
+        groups |> Seq.map (fun kv ->
+            kv.Value.Resolution |> Seq.map (fun kv' -> 
+                (kv.Key,kv'.Key),
+                this.GetAllDependenciesOf(kv.Key,kv'.Value.Name,this.FileName)
+                    |> Set.ofSeq
+                    |> Set.remove kv'.Value.Name
+        )) |> Seq.concat |> Map.ofSeq
+
+
+    member this.GetPackageHullSafe (referencesFile, groupName) =
         match referencesFile.Groups |> Map.tryFind groupName with
         | None -> Result.Succeed(Set.empty)
         | Some group ->
@@ -798,5 +809,29 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
                 |> failIfNone (ReferenceNotFoundInLockFile(referencesFile.FileName, groupName.ToString(), package.Name)))
             |> collect
             |> lift (Seq.concat >> Set.ofSeq)
+
+
+    member this.GetInstalledPackageModel (QualifiedPackageName(groupName, packageName)) =
+        match this.Groups |> Map.tryFind groupName with
+        | None -> failwithf "Group %O can't be found in paket.lock." groupName
+        | Some group ->
+            match group.Resolution.TryFind(packageName) with
+            | None -> failwithf "Package %O is not installed in group %O." packageName groupName
+            | Some resolvedPackage ->
+                let packageName = resolvedPackage.Name
+                let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString()
+                let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
+                let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
+                let nuspec = Nuspec.Load nuspec.FullName
+                let files = NuGetV2.GetLibFiles(folder.FullName)
+                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
     
+
+    /// Returns a list of packages inside the lockfile with their group and version number
+    member this.InstalledPackages =
+        this.GetGroupedResolution () |> Seq.map (fun kv ->
+            let groupName,packageName = kv.Key
+            groupName, packageName, kv.Value.Version
+        ) |> Seq.toList
+
     

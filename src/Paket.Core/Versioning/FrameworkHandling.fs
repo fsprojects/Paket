@@ -167,6 +167,33 @@ module KnownAliases =
          " ", "" ]
         |> List.map (fun (p,r) -> p.ToLower(),r.ToLower())
 
+type BuildMode =
+    | Debug
+    | Release
+    | NoBuildMode
+    | UnknownBuildMode of string
+    member x.AsString =
+        match x with
+        | Debug -> "Debug"
+        | Release -> "Release"
+        | NoBuildMode -> ""
+        | UnknownBuildMode s -> s
+    override x.ToString() = x.AsString
+
+type Platform =
+    | Arm
+    | X64
+    | Win32
+    | NoPlatform
+    | UnknownPlatform of string
+    member x.AsString =
+        match x with
+        | Arm -> "arm"
+        | X64 -> "x64"
+        | Win32 -> "Win32"
+        | NoPlatform -> ""
+        | UnknownPlatform s -> s
+    override x.ToString() = x.AsString
 
 /// Framework Identifier type.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
@@ -180,8 +207,7 @@ type FrameworkIdentifier =
     | MonoAndroid
     | MonoTouch
     | MonoMac
-    | Native of string * string
-    | Runtimes of string 
+    | Native of BuildMode * Platform
     | XamariniOS
     | XamarinMac
     | Windows of string
@@ -201,7 +227,6 @@ type FrameworkIdentifier =
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
         | Native(_) -> "native"
-        | Runtimes(_) -> "runtimes"
         | XamariniOS -> "xamarinios"
         | UAP v -> "uap" + v.ShortString()
         | XamarinMac -> "xamarinmac"
@@ -218,7 +243,6 @@ type FrameworkIdentifier =
         | MonoTouch -> [ ]
         | MonoMac -> [ ]
         | Native(_) -> [ ]
-        | Runtimes(_) -> [ ]
         | XamariniOS -> [ ]
         | XamarinMac -> [ ]
         | UAP UAPVersion.V10 -> [ ]
@@ -280,7 +304,6 @@ type FrameworkIdentifier =
         | DNXCore _, DNXCore _ -> true
         | MonoAndroid _, MonoAndroid _ -> true
         | MonoMac _, MonoMac _ -> true
-        | Runtimes _, Runtimes _ -> true
         | MonoTouch _, MonoTouch _ -> true
         | Windows _, Windows _ -> true
         | WindowsPhoneApp _, WindowsPhoneApp _ -> true
@@ -341,7 +364,6 @@ module FrameworkDetection =
             // Each time the parsing is changed, NuGetPackageCache.CurrentCacheVersion should be bumped.
             let result = 
                 match path with
-                | x when x.StartsWith "runtimes/" -> Some(Runtimes(x.Substring(9)))
                 | "net10" | "net1" | "10" -> Some (DotNetFramework FrameworkVersion.V1)
                 | "net11" | "11" -> Some (DotNetFramework FrameworkVersion.V1_1)
                 | "net20" | "net2" | "net" | "net20-full" | "net20-client" | "20" -> Some (DotNetFramework FrameworkVersion.V2)
@@ -364,15 +386,15 @@ module FrameworkDetection =
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
-                | "native/x86/debug" -> Some(Native("Debug","Win32"))
-                | "native/x64/debug" -> Some(Native("Debug","x64"))
-                | "native/arm/debug" -> Some(Native("Debug","arm"))
-                | "native/x86/release" -> Some(Native("Release","Win32"))
-                | "native/x64/release" -> Some(Native("Release","x64"))
-                | "native/arm/release" -> Some(Native("Release","arm"))
-                | "native/address-model-32" -> Some(Native("","Win32"))
-                | "native/address-model-64" -> Some(Native("","x64"))
-                | "native" -> Some(Native("",""))
+                | "native/x86/debug" -> Some(Native(Debug,Win32))
+                | "native/x64/debug" -> Some(Native(Debug,X64))
+                | "native/arm/debug" -> Some(Native(Debug,Arm))
+                | "native/x86/release" -> Some(Native(Release,Win32))
+                | "native/x64/release" -> Some(Native(Release,X64))
+                | "native/arm/release" -> Some(Native(Release,Arm))
+                | "native/address-model-32" -> Some(Native(NoBuildMode,Win32))
+                | "native/address-model-64" -> Some(Native(NoBuildMode,X64))
+                | "native" -> Some(Native(NoBuildMode,NoPlatform))
                 | "sl"  | "sl3" | "sl30" -> Some (Silverlight "v3.0")
                 | "sl4" | "sl40" -> Some (Silverlight "v4.0")
                 | "sl5" | "sl50" -> Some (Silverlight "v5.0")
@@ -644,32 +666,25 @@ module KnownTargetProfiles =
     let AllDotNetStandardProfiles =
        DotNetStandardProfiles @
        DotNetCoreProfiles
+       // only used in "should understand aot in runtimes" test
+       // We don't support that anymore, if we add this here paket will create corresponding
+       // XML elements to compile for DNXCore...
+       //[SinglePlatform (DNXCore FrameworkVersion.V5_0)]
 
     let AllNativeProfiles =
-        [ Native("","")
-          Native("","Win32")
-          Native("","x64")
-          Native("Debug","Win32")
-          Native("Debug","arm")
-          Native("Debug","x64")
-          Native("Release","Win32")
-          Native("Release","x64")
-          Native("Release","arm")]
+        [ Native(NoBuildMode,NoPlatform)
+          Native(NoBuildMode,Win32)
+          Native(NoBuildMode,X64)
+          Native(NoBuildMode,Arm)
+          Native(Debug,Win32)
+          Native(Debug,Arm)
+          Native(Debug,X64)
+          Native(Release,Win32)
+          Native(Release,X64)
+          Native(Release,Arm)]
 
-    let AllRuntimes =
-        [ Runtimes("win7-x64")
-          Runtimes("win7-x86")
-          Runtimes("win7-arm")
-          Runtimes("debian-x64")
-          Runtimes("aot")
-          Runtimes("win")
-          Runtimes("linux")
-          Runtimes("unix")
-          Runtimes("osx") ]
-
-    let AllProfiles = 
-        (AllNativeProfiles |> List.map SinglePlatform) @ 
-          (AllRuntimes |> List.map SinglePlatform) @
+    let AllProfiles =
+        (AllNativeProfiles |> List.map SinglePlatform) @
           AllDotNetStandardProfiles @
           AllDotNetProfiles
 

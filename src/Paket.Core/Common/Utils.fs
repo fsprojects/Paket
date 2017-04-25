@@ -34,6 +34,12 @@ let acceptJson = "application/atom+json,application/json"
 
 let notNullOrEmpty = not << System.String.IsNullOrEmpty
 
+let inline tryGet key this =
+    let mutable v = Unchecked.defaultof<'v>
+    let scc = ( ^a : (member TryGetValue : 'k * ('v byref) -> bool) this, key, &v)
+    if scc then Some v else None
+
+
 let inline force (lz: 'a Lazy)  = lz.Force()
 let inline endsWith text x = (^a:(member EndsWith:string->bool)x, text) 
 let inline toLower str = (^a:(member ToLower:unit->string)str)

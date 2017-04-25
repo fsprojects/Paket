@@ -133,7 +133,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
 
-    member __.Groups = groups
 
     member this.SimplifyFrameworkRestrictions() = 
         let transform (dependenciesFile:DependenciesFile) (group:DependenciesGroup) =

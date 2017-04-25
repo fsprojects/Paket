@@ -89,8 +89,8 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
         getDllOrder (dllFiles.Keys |> Seq.toList)
         |> List.map (fun a -> dllFiles.[a])
     
-    let referencesForGroup group framework = 
-        let libs = HashSet<_>()
+    let referencesForGroup group (framework:FrameworkIdentifier) = 
+        let libs = HashSet<FileInfo>()
         let sysLibs = HashSet<_>()
         match tryGet group orderedGroupCache with
         | None -> []
@@ -172,7 +172,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
 
     member self.LoadPackages () =
         let packs = 
-            lockFile.GetResolvedPackages () |> Seq.map (fun kvp -> async {
+            lockFile.GetResolvedPackages() |> Seq.map (fun kvp -> async {
                 let groupName, packages = kvp.Key,kvp.Value
                 let orderedPackages = getPackageOrderResolvedPackage kvp.Value
                 orderedGroupCache.TryAdd (groupName,orderedPackages) |> ignore
