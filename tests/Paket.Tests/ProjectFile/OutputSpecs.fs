@@ -1,4 +1,5 @@
-﻿module Paket.ProjectFile.OutputSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.ProjectFile)>]
+module Paket.ProjectFile.OutputSpecs
 
 open Paket
 open NUnit.Framework

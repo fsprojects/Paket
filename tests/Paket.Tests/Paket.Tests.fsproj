@@ -86,6 +86,7 @@
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="TestHelpers.fs" />
     <Compile Include="UtilsSpecs.fs" />
+    <Compile Include="Categories.fs" />
     <Compile Include="Versioning\SemVerSpecs.fs" />
     <Compile Include="Versioning\FrameworkCompatibilitySpecs.fs" />
     <Compile Include="Versioning\ExtractPackageSpecs.fs" />

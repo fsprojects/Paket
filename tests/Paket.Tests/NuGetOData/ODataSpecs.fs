@@ -1,4 +1,5 @@
-﻿module Paket.ODataSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Nuget)>]
+module Paket.ODataSpecs
 
 open Paket
 open NUnit.Framework

@@ -1,4 +1,5 @@
-﻿module Paket.ProjectFile.LocalizationSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.ProjectFile)>]
+module Paket.ProjectFile.LocalizationSpecs
 
 open Paket
 open NUnit.Framework

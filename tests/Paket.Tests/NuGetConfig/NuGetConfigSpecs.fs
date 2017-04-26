@@ -1,4 +1,5 @@
-﻿module Paket.NuGetConfigSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Nuget)>]
+module Paket.NuGetConfigSpecs
 
 open System.IO
 open Paket

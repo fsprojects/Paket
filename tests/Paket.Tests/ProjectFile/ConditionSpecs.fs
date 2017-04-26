@@ -1,4 +1,5 @@
-﻿module Paket.ProjectFile.ConditionSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.ProjectFile)>]
+module Paket.ProjectFile.ConditionSpecs
 
 open Paket
 open NUnit.Framework

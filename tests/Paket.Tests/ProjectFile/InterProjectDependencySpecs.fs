@@ -1,4 +1,5 @@
-﻿module Paket.ProjectFile.InterProjectDependencySpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.ProjectFile)>]
+module Paket.ProjectFile.InterProjectDependencySpecs
 
 open Paket
 open NUnit.Framework

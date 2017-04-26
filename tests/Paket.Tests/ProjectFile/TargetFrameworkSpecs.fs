@@ -1,4 +1,5 @@
-﻿module Paket.ProjectFile.TargetFrameworkSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.ProjectFile)>]
+module Paket.ProjectFile.TargetFrameworkSpecs
 
 open Paket
 open NUnit.Framework

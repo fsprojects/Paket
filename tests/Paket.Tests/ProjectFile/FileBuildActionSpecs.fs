@@ -1,3 +1,4 @@
+[<NUnit.Framework.TestFixture(Category=Category.ProjectFile)>]
 module Paket.ProjectFile.FileBuildActionSpecs
 
 open Paket
