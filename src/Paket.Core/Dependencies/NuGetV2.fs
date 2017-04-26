@@ -736,7 +736,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                 | [source] ->
                     failwithf "Couldn't get package details for package %O %O on %O." packageName version source
                 | [] ->
-                    failwithf "Couldn't get package details for package %O %O because no sources where specified." packageName version
+                    failwithf "Couldn't get package details for package %O %O, because no sources were specified." packageName version
                 | sources ->
                     failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
             | Some packageDetails -> packageDetails
@@ -888,7 +888,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                 | [source] ->
                     failwithf "Could not find versions for package %O on %O." packageName source
                 | [] ->
-                    failwithf "Could not find versions for package %O because no sources where specified." packageName
+                    failwithf "Could not find versions for package %O, because no sources were specified." packageName
                 | sources ->
                     failwithf "Could not find versions for package %O on any of %A." packageName sources
 
