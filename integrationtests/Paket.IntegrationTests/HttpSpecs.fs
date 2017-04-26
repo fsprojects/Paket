@@ -21,7 +21,7 @@ http file:///%s/library.dll library/library.dll""" (root.Replace("\\","/"))
 
 http file://%s/library.dll library/library.dll""" (root.Replace("\\","/"))
 
-    File.WriteAllText(Path.Combine(root,"paket.dependencies"),if isMono then monoDeps else deps)
+    File.WriteAllText(Path.Combine(root,"paket.dependencies"),if isMonoRuntime then monoDeps else deps)
 
     directPaket "update" "i001341-http-dlls" |> ignore
     

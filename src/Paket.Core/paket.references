@@ -5,5 +5,5 @@ Chessie
 
 
 
-File:Globbing.fs .
-File:AssemblyReader.fs .
+File:Globbing.fs Common\
+File:AssemblyReader.fs Common\

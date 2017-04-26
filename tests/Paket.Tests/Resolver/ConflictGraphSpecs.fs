@@ -120,7 +120,7 @@ let graphWithServices =
 
 [<Test>]
 let ``should resolve simple config with services``() = 
-    let cfg = DependenciesFile.FromCode(configWithServices)
+    let cfg = DependenciesFile.FromSource(configWithServices)
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServices, PackageDetailsFromGraph graphWithServices).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "Service.Core"] |> shouldEqual "1.1.31.2"
     getVersion resolved.[PackageName "Service.Contracts"] |> shouldEqual "1.1.31.2"
@@ -144,7 +144,7 @@ let graphWithServers =
 
 [<Test>]
 let ``should resolve simple config with servers``() = 
-    let cfg = DependenciesFile.FromCode(configWithServers)
+    let cfg = DependenciesFile.FromSource(configWithServers)
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "My.Company.PackageC.Server"] |> shouldEqual "1.0.0-pre18038"
 
@@ -158,7 +158,7 @@ nuget My.Company.PackageC.Server rc"""
 
 [<Test>]
 let ``should resolve simple config with servers with RC requirement``() = 
-    let cfg = DependenciesFile.FromCode(configWithServersWithRCRequirement)
+    let cfg = DependenciesFile.FromSource(configWithServersWithRCRequirement)
     try
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> ignore
@@ -177,7 +177,7 @@ nuget My.Company.PackageC.Server > 0.1"""
 
 [<Test>]
 let ``should resolve simple config with servers with version requirement``() = 
-    let cfg = DependenciesFile.FromCode(configWithServersWithVersionRequirement)
+    let cfg = DependenciesFile.FromSource(configWithServersWithVersionRequirement)
     try
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> ignore
@@ -197,6 +197,6 @@ nuget My.Company.PackageC.Server"""
 
 [<Test>]
 let ``should resolve simple config with servers without version requirement``() = 
-    let cfg = DependenciesFile.FromCode(configWithServersWithoutVersionRequirement)
+    let cfg = DependenciesFile.FromSource(configWithServersWithoutVersionRequirement)
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graphWithServers, PackageDetailsFromGraph graphWithServers).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "My.Company.PackageC.Server"] |> shouldEqual "1.0.0-pre18038"

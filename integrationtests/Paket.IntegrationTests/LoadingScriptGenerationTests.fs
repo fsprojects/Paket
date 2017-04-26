@@ -15,76 +15,89 @@ let getLoadScriptDefaultFolder scenario = DirectoryInfo((scriptRoot scenario).Fu
 let getLoadScriptFolder framework scenario = DirectoryInfo(Path.Combine((getLoadScriptDefaultFolder scenario).FullName, framework |> FrameworkDetection.Extract |> Option.get |> string))
 
 let getGeneratedScriptFiles framework scenario =
-  let frameworkDir = getLoadScriptFolder framework scenario
-  frameworkDir.GetFiles() |> Array.sortBy (fun f -> f.FullName)
-let getGeneratedScriptFilesDefaultFolder scenario =
-  let frameworkDir = getLoadScriptDefaultFolder scenario
-  frameworkDir.GetFiles() |> Array.sortBy (fun f -> f.FullName)
+    let frameworkDir = getLoadScriptFolder framework scenario
+    frameworkDir.GetFiles() |> Array.sortBy (fun f -> 
+        printfn "%s" f.FullName
+        f.FullName)
 
-let getScriptContentsFailedExpectations (scriptFolder: DirectoryInfo) expectations =
+let getGeneratedScriptFilesDefaultFolder scenario =
+    let frameworkDir = getLoadScriptDefaultFolder scenario
+    frameworkDir.GetFiles() |> Array.sortBy (fun f -> 
+        printfn "%s" f.FullName
+        f.FullName)
+
+let getScriptContentsFailedExpectations (scriptFolder: DirectoryInfo) (expectations: #seq<string * #seq<string>>) =
     let files =
         scriptFolder.GetFiles()
-        |> Seq.map (fun f -> f.Name, f)
-        |> dict
+        |> Seq.map (fun f -> 
+            f.Name.ToLower(), f
+        ) |> dict
 
     seq {
         for (file, contains) in expectations do
             match files.TryGetValue file with
             | false, _ -> yield sprintf "file %s was not found" file
             | true, file -> 
-                let text = file.FullName |> File.ReadAllText
+                let text = (file.FullName |> File.ReadAllText).ToLower()
                 for expectedText in contains do
-                    if not (text.Contains expectedText) then
+                    let expect = expectedText.ToLower()
+                    if not (text.Contains expect) then
                         yield sprintf "file %s didn't contain %s" file.FullName expectedText
     }
 
 
 [<Test; Category("scriptgen")>]
 let ``simple dependencies generates expected scripts``() = 
-  let scenario = "simple-dependencies"
-  let framework = "net4"
-  paket "install" scenario |> ignore
+    let scenario = "simple-dependencies"
+    let framework = "net4"
+    paket "install" scenario |> ignore
 
-  directPaket (sprintf "generate-include-scripts framework %s" framework) scenario |> ignore
+    directPaket (sprintf "generate-load-scripts framework %s" framework) scenario |> ignore
   
-  let files = getGeneratedScriptFiles framework scenario
-  let actualFiles = files |> Array.map (fun f -> f.Name) |> Array.sortBy id
-  let expectedFiles = [|
-      "argu.csx"
-      "argu.fsx"
-      "log4net.csx"
-      "log4net.fsx"
-      "main.group.csx"
-      "main.group.fsx"
-      "nunit.csx"
-      "nunit.fsx"
-  |]
+    let files = getGeneratedScriptFiles framework scenario
+    
+    let actualFiles = 
+        (files |> Array.map (fun f -> f.Name) |> Array.sortBy id |> Array.map (fun x -> x.ToLower()))
+        |> Set.ofArray
+
+    let expectedFiles = 
+        [   "argu.csx"
+            "argu.fsx"
+            "log4net.csx"
+            "log4net.fsx"
+            "main.group.csx"
+            "main.group.fsx"
+            "nunit.csx"
+            "nunit.fsx"
+        ] |> Set.ofList
   
-  if not isMono then // TODO: Fix me
-    Assert.AreEqual(expectedFiles,actualFiles)
+    if not isMonoRuntime then // TODO: Fix me
+        Assert.AreEqual(expectedFiles,actualFiles)
+
 
 let assertNhibernateForFramework35IsThere scenario =
-  let expectations = [
-    "iesi.collections.csx", ["Net35/Iesi.Collections.dll"]
-    "iesi.collections.fsx", ["Net35/Iesi.Collections.dll"]
-    "nhibernate.csx", ["Net35/NHibernate.dll";"#load \"iesi.collections.csx\""]
-    "nhibernate.fsx", ["Net35/NHibernate.dll";"#load @\"iesi.collections.fsx\""]
-  ]
-  let folder = getLoadScriptDefaultFolder scenario
-  let failures = getScriptContentsFailedExpectations folder expectations
+    let expectations = [
+        "iesi.collections.csx", ["Net35/Iesi.Collections.dll"]
+        "iesi.collections.fsx", ["Net35/Iesi.Collections.dll"]
+        "nhibernate.csx", ["Net35/NHibernate.dll";"#load \"iesi.collections.csx\""]
+        "nhibernate.fsx", ["Net35/NHibernate.dll";"#load @\"iesi.collections.fsx\""]
+    ]
+    let folder = getLoadScriptDefaultFolder scenario
+    let failures = getScriptContentsFailedExpectations folder expectations
 
-  if not (Seq.isEmpty failures) then
-    Assert.Fail (failures |> String.concat Environment.NewLine)
+    if not (Seq.isEmpty failures) then
+        Assert.Fail (failures |> String.concat Environment.NewLine)
 
 
 [<Test;Category("scriptgen")>]
 let ``framework specified``() = 
-  let scenario = "framework-specified"
-  paket "install" scenario |> ignore
+    let scenario = "framework-specified"
+    paket "install" scenario |> ignore
 
-  directPaket "generate-load-scripts" scenario |> ignore
+    directPaket "generate-load-scripts" scenario |> ignore
 
-  assertNhibernateForFramework35IsThere scenario
+    assertNhibernateForFramework35IsThere scenario
+
 
 [<Test; Category("scriptgen"); Ignore("group script is always generated")>]
 let ``don't generate scripts when no references are found``() = 
@@ -95,6 +108,7 @@ let ``don't generate scripts when no references are found``() =
     directPaket "generate-load-scripts" scenario |> ignore
     let scriptRootDir = scriptRoot scenario
     Assert.IsFalse(scriptRootDir.Exists)
+
 
 [<TestCase("csx");TestCase("fsx")>]
 [<Test;Category("scriptgen")>]
@@ -109,6 +123,7 @@ let ``only generates scripts for language provided`` (language : string) =
     let allMatching = scriptFiles |> Array.map (fun fi -> fi.Extension) |> Array.forall ((=) language)
     Assert.IsTrue(allMatching)
      
+
 [<Test; Category("scriptgen")>]
 let ``fails on wrong framework given`` () =
     let scenario = "wrong-args"
@@ -124,6 +139,7 @@ let ``fails on wrong framework given`` () =
     Assert.IsTrue(message.Contains "Cannot generate include scripts.")
     Assert.IsTrue(message.Contains "Unrecognized Framework(s)")
     Assert.IsTrue(message.Contains "foo, bar")
+
 
 [<Test; Category("scriptgen")>]
 let ``fails on wrong scripttype given`` () =
@@ -141,6 +157,7 @@ let ``fails on wrong scripttype given`` () =
     Assert.IsTrue(message.Contains "Unrecognized Script Type(s)")
     Assert.IsTrue(message.Contains "foo, bar")
 
+
 [<Test; Category("scriptgen")>]
 let ``issue 1676 casing`` () =
     let scenario = "issue-1676"
@@ -157,12 +174,14 @@ let ``issue 1676 casing`` () =
             "../../../packages/EntityFramework/lib/net45/EntityFramework.dll"
             "../../../packages/EntityFramework/lib/net45/EntityFramework.SqlServer.dll"
             ]
-      ]
+    ]
     let folder = getLoadScriptFolder "net46" scenario
+    printfn "folder - %s" folder.FullName
     let failures = getScriptContentsFailedExpectations folder expectations
 
     if not (Seq.isEmpty failures) then
         Assert.Fail (failures |> String.concat Environment.NewLine)
+
 
 [<Test; Category("scriptgen")>]
 let ``mscorlib excluded from f# script`` () =

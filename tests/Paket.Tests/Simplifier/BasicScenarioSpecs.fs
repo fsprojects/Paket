@@ -36,7 +36,7 @@ source http://www.nuget.org/api/v2
 nuget A 3.3.0
 nuget B 3.3.1
 nuget C 1.0
-nuget D 2.1""" |> DependenciesFile.FromCode
+nuget D 2.1""" |> DependenciesFile.FromSource
 
 let projects1 = [
     ReferencesFile.FromLines [|"A";"B";"C";"D"|]
@@ -79,7 +79,7 @@ nuget B 1.0
 nuget C 1.0
 nuget D 1.0
 nuget E 1.0
-nuget F 1.0""" |> DependenciesFile.FromCode
+nuget F 1.0""" |> DependenciesFile.FromSource
 
 let projects2 = [
     ReferencesFile.FromLines [|"A";"B";"C";"D";"F"|]
@@ -157,7 +157,7 @@ nuget B 1.0
 nuget C 1.0
 nuget D 1.0
 nuget E 1.0
-nuget F 1.0""" |> DependenciesFile.FromCode
+nuget F 1.0""" |> DependenciesFile.FromSource
 
 let projects3 = [
     ReferencesFile.FromLines [|"A";"B";"C";"D";"F"|]
@@ -216,7 +216,7 @@ nuget Autofac.WebApi2 3.4.0
 nuget Autofac.WebApi2.Owin 3.2.0"""
 
 
-    let originalLockFile = DependenciesFile.FromCode(before)
+    let originalLockFile = DependenciesFile.FromSource(before)
     originalLockFile.SimplifyFrameworkRestrictions().ToString() 
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings expected)
@@ -234,7 +234,7 @@ nuget Autofac.WebApi 3.1.0 framework: >= net45
 nuget Autofac.WebApi2 3.4.0 framework: >= net45
 nuget Autofac.WebApi2.Owin 3.2.0 framework: >= net45"""
 
-    let originalLockFile = DependenciesFile.FromCode(before)
+    let originalLockFile = DependenciesFile.FromSource(before)
     originalLockFile.SimplifyFrameworkRestrictions().ToString()
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings before)
@@ -272,7 +272,7 @@ nuget Autofac.WebApi2 3.4.0
 nuget Autofac.WebApi2.Owin 3.2.0"""
 
 
-    let originalLockFile = DependenciesFile.FromCode(before)
+    let originalLockFile = DependenciesFile.FromSource(before)
     originalLockFile.SimplifyFrameworkRestrictions().ToString() 
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings expected)
@@ -281,7 +281,7 @@ nuget Autofac.WebApi2.Owin 3.2.0"""
 let ``should not simplify framework restrictions in empty file``() =
     let before = ""
     
-    let originalLockFile = DependenciesFile.FromCode(before)
+    let originalLockFile = DependenciesFile.FromSource(before)
     originalLockFile.SimplifyFrameworkRestrictions().ToString() 
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings before)
@@ -319,7 +319,7 @@ nuget Autofac.WebApi2 3.4.0
 nuget Autofac.WebApi2.Owin 3.2.0"""
 
 
-    let originalLockFile = DependenciesFile.FromCode(before)
+    let originalLockFile = DependenciesFile.FromSource(before)
     originalLockFile.SimplifyFrameworkRestrictions().ToString() 
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings expected)
@@ -357,7 +357,7 @@ nuget Autofac.WebApi2 3.4.0 framework: >= net45
 nuget Autofac.WebApi2.Owin 3.2.0"""
 
 
-    let originalLockFile = DependenciesFile.FromCode(before)
+    let originalLockFile = DependenciesFile.FromSource(before)
     originalLockFile.SimplifyFrameworkRestrictions().ToString() 
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings expected)

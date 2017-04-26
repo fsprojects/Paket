@@ -19,6 +19,9 @@ type Dependencies(dependenciesFileName: string) =
                 groupName.ToString(),packageName.ToString(),kv.Value.Version.ToString())
         |> Seq.toList
         
+
+    member val Verbose = Logging.verbose with get, set
+
     /// Clears the NuGet cache
     static member ClearCache() =
         let emptyDir path =
@@ -200,11 +203,29 @@ type Dependencies(dependenciesFileName: string) =
             providedScriptTypes = defaultArg providedScriptTypes [],
             alternativeProjectRoot = None)
 
-    static member GenerateLoadScripts() =
-        LoadingScripts.ScriptGeneration.executeCommand [] (DirectoryInfo (Directory.GetCurrentDirectory())) List.empty List.empty
+
+    member __.GenerateLoadScriptData (paketDependencies:string) (groups:string list) (frameworks:string list) (scriptTypes:string list) =        
+        let depCache = DependencyCache paketDependencies
+        LoadingScripts.ScriptGeneration.constructScriptsFromData depCache (groups|>List.map GroupName) frameworks scriptTypes
+        |> List.ofSeq
+
+
+    member this.GenerateLoadScripts (groups:string list) (frameworks:string list) (scriptTypes:string list)  =
+        this.GenerateLoadScriptData this.DependenciesFile groups frameworks scriptTypes 
+        |> List.iter (fun sd -> 
+            let rootDir = this.RootDirectory
+            Directory.CreateDirectory <| Path.Combine (Constants.PaketFolderName,"load") |> ignore
+            let scriptPath = Path.Combine (rootDir.FullName , sd.PartialPath)
+            tracefn "scriptpath - %s" scriptPath
+            let scriptDir = Path.GetDirectoryName scriptPath |> Path.GetFullPath |> DirectoryInfo
+            scriptDir.Create()
+            tracefn "created - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
+            sd.Save rootDir
+        )
 
     /// Updates all dependencies.
-    member this.Update(force: bool): unit = this.Update(force, false, false, false)
+    member this.Update(force: bool): unit = 
+        this.Update(force, false, false, false)
 
     /// Updates all dependencies.
     member this.Update(force: bool, withBindingRedirects:bool, cleanBindingRedirects: bool, createNewBindingFiles:bool): unit =
@@ -214,11 +235,15 @@ type Dependencies(dependenciesFileName: string) =
     member this.Update(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
         Utils.RunInLockedAccessMode(
             this.RootPath,
-            fun () -> UpdateProcess.Update(
-                        dependenciesFileName,
-                        { UpdaterOptions.Default with
-                            Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
-                            NoInstall = installAfter |> not }))
+            fun () -> 
+            UpdateProcess.Update(
+                dependenciesFileName,
+                    { UpdaterOptions.Default with
+                        Common = InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None)
+                        NoInstall = installAfter |> not 
+                    }
+            )
+        )
 
     /// Updates dependencies in single group.
     member this.UpdateGroup(groupName, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode:SemVerUpdateMode, touchAffectedRefs): unit =
@@ -435,7 +460,6 @@ type Dependencies(dependenciesFileName: string) =
                 let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
                 let nuspec = Nuspec.Load nuspec.FullName
                 let files = NuGetV2.GetLibFiles(folder.FullName)
-                let files = files |> Array.map (fun fi -> fi.FullName)
                 InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
 
     /// Returns all libraries for the given package and framework.

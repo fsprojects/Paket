@@ -1,10 +1,34 @@
-os: Visual Studio 2017
+image: Visual Studio 2017
 init:
   - git config --global core.autocrlf input
 build_script:
-  - cmd: build.cmd RunIntegrationTests
+  - cmd: build.cmd BuildPackage
 test: off
 version: 0.0.1.{build}
 artifacts:
   - path: bin
     name: bin
+  - path: 'temp\*.nupkg'
+    type: NuGetPackage
+nuget:
+  account_feed: false
+  project_feed: true
+
+environment:
+  # these variables are common to all jobs
+  #common_var1: value1
+
+  matrix:
+    # first group
+    - SkipIntegrationTests: true
+    # second group
+    - SkipNuGet: true
+
+#deploy:
+#  provider: NuGet
+#  server: https://ci.appveyor.com/nuget/paket # remove to push to NuGet.org
+#  #api_key:
+#  #  secure: m49OJ7+Jdt9an3jPcTukHA==
+#  #skip_symbols: false
+#  #symbol_server:           # remove to push symbols to SymbolSource.org
+#  artifact: /temp/.*\.nupkg/

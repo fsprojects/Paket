@@ -187,6 +187,9 @@ Target "InstallDotNetCore" (fun _ ->
 
 Target "Clean" (fun _ ->
     !! "src/**/obj"
+    ++ "src/**/bin"
+    ++ "tests/**/obj"
+    ++ "tests/**/bin"
     ++ buildDir 
     ++ tempDir
     |> CleanDirs 
@@ -199,23 +202,18 @@ Target "CleanDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
-Target "MSBuildRestore" (fun _ ->
-    !! solutionFile
-    |> Seq.iter (build (fun p -> {p with RestorePackagesFlag=true; Targets=["Restore"]}))
-)
+let msbuild14 = ProgramFilesX86</>"MSBuild"</>"14.0"</>"Bin"</>"MSBuild.exe"
+
+if isWindows && fileExists msbuild14 then
+    setEnvironVar "MSBUILD"  msbuild14
 
 Target "Build" (fun _ ->
-    if isMono then
-        !! solutionFile
-        |> MSBuildReleaseExt "" [
-                "VisualStudioVersion", "14.0"
-                "ToolsVersion"       , "14.0"  
-        ] "Rebuild"
-        |> ignore
-    else
-        !! solutionFile
-        |> MSBuildReleaseExt "" [] "Rebuild"
-        |> ignore
+    !! solutionFile
+    |> MSBuildReleaseExt "" [
+            "VisualStudioVersion", "14.0"
+            "ToolsVersion"       , "14.0"  
+    ] "Build"
+    |> ignore
 )
 
 
@@ -304,9 +302,10 @@ Target "RunTests" (fun _ ->
 
 Target "QuickTest" (fun _ ->
 
-    !! "src\Paket.Core\Paket.Core.fsproj"
-    |> MSBuildRelease "" "Rebuild"
-    |> ignore
+    [   "src/Paket.Core/Paket.Core.fsproj"
+        "tests/Paket.Tests/Paket.Tests.fsproj"
+    ]   |> MSBuildRelease "" "Rebuild"
+        |> ignore
 
     !! testAssemblies
     |> NUnit3 (fun p ->
@@ -315,16 +314,25 @@ Target "QuickTest" (fun _ ->
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 20. })
 )
+"Clean" ==> "QuickTest"
 
-
-Target "RunIntegrationTests" (fun _ ->
-    !! integrationTestAssemblies
+Target "QuickIntegrationTests" (fun _ ->
+    [   "src/Paket.Core/Paket.Core.fsproj"
+        "src/Paket/Paket.fsproj"
+        "integrationtests/Paket.IntegrationTests/Paket.IntegrationTests.fsproj"
+    ]   |> MSBuildDebug "" "Rebuild"
+        |> ignore
+    
+    
+    !! integrationTestAssemblies    
     |> NUnit3 (fun p ->
         { p with
             ShadowCopy = false
+            Where = "cat==scriptgen"
             WorkingDir = "tests/Paket.Tests"
             TimeOut = TimeSpan.FromMinutes 40. })
 )
+"Clean" ==> "QuickIntegrationTests" 
 
 
 // --------------------------------------------------------------------------------------
@@ -332,7 +340,7 @@ Target "RunIntegrationTests" (fun _ ->
 
 let mergeLibs = ["paket.exe"; "Paket.Core.dll"; "FSharp.Core.dll"; "Newtonsoft.Json.dll"; "Argu.dll"; "Chessie.dll"; "Mono.Cecil.dll"]
 
-Target "MergePaketTool" (fun _ ->
+let mergePaketTool () =
     CreateDir buildMergedDir
 
     let toPack =
@@ -343,11 +351,26 @@ Target "MergePaketTool" (fun _ ->
     let result =
         ExecProcess (fun info ->
             info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/verbose /lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "paket.exe") toPack
+            info.Arguments <- sprintf "/lib:%s /ver:%s /out:%s %s" buildDir release.AssemblyVersion (buildMergedDir @@ "paket.exe") toPack
             ) (TimeSpan.FromMinutes 5.)
 
     if result <> 0 then failwithf "Error during ILRepack execution."
+
+
+Target "MergePaketTool" (fun _ ->
+    mergePaketTool ()
 )
+
+Target "RunIntegrationTests" (fun _ ->
+    mergePaketTool ()
+    !! integrationTestAssemblies    
+    |> NUnit3 (fun p ->
+        { p with
+            ShadowCopy = false
+            WorkingDir = "tests/Paket.Tests"
+            TimeOut = TimeSpan.FromMinutes 40. })
+)
+"Clean" ==> "Build" ==> "RunIntegrationTests" 
 
 Target "MergePowerShell" (fun _ ->
     CreateDir buildMergedDirPS
@@ -584,21 +607,25 @@ Target "ReleaseGitHub" (fun _ ->
 
 Target "Release" DoNothing
 Target "BuildPackage" DoNothing
-
+Target "BuildCore" DoNothing
 // --------------------------------------------------------------------------------------
 // Run all targets by default. Invoke 'build <Target>' to override
 
 Target "All" DoNothing
 
 "Clean"
-  ==> "AssemblyInfo"
   =?> ("InstallDotNetCore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetRestore", not <| hasBuildParam "DISABLE_NETCORE")
   =?> ("DotnetBuild", not <| hasBuildParam "DISABLE_NETCORE")
-  =?> ("MSBuildRestore", not isMono)
-  ==> "Build"
   =?> ("DotnetPackage", not <| hasBuildParam "DISABLE_NETCORE")
+
+  ==> "BuildCore"
+
+"Clean"
+  ==> "AssemblyInfo"
+  ==> "Build"
   =?> ("BuildPowerShell", not isMono)
+  <=> "BuildCore"
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
   =?> ("GenerateDocs",isLocalBuild && not isMono)
@@ -610,8 +637,8 @@ Target "All" DoNothing
   ==> "MergePaketTool"
   =?> ("MergePowerShell", not isMono)
   ==> "SignAssemblies"
-  ==> "NuGet"
-  =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE")
+  =?> ("NuGet", not <| hasBuildParam "SkipNuGet")
+  =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
   ==> "BuildPackage"
 
 "CleanDocs"

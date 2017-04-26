@@ -44,7 +44,7 @@ let ``should generate lock file for packages``() =
     Rx-Main (2.0)
       Rx-Core (>= 2.1)"""
 
-    let cfg = DependenciesFile.FromCode(config1)
+    let cfg = DependenciesFile.FromSource(config1)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
@@ -70,7 +70,7 @@ let ``should generate lock file with framework restrictions for packages``() =
     Rx-Main (2.0) - framework: >= net40
       Rx-Core (>= 2.1)"""
 
-    let cfg = DependenciesFile.FromCode(configWithRestrictions)
+    let cfg = DependenciesFile.FromSource(configWithRestrictions)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
@@ -97,7 +97,7 @@ let ``should generate lock file with no targets import for packages``() =
     Rx-Main (2.0) - framework: >= net40
       Rx-Core (>= 2.1)"""
 
-    let cfg = DependenciesFile.FromCode(configWithNoImport)
+    let cfg = DependenciesFile.FromSource(configWithNoImport)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
@@ -122,7 +122,7 @@ let ``should generate lock file with no copy local for packages``() =
     Rx-Core (2.1) - framework: >= net40
     Rx-Main (2.0) - framework: >= net40
       Rx-Core (>= 2.1)"""
-    let cfg = DependenciesFile.FromCode(configWithCopyLocal)
+    let cfg = DependenciesFile.FromSource(configWithCopyLocal)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
@@ -148,7 +148,7 @@ let ``should generate lock file with disabled content for packages``() =
     Rx-Core (2.1) - content: none, framework: >= net40
     Rx-Main (2.0) - content: none, framework: >= net40
       Rx-Core (>= 2.1)"""
-    let cfg = DependenciesFile.FromCode(configWithDisabledContent)
+    let cfg = DependenciesFile.FromSource(configWithDisabledContent)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected)
@@ -170,7 +170,7 @@ github "owner/project1:commit1" "folder/file 2.fs"
 github "owner:project2:commit2" "folder/file.fs"
 github "owner:project2:commit3" "folder/file3.fs" githubAuth """ 
 
-    let cfg = DependenciesFile.FromCode(config)
+    let cfg = DependenciesFile.FromSource(config)
     
     cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> List.map (fun f -> 
@@ -197,9 +197,10 @@ source https://www.myget.org/F/ravendb3/
 nuget RavenDB.Client == 3.0.3498-Unstable
  """
 
-let graph2 = [
-    "RavenDB.Client","3.0.3498-Unstable",[]
-]
+let graph2 =
+    OfSimpleGraph [
+        "RavenDB.Client","3.0.3498-Unstable",[]
+    ]
 
 let expected2 = """NUGET
   remote: https://www.myget.org/F/ravendb3
@@ -207,7 +208,7 @@ let expected2 = """NUGET
 
 [<Test>]
 let ``should generate lock file for RavenDB.Client``() = 
-    let cfg = DependenciesFile.FromCode(config2)
+    let cfg = DependenciesFile.FromSource(config2)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected2)
@@ -237,7 +238,7 @@ let expected3 = """NUGET
 
 [<Test>]
 let ``should generate other version ranges for packages``() = 
-    let cfg = DependenciesFile.FromCode(config3)
+    let cfg = DependenciesFile.FromSource(config3)
     ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
     |> shouldEqual (normalizeLineEndings expected3)
@@ -265,7 +266,7 @@ let expectedWithHttp = """HTTP
 let ``should generate lock file for http source files``() = 
     let config = """http "http://www.fssnip.net/raw/1M" "test.fs" """ 
 
-    let cfg = DependenciesFile.FromCode(config)
+    let cfg = DependenciesFile.FromSource(config)
     
     cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> List.map trivialResolve
@@ -297,7 +298,7 @@ gist Thorium/6088882
 http http://www.fssnip.net/raw/1M myFile.fs
 http http://www.fssnip.net/raw/15 myFile3.fs """ 
 
-    let cfg = DependenciesFile.FromCode(config)
+    let cfg = DependenciesFile.FromSource(config)
     
     let actual = 
         cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
@@ -325,7 +326,7 @@ http http://nlp.stanford.edu/software/stanford-parser-full-2014-10-31.zip
 http http://nlp.stanford.edu/software/stanford-postagger-full-2014-10-26.zip
 http http://nlp.stanford.edu/software/stanford-segmenter-2014-10-26.zip"""
 
-    let cfg = DependenciesFile.FromCode(config)
+    let cfg = DependenciesFile.FromSource(config)
 
     let references =
         cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles

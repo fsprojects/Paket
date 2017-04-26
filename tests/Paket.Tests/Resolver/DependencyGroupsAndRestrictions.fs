@@ -9,7 +9,7 @@ open Paket.PackageResolver
 
 let resolve graph updateMode (cfg : DependenciesFile) =
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
-    cfg.Resolve(true,noSha1,VersionsFromGraphAsSeq graph,PackageDetailsFromGraph graph,groups,updateMode).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+    cfg.Resolve(true,noSha1,VersionsFromGraphAsSeq graph,PackageDetailsFromGraph graph,(fun _ _ -> None),groups,updateMode).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     
 let graph1 = 
   GraphOfNuspecs [
@@ -61,7 +61,7 @@ framework net46
 
 nuget Chessie"""
     let resolved =
-        DependenciesFile.FromCode(config)
+        DependenciesFile.FromSource(config)
         |> resolve graph1 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "FSharp.Core"] |> shouldEqual "4.0.0.1"
      
@@ -92,7 +92,7 @@ framework net45
 
 nuget Exceptionless"""
     let resolved =
-        DependenciesFile.FromCode(config)
+        DependenciesFile.FromSource(config)
         |> resolve graph3 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Exceptionless"] |> shouldEqual "4.0.1902"
     
@@ -104,7 +104,7 @@ framework net46
 
 nuget Exceptionless"""
     let resolved =
-        DependenciesFile.FromCode(config)
+        DependenciesFile.FromSource(config)
         |> resolve graph3 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Exceptionless"] |> shouldEqual "4.0.1902"
     
@@ -117,7 +117,7 @@ framework net463
 
 nuget Exceptionless"""
     let resolved =
-        DependenciesFile.FromCode(config)
+        DependenciesFile.FromSource(config)
         |> resolve graph3 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Exceptionless"] |> shouldEqual "4.0.1902"
 
@@ -156,7 +156,7 @@ framework net46
 
 nuget Marten"""
     let resolved =
-        DependenciesFile.FromCode(config)
+        DependenciesFile.FromSource(config)
         |> resolve graph4 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Marten"] |> shouldEqual "0.9.12.563"
     getVersion resolved.[PackageName "Npgsql"] |> shouldEqual "3.1.4"
@@ -210,7 +210,7 @@ framework net46
 nuget Exceptionless
 nuget Marten"""
     let resolved =
-        DependenciesFile.FromCode(config)
+        DependenciesFile.FromSource(config)
         |> resolve graph5 UpdateMode.UpdateAll
     getVersion resolved.[PackageName "Marten"] |> shouldEqual "0.9.12.563"
     getVersion resolved.[PackageName "Npgsql"] |> shouldEqual "3.1.4"
@@ -241,7 +241,7 @@ source http://www.nuget.org/api/v2
 
 nuget Chessie"""
     let resolved =
-        DependenciesFile.FromCode(config)
+        DependenciesFile.FromSource(config)
         |> resolve graph6 UpdateMode.UpdateAll
     let chessie = resolved.[PackageName "Chessie"]
     let fsharpCore = resolved.[PackageName "FSharp.Core"]
