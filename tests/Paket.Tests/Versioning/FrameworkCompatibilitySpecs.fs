@@ -1,4 +1,5 @@
-﻿module Paket.FrameworkCompatibilitySpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.FrameworkCompatibilitySpecs
 
 open System.IO
 open Paket

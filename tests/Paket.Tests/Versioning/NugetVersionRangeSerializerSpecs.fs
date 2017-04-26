@@ -1,4 +1,5 @@
-﻿module Paket.NugetVersionRangeSerializerSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.NugetVersionRangeSerializerSpecs
 
 open Paket
 open NUnit.Framework

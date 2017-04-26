@@ -1,4 +1,5 @@
-﻿module Paket.RestrictionFilterSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.RestrictionFilterSpecs
 
 open System.IO
 open Paket

@@ -1,4 +1,5 @@
-﻿module Paket.SemVerSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.SemVerSpecs
 
 open Paket
 open NUnit.Framework

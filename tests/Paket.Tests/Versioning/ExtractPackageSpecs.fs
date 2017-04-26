@@ -1,4 +1,5 @@
-﻿module Paket.ExtractPackageSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.ExtractPackageSpecs
 
 open System.IO
 open Paket

@@ -1,4 +1,5 @@
-﻿module Paket.Requirements.RestrictionApplicationSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.Requirements.RestrictionApplicationSpecs
 
 open Paket
 open FsUnit

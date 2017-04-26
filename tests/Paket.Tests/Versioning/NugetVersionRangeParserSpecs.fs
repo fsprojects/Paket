@@ -1,4 +1,5 @@
-﻿module Paket.NugetVersionRangeParserSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.NugetVersionRangeParserSpecs
 
 open Paket
 open NUnit.Framework

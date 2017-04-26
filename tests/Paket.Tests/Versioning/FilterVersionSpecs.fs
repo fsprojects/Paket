@@ -1,4 +1,5 @@
-﻿module Paket.FilterVersionSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.FilterVersionSpecs
 
 open Paket
 open NUnit.Framework
