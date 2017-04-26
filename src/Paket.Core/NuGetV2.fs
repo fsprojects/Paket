@@ -737,11 +737,12 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
             | Some packageDetails -> packageDetails
         | Some packageDetails -> packageDetails
 
-    let encodeURL (url:string) = 
+    let encodeURL (url:string) =
+        if String.IsNullOrWhiteSpace url then url else
         let segments = url.Split [|'?'|]
         let baseUrl = segments.[0]
         Array.set segments 0 (baseUrl.Replace("+", "%2B"))
-        ("?", segments) |> System.String.Join
+        System.String.Join("?", segments)
 
     let newName = PackageName nugetObject.PackageName
     if packageName <> newName then
