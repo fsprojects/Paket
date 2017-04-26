@@ -1,4 +1,5 @@
-﻿module Paket.InstallModel.AnalyzerSpecs
+﻿[<NUnit.Framework.TestFixture(Category="Xml")>]
+module Paket.InstallModel.AnalyzerSpecs
 
 open Paket
 open NUnit.Framework

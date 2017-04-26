@@ -5,6 +5,7 @@ open NUnit.Framework
 open FsUnit
 open Paket.PlatformMatching
 
+[<TestFixture>]
 module ``Given a target platform`` =
 
     [<Test>]
@@ -28,6 +29,7 @@ module ``Given a target platform`` =
         let p2 = getPlatformPenalty (DotNetFramework FrameworkVersion.V4_6_2, DotNetStandard DotNetStandardVersion.V1_5)
         p1 |> shouldBeSmallerThan p2
 
+[<TestFixture>]
 module ``Given a path`` =
     [<Test>]
     let ``it should split it into the right platforms``() =
@@ -70,6 +72,7 @@ module ``Given a path`` =
         getPenalty [ DotNetFramework FrameworkVersion.V3_5 ] path |> shouldEqual 2
         getPenalty [ DotNetFramework FrameworkVersion.V4_Client ] path |> shouldEqual 3
 
+[<NUnit.Framework.TestFixture>]
 module ``Given an empty path`` =
     [<Test>]
     let ``it should be okay to use from .NET``() =
@@ -81,6 +84,7 @@ module ``Given an empty path`` =
         let path = extractPlatforms ""
         getPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneApp "v8.1" ] path |> shouldBeSmallerThan 2000
 
+[<NUnit.Framework.TestFixture>]
 module ``Given a list of paths`` =
     let paths =
         [ "net40"; "portable-monotouch+monoandroid"; "portable-net40+sl5+win8+wp8+wpa81"

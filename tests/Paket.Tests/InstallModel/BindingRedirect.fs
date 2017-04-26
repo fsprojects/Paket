@@ -1,4 +1,5 @@
-﻿module Paket.BindingRedirects
+﻿[<NUnit.Framework.TestFixture(Category="Xml")>]
+module Paket.BindingRedirects
 
 open Paket
 open Paket.BindingRedirects

@@ -1,4 +1,5 @@
-﻿module Paket.InstallModel.FrameworkConditionsSpecs
+﻿[<NUnit.Framework.TestFixture>]
+module Paket.InstallModel.FrameworkConditionsSpecs
 
 open Paket
 open NUnit.Framework

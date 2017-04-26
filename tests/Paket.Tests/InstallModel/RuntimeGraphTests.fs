@@ -1,4 +1,5 @@
-﻿module Paket.RuntimeGraphTests
+﻿[<NUnit.Framework.TestFixture(Category="Xml")>]
+module Paket.RuntimeGraphTests
 
 open Paket
 open NUnit.Framework
