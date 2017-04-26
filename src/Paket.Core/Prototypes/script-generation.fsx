@@ -82,9 +82,9 @@ let depCache = DependencyCache  paketDependencies
 let depUtil = Dependencies.Locate paketDependencies
 ;;
 Logging.verbose <- true
-let rawgens = ScriptGeneration.constructScriptsFromData depCache [] ["net46"] ["fsx"] |> List.ofSeq
-
-let gens = depUtil.GenerateLoadScriptData paketDependencies [] ["net46"] ["fsx"] |> List.ofSeq
+let rawgens = ScriptGeneration.constructScriptsFromData depCache [] ["net46"] [] |> List.ofSeq
+;;
+//let gens = depUtil.GenerateLoadScriptData paketDependencies [] ["net46"] ["fsx"] |> List.ofSeq
 ;;
 
 

@@ -147,7 +147,7 @@ module ScriptGeneration =
                 let framework = if isDefaultFramework then String.Empty else string framework
                 framework </> group
             let fileName = (sprintf "%s.group.%s" (string group) scriptType.Extension).ToLowerInvariant()
-            folder </> fileName
+            loadScriptsRootFolder </> folder </> fileName
               
        // -- LOAD SCRIPT FORMATTING POINT --
         let scriptFolder groupName (package: PackageResolver.ResolvedPackage) =
@@ -214,15 +214,19 @@ module ScriptGeneration =
                         Input = pieces 
                     } : ScriptContent
                 group,[scriptContent]
-            )
+            ) 
         List.append scriptContent groupScriptContent
-
+        
 
     let constructScriptsFromData (depCache:DependencyCache) (groups:GroupName list) providedFrameworks providedScriptTypes =
         let dependenciesFile = depCache.DependenciesFile
         let frameworksForDependencyGroups = dependenciesFile.ResolveFrameworksForScriptGeneration()
         let environmentFramework = FrameworkDetection.resolveEnvironmentFramework
         let lockFile = depCache.LockFile
+
+        let groups = 
+            if groups = [] then dependenciesFile.Groups |> Seq.map (fun kvp -> kvp.Key) |> Seq.toList 
+            else groups
 
         verbosefn "Generating Load Scripts" 
         verbosefn "Using Paket dependency file\n - %s" dependenciesFile.FileName
@@ -278,14 +282,14 @@ module ScriptGeneration =
                         Cache = depCache
                         ScriptType = scriptType  
                         RootDir = DirectoryInfo lockFile.RootPath
-                        Groups = groups 
+                        Groups = groups
                         DefaultFramework = isDefaultFramework,framework
                     }
                     (framework, content)
                 ] 
             ] |> List.concat
         
-        let allGroupsEmpty (ls:(FrameworkIdentifier *(GroupName * ScriptContent list)list) list) =
+        let allGroupsEmpty (ls:(FrameworkIdentifier *(_ * ScriptContent list)list) list) =
             ls |> List.forall (snd >> List.forall (snd>> List.isEmpty))
             
         // Report that no script generation was possible for the provided frameworks and groups
