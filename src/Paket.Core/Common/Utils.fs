@@ -717,6 +717,10 @@ let RunInLockedAccessMode(rootFolder,action) =
 [<RequireQualifiedAccess>]
 module String =
 
+    /// Match if 'text' starts with the 'prefix' string case
+    // TODO - this implementation is not great and the way it's being used in
+    // lockfile is wasteful with all of the trimmed lines, but this
+    // will need to be fixed at some later point
     let (|StartsWith|_|) prefix (input: string) =
         if input.StartsWith prefix then
             Some (input.Substring(prefix.Length))
@@ -732,17 +736,37 @@ module String =
                 yield String.Empty      // http://stackoverflow.com/questions/19365404/stringreader-omits-trailing-linebreak
         |]
     
+    /// Check if the two strings are equal ignoring case
     let inline equalsIgnoreCase str1 str2 =
         String.Compare(str1,str2,StringComparison.OrdinalIgnoreCase) = 0 
 
+    /// Match if the strings are equal ignoring case
+    let (|EqualsIC|_|) (str1:string) (str2:String) =
+        if equalsIgnoreCase str1 str2 then Some () else None
+    
+    /// Check if 'text' includes the 'target' string case insensitive
     let inline containsIgnoreCase (target:string) (text:string) = 
         text.IndexOf(target, StringComparison.OrdinalIgnoreCase) >= 0
     
-    let inline startsWithIgnoreCase (target:string) (text:string) =
-        text.IndexOf(target, StringComparison.OrdinalIgnoreCase) = 0
+    /// Match if 'text' includes the 'target' string case insensitive
+    let (|ContainsIC|_|) (target:string) (str2:String) =
+        if containsIgnoreCase target str2 then Some () else None
 
-    let inline endsWithIgnoreCase (target:string) (text:string) =
-        text.LastIndexOf(target, StringComparison.OrdinalIgnoreCase) >= text.Length - target.Length
+    /// Check if 'text' starts with the 'prefix' string case insensitive
+    let inline startsWithIgnoreCase (prefix:string) (text:string) =
+        text.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) = 0
+    
+    /// Match if 'text' starts with the 'prefix' string case insensitive
+    let (|StartsWithIC|_|) (prefix:string) (text:String) =
+        if startsWithIgnoreCase prefix text then Some () else None
+    
+    /// Check if 'text' ends with the 'suffix' string case insensitive
+    let inline endsWithIgnoreCase (suffix:string) (text:string) =
+        text.LastIndexOf(suffix, StringComparison.OrdinalIgnoreCase) >= text.Length - suffix.Length
+    
+    /// Match if 'text' ends with the 'suffix' string case insensitive
+    let (|EndsWithIC|_|) (suffix:string) (text:String) =
+        if endsWithIgnoreCase suffix text then  Some () else None
 
     let quoted (text:string) = (if text.Contains(" ") then "\"" + text + "\"" else text) 
 
