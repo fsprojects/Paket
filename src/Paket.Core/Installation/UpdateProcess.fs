@@ -113,7 +113,13 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRunti
 
         let preferredVersions = 
             DependencyChangeDetection.GetPreferredNuGetVersions(dependenciesFile,lockFile)
-            |> Map.map (fun (groupName,packageName) (v,s) -> v,s :: (List.map PackageSources.PackageSource.FromCache (dependenciesFile.GetGroup(groupName).Caches)))
+            |> Map.map (fun (groupName,packageName) (v,s) -> 
+                let caches = 
+                    match dependenciesFile.Groups |> Map.tryFind groupName with
+                    | None -> []
+                    | Some group -> group.Caches
+
+                v,s :: (List.map PackageSources.PackageSource.FromCache caches))
 
         let getVersionsF sources resolverStrategy groupName packageName = 
             seq { 

@@ -642,10 +642,9 @@ let GetLibFiles(targetFolder) =
     |> Array.append runtimeLibs
 
 /// Finds all targets files in a nuget package.
-let GetTargetsFiles targetFolder = getFiles targetFolder "build" ".targets files"
-
-/// Finds all props files in a nuget package 
-let GetPropsFiles targetFolder = getFiles targetFolder "build" ".props files"
+let GetTargetsFiles(targetFolder) =
+    getFiles targetFolder "build" ".targets files"
+    |> Array.filter (fun p -> p.FullPath.ToLower().EndsWith ".targets" || p.FullPath.ToLower().EndsWith ".props")
 
 /// Finds all analyzer files in a nuget package.
 let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
@@ -742,13 +741,20 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
             | Some packageDetails -> packageDetails
         | Some packageDetails -> packageDetails
 
+    let encodeURL (url:string) =
+        if String.IsNullOrWhiteSpace url then url else
+        let segments = url.Split [|'?'|]
+        let baseUrl = segments.[0]
+        Array.set segments 0 (baseUrl.Replace("+", "%2B"))
+        System.String.Join("?", segments)
+
     let newName = PackageName nugetObject.PackageName
     if packageName <> newName then
         failwithf "Package details for %O are not matching requested package %O." newName packageName
 
     { Name = PackageName nugetObject.PackageName
       Source = source
-      DownloadLink = nugetObject.DownloadUrl
+      DownloadLink = encodeURL nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
       LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = nugetObject.Dependencies |> Set.ofList }
@@ -963,7 +969,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                             let sourceUrl =
                                 if nugetPackage.Source.Url.EndsWith("/") then nugetPackage.Source.Url
                                 else nugetPackage.Source.Url + "/"
-                            Uri(Uri (encodeURL sourceUrl), encodeURL nugetPackage.DownloadLink)
+                            Uri(Uri sourceUrl, nugetPackage.DownloadLink)
                             
                     downloadUrl := downloadUri.ToString()
 

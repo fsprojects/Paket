@@ -1,4 +1,4 @@
-#### 5.0.0-alpha002 - 25.04.2017
+#### 4.9.0 - 26.04.2017
 * Fix dotnetcore integration.
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
@@ -7,6 +7,15 @@
 * BREAKS: `InstallModel` API
 * BUGFIX: Improved C++ support
 
+#### 4.8.4 - 26.04.2017
+* BUGFIX: Proper encoding "+" in package download url  - https://github.com/fsprojects/Paket/pull/2288
+
+#### 4.8.3 - 26.04.2017
+* BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
+
+#### 4.8.2 - 26.04.2017
+* BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
+
 #### 4.8.1 - 25.04.2017
 * BREAKING CHANGE: Made pushing changes from Git dependency repositories easier - https://github.com/fsprojects/Paket/pull/2226
     - Paket now clones git dependencies as bare repositories and configures clones under `paket-files` differently. Because of these incompatible changes, it is necessary to manually clear Paket local temp directory (under `%USERPROFILE%\.paket\git\db`) and respective `paket-files` directories after upgrading.
@@ -14,9 +23,6 @@
 #### 4.7.0 - 25.04.2017
 * Bootstrapper: Support NugetSource app-setting key - https://github.com/fsprojects/Paket/pull/2229
 * Unity3d support - https://github.com/fsprojects/Paket/pull/2268
-
-#### 4.6.3 - 24.04.2017
-* Unity3d version support - https://github.com/fsprojects/Paket/pull/2268
 
 #### 4.6.1 - 24.04.2017
 * Support for SourceLink v2 - https://github.com/fsprojects/Paket/pull/2200
