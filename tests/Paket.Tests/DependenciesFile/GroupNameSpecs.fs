@@ -1,4 +1,5 @@
-﻿module Paket.GroupNameSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.DependenciesFiles)>]
+module Paket.GroupNameSpecs
 
 open Paket
 open Paket.Domain

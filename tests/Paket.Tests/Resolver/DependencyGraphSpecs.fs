@@ -1,4 +1,5 @@
-﻿module Paket.DependencyGraphSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
+module Paket.DependencyGraphSpecs
 
 open Paket
 open NUnit.Framework

@@ -1,4 +1,5 @@
-﻿module Paket.AddingDependenciesSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
+module Paket.AddingDependenciesSpecs
 
 open Paket
 open NUnit.Framework

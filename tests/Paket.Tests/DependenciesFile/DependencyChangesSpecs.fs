@@ -1,3 +1,4 @@
+[<NUnit.Framework.TestFixture(Category=Category.DependenciesFiles)>]
 module Paket.DependenciesFile.DependencyChangesSpecs
 
 open Paket

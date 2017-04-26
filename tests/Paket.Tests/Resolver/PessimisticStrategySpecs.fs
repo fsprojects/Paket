@@ -1,3 +1,4 @@
+[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
 module Paket.Resolver.PessimisticStrategySpecs
 
 open Paket

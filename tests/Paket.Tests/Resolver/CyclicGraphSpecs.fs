@@ -1,4 +1,5 @@
-﻿module Paket.CyclicGraphSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
+module Paket.CyclicGraphSpecs
 
 open Paket
 open NUnit.Framework
