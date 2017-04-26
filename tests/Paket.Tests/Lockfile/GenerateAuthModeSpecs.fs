@@ -1,3 +1,4 @@
+[<NUnit.Framework.TestFixture(Category=Category.LockFile)>]
 module Paket.LockFile.GenerateAuthModeSpecs
 
 open Paket
