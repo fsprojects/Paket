@@ -1,3 +1,7 @@
+
+#### 4.8.2 - 26.04.2017
+* BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
+
 #### 4.8.1 - 25.04.2017
 * BREAKING CHANGE: Made pushing changes from Git dependency repositories easier - https://github.com/fsprojects/Paket/pull/2226
     - Paket now clones git dependencies as bare repositories and configures clones under `paket-files` differently. Because of these incompatible changes, it is necessary to manually clear Paket local temp directory (under `%USERPROFILE%\.paket\git\db`) and respective `paket-files` directories after upgrading.
