@@ -204,10 +204,8 @@ type Dependencies(dependenciesFileName: string) =
             alternativeProjectRoot = None)
 
 
-    member this.GenerateLoadScriptData (paketDependencies:string) (groups:string list) (frameworks:string list) (scriptTypes:string list) =
-        let dependenciesFile = DependenciesFile.ReadFromFile paketDependencies
-        let lockFile = this.GetLockFile ()
-        let depCache = DependencyCache (dependenciesFile, lockFile)
+    member __.GenerateLoadScriptData (paketDependencies:string) (groups:string list) (frameworks:string list) (scriptTypes:string list) =        
+        let depCache = DependencyCache paketDependencies
         LoadingScripts.ScriptGeneration.constructScriptsFromData depCache (groups|>List.map GroupName) frameworks scriptTypes
         |> List.ofSeq
 

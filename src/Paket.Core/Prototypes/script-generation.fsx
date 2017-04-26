@@ -49,7 +49,7 @@ let execBase = false
 if execBase then
     let projectRoot = __SOURCE_DIRECTORY__ +  "../../../../"
     let projectDependencies = projectRoot </> "paket.dependencies"
-    //Logging.verbose <- true
+    Logging.verbose <- true
     let projectCache = DependencyCache projectDependencies
 
     let projectRefs = projectCache.GetOrderedReferences Constants.MainDependencyGroup targetFramework
@@ -77,24 +77,14 @@ let loadRootInfo = DirectoryInfo loadRoot
 
 let depCache = DependencyCache  paketDependencies 
 
-let refs = depCache.GetOrderedReferences Constants.MainDependencyGroup targetFramework :> seq<_>
+//let refs = depCache.GetOrderedReferences Constants.MainDependencyGroup targetFramework :> seq<_>
 
 let depUtil = Dependencies.Locate paketDependencies
 ;;
 Logging.verbose <- true
 let rawgens = ScriptGeneration.constructScriptsFromData depCache [] ["net46"] ["fsx"] |> List.ofSeq
-;;
+
 let gens = depUtil.GenerateLoadScriptData paketDependencies [] ["net46"] ["fsx"] |> List.ofSeq
 ;;
-//gens |> Seq.map (fun x -> 
-//    (Path.Combine (rootInfo.FullName,x.PartialPath)) + "\n\n" +
-//    (x.Render rootInfo) + "\n\n ---------------- \n\n")
-//    |> printSqs
-//;;
-//loadRootInfo.Create();;
-//;;
-//gens |> Seq.iter (fun sc -> sc.Save rootInfo)
-//;;
-//printSqs gens
-//;;
+
 

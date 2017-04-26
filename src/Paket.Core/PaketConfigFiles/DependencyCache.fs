@@ -25,6 +25,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
     let mutable orderedGroupCache = ConcurrentDictionary<GroupName,ResolvedPackage list>()
     let mutable orderedGroupReferences = ConcurrentDictionary<(GroupName * FrameworkIdentifier),ReferenceType list>()
 
+
     let getLeafPackagesGeneric getPackageName getDependencies (knownPackages:Set<_>) openList =
         
         let leafPackages =
@@ -61,6 +62,19 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
             (fun (p:PackageResolver.ResolvedPackage) -> p.Name) 
             (fun p -> p.Dependencies |> Seq.map (fun (n,_,_) -> n))
 
+
+    let loadPackages () =
+        let packs = 
+            lockFile.GetResolvedPackages() |> Seq.map (fun kvp -> async {
+                let groupName, packages = kvp.Key,kvp.Value
+                let orderedPackages = getPackageOrderResolvedPackage kvp.Value
+                orderedGroupCache.TryAdd (groupName,orderedPackages) |> ignore
+            }) |> Array.ofSeq
+        Async.Parallel packs 
+        |> Async.RunSynchronously 
+        |> ignore
+    
+    do loadPackages ()
 
     //let getPackageOrderFromLockFile (lockFile:LockFile) =
     //    lockFile.GetResolvedPackages ()
@@ -106,7 +120,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
 
             let assemblyFilePerAssemblyDef = 
                 libs |> Seq.map (fun (f:FileInfo) -> 
-                    AssemblyDefinition.ReadAssembly(f.FullName:string), f)
+                    AssemblyDefinition.ReadAssembly (f.FullName:string), f)
                 |> dict
 
             let assemblies = 
@@ -162,27 +176,14 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
 
     member __.LockFile = lockFile
     member __.DependenciesFile = dependencyFile
-    member __.InstallModels () = installModelCache|> Seq.map(fun x->x.Value)|>List.ofSeq
-    member __.Nuspecs () = nuspecCache|> Seq.map(fun x->x.Value)|>List.ofSeq
+    
+    member __.InstallModels () = 
+        installModelCache |> Seq.map (fun x->x.Value) |>List.ofSeq
+    
+    member __.Nuspecs () = 
+        nuspecCache |> Seq.map (fun x->x.Value) |>List.ofSeq
 
-    member __.OrderedGroups () =  orderedGroupCache|> Seq.map (fun x -> x.Key,x.Value)|> Map.ofSeq
-    member __.OrderedGroups (groupName:GroupName) = 
-         tryGet groupName orderedGroupCache |> Option.defaultValue []
-        
-    member self.ClearLoaded () = loadedGroups.Clear ()
-
-    member self.LoadPackages () =
-        let packs = 
-            lockFile.GetResolvedPackages() |> Seq.map (fun kvp -> async {
-                let groupName, packages = kvp.Key,kvp.Value
-                let orderedPackages = getPackageOrderResolvedPackage kvp.Value
-                orderedGroupCache.TryAdd (groupName,orderedPackages) |> ignore
-            }) |> Array.ofSeq
-        Async.Parallel packs 
-        |> Async.RunSynchronously 
-        |> ignore
-
-    member self.SetupGroup (groupName:GroupName) : bool =
+    member __.SetupGroup (groupName:GroupName) : bool =
         if loadedGroups.Contains groupName then true else
         match tryGet groupName  orderedGroupCache with
         | None -> false
@@ -208,11 +209,27 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
             loadedGroups.Add groupName |> ignore
             true
 
-    new (dependencyFilePath:string) as self = 
+    member self.OrderedGroups () =
+        orderedGroupCache |> Seq.map (fun x -> 
+            self.SetupGroup x.Key |> ignore
+            x.Key, x.Value
+        )|> Map.ofSeq
+    
+    member self.OrderedGroups (groupName:GroupName) = 
+        self.SetupGroup groupName |> ignore
+        tryGet groupName orderedGroupCache |> Option.defaultValue []
+        
+    member self.ClearLoaded () = loadedGroups.Clear ()
+
+
+
+
+
+    new (dependencyFilePath:string) = 
         let depFile = DependenciesFile.ReadFromFile dependencyFilePath 
         let lockFile = depFile.FindLockfile() |> fun path -> path.FullName |> LockFile.LoadFrom
-        DependencyCache (depFile,lockFile) then 
-            self.LoadPackages()
+        DependencyCache (depFile,lockFile)
+
  
     member __.InstallModel groupName packageName = tryGet (groupName, packageName)  installModelCache
     
