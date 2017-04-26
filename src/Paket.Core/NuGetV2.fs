@@ -221,7 +221,7 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
                     let s2 = FrameworkRestriction.AtLeast(DotNetStandard alias)
                     if packages |> Array.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s || r = s2)) |> not then
                         yield n,v,[s2]
-                   
+
                  if standardAliases = [] && not <| Array.exists isMatch packages then
                      for p in p.Split([|'+'; '-'|]) do
                         match FrameworkDetection.Extract p with
@@ -265,12 +265,12 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
             return parseODataDetails(url,nugetURL,packageName,version,raw)
     }
 
-let urlSimilarToTfsOrVsts url = 
+let urlSimilarToTfsOrVsts url =
     String.containsIgnoreCase "visualstudio.com" url || (String.containsIgnoreCase "/_packaging/" url && String.containsIgnoreCase "/nuget/v" url)
 
 /// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
-    let queryPackagesProtocol (packageName:PackageName) = 
+    let queryPackagesProtocol (packageName:PackageName) =
         async {
             let url = sprintf "%s/Packages(Id='%O',Version='%O')" nugetURL packageName version
             let! response = safeGetFromUrl(auth,url,acceptXml)
@@ -278,9 +278,9 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
             let! raw =
                 match response with
                 | Some(r) -> async { return r }
-                | _  when  
-                        String.containsIgnoreCase "myget.org" nugetURL || 
-                        String.containsIgnoreCase "nuget.org" nugetURL || 
+                | _  when
+                        String.containsIgnoreCase "myget.org" nugetURL ||
+                        String.containsIgnoreCase "nuget.org" nugetURL ||
                         String.containsIgnoreCase "visualstudio.com" nugetURL ->
                     failwithf "Could not get package details for %O from %s" packageName nugetURL
                 | _ ->
@@ -302,7 +302,7 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                 return! queryPackagesProtocol packageName
             else
                 return result
-        with _ -> 
+        with _ ->
             try
                 return! queryPackagesProtocol packageName
             with _ ->
@@ -341,7 +341,7 @@ let fixArchive fileName =
         fixDatesInArchive fileName
 
 let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
-    if not <| Directory.Exists directory then 
+    if not <| Directory.Exists directory then
         failwithf "The package %O %O can't be found in %s. (The directory doesn't exist.)%sPlease check the feed definition in your paket.dependencies file." packageName version directory Environment.NewLine
     let v1 = FileInfo(Path.Combine(directory, sprintf "%O.%O.nupkg" packageName version))
     if v1.Exists then v1 else
@@ -428,7 +428,7 @@ let rec private cleanup (dir : DirectoryInfo) =
                 Directory.Move(sub.FullName, newName)
             with
             | exn -> failwithf "Could not move %s to %s%sMessage: %s" sub.FullName newName Environment.NewLine exn.Message
-                
+
             cleanup (DirectoryInfo newName)
         else
             cleanup sub
@@ -676,7 +676,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
             let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
             return Some(source,result) }
 
-    let getPackageDetails force =
+    let getPackageDetails () =
         sources
         |> List.sortBy (fun source ->
             match source with  // put local caches to the end
@@ -723,18 +723,15 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         |> List.tryPick Async.RunSynchronously
 
     let source,nugetObject =
-        match getPackageDetails force with
+        match getPackageDetails() with
         | None ->
-            match getPackageDetails true with
-            | None ->
-                match sources |> List.map (fun (s:PackageSource) -> s.ToString()) with
-                | [source] ->
-                    failwithf "Couldn't get package details for package %O %O on %O." packageName version source
-                | [] ->
-                    failwithf "Couldn't get package details for package %O %O, because no sources were specified." packageName version
-                | sources ->
-                    failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
-            | Some packageDetails -> packageDetails
+            match sources |> List.map (fun (s:PackageSource) -> s.ToString()) with
+            | [source] ->
+                failwithf "Couldn't get package details for package %O %O on %O." packageName version source
+            | [] ->
+                failwithf "Couldn't get package details for package %O %O, because no sources were specified." packageName version
+            | sources ->
+                failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
         | Some packageDetails -> packageDetails
 
     let newName = PackageName nugetObject.PackageName
@@ -951,7 +948,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                                 if nugetPackage.Source.Url.EndsWith("/") then nugetPackage.Source.Url
                                 else nugetPackage.Source.Url + "/"
                             Uri(Uri (encodeURL sourceUrl), encodeURL nugetPackage.DownloadLink)
-                            
+
                     downloadUrl := downloadUri.ToString()
 
                     if authenticated && verbose then
@@ -1022,7 +1019,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                       | Some(Credentials(_)) -> true
                       | _ -> false)
                         -> do! download false (attempt + 1)
-                | exn when String.IsNullOrWhiteSpace !downloadUrl -> failwithf "Could not download %O %O.%s    %s" packageName version Environment.NewLine exn.Message 
+                | exn when String.IsNullOrWhiteSpace !downloadUrl -> failwithf "Could not download %O %O.%s    %s" packageName version Environment.NewLine exn.Message
                 | exn -> failwithf "Could not download %O %O from %s.%s    %s" packageName version !downloadUrl Environment.NewLine exn.Message }
 
     async {
