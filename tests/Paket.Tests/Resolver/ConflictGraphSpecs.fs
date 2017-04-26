@@ -1,4 +1,5 @@
-﻿module Paket.ConflictGraphSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
+module Paket.ConflictGraphSpecs
 
 open Paket
 open Paket.Requirements

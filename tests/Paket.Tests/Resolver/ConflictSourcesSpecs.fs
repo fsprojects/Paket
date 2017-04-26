@@ -1,4 +1,5 @@
-﻿module Paket.Resolver.ConflictSourcesSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
+module Paket.Resolver.ConflictSourcesSpecs
 
 open Paket
 open NUnit.Framework

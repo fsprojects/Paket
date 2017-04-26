@@ -1,4 +1,5 @@
-﻿module DependencyGroupsAndRestrictions
+﻿[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
+module DependencyGroupsAndRestrictions
 
 open Paket
 open NUnit.Framework

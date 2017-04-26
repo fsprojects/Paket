@@ -1,4 +1,5 @@
-﻿module GlobalOptimisticStrategySpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
+module GlobalOptimisticStrategySpecs
 
 open Paket
 open NUnit.Framework

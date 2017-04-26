@@ -1,4 +1,5 @@
-﻿module Resolver.PropertyTestGenerators
+﻿[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
+module Resolver.PropertyTestGenerators
 
 open Paket
 open NUnit.Framework

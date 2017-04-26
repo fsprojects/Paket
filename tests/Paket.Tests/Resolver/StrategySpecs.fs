@@ -1,4 +1,5 @@
-﻿module StrategySpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Resolver)>]
+module StrategySpecs
 
 open Paket
 open NUnit.Framework
