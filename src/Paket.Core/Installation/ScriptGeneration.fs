@@ -23,6 +23,7 @@ module ScriptGeneration =
     let inline (</>) p1 p2 = (?<-) PathCombine p1 p2
 
     open System.Collections.Generic
+    open Paket.Logging
   
     type ScriptType =
         | CSharp | FSharp
@@ -87,6 +88,8 @@ module ScriptGeneration =
         Input : ReferenceType seq
         PartialPath : string
     } with
+        /// use the provided directory to compute the relative paths for the script's contents
+        /// and construct the 
         member self.Render (directory:DirectoryInfo) =
             let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
 
@@ -107,10 +110,12 @@ module ScriptGeneration =
                      sprintf """#r "%s" """ name
         
             self.Input |> Seq.map refString |> String.concat "\n"
-
+        
+        /// Save the script in '<directory>/.paket/load/<script>'
         member self.Save (directory:DirectoryInfo) = 
             directory.Create()
             let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
+            verbosefn "generating script - %s" scriptFile.FullName
             scriptFile.Directory.Create()
             let text = self.Render directory
             File.WriteAllText (scriptFile.FullName, text)
@@ -127,20 +132,18 @@ module ScriptGeneration =
 
     /// Generate a include scripts for all packages defined in paket.dependencies,
     /// if a package is ordered before its dependencies this function will throw.
-    let generateScriptsForRootFolder (context:PaketContext as ctx) =
+    let generateScriptContent (context:PaketContext as ctx) =
         
         let scriptType, groups, dependenciesFile, lockFile = 
             ctx.ScriptType, ctx.Groups, ctx.Cache.DependenciesFile, ctx.Cache.LockFile
         let isDefaultFramework, framework = ctx.DefaultFramework
 
         // -- LOAD SCRIPT FORMATTING POINT --
-        let packagesFolder =Constants.PackagesFolderName
-        
-        // -- LOAD SCRIPT FORMATTING POINT --
         let loadScriptsRootFolder = 
             Constants.PaketFolderName </> "load"
 
         // -- LOAD SCRIPT FORMATTING POINT --
+        /// Create the path for a script that will load all of the packages in the provided Group
         let getGroupFile group = 
             let folder = 
                 let group = if group = Constants.MainDependencyGroup then String.Empty else (string group)
@@ -149,11 +152,6 @@ module ScriptGeneration =
             let fileName = (sprintf "%s.group.%s" (string group) scriptType.Extension).ToLowerInvariant()
             folder </> fileName
               
-        let packagesOrGroupFolder groupName =
-            if groupName = Constants.MainDependencyGroup then packagesFolder
-            else packagesFolder </> groupName 
-       
-
        // -- LOAD SCRIPT FORMATTING POINT --
         let scriptFolder groupName (package: PackageResolver.ResolvedPackage) =
             let group = if groupName = Constants.MainDependencyGroup then String.Empty else (string groupName)
@@ -166,7 +164,8 @@ module ScriptGeneration =
                     
 
         let scriptContent =
-            ctx.Cache.OrderedGroups() |> Map.map (fun groupName packages ->
+            ctx.Cache.OrderedGroups() |> Seq.choose (fun kvp ->
+                let groupName,packages = kvp.Key,kvp.Value
                 if groups = [] || List.exists ((=) groupName) groups then
                     // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
                     ((Map.empty,[]),packages)
@@ -202,25 +201,24 @@ module ScriptGeneration =
                                 {   PartialPath = scriptFile
                                     Lang = scriptType
                                     Input = pieces 
-                                } ::scriptFiles
-                            (knownScripts, rendered)
-                    ) |> fun (_,sfs) -> sfs 
-                else []
-            ) |> Seq.collect (fun x -> x.Value)
-
-        let isDefaultFramework, framework = ctx.DefaultFramework
-        
-        let content =
+                                } 
+                            (knownScripts, rendered::scriptFiles)
+                    ) |> fun (_,sfs) -> Some (groupName, sfs )
+                else None
+            ) 
+        // generate scripts to load all packages within a group
+        let groupScriptContent =
             ctx.Groups |> Seq.map (fun group ->
                 let scriptFile = getGroupFile  group
                 let pieces = ctx.Cache.GetOrderedReferences group framework
-                
-                {   PartialPath = scriptFile
-                    Lang = ctx.ScriptType 
-                    Input = pieces 
-                } : ScriptContent
+                let scriptContent =
+                    {   PartialPath = scriptFile
+                        Lang = ctx.ScriptType 
+                        Input = pieces 
+                    } : ScriptContent
+                group,[scriptContent]
             )
-        Seq.append scriptContent content
+        Seq.append scriptContent groupScriptContent
 
 
     let constructScriptsFromData (depCache:DependencyCache) (groups:GroupName list) providedFrameworks providedScriptTypes =
@@ -272,27 +270,36 @@ module ScriptGeneration =
         let scriptData =
             seq{  
                 for framework, isDefaultFramework in Seq.distinct frameworksToGenerate ->
-                let msg =
-                    match groups with
-                    | []  -> framework.ToString ()
-                    | [g] -> sprintf "%O in group %O" framework g
-                    | _   -> sprintf "%O in groups: %s" framework (String.Join(", ", groups.ToString()))
-
-                Logging.tracefn "Generating load scripts for framework %s" msg
-
                 workaround () // https://github.com/Microsoft/visualfsharp/issues/759#issuecomment-162243299
                 seq{ 
                     for scriptType in scriptTypesToGenerate ->
-                        generateScriptsForRootFolder {
+                        let content = generateScriptContent {
                             Cache = depCache
                             ScriptType = scriptType  
                             RootDir = DirectoryInfo lockFile.RootPath
                             Groups = groups 
                             DefaultFramework = isDefaultFramework,framework
                         }
-                } |> Seq.concat
+                        (framework, content)
+                } 
             } |> Seq.concat
-        scriptData
+
+        if scriptData = Seq.empty then 
+            tracefn "Could not generate any scripts"
+        else 
+            for framework, grouped in scriptData do
+                tracefn "Generating load scripts for framework - %O" framework
+                for group,scriptContent in grouped do 
+                    if grouped = Seq.empty then 
+                        tracefn "Could not generate any scripts for group '%O'" group
+                    else
+                        tracefn "[ Group - %O]" group  
+                        scriptContent |> Seq.iter (fun sc -> tracefn " - %O" sc.PartialPath)
+        let generated =
+            scriptData |> Seq.collect (fun (_fw,groupedContent) -> 
+                groupedContent |> Seq.collect snd
+            )
+        generated
     
 
 

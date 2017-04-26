@@ -19,6 +19,9 @@ type Dependencies(dependenciesFileName: string) =
                 groupName.ToString(),packageName.ToString(),kv.Value.Version.ToString())
         |> Seq.toList
         
+
+    member val Verbose = Logging.verbose with get, set
+
     /// Clears the NuGet cache
     static member ClearCache() =
         let emptyDir path =
@@ -201,18 +204,20 @@ type Dependencies(dependenciesFileName: string) =
             alternativeProjectRoot = None)
 
 
-    static member GenerateLoadScriptData (groups:string list) (frameworks:string list) (scriptTypes:string list) =
-        let depsUtil = Dependencies.Locate()
-        let dependenciesFile = depsUtil.GetDependenciesFile()
-        let lockFile = depsUtil.GetLockFile() 
-        let depCache = DependencyCache (dependenciesFile,lockFile)
+    member this.GenerateLoadScriptData (paketDependencies:string) (groups:string list) (frameworks:string list) (scriptTypes:string list) =
+        let dependenciesFile = DependenciesFile.ReadFromFile paketDependencies
+        verbosefn "Generating Load Scripts from \n - %s" dependenciesFile.FileName
+        let lockFile = this.GetLockFile ()
+        verbosefn "Using LockFile \n - %s" lockFile.FileName
+        let depCache = DependencyCache (dependenciesFile, lockFile)
         LoadingScripts.ScriptGeneration.constructScriptsFromData depCache (groups|>List.map GroupName) frameworks scriptTypes
+        |> List.ofSeq
 
 
-    static member GenerateLoadScripts (groups:string list) (frameworks:string list) (scriptTypes:string list)  =
-        Dependencies.GenerateLoadScriptData groups frameworks scriptTypes 
-        |> Seq.iter (fun sd -> 
-            let rootDir = Dependencies.Locate().RootDirectory
+    member this.GenerateLoadScripts (groups:string list) (frameworks:string list) (scriptTypes:string list)  =
+        this.GenerateLoadScriptData this.DependenciesFile groups frameworks scriptTypes 
+        |> List.iter (fun sd -> 
+            let rootDir = this.RootDirectory
             Directory.CreateDirectory <| Path.Combine (Constants.PaketFolderName,"load") |> ignore
             let scriptPath = Path.Combine (rootDir.FullName , sd.PartialPath)
             tracefn "scriptpath - %s" scriptPath

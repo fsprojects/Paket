@@ -376,7 +376,7 @@ let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks = results.GetResults <@ GenerateLoadScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateLoadScriptsArgs.ScriptType @>
     let providedGroups = defaultArg (results.TryGetResult<@ GenerateLoadScriptsArgs.Groups @>) [] 
-    Dependencies.GenerateLoadScripts providedGroups providedFrameworks providedScriptTypes
+    Dependencies.Locate().GenerateLoadScripts providedGroups providedFrameworks providedScriptTypes
 
 
 let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =

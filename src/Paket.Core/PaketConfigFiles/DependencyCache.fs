@@ -6,6 +6,7 @@ open System.Collections.Concurrent
 open PackageResolver
 open Mono.Cecil
 open System.Collections.Generic
+open Logging
 
 // Needs an update so that all work is not done at once
 // computation should be done on a per group/per framework basis
@@ -185,18 +186,21 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
         if loadedGroups.Contains groupName then true else
         match tryGet groupName  orderedGroupCache with
         | None -> false
-        | Some packages ->
+        | Some resolvedPackageList ->
             let exprs =
-                self.OrderedGroups groupName |> List.map (fun package -> async {
+                if resolvedPackageList <> [] then
+                    verbosefn "[ Loading packages from group - %O ]\n" groupName
+                resolvedPackageList |> List.map (fun package -> async {
                     let packageName = package.Name
                     let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.GetCompareString()
                     let folder = DirectoryInfo(sprintf "%s/packages%s/%O" lockFile.RootPath groupFolder packageName)
-                    let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" lockFile.RootPath groupFolder packageName packageName)
-                    printfn "%s" nuspec.FullName
+                    let nuspecShort = sprintf "/packages%s/%O/%O.nuspec" groupFolder packageName packageName
+                    verbosefn " -- %s" nuspecShort
+                    let nuspec = FileInfo <| Path.Combine (lockFile.RootPath,nuspecShort)
                     let nuspec = Nuspec.Load nuspec.FullName
                     nuspecCache.TryAdd((package.Name,package.Version),nuspec)|>ignore
                     let files = NuGetV2.GetLibFiles(folder.FullName)                    
-                    let model = InstallModel.CreateFromLibs(packageName, package.Version, [], files, [], [], nuspec)
+                    let model = InstallModel.CreateFromLibs(packageName, package.Version, [], files, [], [], nuspec)                    
                     installModelCache.TryAdd((groupName,package.Name) , model) |> ignore                
                 }) |> Array.ofSeq
             Async.Parallel exprs
