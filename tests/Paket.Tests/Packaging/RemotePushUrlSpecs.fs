@@ -1,4 +1,5 @@
-﻿module Paket.RemotePushUrlSpecs
+﻿[<NUnit.Framework.TestFixture(Category="Packaging")>]
+module Paket.RemotePushUrlSpecs
 
 open Paket.RemoteUpload
 open NUnit.Framework

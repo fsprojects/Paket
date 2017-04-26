@@ -1,4 +1,5 @@
-﻿module Paket.TemplateFile.Test
+﻿[<NUnit.Framework.TestFixture(Category="Packaging")>]
+module Paket.TemplateFile.Test
 
 open System.IO
 open Paket

@@ -1,4 +1,5 @@
-﻿module Paket.PackagingProcess.Test
+﻿[<NUnit.Framework.TestFixture(Category="Packaging")>]
+module Paket.PackagingProcess.Test
 
 open System.IO
 open System.Reflection

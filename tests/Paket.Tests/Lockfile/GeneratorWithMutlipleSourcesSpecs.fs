@@ -3,7 +3,7 @@ open Paket
 open NUnit.Framework
 
 [<TestFixture (Category=Category.LockFile)>]
-module.GenerationWithMutlipleSourcesSpecs =
+module GenerationWithMutlipleSourcesSpecs =
 
     open Paket
     open NUnit.Framework

@@ -1,4 +1,5 @@
-﻿module Paket.NuspecWriterSpecs
+﻿[<NUnit.Framework.TestFixture(Category="Packaging")>]
+module Paket.NuspecWriterSpecs
 
 open System.IO
 open Paket
