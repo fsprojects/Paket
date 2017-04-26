@@ -458,11 +458,21 @@ let ``should read http source file from config without quotes with file specs``(
 
 [<Test>]
 let ``should read http source file from config without quotes with file specs and project and query string after filename``() =
-    let config = """http http://server-stash:7658/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw Rabbit.fs project"""
+    let config = """http http://server-stash:7658/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw
+                    http http://server-stash:7658/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw Rabbit.fs project"""
     let dependencies = DependenciesFile.FromCode(config)
     dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
     |> shouldEqual
         [ { Owner = "server-stash_7658"
+            Project = ""
+            Name = "Rabbit.fs"
+            Origin = ModuleResolver.Origin.HttpLink "http://server-stash:7658"
+            Version = VersionRestriction.Concrete "/projects/proj1/repos/repo1/browse/Source/SolutionFolder/Rabbit.fs?at=a5457f3d811830059cd39d583f264eab340c273d&raw"
+            Command = None
+            OperatingSystemRestriction = None
+            PackagePath = None
+            AuthKey = None }
+          { Owner = "server-stash_7658"
             Project = ""
             Name = "Rabbit.fs"
             Origin = ModuleResolver.Origin.HttpLink "http://server-stash:7658"
