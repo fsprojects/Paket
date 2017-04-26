@@ -49,34 +49,44 @@ module ScriptGeneration =
         | DoNotGenerate
         | Generate of lines : ReferenceType list
 
+    // TODO - For FSI we don't want to load FSharp.Core unless '--noframework' has been specified
+    //        we currently don't address this situation well
+    let filterFSharpRefTypes (scriptType:ScriptType) (refls:ReferenceType list) =
+        refls |> List.filter ( fun ref ->
+            if scriptType = ScriptType.FSharp then 
+                match ref with 
+                | Assembly info -> not <| String.containsIgnoreCase "FSharp.Core" info.Name
+                | Framework info -> not <|  String.containsIgnoreCase "FSharp.Core" info
+                | LoadScript info -> not <| String.containsIgnoreCase "FSharp.Core" info.Name
+            else true
+        )
 
     /// default implementation of F# include script generator
     let generateScript (scriptType:ScriptType) (input: ScriptGenInput) =
         let packageName = input.PackageName.GetCompareString()
-
-        let depLines =
-            input.DependentScripts |> List.map LoadScript
         
-        let filterMscorlib assemblies =
-            // For F# we never want to reference mscorlib directly (some nuget package state it as a dependency)
-            // reason is that having it referenced more than once fails in FSI
-            assemblies |> Seq.filter ( function  "mscorlib" -> false | _ -> true)
+        let lines =
+            if String.equalsIgnoreCase packageName "FSharp.Core" then [] else
 
-        let frameworkRefLines =
-            match scriptType with 
-            | CSharp -> input.FrameworkReferences :> seq<_>
-            | FSharp -> input.FrameworkReferences |> filterMscorlib
-            |> Seq.map Framework
-            |> Seq.toList
+            let scriptRefs =
+                input.DependentScripts |> List.map LoadScript
 
-        let dllLines =
-            match scriptType, packageName.ToLowerInvariant() with
-            | FSharp, "fsharp.core" -> []
-            | _ -> 
-                input.OrderedDllReferences 
-                |> List.map Assembly
+            let filterForFSI assemblies =
+                // For F# we never want to reference mscorlib directly (some nuget package state it as a dependency)
+                // reason is that having it referenced more than once fails in FSI
+                assemblies |> Seq.filter (function "mscorlib" -> false | _ -> true)
 
-        let lines = List.concat [depLines; frameworkRefLines; dllLines]
+            let frameworkRefLines =
+                match scriptType with 
+                | CSharp -> input.FrameworkReferences :> seq<_>
+                | FSharp -> input.FrameworkReferences |> filterForFSI
+                |> Seq.map Framework
+                |> Seq.toList
+        
+            let dllLines = input.OrderedDllReferences |> List.map Assembly
+        
+            List.concat [scriptRefs; frameworkRefLines; dllLines]
+            |> filterFSharpRefTypes scriptType
         
         match lines with
         | [] -> DoNotGenerate
@@ -178,8 +188,12 @@ module ScriptGeneration =
                             |> List.ofSeq
                             |> List.map FileInfo
 
-                        let dllFiles = ctx.Cache.GetOrderedPackageReferences groupName package.Name framework
-                        let frameworkRefs = ctx.Cache.GetOrderedFrameworkReferences groupName package.Name framework|> List.map (fun ref -> ref.Name)
+                        let dllFiles = 
+                            ctx.Cache.GetOrderedPackageReferences groupName package.Name framework
+
+                        let frameworkRefs = 
+                            ctx.Cache.GetOrderedFrameworkReferences groupName package.Name framework
+                            |> List.map (fun ref -> ref.Name)
 
                         let scriptInfo = {
                             PackageName                  = package.Name
@@ -207,7 +221,7 @@ module ScriptGeneration =
         let groupScriptContent =
             ctx.Groups |> List.map (fun group ->
                 let scriptFile = getGroupFile  group
-                let pieces = ctx.Cache.GetOrderedReferences group framework
+                let pieces = ctx.Cache.GetOrderedReferences group framework |> filterFSharpRefTypes ctx.ScriptType
                 let scriptContent =
                     {   PartialPath = scriptFile
                         Lang = ctx.ScriptType 

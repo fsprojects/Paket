@@ -56,15 +56,16 @@ if execBase then
     let projectGens = ScriptGeneration.constructScriptsFromData projectCache [] [] ["fsx"] |> List.ofSeq
     ()
 ;;
+let scenario = "fsharpcore"
 
 let paketRoot =
-    Path.Combine(__SOURCE_DIRECTORY__,"../../../integrationtests/scenarios/loading-scripts/framework-specified/temp")
+    Path.Combine(__SOURCE_DIRECTORY__,sprintf "../../../integrationtests/scenarios/loading-scripts/%s/temp" scenario)
     |> Path.GetFullPath
 
 printfn  "%s" paketRoot
 let paketDependencies = paketRoot </> "paket.dependencies"
 
-prepare "framework-specified"
+prepare scenario
 ;;
 let text = File.ReadAllText paketDependencies
 Dependencies.Install (text, paketRoot)
@@ -82,7 +83,7 @@ let depCache = DependencyCache  paketDependencies
 let depUtil = Dependencies.Locate paketDependencies
 ;;
 Logging.verbose <- true
-let rawgens = ScriptGeneration.constructScriptsFromData depCache [] ["net46"] [] |> List.ofSeq
+let rawgens = ScriptGeneration.constructScriptsFromData depCache [] ["net46"] ["fsx"] |> List.ofSeq
 ;;
 //let gens = depUtil.GenerateLoadScriptData paketDependencies [] ["net46"] ["fsx"] |> List.ofSeq
 ;;

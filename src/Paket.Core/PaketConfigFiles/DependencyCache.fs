@@ -17,6 +17,10 @@ type ReferenceType =
     | Assembly  of FileInfo
     | Framework of string
     | LoadScript of FileInfo
+    override self.ToString () = self |> function
+        | Assembly info -> sprintf "Assembly: '%s'" info.FullName
+        | Framework info -> sprintf "Framework: '%s'" info
+        | LoadScript info -> sprintf "LoadScript: '%s'" info.FullName
 
 type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
     let loadedGroups = HashSet<GroupName>()
