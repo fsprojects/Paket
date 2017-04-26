@@ -1,3 +1,5 @@
+#### 4.8.3 - 26.04.2017
+* BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
 
 #### 4.8.2 - 26.04.2017
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
