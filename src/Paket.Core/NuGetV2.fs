@@ -735,13 +735,19 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
             | Some packageDetails -> packageDetails
         | Some packageDetails -> packageDetails
 
+    let encodeURL (url:string) = 
+        let segments = url.Split [|'?'|]
+        let baseUrl = segments.[0]
+        Array.set segments 0 (baseUrl.Replace("+", "%2B"))
+        ("?", segments) |> System.String.Join
+
     let newName = PackageName nugetObject.PackageName
     if packageName <> newName then
         failwithf "Package details for %O are not matching requested package %O." newName packageName
 
     { Name = PackageName nugetObject.PackageName
       Source = source
-      DownloadLink = nugetObject.DownloadUrl
+      DownloadLink = encodeURL nugetObject.DownloadUrl
       Unlisted = nugetObject.Unlisted
       LicenseUrl = nugetObject.LicenseUrl
       DirectDependencies = nugetObject.Dependencies |> Set.ofList }
@@ -940,7 +946,6 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                         tracefn "Downloading %O %O%s" packageName version (if groupName = Constants.MainDependencyGroup then "" else sprintf " (%O)" groupName)
                     let nugetPackage = GetPackageDetails alternativeProjectRoot root force [source] groupName packageName version
 
-                    let encodeURL (url:string) = url.Replace("+","%2B")
                     let downloadUri =
                         if Uri.IsWellFormedUriString(nugetPackage.DownloadLink, UriKind.Absolute) then
                             Uri nugetPackage.DownloadLink
@@ -948,7 +953,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                             let sourceUrl =
                                 if nugetPackage.Source.Url.EndsWith("/") then nugetPackage.Source.Url
                                 else nugetPackage.Source.Url + "/"
-                            Uri(Uri (encodeURL sourceUrl), encodeURL nugetPackage.DownloadLink)
+                            Uri(Uri sourceUrl, nugetPackage.DownloadLink)
                             
                     downloadUrl := downloadUri.ToString()
 
