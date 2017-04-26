@@ -193,7 +193,7 @@ module SemVer =
                     match firstDash, plusIndex with
                     | -1, _ -> ""
                     | d, p when p = -1 -> version.Substring(d+1)
-                    | d, p -> version.Substring(d+1, (version.Length - 1 - p) )
+                    | d, p -> version.Substring(d+1, (p - 1 - d) )
             
                 /// there can only be one piece of build metadata, and it is signified by a + and then any number of dot-separated alpha-numeric groups.
                 /// this just greedily takes the whole remaining string :(
