@@ -84,13 +84,11 @@ let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 
 let LocalRootForTempData =
     getEnvDir Environment.SpecialFolder.UserProfile 
-    |> Option.orElse (
-        getEnvDir Environment.SpecialFolder.LocalApplicationData 
-    )|> Option.defaultValue (
+    |> Option.orElse (getEnvDir Environment.SpecialFolder.LocalApplicationData)
+    |> Option.defaultValue (
         let fallback = Path.GetFullPath ".paket"
         Logging.traceWarnfn 
-            "Could not detect a root for our (user specific) temporary files.\
-             Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead" fallback
+            "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead" fallback
         fallback
     )
 
@@ -111,7 +109,6 @@ let MagicUnlistingDate = DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(
 
 /// The NuGet cache folder.
 let NuGetCacheFolder =
-    // 
     getEnVar "NuGetCachePath" 
     |> Option.bind (fun cachePath ->
         let di = DirectoryInfo cachePath
