@@ -9,7 +9,7 @@ NUGET
       FSharp.Core  - framework: >= net10, netstandard10, netstandard11, netstandard12, netstandard13, netstandard14, netstandard15
       FSharp.Core (>= 4.0.1.7-alpha) - framework: >= netstandard16
       NETStandard.Library (>= 1.6) - framework: >= netstandard16
-    FSharp.Compiler.Tools (4.1.5) - content: none, framework: >= net40, >= netstandard13
+    FSharp.Compiler.Tools (4.1.15) - content: none, framework: >= net40, >= netstandard13
     FSharp.Core (4.1.12) - redirects: force
       System.Collections (>= 4.0.11) - framework: >= netstandard16
       System.Console (>= 4.0) - framework: >= netstandard16
@@ -35,8 +35,8 @@ NUGET
       System.Threading.ThreadPool (>= 4.0.10) - framework: >= netstandard16
       System.Threading.Timer (>= 4.0.1) - framework: >= netstandard16
       System.ValueTuple (>= 4.3) - framework: >= net10, netstandard10, netstandard11, netstandard12, netstandard13, netstandard14, netstandard15
-    FSharp.NET.Sdk (1.0.2) - content: none
-      FSharp.Compiler.Tools (>= 4.1.1) - framework: >= net40, >= netstandard13
+    FSharp.NET.Sdk (1.0.3) - content: none
+      FSharp.Compiler.Tools (>= 4.1.15) - framework: >= net40, >= netstandard13
     Libuv (1.9.1) - framework: netcore10, netcore11
     Microsoft.CodeAnalysis.Common (2.1) - framework: netcore10, netcore11
     Microsoft.CodeAnalysis.CSharp (2.1) - framework: netcore10, netcore11
@@ -747,14 +747,14 @@ NUGET
       System.Xml.XPath (>= 4.3) - framework: >= net46, >= netstandard13
 GITHUB
   remote: fsharp/FAKE
-    src/app/FakeLib/Globbing/Globbing.fs (dad2dec00064233e9742b458d96fe64708f3be8a)
+    src/app/FakeLib/Globbing/Globbing.fs (b3c24620153e6bd20ab48abec1b5a94fabc968f9)
   remote: fsprojects/FSharp.TypeProviders.StarterPack
     src/AssemblyReader.fs (45f4d8780b3213ef61ba4fccc716cd495565c1a4)
 GROUP Build
 CONTENT: NONE
 NUGET
   remote: https://www.nuget.org/api/v2
-    FAKE (4.58.6)
+    FAKE (4.59.1)
     FSharp.Compiler.Service (2.0.0.6)
     FSharp.Formatting (2.14.4)
       FSharp.Compiler.Service (2.0.0.6)
@@ -772,7 +772,7 @@ NUGET
       Microsoft.Net.Http  - framework: net10, net11, net20, net30, net35, net40, net40-full
 GITHUB
   remote: fsharp/FAKE
-    modules/Octokit/Octokit.fsx (dad2dec00064233e9742b458d96fe64708f3be8a)
+    modules/Octokit/Octokit.fsx (b3c24620153e6bd20ab48abec1b5a94fabc968f9)
       Octokit (>= 0.20)
 GROUP Test
 CONTENT: NONE

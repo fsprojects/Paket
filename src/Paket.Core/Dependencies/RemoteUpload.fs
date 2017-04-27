@@ -59,7 +59,7 @@ let Push maxTrials url apiKey packageFileName =
             if exn.Message.Contains("(409)") |> not then // exclude conflicts
                 match exn with
                 | :? WebException as we when not (isNull we.Response) -> 
-                    let response = (exn :?> System.Net.WebException).Response
+                    let response = (exn :?> WebException).Response
                     use reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8)
                     let text = reader.ReadToEnd()
                     tracefnVerbose "Response body was: %s" text

@@ -1,4 +1,4 @@
-﻿module Paket.Constants
+module Paket.Constants
 
 open System
 open System.IO
@@ -69,28 +69,24 @@ let getEnvDir specialPath =
     let dir = Environment.GetFolderPath specialPath 
     if String.IsNullOrEmpty dir then None else Some dir
 
-
 let AppDataFolder =
     getEnvDir Environment.SpecialFolder.ApplicationData 
     |> Option.defaultValue (
         let fallback = Path.GetFullPath ".paket"
-        Logging.traceWarnfn 
-            "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead" fallback
-        fallback
-    )
+        if Logging.verbose then
+            Logging.tracefn "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead." fallback
+        fallback)
 
 let PaketConfigFolder   = Path.Combine(AppDataFolder, "Paket")
 let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 
 let LocalRootForTempData =
     getEnvDir Environment.SpecialFolder.UserProfile 
-    |> Option.orElse (
-        getEnvDir Environment.SpecialFolder.LocalApplicationData 
-    )|> Option.defaultValue (
+    |> Option.orElse (getEnvDir Environment.SpecialFolder.LocalApplicationData)
+    |> Option.defaultValue (
         let fallback = Path.GetFullPath ".paket"
-        Logging.traceWarnfn 
-            "Could not detect a root for our (user specific) temporary files.\
-             Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead" fallback
+        if Logging.verbose then
+            Logging.tracefn "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead." fallback
         fallback
     )
 
@@ -111,7 +107,6 @@ let MagicUnlistingDate = DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(
 
 /// The NuGet cache folder.
 let NuGetCacheFolder =
-    // 
     getEnVar "NuGetCachePath" 
     |> Option.bind (fun cachePath ->
         let di = DirectoryInfo cachePath
@@ -126,7 +121,7 @@ let NuGetCacheFolder =
             Some di.FullName
     ))|> Option.defaultValue (
         let fallback = Path.GetFullPath ".paket"
-        Logging.traceWarnfn 
-            "Could not find LocalApplicationData folder, try to set the 'LocalAppData' environment variable. Using '%s' instead" fallback
+        if Logging.verbose then
+            Logging.tracefn "Could not find LocalApplicationData folder, try to set the 'LocalAppData' environment variable. Using '%s' instead" fallback
         fallback
     )
