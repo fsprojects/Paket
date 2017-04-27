@@ -168,9 +168,14 @@ module DependenciesFileParser =
             
             let splitted = projectSpec.TrimEnd('/').Split([| ':'; '/' |], StringSplitOptions.RemoveEmptyEntries)
             
+            let removeQueryString (s:string) = 
+                match s.IndexOf '?' with
+                | -1 -> s
+                | pos -> s.Substring(0, pos)
+             
             let fileName = 
                 if String.IsNullOrEmpty fileSpec then
-                    let name = Seq.last splitted
+                    let name = splitted |> Seq.last |> removeQueryString
                     if String.IsNullOrEmpty <| Path.GetExtension(name) then name + ".fs"
                     else name
                 else fileSpec
