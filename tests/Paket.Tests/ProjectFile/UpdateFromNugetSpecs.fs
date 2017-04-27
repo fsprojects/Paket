@@ -1,7 +1,7 @@
 ﻿namespace Paket.ProjectFile
 
-open Paket
 open NUnit.Framework
+open Paket
 
 [<TestFixture(Category=Category.ProjectFile)>]
 module UpdateFromNugetSpecs =

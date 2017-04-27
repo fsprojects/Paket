@@ -15,12 +15,14 @@ module ConflictSourcesSpecs =
 
     let noGitHubConfigured _ = failwith "no GitHub configured"
 
-    let config1 = """
-    source "http://www.nuget.org/api/v2"
+    let config1Text = """
+source "http://www.nuget.org/api/v2"
 
-    github fsharp/fsharp:master foo.fs
-    github fsprojects/FAKE:master test.fs
-    """
+github fsharp/fsharp:master foo.fs
+github fsprojects/FAKE:master test.fs
+"""
+
+    let config1 = trimAndNormalizeLines config1Text
 
     [<Test>]
     let ``should resolve source files with correct sha``() =
@@ -50,23 +52,27 @@ module ConflictSourcesSpecs =
             PackagePath = None
             AuthKey = None }
 
-    let config2 = """
-    source "http://www.nuget.org/api/v2"
+    let config2Text = """
+source "http://www.nuget.org/api/v2"
 
-    github fsharp/fsharp:master foo.fs
-    github fsharp/fsharp:fsharp4 foo.fs
-    github fsprojects/FAKE:master test.fs
-    github fsprojects/FAKE:vNext readme.md
-    """
+github fsharp/fsharp:master foo.fs
+github fsharp/fsharp:fsharp4 foo.fs
+github fsprojects/FAKE:master test.fs
+github fsprojects/FAKE:vNext readme.md
+"""
 
-    let expectedError = """Found conflicting source file requirements:
-       - fsharp/fsharpfoo.fs
-         Versions:
-         - master
-         - fsharp4
-       Currently multiple versions for same source directory are not supported.
-       Please adjust the dependencies file.""" |> normalizeLineEndings
+    let config2 = trimAndNormalizeLines config2Text
 
+    let expectedErrorText = """
+Found conflicting source file requirements:
+   - fsharp/fsharpfoo.fs
+     Versions:
+     - master
+     - fsharp4
+   Currently multiple versions for same source directory are not supported.
+   Please adjust the dependencies file.""" 
+
+    let expectedError = trimAndNormalizeLines expectedErrorText
     [<Test>]
     let ``should fail resolving same source files from same repository but different versions``() =
         try

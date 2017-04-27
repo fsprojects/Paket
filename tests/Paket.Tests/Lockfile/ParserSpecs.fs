@@ -14,26 +14,26 @@ module ParserSpecs =
     open Paket.Requirements
     open Paket.PackageSources
 
-    let lockFile = """COPY-LOCAL: FALSE
-    NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        Castle.Windsor (2.1)
-        Castle.Windsor-log4net (3.3)
-          Castle.Windsor (>= 2.0)
-          log4net (>= 1.0)
-        Rx-Core (2.1)
-        Rx-Main (2.0)
-          Rx-Core (>= 2.1)
-        log (1.2)
-        log4net (1.1)
-          log (>= 1.0)
-    GITHUB
-      remote: fsharp/FAKE
-      specs:
-        src/app/FAKE/Cli.fs (7699e40e335f3cc54ab382a8969253fecc1e08a9) gitHubAuth
-        src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs (Globbing)
-    """
+    let lockFile = """
+COPY-LOCAL: FALSE
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    Rx-Core (2.1)
+    Rx-Main (2.0)
+      Rx-Core (>= 2.1)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)
+GITHUB
+  remote: fsharp/FAKE
+  specs:
+    src/app/FAKE/Cli.fs (7699e40e335f3cc54ab382a8969253fecc1e08a9) gitHubAuth
+    src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs (Globbing)""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse lock file``() = 
@@ -86,22 +86,22 @@ module ParserSpecs =
         sourceFiles.[0].Name |> shouldEqual "src/app/FAKE/Cli.fs"
         sourceFiles.[0].ToString() |> shouldEqual "fsharp/FAKE:7699e40e335f3cc54ab382a8969253fecc1e08a9 src/app/FAKE/Cli.fs"
 
-    let strictLockFile = """REFERENCES: STRICT
-    IMPORT-TARGETS: FALSE
-    NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        Castle.Windsor (2.1)
-        Castle.Windsor-log4net (3.3)
-          Castle.Windsor (>= 2.0)
-          log4net (>= 1.0)
-        Rx-Core (2.1)
-        Rx-Main (2.0)
-          Rx-Core (>= 2.1)
-        log (1.2)
-        log4net (1.1)
-          log (>= 1.0)
-    """
+    let strictLockFile = """
+REFERENCES: STRICT
+IMPORT-TARGETS: FALSE
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    Rx-Core (2.1)
+    Rx-Main (2.0)
+      Rx-Core (>= 2.1)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse strict lock file``() = 
@@ -118,27 +118,28 @@ module ParserSpecs =
         packages.[5].Version |> shouldEqual (SemVer.Parse "1.1")
         packages.[5].Dependencies |> shouldEqual (Set.ofList [PackageName "log", VersionRequirement(Minimum(SemVer.Parse "1.0"), PreReleaseStatus.No), FrameworkRestrictionList []])
 
-    let redirectsLockFile = """REDIRECTS: ON
-    IMPORT-TARGETS: TRUE
-    COPY-LOCAL: TRUE
-    NUGET
-      remote: "D:\code\temp with space"
-      specs:
-        Castle.Windsor (2.1)
+    let redirectsLockFile = """
+REDIRECTS: ON
+IMPORT-TARGETS: TRUE
+COPY-LOCAL: TRUE
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)
 
-    GROUP Test
-    NUGET
-      remote: "D:\code\temp with space"
-      specs:
-        xUnit (2.0.0)
+GROUP Test
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    xUnit (2.0.0)
 
-    GROUP Build
-    REDIRECTS: OFF
-    NUGET
-      remote: "D:\code\temp with space"
-      specs:
-        FAKE (4.0.0)
-    """
+GROUP Build
+REDIRECTS: OFF
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    FAKE (4.0.0)"""                      |> trimAndNormalizeLines
+
 
     [<Test>]
     let ``should parse redirects lock file``() = 
@@ -165,13 +166,14 @@ module ParserSpecs =
         build.Options.Settings.ImportTargets |> shouldEqual None
         build.Options.Settings.CopyLocal |> shouldEqual None
 
-    let lockFileWithFrameworkRestrictions = """FRAMEWORK: >= NET45
-    IMPORT-TARGETS: TRUE
-    NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        Castle.Windsor (2.1)
-    """
+    let lockFileWithFrameworkRestrictions = """
+FRAMEWORK: >= NET45
+IMPORT-TARGETS: TRUE
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)"""                         |> trimAndNormalizeLines
+
 
     [<Test>]
     let ``should parse lock file with framework restrictions``() = 
@@ -183,41 +185,43 @@ module ParserSpecs =
         lockFile.Options.Settings.ImportTargets |> shouldEqual (Some true)
         lockFile.Options.Settings.CopyLocal |> shouldEqual None
 
-    let dogfood = """NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        DotNetZip (1.9.3)
-        FAKE (3.5.5)
-        FSharp.Compiler.Service (0.0.62)
-        FSharp.Formatting (2.4.25)
-          Microsoft.AspNet.Razor (2.0.30506.0)
-          RazorEngine (3.3.0)
-          FSharp.Compiler.Service (>= 0.0.59)
-        Microsoft.AspNet.Razor (2.0.30506.0)
-        Microsoft.Bcl (1.1.9)
-          Microsoft.Bcl.Build (>= 1.0.14)
-        Microsoft.Bcl.Build (1.0.21)
-        Microsoft.Net.Http (2.2.28)
-          Microsoft.Bcl (>= 1.1.9)
-          Microsoft.Bcl.Build (>= 1.0.14)
-        Newtonsoft.Json (6.0.5)
-        NuGet.CommandLine (2.8.2)
-        NUnit (2.6.3)
-        NUnit.Runners (2.6.3)
-        Octokit (0.4.1)
-          Microsoft.Net.Http (>= 0)
-        RazorEngine (3.3.0)
-          Microsoft.AspNet.Razor (>= 2.0.30506.0)
-        SourceLink.Fake (0.3.4)
-        UnionArgParser (0.8.0)
-    GITHUB
-      remote: forki/FsUnit
-      specs:
-        FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
-      remote: fsharp/FAKE
-      specs:
-        modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
-          Octokit (>= 0)"""
+    let dogfood = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    DotNetZip (1.9.3)
+    FAKE (3.5.5)
+    FSharp.Compiler.Service (0.0.62)
+    FSharp.Formatting (2.4.25)
+      Microsoft.AspNet.Razor (2.0.30506.0)
+      RazorEngine (3.3.0)
+      FSharp.Compiler.Service (>= 0.0.59)
+    Microsoft.AspNet.Razor (2.0.30506.0)
+    Microsoft.Bcl (1.1.9)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Build (1.0.21)
+    Microsoft.Net.Http (2.2.28)
+      Microsoft.Bcl (>= 1.1.9)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Newtonsoft.Json (6.0.5)
+    NuGet.CommandLine (2.8.2)
+    NUnit (2.6.3)
+    NUnit.Runners (2.6.3)
+    Octokit (0.4.1)
+      Microsoft.Net.Http (>= 0)
+    RazorEngine (3.3.0)
+      Microsoft.AspNet.Razor (>= 2.0.30506.0)
+    SourceLink.Fake (0.3.4)
+    UnionArgParser (0.8.0)
+GITHUB
+  remote: forki/FsUnit
+  specs:
+    FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
+  remote: fsharp/FAKE
+  specs:
+    modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
+      Octokit (>= 0)"""     |> trimAndNormalizeLines
+        
 
     [<Test>]
     let ``should parse own lock file``() = 
@@ -233,41 +237,43 @@ module ParserSpecs =
 
         lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
 
-    let dogfood2 = """NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        DotNetZip (1.9.3)
-        FAKE (3.5.5)
-        FSharp.Compiler.Service (0.0.62)
-        FSharp.Formatting (2.4.25)
-          Microsoft.AspNet.Razor (2.0.30506.0)
-          RazorEngine (3.3.0)
-          FSharp.Compiler.Service (>= 0.0.59)
-        Microsoft.AspNet.Razor (2.0.30506.0)
-        Microsoft.Bcl (1.1.9)
-          Microsoft.Bcl.Build (>= 1.0.14)
-        Microsoft.Bcl.Build (1.0.21)
-        Microsoft.Net.Http (2.2.28)
-          Microsoft.Bcl (>= 1.1.9)
-          Microsoft.Bcl.Build (>= 1.0.14)
-        Newtonsoft.Json (6.0.5)
-        NuGet.CommandLine (2.8.2)
-        NUnit (2.6.3)
-        NUnit.Runners (2.6.3)
-        Octokit (0.4.1)
-          Microsoft.Net.Http
-        RazorEngine (3.3.0)
-          Microsoft.AspNet.Razor (>= 2.0.30506.0)
-        SourceLink.Fake (0.3.4)
-        UnionArgParser (0.8.0)
-    GITHUB
-      remote: forki/FsUnit
-      specs:
-        FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
-      remote: fsharp/FAKE
-      specs:
-        modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
-          Octokit"""
+    let dogfood2 = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    DotNetZip (1.9.3)
+    FAKE (3.5.5)
+    FSharp.Compiler.Service (0.0.62)
+    FSharp.Formatting (2.4.25)
+      Microsoft.AspNet.Razor (2.0.30506.0)
+      RazorEngine (3.3.0)
+      FSharp.Compiler.Service (>= 0.0.59)
+    Microsoft.AspNet.Razor (2.0.30506.0)
+    Microsoft.Bcl (1.1.9)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Build (1.0.21)
+    Microsoft.Net.Http (2.2.28)
+      Microsoft.Bcl (>= 1.1.9)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Newtonsoft.Json (6.0.5)
+    NuGet.CommandLine (2.8.2)
+    NUnit (2.6.3)
+    NUnit.Runners (2.6.3)
+    Octokit (0.4.1)
+      Microsoft.Net.Http
+    RazorEngine (3.3.0)
+      Microsoft.AspNet.Razor (>= 2.0.30506.0)
+    SourceLink.Fake (0.3.4)
+    UnionArgParser (0.8.0)
+GITHUB
+  remote: forki/FsUnit
+  specs:
+    FsUnit.fs (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
+  remote: fsharp/FAKE
+  specs:
+    modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
+      Octokit"""               |> trimAndNormalizeLines
+    
 
     [<Test>]
     let ``should parse own lock file2``() = 
@@ -284,24 +290,24 @@ module ParserSpecs =
         lockFile.SourceFiles.[0].Name |> shouldEqual "modules/Octokit/Octokit.fsx"
 
 
-    let frameworkRestricted = """NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        Fleece (0.4.0)
-          FSharpPlus (>= 0.0.4)
-          ReadOnlyCollectionExtensions (>= 1.2.0)
-          ReadOnlyCollectionInterfaces (1.0.0) - >= net40
-          System.Json (>= 4.0.20126.16343)
-        FsControl (1.0.9)
-        FSharpPlus (0.0.4)
-          FsControl (>= 1.0.9)
-        LinqBridge (1.3.0) - >= net20 < net35
-        ReadOnlyCollectionExtensions (1.2.0)
-          LinqBridge (>= 1.3.0) - >= net20 < net35
-          ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
-        ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
-        System.Json (4.0.20126.16343)
-    """
+    let frameworkRestricted = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Fleece (0.4.0)
+      FSharpPlus (>= 0.0.4)
+      ReadOnlyCollectionExtensions (>= 1.2.0)
+      ReadOnlyCollectionInterfaces (1.0.0) - >= net40
+      System.Json (>= 4.0.20126.16343)
+    FsControl (1.0.9)
+    FSharpPlus (0.0.4)
+      FsControl (>= 1.0.9)
+    LinqBridge (1.3.0) - >= net20 < net35
+    ReadOnlyCollectionExtensions (1.2.0)
+      LinqBridge (>= 1.3.0) - >= net20 < net35
+      ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
+    ReadOnlyCollectionInterfaces (1.0.0) - net20, net35, >= net40
+    System.Json (4.0.20126.16343)"""     |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse framework restricted lock file``() = 
@@ -343,24 +349,26 @@ module ParserSpecs =
                          FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
                          FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
-    let frameworkRestricted' = """NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        Fleece (0.4.0)
-          FSharpPlus (>= 0.0.4)
-          ReadOnlyCollectionExtensions (>= 1.2.0)
-          ReadOnlyCollectionInterfaces (1.0.0) - framework: >= net40
-          System.Json (>= 4.0.20126.16343)
-        FsControl (1.0.9)
-        FSharpPlus (0.0.4)
-          FsControl (>= 1.0.9)
-        LinqBridge (1.3.0) - import_targets: false, content: none, version_in_path: true, framework: >= net20 < net35, copy_content_to_output_dir: never
-        ReadOnlyCollectionExtensions (1.2.0)
-          LinqBridge (>= 1.3.0) - framework: >= net20 < net35
-          ReadOnlyCollectionInterfaces (1.0.0) - framework: net20, net35, >= net40
-        ReadOnlyCollectionInterfaces (1.0.0) - copy_local: false, import_targets: false, framework: net20, net35, >= net40
-        System.Json (4.0.20126.16343)
-    """
+    let frameworkRestricted' = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Fleece (0.4.0)
+      FSharpPlus (>= 0.0.4)
+      ReadOnlyCollectionExtensions (>= 1.2.0)
+      ReadOnlyCollectionInterfaces (1.0.0) - framework: >= net40
+      System.Json (>= 4.0.20126.16343)
+    FsControl (1.0.9)
+    FSharpPlus (0.0.4)
+      FsControl (>= 1.0.9)
+    LinqBridge (1.3.0) - import_targets: false, content: none, version_in_path: true, framework: >= net20 < net35, copy_content_to_output_dir: never
+    ReadOnlyCollectionExtensions (1.2.0)
+      LinqBridge (>= 1.3.0) - framework: >= net20 < net35
+      ReadOnlyCollectionInterfaces (1.0.0) - framework: net20, net35, >= net40
+    ReadOnlyCollectionInterfaces (1.0.0) - copy_local: false, import_targets: false, framework: net20, net35, >= net40
+    System.Json (4.0.20126.16343)"""  |> trimAndNormalizeLines
+
+    
 
     [<Test>]
     let ``should parse framework restricted lock file in new syntax``() = 
@@ -411,11 +419,10 @@ module ParserSpecs =
                          FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))])
 
     let simpleHTTP = """
-    HTTP
-      remote: http://www.frijters.net/ikvmbin-8.0.5449.0.zip
-      specs:
-        ikvmbin-8.0.5449.0.zip
-    """
+HTTP
+  remote: http://www.frijters.net/ikvmbin-8.0.5449.0.zip
+  specs:
+    ikvmbin-8.0.5449.0.zip"""  |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse simple http reference``() = 
@@ -426,17 +433,18 @@ module ParserSpecs =
         references.[0].Origin |> shouldEqual (Origin.HttpLink("http://www.frijters.net/ikvmbin-8.0.5449.0.zip"))
 
 
-    let lockFileForStanfordNLPdotNET = """HTTP
-      remote: http://www.frijters.net
-      specs:
-        ikvmbin-8.0.5449.0.zip (/ikvmbin-8.0.5449.0.zip)
-      remote: http://nlp.stanford.edu
-      specs:
-        stanford-corenlp-full-2014-10-31.zip (/software/stanford-corenlp-full-2014-10-31.zip)
-        stanford-ner-2014-10-26.zip (/software/stanford-ner-2014-10-26.zip)
-        stanford-parser-full-2014-10-31.zip (/software/stanford-parser-full-2014-10-31.zip)
-        stanford-postagger-full-2014-10-26.zip (/software/stanford-postagger-full-2014-10-26.zip)
-        stanford-segmenter-2014-10-26.zip (/software/stanford-segmenter-2014-10-26.zip)"""
+    let lockFileForStanfordNLPdotNET = """
+HTTP
+  remote: http://www.frijters.net
+  specs:
+    ikvmbin-8.0.5449.0.zip (/ikvmbin-8.0.5449.0.zip)
+  remote: http://nlp.stanford.edu
+  specs:
+    stanford-corenlp-full-2014-10-31.zip (/software/stanford-corenlp-full-2014-10-31.zip)
+    stanford-ner-2014-10-26.zip (/software/stanford-ner-2014-10-26.zip)
+    stanford-parser-full-2014-10-31.zip (/software/stanford-parser-full-2014-10-31.zip)
+    stanford-postagger-full-2014-10-26.zip (/software/stanford-postagger-full-2014-10-26.zip)
+    stanford-segmenter-2014-10-26.zip (/software/stanford-segmenter-2014-10-26.zip)"""  |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse lock file for http Stanford.NLP.NET project``() =
@@ -450,13 +458,13 @@ module ParserSpecs =
         references.[0].Project |> shouldEqual ""
         references.[0].Name |> shouldEqual "stanford-segmenter-2014-10-26.zip"
 
-    let portableLockFile = """NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        FSharp.Data (2.0.14)
-          Zlib.Portable (>= 1.10.0) - framework: portable-net40+sl50+wp80+win80
-        Zlib.Portable (1.10.0) - framework: portable-net40+sl50+wp80+win80
-    """
+    let portableLockFile = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    FSharp.Data (2.0.14)
+      Zlib.Portable (>= 1.10.0) - framework: portable-net40+sl50+wp80+win80
+    Zlib.Portable (1.10.0) - framework: portable-net40+sl50+wp80+win80"""   |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse portable lockfile``() =
@@ -472,39 +480,40 @@ module ParserSpecs =
         packages.[1].Version |> shouldEqual (SemVer.Parse "1.10.0")
         (packages.[1].Settings.FrameworkRestrictions |> getRestrictionList).ToString() |> shouldEqual "[portable-net40+sl50+wp80+win80]"
 
-    let reactiveuiLockFile = """NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        reactiveui (5.5.1)
-          reactiveui-core (5.5.1)
-          reactiveui-platforms (5.5.1)
-        reactiveui-core (5.5.1)
-          Rx-Main (>= 2.1.30214.0) - framework: portable-net45+win+wp80
-          Rx-WindowStoreApps (>= 2.1.30214.0) - framework: winv4.5
-        reactiveui-platforms (5.5.1)
-          Rx-Xaml (>= 2.1.30214.0) - framework: winv4.5, wpv8.0, >= net45
-          reactiveui-core (5.5.1) - framework: monoandroid, monotouch, monomac, winv4.5, wpv8.0, >= net45
-        Rx-Core (2.2.5)
-          Rx-Interfaces (>= 2.2.5)
-        Rx-Interfaces (2.2.5)
-        Rx-Linq (2.2.5)
-          Rx-Core (>= 2.2.5)
-          Rx-Interfaces (>= 2.2.5)
-        Rx-Main (2.2.5) - framework: portable-net45+win+wp80
-          Rx-Core (>= 2.2.5)
-          Rx-Interfaces (>= 2.2.5)
-          Rx-Linq (>= 2.2.5)
-          Rx-PlatformServices (>= 2.2.5)
-        Rx-PlatformServices (2.2.5)
-          Rx-Core (>= 2.2.5)
-          Rx-Interfaces (>= 2.2.5)
-        Rx-WindowStoreApps (2.2.5) - framework: winv4.5
-          Rx-Main (>= 2.2.5)
-          Rx-WinRT (>= 2.2.5)
-        Rx-WinRT (2.2.5)
-          Rx-Main (>= 2.2.5)
-        Rx-Xaml (2.2.5) - framework: winv4.5, wpv8.0, >= net45
-          Rx-Main (>= 2.2.5)"""
+    let reactiveuiLockFile = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    reactiveui (5.5.1)
+      reactiveui-core (5.5.1)
+      reactiveui-platforms (5.5.1)
+    reactiveui-core (5.5.1)
+      Rx-Main (>= 2.1.30214.0) - framework: portable-net45+win+wp80
+      Rx-WindowStoreApps (>= 2.1.30214.0) - framework: winv4.5
+    reactiveui-platforms (5.5.1)
+      Rx-Xaml (>= 2.1.30214.0) - framework: winv4.5, wpv8.0, >= net45
+      reactiveui-core (5.5.1) - framework: monoandroid, monotouch, monomac, winv4.5, wpv8.0, >= net45
+    Rx-Core (2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-Interfaces (2.2.5)
+    Rx-Linq (2.2.5)
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-Main (2.2.5) - framework: portable-net45+win+wp80
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+      Rx-Linq (>= 2.2.5)
+      Rx-PlatformServices (>= 2.2.5)
+    Rx-PlatformServices (2.2.5)
+      Rx-Core (>= 2.2.5)
+      Rx-Interfaces (>= 2.2.5)
+    Rx-WindowStoreApps (2.2.5) - framework: winv4.5
+      Rx-Main (>= 2.2.5)
+      Rx-WinRT (>= 2.2.5)
+    Rx-WinRT (2.2.5)
+      Rx-Main (>= 2.2.5)
+    Rx-Xaml (2.2.5) - framework: winv4.5, wpv8.0, >= net45
+      Rx-Main (>= 2.2.5)"""  |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse reactiveui lockfile``() =
@@ -523,23 +532,23 @@ module ParserSpecs =
         packages.[10].Version |> shouldEqual (SemVer.Parse "2.2.5")
         (packages.[10].Settings.FrameworkRestrictions |> getRestrictionList).ToString() |> shouldEqual "[winv4.5; wpv8.0; >= net45]"
 
-    let multipleFeedLockFile = """NUGET
-      remote: http://internalfeed/NugetWebFeed/nuget
-        Internal_1 (1.2.10)
-          Newtonsoft.Json (>= 6.0 < 6.1)
-        log4net (1.2.10)
-        Newtonsoft.Json (6.0.6)
-      remote: https://www.nuget.org/api/v2
-        Microsoft.AspNet.WebApi (5.2.3)
-          Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3)
-        Microsoft.AspNet.WebApi.Client (5.2.3)
-          Microsoft.Net.Http (>= 2.2.22) - framework: portable-wp80+win+net45+wp81+wpa81
-          Newtonsoft.Json (>= 6.0.4) - framework: >= net45, portable-wp80+win+net45+wp81+wpa81
-        Microsoft.AspNet.WebApi.Core (5.2.3)
-          Microsoft.AspNet.WebApi.Client (>= 5.2.3)
-        Microsoft.AspNet.WebApi.WebHost (5.2.3)
-          Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3)
-    """
+    let multipleFeedLockFile = """
+NUGET
+  remote: http://internalfeed/NugetWebFeed/nuget
+    Internal_1 (1.2.10)
+      Newtonsoft.Json (>= 6.0 < 6.1)
+    log4net (1.2.10)
+    Newtonsoft.Json (6.0.6)
+  remote: https://www.nuget.org/api/v2
+    Microsoft.AspNet.WebApi (5.2.3)
+      Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3)
+    Microsoft.AspNet.WebApi.Client (5.2.3)
+      Microsoft.Net.Http (>= 2.2.22) - framework: portable-wp80+win+net45+wp81+wpa81
+      Newtonsoft.Json (>= 6.0.4) - framework: >= net45, portable-wp80+win+net45+wp81+wpa81
+    Microsoft.AspNet.WebApi.Core (5.2.3)
+      Microsoft.AspNet.WebApi.Client (>= 5.2.3)
+    Microsoft.AspNet.WebApi.WebHost (5.2.3)
+      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3)""" |> trimAndNormalizeLines 
 
     [<Test>]
     let ``should parse lockfile with multiple feeds``() =
@@ -557,28 +566,28 @@ module ParserSpecs =
 
     [<Test>]
     let ``should parse and serialise multiple feed lockfile``() =
-        let lockFile = LockFile.Parse("",toLines multipleFeedLockFile)
+        let lockFile = LockFile.Parse("",toLines  multipleFeedLockFile)
         let lockFile' = lockFile.ToString()
 
-        normalizeLineEndings lockFile' 
-        |> shouldEqual (normalizeLineEndings multipleFeedLockFile)
+        trimAndNormalizeLines lockFile' 
+        |> shouldEqual multipleFeedLockFile
 
 
-    let groupsLockFile = """REDIRECTS: ON
-    COPY-LOCAL: TRUE
-    IMPORT-TARGETS: TRUE
-    NUGET
-      remote: "D:\code\temp with space"
-        Castle.Windsor (2.1)
+    let groupsLockFile = """
+REDIRECTS: ON
+COPY-LOCAL: TRUE
+IMPORT-TARGETS: TRUE
+NUGET
+  remote: "D:\code\temp with space"
+    Castle.Windsor (2.1)
 
-    GROUP Build
-    REDIRECTS: ON
-    COPY-LOCAL: TRUE
-    CONDITION: LEGACY
-    NUGET
-      remote: "D:\code\temp with space"
-        FAKE (4.0) - redirects: on
-    """
+GROUP Build
+REDIRECTS: ON
+COPY-LOCAL: TRUE
+CONDITION: LEGACY
+NUGET
+  remote: "D:\code\temp with space"
+    FAKE (4.0) - redirects: on""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse lock file with groups``() = 
@@ -617,16 +626,17 @@ module ParserSpecs =
         let lockFile = LockFile.Parse("",toLines groupsLockFile)
         let lockFile' = lockFile.ToString()
 
-        normalizeLineEndings lockFile' 
-        |> shouldEqual (normalizeLineEndings groupsLockFile)
+        trimAndNormalizeLines lockFile' 
+        |> shouldEqual (trimAndNormalizeLines groupsLockFile)
 
     [<Test>]
     let ``should parse strategy min lock file``() = 
-        let lockFile = """STRATEGY: MIN
-    NUGET
-      remote: "D:\code\temp with space"
-        Castle.Windsor (2.1)
-    """
+        let lockFile = """
+STRATEGY: MIN
+NUGET
+  remote: "D:\code\temp with space"
+    Castle.Windsor (2.1)"""   |> trimAndNormalizeLines
+
         let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
         let packages = List.rev lockFile.Packages
     
@@ -635,12 +645,13 @@ module ParserSpecs =
     
     [<Test>]
     let ``should parse strategy max lock file``() = 
-        let lockFile = """STRATEGY: MAX
-    NUGET
-      remote: "D:\code\temp with space"
-      specs:
-        Castle.Windsor (2.1)
-    """
+        let lockFile = """
+STRATEGY: MAX
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)"""  |> trimAndNormalizeLines
+
         let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
         let packages = List.rev lockFile.Packages
     
@@ -649,36 +660,38 @@ module ParserSpecs =
 
     [<Test>]
     let ``should parse no strategy lock file``() = 
-        let lockFile = """NUGET
-      remote: "D:\code\temp with space"
-      specs:
-        Castle.Windsor (2.1)
-    """
+        let lockFile = """
+NUGET
+  remote: "D:\code\temp with space"
+  specs:
+    Castle.Windsor (2.1)"""  |> trimAndNormalizeLines
+        
         let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
         let packages = List.rev lockFile.Packages
     
         packages.Length |> shouldEqual 1
         lockFile.Options.ResolverStrategyForTransitives |> shouldEqual None
     
-    let packageRedirectsLockFile = """REDIRECTS: ON
-    NUGET
-      remote: "D:\code\temp with space"
-        Castle.Windsor (2.1)
-        DotNetZip (1.9.3) - redirects: on
-        FAKE (3.5.5) - redirects: off
-        FSharp.Compiler.Service (0.0.62) - redirects: force
+    let packageRedirectsLockFile = """
+REDIRECTS: ON
+NUGET
+  remote: "D:\code\temp with space"
+    Castle.Windsor (2.1)
+    DotNetZip (1.9.3) - redirects: on
+    FAKE (3.5.5) - redirects: off
+    FSharp.Compiler.Service (0.0.62) - redirects: force
 
-    GROUP Build
-    NUGET
-      remote: "D:\code\temp with space"
-        FAKE (4.0) - redirects: on
+GROUP Build
+NUGET
+  remote: "D:\code\temp with space"
+    FAKE (4.0) - redirects: on
 
-    GROUP Test
-    REDIRECTS: OFF
-    NUGET
-      remote: "D:\code\temp with space"
-        xUnit (2.0.0)
-    """
+GROUP Test
+REDIRECTS: OFF
+NUGET
+  remote: "D:\code\temp with space"
+    xUnit (2.0.0)"""                     |> trimAndNormalizeLines
+
 
     [<Test>]
     let ``should parse redirects lock file and packages``() = 
@@ -715,35 +728,36 @@ module ParserSpecs =
         let lockFile = LockFile.Parse("",toLines packageRedirectsLockFile)
         let lockFile' = lockFile.ToString()
 
-        normalizeLineEndings lockFile' 
-        |> shouldEqual (normalizeLineEndings packageRedirectsLockFile)
+        trimAndNormalizeLines lockFile' 
+        |> shouldEqual packageRedirectsLockFile
 
-    let autodetectLockFile = """REDIRECTS: ON
-    FRAMEWORK: NET452, NET452
-    NUGET
-      remote: http://api.nuget.org/v3/index.json
-      specs:
-        Autofac (3.5.2) - framework: net452
-        Autofac.Extras.ServiceStack (2.0.2) - framework: net452
-          Autofac  - framework: net452
-          ServiceStack (>= 4.0.0) - framework: net452
-        ServiceStack (4.0.54) - framework: net452
-          ServiceStack.Client (>= 4.0.54) - framework: net452
-          ServiceStack.Common (>= 4.0.54) - framework: net452
-        ServiceStack.Client (4.0.54) - framework: net452
-          ServiceStack.Interfaces (>= 4.0.54) - framework: net452
-          ServiceStack.Text (>= 4.0.54) - framework: net452
-        ServiceStack.Common (4.0.54) - framework: net452
-          ServiceStack.Interfaces (>= 4.0.54) - framework: net452
-          ServiceStack.Text (>= 4.0.54) - framework: net452
-        ServiceStack.Interfaces (4.0.54) - framework: net452
-        ServiceStack.Text (4.0.54) - framework: net452
-      remote: https://www.myget.org/F/paket-framework-problem-repro
-      specs:
-        DependsOnAutofac (1.2.0)
-          Autofac  - framework: net452
-          Autofac.Extras.ServiceStack  - framework: net452
-    """
+    let autodetectLockFile = """
+REDIRECTS: ON
+FRAMEWORK: NET452, NET452
+NUGET
+  remote: http://api.nuget.org/v3/index.json
+  specs:
+    Autofac (3.5.2) - framework: net452
+    Autofac.Extras.ServiceStack (2.0.2) - framework: net452
+      Autofac  - framework: net452
+      ServiceStack (>= 4.0.0) - framework: net452
+    ServiceStack (4.0.54) - framework: net452
+      ServiceStack.Client (>= 4.0.54) - framework: net452
+      ServiceStack.Common (>= 4.0.54) - framework: net452
+    ServiceStack.Client (4.0.54) - framework: net452
+      ServiceStack.Interfaces (>= 4.0.54) - framework: net452
+      ServiceStack.Text (>= 4.0.54) - framework: net452
+    ServiceStack.Common (4.0.54) - framework: net452
+      ServiceStack.Interfaces (>= 4.0.54) - framework: net452
+      ServiceStack.Text (>= 4.0.54) - framework: net452
+    ServiceStack.Interfaces (4.0.54) - framework: net452
+    ServiceStack.Text (4.0.54) - framework: net452
+  remote: https://www.myget.org/F/paket-framework-problem-repro
+  specs:
+    DependsOnAutofac (1.2.0)
+      Autofac  - framework: net452
+      Autofac.Extras.ServiceStack  - framework: net452"""  |> trimAndNormalizeLines
+
 
     [<Test>]
     let ``should parse lock file from auto-detect settings``() = 
@@ -758,12 +772,13 @@ module ParserSpecs =
         let deps = packages.Tail.Head.Dependencies |> Seq.toList |> List.map (fun (n,_,_) -> n)
         deps.Head |> shouldEqual (PackageName "Autofac")
 
-    let lockFileWithManyFrameworks = """NUGET
-      remote: https://www.nuget.org/api/v2
-        CommonServiceLocator (1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50
-        MvvmLightLibs (5.2)
-          CommonServiceLocator (>= 1.0) - framework: net35, sl40
-          CommonServiceLocator (>= 1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""
+    let lockFileWithManyFrameworks = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+    CommonServiceLocator (1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50
+    MvvmLightLibs (5.2)
+      CommonServiceLocator (>= 1.0) - framework: net35, sl40
+      CommonServiceLocator (>= 1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""  |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse lock file many frameworks``() = 
@@ -779,13 +794,14 @@ module ParserSpecs =
         |> normalizeLineEndings
         |> shouldEqual (normalizeLineEndings lockFileWithManyFrameworks)
 
-    let lockFileWithDependencies = """NUGET
-      remote: https://www.nuget.org/api/v2
-        Argu (2.1)
-        Chessie (0.4)
-          FSharp.Core
-        FSharp.Core (4.0.0.1) - redirects: force
-        Newtonsoft.Json (8.0.3) - redirects: force"""
+    let lockFileWithDependencies = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+    Argu (2.1)
+    Chessie (0.4)
+      FSharp.Core
+    FSharp.Core (4.0.0.1) - redirects: force
+    Newtonsoft.Json (8.0.3) - redirects: force"""  |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse lock file with depdencies``() = 
@@ -797,14 +813,15 @@ module ParserSpecs =
         |> normalizeLineEndings
         |> shouldEqual (normalizeLineEndings lockFileWithDependencies)
 
-    let lockFileWithGreaterZeroDependency = """NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        Argu (2.1)
-        Chessie (0.4)
-          FSharp.Core (>= 0.0)
-        FSharp.Core (4.0.0.1) - redirects: force
-        Newtonsoft.Json (8.0.3) - redirects: force"""
+    let lockFileWithGreaterZeroDependency = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Argu (2.1)
+    Chessie (0.4)
+      FSharp.Core (>= 0.0)
+    FSharp.Core (4.0.0.1) - redirects: force
+    Newtonsoft.Json (8.0.3) - redirects: force""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse lock file with greater zero dependency``() = 
@@ -817,11 +834,10 @@ module ParserSpecs =
         |> shouldEqual (normalizeLineEndings lockFileWithDependencies)
 
     let fullGitLockFile = """
-    GIT
-      remote: git@github.com:fsprojects/Paket.git
-      specs:
-         (528024723f314aa1011499a122258167b53699f7)
-    """
+GIT
+  remote: git@github.com:fsprojects/Paket.git
+  specs:
+     (528024723f314aa1011499a122258167b53699f7)"""  |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse full git lock file``() = 
@@ -831,11 +847,10 @@ module ParserSpecs =
         lockFile.Head.SourceFiles.Head.Project |> shouldEqual "Paket"
 
     let localGitLockFile = """
-    GIT
-      remote: file:///c:/code/Paket.VisualStudio
-      specs:
-         (528024723f314aa1011499a122258167b53699f7)
-    """
+GIT
+  remote: file:///c:/code/Paket.VisualStudio
+  specs:
+     (528024723f314aa1011499a122258167b53699f7)""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse local git lock file``() = 
@@ -847,16 +862,15 @@ module ParserSpecs =
 
 
     let localGitLockFileWithBuild = """
-    NUGET
-      remote: paket-files/github.com/nupkgtest/source
-      specs:
-        Argu (1.1.3)
-    GIT
-      remote: https://github.com/forki/nupkgtest.git
-      specs:
-         (2942d23fcb13a2574b635194203aed7610b21903)
-          build: build.cmd Test
-    """
+NUGET
+  remote: paket-files/github.com/nupkgtest/source
+  specs:
+    Argu (1.1.3)
+GIT
+  remote: https://github.com/forki/nupkgtest.git
+  specs:
+     (2942d23fcb13a2574b635194203aed7610b21903)
+      build: build.cmd Test"""              |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse local git lock file with build``() = 
@@ -868,15 +882,14 @@ module ParserSpecs =
 
 
     let localGitLockFileWithBuildAndNoSpecs = """
-    NUGET
-      remote: paket-files/github.com/nupkgtest/source
-      specs:
-        Argu (1.1.3)
-    GIT
-      remote: https://github.com/forki/nupkgtest.git
-         (2942d23fcb13a2574b635194203aed7610b21903)
-          build: build.cmd Test
-    """
+NUGET
+  remote: paket-files/github.com/nupkgtest/source
+  specs:
+    Argu (1.1.3)
+GIT
+  remote: https://github.com/forki/nupkgtest.git
+     (2942d23fcb13a2574b635194203aed7610b21903)
+      build: build.cmd Test"""              |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse local git lock file with build and no specs``() = 
@@ -887,11 +900,11 @@ module ParserSpecs =
         lockFile.Head.SourceFiles.Head.Command |> shouldEqual (Some "build.cmd Test")
 
     let lockFileWithFilesContainingSpaces = """
-    GITHUB
-      remote: owner/repo
-      specs:
-        "file 1.fs" (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
-        "file 2.fs" (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468) secret"""
+GITHUB
+  remote: owner/repo
+  specs:
+    "file 1.fs" (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468)
+    "file 2.fs" (7623fc13439f0e60bd05c1ed3b5f6dcb937fe468) secret""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should parse lock file with spaces in file names``() =

@@ -11,13 +11,14 @@ module GenerationWithMutlipleSourcesSpecs =
     open TestHelpers
     open Paket.Domain
 
-    let config1 = """
-    source "http://www.nuget.org/api/v2"
-    source "http://nuget.org/api/v3"
+    let config1Text = """
+source "http://www.nuget.org/api/v2"
+source "http://nuget.org/api/v3"
 
-    nuget "Castle.Windsor-log4net" "~> 3.2"
-    nuget "Rx-Main" "~> 2.0"
-    """
+nuget "Castle.Windsor-log4net" "~> 3.2"
+nuget "Rx-Main" "~> 2.0"
+"""
+    let config1 = trimAndNormalizeLines config1Text
 
     let graph =
       OfSimpleGraph [
@@ -34,18 +35,21 @@ module GenerationWithMutlipleSourcesSpecs =
         "log","1.2",[]
       ]
 
-    let expected = """NUGET
-      remote: http://www.nuget.org/api/v2
-        Castle.Windsor (2.1)
-        Castle.Windsor-log4net (3.3)
-          Castle.Windsor (>= 2.0)
-          log4net (>= 1.0)
-        log (1.2)
-        log4net (1.1)
-          log (>= 1.0)
-        Rx-Core (2.1)
-        Rx-Main (2.0)
-          Rx-Core (>= 2.1)"""
+    let expectedText = """
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)
+    Rx-Core (2.1)
+    Rx-Main (2.0)
+      Rx-Core (>= 2.1)"""
+    
+    let expected = trimAndNormalizeLines expectedText
 
     [<Test>]
     let ``should generate lock file``() = 

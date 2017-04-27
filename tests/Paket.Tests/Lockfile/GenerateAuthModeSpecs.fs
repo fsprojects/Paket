@@ -12,19 +12,19 @@ module GenerateAuthModeSpecs =
     open Paket.Domain
 
     let config1 = """
-    source "http://www.nuget.org/api/v2"  username: "user" password: "pass"
+source "http://www.nuget.org/api/v2"  username: "user" password: "pass"
 
-    nuget "Castle.Windsor-log4net" "~> 3.2"
-    """
+nuget "Castle.Windsor-log4net" "~> 3.2" """ |> trimAndNormalizeLines
 
     let graph =
         OfSimpleGraph [
             "Castle.Windsor-log4net","3.2",[]
         ]
 
-    let expected = """NUGET
-      remote: http://www.nuget.org/api/v2
-        Castle.Windsor-log4net (3.2)"""
+    let expected = """
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Castle.Windsor-log4net (3.2)""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should generate no auth in lock file``() = 

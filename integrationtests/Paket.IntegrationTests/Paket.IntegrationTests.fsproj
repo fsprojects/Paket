@@ -96,6 +96,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="paket.references" />
     <Compile Include="..\..\paket-files\test\forki\FsUnit\FsUnit.fs">
       <Paket>True</Paket>
       <Link>FsUnit.fs</Link>
@@ -126,7 +127,6 @@
     <Compile Include="LoadingScriptGenerationTests.fs" />
     <Compile Include="LocalOverrideSpecs.fs" />
     <Compile Include="SimplifierSpecs.fs" />
-    <None Include="paket.references" />
     <Content Include="App.config" />
   </ItemGroup>
   <ItemGroup>

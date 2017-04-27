@@ -12,53 +12,57 @@ module GenerateWithOptionsSpecs =
     open Paket.Domain
     open Paket.Requirements
 
-    let config1 = """
-    references strict
-    framework: >= net45
-    copy_local false
-    source "http://www.nuget.org/api/v2"
+    let config1Text = """
+references strict
+framework: >= net45
+copy_local false
+source "http://www.nuget.org/api/v2"
 
-    nuget "Castle.Windsor-log4net" "~> 3.2"
-    """
+nuget "Castle.Windsor-log4net" "~> 3.2" """ |> trimAndNormalizeLines
 
+    let config1 = trimAndNormalizeLines config1Text
     let graph1 =
         OfSimpleGraph [
             "Castle.Windsor-log4net","3.2",[]
         ]
 
-    let expected1 = """REFERENCES: STRICT
-    COPY-LOCAL: FALSE
-    FRAMEWORK: >= NET45
-    NUGET
-      remote: http://www.nuget.org/api/v2
-        Castle.Windsor-log4net (3.2)"""
+    let expected1Text = """
+REFERENCES: STRICT
+COPY-LOCAL: FALSE
+FRAMEWORK: >= NET45
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Castle.Windsor-log4net (3.2)""" |> trimAndNormalizeLines
+
+    let expected1 = trimAndNormalizeLines expected1Text 
+
 
     [<Test>]
     let ``should generate strict lock file``() = 
         let cfg = DependenciesFile.FromSource(config1)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph1, PackageDetailsFromGraph graph1).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-        |> shouldEqual (normalizeLineEndings expected1)
+        |> shouldEqual expected1
 
 
     let configWithContent = """
-    content none
-    import_targets false
-    source "http://www.nuget.org/api/v2"
+content none
+import_targets false
+source "http://www.nuget.org/api/v2"
 
-    nuget "Microsoft.SqlServer.Types"
-    """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
     let graph2 =
         OfSimpleGraph [
             "Microsoft.SqlServer.Types","1.0",[]
         ]
 
-    let expected2 = """IMPORT-TARGETS: FALSE
-    CONTENT: NONE
-    NUGET
-      remote: http://www.nuget.org/api/v2
-        Microsoft.SqlServer.Types (1.0)"""
+    let expected2 = """
+IMPORT-TARGETS: FALSE
+CONTENT: NONE
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should generate content none lock file``() = 
@@ -68,21 +72,21 @@ module GenerateWithOptionsSpecs =
         |> shouldEqual (normalizeLineEndings expected2)
 
     let configWithRedirects = """
-    redirects on
-    source "http://www.nuget.org/api/v2"
+redirects on
+source "http://www.nuget.org/api/v2"
 
-    nuget "Microsoft.SqlServer.Types"
-    """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
     let graph3 = 
         OfSimpleGraph [
             "Microsoft.SqlServer.Types","1.0",[]
         ]
 
-    let expected3 = """REDIRECTS: ON
-    NUGET
-      remote: http://www.nuget.org/api/v2
-        Microsoft.SqlServer.Types (1.0)"""
+    let expected3 = """
+REDIRECTS: ON
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should generate redirects lock file``() = 
@@ -94,16 +98,16 @@ module GenerateWithOptionsSpecs =
     [<Test>]
     let ``should generate strategy min lock file``() = 
         let config = """
-        strategy min
-        source "http://www.nuget.org/api/v2"
+strategy min
+source "http://www.nuget.org/api/v2"
 
-        nuget "Microsoft.SqlServer.Types"
-        """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-        let expected = """STRATEGY: MIN
-    NUGET
-      remote: http://www.nuget.org/api/v2
-        Microsoft.SqlServer.Types (1.0)"""
+        let expected = """
+STRATEGY: MIN
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(config)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
@@ -113,16 +117,16 @@ module GenerateWithOptionsSpecs =
     [<Test>]
     let ``should generate strategy max lock file``() = 
         let config = """
-        strategy max
-        source "http://www.nuget.org/api/v2"
+strategy max
+source "http://www.nuget.org/api/v2"
 
-        nuget "Microsoft.SqlServer.Types"
-        """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-        let expected = """STRATEGY: MAX
-    NUGET
-      remote: http://www.nuget.org/api/v2
-        Microsoft.SqlServer.Types (1.0)"""
+        let expected = """
+STRATEGY: MAX
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(config)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
@@ -132,16 +136,16 @@ module GenerateWithOptionsSpecs =
     [<Test>]
     let ``should generate lowest_matching true lock file``() = 
         let config = """
-        lowest_matching true
-        source "http://www.nuget.org/api/v2"
+lowest_matching true
+source "http://www.nuget.org/api/v2"
 
-        nuget "Microsoft.SqlServer.Types"
-        """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-        let expected = """LOWEST_MATCHING: TRUE
-    NUGET
-      remote: http://www.nuget.org/api/v2
-        Microsoft.SqlServer.Types (1.0)"""
+        let expected = """
+LOWEST_MATCHING: TRUE
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(config)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
@@ -151,16 +155,16 @@ module GenerateWithOptionsSpecs =
     [<Test>]
     let ``should generate lowest_matching false lock file``() = 
         let config = """
-        lowest_matching false
-        source "http://www.nuget.org/api/v2"
+lowest_matching false
+source "http://www.nuget.org/api/v2"
 
-        nuget "Microsoft.SqlServer.Types"
-        """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-        let expected = """LOWEST_MATCHING: FALSE
-    NUGET
-      remote: http://www.nuget.org/api/v2
-        Microsoft.SqlServer.Types (1.0)"""
+        let expected = """
+LOWEST_MATCHING: FALSE
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(config)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
@@ -171,13 +175,13 @@ module GenerateWithOptionsSpecs =
     [<Test>]
     let ``should resolve config with global framework restrictions``() = 
 
-        let config = """framework: >= net40
+        let config = """
+framework: >= net40
 
-    source https://www.nuget.org/api/v2
+source https://www.nuget.org/api/v2
 
-    nuget NLog framework: net40
-    nuget NLog.Contrib
-    """
+nuget NLog framework: net40
+nuget NLog.Contrib""" |> trimAndNormalizeLines
 
         let graph =
           OfSimpleGraph [
@@ -186,12 +190,13 @@ module GenerateWithOptionsSpecs =
             "NLog.Contrib","1.0.0",["NLog",DependenciesFileParser.parseVersionRequirement ">= 1.0.1"]
           ]
 
-        let expected = """FRAMEWORK: >= NET40
-    NUGET
-      remote: https://www.nuget.org/api/v2
-        NLog (1.0.1)
-        NLog.Contrib (1.0)
-          NLog (>= 1.0.1)"""
+        let expected = """
+FRAMEWORK: >= NET40
+NUGET
+  remote: https://www.nuget.org/api/v2
+    NLog (1.0.1)
+    NLog.Contrib (1.0)
+      NLog (>= 1.0.1)""" |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(config)
         let group = cfg.Groups.[Constants.MainDependencyGroup]

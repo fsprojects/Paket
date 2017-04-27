@@ -13,10 +13,10 @@ module GeneratorSpecs =
     open Paket.Domain
 
     let config1 = """
-    source "http://www.nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
-    nuget "Castle.Windsor-log4net" "~> 3.2"
-    nuget "Rx-Main" "~> 2.0" """
+nuget "Castle.Windsor-log4net" "~> 3.2"
+nuget "Rx-Main" "~> 2.0" """ |> trimAndNormalizeLines
 
     let graph = 
       OfSimpleGraph [
@@ -36,144 +36,151 @@ module GeneratorSpecs =
 
     [<Test>]
     let ``should generate lock file for packages``() = 
-        let expected = """NUGET
-      remote: http://www.nuget.org/api/v2
-        Castle.Windsor (2.1)
-        Castle.Windsor-log4net (3.3)
-          Castle.Windsor (>= 2.0)
-          log4net (>= 1.0)
-        log (1.2)
-        log4net (1.1)
-          log (>= 1.0)
-        Rx-Core (2.1)
-        Rx-Main (2.0)
-          Rx-Core (>= 2.1)"""
+        let expected = """
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3)
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2)
+    log4net (1.1)
+      log (>= 1.0)
+    Rx-Core (2.1)
+    Rx-Main (2.0)
+      Rx-Core (>= 2.1)""" |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(config1)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-        |> shouldEqual (normalizeLineEndings expected)
+        |> shouldEqual  expected
 
     let configWithRestrictions = """
-    source "http://www.nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
-    nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
-    nuget "Rx-Main" "~> 2.0" framework: >= net40 """
+nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
+nuget "Rx-Main" "~> 2.0" framework: >= net40 """ |> trimAndNormalizeLines
 
     [<Test>]
     let ``should generate lock file with framework restrictions for packages``() = 
-        let expected = """NUGET
-      remote: http://www.nuget.org/api/v2
-        Castle.Windsor (2.1) - framework: net35
-        Castle.Windsor-log4net (3.3) - framework: net35
-          Castle.Windsor (>= 2.0)
-          log4net (>= 1.0)
-        log (1.2) - framework: net35
-        log4net (1.1) - framework: net35
-          log (>= 1.0)
-        Rx-Core (2.1) - framework: >= net40
-        Rx-Main (2.0) - framework: >= net40
-          Rx-Core (>= 2.1)"""
+        let expected = """
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Castle.Windsor (2.1) - framework: net35
+    Castle.Windsor-log4net (3.3) - framework: net35
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2) - framework: net35
+    log4net (1.1) - framework: net35
+      log (>= 1.0)
+    Rx-Core (2.1) - framework: >= net40
+    Rx-Main (2.0) - framework: >= net40
+      Rx-Core (>= 2.1)""" |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(configWithRestrictions)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-        |> shouldEqual (normalizeLineEndings expected)
+        |> shouldEqual expected
 
 
     let configWithNoImport = """
-    source "D:\code\temp with space"
+source "D:\code\temp with space"
 
-    nuget "Castle.Windsor-log4net" ~> 3.2 import_targets: false, framework: net35
-    nuget "Rx-Main" "~> 2.0" framework: >= net40 """
+nuget "Castle.Windsor-log4net" ~> 3.2 import_targets: false, framework: net35
+nuget "Rx-Main" "~> 2.0" framework: >= net40 """ |> trimAndNormalizeLines
 
     [<Test>]
     let ``should generate lock file with no targets import for packages``() = 
-        let expected = """NUGET
-      remote: "D:\code\temp with space"
-        Castle.Windsor (2.1) - import_targets: false, framework: net35
-        Castle.Windsor-log4net (3.3) - import_targets: false, framework: net35
-          Castle.Windsor (>= 2.0)
-          log4net (>= 1.0)
-        log (1.2) - import_targets: false, framework: net35
-        log4net (1.1) - import_targets: false, framework: net35
-          log (>= 1.0)
-        Rx-Core (2.1) - framework: >= net40
-        Rx-Main (2.0) - framework: >= net40
-          Rx-Core (>= 2.1)"""
+        let expected = """
+NUGET
+  remote: "D:\code\temp with space"
+    Castle.Windsor (2.1) - import_targets: false, framework: net35
+    Castle.Windsor-log4net (3.3) - import_targets: false, framework: net35
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2) - import_targets: false, framework: net35
+    log4net (1.1) - import_targets: false, framework: net35
+      log (>= 1.0)
+    Rx-Core (2.1) - framework: >= net40
+    Rx-Main (2.0) - framework: >= net40
+      Rx-Core (>= 2.1)"""  |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(configWithNoImport)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-        |> shouldEqual (normalizeLineEndings expected)
+        |> shouldEqual expected
 
     let configWithCopyLocal = """
-    source "http://www.nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
-    nuget "Castle.Windsor-log4net" ~> 3.2 copy_local: false, import_targets: false, framework: net35
-    nuget "Rx-Main" "~> 2.0" framework: >= net40 """
+nuget "Castle.Windsor-log4net" ~> 3.2 copy_local: false, import_targets: false, framework: net35
+nuget "Rx-Main" "~> 2.0" framework: >= net40 """ |> trimAndNormalizeLines
 
     [<Test>]
     let ``should generate lock file with no copy local for packages``() = 
-        let expected = """NUGET
-      remote: http://www.nuget.org/api/v2
-        Castle.Windsor (2.1) - copy_local: false, import_targets: false, framework: net35
-        Castle.Windsor-log4net (3.3) - copy_local: false, import_targets: false, framework: net35
-          Castle.Windsor (>= 2.0)
-          log4net (>= 1.0)
-        log (1.2) - copy_local: false, import_targets: false, framework: net35
-        log4net (1.1) - copy_local: false, import_targets: false, framework: net35
-          log (>= 1.0)
-        Rx-Core (2.1) - framework: >= net40
-        Rx-Main (2.0) - framework: >= net40
-          Rx-Core (>= 2.1)"""
+        let expected = """
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Castle.Windsor (2.1) - copy_local: false, import_targets: false, framework: net35
+    Castle.Windsor-log4net (3.3) - copy_local: false, import_targets: false, framework: net35
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2) - copy_local: false, import_targets: false, framework: net35
+    log4net (1.1) - copy_local: false, import_targets: false, framework: net35
+      log (>= 1.0)
+    Rx-Core (2.1) - framework: >= net40
+    Rx-Main (2.0) - framework: >= net40
+      Rx-Core (>= 2.1)""" |> trimAndNormalizeLines
         let cfg = DependenciesFile.FromSource(configWithCopyLocal)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-        |> shouldEqual (normalizeLineEndings expected)
+        |> shouldEqual expected
 
 
     let configWithDisabledContent = """
-    source "http://www.nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
-    nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
-    nuget "Rx-Main" "~> 2.0" content: none, framework: >= net40 """
+nuget "Castle.Windsor-log4net" ~> 3.2 framework: net35
+nuget "Rx-Main" "~> 2.0" content: none, framework: >= net40 """ |> trimAndNormalizeLines
 
     [<Test>]
     let ``should generate lock file with disabled content for packages``() = 
-        let expected = """NUGET
-      remote: http://www.nuget.org/api/v2
-        Castle.Windsor (2.1) - framework: net35
-        Castle.Windsor-log4net (3.3) - framework: net35
-          Castle.Windsor (>= 2.0)
-          log4net (>= 1.0)
-        log (1.2) - framework: net35
-        log4net (1.1) - framework: net35
-          log (>= 1.0)
-        Rx-Core (2.1) - content: none, framework: >= net40
-        Rx-Main (2.0) - content: none, framework: >= net40
-          Rx-Core (>= 2.1)"""
+        let expected = """
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Castle.Windsor (2.1) - framework: net35
+    Castle.Windsor-log4net (3.3) - framework: net35
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2) - framework: net35
+    log4net (1.1) - framework: net35
+      log (>= 1.0)
+    Rx-Core (2.1) - content: none, framework: >= net40
+    Rx-Main (2.0) - content: none, framework: >= net40
+      Rx-Core (>= 2.1)""" |> trimAndNormalizeLines
         let cfg = DependenciesFile.FromSource(configWithDisabledContent)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-        |> shouldEqual (normalizeLineEndings expected)
+        |> shouldEqual expected
 
-    let expectedWithGitHub = """GITHUB
-      remote: owner/project1
-        "folder/file 2.fs" (commit1)
-        folder/file.fs (master)
-        folder/file1.fs (commit1)
-      remote: owner/project2
-        folder/file.fs (commit2)
-        folder/file3.fs (commit3) githubAuth"""
+    let expectedWithGitHub = """
+GITHUB
+  remote: owner/project1
+    "folder/file 2.fs" (commit1)
+    folder/file.fs (master)
+    folder/file1.fs (commit1)
+  remote: owner/project2
+    folder/file.fs (commit2)
+    folder/file3.fs (commit3) githubAuth""" |> trimAndNormalizeLines
     
     [<Test>]
     let ``should generate lock file for source files``() = 
-        let config = """github "owner:project1:master" "folder/file.fs"
-    github "owner/project1:commit1" "folder/file1.fs"
-    github "owner/project1:commit1" "folder/file 2.fs"
-    github "owner:project2:commit2" "folder/file.fs"
-    github "owner:project2:commit3" "folder/file3.fs" githubAuth """ 
+        let config = """
+github "owner:project1:master" "folder/file.fs"
+github "owner/project1:commit1" "folder/file1.fs"
+github "owner/project1:commit1" "folder/file 2.fs"
+github "owner:project2:commit2" "folder/file.fs"
+github "owner:project2:commit3" "folder/file3.fs" githubAuth """  |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(config)
     
@@ -193,35 +200,35 @@ module GeneratorSpecs =
                   AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
             | _ -> failwith "error")
         |> LockFileSerializer.serializeSourceFiles
-        |> shouldEqual (normalizeLineEndings expectedWithGitHub)
+        |> shouldEqual  expectedWithGitHub
 
 
     let config2 = """
-    source https://www.myget.org/F/ravendb3/
+source https://www.myget.org/F/ravendb3/
 
-    nuget RavenDB.Client == 3.0.3498-Unstable
-     """
+nuget RavenDB.Client == 3.0.3498-Unstable""" |> trimAndNormalizeLines
 
     let graph2 =
         OfSimpleGraph [
             "RavenDB.Client","3.0.3498-Unstable",[]
         ]
 
-    let expected2 = """NUGET
-      remote: https://www.myget.org/F/ravendb3
-        RavenDB.Client (3.0.3498-Unstable)"""
+    let expected2 = """
+NUGET
+  remote: https://www.myget.org/F/ravendb3
+    RavenDB.Client (3.0.3498-Unstable)""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should generate lock file for RavenDB.Client``() = 
         let cfg = DependenciesFile.FromSource(config2)
         ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
         |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-        |> shouldEqual (normalizeLineEndings expected2)
+        |> shouldEqual expected2
 
     let config3 = """
-    source "http://www.nuget.org/api/v2"
+source "http://www.nuget.org/api/v2"
 
-    nuget "OtherVersionRanges.Package" "~> 1.0" """
+nuget "OtherVersionRanges.Package" "~> 1.0" """ |> trimAndNormalizeLines
 
     let graph3 =
       OfSimpleGraph [
@@ -231,15 +238,16 @@ module GeneratorSpecs =
         "Maximum.Package","2.9",[]
       ]
 
-    let expected3 = """NUGET
-      remote: http://www.nuget.org/api/v2
-        GreaterThan.Package (2.1)
-          Maximum.Package (<= 3.0)
-        LessThan.Package (1.9)
-          GreaterThan.Package (> 2.0)
-        Maximum.Package (2.9)
-        OtherVersionRanges.Package (1.0)
-          LessThan.Package (< 2.0)"""
+    let expected3 = """
+NUGET
+  remote: http://www.nuget.org/api/v2
+    GreaterThan.Package (2.1)
+      Maximum.Package (<= 3.0)
+    LessThan.Package (1.9)
+      GreaterThan.Package (> 2.0)
+    Maximum.Package (2.9)
+    OtherVersionRanges.Package (1.0)
+      LessThan.Package (< 2.0)""" |> trimAndNormalizeLines
 
     [<Test>]
     let ``should generate other version ranges for packages``() = 
@@ -263,9 +271,10 @@ module GeneratorSpecs =
           Name = f.Name
           AuthKey = f.AuthKey } : ModuleResolver.ResolvedSourceFile
 
-    let expectedWithHttp = """HTTP
-      remote: http://www.fssnip.net
-        test.fs (/raw/1M)"""
+    let expectedWithHttp = """
+HTTP
+  remote: http://www.fssnip.net
+    test.fs (/raw/1M)""" |> trimAndNormalizeLines
     
     [<Test>]
     let ``should generate lock file for http source files``() = 
@@ -276,32 +285,35 @@ module GeneratorSpecs =
         cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
         |> List.map trivialResolve
         |> LockFileSerializer.serializeSourceFiles
-        |> shouldEqual (normalizeLineEndings expectedWithHttp)
+        |> shouldEqual  expectedWithHttp
 
-    let expectedMultiple = """HTTP
-      remote: http://www.fssnip.net
-        myFile.fs (/raw/1M)
-        myFile2.fs (/raw/32)
-        myFile3.fs (/raw/15)
-        myFile5.fs (/raw/34) httpAuth
-    GIST
-      remote: Thorium/1972308
-        gistfile1.fs
-      remote: Thorium/6088882
-        FULLPROJECT"""
+    let expectedMultiple = """
+HTTP
+  remote: http://www.fssnip.net
+    myFile.fs (/raw/1M)
+    myFile2.fs (/raw/32)
+    myFile3.fs (/raw/15)
+    myFile5.fs (/raw/34) httpAuth
+GIST
+  remote: Thorium/1972308
+    gistfile1.fs
+  remote: Thorium/6088882
+    FULLPROJECT"""          |> trimAndNormalizeLines
+        
     
     [<Test>]
     let ``should generate lock file for http and gist source files``() = 
-        let config = """source "http://www.nuget.org/api/v2
+        let config = """
+source "http://www.nuget.org/api/v2
 
-    http http://www.fssnip.net/raw/32 myFile2.fs
-    http http://www.fssnip.net/raw/34 myFile5.fs httpAuth
+http http://www.fssnip.net/raw/32 myFile2.fs
+http http://www.fssnip.net/raw/34 myFile5.fs httpAuth
 
-    gist Thorium/1972308 gistfile1.fs
-    gist Thorium/6088882 
+gist Thorium/1972308 gistfile1.fs
+gist Thorium/6088882 
 
-    http http://www.fssnip.net/raw/1M myFile.fs
-    http http://www.fssnip.net/raw/15 myFile3.fs """ 
+http http://www.fssnip.net/raw/1M myFile.fs
+http http://www.fssnip.net/raw/15 myFile3.fs """ |> trimAndNormalizeLines
 
         let cfg = DependenciesFile.FromSource(config)
     
@@ -309,19 +321,20 @@ module GeneratorSpecs =
             cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
             |> List.map trivialResolve
             |> LockFileSerializer.serializeSourceFiles
-        actual |> shouldEqual (normalizeLineEndings expectedMultiple)
+        actual |> shouldEqual expectedMultiple
 
 
-    let expectedForStanfordNLPdotNET = """HTTP
-      remote: http://www.frijters.net
-        ikvmbin-8.0.5449.0.zip (/ikvmbin-8.0.5449.0.zip)
-      remote: http://nlp.stanford.edu
-        stanford-corenlp-full-2014-10-31.zip (/software/stanford-corenlp-full-2014-10-31.zip)
-        stanford-ner-2014-10-26.zip (/software/stanford-ner-2014-10-26.zip)
-        stanford-parser-full-2014-10-31.zip (/software/stanford-parser-full-2014-10-31.zip)
-        stanford-postagger-full-2014-10-26.zip (/software/stanford-postagger-full-2014-10-26.zip)
-        stanford-segmenter-2014-10-26.zip (/software/stanford-segmenter-2014-10-26.zip)"""
-
+    let expectedForStanfordNLPdotNET = """
+HTTP
+  remote: http://www.frijters.net
+    ikvmbin-8.0.5449.0.zip (/ikvmbin-8.0.5449.0.zip)
+  remote: http://nlp.stanford.edu
+    stanford-corenlp-full-2014-10-31.zip (/software/stanford-corenlp-full-2014-10-31.zip)
+    stanford-ner-2014-10-26.zip (/software/stanford-ner-2014-10-26.zip)
+    stanford-parser-full-2014-10-31.zip (/software/stanford-parser-full-2014-10-31.zip)
+    stanford-postagger-full-2014-10-26.zip (/software/stanford-postagger-full-2014-10-26.zip)
+    stanford-segmenter-2014-10-26.zip (/software/stanford-segmenter-2014-10-26.zip)"""  |> trimAndNormalizeLines
+    
     [<Test>]
     let ``should generate lock file for http Stanford.NLP.NET project``() =
         let config = """http http://www.frijters.net/ikvmbin-8.0.5449.0.zip
@@ -345,7 +358,7 @@ module GeneratorSpecs =
 
         references
         |> LockFileSerializer.serializeSourceFiles
-        |> shouldEqual (normalizeLineEndings expectedForStanfordNLPdotNET)
+        |> shouldEqual expectedForStanfordNLPdotNET
 
     [<Test>]
     let ``should parse and regenerate http Stanford.NLP.NET project``() =
@@ -354,30 +367,30 @@ module GeneratorSpecs =
         lockFile.SourceFiles
         |> List.rev
         |> LockFileSerializer.serializeSourceFiles
-        |> shouldEqual (normalizeLineEndings expectedForStanfordNLPdotNET)
+        |> shouldEqual expectedForStanfordNLPdotNET
 
     [<Test>]
     let ``should generate lock file with second group``() = 
-        let expected = """NUGET
-      remote: http://www.nuget.org/api/v2
-        Castle.Windsor (2.1) - copy_content_to_output_dir: preserve_newest
-        Castle.Windsor-log4net (3.3) - framework: net35
-          Castle.Windsor (>= 2.0)
-          log4net (>= 1.0)
-        log (1.2)
-        log4net (1.1) - copy_content_to_output_dir: never
-          log (>= 1.0)
-        Rx-Core (2.1) - content: none
-        Rx-Main (2.0) - content: none, framework: >= net40
-          Rx-Core (>= 2.1)
+        let expected = """
+NUGET
+  remote: http://www.nuget.org/api/v2
+    Castle.Windsor (2.1) - copy_content_to_output_dir: preserve_newest
+    Castle.Windsor-log4net (3.3) - framework: net35
+      Castle.Windsor (>= 2.0)
+      log4net (>= 1.0)
+    log (1.2)
+    log4net (1.1) - copy_content_to_output_dir: never
+      log (>= 1.0)
+    Rx-Core (2.1) - content: none
+    Rx-Main (2.0) - content: none, framework: >= net40
+      Rx-Core (>= 2.1)
 
-    GROUP Build
-    COPY-LOCAL: TRUE
-    COPY-CONTENT-TO-OUTPUT-DIR: ALWAYS
-    CONDITION: LEGACY
-    NUGET
-      remote: http://www.nuget.org/api/v2
-        FAKE (4.0)
-    """
+GROUP Build
+COPY-LOCAL: TRUE
+COPY-CONTENT-TO-OUTPUT-DIR: ALWAYS
+CONDITION: LEGACY
+NUGET
+  remote: http://www.nuget.org/api/v2
+    FAKE (4.0)"""           |> trimAndNormalizeLines
         let lockFile = LockFile.Parse("Test",toLines expected)
-        lockFile.ToString() |> normalizeLineEndings |> shouldEqual (normalizeLineEndings expected)
+        lockFile.ToString() |> trimAndNormalizeLines |> shouldEqual  expected

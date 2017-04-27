@@ -11,20 +11,22 @@ module ParserWithMultipleSourcesSpecs =
     open TestHelpers
     open Paket.Domain
 
-    let lockFile = """NUGET
-      remote: https://www.nuget.org/api/v2
-      specs:
-        Castle.Windsor (2.1)
-        Castle.Windsor-log4net (3.3)
-        log (1.2)
-        log4net (1.1)
-      remote: http://nuget.org/api/v3
-      specs:
-        Rx-Core (2.1)
-        Rx-Main (2.0)"""
+    let lockFile = """
+NUGET
+  remote: https://www.nuget.org/api/v2
+  specs:
+    Castle.Windsor (2.1)
+    Castle.Windsor-log4net (3.3)
+    log (1.2)
+    log4net (1.1)
+  remote: http://nuget.org/api/v3
+  specs:
+    Rx-Core (2.1)
+    Rx-Main (2.0)"""
 
     [<Test>]
     let ``should parse lock file``() = 
+        let lockFile = trimAndNormalizeLines lockFile
         let lockFile = LockFileParser.Parse(toLines lockFile) |> List.head
         let packages = List.rev lockFile.Packages
         packages.Length |> shouldEqual 6
