@@ -1,18 +1,22 @@
-﻿module Paket.IntegrationTests.SimplifierSpecs
-
+﻿namespace Paket.IntegrationTests
 open NUnit.Framework
-open Fake
-open FsUnit
 
-[<Test>]
-let ``#1737 simplify should handle auto-detected framework``() =
-    let scenario = "i001737-simplify-with-auto-framework"
-    prepare scenario
-    paket "install" scenario |> ignore
+[<TestFixture>]
+module SimplifierSpecs =
 
-    let deps = Paket.Dependencies(scenarioTempPath scenario </> "paket.dependencies")
-    deps.Simplify(false)
+
+    open Fake
+    open FsUnit
+
+    [<Test>]
+    let ``#1737 simplify should handle auto-detected framework``() =
+        let scenario = "i001737-simplify-with-auto-framework"
+        prepare scenario
+        paket "install" scenario |> ignore
+
+        let deps = Paket.Dependencies(scenarioTempPath scenario </> "paket.dependencies")
+        deps.Simplify(false)
     
-    deps.GetDependenciesFile().Groups.[Paket.Constants.MainDependencyGroup].Packages |> shouldHaveLength 1
+        deps.GetDependenciesFile().Groups.[Paket.Constants.MainDependencyGroup].Packages |> shouldHaveLength 1
 
 
