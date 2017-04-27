@@ -5,6 +5,7 @@
   * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
 * New command `paket generate-nuspec`
 * BUGFIX: Improved C++ support
+* BUGFIX: Fixed bug with ignored argument of getPackageDetails - https://github.com/fsprojects/Paket/pull/2293
 * BUGFIX: HTTP dependency - strip query string to detect a file name - https://github.com/fsprojects/Paket/pull/2295
 * BUGFIX: Proper encoding "+" in package download url - https://github.com/fsprojects/Paket/pull/2288
 * BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
