@@ -1,20 +1,14 @@
-#### 4.9.0 - 26.04.2017
-* Fix dotnetcore integration.
+#### 5.0.0-alpha001 - 27.04.2017
+* BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
   * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
 * New command `paket generate-nuspec`
-* BREAKS: `InstallModel` API
 * BUGFIX: Improved C++ support
-
-#### 4.8.4 - 26.04.2017
-* BUGFIX: Proper encoding "+" in package download url  - https://github.com/fsprojects/Paket/pull/2288
-
-#### 4.8.3 - 26.04.2017
+* BUGFIX: Proper encoding "+" in package download url - https://github.com/fsprojects/Paket/pull/2288
 * BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
-
-#### 4.8.2 - 26.04.2017
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
+* BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
 
 #### 4.8.1 - 25.04.2017
 * BREAKING CHANGE: Made pushing changes from Git dependency repositories easier - https://github.com/fsprojects/Paket/pull/2226
