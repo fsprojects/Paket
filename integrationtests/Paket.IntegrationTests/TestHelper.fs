@@ -71,13 +71,7 @@ let directPaketInPath command scenarioPath =
     #endif
 
 let directPaket command scenario =
-    let timer = System.Diagnostics.Stopwatch.StartNew()
-    let result = directPaketInPath command (scenarioTempPath scenario)
-    timer.Stop ()
-    let exectime = timer.Elapsed.ToString "mm\\:ss\\.ff"
-    let paketTime = sprintf "Paket Execution Time for Scenario %s\n -- %s\n" scenario exectime
-    printfn "%s" paketTime
-    paketTime + result
+    directPaketInPath command (scenarioTempPath scenario)
 
 let paket command scenario =
     prepare scenario
@@ -85,7 +79,6 @@ let paket command scenario =
     directPaket command scenario
 
 let update scenario =
-    printfn "paket update scenario - %s" scenario
     #if INTERACTIVE
     paket "update --verbose" scenario |> printfn "%s"
     #else
@@ -94,7 +87,6 @@ let update scenario =
     LockFile.LoadFrom(Path.Combine(scenarioTempPath scenario,"paket.lock"))
 
 let install scenario =
-    printfn "paket install scenario - %s" scenario
     #if INTERACTIVE
     paket "install --verbose" scenario |> printfn "%s"
     #else
