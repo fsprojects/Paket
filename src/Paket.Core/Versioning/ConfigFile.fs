@@ -17,9 +17,10 @@ let private rootElement = "configuration"
 let private getConfigNode (nodeName : string) =
     let rootNode = 
         let doc = XmlDocument ()
-        if File.Exists Constants.PaketConfigFile then 
+        let configFile = Constants.PaketConfigFile.Force()
+        if File.Exists configFile then 
             try 
-                use f = File.OpenRead(Constants.PaketConfigFile)
+                use f = File.OpenRead configFile
                 doc.Load f
                 ok doc.DocumentElement
             with _ -> fail ConfigFileParseError
@@ -41,8 +42,8 @@ let private getConfigNode (nodeName : string) =
 
 let private saveConfigNode (node : XmlNode) =
     trial {
-        do! createDir Constants.PaketConfigFolder
-        do! saveNormalizedXml Constants.PaketConfigFile node.OwnerDocument
+        do! createDir (Constants.PaketConfigFolder.Force())
+        do! saveNormalizedXml (Constants.PaketConfigFile.Force()) node.OwnerDocument
     }
 
 
@@ -148,7 +149,7 @@ let private getCredentialsNode = lazy(getConfigNode "credentials" |> returnOrFai
 let GetAuthenticationForUrl =
     memoize (fun (source : string, url) ->
     let sourceNodes =
-        if File.Exists Constants.PaketConfigFile |> not then [] else
+        if File.Exists(Constants.PaketConfigFile.Force()) |> not then [] else
         let credentialsNode = getCredentialsNode.Force()
         getSourceNodes credentialsNode source "credential" @ getSourceNodes credentialsNode source "token"
 

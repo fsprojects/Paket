@@ -160,7 +160,7 @@ module NugetEnv =
                 | null -> None 
                 | _ -> Some(FileInfo(Path.Combine(di.FullName, "nuget.config")), di.Parent)) 
         |> List.rev
-        |> List.append [FileInfo(Path.Combine(Constants.AppDataFolder, "nuget", "nuget.config"))]
+        |> List.append [FileInfo(Path.Combine(Constants.AppDataFolder.Force(), "nuget", "nuget.config"))]
         |> List.filter (fun fi -> fi.Exists)
         |> List.fold (fun config file -> 
                         config
