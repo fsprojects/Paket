@@ -1,10 +1,11 @@
-#### 5.0.0-alpha004 - 27.04.2017
+#### 5.0.0-alpha005 - 27.04.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
   * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
 * New command `paket generate-nuspec`
 * BUGFIX: Improved C++ support
+* BUGFIX: HTTP dependency - strip query string to detect a file name - https://github.com/fsprojects/Paket/pull/2295
 * BUGFIX: Proper encoding "+" in package download url - https://github.com/fsprojects/Paket/pull/2288
 * BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
