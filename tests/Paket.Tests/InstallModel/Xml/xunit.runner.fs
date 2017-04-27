@@ -39,7 +39,7 @@ module XUniRunnerSpecs =
             InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", [],[],
                 [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
                   @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props"  ]
-                |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\xunit.runner.visualstudio\",
+                |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\xunit.runner.visualstudio\",
                 [],
                   Nuspec.All)
     
@@ -71,7 +71,7 @@ module XUniRunnerSpecs =
             InstallModel.CreateFromLibs(PackageName "xunit.runner.visualstudio", SemVer.Parse "2.50.0", [],[],
                 [ @"..\xunit.runner.visualstudio\build\net20\xunit.runner.visualstudio.props" 
                   @"..\xunit.runner.visualstudio\build\portable-net45+aspnetcore50+win+wpa81+wp80+monotouch+monoandroid\xunit.runner.visualstudio.props" ]
-                |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\xunit.runner.visualstudio\",
+                |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\xunit.runner.visualstudio\",
                   [],
                   Nuspec.All)
 

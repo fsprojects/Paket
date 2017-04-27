@@ -28,7 +28,7 @@ module GitInfoPlanterSpecs =
             InstallModel.CreateFromLibs(PackageName "GitInfoPlanter", SemVer.Parse "0.21", [],
                 [ ],
                 [ @"..\GitInfoPlanter\build\GitInfoPlanter.targets" ]
-                |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\GitInfoPlanter\",
+                |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\GitInfoPlanter\",
                 [],
                   Nuspec.All)
 

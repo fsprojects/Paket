@@ -85,7 +85,7 @@ let ``should generate Xml for System.Security.Cryptography.Algorithms in CSharp 
               @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net463\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\netcore50\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll" ]
-            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\System.Security.Cryptography.Algorithms\",
+            |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\System.Security.Cryptography.Algorithms\",
             [],
             [],
             Nuspec.All)

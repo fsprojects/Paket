@@ -1,13 +1,18 @@
-﻿module Paket.InstallModel.Xml.SystemNetHttpSpecs
-
+﻿namespace Paket.Tests.InstallModel.Xml
 open Paket
 open NUnit.Framework
-open FsUnit
-open Paket.TestHelpers
-open Paket.Domain
-open Paket.Requirements
 
-let expected = """
+[<TestFixture; Category(Category.InstallModel); Category(Category.Xml)>]
+module SystemNetHttpSpecs =
+
+    open Paket
+    open NUnit.Framework
+    open FsUnit
+    open Paket.TestHelpers
+    open Paket.Domain
+    open Paket.Requirements
+
+    let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <When Condition="$(TargetFrameworkIdentifier) == 'MonoAndroid'">
     <ItemGroup>
@@ -152,47 +157,47 @@ let expected = """
   </When>
 </Choose>"""
 
-[<Test>]
-let ``should generate Xml for System.Net.Http 2.2.8``() =
-    ensureDir()
-    let model =
-        InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [],
-            [
-              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll"
+    [<Test>]
+    let ``should generate Xml for System.Net.Http 2.2.8``() =
+        ensureDir()
+        let model =
+            InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [],
+                [
+                  @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll"
+                  @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Primitives.dll"
+                  @"..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\portable-net45+monoandroid10+monotouch10+xamarinios10+Xamarin.Mac20\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll"
+                  @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+                  @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"
+                  @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll"
 
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"
+                  @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll"
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll"
+                  @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll"
+                  @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll"
+                  @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"
+                  @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll"
 
-              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll"
-              ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Microsoft.Net.Http\",
-              [],
-              [],
-              Nuspec.All)
+                  @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll"
+                  ] |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\Microsoft.Net.Http\",
+                  [],
+                  [],
+                  Nuspec.All)
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
-    let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
-    currentXML
-    |> shouldEqual (normalizeXml expected)
+        let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+        let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
+        currentXML
+        |> shouldEqual (normalizeXml expected)

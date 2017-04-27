@@ -31,7 +31,7 @@ module PlossumSpecs =
         let model =
             InstallModel.CreateFromLibs(PackageName "Plossum.CommandLine", SemVer.Parse "1.5.0", [],
                 [ @"..\Plossum.CommandLine\lib\net40\Plossum CommandLine.dll" ]
-                |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Plossum.CommandLine\",
+                |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\Plossum.CommandLine\",
                   [],
                   [],
                   Nuspec.All)

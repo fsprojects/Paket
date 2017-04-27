@@ -21,7 +21,7 @@ module FantomasSpecs =
       </Reference>
     </ItemGroup>"""
 
-    let fromLegacyList = Paket.InstallModel.ProcessingSpecs.fromLegacyList
+    let fromLegacyList = Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList
 
     [<Test>]
     let ``should generate Xml for Fantomas 1.5``() = 

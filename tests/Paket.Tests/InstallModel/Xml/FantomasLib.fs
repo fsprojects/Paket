@@ -28,7 +28,7 @@ module FantomasLibSpecs =
             InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
                 [ @"..\Fantomas\Lib\FantomasLib.dll"
                   @"..\Fantomas\Lib\FSharp.Core.dll"
-                  @"..\Fantomas\Lib\Fantomas.exe" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fantomas\",
+                  @"..\Fantomas\Lib\Fantomas.exe" ] |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fantomas\",
                   [],
                   [],
                   Nuspec.Explicit ["FantomasLib.dll"])

@@ -14,7 +14,7 @@ module SQLiteSpecs =
     open Paket.InstallModel
     open Paket.PlatformMatching
 
-    let fromLegacyList = Paket.InstallModel.ProcessingSpecs.fromLegacyList
+    let fromLegacyList = Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList
 
     let expectedReferenceNodes = """
     <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">

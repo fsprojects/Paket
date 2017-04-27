@@ -1,13 +1,18 @@
-﻿module Paket.InstallModel.Xml.SystemNetHttpWithFramweworkReferencesSpecs
-
+﻿namespace Paket.Tests.InstallModel.Xml
 open Paket
 open NUnit.Framework
-open FsUnit
-open Paket.TestHelpers
-open Paket.Domain
-open Paket.Requirements
 
-let expected = """
+[<TestFixture; Category(Category.InstallModel); Category(Category.Xml)>]
+module SystemNetHttpWithFramweworkReferencesSpecs =
+
+    open Paket
+    open NUnit.Framework
+    open FsUnit
+    open Paket.TestHelpers
+    open Paket.Domain
+    open Paket.Requirements
+
+    let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
     <ItemGroup>
@@ -55,31 +60,31 @@ let expected = """
   </When>
 </Choose>"""
 
-[<Test>]
-let ``should generate Xml for System.Net.Http 2.2.8``() = 
-    ensureDir()
-    let model =
-        InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [],
-            [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"
-              @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll"
+    [<Test>]
+    let ``should generate Xml for System.Net.Http 2.2.8``() = 
+        ensureDir()
+        let model =
+            InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [],
+                [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
+                  @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"
+                  @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll"
 
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll"
-              @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Microsoft.Net.Http\",
-               [],
-               [],
-               { References = NuspecReferences.All
-                 Version = "2.2.8"
-                 OfficialName = "Microsoft.Net.Http"
-                 Dependencies = []
-                 LicenseUrl = ""
-                 IsDevelopmentDependency = false
-                 FrameworkAssemblyReferences =
-                 [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))] }
-                  { AssemblyName = "System.Net.Http.WebRequest"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]})
+                  @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll"
+                  @"..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll"] |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\Microsoft.Net.Http\",
+                   [],
+                   [],
+                   { References = NuspecReferences.All
+                     Version = "2.2.8"
+                     OfficialName = "Microsoft.Net.Http"
+                     Dependencies = []
+                     LicenseUrl = ""
+                     IsDevelopmentDependency = false
+                     FrameworkAssemblyReferences =
+                     [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))] }
+                      { AssemblyName = "System.Net.Http.WebRequest"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]})
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
-    let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
-    currentXML
-    |> shouldEqual (normalizeXml expected)
+        let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+        let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
+        currentXML
+        |> shouldEqual (normalizeXml expected)

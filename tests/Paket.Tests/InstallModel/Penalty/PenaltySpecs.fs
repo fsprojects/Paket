@@ -1,11 +1,11 @@
 ﻿namespace Paket.Tests.InstallModel
-
 open Paket
+open Paket.Tests
 open NUnit.Framework
 open FsUnit
 open Paket.PlatformMatching
 
-[<TestFixture>]
+[<TestFixture>][<Category(Category.InstallModel)>]
 module ``Given a target platform`` =
 
     [<Test>]
@@ -29,7 +29,7 @@ module ``Given a target platform`` =
         let p2 = getPlatformPenalty (DotNetFramework FrameworkVersion.V4_6_2, DotNetStandard DotNetStandardVersion.V1_5)
         p1 |> shouldBeSmallerThan p2
 
-[<TestFixture>]
+[<TestFixture>][<Category(Category.InstallModel)>]
 module ``Given a path`` =
     [<Test>]
     let ``it should split it into the right platforms``() =
@@ -72,7 +72,7 @@ module ``Given a path`` =
         getPenalty [ DotNetFramework FrameworkVersion.V3_5 ] path |> shouldEqual 2
         getPenalty [ DotNetFramework FrameworkVersion.V4_Client ] path |> shouldEqual 3
 
-[<NUnit.Framework.TestFixture>]
+[<TestFixture>][<Category(Category.InstallModel)>]
 module ``Given an empty path`` =
     [<Test>]
     let ``it should be okay to use from .NET``() =
@@ -84,7 +84,7 @@ module ``Given an empty path`` =
         let path = extractPlatforms ""
         getPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneApp "v8.1" ] path |> shouldBeSmallerThan 2000
 
-[<NUnit.Framework.TestFixture>]
+[<TestFixture>][<Category(Category.InstallModel)>]
 module ``Given a list of paths`` =
     let paths =
         [ "net40"; "portable-monotouch+monoandroid"; "portable-net40+sl5+win8+wp8+wpa81"
@@ -128,13 +128,17 @@ module ``Given a list of paths`` =
                 }
             flattend |> shouldNotContain (KnownTargetProfiles.FindPortableProfile "Profile41")
 
+[<TestFixture>][<Category(Category.InstallModel)>]
 module ``ProfileAnalyzer tests`` =
     [<Test>]
     let ``test that we cannot detect portable-net40+sl4+win8+wp71+wpa81`` () =
         let res = Paket.PlatformMatching.tryGetProfile (extractPlatforms "portable-net40+sl4+win8+wp71+wpa81")
         res |> shouldEqual None
 
+[<TestFixture>][<Category(Category.InstallModel)>]
 module ``General Penalty checks`` =
+    
+
     [<Test>]
     let ``prefer net20 over emtpy folder``()=
         Paket.PlatformMatching.findBestMatch ([""; "net20"] |> List.map extractPlatforms, SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_1)))

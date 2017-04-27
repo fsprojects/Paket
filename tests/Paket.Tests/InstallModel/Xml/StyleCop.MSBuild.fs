@@ -23,7 +23,7 @@ module StyleCopSpecs =
         ensureDir()
         let model =
             InstallModel.CreateFromLibs(PackageName "StyleCop.MSBuild", SemVer.Parse "4.7.49.1", [],[],
-                [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\StyleCop.MSBuild\",
+                [ @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" ] |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\StyleCop.MSBuild\",
                 [],
                   Nuspec.All)
 
