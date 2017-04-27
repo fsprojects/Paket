@@ -651,7 +651,7 @@ let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "anal
 
 let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : PackageResolver.PackageDetails =
 
-    let tryV2 source (nugetSource:NugetSource)  = async {
+    let tryV2 source (nugetSource:NugetSource) force = async {
         let! result =
             getDetailsFromNuGet
                 force
@@ -661,7 +661,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                 version
         return Some(source,result)  }
 
-    let tryV3 source nugetSource = async {
+    let tryV3 source nugetSource force = async {
         if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") || nugetSource.Url.Contains("visualstudio.com") || nugetSource.Url.Contains("/nuget/v3/") then
             match NuGetV3.calculateNuGet2Path nugetSource.Url with
             | Some url ->
@@ -690,19 +690,19 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
             try
                 match source with
                 | NuGetV2 nugetSource ->
-                    return! tryV2 source nugetSource
+                    return! tryV2 source nugetSource force
                 | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
                     match NuGetV3.calculateNuGet2Path nugetSource.Url with
                     | Some url ->
                         let nugetSource : NugetSource =
                             { Url = url
                               Authentication = nugetSource.Authentication }
-                        return! tryV2 source nugetSource
+                        return! tryV2 source nugetSource force
                     | _ ->
-                        return! tryV3 source nugetSource
+                        return! tryV3 source nugetSource force
                 | NuGetV3 nugetSource ->
                     try
-                        return! tryV3 source nugetSource
+                        return! tryV3 source nugetSource force
                     with
                     | exn ->
                         match NuGetV3.calculateNuGet2Path nugetSource.Url with
@@ -710,10 +710,10 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                             let nugetSource : NugetSource =
                                 { Url = url
                                   Authentication = nugetSource.Authentication }
-                            return! tryV2 source nugetSource
+                            return! tryV2 source nugetSource force
                         | _ ->
                             raise exn
-                            return! tryV3 source nugetSource
+                            return! tryV3 source nugetSource force
 
                 | LocalNuGet(path,Some _) ->
                     let! result = getDetailsFromLocalNuGetPackage true alternativeProjectRoot root path packageName version
