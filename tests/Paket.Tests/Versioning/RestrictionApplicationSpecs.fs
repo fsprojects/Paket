@@ -1,4 +1,4 @@
-﻿namespace Paket.Requirements
+﻿namespace Paket.Tests.Requirements
 open Paket
 open NUnit.Framework
 [<TestFixture(Category=Category.Versioning)>]

@@ -1,4 +1,4 @@
-namespace Paket.Resolver
+namespace Paket.Tests.Resolver
 
 open Paket
 open NUnit.Framework

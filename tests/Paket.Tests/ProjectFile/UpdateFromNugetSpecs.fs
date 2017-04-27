@@ -1,4 +1,4 @@
-﻿namespace Paket.ProjectFile
+﻿namespace Paket.Tests.ProjectFile
 
 open NUnit.Framework
 open Paket

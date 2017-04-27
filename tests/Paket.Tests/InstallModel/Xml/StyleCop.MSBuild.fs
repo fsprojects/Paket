@@ -1,4 +1,4 @@
-﻿namespace Paket.InstallModel.Xml
+﻿namespace Paket.Tests.InstallModel.Xml
 open Paket
 open NUnit.Framework
 

@@ -1,4 +1,4 @@
-namespace Paket.LockFile
+namespace Paket.Tests.LockFile
 open Paket
 open NUnit.Framework
 
