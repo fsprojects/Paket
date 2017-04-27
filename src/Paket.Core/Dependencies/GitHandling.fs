@@ -145,12 +145,11 @@ let getHashFromRemote url branch =
 
 let fetchCache repoCacheFolder cloneUrl =
     try
-        let repoCacheFolder = Constants.GitRepoCacheFolder.Force()
         if not <| Directory.Exists repoCacheFolder then
-            if not <| Directory.Exists repoCacheFolder then
-                Directory.CreateDirectory repoCacheFolder |> ignore
+            if not <| Directory.Exists Constants.GitRepoCacheFolder then
+                Directory.CreateDirectory Constants.GitRepoCacheFolder |> ignore
             tracefn "Cloning %s to %s" cloneUrl repoCacheFolder
-            CommandHelper.runSimpleGitCommand repoCacheFolder ("clone --mirror " + quote cloneUrl + " " + quote repoCacheFolder) |> ignore
+            CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone --mirror " + quote cloneUrl + " " + quote repoCacheFolder) |> ignore
         else
             CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + quote cloneUrl) |> ignore
             verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder

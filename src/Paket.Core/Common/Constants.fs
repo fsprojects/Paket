@@ -1,4 +1,4 @@
-﻿module Paket.Constants
+module Paket.Constants
 
 open System
 open System.IO
@@ -69,45 +69,44 @@ let getEnvDir specialPath =
     let dir = Environment.GetFolderPath specialPath 
     if String.IsNullOrEmpty dir then None else Some dir
 
-let AppDataFolder = lazy(
+let AppDataFolder =
     getEnvDir Environment.SpecialFolder.ApplicationData 
     |> Option.defaultValue (
         let fallback = Path.GetFullPath ".paket"
         if Logging.verbose then
             Logging.tracefn "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead." fallback
         fallback)
-    )
 
-let PaketConfigFolder = lazy(Path.Combine(AppDataFolder.Force(), "Paket"))
-let PaketConfigFile = lazy(Path.Combine(PaketConfigFolder.Force(), "paket.config"))
+let PaketConfigFolder   = Path.Combine(AppDataFolder, "Paket")
+let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 
-let LocalRootForTempData = lazy(
-    getEnvDir Environment.SpecialFolder.UserProfile
+let LocalRootForTempData =
+    getEnvDir Environment.SpecialFolder.UserProfile 
     |> Option.orElse (getEnvDir Environment.SpecialFolder.LocalApplicationData)
     |> Option.defaultValue (
         let fallback = Path.GetFullPath ".paket"
         if Logging.verbose then
             Logging.tracefn "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead." fallback
         fallback
-    ))
+    )
 
-let GitRepoCacheFolder = lazy(Path.Combine(LocalRootForTempData.Force(),".paket","git","db"))
+let GitRepoCacheFolder = Path.Combine(LocalRootForTempData,".paket","git","db")
 
 let [<Literal>] GlobalPackagesFolderEnvironmentKey = "NUGET_PACKAGES"
 
-let UserNuGetPackagesFolder = lazy(
+let UserNuGetPackagesFolder = 
     getEnVar GlobalPackagesFolderEnvironmentKey 
     |> Option.map (fun path ->
         path.Replace (Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
     ) |> Option.defaultValue(
-        Path.Combine (LocalRootForTempData.Force(),".nuget","packages")
-    ))
+        Path.Combine (LocalRootForTempData,".nuget","packages")
+    )
 
 /// The magic unpublished date is 1900-01-01T00:00:00
 let MagicUnlistingDate = DateTimeOffset(1900, 1, 1, 0, 0, 0, TimeSpan.FromHours(-8.)).DateTime
 
 /// The NuGet cache folder.
-let NuGetCacheFolder = lazy(
+let NuGetCacheFolder =
     getEnVar "NuGetCachePath" 
     |> Option.bind (fun cachePath ->
         let di = DirectoryInfo cachePath
@@ -125,4 +124,4 @@ let NuGetCacheFolder = lazy(
         if Logging.verbose then
             Logging.tracefn "Could not find LocalApplicationData folder, try to set the 'LocalAppData' environment variable. Using '%s' instead" fallback
         fallback
-    ))
+    )

@@ -65,7 +65,7 @@ let getCacheFileName nugetURL (packageName:PackageName) (version:SemVerInfo) =
     let packageUrl = 
         sprintf "%O.%s.s%d.json" 
            packageName (version.Normalize()) h
-    FileInfo(Path.Combine(Constants.NuGetCacheFolder.Force(),packageUrl))
+    FileInfo(Path.Combine(Constants.NuGetCacheFolder,packageUrl))
 
 let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> NuGetPackageCache Async) : NuGetPackageCache Async = 
     let cacheFile = getCacheFileName nugetURL packageName version

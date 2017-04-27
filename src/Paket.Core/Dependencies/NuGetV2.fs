@@ -451,7 +451,7 @@ let rec private cleanup (dir : DirectoryInfo) =
 /// Extracts the given package to the user folder
 let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
-        let targetFolder = DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder.Force(),packageName.ToString(),version.Normalize()))
+        let targetFolder = DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize()))
 
         if isExtracted targetFolder fileName |> not then
             Directory.CreateDirectory(targetFolder.FullName) |> ignore
@@ -461,7 +461,7 @@ let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version
 
             ZipFile.ExtractToDirectory(fileName, targetFolder.FullName)
 
-            let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder.Force(),fi.Name + ".sha512")
+            let cachedHashFile = Path.Combine(Constants.NuGetCacheFolder,fi.Name + ".sha512")
             if not <| File.Exists cachedHashFile then
                 use stream = File.OpenRead(fileName)
                 let packageSize = stream.Length
@@ -810,7 +810,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
         let getVersionsFailedCacheFileName (source:PackageSource) =
             let h = source.Url |> normalizeUrl |> hash |> abs
             let packageUrl = sprintf "Versions.%O.s%d.failed" packageName h
-            FileInfo(Path.Combine(Constants.NuGetCacheFolder.Force(),packageUrl))
+            FileInfo(Path.Combine(Constants.NuGetCacheFolder,packageUrl))
 
         let sources =
             sources
@@ -913,10 +913,9 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
 let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
-    let nugetCache = Constants.NuGetCacheFolder.Force()
-    let targetFileName = Path.Combine(nugetCache, normalizedNupkgName)
+    let targetFileName = Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
     let targetFile = FileInfo targetFileName
-    let licenseFileName = Path.Combine(nugetCache, packageName.ToString() + "." + version.Normalize() + ".license.html")
+    let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
 
     let rec getFromCache (caches:Cache list) =
         match caches with

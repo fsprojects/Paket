@@ -28,9 +28,9 @@ type Dependencies(dependenciesFileName: string) =
             verbosefn "Emptying '%s'" path
             Utils.emptyDir (DirectoryInfo path)
         
-        emptyDir (Constants.UserNuGetPackagesFolder.Force())
-        emptyDir (Constants.NuGetCacheFolder.Force())
-        emptyDir (Constants.GitRepoCacheFolder.Force())
+        emptyDir (Constants.UserNuGetPackagesFolder)
+        emptyDir (Constants.NuGetCacheFolder)
+        emptyDir (Constants.GitRepoCacheFolder)
 
     /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
     static member Locate(): Dependencies = Dependencies.Locate(Directory.GetCurrentDirectory())
