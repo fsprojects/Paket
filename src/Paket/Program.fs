@@ -2,7 +2,7 @@ namespace Paket
 /// [omit]
 
 
-module internal Program =
+module Program =
 
     open System
     open System.Diagnostics
