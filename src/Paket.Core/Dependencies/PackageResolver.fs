@@ -654,16 +654,22 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
         let inline fuseConflicts currentConflict priorConflictSteps conflicts =
             let findMatchingStep priorConflictSteps =
                 priorConflictSteps // row
-                |> Seq.tryFind (fun (_,_,lastRequirement:PackageRequirement,_,_) ->
+                |> Seq.tryFindIndex (fun (_,_,lastRequirement:PackageRequirement,_,_) ->
                     let currentNames =
                         conflicts |> Seq.collect (fun c ->
                             let graphNameList =
                                 c.Graph |> List.map (fun (pr:PackageRequirement) -> pr.Name) 
                             c.Name :: graphNameList)
                         |> Seq.toArray
-                    currentNames |> Array.contains lastRequirement.Name                        
-                )
-                |> Option.map (fun r -> r, priorConflictSteps |> List.filter(fun r2 -> not (obj.ReferenceEquals(r, r2))))
+                    currentNames |> Array.contains lastRequirement.Name)
+                |> Option.map (fun i ->
+                    let row = priorConflictSteps |> List.item i
+                    let priorExceptRow =
+                        priorConflictSteps
+                        |> List.mapi (fun i2 v -> i2,v)
+                        |> List.filter (fun (i2, _) -> i2 <> i)
+                        |> List.map snd
+                    row, priorExceptRow)
 
             match priorConflictSteps, findMatchingStep priorConflictSteps with
             | [], _  -> currentConflict
