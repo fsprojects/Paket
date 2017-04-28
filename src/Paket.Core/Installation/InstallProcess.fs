@@ -46,7 +46,7 @@ let findPackageFolder root (groupName,packageName) (version,settings) =
             if groupName = Constants.MainDependencyGroup then
                 DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName))
             else
-                let groupName = groupName.GetCompareString()
+                let groupName = groupName.CompareString
                 let di = DirectoryInfo(Path.Combine(root, Constants.PackagesFolderName, groupName))
                 if di.Exists then di else
 
