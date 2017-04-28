@@ -249,11 +249,11 @@ module LockFileParser =
         | _, "GIT" -> RepositoryType "GIT"
         | _, "NUGET" -> RepositoryType "NUGET"
         | _, "GITHUB" -> RepositoryType "GITHUB"
-        | Some "NUGET", String.StartsWith "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
-        | _, String.StartsWith "remote:" trimmed -> Remote(trimmed.Trim())
-        | _, String.StartsWith "GROUP" trimmed -> Group(trimmed.Replace("GROUP","").Trim())
-        | _, String.StartsWith "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
-        | _, String.StartsWith "REDIRECTS:" trimmed -> 
+        | Some "NUGET", String.RemovePrefix "remote:" trimmed -> Remote(PackageSource.Parse("source " + trimmed.Trim()).ToString())
+        | _, String.RemovePrefix "remote:" trimmed -> Remote(trimmed.Trim())
+        | _, String.RemovePrefix "GROUP" trimmed -> Group(trimmed.Replace("GROUP","").Trim())
+        | _, String.RemovePrefix "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
+        | _, String.RemovePrefix "REDIRECTS:" trimmed -> 
             let setting =
                 match trimmed.Trim().ToLowerInvariant() with
                 | "on" -> Some true
@@ -261,9 +261,9 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption (Redirects setting)
-        | _, String.StartsWith "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
-        | _, String.StartsWith "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
-        | _, String.StartsWith "GENERATE-LOAD-SCRIPTS:" trimmed -> 
+        | _, String.RemovePrefix "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
+        | _, String.RemovePrefix "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
+        | _, String.RemovePrefix "GENERATE-LOAD-SCRIPTS:" trimmed -> 
             let setting =
                 match trimmed.Trim().ToLowerInvariant() with
                 | "on" -> Some true
@@ -271,7 +271,7 @@ module LockFileParser =
                 | _ -> None
                                             
             InstallOption (GenerateLoadScripts setting)
-        | _, String.StartsWith "COPY-CONTENT-TO-OUTPUT-DIR:" trimmed -> 
+        | _, String.RemovePrefix "COPY-CONTENT-TO-OUTPUT-DIR:" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
                 | "always" -> CopyToOutputDirectorySettings.Always
@@ -280,9 +280,9 @@ module LockFileParser =
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
                                             
             InstallOption (CopyContentToOutputDir setting)
-        | _, String.StartsWith "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(FrameworkRestrictionList (trimmed.Trim() |> Requirements.parseRestrictions true)))
-        | _, String.StartsWith "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
-        | _, String.StartsWith "CONTENT:" trimmed -> 
+        | _, String.RemovePrefix "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(FrameworkRestrictionList (trimmed.Trim() |> Requirements.parseRestrictions true)))
+        | _, String.RemovePrefix "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
+        | _, String.RemovePrefix "CONTENT:" trimmed -> 
             let setting =
                 match trimmed.Trim().ToLowerInvariant() with
                 | "none" -> ContentCopySettings.Omit
@@ -290,7 +290,7 @@ module LockFileParser =
                 | _ -> ContentCopySettings.Overwrite
 
             InstallOption (OmitContent setting)
-        | _, String.StartsWith "STRATEGY:" trimmed -> 
+        | _, String.RemovePrefix "STRATEGY:" trimmed -> 
             let setting =
                 match trimmed.Trim().ToLowerInvariant() with
                 | "min" -> Some ResolverStrategy.Min
@@ -298,7 +298,7 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption(TransitiveDependenciesResolverStrategy(setting))
-        | _, String.StartsWith "LOWEST_MATCHING:" trimmed -> 
+        | _, String.RemovePrefix "LOWEST_MATCHING:" trimmed -> 
             let setting =
                 match trimmed.Trim().ToLowerInvariant() with
                 | "true" -> Some ResolverStrategy.Min
@@ -306,11 +306,11 @@ module LockFileParser =
                 | _ -> None
 
             InstallOption(DirectDependenciesResolverStrategy(setting))
-        | _, String.StartsWith "build: " trimmed ->
+        | _, String.RemovePrefix "build: " trimmed ->
             InstallOption(Command trimmed)
-        | _, String.StartsWith "path: " trimmed ->
+        | _, String.RemovePrefix "path: " trimmed ->
             InstallOption(PackagePath trimmed)
-        | _, String.StartsWith "os: " trimmed ->
+        | _, String.RemovePrefix "os: " trimmed ->
             InstallOption(OperatingSystemRestriction trimmed)
         | _, trimmed when line.StartsWith "      " ->
             let frameworkSettings =

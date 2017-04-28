@@ -228,20 +228,20 @@ module DependenciesFileParser =
     let private (|Remote|_|) (line:string) =
         let trimmed = line.Trim() 
         match trimmed with
-        | String.StartsWith "source" _ as trimmed -> 
+        | String.RemovePrefix "source" _ as trimmed -> 
             try 
                 let source = PackageSource.Parse(trimmed)
                 Some (Remote(RemoteParserOption.PackageSource(source)))
             with e -> 
                 traceWarnfn "could not parse package source %s (%s)" trimmed e.Message
                 reraise ()
-        | String.StartsWith "cache" _ as trimmed -> Some (Remote(RemoteParserOption.Cache(Cache.Parse(trimmed))))
+        | String.RemovePrefix "cache" _ as trimmed -> Some (Remote(RemoteParserOption.Cache(Cache.Parse(trimmed))))
         | _ -> None
         
     let private (|Package|_|) (line:string) =
         let trimmed = line.Trim() 
         match trimmed with
-        | String.StartsWith "nuget" trimmed -> 
+        | String.RemovePrefix "nuget" trimmed -> 
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) = 
@@ -267,16 +267,16 @@ module DependenciesFileParser =
         let trimmed = line.Trim() 
         match trimmed with
         | _ when String.IsNullOrWhiteSpace line -> Some (Empty(line))
-        | String.StartsWith "version" _ as trimmed -> Some (Empty(trimmed)) // Parsed by the boostrapper, not paket itself
-        | String.StartsWith "//" _ -> Some (Empty(line))
-        | String.StartsWith "#" _ -> Some (Empty(line))
+        | String.RemovePrefix "version" _ as trimmed -> Some (Empty(trimmed)) // Parsed by the boostrapper, not paket itself
+        | String.RemovePrefix "//" _ -> Some (Empty(line))
+        | String.RemovePrefix "#" _ -> Some (Empty(line))
         | _ -> None
         
     let private (|ParserOptions|_|) (line:string) =
         let trimmed = line.Trim() 
         match trimmed with
-        | String.StartsWith "references" trimmed -> Some (ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict")))
-        | String.StartsWith "redirects" trimmed ->
+        | String.RemovePrefix "references" trimmed -> Some (ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict")))
+        | String.RemovePrefix "redirects" trimmed ->
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
                 | "on" -> Some true
@@ -284,7 +284,7 @@ module DependenciesFileParser =
                 | _ -> None
 
             Some (ParserOptions(ParserOption.Redirects(setting)))
-        | String.StartsWith "strategy" trimmed -> 
+        | String.RemovePrefix "strategy" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
                 | "max" -> Some ResolverStrategy.Max
@@ -292,7 +292,7 @@ module DependenciesFileParser =
                 | _ -> None
 
             Some (ParserOptions(ParserOption.ResolverStrategyForTransitives(setting)))
-        | String.StartsWith "lowest_matching" trimmed -> 
+        | String.RemovePrefix "lowest_matching" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
                 | "false" -> Some ResolverStrategy.Max
@@ -300,7 +300,7 @@ module DependenciesFileParser =
                 | _ -> None
 
             Some (ParserOptions(ParserOption.ResolverStrategyForDirectDependencies(setting)))
-        | String.StartsWith "framework" trimmed -> 
+        | String.RemovePrefix "framework" trimmed -> 
             let text = trimmed.Replace(":", "").Trim()
             
             if text = "auto-detect" then 
@@ -313,7 +313,7 @@ module DependenciesFileParser =
                 let options = ParserOption.FrameworkRestrictions(FrameworkRestrictionList restrictions)
                 Some (ParserOptions options)
 
-        | String.StartsWith "content" trimmed -> 
+        | String.RemovePrefix "content" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
                 | "none" -> ContentCopySettings.Omit
@@ -321,9 +321,9 @@ module DependenciesFileParser =
                 | _ -> ContentCopySettings.Overwrite
 
             Some (ParserOptions(ParserOption.OmitContent(setting)))
-        | String.StartsWith "import_targets" trimmed -> Some (ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true")))
-        | String.StartsWith "copy_local" trimmed -> Some (ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true")))
-        | String.StartsWith "copy_content_to_output_dir" trimmed -> 
+        | String.RemovePrefix "import_targets" trimmed -> Some (ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true")))
+        | String.RemovePrefix "copy_local" trimmed -> Some (ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true")))
+        | String.RemovePrefix "copy_content_to_output_dir" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
                 | "always" -> CopyToOutputDirectorySettings.Always
@@ -332,8 +332,8 @@ module DependenciesFileParser =
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
                         
             Some (ParserOptions(ParserOption.CopyContentToOutputDir(setting)))
-        | String.StartsWith "condition" trimmed -> Some (ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper())))
-        | String.StartsWith "generate_load_scripts" trimmed ->
+        | String.RemovePrefix "condition" trimmed -> Some (ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper())))
+        | String.RemovePrefix "generate_load_scripts" trimmed ->
             let setting =
                 match trimmed.Replace(":","").Trim().ToLowerInvariant() with
                 | "on"  | "true"  -> Some true
@@ -345,27 +345,27 @@ module DependenciesFileParser =
     let private (|SourceFile|_|) (line:string) =
         let trimmed = line.Trim() 
         match trimmed with
-        | String.StartsWith "gist" _ as trimmed ->
+        | String.RemovePrefix "gist" _ as trimmed ->
             Some (SourceFile(parseGitSource trimmed Origin.GistLink "gist"))
-        | String.StartsWith "github" _ as trimmed  ->
+        | String.RemovePrefix "github" _ as trimmed  ->
             Some (SourceFile(parseGitSource trimmed Origin.GitHubLink "github"))
-        | String.StartsWith "http" _ as trimmed  ->
+        | String.RemovePrefix "http" _ as trimmed  ->
             Some (SourceFile(parseHttpSource trimmed))
         | _ -> None 
 
     let private (|Git|_|) (line:string) =
         let trimmed = line.Trim() 
         match trimmed with
-        | String.StartsWith "git" _ as trimmed  ->
+        | String.RemovePrefix "git" _ as trimmed  ->
             Some (Git(trimmed.Substring(4)))
-        | String.StartsWith "file:" _ as trimmed  ->
+        | String.RemovePrefix "file:" _ as trimmed  ->
             Some (Git(trimmed))
         | _ -> None
         
     let private (|Group|_|) (line:string) =
         let trimmed = line.Trim() 
         match trimmed with
-        | String.StartsWith "group" _ as trimmed -> Some (Group(trimmed.Replace("group ","")))
+        | String.RemovePrefix "group" _ as trimmed -> Some (Group(trimmed.Replace("group ","")))
         | _ -> None
     
     let parsePackage(sources,parent,name,version,rest:string) =
