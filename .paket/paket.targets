@@ -55,7 +55,7 @@
     <Exec Command="$(RestoreCommand)" 
           IgnoreStandardErrorWarningFormat="true" 
           WorkingDirectory="$(PaketRootPath)" 
-          ContinueOnError="true" 
+          ContinueOnError="false" 
           Condition=" Exists('$(PaketReferences)') AND '$(PaketReferences)' != '' " 
     />
   </Target>
