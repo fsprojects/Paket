@@ -22,7 +22,7 @@ let ``should generate Xml for RefactoringEssentials in CSharp project``() =
               [],
               [
                 [".."; "RefactoringEssentials"; "analyzers"; "dotnet"; "RefactoringEssentials.dll"] |> toPath
-              ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList ([".."; "RefactoringEssentials"; ""] |> toPath),
+              ] |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList ([".."; "RefactoringEssentials"; ""] |> toPath),
               Nuspec.All)
 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
@@ -42,7 +42,7 @@ let ``should generate Xml for RefactoringEssentials in VisualBasic project``() =
               [],
               [
                 [".."; "RefactoringEssentials"; "analyzers"; "dotnet"; "RefactoringEssentials.dll"] |> toPath
-              ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList ([".."; "RefactoringEssentials"; ""] |> toPath),
+              ] |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList ([".."; "RefactoringEssentials"; ""] |> toPath),
               Nuspec.All)
 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyVbGuid.vbprojtest")

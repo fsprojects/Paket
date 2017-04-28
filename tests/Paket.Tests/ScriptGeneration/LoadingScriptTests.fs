@@ -1,5 +1,4 @@
-﻿[<NUnit.Framework.TestFixture>]
-[<NUnit.Framework.Category "Script Generation">]
+﻿[<NUnit.Framework.TestFixture(Category="Script Generation")>]
 module Paket.LoadingScriptTests
 
 open System.IO

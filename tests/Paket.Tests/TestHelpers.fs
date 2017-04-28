@@ -8,6 +8,7 @@ open PackageResolver
 open System.Xml
 open System.IO
 open Paket.Domain
+open FsUnit.Extensions
 
 type GraphDependency = string * VersionRequirement * FrameworkRestrictions
 
@@ -135,3 +136,8 @@ let toPath elems = System.IO.Path.Combine(elems |> Seq.toArray)
 let ensureDir () = System.Environment.CurrentDirectory <-  NUnit.Framework.TestContext.CurrentContext.TestDirectory
 
 let printSqs sqs = sqs |> Seq.iter (printfn "%A")
+
+let inline shouldEqualNormalized (a:'a) (b:'b) =
+    let str1 = string a |> trimAndNormalizeLines 
+    let str2 = string b |> trimAndNormalizeLines 
+    str1 |> shouldEqual str2

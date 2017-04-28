@@ -1,4 +1,5 @@
-﻿module Paket.ConfigFileSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.ConfigFileSpecs
 
 open Paket
 open Paket.ConfigFile

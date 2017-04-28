@@ -1,206 +1,216 @@
-module Paket.LockFile.GenerateWithOptionsSpecs
-
+namespace Paket.Tests.LockFile
 open Paket
 open NUnit.Framework
-open FsUnit
-open TestHelpers
-open Paket.Domain
-open Paket.Requirements
 
-let config1 = """
+[<TestFixture (Category=Category.LockFile)>]
+module GenerateWithOptionsSpecs =
+
+    open Paket
+    open NUnit.Framework
+    open FsUnit
+    open TestHelpers
+    open Paket.Domain
+    open Paket.Requirements
+
+    let config1Text = """
 references strict
 framework: >= net45
 copy_local false
 source "http://www.nuget.org/api/v2"
 
-nuget "Castle.Windsor-log4net" "~> 3.2"
-"""
+nuget "Castle.Windsor-log4net" "~> 3.2" """ |> trimAndNormalizeLines
 
-let graph1 =
-    OfSimpleGraph [
-        "Castle.Windsor-log4net","3.2",[]
-    ]
+    let config1 = trimAndNormalizeLines config1Text
+    let graph1 =
+        OfSimpleGraph [
+            "Castle.Windsor-log4net","3.2",[]
+        ]
 
-let expected1 = """REFERENCES: STRICT
+    let expected1Text = """
+REFERENCES: STRICT
 COPY-LOCAL: FALSE
 FRAMEWORK: >= NET45
 NUGET
   remote: http://www.nuget.org/api/v2
-    Castle.Windsor-log4net (3.2)"""
+    Castle.Windsor-log4net (3.2)""" |> trimAndNormalizeLines
 
-[<Test>]
-let ``should generate strict lock file``() = 
-    let cfg = DependenciesFile.FromSource(config1)
-    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph1, PackageDetailsFromGraph graph1).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-    |> shouldEqual (normalizeLineEndings expected1)
+    let expected1 = trimAndNormalizeLines expected1Text 
 
 
-let configWithContent = """
+    [<Test>]
+    let ``should generate strict lock file``() = 
+        let cfg = DependenciesFile.FromSource(config1)
+        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph1, PackageDetailsFromGraph graph1).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+        |> shouldEqual expected1
+
+
+    let configWithContent = """
 content none
 import_targets false
 source "http://www.nuget.org/api/v2"
 
-nuget "Microsoft.SqlServer.Types"
-"""
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-let graph2 =
-    OfSimpleGraph [
-        "Microsoft.SqlServer.Types","1.0",[]
-    ]
+    let graph2 =
+        OfSimpleGraph [
+            "Microsoft.SqlServer.Types","1.0",[]
+        ]
 
-let expected2 = """IMPORT-TARGETS: FALSE
+    let expected2 = """
+IMPORT-TARGETS: FALSE
 CONTENT: NONE
 NUGET
   remote: http://www.nuget.org/api/v2
-    Microsoft.SqlServer.Types (1.0)"""
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
-[<Test>]
-let ``should generate content none lock file``() = 
-    let cfg = DependenciesFile.FromSource(configWithContent)
-    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-    |> shouldEqual (normalizeLineEndings expected2)
+    [<Test>]
+    let ``should generate content none lock file``() = 
+        let cfg = DependenciesFile.FromSource(configWithContent)
+        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph2, PackageDetailsFromGraph graph2).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+        |> shouldEqual (normalizeLineEndings expected2)
 
-let configWithRedirects = """
+    let configWithRedirects = """
 redirects on
 source "http://www.nuget.org/api/v2"
 
-nuget "Microsoft.SqlServer.Types"
-"""
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-let graph3 = 
-    OfSimpleGraph [
-        "Microsoft.SqlServer.Types","1.0",[]
-    ]
+    let graph3 = 
+        OfSimpleGraph [
+            "Microsoft.SqlServer.Types","1.0",[]
+        ]
 
-let expected3 = """REDIRECTS: ON
+    let expected3 = """
+REDIRECTS: ON
 NUGET
   remote: http://www.nuget.org/api/v2
-    Microsoft.SqlServer.Types (1.0)"""
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
-[<Test>]
-let ``should generate redirects lock file``() = 
-    let cfg = DependenciesFile.FromSource(configWithRedirects)
-    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-    |> shouldEqual (normalizeLineEndings expected3)
+    [<Test>]
+    let ``should generate redirects lock file``() = 
+        let cfg = DependenciesFile.FromSource(configWithRedirects)
+        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+        |> shouldEqual (normalizeLineEndings expected3)
 
-[<Test>]
-let ``should generate strategy min lock file``() = 
-    let config = """
-    strategy min
-    source "http://www.nuget.org/api/v2"
+    [<Test>]
+    let ``should generate strategy min lock file``() = 
+        let config = """
+strategy min
+source "http://www.nuget.org/api/v2"
 
-    nuget "Microsoft.SqlServer.Types"
-    """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-    let expected = """STRATEGY: MIN
+        let expected = """
+STRATEGY: MIN
 NUGET
   remote: http://www.nuget.org/api/v2
-    Microsoft.SqlServer.Types (1.0)"""
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
-    let cfg = DependenciesFile.FromSource(config)
-    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-    |> shouldEqual (normalizeLineEndings expected)
+        let cfg = DependenciesFile.FromSource(config)
+        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+        |> shouldEqual (normalizeLineEndings expected)
 
-[<Test>]
-let ``should generate strategy max lock file``() = 
-    let config = """
-    strategy max
-    source "http://www.nuget.org/api/v2"
+    [<Test>]
+    let ``should generate strategy max lock file``() = 
+        let config = """
+strategy max
+source "http://www.nuget.org/api/v2"
 
-    nuget "Microsoft.SqlServer.Types"
-    """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-    let expected = """STRATEGY: MAX
+        let expected = """
+STRATEGY: MAX
 NUGET
   remote: http://www.nuget.org/api/v2
-    Microsoft.SqlServer.Types (1.0)"""
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
-    let cfg = DependenciesFile.FromSource(config)
-    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-    |> shouldEqual (normalizeLineEndings expected)
+        let cfg = DependenciesFile.FromSource(config)
+        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+        |> shouldEqual (normalizeLineEndings expected)
 
-[<Test>]
-let ``should generate lowest_matching true lock file``() = 
-    let config = """
-    lowest_matching true
-    source "http://www.nuget.org/api/v2"
+    [<Test>]
+    let ``should generate lowest_matching true lock file``() = 
+        let config = """
+lowest_matching true
+source "http://www.nuget.org/api/v2"
 
-    nuget "Microsoft.SqlServer.Types"
-    """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-    let expected = """LOWEST_MATCHING: TRUE
+        let expected = """
+LOWEST_MATCHING: TRUE
 NUGET
   remote: http://www.nuget.org/api/v2
-    Microsoft.SqlServer.Types (1.0)"""
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
-    let cfg = DependenciesFile.FromSource(config)
-    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-    |> shouldEqual (normalizeLineEndings expected)
+        let cfg = DependenciesFile.FromSource(config)
+        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+        |> shouldEqual (normalizeLineEndings expected)
 
-[<Test>]
-let ``should generate lowest_matching false lock file``() = 
-    let config = """
-    lowest_matching false
-    source "http://www.nuget.org/api/v2"
+    [<Test>]
+    let ``should generate lowest_matching false lock file``() = 
+        let config = """
+lowest_matching false
+source "http://www.nuget.org/api/v2"
 
-    nuget "Microsoft.SqlServer.Types"
-    """
+nuget "Microsoft.SqlServer.Types" """ |> trimAndNormalizeLines
 
-    let expected = """LOWEST_MATCHING: FALSE
+        let expected = """
+LOWEST_MATCHING: FALSE
 NUGET
   remote: http://www.nuget.org/api/v2
-    Microsoft.SqlServer.Types (1.0)"""
+    Microsoft.SqlServer.Types (1.0)""" |> trimAndNormalizeLines
 
-    let cfg = DependenciesFile.FromSource(config)
-    ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-    |> shouldEqual (normalizeLineEndings expected)
+        let cfg = DependenciesFile.FromSource(config)
+        ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph3, PackageDetailsFromGraph graph3).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+        |> shouldEqual (normalizeLineEndings expected)
 
 
-[<Test>]
-let ``should resolve config with global framework restrictions``() = 
+    [<Test>]
+    let ``should resolve config with global framework restrictions``() = 
 
-    let config = """framework: >= net40
+        let config = """
+framework: >= net40
 
 source https://www.nuget.org/api/v2
 
 nuget NLog framework: net40
-nuget NLog.Contrib
-"""
+nuget NLog.Contrib""" |> trimAndNormalizeLines
 
-    let graph =
-      OfSimpleGraph [
-        "NLog","1.0.0",[]
-        "NLog","1.0.1",[]
-        "NLog.Contrib","1.0.0",["NLog",DependenciesFileParser.parseVersionRequirement ">= 1.0.1"]
-      ]
+        let graph =
+          OfSimpleGraph [
+            "NLog","1.0.0",[]
+            "NLog","1.0.1",[]
+            "NLog.Contrib","1.0.0",["NLog",DependenciesFileParser.parseVersionRequirement ">= 1.0.1"]
+          ]
 
-    let expected = """FRAMEWORK: >= NET40
+        let expected = """
+FRAMEWORK: >= NET40
 NUGET
   remote: https://www.nuget.org/api/v2
     NLog (1.0.1)
     NLog.Contrib (1.0)
-      NLog (>= 1.0.1)"""
+      NLog (>= 1.0.1)""" |> trimAndNormalizeLines
 
-    let cfg = DependenciesFile.FromSource(config)
-    let group = cfg.Groups.[Constants.MainDependencyGroup]
-    group.Packages.Head.Settings.FrameworkRestrictions 
-    |> getRestrictionList
-    |> shouldEqual [FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)) ]
+        let cfg = DependenciesFile.FromSource(config)
+        let group = cfg.Groups.[Constants.MainDependencyGroup]
+        group.Packages.Head.Settings.FrameworkRestrictions 
+        |> getRestrictionList
+        |> shouldEqual [FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)) ]
 
-    let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    getVersion resolved.[PackageName "NLog"] |> shouldEqual "1.0.1"
-    resolved.[PackageName "NLog"].Settings.FrameworkRestrictions 
-    |> getRestrictionList
-    |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)) ]
+        let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
+        getVersion resolved.[PackageName "NLog"] |> shouldEqual "1.0.1"
+        resolved.[PackageName "NLog"].Settings.FrameworkRestrictions 
+        |> getRestrictionList
+        |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)) ]
 
-    resolved
-    |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
-    |> shouldEqual (normalizeLineEndings expected)
+        resolved
+        |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options
+        |> shouldEqual (normalizeLineEndings expected)
 

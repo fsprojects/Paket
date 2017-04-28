@@ -1,16 +1,23 @@
-module Paket.LockFile.QuerySpecs
-
+namespace Paket.Tests.LockFile
 open Paket
 open NUnit.Framework
-open FsUnit
-open TestHelpers
-open Paket.Domain
+
+[<TestFixture (Category=Category.LockFile)>]
+[<Parallelizable(ParallelScope.None)>]
+module QuerySpecs =
+
+    open Paket
+    open NUnit.Framework
+    open FsUnit
+    open TestHelpers
+    open Paket.Domain
 
 
-let isDependencyOf(lockFile:LockFile,dependentPackage,(group,package)) =
-    lockFile.GetAllDependenciesOf((group,package,"test")).Contains dependentPackage
+    let isDependencyOf(lockFile:LockFile,dependentPackage,(group,package)) =
+        lockFile.GetAllDependenciesOf((group,package,"test")).Contains dependentPackage
 
-let data = """NUGET
+    let dataText = """
+NUGET
   remote: https://www.nuget.org/api/v2
   specs:
     Castle.Windsor (2.1)
@@ -28,27 +35,28 @@ GITHUB
   specs:
     src/app/FAKE/Cli.fs (7699e40e335f3cc54ab382a8969253fecc1e08a9)
     src/app/Fake.Deploy.Lib/FakeDeployAgentHelper.fs (Globbing)
-"""
+""" 
+    let data = trimAndNormalizeLines dataText
 
-let lockFile = LockFile.Parse("Test",toLines data)
+    let lockFile = LockFile.Parse("Test",toLines data)
 
 
-[<Test>]
-let ``should detect itself as dependency``() = 
-    isDependencyOf(lockFile,PackageName "Rx-Core",(Constants.MainDependencyGroup,PackageName "Rx-Core"))
-    |> shouldEqual true
+    [<Test>]
+    let ``should detect itself as dependency``() = 
+        isDependencyOf(lockFile,PackageName "Rx-Core",(Constants.MainDependencyGroup,PackageName "Rx-Core"))
+        |> shouldEqual true
 
-[<Test>]
-let ``should detect direct dependencies``() = 
-    isDependencyOf(lockFile,PackageName "Rx-Core",(Constants.MainDependencyGroup,PackageName "Rx-Main"))
-    |> shouldEqual true
+    [<Test>]
+    let ``should detect direct dependencies``() = 
+        isDependencyOf(lockFile,PackageName "Rx-Core",(Constants.MainDependencyGroup,PackageName "Rx-Main"))
+        |> shouldEqual true
 
-[<Test>]
-let ``should detect transitive dependencies``() = 
-    isDependencyOf(lockFile,PackageName "log",(Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"))
-    |> shouldEqual true
+    [<Test>]
+    let ``should detect transitive dependencies``() = 
+        isDependencyOf(lockFile,PackageName "log",(Constants.MainDependencyGroup,PackageName "Castle.Windsor-log4net"))
+        |> shouldEqual true
     
-[<Test>]
-let ``should detect when packages are unrelated``() = 
-    isDependencyOf(lockFile,PackageName "log",(Constants.MainDependencyGroup,PackageName "Rx-Core"))
-    |> shouldEqual false
+    [<Test>]
+    let ``should detect when packages are unrelated``() = 
+        isDependencyOf(lockFile,PackageName "log",(Constants.MainDependencyGroup,PackageName "Rx-Core"))
+        |> shouldEqual false

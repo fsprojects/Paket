@@ -1,50 +1,58 @@
-﻿module Paket.Resolver.ConflictSourcesSpecs
+﻿namespace Paket.Tests.Resolver
 
 open Paket
 open NUnit.Framework
-open FsUnit
-open TestHelpers
-open Paket.Domain
-open Paket.Requirements
 
-let noGitHubConfigured _ = failwith "no GitHub configured"
+[<TestFixture(Category=Category.Resolver)>]
+module ConflictSourcesSpecs =
 
-let config1 = """
+    open Paket
+    open NUnit.Framework
+    open FsUnit
+    open TestHelpers
+    open Paket.Domain
+    open Paket.Requirements
+
+    let noGitHubConfigured _ = failwith "no GitHub configured"
+
+    let config1Text = """
 source "http://www.nuget.org/api/v2"
 
 github fsharp/fsharp:master foo.fs
 github fsprojects/FAKE:master test.fs
 """
 
-[<Test>]
-let ``should resolve source files with correct sha``() =
-    let name = PackageName "name"
-    let dep =
-      { Name = name
-        ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
-        ResolverStrategyForTransitives = Some ResolverStrategy.Max
-        Graph = []
-        Sources = []
-        Parent = Requirements.PackageRequirementSource.DependenciesFile ""
-        Settings = InstallSettings.Default
-        VersionRequirement = VersionRequirement.NoRestriction }
-    let sha = "sha1"
-    let cfg = DependenciesFile.FromSource(config1)
-    let resolved = ModuleResolver.Resolve((fun _ -> [dep],[]), (fun _ _ _ _ _ -> sha), cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles)
-    resolved
-    |> shouldContain
-      { Owner = "fsharp"
-        Project = "fsharp"
-        Name = "foo.fs"
-        Commit = sha
-        Dependencies = [name, VersionRequirement.NoRestriction] |> Set.ofList
-        Origin = ModuleResolver.Origin.GitHubLink
-        Command = None
-        OperatingSystemRestriction = None
-        PackagePath = None
-        AuthKey = None }
+    let config1 = trimAndNormalizeLines config1Text
 
-let config2 = """
+    [<Test>]
+    let ``should resolve source files with correct sha``() =
+        let name = PackageName "name"
+        let dep =
+          { Name = name
+            ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
+            ResolverStrategyForTransitives = Some ResolverStrategy.Max
+            Graph = []
+            Sources = []
+            Parent = Requirements.PackageRequirementSource.DependenciesFile ""
+            Settings = InstallSettings.Default
+            VersionRequirement = VersionRequirement.NoRestriction }
+        let sha = "sha1"
+        let cfg = DependenciesFile.FromSource(config1)
+        let resolved = ModuleResolver.Resolve((fun _ -> [dep],[]), (fun _ _ _ _ _ -> sha), cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles)
+        resolved
+        |> shouldContain
+          { Owner = "fsharp"
+            Project = "fsharp"
+            Name = "foo.fs"
+            Commit = sha
+            Dependencies = [name, VersionRequirement.NoRestriction] |> Set.ofList
+            Origin = ModuleResolver.Origin.GitHubLink
+            Command = None
+            OperatingSystemRestriction = None
+            PackagePath = None
+            AuthKey = None }
+
+    let config2Text = """
 source "http://www.nuget.org/api/v2"
 
 github fsharp/fsharp:master foo.fs
@@ -53,18 +61,22 @@ github fsprojects/FAKE:master test.fs
 github fsprojects/FAKE:vNext readme.md
 """
 
-let expectedError = """Found conflicting source file requirements:
+    let config2 = trimAndNormalizeLines config2Text
+
+    let expectedErrorText = """
+Found conflicting source file requirements:
    - fsharp/fsharpfoo.fs
      Versions:
      - master
      - fsharp4
    Currently multiple versions for same source directory are not supported.
-   Please adjust the dependencies file.""" |> normalizeLineEndings
+   Please adjust the dependencies file.""" 
 
-[<Test>]
-let ``should fail resolving same source files from same repository but different versions``() =
-    try
-        let cfg = DependenciesFile.FromSource(config2)
-        ModuleResolver.Resolve(noGitHubConfigured, noGitHubConfigured, cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles) |> ignore
-    with
-    | ex -> ex.Message |> shouldEqual expectedError
+    let expectedError = trimAndNormalizeLines expectedErrorText
+    [<Test>]
+    let ``should fail resolving same source files from same repository but different versions``() =
+        try
+            let cfg = DependenciesFile.FromSource(config2)
+            ModuleResolver.Resolve(noGitHubConfigured, noGitHubConfigured, cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles) |> ignore
+        with
+        | ex -> ex.Message |> shouldEqual expectedError

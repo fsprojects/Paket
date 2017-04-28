@@ -36,4 +36,6 @@ val event : Event<Trace>
 
 val traceToConsole : Trace -> unit
 
+val traceToBuilder : System.Text.StringBuilder -> Trace -> unit
+
 val setLogFile : string -> IDisposable

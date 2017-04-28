@@ -77,6 +77,11 @@ let traceToConsole (trace:Trace) =
                 if trace.NewLine then Console.WriteLine trace.Text
                 else Console.Write trace.Text )
 
+let traceToBuilder (stringBuilder:System.Text.StringBuilder) (trace:Trace) =
+    if trace.NewLine then 
+        stringBuilder.AppendLine trace.Text |> ignore else
+        stringBuilder.Append trace.Text |> ignore
+    
 
 // Log File Trace
 

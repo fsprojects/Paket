@@ -1,4 +1,5 @@
-﻿module Paket.UpdateProcess.Test
+﻿[<NUnit.Framework.TestFixture(Category="Xml")>]
+module Paket.UpdateProcess.Test
 
 open Paket
 open Paket.Domain

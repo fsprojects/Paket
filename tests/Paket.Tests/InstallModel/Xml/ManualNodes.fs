@@ -1,79 +1,84 @@
-﻿module Paket.InstallModel.Xml.ManualNodesSpecs
-
+﻿namespace Paket.Tests.InstallModel.Xml
 open Paket
 open NUnit.Framework
-open FsUnit
-open Paket.Domain
-open Paket.Requirements
-open TestHelpers
 
-let fromLegacyList = Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fantomas\"
+[<TestFixture; Category(Category.InstallModel); Category(Category.Xml)>]
+module ManualNodesSpecs =
 
-[<Test>]
-let ``should find custom nodes in doc``() = 
-    ensureDir()
-    let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll"
-              @"..\Fantomas\lib\FSharp.Core.dll"
-              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
-              [],
-              [],
-              Nuspec.Explicit ["FantomasLib.dll"])
+    open Paket
+    open NUnit.Framework
+    open FsUnit
+    open Paket.Domain
+    open Paket.Requirements
+    open TestHelpers
 
-    ProjectFile.TryLoad("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value.GetCustomModelNodes(model).IsEmpty
-    |> shouldEqual false
+    let fromLegacyList = Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\Fantomas\"
 
-[<Test>]
-let ``should find custom Paket nodes in doc``() = 
-    ensureDir()
-    let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll"
-              @"..\Fantomas\lib\FSharp.Core.dll"
-              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
-              [],
-              [],
-              Nuspec.Explicit ["FantomasLib.dll"])
+    [<Test>]
+    let ``should find custom nodes in doc``() = 
+        ensureDir()
+        let model =
+            InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
+                [ @"..\Fantomas\lib\FantomasLib.dll"
+                  @"..\Fantomas\lib\FSharp.Core.dll"
+                  @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
+                  [],
+                  [],
+                  Nuspec.Explicit ["FantomasLib.dll"])
 
-    ProjectFile.TryLoad("./ProjectFile/TestData/CustomPaketFantomasNode.fsprojtest").Value.GetCustomModelNodes(model).IsEmpty
-    |> shouldEqual false
+        ProjectFile.TryLoad("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value.GetCustomModelNodes(model).IsEmpty
+        |> shouldEqual false
 
+    [<Test>]
+    let ``should find custom Paket nodes in doc``() = 
+        ensureDir()
+        let model =
+            InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
+                [ @"..\Fantomas\lib\FantomasLib.dll"
+                  @"..\Fantomas\lib\FSharp.Core.dll"
+                  @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
+                  [],
+                  [],
+                  Nuspec.Explicit ["FantomasLib.dll"])
 
-[<Test>]
-let ``should not find custom nodes if there are none``() = 
-    ensureDir()
-    let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll"
-              @"..\Fantomas\lib\FSharp.Core.dll"
-              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
-              [],
-              [],
-              Nuspec.Explicit ["FantomasLib.dll"])
-
-    ProjectFile.TryLoad("./ProjectFile/TestData/NoCustomFantomasNode.fsprojtest").Value.GetCustomModelNodes(model).IsEmpty
-    |> shouldEqual true
+        ProjectFile.TryLoad("./ProjectFile/TestData/CustomPaketFantomasNode.fsprojtest").Value.GetCustomModelNodes(model).IsEmpty
+        |> shouldEqual false
 
 
-[<Test>]
-let ``should delete custom nodes if there are some``() = 
-    ensureDir()
-    let model =
-        InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
-            [ @"..\Fantomas\lib\FantomasLib.dll"
-              @"..\Fantomas\lib\FSharp.Core.dll"
-              @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
-              [],
-              [],
-              Nuspec.Explicit ["FantomasLib.dll"])
+    [<Test>]
+    let ``should not find custom nodes if there are none``() = 
+        ensureDir()
+        let model =
+            InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
+                [ @"..\Fantomas\lib\FantomasLib.dll"
+                  @"..\Fantomas\lib\FSharp.Core.dll"
+                  @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
+                  [],
+                  [],
+                  Nuspec.Explicit ["FantomasLib.dll"])
 
-    let project = ProjectFile.TryLoad("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value
+        ProjectFile.TryLoad("./ProjectFile/TestData/NoCustomFantomasNode.fsprojtest").Value.GetCustomModelNodes(model).IsEmpty
+        |> shouldEqual true
 
-    project.GetCustomModelNodes(model).Length
-    |> shouldEqual 2
 
-    project.DeleteCustomModelNodes model
+    [<Test>]
+    let ``should delete custom nodes if there are some``() = 
+        ensureDir()
+        let model =
+            InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0", [],
+                [ @"..\Fantomas\lib\FantomasLib.dll"
+                  @"..\Fantomas\lib\FSharp.Core.dll"
+                  @"..\Fantomas\lib\Fantomas.exe" ] |> fromLegacyList,
+                  [],
+                  [],
+                  Nuspec.Explicit ["FantomasLib.dll"])
 
-    project.GetCustomModelNodes(model).Length
-    |> shouldEqual 1
+        let project = ProjectFile.TryLoad("./ProjectFile/TestData/CustomFantomasNode.fsprojtest").Value
+
+        project.GetCustomModelNodes(model).Length
+        |> shouldEqual 2
+
+        project.DeleteCustomModelNodes model
+
+        project.GetCustomModelNodes(model).Length
+        |> shouldEqual 1

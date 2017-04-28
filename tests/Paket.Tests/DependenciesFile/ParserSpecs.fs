@@ -1,4 +1,4 @@
-module Paket.DependenciesFile.ParserSpecs
+ï»¿module Paket.Tests.DependenciesFile.ParserSpecs
 
 open Paket
 open Paket.PackageSources
@@ -677,7 +677,7 @@ let ``should read config without versions``() =
 
 
 let configWithPassword = """
-source http://www.nuget.org/api/v2 username: "tatü tata" password: "you got hacked!"
+source http://www.nuget.org/api/v2 username: "tatï¿½ tata" password: "you got hacked!"
 nuget Rx-Main
 """
 
@@ -689,10 +689,10 @@ let ``should read config with encapsulated password source``() =
     |> shouldEqual [ 
         PackageSource.NuGetV2 { 
             Url = "http://www.nuget.org/api/v2"
-            Authentication = Some (PlainTextAuthentication("tatü tata", "you got hacked!")) } ]
+            Authentication = Some (PlainTextAuthentication("tatï¿½ tata", "you got hacked!")) } ]
 
 let configWithPasswordInSingleQuotes = """
-source http://www.nuget.org/api/v2 username: 'tatü tata' password: 'you got hacked!'
+source http://www.nuget.org/api/v2 username: 'tatï¿½ tata' password: 'you got hacked!'
 nuget Rx-Main
 """
 
@@ -1475,4 +1475,3 @@ let ``parsing generate load scripts`` () =
         for _, (case, expectation, result) in failedResults do
             printfn "case %A expected %A got %A" case expectation result
         failwith "failed"
-

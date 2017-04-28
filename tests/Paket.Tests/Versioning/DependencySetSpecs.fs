@@ -1,4 +1,5 @@
-﻿module Paket.DependencySetSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Versioning)>]
+module Paket.DependencySetSpecs
 
 open Paket
 open Paket.BindingRedirects

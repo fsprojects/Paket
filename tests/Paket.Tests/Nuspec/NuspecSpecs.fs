@@ -1,4 +1,5 @@
-﻿module Paket.NuspecSpecs
+﻿[<NUnit.Framework.TestFixture(Category=Category.Nuget)>]
+module Paket.NuspecSpecs
 
 open Paket
 open NUnit.Framework

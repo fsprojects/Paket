@@ -1,66 +1,71 @@
-﻿module Paket.InstallModel.Xml.LibGit2SharpSpecs
-
+﻿namespace Paket.Tests.InstallModel.Xml
 open Paket
 open NUnit.Framework
-open FsUnit
-open Paket.TestHelpers
-open Paket.Domain
-open Paket.Requirements
 
-let expectedReferenceNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
-    <ItemGroup>
-      <Reference Include="LibGit2Sharp">
-        <HintPath>..\..\..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll</HintPath>
-        <Private>True</Private>
-        <Paket>True</Paket>
-      </Reference>
-    </ItemGroup>
-  </When>
-</Choose>"""
+[<TestFixture; Category(Category.InstallModel); Category(Category.Xml)>]
+module LibGit2SharpSpecs =
 
-let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
-    <PropertyGroup>
-      <__paket__LibGit2Sharp_props>net40\LibGit2Sharp</__paket__LibGit2Sharp_props>
-    </PropertyGroup>
-  </When>
-</Choose>"""
+    open Paket
+    open NUnit.Framework
+    open FsUnit
+    open Paket.TestHelpers
+    open Paket.Domain
+    open Paket.Requirements
 
-let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props" Condition="Exists('..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+    let expectedReferenceNodes = """<?xml version="1.0" encoding="utf-16"?>
+    <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+      <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
+        <ItemGroup>
+          <Reference Include="LibGit2Sharp">
+            <HintPath>..\..\..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll</HintPath>
+            <Private>True</Private>
+            <Paket>True</Paket>
+          </Reference>
+        </ItemGroup>
+      </When>
+    </Choose>"""
 
-[<Test>]
-let ``should generate Xml for LibGit2Sharp 2.0.0``() =
-    ensureDir()
-    let model =
-        InstallModel.CreateFromLibs(PackageName "LibGit2Sharp", SemVer.Parse "0.21", [],
-            [ @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll" ]
-            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\LibGit2Sharp\",
-            [ @"..\LibGit2Sharp\build\net40\LibGit2Sharp.props" ]
-            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\LibGit2Sharp\",
-            [],
-              Nuspec.All)
+    let expectedPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
+    <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+      <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
+        <PropertyGroup>
+          <__paket__LibGit2Sharp_props>net40\LibGit2Sharp</__paket__LibGit2Sharp_props>
+        </PropertyGroup>
+      </When>
+    </Choose>"""
 
-    model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
-        |> Seq.map (fun f -> f.Path) |> shouldContain @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll"
+    let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
+    <Import Project="..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props" Condition="Exists('..\..\..\LibGit2Sharp\build\$(__paket__LibGit2Sharp_props).props')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
-    ctx.ChooseNodes.Head.OuterXml
-    |> normalizeXml
-    |> shouldEqual (normalizeXml expectedReferenceNodes)
+    [<Test>]
+    let ``should generate Xml for LibGit2Sharp 2.0.0``() =
+        ensureDir()
+        let model =
+            InstallModel.CreateFromLibs(PackageName "LibGit2Sharp", SemVer.Parse "0.21", [],
+                [ @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll" ]
+                |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\LibGit2Sharp\",
+                [ @"..\LibGit2Sharp\build\net40\LibGit2Sharp.props" ]
+                |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\LibGit2Sharp\",
+                [],
+                  Nuspec.All)
 
-    ctx.FrameworkSpecificPropertyChooseNode.OuterXml
-    |> normalizeXml
-    |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
+        model.GetLibReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+            |> Seq.map (fun f -> f.Path) |> shouldContain @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll"
 
-    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 1
-    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
-    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
+        let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+        ctx.ChooseNodes.Head.OuterXml
+        |> normalizeXml
+        |> shouldEqual (normalizeXml expectedReferenceNodes)
 
-    (ctx.FrameworkSpecificPropsNodes |> Seq.head).OuterXml
-    |> normalizeXml
-    |> shouldEqual (normalizeXml expectedPropertyNodes)
+        ctx.FrameworkSpecificPropertyChooseNode.OuterXml
+        |> normalizeXml
+        |> shouldEqual (normalizeXml expectedPropertyDefinitionNodes)
+
+        ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 1
+        ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
+        ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
+        ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 0
+
+        (ctx.FrameworkSpecificPropsNodes |> Seq.head).OuterXml
+        |> normalizeXml
+        |> shouldEqual (normalizeXml expectedPropertyNodes)

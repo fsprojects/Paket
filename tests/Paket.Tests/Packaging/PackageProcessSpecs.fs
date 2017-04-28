@@ -1,39 +1,44 @@
-﻿module Paket.PackagingProcess.Test
-
-open System.IO
-open System.Reflection
+﻿namespace Paket.Tests.Packaging
 open Paket
-open FsUnit
 open NUnit.Framework
 
-[<Test>]
-let ``Loading assembly metadata works``() = 
-    let workingDir = Path.GetFullPath(".")
-    
-    let fileName =
-        if File.Exists(Path.Combine(workingDir, "Paket.Tests.fsproj")) then
-            Path.Combine(workingDir, "Paket.Tests.fsproj")
-            |> normalizePath
-        else
-            Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
-            |> normalizePath
+[<TestFixture(Category=Category.Packaging)>]
+module PackagingProcess =
 
-    if File.Exists fileName |> not then
-        failwithf "%s does not exist." fileName
+    open System.IO
+    open System.Reflection
+    open Paket
+    open FsUnit
+    open NUnit.Framework
 
-    let projFile = 
-        fileName
-        |> ProjectFile.LoadFromFile
+    [<Test>]
+    let ``Loading assembly metadata works``() = 
+        let workingDir = Path.GetFullPath(".")
     
-    let config = 
-        if workingDir.Contains "Debug" then "Debug"
-        else "Release"
+        let fileName =
+            if File.Exists(Path.Combine(workingDir, "Paket.Tests.fsproj")) then
+                Path.Combine(workingDir, "Paket.Tests.fsproj")
+                |> normalizePath
+            else
+                Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
+                |> normalizePath
+
+        if File.Exists fileName |> not then
+            failwithf "%s does not exist." fileName
+
+        let projFile = 
+            fileName
+            |> ProjectFile.LoadFromFile
     
-    let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
-    id |> shouldEqual "Paket.Tests"
+        let config = 
+            if workingDir.Contains "Debug" then "Debug"
+            else "Release"
     
-    let attribs = PackageMetaData.loadAssemblyAttributes assemblyReader
-    PackageMetaData.getVersion versionFromAssembly attribs |> shouldEqual <| Some(SemVer.Parse "1.0.0.0")
-    let authors = PackageMetaData.getAuthors attribs
-    authors.Value |> shouldEqual ["Two"; "Authors" ]
-    PackageMetaData.getDescription attribs |> shouldEqual <| Some("A description")
+        let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
+        id |> shouldEqual "Paket.Tests"
+    
+        let attribs = PackageMetaData.loadAssemblyAttributes assemblyReader
+        PackageMetaData.getVersion versionFromAssembly attribs |> shouldEqual <| Some(SemVer.Parse "1.0.0.0")
+        let authors = PackageMetaData.getAuthors attribs
+        authors.Value |> shouldEqual ["Two"; "Authors" ]
+        PackageMetaData.getDescription attribs |> shouldEqual <| Some("A description")

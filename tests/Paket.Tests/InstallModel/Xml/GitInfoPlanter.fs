@@ -1,46 +1,51 @@
-﻿module Paket.InstallModel.Xml.GitInfoPlanterSpecs
-
+﻿namespace Paket.Tests.InstallModel.Xml
 open Paket
 open NUnit.Framework
-open FsUnit
-open Paket.TestHelpers
-open Paket.Domain
-open Paket.Requirements
 
-let emptyReferences = """<?xml version="1.0" encoding="utf-16"?>
-<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+[<TestFixture; Category(Category.InstallModel); Category(Category.Xml)>]
+module GitInfoPlanterSpecs =
 
-let emptyPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+    open Paket
+    open NUnit.Framework
+    open FsUnit
+    open Paket.TestHelpers
+    open Paket.Domain
+    open Paket.Requirements
 
-let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
-<Import Project="..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets" Condition="Exists('..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
+    let emptyReferences = """<?xml version="1.0" encoding="utf-16"?>
+    <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
-[<Test>]
-let ``should generate Xml for GitInfoPlanter2.0.0``() = 
-    ensureDir()
-    let model =
-        InstallModel.CreateFromLibs(PackageName "GitInfoPlanter", SemVer.Parse "0.21", [],
-            [ ],
-            [ @"..\GitInfoPlanter\build\GitInfoPlanter.targets" ]
-            |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\GitInfoPlanter\",
-            [],
-              Nuspec.All)
+    let emptyPropertyDefinitionNodes = """<?xml version="1.0" encoding="utf-16"?>
+    <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
-    ctx.ChooseNodes.Head.OuterXml
-    |> normalizeXml
-    |> shouldEqual (normalizeXml emptyReferences)
+    let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
+    <Import Project="..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets" Condition="Exists('..\..\..\GitInfoPlanter\build\GitInfoPlanter.targets')" Label="Paket" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" />"""
 
-    ctx.FrameworkSpecificPropertyChooseNode.OuterXml
-    |> normalizeXml
-    |> shouldEqual (normalizeXml emptyPropertyDefinitionNodes)
+    [<Test>]
+    let ``should generate Xml for GitInfoPlanter2.0.0``() = 
+        ensureDir()
+        let model =
+            InstallModel.CreateFromLibs(PackageName "GitInfoPlanter", SemVer.Parse "0.21", [],
+                [ ],
+                [ @"..\GitInfoPlanter\build\GitInfoPlanter.targets" ]
+                |> Paket.Tests.InstallModel.ProcessingSpecs.fromLegacyList @"..\GitInfoPlanter\",
+                [],
+                  Nuspec.All)
 
-    ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
-    ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
-    ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 1
+        let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+        ctx.ChooseNodes.Head.OuterXml
+        |> normalizeXml
+        |> shouldEqual (normalizeXml emptyReferences)
 
-    (ctx.GlobalTargetsNodes |> Seq.head).OuterXml
-    |> normalizeXml
-    |> shouldEqual (normalizeXml expectedPropertyNodes)
+        ctx.FrameworkSpecificPropertyChooseNode.OuterXml
+        |> normalizeXml
+        |> shouldEqual (normalizeXml emptyPropertyDefinitionNodes)
+
+        ctx.FrameworkSpecificPropsNodes |> Seq.length |> shouldEqual 0
+        ctx.GlobalPropsNodes |> Seq.length |> shouldEqual 0
+        ctx.FrameworkSpecificTargetsNodes |> Seq.length |> shouldEqual 0
+        ctx.GlobalTargetsNodes |> Seq.length |> shouldEqual 1
+
+        (ctx.GlobalTargetsNodes |> Seq.head).OuterXml
+        |> normalizeXml
+        |> shouldEqual (normalizeXml expectedPropertyNodes)

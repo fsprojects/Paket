@@ -866,6 +866,9 @@ let removeFile (fileName : string) =
 let normalizeLineEndings (text : string) = 
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
 
+let trimAndNormalizeLines (text : string) = 
+    text.Trim() |> normalizeLineEndings
+
 // adapted from MiniRx
 // http://minirx.codeplex.com/
 [<AutoOpen>]
