@@ -11,6 +11,7 @@
 * BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
 * BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
+* BREAKING CHANGE: `FixNuspec` -> `FixNuspecs` - Can fix a list of nuspec files now 
 
 #### 4.8.1 - 25.04.2017
 * BREAKING CHANGE: Made pushing changes from Git dependency repositories easier - https://github.com/fsprojects/Paket/pull/2226
