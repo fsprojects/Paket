@@ -21,7 +21,7 @@ let internal computeFilePath(owner,project,root,groupName:GroupName,name : strin
         if groupName = Constants.MainDependencyGroup then
             Path.Combine(root,Constants.PaketFilesFolderName, owner, project, path)
         else
-            Path.Combine(root,Constants.PaketFilesFolderName, groupName.GetCompareString(), owner, project, path)
+            Path.Combine(root,Constants.PaketFilesFolderName, groupName.CompareString, owner, project, path)
         |> normalizePath
     let di = DirectoryInfo(dir)
     di.FullName

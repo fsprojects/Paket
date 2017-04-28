@@ -197,7 +197,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
                     verbosefn "[ Loading packages from group - %O ]\n" groupName
                 resolvedPackageList |> List.map (fun package -> async {
                     let packageName = package.Name
-                    let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.GetCompareString()
+                    let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.CompareString
                     let folder = DirectoryInfo(sprintf "%s/packages%s/%O" lockFile.RootPath groupFolder packageName)
                     let nuspecShort = sprintf "/packages%s/%O/%O.nuspec" groupFolder packageName packageName
                     verbosefn " -- %s" nuspecShort

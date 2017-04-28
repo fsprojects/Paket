@@ -646,7 +646,7 @@ let getTargetFolder root groupName (packageName:PackageName) version includeVers
     if groupName = Constants.MainDependencyGroup then
         Path.Combine(root, Constants.PackagesFolderName, packageFolder)
     else
-        Path.Combine(root, Constants.PackagesFolderName, groupName.GetCompareString(), packageFolder)
+        Path.Combine(root, Constants.PackagesFolderName, groupName.CompareString, packageFolder)
 
 let RunInLockedAccessMode(rootFolder,action) =
     let packagesFolder = Path.Combine(rootFolder,Constants.PackagesFolderName)
