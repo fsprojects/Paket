@@ -265,6 +265,14 @@ let fixNuspecs silent (results : ParseResults<_>) =
     let referenceFile = results.GetResult <@ FixNuspecsArgs.ReferencesFile @>
     let nuspecFiles = results.GetResult <@ FixNuspecsArgs.Files @> 
     Dependencies.FixNuspecs (referenceFile, nuspecFiles)
+
+
+// For Backwards compatibility
+let fixNuspec silent (results : ParseResults<_>) =
+    let fileString = results.GetResult <@ FixNuspecArgs.File @> 
+    let refFile = results.GetResult <@ FixNuspecArgs.ReferencesFile @> 
+    let nuspecList = fileString.Split([|';'|])|>List.ofArray
+    Dependencies.FixNuspecs (refFile, nuspecList)
     
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
@@ -393,6 +401,7 @@ let main() =
             | Update r -> processCommand silent update r
             | FindPackages r -> processCommand silent (findPackages silent) r
             | FindPackageVersions r -> processCommand silent findPackageVersions r
+            | FixNuspec r -> processCommand silent (fixNuspec silent) r
             | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
             | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
             | ShowGroups r -> processCommand silent showGroups r
