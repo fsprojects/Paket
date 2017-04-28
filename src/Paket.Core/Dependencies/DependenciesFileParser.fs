@@ -15,8 +15,8 @@ module DependenciesFileParser =
 
     let (|NuGetStrategy|PaketStrategy|NoStrategy|) (text : string) =
         match text |> Seq.tryHead with
-        | Some('!') -> NuGetStrategy
-        | Some('@') -> PaketStrategy
+        | Some '!' -> NuGetStrategy
+        | Some '@' -> PaketStrategy
         | _ -> NoStrategy
 
     let parseResolverStrategy (text : string) = 
@@ -25,7 +25,7 @@ module DependenciesFileParser =
         | PaketStrategy -> Some ResolverStrategy.Max
         | NoStrategy -> None
 
-    let twiddle(minimum:string) =
+    let twiddle (minimum:string) =
         let promote index (values:string array) =
             let parsed, number = Int32.TryParse values.[index]
             if parsed then values.[index] <- (number + 1).ToString()
@@ -43,19 +43,13 @@ module DependenciesFileParser =
                 match texts |> List.filter ((<>) "") with
                 | [] -> 
                     versions
-                    |> List.collect (fun version -> 
-                        match version.PreRelease with 
-                        | Some x -> [x.Name]
-                        | _ -> [])
+                    |> List.collect (function { PreRelease = Some x } -> [x.Name] | _ -> [])
                     |> List.distinct
-                    |> fun xs -> 
-                        match xs with
-                        | [] -> PreReleaseStatus.No
-                        | _ -> PreReleaseStatus.Concrete xs
+                    |> function [] -> PreReleaseStatus.No | xs -> PreReleaseStatus.Concrete xs
                 | [x] when String.equalsIgnoreCase x "prerelease" -> PreReleaseStatus.All
                 | _ -> PreReleaseStatus.Concrete texts
 
-            if String.IsNullOrWhiteSpace text then VersionRequirement(VersionRange.AtLeast("0"),PreReleaseStatus.No) else
+            if String.IsNullOrWhiteSpace text then VersionRequirement(VersionRange.AtLeast "0",PreReleaseStatus.No) else
 
             match text.Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Array.toList with
             |  ">=" :: v1 :: "<" :: v2 :: rest ->
@@ -85,8 +79,8 @@ module DependenciesFileParser =
             | _ -> 
                 let splitVersion (text:string) =
                     match VersionRange.BasicOperators |> List.tryFind(text.StartsWith) with
-                    | Some token -> token, text.Replace(token + " ", "").Split(' ') |> Array.toList
-                    | None -> "=", text.Split(' ') |> Array.toList
+                    | Some token -> token, text.Replace(token + " ", "").Split ' ' |> Array.toList
+                    | None -> "=", text.Split ' ' |> Array.toList
 
             
                 match splitVersion text with
@@ -154,17 +148,17 @@ module DependenciesFileParser =
         let parts = parseDependencyLine trimmed
         
         let getParts (projectSpec : string) fileSpec projectName authKey = 
-            let projectSpec = projectSpec.TrimEnd('/')
+            let projectSpec = projectSpec.TrimEnd '/'
             
             let projectSpec', commit =
                 let start = 
-                    match projectSpec.IndexOf("://") with
+                    match projectSpec.IndexOf "://" with
                     | -1 -> 8 // 8 = "https://".Length
                     | pos -> pos + 3
              
                 match projectSpec.IndexOf('/', start) with 
                 | -1 -> projectSpec, "/"
-                | pos -> projectSpec.Substring(0, pos), projectSpec.Substring(pos)
+                | pos -> projectSpec.Substring(0, pos), projectSpec.Substring pos
             
             let splitted = projectSpec.TrimEnd('/').Split([| ':'; '/' |], StringSplitOptions.RemoveEmptyEntries)
             
@@ -176,21 +170,21 @@ module DependenciesFileParser =
             let fileName = 
                 if String.IsNullOrEmpty fileSpec then
                     let name = splitted |> Seq.last |> removeQueryString
-                    if String.IsNullOrEmpty <| Path.GetExtension(name) then name + ".fs"
+                    if String.IsNullOrEmpty <| Path.GetExtension name then name + ".fs"
                     else name
                 else fileSpec
             
             let owner = 
-                match projectSpec'.IndexOf("://") with
+                match projectSpec'.IndexOf "://" with
                 | -1 -> projectSpec'
                 | pos -> projectSpec'.Substring(pos + 3) |> removeInvalidChars
             
             HttpLink(projectSpec'), (owner, projectName, Some commit), fileName, authKey
 
         match parts with
-        | [| spec; url |] -> getParts url "" "" None
-        | [| spec; url; fileSpec |] -> getParts url fileSpec "" None
-        | [| spec; url; fileSpec; authKey |] -> getParts url fileSpec "" (Some authKey)
+        | [| _spec; url |] -> getParts url "" "" None
+        | [| _spec; url; fileSpec |] -> getParts url fileSpec "" None
+        | [| _spec; url; fileSpec; authKey |] -> getParts url fileSpec "" (Some authKey)
         | _ -> failwithf "invalid http-reference specification:%s     %s" Environment.NewLine trimmed
 
     type private ParserOption =
@@ -212,47 +206,38 @@ module DependenciesFileParser =
     | Cache of Cache
 
     let private removeComment (text:string) =
-        match text.IndexOf("//") with
-        | -1 ->
-            match text.IndexOf("#") with
-            | -1 -> text
-            | p -> 
-                let f = text.Substring(0,p).Trim()
-                printfn "%s" f
-                f
-        | p -> 
-            let f = text.Substring(0,p).Trim()
-            printfn "%s" f
-            f 
+        let stripComment pos =
+            let ln = text.Substring(0,pos).Trim() in printfn "%s" ln; ln
+        match text.IndexOf "//", text.IndexOf "#" with
+        | -1 , -1 -> text
+        | -1, p | p , -1 -> stripComment p
+        | p1, p2 -> stripComment (min p1 p2) 
+            
 
     let private (|Remote|_|) (line:string) =
-        let trimmed = line.Trim() 
-        match trimmed with
+        match line.Trim()  with
         | String.RemovePrefix "source" _ as trimmed -> 
             try 
-                let source = PackageSource.Parse(trimmed)
-                Some (Remote(RemoteParserOption.PackageSource(source)))
+                let source = PackageSource.Parse trimmed
+                Some (Remote (RemoteParserOption.PackageSource source))
             with e -> 
                 traceWarnfn "could not parse package source %s (%s)" trimmed e.Message
                 reraise ()
-        | String.RemovePrefix "cache" _ as trimmed -> Some (Remote(RemoteParserOption.Cache(Cache.Parse(trimmed))))
+        | String.RemovePrefix "cache" _ as trimmed -> Some (Remote (RemoteParserOption.Cache (Cache.Parse trimmed)))
         | _ -> None
         
-    let private (|Package|_|) (line:string) =
-        let trimmed = line.Trim() 
-        match trimmed with
+    let private (|Package|_|) (line:string) =        
+        match line.Trim() with
         | String.RemovePrefix "nuget" trimmed -> 
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) = 
-                match Int32.TryParse(text.[0].ToString()) with
-                | true,_ -> true
-                | _ -> false
+                let (result,_) = Int32.TryParse(text.[0].ToString()) in result
            
             match parts with
             | name :: operator1 :: version1  :: operator2 :: version2 :: rest
                 when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> 
-                Some (Package(name,operator1 + " " + version1 + " " + operator2 + " " + version2, String.Join(" ",rest) |> removeComment))
+                Some (Package(name,operator1+" "+version1+" "+operator2+" "+version2, String.Join(" ",rest) |> removeComment))
             | name :: operator :: version  :: rest 
                 when List.exists ((=) operator) operators ->
                 Some (Package(name,operator + " " + version, String.Join(" ",rest) |> removeComment))
@@ -264,117 +249,112 @@ module DependenciesFileParser =
         | _ -> None
     
     let private (|Empty|_|) (line:string) =
-        let trimmed = line.Trim() 
-        match trimmed with
-        | _ when String.IsNullOrWhiteSpace line -> Some (Empty(line))
-        | String.RemovePrefix "version" _ as trimmed -> Some (Empty(trimmed)) // Parsed by the boostrapper, not paket itself
-        | String.RemovePrefix "//" _ -> Some (Empty(line))
-        | String.RemovePrefix "#" _ -> Some (Empty(line))
+        match line.Trim()  with
+        | _ when String.IsNullOrWhiteSpace line -> Some (Empty line)
+        | String.RemovePrefix "version" _ as trimmed -> Some (Empty trimmed) // Parsed by the boostrapper, not paket itself
+        | String.RemovePrefix "//" _ -> Some (Empty line)
+        | String.RemovePrefix "#" _ -> Some (Empty line)
         | _ -> None
         
     let private (|ParserOptions|_|) (line:string) =
-        let trimmed = line.Trim() 
-        match trimmed with
-        | String.RemovePrefix "references" trimmed -> Some (ParserOptions(ParserOption.ReferencesMode(trimmed.Replace(":","").Trim() = "strict")))
+        match line.Trim() with
+        | String.RemovePrefix "references" trimmed -> Some (ParserOptions (ParserOption.ReferencesMode (trimmed.Replace(":","").Trim() = "strict")))
         | String.RemovePrefix "redirects" trimmed ->
             let setting =
-                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
-                | "on" -> Some true
-                | "off" -> Some false
+                match trimmed.Replace(":","").Trim() with
+                | String.EqualsIC "on" -> Some true
+                | String.EqualsIC "off" -> Some false
                 | _ -> None
 
-            Some (ParserOptions(ParserOption.Redirects(setting)))
+            Some (ParserOptions (ParserOption.Redirects setting))
         | String.RemovePrefix "strategy" trimmed -> 
             let setting =
-                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
-                | "max" -> Some ResolverStrategy.Max
-                | "min" -> Some ResolverStrategy.Min
+                match trimmed.Replace(":","").Trim() with
+                | String.EqualsIC "max" -> Some ResolverStrategy.Max
+                | String.EqualsIC "min" -> Some ResolverStrategy.Min
                 | _ -> None
 
-            Some (ParserOptions(ParserOption.ResolverStrategyForTransitives(setting)))
+            Some (ParserOptions (ParserOption.ResolverStrategyForTransitives setting))
         | String.RemovePrefix "lowest_matching" trimmed -> 
             let setting =
-                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
-                | "false" -> Some ResolverStrategy.Max
-                | "true" -> Some ResolverStrategy.Min
+                match trimmed.Replace(":","").Trim() with
+                | String.EqualsIC "false" -> Some ResolverStrategy.Max
+                | String.EqualsIC "true" -> Some ResolverStrategy.Min
                 | _ -> None
 
-            Some (ParserOptions(ParserOption.ResolverStrategyForDirectDependencies(setting)))
+            Some (ParserOptions (ParserOption.ResolverStrategyForDirectDependencies setting))
         | String.RemovePrefix "framework" trimmed -> 
             let text = trimmed.Replace(":", "").Trim()
             
             if text = "auto-detect" then 
-                Some (ParserOptions(ParserOption.AutodetectFrameworkRestrictions))
+                Some (ParserOptions (ParserOption.AutodetectFrameworkRestrictions))
             else 
                 let restrictions = Requirements.parseRestrictions true text
                 if String.IsNullOrWhiteSpace text |> not && List.isEmpty restrictions then 
                     failwithf "Could not parse framework restriction \"%s\"" text
 
-                let options = ParserOption.FrameworkRestrictions(FrameworkRestrictionList restrictions)
+                let options = ParserOption.FrameworkRestrictions (FrameworkRestrictionList restrictions)
                 Some (ParserOptions options)
 
         | String.RemovePrefix "content" trimmed -> 
             let setting =
-                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
-                | "none" -> ContentCopySettings.Omit
-                | "once" -> ContentCopySettings.OmitIfExisting
+                match trimmed.Replace(":","").Trim() with
+                | String.EqualsIC "none" -> ContentCopySettings.Omit
+                | String.EqualsIC "once" -> ContentCopySettings.OmitIfExisting
                 | _ -> ContentCopySettings.Overwrite
 
-            Some (ParserOptions(ParserOption.OmitContent(setting)))
-        | String.RemovePrefix "import_targets" trimmed -> Some (ParserOptions(ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true")))
-        | String.RemovePrefix "copy_local" trimmed -> Some (ParserOptions(ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true")))
+            Some (ParserOptions (ParserOption.OmitContent setting))
+        | String.RemovePrefix "import_targets" trimmed -> Some (ParserOptions (ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true")))
+        | String.RemovePrefix "copy_local" trimmed -> Some (ParserOptions (ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true")))
         | String.RemovePrefix "copy_content_to_output_dir" trimmed -> 
             let setting =
-                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
-                | "always" -> CopyToOutputDirectorySettings.Always
-                | "never" -> CopyToOutputDirectorySettings.Never
-                | "preserve_newest" -> CopyToOutputDirectorySettings.PreserveNewest
+                match trimmed.Replace(":","").Trim() with
+                | String.EqualsIC "always" -> CopyToOutputDirectorySettings.Always
+                | String.EqualsIC "never" -> CopyToOutputDirectorySettings.Never
+                | String.EqualsIC "preserve_newest" -> CopyToOutputDirectorySettings.PreserveNewest
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
                         
-            Some (ParserOptions(ParserOption.CopyContentToOutputDir(setting)))
+            Some (ParserOptions (ParserOption.CopyContentToOutputDir setting))
         | String.RemovePrefix "condition" trimmed -> Some (ParserOptions(ParserOption.ReferenceCondition(trimmed.Replace(":","").Trim().ToUpper())))
         | String.RemovePrefix "generate_load_scripts" trimmed ->
             let setting =
-                match trimmed.Replace(":","").Trim().ToLowerInvariant() with
-                | "on"  | "true"  -> Some true
-                | "off" | "false" -> Some false
+                match trimmed.Replace(":","").Trim() with
+                | String.EqualsIC "on"  | String.EqualsIC "true"  -> Some true
+                | String.EqualsIC "off" | String.EqualsIC "false" -> Some false
                 | _ -> None
-            Some (ParserOptions(ParserOption.GenerateLoadScripts setting))
+            Some (ParserOptions (ParserOption.GenerateLoadScripts setting))
         | _ -> None
         
-    let private (|SourceFile|_|) (line:string) =
-        let trimmed = line.Trim() 
-        match trimmed with
+    let private (|SourceFile|_|) (line:string) =        
+        match line.Trim() with
         | String.RemovePrefix "gist" _ as trimmed ->
-            Some (SourceFile(parseGitSource trimmed Origin.GistLink "gist"))
+            Some (SourceFile (parseGitSource trimmed Origin.GistLink "gist"))
         | String.RemovePrefix "github" _ as trimmed  ->
-            Some (SourceFile(parseGitSource trimmed Origin.GitHubLink "github"))
+            Some (SourceFile (parseGitSource trimmed Origin.GitHubLink "github"))
         | String.RemovePrefix "http" _ as trimmed  ->
-            Some (SourceFile(parseHttpSource trimmed))
+            Some (SourceFile (parseHttpSource trimmed))
         | _ -> None 
 
-    let private (|Git|_|) (line:string) =
-        let trimmed = line.Trim() 
-        match trimmed with
+    let private (|Git|_|) (line:string) =        
+        match line.Trim() with
         | String.RemovePrefix "git" _ as trimmed  ->
-            Some (Git(trimmed.Substring(4)))
+            Some (Git(trimmed.Substring 4))
         | String.RemovePrefix "file:" _ as trimmed  ->
-            Some (Git(trimmed))
+            Some (Git trimmed)
         | _ -> None
         
-    let private (|Group|_|) (line:string) =
-        let trimmed = line.Trim() 
-        match trimmed with
-        | String.RemovePrefix "group" _ as trimmed -> Some (Group(trimmed.Replace("group ","")))
+    let private (|Group|_|) (line:string) =        
+        match line.Trim()  with
+        | String.RemovePrefix "group" _ as trimmed -> Some (Group (trimmed.Replace("group ","")))
         | _ -> None
     
-    let parsePackage(sources,parent,name,version,rest:string) =
+    let parsePackage (sources,parent,name,version,rest:string) =
         let prereleases,optionsText =
             if rest.Contains ":" then
                 // boah that's reaaaally ugly, but keeps backwards compat
                 let pos = rest.IndexOf ':'
                 let s = rest.Substring(0,pos).TrimEnd()
-                let pos' = s.LastIndexOf(' ')
+                let pos' = s.LastIndexOf ' '
                 let prereleases = if pos' > 0 then s.Substring(0,pos') else ""
                 let s' = if prereleases <> "" then rest.Replace(prereleases,"") else rest
                 prereleases,s'
@@ -389,28 +369,29 @@ module DependenciesFileParser =
         let vr = (version + " " + prereleases).Trim(VersionRange.StrategyOperators |> Array.ofList)
         let versionRequirement = parseVersionRequirement vr
 
-        { Name = packageName
-          ResolverStrategyForTransitives = 
-            if optionsText.Contains "strategy" then 
-                let kvPairs = parseKeyValuePairs optionsText
-                match kvPairs.TryGetValue "strategy" with
-                | true, "max" -> Some ResolverStrategy.Max 
-                | true, "min" -> Some ResolverStrategy.Min
-                | _ -> parseResolverStrategy version
-            else parseResolverStrategy version 
-          ResolverStrategyForDirectDependencies = 
-            if optionsText.Contains "lowest_matching" then 
-                let kvPairs = parseKeyValuePairs optionsText
-                match kvPairs.TryGetValue "lowest_matching" with
-                | true, "false" -> Some ResolverStrategy.Max 
-                | true, "true" -> Some ResolverStrategy.Min
-                | _ -> None
-            else None 
-          Parent = parent
-          Graph = []
-          Sources = sources
-          Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
-          VersionRequirement = versionRequirement } 
+        {   Name = packageName
+            ResolverStrategyForTransitives = 
+                if optionsText.Contains "strategy" then 
+                    let kvPairs = parseKeyValuePairs optionsText
+                    match kvPairs.TryGetValue "strategy" with
+                    | true, "max" -> Some ResolverStrategy.Max 
+                    | true, "min" -> Some ResolverStrategy.Min
+                    | _ -> parseResolverStrategy version
+                else parseResolverStrategy version 
+            ResolverStrategyForDirectDependencies = 
+                if optionsText.Contains "lowest_matching" then 
+                    let kvPairs = parseKeyValuePairs optionsText
+                    match kvPairs.TryGetValue "lowest_matching" with
+                    | true, "false" -> Some ResolverStrategy.Max 
+                    | true, "true" -> Some ResolverStrategy.Min
+                    | _ -> None
+                else None 
+            Parent = parent
+            Graph = []
+            Sources = sources
+            Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
+            VersionRequirement = versionRequirement 
+        } 
 
     let parsePackageLine(sources,parent,line:string) =
         match line with 
@@ -438,7 +419,7 @@ module DependenciesFileParser =
             let lineNo = lineNo + 1
             try
                 match line with
-                | Group(newGroupName) -> 
+                | Group newGroupName -> 
                     let newGroups =
                         let newGroupName = GroupName newGroupName
                         if current.Name = newGroupName then current::other else
@@ -446,9 +427,9 @@ module DependenciesFileParser =
                         | Some g -> g::current::(other |> List.filter (fun g -> g.Name <> newGroupName))
                         | None -> DependenciesGroup.New(newGroupName)::current::other
                     lineNo,newGroups
-                | Empty(_) -> lineNo, current::other
-                | Remote(RemoteParserOption.PackageSource newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
-                | Remote(RemoteParserOption.Cache newCache) ->                    
+                | Empty _ -> lineNo, current::other
+                | Remote (RemoteParserOption.PackageSource newSource) -> lineNo, { current with Sources = current.Sources @ [newSource] |> List.distinct }::other
+                | Remote (RemoteParserOption.Cache newCache) ->                    
                     let newCache =
                         if String.IsNullOrWhiteSpace fileName then
                             newCache
@@ -458,7 +439,7 @@ module DependenciesFileParser =
                     let caches = current.Caches @ [newCache] |> List.distinct
                     let sources = current.Sources @ [LocalNuGet(newCache.Location,Some newCache)] |> List.distinct
                     lineNo, { current with Caches = caches; Sources = sources }::other
-                | ParserOptions(options) ->
+                | ParserOptions options ->
                     lineNo,{ current with Options = parseOptions current options} ::other
                 | Package(name,version,rest) ->
                     let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest) 
@@ -467,40 +448,42 @@ module DependenciesFileParser =
                     
                     lineNo, { current with Packages = current.Packages  @ [package] }::other
                 | SourceFile(origin, (owner,project, vr), path, authKey) ->
-                    let remoteFile : UnresolvedSource = 
-                        { Owner = owner
-                          Project = project
-                          Version = 
+                    let remoteFile : UnresolvedSource = { 
+                        Owner = owner
+                        Project = project
+                        Version = 
                             match vr with
                             | None -> VersionRestriction.NoVersionRestriction
                             | Some x -> VersionRestriction.Concrete x
-                          Name = path
-                          Origin = origin
-                          Command = None
-                          OperatingSystemRestriction = None
-                          PackagePath = None
-                          AuthKey = authKey }
+                        Name = path
+                        Origin = origin
+                        Command = None
+                        OperatingSystemRestriction = None
+                        PackagePath = None
+                        AuthKey = authKey 
+                    }
                     lineNo, { current with RemoteFiles = current.RemoteFiles @ [remoteFile] }::other
-                | Git(gitConfig) ->
+                | Git gitConfig ->
                     let owner,vr,project,origin,buildCommand,operatingSystemRestriction,packagePath = Git.Handling.extractUrlParts gitConfig
-                    let remoteFile : UnresolvedSource = 
-                        { Owner = owner
-                          Project = project
-                          Version = 
-                            match vr with
-                            | None -> VersionRestriction.NoVersionRestriction
-                            | Some x -> 
-                                try 
-                                    let vr = parseVersionRequirement x
-                                    VersionRestriction.VersionRequirement vr
-                                with 
-                                | _ -> VersionRestriction.Concrete x
-                          Command = buildCommand
-                          OperatingSystemRestriction = operatingSystemRestriction
-                          PackagePath = packagePath
-                          Name = ""
-                          Origin = GitLink origin
-                          AuthKey = None }
+                    let remoteFile : UnresolvedSource = { 
+                        Owner = owner
+                        Project = project
+                        Version = 
+                          match vr with
+                          | None -> VersionRestriction.NoVersionRestriction
+                          | Some x -> 
+                              try 
+                                  let vr = parseVersionRequirement x
+                                  VersionRestriction.VersionRequirement vr
+                              with 
+                              | _ -> VersionRestriction.Concrete x
+                        Command = buildCommand
+                        OperatingSystemRestriction = operatingSystemRestriction
+                        PackagePath = packagePath
+                        Name = ""
+                        Origin = GitLink origin
+                        AuthKey = None 
+                    }
                     let sources = 
                         match packagePath with
                         | None -> current.Sources
@@ -528,9 +511,10 @@ module DependenciesFileParser =
 
         fileName, groups, lines
     
-    let parseVersionString (version : string) = 
-        { VersionRequirement = parseVersionRequirement (version.Trim(VersionRange.StrategyOperators |> Array.ofList))
-          ResolverStrategy = parseResolverStrategy version }
+    let parseVersionString (version : string) = {   
+        VersionRequirement = parseVersionRequirement (version.Trim(VersionRange.StrategyOperators |> Array.ofList))
+        ResolverStrategy = parseResolverStrategy version 
+    }
 
 
 

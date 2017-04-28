@@ -255,9 +255,9 @@ module LockFileParser =
         | _, String.RemovePrefix "REFERENCES:" trimmed -> InstallOption(ReferencesMode(trimmed.Trim() = "STRICT"))
         | _, String.RemovePrefix "REDIRECTS:" trimmed -> 
             let setting =
-                match trimmed.Trim().ToLowerInvariant() with
-                | "on" -> Some true
-                | "off" -> Some false
+                match trimmed.Trim() with
+                | String.EqualsIC "on" -> Some true
+                | String.EqualsIC "off" -> Some false
                 | _ -> None
 
             InstallOption (Redirects setting)
@@ -265,9 +265,9 @@ module LockFileParser =
         | _, String.RemovePrefix "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "GENERATE-LOAD-SCRIPTS:" trimmed -> 
             let setting =
-                match trimmed.Trim().ToLowerInvariant() with
-                | "on" -> Some true
-                | "off" -> Some false
+                match trimmed.Trim() with
+                | String.EqualsIC "on" -> Some true
+                | String.EqualsIC "off" -> Some false
                 | _ -> None
                                             
             InstallOption (GenerateLoadScripts setting)
@@ -292,17 +292,17 @@ module LockFileParser =
             InstallOption (OmitContent setting)
         | _, String.RemovePrefix "STRATEGY:" trimmed -> 
             let setting =
-                match trimmed.Trim().ToLowerInvariant() with
-                | "min" -> Some ResolverStrategy.Min
-                | "max" -> Some ResolverStrategy.Max
+                match trimmed.Trim() with
+                | String.EqualsIC "min" -> Some ResolverStrategy.Min
+                | String.EqualsIC "max" -> Some ResolverStrategy.Max
                 | _ -> None
 
             InstallOption(TransitiveDependenciesResolverStrategy(setting))
         | _, String.RemovePrefix "LOWEST_MATCHING:" trimmed -> 
             let setting =
-                match trimmed.Trim().ToLowerInvariant() with
-                | "true" -> Some ResolverStrategy.Min
-                | "false" -> Some ResolverStrategy.Max
+                match trimmed.Trim() with
+                | String.EqualsIC "true" -> Some ResolverStrategy.Min
+                | String.EqualsIC "false" -> Some ResolverStrategy.Max
                 | _ -> None
 
             InstallOption(DirectDependenciesResolverStrategy(setting))
@@ -314,15 +314,15 @@ module LockFileParser =
             InstallOption(OperatingSystemRestriction trimmed)
         | _, trimmed when line.StartsWith "      " ->
             let frameworkSettings =
-                if trimmed.Contains(" - ") then
-                    let pos = trimmed.LastIndexOf(" - ")
+                if trimmed.Contains " - " then
+                    let pos = trimmed.LastIndexOf " - "
                     try
                         InstallSettings.Parse(trimmed.Substring(pos + 3))
                     with
                     | _ -> InstallSettings.Parse("framework: " + trimmed.Substring(pos + 3)) // backwards compatible
                 else
                     InstallSettings.Default
-            if trimmed.Contains("(") then
+            if trimmed.Contains "(" then
                 let parts = trimmed.Split '(' 
                 NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim(),frameworkSettings)
             else
@@ -381,8 +381,8 @@ module LockFileParser =
             | currentGroup::otherGroups ->
                 if String.IsNullOrWhiteSpace line || line.Trim().StartsWith("specs:") then currentGroup::otherGroups else
                 match (currentGroup, line) with
-                | Remote(url) -> { currentGroup with RemoteUrl = Some url }::otherGroups
-                | Group(groupName) -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
+                | Remote url -> { currentGroup with RemoteUrl = Some url }::otherGroups
+                | Group groupName -> { GroupName = GroupName groupName; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false } :: currentGroup :: otherGroups
                 | InstallOption(Command(command)) -> 
                     let sourceFiles = 
                         match currentGroup.SourceFiles with
@@ -557,7 +557,7 @@ module LockFileParser =
 
 
 /// Allows to parse and analyze paket.lock files.
-type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
+type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
     let fileName = if isNull fileName then String.Empty else fileName
     member __.Groups = groups
     member __.FileName = fileName
@@ -671,16 +671,16 @@ type LockFile(fileName:string,groups: Map<GroupName,LockFileGroup>) =
 
 
     override __.ToString() =
-        String.Join
-            (Environment.NewLine,
-             [|let mainGroup = groups.[Constants.MainDependencyGroup]
-               yield LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution
-               yield LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles
-               for g in groups do 
-                if g.Key <> Constants.MainDependencyGroup then
-                    yield "GROUP " + g.Value.Name.ToString()
-                    yield LockFileSerializer.serializePackages g.Value.Options g.Value.Resolution
-                    yield LockFileSerializer.serializeSourceFiles g.Value.RemoteFiles|])
+        String.Join (Environment.NewLine,
+            [|  let mainGroup = groups.[Constants.MainDependencyGroup]
+                yield LockFileSerializer.serializePackages mainGroup.Options mainGroup.Resolution
+                yield LockFileSerializer.serializeSourceFiles mainGroup.RemoteFiles
+                for g in groups do 
+                    if g.Key <> Constants.MainDependencyGroup then
+                        yield "GROUP " + g.Value.Name.ToString()
+                        yield LockFileSerializer.serializePackages g.Value.Options g.Value.Resolution
+                        yield LockFileSerializer.serializeSourceFiles g.Value.RemoteFiles
+            |])
 
 
     /// Updates the paket.lock file with the analyzed dependencies from the paket.dependencies file.
