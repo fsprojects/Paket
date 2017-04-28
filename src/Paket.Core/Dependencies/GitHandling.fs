@@ -92,7 +92,7 @@ let extractUrlParts (gitConfig:string) =
 
     let origin =
         match url with
-        | String.StartsWith @"file:///" _ ->
+        | String.RemovePrefix @"file:///" _ ->
             LocalGitOrigin url
         | _ ->
             RemoteGitOrigin url
