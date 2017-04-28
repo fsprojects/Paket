@@ -11,6 +11,7 @@
 * BUGFIX: Proper encoding "+" in package download url - https://github.com/fsprojects/Paket/pull/2288
 * BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
+* BREAKING CHANGE: Paket.PowerShell is no longer supported
 * BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
 
