@@ -260,73 +260,20 @@ let findPackages silent (results : ParseResults<_>) =
 
     | Some searchText -> searchAndPrint searchText
 
+
+let fixNuspecs silent (results : ParseResults<_>) =
+    let referenceFile = results.GetResult <@ FixNuspecsArgs.ReferencesFile @>
+    let nuspecFiles = results.GetResult <@ FixNuspecsArgs.Files @> 
+    Dependencies.FixNuspecs (referenceFile, nuspecFiles)
+
+
+// For Backwards compatibility
 let fixNuspec silent (results : ParseResults<_>) =
-    match results.TryGetResult <@ FixNuspecArgs.File @> with
-    | None ->
-        failwithf "Please specify the nuspec file with the 'file' parameter."
-
-    | Some nuspecFileNames ->
-        // if multiple, msbuild will join them via ';'
-        let fileNameSplits = nuspecFileNames.Split([|';'|])
-        for nuspecFileName in fileNameSplits do
-            if not (File.Exists nuspecFileName) then
-                failwithf "Specified file '%s' does not exist." nuspecFileName
-
-        for nuspecFileName in fileNameSplits do
-            let nuspecText = File.ReadAllText nuspecFileName
-
-            let doc =
-                try
-                    let doc = Xml.XmlDocument()
-                    doc.LoadXml nuspecText
-                    doc
-                with
-                | exn -> failwithf "Could not parse nuspec file '%s'.%sMessage: %s" nuspecFileName Environment.NewLine exn.Message
-
-            match results.TryGetResult <@ FixNuspecArgs.ReferencesFile @> with
-            | None ->
-                failwithf "Please specify the references-file with the 'references-file' parameter."
-
-            | Some referencesFileName ->
-                if not (File.Exists referencesFileName) then
-                    failwithf "Specified references-file '%s' does not exist." referencesFileName
-
-                let referencesText = File.ReadAllLines referencesFileName
-                let transitiveReferences =
-                    referencesText
-                    |> Array.map (fun l -> l.Split [|','|])
-                    |> Array.choose (fun x ->
-                        if x.[2] = "Transitive" then
-                            Some x.[0]
-                        else
-                            None)
-                    |> Set.ofArray
-
-                let rec traverse (parent:XmlNode) =
-                    let nodesToRemove = System.Collections.Generic.List<_>()
-                    for node in parent.ChildNodes do
-                        if node.Name = "dependency" then
-                            let packageName = 
-                                match node.Attributes.["id"] with
-                                | null -> ""
-                                | x -> x.InnerText
-
-                            if transitiveReferences.Contains packageName then
-                                nodesToRemove.Add node |> ignore
-
-                    if nodesToRemove.Count = 0 then
-                        for node in parent.ChildNodes do
-                            traverse node
-                    else
-                        for node in nodesToRemove do
-                            parent.RemoveChild node |> ignore
-
-                traverse doc
-
-                use fileStream = File.Open(nuspecFileName, FileMode.Create)
-
-                doc.Save(fileStream)
-
+    let fileString = results.GetResult <@ FixNuspecArgs.File @> 
+    let refFile = results.GetResult <@ FixNuspecArgs.ReferencesFile @> 
+    let nuspecList = fileString.Split([|';'|])|>List.ofArray
+    Dependencies.FixNuspecs (refFile, nuspecList)
+    
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
 let getInstalledPackages (results : ParseResults<_>) =
@@ -455,6 +402,7 @@ let main() =
             | FindPackages r -> processCommand silent (findPackages silent) r
             | FindPackageVersions r -> processCommand silent findPackageVersions r
             | FixNuspec r -> processCommand silent (fixNuspec silent) r
+            | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
             | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
             | ShowGroups r -> processCommand silent showGroups r
             | Pack r -> processCommand silent pack r

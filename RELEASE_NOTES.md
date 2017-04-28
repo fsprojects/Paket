@@ -13,6 +13,8 @@
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
 * BREAKING CHANGE: Paket.PowerShell is no longer supported
 * BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
+* New Command: `FixNuspecs` - Can fix a list of nuspec files now 
+* DEPRECATED: `FixNuspec`is now obsolete, use `FixNuspecs` instead
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
 
 #### 4.8.1 - 25.04.2017

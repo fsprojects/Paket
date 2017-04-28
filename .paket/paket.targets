@@ -43,10 +43,6 @@
 
   <PropertyGroup>
   <!-- Commands -->
-    <PaketReferences Condition="!Exists('$(MSBuildProjectFullPath).paket.references')">$(MSBuildProjectDirectory)\$(MSBuildProjectName).paket.references</PaketReferences>
-    <PaketReferences Condition="!Exists('$(MSBuildProjectDirectory)\$(MSBuildProjectName).paket.references')">$(MSBuildProjectDirectory)\paket.references</PaketReferences>
-    <PaketReferences Condition="!Exists('$(PaketReferences)')">$(MSBuildStartupDirectory)\paket.references</PaketReferences>
-    <PaketReferences Condition="Exists('$(MSBuildProjectFullPath).paket.references')">$(MSBuildProjectFullPath).paket.references</PaketReferences>
     <RestoreCommand>$(PaketCommand) restore --references-files "$(PaketReferences)"</RestoreCommand>
     <!-- We need to ensure packages are restored prior to assembly resolve -->
     <BuildDependsOn Condition="$(RestorePackages) == 'true'">RestorePackages; $(BuildDependsOn);</BuildDependsOn>

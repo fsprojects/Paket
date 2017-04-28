@@ -231,20 +231,30 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | SearchText(_) -> "Search text of a Package."
-            | Source(_) -> "Allows to specify the package source feed."
-            | MaxResults(_) -> "Maximum number of results."
+            | SearchText _ -> "Search text of a Package."
+            | Source _ -> "Allows to specify the package source feed."
+            | MaxResults _ -> "Maximum number of results."
 
-            
+
 type FixNuspecArgs =
-    | [<CustomCommandLine("file")>] File of text:string
-    | [<CustomCommandLine("references-file")>] ReferencesFile of text:string
+    | [<Mandatory>][<CustomCommandLine("file")>] File of text:string
+    | [<Mandatory>][<CustomCommandLine("references-file")>] ReferencesFile of text:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | File(_) -> "FileName of the nuspec file."
-            | ReferencesFile(_) -> "FileName of the nuspec file."
+            | File _ -> "FileName of the nuspec file."
+            | ReferencesFile _ -> "FileName of the nuspec file."
+            
+type FixNuspecsArgs =
+    | [<Mandatory>][<CustomCommandLine("files")>] Files of nuspecPaths:string list
+    | [<Mandatory>][<CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
+with
+    interface IArgParserTemplate with
+        member this.Usage =
+            match this with
+            | Files _ -> "List of .nuspec files to fix transitive dependencies within."
+            | ReferencesFile _ -> "FileName of the nuspec file."
 
 
 type GenerateNuspecArgs =
@@ -386,6 +396,7 @@ type Command =
     | [<CustomCommandLine("find-packages")>]            FindPackages of ParseResults<FindPackagesArgs>
     | [<CustomCommandLine("find-package-versions")>]    FindPackageVersions of ParseResults<FindPackageVersionsArgs>
     | [<CustomCommandLine("fix-nuspec")>]               FixNuspec of ParseResults<FixNuspecArgs>
+    | [<CustomCommandLine("fix-nuspecs")>]              FixNuspecs of ParseResults<FixNuspecsArgs>
     | [<CustomCommandLine("generate-nuspec")>]          GenerateNuspec of ParseResults<GenerateNuspecArgs>
     | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResults<ShowInstalledPackagesArgs>
     | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResults<ShowGroupsArgs>
@@ -413,7 +424,8 @@ with
             | Update _ -> "Update one or all dependencies to their latest version and update projects."
             | FindPackages _ -> "Allows to search for packages."
             | FindPackageVersions _ -> "Allows to search for package versions."
-            | FixNuspec _ -> "Allows to patch a nuspec with the correct dependencies."
+            | FixNuspec _ -> "[ Obsolete ] see fix-nuspecs."
+            | FixNuspecs _ -> "Patch a list of .nuspec files to correct transitive dependencies."
             | GenerateNuspec _ -> "Generates a default nuspec for a project including its direct dependencies."
             | ShowInstalledPackages _ -> "Shows all installed top-level packages."
             | ShowGroups _ -> "Shows all groups."
