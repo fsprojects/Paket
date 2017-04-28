@@ -1038,7 +1038,7 @@ module ProjectFile =
 
         completeModel
         |> Seq.filter (fun kv -> usedPackages.ContainsKey kv.Key)
-        |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.GetCompareString(), packName.GetCompareString())
+        |> Seq.sortBy (fun kv -> let group, packName = kv.Key in group.CompareString, packName.CompareString)
         |> Seq.map (fun kv -> 
             deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]

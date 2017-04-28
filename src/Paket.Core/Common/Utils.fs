@@ -646,7 +646,7 @@ let getTargetFolder root groupName (packageName:PackageName) version includeVers
     if groupName = Constants.MainDependencyGroup then
         Path.Combine(root, Constants.PackagesFolderName, packageFolder)
     else
-        Path.Combine(root, Constants.PackagesFolderName, groupName.GetCompareString(), packageFolder)
+        Path.Combine(root, Constants.PackagesFolderName, groupName.CompareString, packageFolder)
 
 let RunInLockedAccessMode(rootFolder,action) =
     let packagesFolder = Path.Combine(rootFolder,Constants.PackagesFolderName)
@@ -718,12 +718,12 @@ let RunInLockedAccessMode(rootFolder,action) =
 module String =
 
     /// Match if 'text' starts with the 'prefix' string case
-    // TODO - this implementation is not great and the way it's being used in
-    // lockfile is wasteful with all of the trimmed lines, but this
-    // will need to be fixed at some later point
     let (|StartsWith|_|) prefix (input: string) =
-        if input.StartsWith prefix then
-            Some (input.Substring(prefix.Length))
+        if input.StartsWith prefix then Some () else None
+    
+    /// Match if 'text' starts with the 'prefix' and return the text with the prefix removed
+    let (|RemovePrefix|_|) prefix (input: string) =
+        if input.StartsWith prefix then Some (input.Substring prefix.Length)
         else None
 
     let getLines (str: string) =
