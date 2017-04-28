@@ -27,7 +27,16 @@ let ``#1166 Should resolve Nancy without timeout``() =
     |> shouldBeGreaterThan (SemVer.Parse "1.1")
 
 [<Test>]
-[<Ignore("fails with SO, skipping until works")>]
+let ``#2289 Paket 4.x install command takes hours to complete``() =
+    let lockFile = install "i002289-resolve-nunit-timeout"
+    let nunitVersion =
+        lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
+    nunitVersion
+    |> shouldBeGreaterThan (SemVer.Parse "2.0")
+    nunitVersion
+    |> shouldBeSmallerThan (SemVer.Parse "3.0")
+
+[<Test>]
 let ``#1174 Should find Ninject error``() =
     updateShouldFindPackageConflict "Ninject" "i001174-resolve-fast-conflict"
 

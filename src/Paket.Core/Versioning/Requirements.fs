@@ -791,25 +791,30 @@ type PackageRequirement =
     member this.Depth = this.Graph.Length
 
     static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =
-        if x = y then 0 else
-        seq {
-            yield compare
-                (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
-                (not y.VersionRequirement.Range.IsGlobalOverride,y.Depth)
-            yield match startWithPackage with
+        if obj.ReferenceEquals(x, y) then 0 else
+        let c = compare
+                  (not x.VersionRequirement.Range.IsGlobalOverride,x.Depth)
+                  (not y.VersionRequirement.Range.IsGlobalOverride,y.Depth)
+        if c <> 0 then c else
+        let c = match startWithPackage with
                     | Some filter when filter.Match x.Name -> -1
                     | Some filter when filter.Match y.Name -> 1
                     | _ -> 0
-            yield -compare x.ResolverStrategyForDirectDependencies y.ResolverStrategyForDirectDependencies
-            yield -compare x.ResolverStrategyForTransitives y.ResolverStrategyForTransitives
-            yield compare boostX boostY
-            yield -compare x.VersionRequirement y.VersionRequirement
-            yield compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions
-            yield compare x.Parent y.Parent
-            yield compare x.Name y.Name
-        }
-        |> Seq.tryFind (fun x -> x <> 0)
-        |> Option.fold (fun _ x -> x) 0
+        if c <> 0 then c else
+        let c = -compare x.ResolverStrategyForDirectDependencies y.ResolverStrategyForDirectDependencies
+        if c <> 0 then c else
+        let c = -compare x.ResolverStrategyForTransitives y.ResolverStrategyForTransitives
+        if c <> 0 then c else
+        let c = compare boostX boostY
+        if c <> 0 then c else
+        let c = -compare x.VersionRequirement y.VersionRequirement
+        if c <> 0 then c else
+        let c = compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions
+        if c <> 0 then c else
+        let c = compare x.Parent y.Parent
+        if c <> 0 then c else
+        let c = compare x.Name y.Name
+        if c <> 0 then c else 0
 
     interface System.IComparable with
        member this.CompareTo that = 
