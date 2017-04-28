@@ -63,7 +63,7 @@ module ScriptGeneration =
 
     /// default implementation of F# include script generator
     let generateScript (scriptType:ScriptType) (input: ScriptGenInput) =
-        let packageName = input.PackageName.GetCompareString()
+        let packageName = input.PackageName.CompareString
         
         let lines =
             if String.equalsIgnoreCase packageName "FSharp.Core" then [] else

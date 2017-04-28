@@ -57,7 +57,7 @@ let rec private followODataLink auth url =
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
     async {
         try
-            let url = sprintf "%s/Packages?$filter=tolower(Id) eq '%s'" nugetURL (package.GetCompareString())
+            let url = sprintf "%s/Packages?$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
             verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
             let! result = followODataLink auth url
             return Some result
@@ -248,7 +248,7 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     async {
         try
-            let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.GetCompareString()) (version.Normalize())
+            let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) (version.Normalize())
             let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
                 tracefn "Response from %s:" url
@@ -256,7 +256,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                 tracefn "%s" raw
             return parseODataDetails(url,nugetURL,packageName,version,raw)
         with _ ->
-            let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.GetCompareString()) version
+            let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
             let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
                 tracefn "Response from %s:" url
@@ -352,7 +352,7 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     let v3 =
         Directory.EnumerateFiles(directory,"*.nupkg",SearchOption.AllDirectories)
         |> Seq.map (fun x -> FileInfo(x))
-        |> Seq.filter (fun fi -> String.containsIgnoreCase (packageName.GetCompareString())  fi.Name)
+        |> Seq.filter (fun fi -> String.containsIgnoreCase (packageName.CompareString)  fi.Name)
         |> Seq.filter (fun fi -> fi.Name.Contains(normalizedVersion) || fi.Name.Contains(version.ToString()))
         |> Seq.tryHead
 

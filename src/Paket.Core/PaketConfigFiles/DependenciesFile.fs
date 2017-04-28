@@ -78,7 +78,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         firstLine,lastLine
 
     let tryFindPackageLine groupName (packageName:PackageName) =
-        let name = packageName.GetCompareString()
+        let name = packageName.CompareString
         let _,_,found =
             textRepresentation
             |> Array.fold (fun (i,currentGroup,found) line -> 
@@ -531,7 +531,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let newLines = 
                 this.Lines 
                 |> Array.map (fun l -> 
-                    let name = packageName.GetCompareString()
+                    let name = packageName.CompareString
                     if isPackageLine name l then 
                         let p = this.GetPackage(groupName,packageName)
                         match vr.VersionRequirement.Range with

@@ -16,17 +16,13 @@ type PackageName =
     member self.CompareString = 
        self |> function PackageName (compareString=c) -> c
 
-    member this.GetCompareString() =
-        match this with
-        | PackageName (_,id) -> id
-        
     override this.ToString() = 
         match this with
         | PackageName (name,_) -> name
 
     override this.Equals that = 
         match that with
-        | :? PackageName as that -> this.GetCompareString() = that.GetCompareString()
+        | :? PackageName as that -> this.CompareString = that.CompareString
         | _ -> false
 
     override this.GetHashCode () = hash this.CompareString
@@ -34,7 +30,7 @@ type PackageName =
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? PackageName as that -> StringComparer.Ordinal.Compare(this.GetCompareString(), that.GetCompareString())
+          | :? PackageName as that -> StringComparer.Ordinal.Compare(this.CompareString, that.CompareString)
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Function to convert a string into a NuGet package name
@@ -53,25 +49,21 @@ type GroupName =
     member self.CompareString = 
        self |> function GroupName (compareString=c) -> c
 
-    member this.GetCompareString() =
-        match this with
-        | GroupName (_,id) -> id
-
     override this.ToString () = 
         match this with
         | GroupName (name,_) -> name
 
     override this.Equals(that) = 
         match that with
-        | :? GroupName as that -> this.GetCompareString() = that.GetCompareString()
+        | :? GroupName as that -> this.CompareString = that.CompareString
         | _ -> false
 
-    override this.GetHashCode() = hash (this.GetCompareString())
+    override this.GetHashCode() = hash this.CompareString
 
     interface System.IComparable with
        member this.CompareTo that = 
           match that with 
-          | :? GroupName as that -> StringComparer.Ordinal.Compare(this.GetCompareString(), that.GetCompareString())
+          | :? GroupName as that -> StringComparer.Ordinal.Compare(this.CompareString, that.CompareString)
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Function to convert a string into a group name
@@ -117,7 +109,7 @@ type PackageFilter =
                     ||| RegexOptions.CultureInvariant 
                     ||| RegexOptions.IgnoreCase)
 
-            regex.IsMatch (packageName.GetCompareString())
+            regex.IsMatch (packageName.CompareString)
 
     static member ofName name = PackageFilter.PackageName name
 
