@@ -14,7 +14,7 @@
 
   <Target Name="PaketRestore" BeforeTargets="_GenerateProjectRestoreGraphPerFramework;_GenerateRestoreGraphWalkPerFramework;CollectPackageReferences" >
 
-    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" ' />
+    <Exec Command='$(PaketCommand) restore --project "$(MSBuildProjectFullPath)" ' ContinueOnError="false" />
 
     <PropertyGroup>
       <PaketReferencesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferencesFilePath>
@@ -56,7 +56,7 @@
       <_NuspecFiles Include="$(BaseIntermediateOutputPath)*.nuspec"/>
     </ItemGroup>
 
-    <Exec Command='$(PaketCommand) fix-nuspecs files "@(_NuspecFiles)" references-file "$(PaketReferencesFilePath)" ' />
+    <Exec Command='$(PaketCommand) fix-nuspec file "@(_NuspecFiles)" references-file "$(PaketReferencesFilePath)" ' />
     
     <ConvertToAbsolutePath Condition="@(_NuspecFiles) != ''" Paths="@(_NuspecFiles)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />

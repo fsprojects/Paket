@@ -45,7 +45,6 @@ let tags = "nuget, bundler, F#"
 
 // File system information
 let solutionFile  = "Paket.sln"
-let solutionFilePowerShell = "Paket.PowerShell.sln"
 
 // Pattern specifying assemblies to be tested using NUnit
 let testAssemblies = "tests/**/bin/Release/*Tests*.dll"
@@ -79,7 +78,6 @@ let netcoreFiles = !! "src/**.preview?/*.fsproj" |> Seq.toList
 let buildDir = "bin"
 let tempDir = "temp"
 let buildMergedDir = buildDir @@ "merged"
-let buildMergedDirPS = buildDir @@ "Paket.PowerShell"
 
 Environment.CurrentDirectory <- __SOURCE_DIRECTORY__
 // Read additional information from the release notes document
@@ -273,22 +271,6 @@ Target "DotnetPackage" (fun _ ->
 
 
 // --------------------------------------------------------------------------------------
-// Build PowerShell project
-
-Target "BuildPowerShell" (fun _ ->
-    if File.Exists "src/Paket.PowerShell/System.Management.Automation.dll" = false then
-        let result =
-            ExecProcess (fun info ->
-                info.FileName <- Path.Combine(Environment.SystemDirectory, @"WindowsPowerShell\v1.0\powershell.exe")
-                info.Arguments <- "-executionpolicy bypass -noprofile -file src/Paket.PowerShell/System.Management.Automation.ps1") System.TimeSpan.MaxValue
-        if result <> 0 then failwithf "Error copying System.Management.Automation.dll"
-
-    !! solutionFilePowerShell
-    |> MSBuildRelease "" "Rebuild"
-    |> ignore
-)
-
-// --------------------------------------------------------------------------------------
 // Run the unit tests using test runner
 
 Target "RunTests" (fun _ ->
@@ -372,32 +354,6 @@ Target "RunIntegrationTests" (fun _ ->
 )
 "Clean" ==> "Build" ==> "RunIntegrationTests" 
 
-Target "MergePowerShell" (fun _ ->
-    CreateDir buildMergedDirPS
-
-    let toPack =
-        mergeLibs @ ["Paket.PowerShell.dll"]
-        |> List.map (fun l -> buildDir @@ l)
-        |> separated " "
-
-    let result =
-        ExecProcess (fun info ->
-            info.FileName <- currentDirectory </> "packages" </> "build" </> "ILRepack" </> "tools" </> "ILRepack.exe"
-            info.Arguments <- sprintf "/verbose /lib:%s /out:%s %s" buildDir (buildMergedDirPS @@ "Paket.PowerShell.dll") toPack
-            ) (TimeSpan.FromMinutes 5.)
-
-    if result <> 0 then failwithf "Error during ILRepack execution."
-
-    // copy psd1 & set version
-    CopyFile (buildMergedDirPS @@ "ArgumentTabCompletion.ps1") "src/Paket.PowerShell/ArgumentTabCompletion.ps1"
-    let psd1 = buildMergedDirPS @@ "Paket.PowerShell.psd1"
-    CopyFile psd1 "src/Paket.PowerShell/Paket.PowerShell.psd1"
-    use psd = File.AppendText psd1
-    psd.WriteLine ""
-    psd.WriteLine (sprintf "ModuleVersion = '%s'" release.AssemblyVersion)
-    psd.WriteLine "}"
-)
-
 Target "SignAssemblies" (fun _ ->
     let pfx = "code-sign.pfx"
     if not <| fileExists pfx then
@@ -444,27 +400,6 @@ Target "MergeDotnetCoreIntoNuget" (fun _ ->
     let runTool = runCmdIn "tools" dotnetExePath
 
     runTool """mergenupkg --source "%s" --other "%s" --framework netstandard1.6 """ nupkg netcoreNupkg
-)
-
-Target "PublishChocolatey" (fun _ ->
-    let chocoDir = tempDir </> "Choco"
-    let files = !! (tempDir </> "*PowerShell*")
-    if isMono then
-        files
-        |> Seq.iter File.Delete
-    else
-        CleanDir chocoDir
-        files
-        |> CopyTo chocoDir
-
-        Paket.Push (fun p -> 
-            { p with 
-                ToolPath = "bin/merged/paket.exe"
-                PublishUrl = "https://chocolatey.org/"
-                ApiKey = getBuildParam "ChocoKey"
-                WorkingDir = chocoDir })
-
-        CleanDir chocoDir
 )
 
 Target "PublishNuGet" (fun _ ->
@@ -624,7 +559,6 @@ Target "All" DoNothing
 "Clean"
   ==> "AssemblyInfo"
   ==> "Build"
-  =?> ("BuildPowerShell", not isMono)
   <=> "BuildCore"
   ==> "RunTests"
   =?> ("GenerateReferenceDocs",isLocalBuild && not isMono)
@@ -635,7 +569,6 @@ Target "All" DoNothing
 "All"
   =?> ("RunIntegrationTests", not <| hasBuildParam "SkipIntegrationTests")
   ==> "MergePaketTool"
-  =?> ("MergePowerShell", not isMono)
   ==> "SignAssemblies"
   =?> ("NuGet", not <| hasBuildParam "SkipNuGet")
   =?> ("MergeDotnetCoreIntoNuget", not <| hasBuildParam "DISABLE_NETCORE" && not <| hasBuildParam "SkipNuGet")
@@ -653,7 +586,6 @@ Target "All" DoNothing
   ==> "KeepRunning"
 
 "BuildPackage"
-  ==> "PublishChocolatey"
   ==> "PublishNuGet"
 
 "PublishNuGet"
