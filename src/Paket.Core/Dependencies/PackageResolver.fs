@@ -356,7 +356,9 @@ let private explorePackageConfig getPackageDetailsF  (pkgConfig:PackageConfig) =
     | _ ->
         match dependency.VersionRequirement.Range with
         | Specific _ when dependency.Parent.IsRootRequirement() -> traceWarnfn " - %O is pinned to %O" dependency.Name version
-        | _ -> tracefn  " - %O %A" dependency.Name version
+        | _ ->
+            let compareString = dependency.Name.CompareString
+            tracefn  " - %O %A" dependency.Name version
 
     let newRestrictions =
         filterRestrictions dependency.Settings.FrameworkRestrictions pkgConfig.GlobalRestrictions
@@ -693,7 +695,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                         currentStep.CurrentResolution.Count 
                         (currentStep.CurrentResolution |> Seq.map (fun x -> sprintf "\n     - %O, %O" x.Key x.Value.Version) |> String.Concat)
                         currentStep.OpenRequirements.Count
-                        (currentStep.OpenRequirements  |> Seq.map (fun x -> sprintf "\n     - %O, %O" x.Parent x.VersionRequirement) |> String.Concat)
+                        (currentStep.OpenRequirements  |> Seq.map (fun x -> sprintf "\n     - %O, %O (from %O)" x.Name x.VersionRequirement x.Parent) |> String.Concat)
 
                 let currentRequirement = 
                     getCurrentRequirement packageFilter currentStep.OpenRequirements stackpack.ConflictHistory
