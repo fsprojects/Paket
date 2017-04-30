@@ -1001,15 +1001,12 @@ module Seq =
 
 [<RequireQualifiedAccess>]
 module List =
-    // try to find an element in a list.
+    // Try to find an element in a list.
     // If found, return the element and the list WITHOUT the element.
-    // If not found, return None.
+    // If not found, return None and the whole original list.
     let tryExtractOne fn values =
         match List.tryFindIndex fn values with
         | Some i ->
-            let rest = [
-                for i2 in 0 .. values.Length - 1 do
-                    if i <> i2 then yield values.[i2]
-            ]
-            Some values.[i], rest
+            let v = values.[i]
+            Some v, (values.[0 .. i - 1 ] @ values.[i + 1 .. ])
         | None -> None, values
