@@ -653,8 +653,8 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
 
         let inline fuseConflicts currentConflict priorConflictSteps conflicts =
             let findMatchingStep priorConflictSteps =
-                priorConflictSteps // row
-                |> Seq.tryFindIndex (fun (_,_,lastRequirement:PackageRequirement,_,_) ->
+                priorConflictSteps
+                |> List.tryExtractOne (fun (_,_,lastRequirement:PackageRequirement,_,_) ->
                     let currentNames =
                         conflicts |> Seq.collect (fun c ->
                             let graphNameList =
@@ -662,24 +662,16 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                             c.Name :: graphNameList)
                         |> Seq.toArray
                     currentNames |> Array.contains lastRequirement.Name)
-                |> Option.map (fun i ->
-                    let row = priorConflictSteps |> List.item i
-                    let priorExceptRow =
-                        priorConflictSteps
-                        |> List.mapi (fun i2 v -> i2,v)
-                        |> List.filter (fun (i2, _) -> i2 <> i)
-                        |> List.map snd
-                    row, priorExceptRow)
 
-            match priorConflictSteps, findMatchingStep priorConflictSteps with
-            | [], _  -> currentConflict
-            | _, Some (head, priorConflictSteps) ->
+            match findMatchingStep priorConflictSteps with
+            | None, []  -> currentConflict
+            | (Some head), priorConflictSteps ->
                 let (lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags) = head
                 let continueConflict = 
                     { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }        
                 step (Inner((continueConflict,lastStep,lastRequirement), priorConflictSteps))  stackpack lastCompatibleVersions lastFlags
             // could not find a specific package - go back one step
-            | head :: priorConflictSteps, None ->
+            | None, head :: priorConflictSteps ->
                 let (lastConflict, lastStep, lastRequirement, lastCompatibleVersions, lastFlags) = head
                 let continueConflict = 
                     { currentConflict with VersionsToExplore = lastConflict.VersionsToExplore }        
