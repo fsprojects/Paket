@@ -31,11 +31,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
     <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i002294-pin-netstandard-1-6\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i001145-excludes\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -45,25 +41,6 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001663-google-apis\temp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartArguments>update --hard</StartArguments>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\tempp</StartWorkingDirectory>
-    <StartArguments>update --keep-major</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001701-keep-major\temp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\code\PaketKopie</StartWorkingDirectory>
-    <StartArguments>update -f</StartArguments>
-    <StartWorkingDirectory>D:\code\Paket\integrationtests\scenarios\i001117-aws\temp</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\temp\repo3</StartWorkingDirectory>
-    <StartArguments>install -v</StartArguments>
-    <StartWorkingDirectory>D:\temp\IconPacksTestApp\src</StartWorkingDirectory>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\temp\unlisted</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\temp\PaketWithProblem1</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>D:\temp\paketRestoreBug</StartWorkingDirectory>
   </PropertyGroup>
