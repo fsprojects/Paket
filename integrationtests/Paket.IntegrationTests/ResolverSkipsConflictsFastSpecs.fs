@@ -33,6 +33,12 @@ let ``#2294 Cannot pin NETStandard.Library = 1.6.0``() =
     |> shouldEqual (SemVer.Parse "1.6")
 
 [<Test>]
+let ``#2294 pin NETStandard.Library = 1.6.0 Strategy Workaround``() =
+    let lockFile = update "i002294-withstrategy"
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NETStandard.Library"].Version
+    |> shouldEqual (SemVer.Parse "1.6")
+
+[<Test>]
 [<Ignore("fails with SO, skipping until works")>]
 let ``#1174 Should find Ninject error``() =
     updateShouldFindPackageConflict "Ninject" "i001174-resolve-fast-conflict"

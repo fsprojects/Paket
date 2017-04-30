@@ -1,5 +1,8 @@
 source https://www.nuget.org/api/v2/
 
+strategy: min
+lowest_matching: true
+
 nuget xunit >= 2.3 prerelease
 nuget FakeItEasy
 nuget FluentAssertions
