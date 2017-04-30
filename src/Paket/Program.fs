@@ -412,7 +412,6 @@ let why (results: ParseResults<WhyArgs>) =
 
 
 let main() =
-    //Environment.SetEnvironmentVariable("PAKET_DEBUG_RUNTIME_DEPS", "true")
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
