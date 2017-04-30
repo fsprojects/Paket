@@ -277,47 +277,50 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         for d in runtimeDeps do
                             tracefn "  -> %O" d
 
+                    // TODO: In theory the resolver should be way faster with the commented block. But it seems to be not ready jet...
+                    // or at least I can't make it work...
                     // We want to tell the resolver:
                     // "We don't really want Package A, but if you need it take Version X (from our resolution above)"
                     // We do this we hook-in in a modified getVersionF callback which filters known packages to only contain
                     // the version from the resolution above
                     // Additionally we add all the requirements, but with locked versions.
-                    let getVersionFromFirstResolution sources strategy groupName packageName =
-                        let resolvedVersion =
-                            match resolved |> Map.tryFind packageName with
-                            | Some res -> Some res.Version
-                            | _ -> None
-                        // getVersionF is already cached by upper layers so that's propably fine?
-                        getVersionF sources strategy groupName packageName
-                        |> Seq.filter (fun (ver, _) ->
-                            match resolvedVersion with Some v -> v = ver | None -> true)
+                    //let getVersionFromFirstResolution sources strategy groupName packageName =
+                    //    let resolvedVersion =
+                    //        match resolved |> Map.tryFind packageName with
+                    //        | Some res -> Some res.Version
+                    //        | _ -> None
+                    //    // getVersionF is already cached by upper layers so that's propably fine?
+                    //    getVersionF sources strategy groupName packageName
+                    //    |> Seq.filter (fun (ver, _) ->
+                    //        match resolvedVersion with Some v -> v = ver | None -> true)
 
                     tracefn  "Trying to find a valid resolution considering runtime dependencies..."
                     let runtimeResolutionDeps =
-                        resolved
-                        |> Map.toSeq
-                        |> Seq.map snd
-                        |> Seq.map (fun p ->
-                            { Name = p.Name
-                              VersionRequirement = VersionRequirement (VersionRange.Exactly p.Version.AsString, PreReleaseStatus.All)
-                              // How to get that?
-                              ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
-                              ResolverStrategyForTransitives = Some ResolverStrategy.Max
-                              Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
-                              Graph = []
-                              Sources = group.Sources
-                              Settings = group.Options.Settings })
-                        |> fun des -> Seq.append des runtimeDeps
-                        //let makeExact (req:PackageRequirement) =
-                        //    match resolved |> Map.tryFind req.Name with
-                        //    | Some res ->
-                        //        { req with VersionRequirement = VersionRequirement (VersionRange.Exactly res.Version.AsString, req.VersionRequirement.PreReleases) }
-                        //    | None -> req
-                        //(step1Deps |> Seq.map makeExact |> Seq.toList) @ runtimeDeps
-                        |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
+                        (step1Deps |> Set.toList) @ runtimeDeps |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
+                    //    resolved
+                    //    |> Map.toSeq
+                    //    |> Seq.map snd
+                    //    |> Seq.map (fun p ->
+                    //        { Name = p.Name
+                    //          VersionRequirement = VersionRequirement (VersionRange.Exactly p.Version.AsString, PreReleaseStatus.All)
+                    //          // How to get that?
+                    //          ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
+                    //          ResolverStrategyForTransitives = Some ResolverStrategy.Max
+                    //          Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
+                    //          Graph = []
+                    //          Sources = group.Sources
+                    //          Settings = group.Options.Settings })
+                    //    |> fun des -> Seq.append des runtimeDeps
+                    //    //let makeExact (req:PackageRequirement) =
+                    //    //    match resolved |> Map.tryFind req.Name with
+                    //    //    | Some res ->
+                    //    //        { req with VersionRequirement = VersionRequirement (VersionRange.Exactly res.Version.AsString, req.VersionRequirement.PreReleases) }
+                    //    //    | None -> req
+                    //    //(step1Deps |> Seq.map makeExact |> Seq.toList) @ runtimeDeps
+                    //    |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
                     let runtimeResolution =
                         PackageResolver.Resolve(
-                            getVersionFromFirstResolution,
+                            getVersionF,
                             getPackageDetailsF,
                             groupName,
                             group.Options.ResolverStrategyForDirectDependencies,
@@ -335,7 +338,10 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         runtimeResolved
                         |> Map.map (fun n v ->
                             match resolved |> Map.tryFind n with
-                            | Some _ -> v
+                            | Some old ->
+                                if old.Version <> v.Version then
+                                    traceWarnfn "Version of %O was changed from %O to %O because of runtime dependencies" n old.Version v.Version
+                                v
                             | None -> // pulled because of runtime resolution
                                 { v with IsRuntimeDependency = true })
                         //Map.merge (fun p1 p2 ->
