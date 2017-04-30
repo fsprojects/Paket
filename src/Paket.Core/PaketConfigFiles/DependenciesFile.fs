@@ -270,12 +270,23 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Settings = group.Options.Settings })
                         |> Seq.toList
 
-                    // TODO: We might want a way here to tell the resolver:
+                    // We want to tell the resolver:
                     // "We don't really want Package A, but if you need it take Version X (from our resolution above)"
-                    // Maybe we can actually do this by modifying the "getVersionF" callback?
+                    // We do this we hook-in in a modified getVersionF callback which filters known packages to only contain
+                    // the version from the resolution above
+                    let getVersionFromFirstResolution sources strategy groupName packageName =
+                        let resolvedVersion =
+                            match resolved |> Map.tryFind packageName with
+                            | Some res -> Some res.Version
+                            | _ -> None
+                        // getVersionF is already cached by upper layers so that's propably fine?
+                        getVersionF sources strategy groupName packageName
+                        |> Seq.filter (fun (ver, _) ->
+                            match resolvedVersion with Some v -> v = ver | None -> true)
+
                     let runtimeResolution =
                         PackageResolver.Resolve(
-                            getVersionF,
+                            getVersionFromFirstResolution,
                             getPackageDetailsF,
                             groupName,
                             group.Options.ResolverStrategyForDirectDependencies,
@@ -285,7 +296,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             updateMode)
 
                     // Combine with existing resolution and mark runtime packages.
-                    // TODO: Warn if a package is part of both resolutions?
                     // TODO: Warn if a runtime package contains a runtime.json? -> We don't download them here :/
                     match runtimeResolution with
                     | Resolution.Ok runtimeResolved ->
