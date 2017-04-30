@@ -314,7 +314,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Settings =
                                 match oldDepsInfo with
                                 | Some d -> d.Settings
-                                | None -> group.Options.Settings })
+                                | None -> p.Settings })
                         |> fun des -> Seq.append des runtimeDeps
                         |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
                         // works, alternatively
