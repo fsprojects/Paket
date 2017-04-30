@@ -34,8 +34,8 @@
     <StartWorkingDirectory>D:\temp\coreclrtest</StartWorkingDirectory>
     <StartArguments>install</StartArguments>
     <StartWorkingDirectory>C:\dev\src\Paket\integrationtests\scenarios\loading-scripts\dependencies-file-flag\temp</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i001145-excludes\temp</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i002294-pin-netstandard-1-6\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

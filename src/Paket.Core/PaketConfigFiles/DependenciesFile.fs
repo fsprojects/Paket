@@ -229,6 +229,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
 
             // Step 1 Package resolution
+            let step1Deps = remoteDependencies @ group.Packages |> Set.ofList
             let resolution =
                 PackageResolver.Resolve(
                     getVersionF, 
@@ -237,13 +238,14 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     group.Options.ResolverStrategyForDirectDependencies,
                     group.Options.ResolverStrategyForTransitives,
                     group.Options.Settings.FrameworkRestrictions,
-                    remoteDependencies @ group.Packages |> Set.ofList,
+                    step1Deps,
                     updateMode)
 
             // Step 2 Runtime package resolution, see https://github.com/fsprojects/Paket/pull/2255
             let runtimeResolution =
                 match resolution with
                 | Resolution.Ok resolved ->
+                    tracefn  "Calculating the runtime graph..."
                     // runtime resolution step
                     let runtimeGraph = // setting this variable to empty is the fastest way to disable runtime deps resolution
                         resolved
@@ -284,31 +286,33 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         |> Seq.filter (fun (ver, _) ->
                             match resolvedVersion with Some v -> v = ver | None -> true)
 
+                    tracefn  "Trying to find a valid resolution considering runtime dependencies..."
                     let runtimeResolution =
                         PackageResolver.Resolve(
-                            getVersionFromFirstResolution,
+                            getVersionF,
                             getPackageDetailsF,
                             groupName,
                             group.Options.ResolverStrategyForDirectDependencies,
                             group.Options.ResolverStrategyForTransitives,
                             group.Options.Settings.FrameworkRestrictions,
-                            runtimeDeps |> Set.ofList,
+                            (step1Deps |> Seq.toList) @ runtimeDeps |> Seq.distinctBy (fun d -> d.Name) |> Set.ofSeq,
                             updateMode)
 
                     // Combine with existing resolution and mark runtime packages.
                     // TODO: Warn if a runtime package contains a runtime.json? -> We don't download them here :/
-                    match runtimeResolution with
-                    | Resolution.Ok runtimeResolved ->
-                        let mapped =
-                            runtimeResolved
-                            |> Map.map (fun _ v -> { v with IsRuntimeDependency = true })
-                        Map.merge (fun p1 p2 ->
-                            if p1.Version = p2.Version then
-                                p1
-                            else
-                            failwithf "same package '%A' in runtime '%A' and regular '%A' resolution with different versions" p1.Name p1.Version p2.Version) resolved mapped
-                        |> Resolution.Ok
-                    | _ -> resolution
+                    runtimeResolution
+                    //match runtimeResolution with
+                    //| Resolution.Ok runtimeResolved ->
+                    //    let mapped =
+                    //        runtimeResolved
+                    //        |> Map.map (fun _ v -> { v with IsRuntimeDependency = true })
+                    //    Map.merge (fun p1 p2 ->
+                    //        if p1.Version = p2.Version then
+                    //            p1
+                    //        else
+                    //        failwithf "same package '%A' in runtime '%A' and regular '%A' resolution with different versions" p1.Name p1.Version p2.Version) resolved mapped
+                    //    |> Resolution.Ok
+                    //| _ -> resolution
                 | Resolution.Conflict _ -> resolution
 
             { ResolvedPackages = runtimeResolution
