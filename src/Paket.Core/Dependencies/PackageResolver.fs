@@ -653,14 +653,15 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
 
         let inline fuseConflicts currentConflict priorConflictSteps conflicts =
             let findMatchingStep priorConflictSteps =
+                let currentNames =
+                    conflicts
+                    |> Seq.collect (fun c ->
+                        let graphNameList =
+                            c.Graph |> List.map (fun (pr:PackageRequirement) -> pr.Name) 
+                        c.Name :: graphNameList)
+                    |> Seq.toArray
                 priorConflictSteps
                 |> List.tryExtractOne (fun (_,_,lastRequirement:PackageRequirement,_,_) ->
-                    let currentNames =
-                        conflicts |> Seq.collect (fun c ->
-                            let graphNameList =
-                                c.Graph |> List.map (fun (pr:PackageRequirement) -> pr.Name) 
-                            c.Name :: graphNameList)
-                        |> Seq.toArray
                     currentNames |> Array.contains lastRequirement.Name)
 
             match findMatchingStep priorConflictSteps with
