@@ -264,18 +264,14 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         |> Seq.map (fun (name, versionReq) ->
                             { Name = name
                               VersionRequirement = versionReq
-                              ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
-                              ResolverStrategyForTransitives = Some ResolverStrategy.Max
+                              ResolverStrategyForDirectDependencies = group.Options.ResolverStrategyForDirectDependencies
+                              ResolverStrategyForTransitives = group.Options.ResolverStrategyForTransitives
                               Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
                               Graph = []
                               Sources = group.Sources
                               Settings = group.Options.Settings })
                         |> Seq.toList
 
-                    if Logging.verbose then
-                        tracefn "Runtime dependencies: "
-                        for d in runtimeDeps do
-                            tracefn "  -> %O" d
 
                     // TODO: In theory the resolver should be way faster with the commented block. But it seems to be not ready jet...
                     // or at least I can't make it work...
@@ -284,40 +280,63 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     // We do this we hook-in in a modified getVersionF callback which filters known packages to only contain
                     // the version from the resolution above
                     // Additionally we add all the requirements, but with locked versions.
-                    //let getVersionFromFirstResolution sources strategy groupName packageName =
-                    //    let resolvedVersion =
-                    //        match resolved |> Map.tryFind packageName with
-                    //        | Some res -> Some res.Version
-                    //        | _ -> None
-                    //    // getVersionF is already cached by upper layers so that's propably fine?
-                    //    getVersionF sources strategy groupName packageName
-                    //    |> Seq.filter (fun (ver, _) ->
-                    //        match resolvedVersion with Some v -> v = ver | None -> true)
+                    let getVersionFromFirstResolution sources strategy groupName packageName =
+                        let resolvedVersion =
+                            match resolved |> Map.tryFind packageName with
+                            | Some res -> Some res.Version
+                            | _ -> None
+                        // getVersionF is already cached by upper layers so that's propably fine?
+                        getVersionF sources strategy groupName packageName
+                        |> Seq.filter (fun (ver, _) ->
+                            match resolvedVersion with Some v -> v = ver | None -> true)
 
                     tracefn  "Trying to find a valid resolution considering runtime dependencies..."
                     let runtimeResolutionDeps =
-                        (step1Deps |> Set.toList) @ runtimeDeps |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
-                    //    resolved
-                    //    |> Map.toSeq
-                    //    |> Seq.map snd
-                    //    |> Seq.map (fun p ->
-                    //        { Name = p.Name
-                    //          VersionRequirement = VersionRequirement (VersionRange.Exactly p.Version.AsString, PreReleaseStatus.All)
-                    //          // How to get that?
-                    //          ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
-                    //          ResolverStrategyForTransitives = Some ResolverStrategy.Max
-                    //          Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
-                    //          Graph = []
-                    //          Sources = group.Sources
-                    //          Settings = group.Options.Settings })
-                    //    |> fun des -> Seq.append des runtimeDeps
-                    //    //let makeExact (req:PackageRequirement) =
-                    //    //    match resolved |> Map.tryFind req.Name with
-                    //    //    | Some res ->
-                    //    //        { req with VersionRequirement = VersionRequirement (VersionRange.Exactly res.Version.AsString, req.VersionRequirement.PreReleases) }
-                    //    //    | None -> req
-                    //    //(step1Deps |> Seq.map makeExact |> Seq.toList) @ runtimeDeps
-                    //    |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
+                        resolved
+                        |> Map.toSeq
+                        |> Seq.map snd
+                        |> Seq.map (fun p ->
+                            let oldDepsInfo = step1Deps |> Seq.tryFind (fun d -> d.Name = p.Name)
+                            { Name = p.Name
+                              VersionRequirement = VersionRequirement (VersionRange.Exactly p.Version.AsString, PreReleaseStatus.All)
+                              // How to get that for the package?
+                              ResolverStrategyForDirectDependencies =
+                                match oldDepsInfo with
+                                | Some d -> d.ResolverStrategyForDirectDependencies
+                                | None -> group.Options.ResolverStrategyForDirectDependencies
+                              ResolverStrategyForTransitives =
+                                match oldDepsInfo with
+                                | Some d -> d.ResolverStrategyForTransitives
+                                | None -> group.Options.ResolverStrategyForTransitives
+                              Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
+                              Graph = []
+                              Sources = group.Sources
+                              Settings =
+                                match oldDepsInfo with
+                                | Some d -> d.Settings
+                                | None -> group.Options.Settings })
+                        |> fun des -> Seq.append des runtimeDeps
+                        |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
+                        // works, alternatively
+                        //(step1Deps |> Set.toList) @ runtimeDeps |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
+
+                    if Environment.GetEnvironmentVariable "PAKET_DEBUG_RUNTIME_DEPS" = "true" then
+                        tracefn "Runtime dependencies: "
+                        let runtimeDepsFile = DependenciesFile.FromSource ""
+                        let runtimeDepsFile = runtimeDepsFile.AddFrameworkRestriction(Constants.MainDependencyGroup, getRestrictionList group.Options.Settings.FrameworkRestrictions)
+                        let runtimeDepsFile = runtimeDepsFile.AddResolverStrategyForTransitives(Constants.MainDependencyGroup, group.Options.ResolverStrategyForTransitives)
+                        let runtimeDepsFile = (runtimeDepsFile:DependenciesFile).AddResolverStrategyForDirectDependencies(Constants.MainDependencyGroup, group.Options.ResolverStrategyForDirectDependencies)
+                        let runtimeDepsFile =
+                            runtimeResolutionDeps
+                            |> Seq.fold (fun (deps:DependenciesFile) dep -> deps.AddAdditionalPackage(Constants.MainDependencyGroup, dep.Name, dep.VersionRequirement, dep.ResolverStrategyForTransitives, dep.Settings)) runtimeDepsFile
+
+                        tracefn "Depsfile: \n%O" runtimeDepsFile
+                        //let makeExact (req:PackageRequirement) =
+                        //    match resolved |> Map.tryFind req.Name with
+                        //    | Some res ->
+                        //        { req with VersionRequirement = VersionRequirement (VersionRange.Exactly res.Version.AsString, req.VersionRequirement.PreReleases) }
+                        //    | None -> req
+                        //(step1Deps |> Seq.map makeExact |> Seq.toList) @ runtimeDeps
                     let runtimeResolution =
                         PackageResolver.Resolve(
                             getVersionF,
@@ -379,6 +398,54 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
        
         DependenciesFile(
             list 
+            |> Seq.toArray
+            |> DependenciesFileParser.parseDependenciesFile fileName false)
+
+    member private this.AddResolverStrategyForTransitives(groupName, strategy:ResolverStrategy option) =
+        match strategy with
+        | None -> this
+        | Some strategy ->
+        let strategyString = sprintf "strategy: %s" (match strategy with ResolverStrategy.Max -> "max" | ResolverStrategy.Min -> "min")
+
+        let list = new System.Collections.Generic.List<_>()
+        list.AddRange textRepresentation
+
+        match groups |> Map.tryFind groupName with
+        | None -> list.Add(strategyString)
+        | Some group ->
+            let firstGroupLine,_ = findGroupBorders groupName
+            let pos = ref firstGroupLine
+            while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do
+                pos := !pos + 1
+
+            list.Insert(!pos,strategyString)
+
+        DependenciesFile(
+            list
+            |> Seq.toArray
+            |> DependenciesFileParser.parseDependenciesFile fileName false)
+
+    member private this.AddResolverStrategyForDirectDependencies(groupName, strategy:ResolverStrategy option) =
+        match strategy with
+        | None -> this
+        | Some strategy ->
+        let strategyString = sprintf "lowest_matching: %s" (match strategy with ResolverStrategy.Max -> "false" | ResolverStrategy.Min -> "true")
+
+        let list = new System.Collections.Generic.List<_>()
+        list.AddRange textRepresentation
+
+        match groups |> Map.tryFind groupName with
+        | None -> list.Add(strategyString)
+        | Some group ->
+            let firstGroupLine,_ = findGroupBorders groupName
+            let pos = ref firstGroupLine
+            while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do
+                pos := !pos + 1
+
+            list.Insert(!pos,strategyString)
+
+        DependenciesFile(
+            list
             |> Seq.toArray
             |> DependenciesFileParser.parseDependenciesFile fileName false)
 
