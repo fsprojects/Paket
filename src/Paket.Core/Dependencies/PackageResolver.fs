@@ -815,7 +815,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                             tracefn "     %O %O was unlisted" exploredPackage.Name exploredPackage.Version
                         step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags 
                     else
-                        // It might be that this version is already not possible because of your current set.
+                        // It might be that this version is already not possible because of our current set.
                         // Example: We took A with version 1.0.0 (in our current resolution), but this version depends on A > 1.0.0
                         let canTakePackage =
                             currentStep.CurrentResolution

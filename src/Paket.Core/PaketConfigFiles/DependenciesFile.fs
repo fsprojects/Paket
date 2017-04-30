@@ -193,8 +193,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         try self.GetPackage (groupName,name) |> Some
         with _ -> None
 
-
-
     member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, getPackageRuntimeGraph, groupsToResolve:Map<GroupName,_>, updateMode) =
         let resolveGroup groupName _ =
             let group = this.GetGroup groupName
@@ -224,11 +222,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           Sources = group.Sources
                           Settings = group.Options.Settings })
                 |> Seq.toList
-            
+
             if String.IsNullOrWhiteSpace fileName |> not then
                 RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName fileName, groupName, force, remoteFiles)
 
-            // Step 1 Package resolution
+            // 1. Package resolution
             let step1Deps = remoteDependencies @ group.Packages |> Set.ofList
             let resolution =
                 PackageResolver.Resolve(
@@ -241,19 +239,18 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     step1Deps,
                     updateMode)
 
-            // Step 2 Runtime package resolution, see https://github.com/fsprojects/Paket/pull/2255
+            // 2. Runtime package resolution, see https://github.com/fsprojects/Paket/pull/2255
             let runtimeResolution =
                 match resolution with
-                | Resolution.Ok resolved ->
+                | Resolution.Ok resolved when Environment.GetEnvironmentVariable "PAKET_DISABLE_RUNTIME_RESOLUTION" <> "true" ->
                     tracefn  "Calculating the runtime graph..."
-                    // runtime resolution step
-                    let runtimeGraph = // setting this variable to empty is the fastest way to disable runtime deps resolution
+                    // We first need to calculate the graph, note that this might already download packages into the cache...
+                    let runtimeGraph =
                         resolved
                         |> Map.toSeq |> Seq.map snd
                         |> Seq.choose (getPackageRuntimeGraph groupName)
                         |> RuntimeGraph.mergeSeq
-                        //RuntimeGraph.Empty
-                    // 3. Resolve runtime deps and add it to the resolution
+                    // now we need to get the runtime deps and add them to the resolution
                     let rids = RuntimeGraph.getKnownRids runtimeGraph
                     let runtimeDeps =
                         resolved
@@ -272,24 +269,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Settings = group.Options.Settings })
                         |> Seq.toList
 
-
-                    // TODO: In theory the resolver should be way faster with the commented block. But it seems to be not ready jet...
-                    // or at least I can't make it work...
                     // We want to tell the resolver:
                     // "We don't really want Package A, but if you need it take Version X (from our resolution above)"
-                    // We do this we hook-in in a modified getVersionF callback which filters known packages to only contain
-                    // the version from the resolution above
-                    // Additionally we add all the requirements, but with locked versions.
-                    let getVersionFromFirstResolution sources strategy groupName packageName =
-                        let resolvedVersion =
-                            match resolved |> Map.tryFind packageName with
-                            | Some res -> Some res.Version
-                            | _ -> None
-                        // getVersionF is already cached by upper layers so that's propably fine?
-                        getVersionF sources strategy groupName packageName
-                        |> Seq.filter (fun (ver, _) ->
-                            match resolvedVersion with Some v -> v = ver | None -> true)
-
+                    // We do this by adding all packages from the above resolution but locked at their version.
                     tracefn  "Trying to find a valid resolution considering runtime dependencies..."
                     let runtimeResolutionDeps =
                         resolved
@@ -299,7 +281,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             let oldDepsInfo = step1Deps |> Seq.tryFind (fun d -> d.Name = p.Name)
                             { Name = p.Name
                               VersionRequirement = VersionRequirement (VersionRange.Exactly p.Version.AsString, PreReleaseStatus.All)
-                              // How to get that for the package?
                               ResolverStrategyForDirectDependencies =
                                 match oldDepsInfo with
                                 | Some d -> d.ResolverStrategyForDirectDependencies
@@ -317,8 +298,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                 | None -> p.Settings })
                         |> fun des -> Seq.append des runtimeDeps
                         |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
-                        // works, alternatively
-                        //(step1Deps |> Set.toList) @ runtimeDeps |> Seq.distinctBy (fun p -> p.Name) |> Set.ofSeq
 
                     if Environment.GetEnvironmentVariable "PAKET_DEBUG_RUNTIME_DEPS" = "true" then
                         tracefn "Runtime dependencies: "
@@ -331,12 +310,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             |> Seq.fold (fun (deps:DependenciesFile) dep -> deps.AddAdditionalPackage(Constants.MainDependencyGroup, dep.Name, dep.VersionRequirement, dep.ResolverStrategyForTransitives, dep.Settings)) runtimeDepsFile
 
                         tracefn "Depsfile: \n%O" runtimeDepsFile
-                        //let makeExact (req:PackageRequirement) =
-                        //    match resolved |> Map.tryFind req.Name with
-                        //    | Some res ->
-                        //        { req with VersionRequirement = VersionRequirement (VersionRange.Exactly res.Version.AsString, req.VersionRequirement.PreReleases) }
-                        //    | None -> req
-                        //(step1Deps |> Seq.map makeExact |> Seq.toList) @ runtimeDeps
+
                     let runtimeResolution =
                         PackageResolver.Resolve(
                             getVersionF,
@@ -350,24 +324,18 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
                     // Combine with existing resolution and mark runtime packages.
                     // TODO: Warn if a runtime package contains a runtime.json? -> We don't download them here :/
-                    //runtimeResolution
                     match runtimeResolution with
                     | Resolution.Ok runtimeResolved ->
-                        //let mapped =
                         runtimeResolved
                         |> Map.map (fun n v ->
                             match resolved |> Map.tryFind n with
                             | Some old ->
                                 if old.Version <> v.Version then
-                                    traceWarnfn "Version of %O was changed from %O to %O because of runtime dependencies" n old.Version v.Version
+                                    // that shouldn't happen because we locked everything?
+                                    failwithf "Version of %O was changed from %O to %O because of runtime dependencies" n old.Version v.Version
                                 v
                             | None -> // pulled because of runtime resolution
                                 { v with IsRuntimeDependency = true })
-                        //Map.merge (fun p1 p2 ->
-                        //    if p1.Version = p2.Version then
-                        //        p1
-                        //    else
-                        //    failwithf "same package '%A' in runtime '%A' and regular '%A' resolution with different versions" p1.Name p1.Version p2.Version) resolved mapped
                         |> Resolution.Ok
                     | _ -> resolution
                 | Resolution.Conflict _ -> resolution
