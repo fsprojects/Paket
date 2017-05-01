@@ -17,7 +17,8 @@ let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp"
 let scenarioCachePath scenario = Path.Combine(integrationTestPath,scenario,"cache")
 let originalScenarioPath scenario = Path.Combine(integrationTestPath,scenario,"before")
 
-let useCache = false
+let useCache = true
+let cleanCache = false
 let preventLiveData = false
 
 let cleanup scenario =
@@ -38,7 +39,8 @@ let prepare scenario =
     let scenarioPath = scenarioTempPath scenario
     let cachePath = scenarioCachePath scenario
     CleanDir scenarioPath
-    if not useCache then CleanDir cachePath
+    if useCache then
+        if cleanCache || not (Directory.Exists cachePath) then CleanDir cachePath
     CopyDir scenarioPath originalScenarioPath (fun _ -> true)
     Directory.GetFiles(scenarioPath, "*.fsprojtemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "fsproj")))

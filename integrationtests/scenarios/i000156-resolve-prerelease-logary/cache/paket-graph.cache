@@ -1,0 +1,48 @@
+{
+  "http://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:31:00.099612+02:00",
+        "PackageName": "FSharp.Actor-logary",
+        "Versions": [
+          {
+            "Version": "2.0.0-alpha5",
+            "PackageDetails": {
+              "Name": "FSharp.Actor-logary",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/FSharp.Actor-logary/2.0.0-alpha5",
+              "LicenseUrl": "https://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "FSharp.Core.3",
+                  "VersionRequirement": ">= 0.0.2"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:31:00.4096138+02:00",
+        "PackageName": "FSharp.Core.3",
+        "Versions": [
+          {
+            "Version": "0.0.1"
+          },
+          {
+            "Version": "0.0.2",
+            "PackageDetails": {
+              "Name": "FSharp.Core.3",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/FSharp.Core.3/0.0.2",
+              "LicenseUrl": "http://www.microsoft.com/en-us/download/details.aspx?id=34675",
+              "IsUnlisted": true,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

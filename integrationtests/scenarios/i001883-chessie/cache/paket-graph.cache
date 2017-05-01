@@ -1,0 +1,258 @@
+{
+  "http://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:42:04.5143175+02:00",
+        "PackageName": "Chessie",
+        "Versions": [
+          {
+            "Version": "0.6",
+            "PackageDetails": {
+              "Name": "Chessie",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Chessie/0.6.0",
+              "LicenseUrl": "http://github.com/fsprojects/Chessie/blob/master/LICENSE.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "FSharp.Core",
+                  "VersionRequirement": "",
+                  "FrameworkRestrictions": ">= net10, netstandard10, netstandard11, netstandard12, netstandard13, netstandard14, netstandard15"
+                },
+                {
+                  "PackageName": "FSharp.Core",
+                  "VersionRequirement": ">= 4.0.1.7-alpha",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "NETStandard.Library",
+                  "VersionRequirement": ">= 1.6",
+                  "FrameworkRestrictions": ">= netstandard16"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:42:05.6193161+02:00",
+        "PackageName": "System.ValueTuple",
+        "Versions": [
+          {
+            "Version": "0.0.1-alpha"
+          },
+          {
+            "Version": "4.0.0-rc3-24212-01"
+          },
+          {
+            "Version": "4.3.0-preview1-24530-04"
+          },
+          {
+            "Version": "4.3.0",
+            "PackageDetails": {
+              "Name": "System.ValueTuple",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.ValueTuple/4.3.0",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.Collections",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Resources.ResourceManager",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Runtime",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard10"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:42:05.5243313+02:00",
+        "PackageName": "FSharp.Core",
+        "Versions": [
+          {
+            "Version": "2.0.0.0"
+          },
+          {
+            "Version": "3.0.2"
+          },
+          {
+            "Version": "3.1.2"
+          },
+          {
+            "Version": "3.1.2.1"
+          },
+          {
+            "Version": "3.1.2.5"
+          },
+          {
+            "Version": "4.0.0"
+          },
+          {
+            "Version": "4.0.0.1"
+          },
+          {
+            "Version": "4.0.1.5"
+          },
+          {
+            "Version": "4.0.1.7-alpha"
+          },
+          {
+            "Version": "4.1.0"
+          },
+          {
+            "Version": "4.1.0.2"
+          },
+          {
+            "Version": "4.1.2"
+          },
+          {
+            "Version": "4.1.12"
+          },
+          {
+            "Version": "4.1.17",
+            "PackageDetails": {
+              "Name": "FSharp.Core",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/FSharp.Core/4.1.17",
+              "LicenseUrl": "https://github.com/fsharp/fsharp/blob/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.Collections",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Console",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Tools",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Globalization",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.IO",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Linq.Expressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Linq.Queryable",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Net.Requests",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Resources.ResourceManager",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Runtime",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Runtime.Numerics",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Text.RegularExpressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.Tasks",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.Tasks.Parallel",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.Thread",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.ThreadPool",
+                  "VersionRequirement": ">= 4.0.10",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.Timer",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.ValueTuple",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= net10, netstandard10, netstandard11, netstandard12, netstandard13, netstandard14, netstandard15"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

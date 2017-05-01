@@ -1,0 +1,38 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:39:54.8610463+02:00",
+        "PackageName": "Alphafs",
+        "Versions": [
+          {
+            "Version": "2.0.0.0"
+          },
+          {
+            "Version": "2.0.0.1"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.1.0"
+          },
+          {
+            "Version": "2.1.1"
+          },
+          {
+            "Version": "2.1.2",
+            "PackageDetails": {
+              "Name": "AlphaFS",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/AlphaFS/2.1.2",
+              "LicenseUrl": "https://github.com/alphaleonis/AlphaFS/blob/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

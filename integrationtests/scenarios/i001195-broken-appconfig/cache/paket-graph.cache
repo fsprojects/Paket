@@ -1,0 +1,914 @@
+{
+  "http://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:34",
+        "PackageName": "Castle.Windsor",
+        "Versions": [
+          {
+            "Version": "3.0.0.3001",
+            "PackageDetails": {
+              "Name": "Castle.Windsor",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Castle.Windsor/3.0.0.3001",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Castle.Core",
+                  "VersionRequirement": ">= 3.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:33",
+        "PackageName": "Albedo",
+        "Versions": [
+          {
+            "Version": "1.0.2",
+            "PackageDetails": {
+              "Name": "Albedo",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Albedo/1.0.2",
+              "LicenseUrl": "https://raw2.github.com/ploeh/Albedo/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:34",
+        "PackageName": "AutoFixture.Idioms",
+        "Versions": [
+          {
+            "Version": "3.35.1",
+            "PackageDetails": {
+              "Name": "AutoFixture.Idioms",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/AutoFixture.Idioms/3.35.1",
+              "LicenseUrl": "https://github.com/AutoFixture/AutoFixture/blob/master/LICENCE.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Albedo",
+                  "VersionRequirement": ">= 1.0.1"
+                },
+                {
+                  "PackageName": "autofixture",
+                  "VersionRequirement": ">= 3.35.1"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:34",
+        "PackageName": "Castle.Core",
+        "Versions": [
+          {
+            "Version": "3.3.3",
+            "PackageDetails": {
+              "Name": "Castle.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Castle.Core/3.3.3",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:34",
+        "PackageName": "Castle.Windsor.Extensions",
+        "Versions": [
+          {
+            "Version": "2.1.1",
+            "PackageDetails": {
+              "Name": "Castle.Windsor.Extensions",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Castle.Windsor.Extensions/2.1.1",
+              "LicenseUrl": "http://www.gnu.org/licenses/lgpl-2.1.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Castle.Core",
+                  "VersionRequirement": ">= 3.0.0.3001",
+                  "FrameworkRestrictions": ">= net40"
+                },
+                {
+                  "PackageName": "Castle.Windsor",
+                  "VersionRequirement": ">= 3.0.0.3001",
+                  "FrameworkRestrictions": ">= net40"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:22:32.2961687+02:00",
+        "PackageName": "xunit.extensions",
+        "Versions": [
+          {
+            "Version": "1.7.0.1540"
+          },
+          {
+            "Version": "1.8.0.1545"
+          },
+          {
+            "Version": "1.8.0.1549",
+            "PackageDetails": {
+              "Name": "xunit.extensions",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/xunit.extensions/1.8.0.1549",
+              "LicenseUrl": "http://xunit.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "xunit",
+                  "VersionRequirement": ">= 1.8.0.1549"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "1.9.0.1566"
+          },
+          {
+            "Version": "1.9.1"
+          },
+          {
+            "Version": "1.9.2",
+            "PackageDetails": {
+              "Name": "xunit.extensions",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/xunit.extensions/1.9.2",
+              "LicenseUrl": "http://xunit.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "xunit",
+                  "VersionRequirement": "1.9.2"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.0.0-alpha-build1611"
+          },
+          {
+            "Version": "2.0.0-rc4-build2924"
+          },
+          {
+            "Version": "2.0.0"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:35",
+        "PackageName": "log4net",
+        "Versions": [
+          {
+            "Version": "2.0.3",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/log4net/2.0.3",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:36",
+        "PackageName": "Newtonsoft.Json.Schema",
+        "Versions": [
+          {
+            "Version": "1.0.11",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json.Schema",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Newtonsoft.Json.Schema/1.0.11",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json.Schema/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Newtonsoft.Json",
+                  "VersionRequirement": ">= 6.0.8"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:36",
+        "PackageName": "xunit",
+        "Versions": [
+          {
+            "Version": "1.9.2",
+            "PackageDetails": {
+              "Name": "xunit",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/xunit/1.9.2",
+              "LicenseUrl": "http://xunit.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:34",
+        "PackageName": "AutoFixture.Xunit",
+        "Versions": [
+          {
+            "Version": "3.36.9",
+            "PackageDetails": {
+              "Name": "AutoFixture.Xunit",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/AutoFixture.Xunit/3.36.9",
+              "LicenseUrl": "https://github.com/AutoFixture/AutoFixture/blob/master/LICENCE.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "autofixture",
+                  "VersionRequirement": ">= 3.36.9"
+                },
+                {
+                  "PackageName": "xunit.extensions",
+                  "VersionRequirement": ">= 1.8.0.1549 < 2.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:22:31.297172+02:00",
+        "PackageName": "autofixture",
+        "Versions": [
+          {
+            "Version": "2.0"
+          },
+          {
+            "Version": "2.1"
+          },
+          {
+            "Version": "2.2.44"
+          },
+          {
+            "Version": "2.2.45"
+          },
+          {
+            "Version": "2.3.1"
+          },
+          {
+            "Version": "2.3.2"
+          },
+          {
+            "Version": "2.4.0"
+          },
+          {
+            "Version": "2.4.1"
+          },
+          {
+            "Version": "2.5.0"
+          },
+          {
+            "Version": "2.5.1"
+          },
+          {
+            "Version": "2.5.2"
+          },
+          {
+            "Version": "2.6.0"
+          },
+          {
+            "Version": "2.7.0"
+          },
+          {
+            "Version": "2.7.1"
+          },
+          {
+            "Version": "2.7.2"
+          },
+          {
+            "Version": "2.8.0"
+          },
+          {
+            "Version": "2.9.0"
+          },
+          {
+            "Version": "2.9.1"
+          },
+          {
+            "Version": "2.9.2"
+          },
+          {
+            "Version": "2.10.0"
+          },
+          {
+            "Version": "2.11.0"
+          },
+          {
+            "Version": "2.11.1"
+          },
+          {
+            "Version": "2.11.2"
+          },
+          {
+            "Version": "2.11.3"
+          },
+          {
+            "Version": "2.11.4"
+          },
+          {
+            "Version": "2.12.0"
+          },
+          {
+            "Version": "2.12.1"
+          },
+          {
+            "Version": "2.13.0"
+          },
+          {
+            "Version": "2.13.1"
+          },
+          {
+            "Version": "2.13.2"
+          },
+          {
+            "Version": "2.13.3"
+          },
+          {
+            "Version": "2.13.4"
+          },
+          {
+            "Version": "2.13.5"
+          },
+          {
+            "Version": "2.14.0"
+          },
+          {
+            "Version": "2.14.1"
+          },
+          {
+            "Version": "2.15.0"
+          },
+          {
+            "Version": "2.15.1"
+          },
+          {
+            "Version": "2.15.2"
+          },
+          {
+            "Version": "2.15.3"
+          },
+          {
+            "Version": "2.15.4"
+          },
+          {
+            "Version": "2.15.5"
+          },
+          {
+            "Version": "2.15.6"
+          },
+          {
+            "Version": "2.16.0"
+          },
+          {
+            "Version": "2.16.1"
+          },
+          {
+            "Version": "2.16.2"
+          },
+          {
+            "Version": "3.0.1"
+          },
+          {
+            "Version": "3.0.2"
+          },
+          {
+            "Version": "3.0.3"
+          },
+          {
+            "Version": "3.0.5"
+          },
+          {
+            "Version": "3.0.6"
+          },
+          {
+            "Version": "3.0.7"
+          },
+          {
+            "Version": "3.0.8"
+          },
+          {
+            "Version": "3.0.9"
+          },
+          {
+            "Version": "3.1.0"
+          },
+          {
+            "Version": "3.2.0"
+          },
+          {
+            "Version": "3.2.1"
+          },
+          {
+            "Version": "3.3.0"
+          },
+          {
+            "Version": "3.4.0"
+          },
+          {
+            "Version": "3.4.1"
+          },
+          {
+            "Version": "3.5.0"
+          },
+          {
+            "Version": "3.5.1"
+          },
+          {
+            "Version": "3.6.0"
+          },
+          {
+            "Version": "3.6.1"
+          },
+          {
+            "Version": "3.6.2"
+          },
+          {
+            "Version": "3.6.3"
+          },
+          {
+            "Version": "3.6.4"
+          },
+          {
+            "Version": "3.6.5"
+          },
+          {
+            "Version": "3.6.6"
+          },
+          {
+            "Version": "3.6.7"
+          },
+          {
+            "Version": "3.6.8"
+          },
+          {
+            "Version": "3.7.0"
+          },
+          {
+            "Version": "3.8.0"
+          },
+          {
+            "Version": "3.8.1"
+          },
+          {
+            "Version": "3.9.0"
+          },
+          {
+            "Version": "3.9.1"
+          },
+          {
+            "Version": "3.10.0"
+          },
+          {
+            "Version": "3.10.1"
+          },
+          {
+            "Version": "3.11.0"
+          },
+          {
+            "Version": "3.12.0"
+          },
+          {
+            "Version": "3.12.1"
+          },
+          {
+            "Version": "3.13.0"
+          },
+          {
+            "Version": "3.14.0"
+          },
+          {
+            "Version": "3.15.0"
+          },
+          {
+            "Version": "3.15.1"
+          },
+          {
+            "Version": "3.16.0"
+          },
+          {
+            "Version": "3.16.1"
+          },
+          {
+            "Version": "3.16.2"
+          },
+          {
+            "Version": "3.16.3"
+          },
+          {
+            "Version": "3.16.4"
+          },
+          {
+            "Version": "3.16.5"
+          },
+          {
+            "Version": "3.16.6"
+          },
+          {
+            "Version": "3.16.7"
+          },
+          {
+            "Version": "3.16.8"
+          },
+          {
+            "Version": "3.16.9"
+          },
+          {
+            "Version": "3.16.10"
+          },
+          {
+            "Version": "3.17.0"
+          },
+          {
+            "Version": "3.18.0"
+          },
+          {
+            "Version": "3.18.1"
+          },
+          {
+            "Version": "3.18.2"
+          },
+          {
+            "Version": "3.18.3"
+          },
+          {
+            "Version": "3.18.4"
+          },
+          {
+            "Version": "3.18.5"
+          },
+          {
+            "Version": "3.18.6"
+          },
+          {
+            "Version": "3.18.7"
+          },
+          {
+            "Version": "3.18.8"
+          },
+          {
+            "Version": "3.18.9"
+          },
+          {
+            "Version": "3.18.10"
+          },
+          {
+            "Version": "3.19.0"
+          },
+          {
+            "Version": "3.19.1"
+          },
+          {
+            "Version": "3.19.2"
+          },
+          {
+            "Version": "3.20.0"
+          },
+          {
+            "Version": "3.20.1"
+          },
+          {
+            "Version": "3.20.2"
+          },
+          {
+            "Version": "3.20.3"
+          },
+          {
+            "Version": "3.20.4"
+          },
+          {
+            "Version": "3.21.0"
+          },
+          {
+            "Version": "3.21.1"
+          },
+          {
+            "Version": "3.22.0"
+          },
+          {
+            "Version": "3.23.0"
+          },
+          {
+            "Version": "3.23.1"
+          },
+          {
+            "Version": "3.23.2"
+          },
+          {
+            "Version": "3.24.0"
+          },
+          {
+            "Version": "3.24.1"
+          },
+          {
+            "Version": "3.24.2"
+          },
+          {
+            "Version": "3.24.3"
+          },
+          {
+            "Version": "3.24.4"
+          },
+          {
+            "Version": "3.24.5"
+          },
+          {
+            "Version": "3.24.6"
+          },
+          {
+            "Version": "3.25.0"
+          },
+          {
+            "Version": "3.26.0"
+          },
+          {
+            "Version": "3.27.0"
+          },
+          {
+            "Version": "3.28.0"
+          },
+          {
+            "Version": "3.29.0"
+          },
+          {
+            "Version": "3.30.0"
+          },
+          {
+            "Version": "3.30.1"
+          },
+          {
+            "Version": "3.30.2"
+          },
+          {
+            "Version": "3.30.3"
+          },
+          {
+            "Version": "3.30.4"
+          },
+          {
+            "Version": "3.30.5"
+          },
+          {
+            "Version": "3.30.6"
+          },
+          {
+            "Version": "3.30.7"
+          },
+          {
+            "Version": "3.30.8"
+          },
+          {
+            "Version": "3.31.0"
+          },
+          {
+            "Version": "3.31.1"
+          },
+          {
+            "Version": "3.31.2"
+          },
+          {
+            "Version": "3.31.3"
+          },
+          {
+            "Version": "3.32.0"
+          },
+          {
+            "Version": "3.32.2"
+          },
+          {
+            "Version": "3.33.0"
+          },
+          {
+            "Version": "3.34.0"
+          },
+          {
+            "Version": "3.34.1"
+          },
+          {
+            "Version": "3.34.2"
+          },
+          {
+            "Version": "3.35.0"
+          },
+          {
+            "Version": "3.35.1"
+          },
+          {
+            "Version": "3.36.0"
+          },
+          {
+            "Version": "3.36.1"
+          },
+          {
+            "Version": "3.36.2"
+          },
+          {
+            "Version": "3.36.3"
+          },
+          {
+            "Version": "3.36.4"
+          },
+          {
+            "Version": "3.36.5"
+          },
+          {
+            "Version": "3.36.6"
+          },
+          {
+            "Version": "3.36.7"
+          },
+          {
+            "Version": "3.36.8"
+          },
+          {
+            "Version": "3.36.9",
+            "PackageDetails": {
+              "Name": "AutoFixture",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/AutoFixture/3.36.9",
+              "LicenseUrl": "https://github.com/AutoFixture/AutoFixture/blob/master/LICENCE.txt",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "3.36.10"
+          },
+          {
+            "Version": "3.36.11"
+          },
+          {
+            "Version": "3.36.12"
+          },
+          {
+            "Version": "3.37.0"
+          },
+          {
+            "Version": "3.37.1"
+          },
+          {
+            "Version": "3.37.2"
+          },
+          {
+            "Version": "3.37.3"
+          },
+          {
+            "Version": "3.38.0"
+          },
+          {
+            "Version": "3.38.1"
+          },
+          {
+            "Version": "3.39.0"
+          },
+          {
+            "Version": "3.40.0"
+          },
+          {
+            "Version": "3.40.1"
+          },
+          {
+            "Version": "3.41.0"
+          },
+          {
+            "Version": "3.41.1"
+          },
+          {
+            "Version": "3.42.0"
+          },
+          {
+            "Version": "3.43.0"
+          },
+          {
+            "Version": "3.43.1"
+          },
+          {
+            "Version": "3.43.2"
+          },
+          {
+            "Version": "3.43.3"
+          },
+          {
+            "Version": "3.43.4"
+          },
+          {
+            "Version": "3.44.0"
+          },
+          {
+            "Version": "3.44.1"
+          },
+          {
+            "Version": "3.45.0"
+          },
+          {
+            "Version": "3.45.1"
+          },
+          {
+            "Version": "3.45.2"
+          },
+          {
+            "Version": "3.45.3"
+          },
+          {
+            "Version": "3.46.0"
+          },
+          {
+            "Version": "3.47.0"
+          },
+          {
+            "Version": "3.47.1"
+          },
+          {
+            "Version": "3.47.2"
+          },
+          {
+            "Version": "3.47.3"
+          },
+          {
+            "Version": "3.47.4"
+          },
+          {
+            "Version": "3.47.5"
+          },
+          {
+            "Version": "3.47.6"
+          },
+          {
+            "Version": "3.47.7"
+          },
+          {
+            "Version": "3.47.8"
+          },
+          {
+            "Version": "3.48.0"
+          },
+          {
+            "Version": "3.49.0"
+          },
+          {
+            "Version": "3.49.1"
+          },
+          {
+            "Version": "3.50.0"
+          },
+          {
+            "Version": "3.50.1"
+          },
+          {
+            "Version": "3.50.2",
+            "PackageDetails": {
+              "Name": "AutoFixture",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/AutoFixture/3.50.2",
+              "LicenseUrl": "https://github.com/AutoFixture/AutoFixture/blob/master/LICENCE.txt",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:35",
+        "PackageName": "Newtonsoft.Json",
+        "Versions": [
+          {
+            "Version": "7.0.1",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Newtonsoft.Json/7.0.1",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

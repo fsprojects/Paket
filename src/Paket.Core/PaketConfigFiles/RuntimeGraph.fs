@@ -70,7 +70,7 @@ module RuntimeGraphParser =
       "Microsoft.Win32.Primitives": {
         "runtime.win.Microsoft.Win32.Primitives": "4.3.0"
       },*)
-    let readRuntimeDescriptionJ (json:JObject) =
+    let readRuntimeDescriptionJ nugetSyntax (json:JObject) =
       [ for t in json :> IEnumerable<KeyValuePair<string, JToken>> do
           let rid = { Rid = t.Key }
           match t.Value with
@@ -89,7 +89,7 @@ module RuntimeGraphParser =
                         match kv.Value with
                         | :? JObject as deps ->
                             deps :> IEnumerable<KeyValuePair<string, JToken>>
-                            |> Seq.map (fun kv -> PackageName kv.Key, VersionRequirement.Parse (string kv.Value))
+                            |> Seq.map (fun kv -> PackageName kv.Key, (if nugetSyntax then VersionRequirement.Parse else DependenciesFileParser.parseVersionRequirement) (string kv.Value))
                             |> Seq.toList
                         | _ -> failwithf "unknown stuff in runtime-dependency: %O" kv.Value
                     packageName, depsSpec)
@@ -100,7 +100,7 @@ module RuntimeGraphParser =
                     RuntimeDependencies = dependencies }
           | _ -> failwithf "unknwn stuff in runtime-description: %O" t.Value ]
 
-    let readRuntimeGraphJ (json:JObject) =
+    let readRuntimeGraphJ nugetSytax (json:JObject) =
        { Supports =
             match json.["supports"] with
             | :? JObject as supports ->
@@ -112,17 +112,17 @@ module RuntimeGraphParser =
          Runtimes =
             match json.["runtimes"] with
             | :? JObject as runtimes ->
-                readRuntimeDescriptionJ runtimes
+                readRuntimeDescriptionJ nugetSytax runtimes
                 |> Seq.map (fun r -> r.Rid, r)
                 |> Map.ofSeq
             | null -> Map.empty
             | _ -> failwith "invalid data in runtimes" }
 
     let readRuntimeGraph (s:string) =
-        readRuntimeGraphJ (JObject.Parse(s))
+        readRuntimeGraphJ true (JObject.Parse(s))
 
     let inline (!>) (x:^a) : ^b = ((^a or ^b) : (static member op_Implicit : ^a -> ^b) x)
-    let writeRuntime (desc:RuntimeDescription) =
+    let writeRuntime  (desc:RuntimeDescription) =
         let r = JObject()
         let imp = JArray()
         desc.InheritedRids |> Seq.iter (fun rid -> imp.Add( !> (rid.ToString())))

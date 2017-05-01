@@ -1,0 +1,315 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:18.0393036+02:00",
+        "PackageName": "xunit.extensibility.core",
+        "Versions": [
+          {
+            "Version": "2.1.0",
+            "PackageDetails": {
+              "Name": "xunit.extensibility.core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/xunit.extensibility.core/2.1.0",
+              "LicenseUrl": "https://raw.githubusercontent.com/xunit/xunit/master/license.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "xunit.abstractions",
+                  "VersionRequirement": "2.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:18.5963078+02:00",
+        "PackageName": "xunit.extensibility.execution",
+        "Versions": [
+          {
+            "Version": "2.1.0",
+            "PackageDetails": {
+              "Name": "xunit.extensibility.execution",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/xunit.extensibility.execution/2.1.0",
+              "LicenseUrl": "https://raw.githubusercontent.com/xunit/xunit/master/license.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.Collections",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Globalization",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.IO",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Linq.Expressions",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Runtime",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Text.Encoding",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Threading",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Threading.Tasks",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "xunit.abstractions",
+                  "VersionRequirement": ">= 2.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "xunit.extensibility.core",
+                  "VersionRequirement": "2.1",
+                  "FrameworkRestrictions": "dnx451, dnxcore50, monoandroid, monotouch, xamarinios, winv4.5, wpv8.0, wpav8.1, >= net45"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:17.6963045+02:00",
+        "PackageName": "xunit.assert",
+        "Versions": [
+          {
+            "Version": "2.1.0",
+            "PackageDetails": {
+              "Name": "xunit.assert",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/xunit.assert/2.1.0",
+              "LicenseUrl": "https://raw.githubusercontent.com/xunit/xunit/master/license.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.Collections",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Globalization",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.ObjectModel",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Runtime",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Text.RegularExpressions",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Threading.Tasks",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:17.5818075+02:00",
+        "PackageName": "xunit.abstractions",
+        "Versions": [
+          {
+            "Version": "2.0.0",
+            "PackageDetails": {
+              "Name": "xunit.abstractions",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/xunit.abstractions/2.0.0",
+              "LicenseUrl": "https://raw.githubusercontent.com/xunit/xunit/master/license.txt",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:17.4678055+02:00",
+        "PackageName": "xunit",
+        "Versions": [
+          {
+            "Version": "2.1.0",
+            "PackageDetails": {
+              "Name": "xunit",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/xunit/2.1.0",
+              "LicenseUrl": "https://raw.githubusercontent.com/xunit/xunit/master/license.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "xunit.assert",
+                  "VersionRequirement": "2.1"
+                },
+                {
+                  "PackageName": "xunit.core",
+                  "VersionRequirement": "2.1"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:17.8163036+02:00",
+        "PackageName": "xunit.core",
+        "Versions": [
+          {
+            "Version": "2.1.0",
+            "PackageDetails": {
+              "Name": "xunit.core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/xunit.core/2.1.0",
+              "LicenseUrl": "https://raw.githubusercontent.com/xunit/xunit/master/license.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.Collections",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Globalization",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Runtime",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "System.Threading.Tasks",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "xunit.abstractions",
+                  "VersionRequirement": ">= 2.0",
+                  "FrameworkRestrictions": "dnxcore50"
+                },
+                {
+                  "PackageName": "xunit.extensibility.core",
+                  "VersionRequirement": "2.1",
+                  "FrameworkRestrictions": "dnx451, dnxcore50, monoandroid, monotouch, xamarinios, winv4.5, wpv8.0, wpav8.1, portable-net45+win80+wp80+wpa81, >= net45"
+                },
+                {
+                  "PackageName": "xunit.extensibility.execution",
+                  "VersionRequirement": "2.1",
+                  "FrameworkRestrictions": "dnx451, dnxcore50, monoandroid, monotouch, xamarinios, winv4.5, wpv8.0, wpav8.1, portable-net45+win80+wp80+wpa81, >= net45"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

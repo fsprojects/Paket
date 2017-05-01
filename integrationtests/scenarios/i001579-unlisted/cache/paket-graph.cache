@@ -1,0 +1,307 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T01:13:19.4970215+02:00",
+        "PackageName": "Mvvmlight",
+        "Versions": [
+          {
+            "Version": "3.0.0.29166"
+          },
+          {
+            "Version": "3.0.1"
+          },
+          {
+            "Version": "3.0.2"
+          },
+          {
+            "Version": "3.0.3"
+          },
+          {
+            "Version": "3.1.0"
+          },
+          {
+            "Version": "3.1.1"
+          },
+          {
+            "Version": "4.1.23.0",
+            "PackageDetails": {
+              "Name": "MvvmLight",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MvvmLight/4.1.23.0",
+              "LicenseUrl": "http://mvvmlight.codeplex.com/license",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "4.1.26.0",
+            "PackageDetails": {
+              "Name": "MvvmLight",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MvvmLight/4.1.26.0",
+              "LicenseUrl": "http://mvvmlight.codeplex.com/license",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "4.1.26.1",
+            "PackageDetails": {
+              "Name": "MvvmLight",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MvvmLight/4.1.26.1",
+              "LicenseUrl": "http://mvvmlight.codeplex.com/license",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "4.1.27.0",
+            "PackageDetails": {
+              "Name": "MvvmLight",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MvvmLight/4.1.27.0",
+              "LicenseUrl": "http://mvvmlight.codeplex.com/license",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "MvvmLightLibs",
+                  "VersionRequirement": ">= 4.1.27",
+                  "FrameworkRestrictions": "winv4.5, wpv7.1, wpv8.0, sl40, sl50, >= net35"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "4.1.27.1",
+            "PackageDetails": {
+              "Name": "MvvmLight",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MvvmLight/4.1.27.1",
+              "LicenseUrl": "http://mvvmlight.codeplex.com/license",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "MvvmLightLibs",
+                  "VersionRequirement": ">= 4.1.27",
+                  "FrameworkRestrictions": "winv4.5, wpv7.1, wpv8.0, sl40, sl50, >= net35"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "4.2.30.0",
+            "PackageDetails": {
+              "Name": "MvvmLight",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MvvmLight/4.2.30.0",
+              "LicenseUrl": "http://mvvmlight.codeplex.com/license",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "MvvmLightLibs",
+                  "VersionRequirement": ">= 4.2.30",
+                  "FrameworkRestrictions": "winv4.5, wpv7.1, wpv8.0, sl40, sl50, >= net35"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "4.2.32.7",
+            "PackageDetails": {
+              "Name": "MvvmLight",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MvvmLight/4.2.32.7",
+              "LicenseUrl": "http://mvvmlight.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "MvvmLightLibs",
+                  "VersionRequirement": ">= 4.4.32.7",
+                  "FrameworkRestrictions": "monoandroid, winv4.5, wpv7.1, wpv8.0, wpav8.1, sl40, sl50, >= net35"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "5.0.0.0"
+          },
+          {
+            "Version": "5.0.0.1"
+          },
+          {
+            "Version": "5.0.1.0"
+          },
+          {
+            "Version": "5.0.2.0"
+          },
+          {
+            "Version": "5.1.0.0"
+          },
+          {
+            "Version": "5.1.0.1"
+          },
+          {
+            "Version": "5.1.0.2"
+          },
+          {
+            "Version": "5.1.1.0"
+          },
+          {
+            "Version": "5.2.0.0"
+          },
+          {
+            "Version": "5.3.0.0"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:13:19.3890215+02:00",
+        "PackageName": "CommonServiceLocator",
+        "Versions": [
+          {
+            "Version": "1.0"
+          },
+          {
+            "Version": "1.2"
+          },
+          {
+            "Version": "1.3",
+            "PackageDetails": {
+              "Name": "CommonServiceLocator",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/CommonServiceLocator/1.3",
+              "LicenseUrl": "http://commonservicelocator.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:13:20.7480228+02:00",
+        "PackageName": "MvvmLightLibs",
+        "Versions": [
+          {
+            "Version": "3.0.2"
+          },
+          {
+            "Version": "3.0.3"
+          },
+          {
+            "Version": "3.1.0"
+          },
+          {
+            "Version": "3.1.1"
+          },
+          {
+            "Version": "4.1.23.0"
+          },
+          {
+            "Version": "4.1.26.0"
+          },
+          {
+            "Version": "4.1.26.1"
+          },
+          {
+            "Version": "4.1.27.0"
+          },
+          {
+            "Version": "4.1.27.1"
+          },
+          {
+            "Version": "4.2.30.0"
+          },
+          {
+            "Version": "4.3.31.0"
+          },
+          {
+            "Version": "4.3.31.1"
+          },
+          {
+            "Version": "4.4.32.0"
+          },
+          {
+            "Version": "4.4.32.1"
+          },
+          {
+            "Version": "4.4.32.2"
+          },
+          {
+            "Version": "4.4.32.3"
+          },
+          {
+            "Version": "4.4.32.4"
+          },
+          {
+            "Version": "4.4.32.5"
+          },
+          {
+            "Version": "4.4.32.6"
+          },
+          {
+            "Version": "4.4.32.7"
+          },
+          {
+            "Version": "5.0.0.0"
+          },
+          {
+            "Version": "5.0.0.1"
+          },
+          {
+            "Version": "5.0.1.0"
+          },
+          {
+            "Version": "5.0.2.0"
+          },
+          {
+            "Version": "5.1.0.0"
+          },
+          {
+            "Version": "5.1.0.1"
+          },
+          {
+            "Version": "5.1.1.0"
+          },
+          {
+            "Version": "5.2.0.0"
+          },
+          {
+            "Version": "5.3.0.0",
+            "PackageDetails": {
+              "Name": "MvvmLightLibs",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MvvmLightLibs/5.3.0.0",
+              "LicenseUrl": "http://mvvmlight.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "CommonServiceLocator",
+                  "VersionRequirement": ">= 1.0",
+                  "FrameworkRestrictions": "net35"
+                },
+                {
+                  "PackageName": "CommonServiceLocator",
+                  "VersionRequirement": ">= 1.3",
+                  "FrameworkRestrictions": "monoandroid, xamarinios, winv4.5.1, wpv8.0, wpv8.1, wpav8.1, sl50, portable-net45+win8+wp8+wpa81, >= net40"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "5.4.0-alpha"
+          }
+        ]
+      }
+    ]
+  },
+  "bin": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T01:13:20.7865225+02:00",
+        "PackageName": "Paket.Test.A",
+        "Versions": [
+          {
+            "Version": "1.0.0-prerelease",
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "TestA": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T01:00:45.0556698+02:00",
+        "PackageName": "Test",
+        "Versions": [
+          {
+            "Version": "0.0.1",
+            "PackageDetails": {
+              "Name": "Test",
+              "DownloadLink": "Test",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

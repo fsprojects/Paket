@@ -182,7 +182,7 @@ let internal readPackageDependency (j:JObject) : PackageName * VersionRequiremen
         match j.["VersionRequirement"] with
         | :? JValue as v -> v.ToString()
         | _ -> failwithf "Need Name in PackageDetails element"
-        |> VersionRequirement.Parse
+        |> DependenciesFileParser.parseVersionRequirement
 
     let frameworkRestrictions =
         match j.["FrameworkRestrictions"] with
@@ -226,7 +226,7 @@ let internal readPackageDetails source (j:JObject) : PackageDetails =
 let internal readRuntimeGraph (j:JObject) : RuntimeGraph option =
     match j.["runtimes"] with
     | :? JObject as s ->
-        RuntimeGraphParser.readRuntimeGraphJ j |> Some
+        RuntimeGraphParser.readRuntimeGraphJ false j |> Some
     | _ -> None
 
 let internal readVersion source (jObject:JObject) : SemVerInfo * PackageDetails option * RuntimeGraphCache =
@@ -376,7 +376,8 @@ let liftGetVersionsF (getVersionF:GetVersionF) : GetVersionF =
             items
             |> Seq.concat
             |> Seq.groupBy fst
-            |> Seq.map (fun (k, g) -> k, g |> Seq.map snd |> Seq.toList))
+            |> Seq.map (fun (k, g) -> k, g |> Seq.map snd |> Seq.toList)
+            |> Seq.sortByDescending (fun (v,_) -> v))
         |> Option.defaultWith (fun () ->
             // At least one source was not cached -> retrieve from server
             if preventOnlineRead then failwithf "At least one package source of %A was not found locally, and 'Prevent Online Read' was request." sources

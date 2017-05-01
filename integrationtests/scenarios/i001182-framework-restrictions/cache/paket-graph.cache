@@ -1,0 +1,616 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:33.3236457+02:00",
+        "PackageName": "Microsoft.WindowsAzure.ConfigurationManager",
+        "Versions": [
+          {
+            "Version": "1.7.0.0"
+          },
+          {
+            "Version": "1.7.0.1"
+          },
+          {
+            "Version": "1.7.0.2"
+          },
+          {
+            "Version": "1.7.0.3"
+          },
+          {
+            "Version": "1.8.0.0"
+          },
+          {
+            "Version": "2.0.0.0"
+          },
+          {
+            "Version": "2.0.1.0"
+          },
+          {
+            "Version": "2.0.2.0"
+          },
+          {
+            "Version": "2.0.3"
+          },
+          {
+            "Version": "3.0.0"
+          },
+          {
+            "Version": "3.1.0"
+          },
+          {
+            "Version": "3.2.0"
+          },
+          {
+            "Version": "3.2.1"
+          },
+          {
+            "Version": "3.2.2"
+          },
+          {
+            "Version": "3.2.3",
+            "PackageDetails": {
+              "Name": "Microsoft.WindowsAzure.ConfigurationManager",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.WindowsAzure.ConfigurationManager/3.2.3",
+              "LicenseUrl": "http://aka.ms/windowsazureapache2",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:14",
+        "PackageName": "WindowsAzure.Storage",
+        "Versions": [
+          {
+            "Version": "4.3.0",
+            "PackageDetails": {
+              "Name": "WindowsAzure.Storage",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/WindowsAzure.Storage/4.3.0",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=331471",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Data.OData",
+                  "VersionRequirement": ">= 5.6.2",
+                  "FrameworkRestrictions": "winv4.5, wpv8.0, wpav8.1, >= net40"
+                },
+                {
+                  "PackageName": "Microsoft.Data.Services.Client",
+                  "VersionRequirement": ">= 5.6.2",
+                  "FrameworkRestrictions": ">= net40"
+                },
+                {
+                  "PackageName": "Microsoft.WindowsAzure.ConfigurationManager",
+                  "VersionRequirement": ">= 1.8",
+                  "FrameworkRestrictions": ">= net40"
+                },
+                {
+                  "PackageName": "Newtonsoft.Json",
+                  "VersionRequirement": ">= 5.0.8",
+                  "FrameworkRestrictions": "wpv8.0, >= net40"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:33.2541345+02:00",
+        "PackageName": "Microsoft.Data.Services.Client",
+        "Versions": [
+          {
+            "Version": "5.0.0.50403"
+          },
+          {
+            "Version": "5.0.1-rc"
+          },
+          {
+            "Version": "5.0.1"
+          },
+          {
+            "Version": "5.0.2-rc"
+          },
+          {
+            "Version": "5.0.2"
+          },
+          {
+            "Version": "5.1.0-rc"
+          },
+          {
+            "Version": "5.1.0-rc1"
+          },
+          {
+            "Version": "5.1.0-rc2"
+          },
+          {
+            "Version": "5.1.0"
+          },
+          {
+            "Version": "5.2.0-rc1"
+          },
+          {
+            "Version": "5.2.0"
+          },
+          {
+            "Version": "5.3.0-rc1"
+          },
+          {
+            "Version": "5.3.0"
+          },
+          {
+            "Version": "5.4.0-rc1"
+          },
+          {
+            "Version": "5.4.0"
+          },
+          {
+            "Version": "5.5.0-alpha1"
+          },
+          {
+            "Version": "5.5.0-alpha2"
+          },
+          {
+            "Version": "5.5.0-rc1"
+          },
+          {
+            "Version": "5.5.0"
+          },
+          {
+            "Version": "5.6.0-alpha1"
+          },
+          {
+            "Version": "5.6.0-rc1"
+          },
+          {
+            "Version": "5.6.0"
+          },
+          {
+            "Version": "5.6.1"
+          },
+          {
+            "Version": "5.6.2"
+          },
+          {
+            "Version": "5.6.3"
+          },
+          {
+            "Version": "5.6.4"
+          },
+          {
+            "Version": "5.6.5-beta"
+          },
+          {
+            "Version": "5.7.0-beta"
+          },
+          {
+            "Version": "5.7.0-rc"
+          },
+          {
+            "Version": "5.7.0"
+          },
+          {
+            "Version": "5.8.0-beta"
+          },
+          {
+            "Version": "5.8.0"
+          },
+          {
+            "Version": "5.8.1"
+          },
+          {
+            "Version": "5.8.2",
+            "PackageDetails": {
+              "Name": "Microsoft.Data.Services.Client",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Data.Services.Client/5.8.2",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?linkid=833178",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Data.OData",
+                  "VersionRequirement": "5.8.2"
+                },
+                {
+                  "PackageName": "System.ComponentModel.EventBasedAsync",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard11"
+                },
+                {
+                  "PackageName": "System.Dynamic.Runtime",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard11"
+                },
+                {
+                  "PackageName": "System.Linq.Queryable",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard11"
+                },
+                {
+                  "PackageName": "System.Net.Requests",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard11"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:33.8486363+02:00",
+        "PackageName": "Newtonsoft.Json",
+        "Versions": [
+          {
+            "Version": "3.5.8"
+          },
+          {
+            "Version": "4.0.1"
+          },
+          {
+            "Version": "4.0.2"
+          },
+          {
+            "Version": "4.0.3"
+          },
+          {
+            "Version": "4.0.4"
+          },
+          {
+            "Version": "4.0.5"
+          },
+          {
+            "Version": "4.0.6"
+          },
+          {
+            "Version": "4.0.7"
+          },
+          {
+            "Version": "4.0.8"
+          },
+          {
+            "Version": "4.5.1"
+          },
+          {
+            "Version": "4.5.2"
+          },
+          {
+            "Version": "4.5.3"
+          },
+          {
+            "Version": "4.5.4"
+          },
+          {
+            "Version": "4.5.5"
+          },
+          {
+            "Version": "4.5.6"
+          },
+          {
+            "Version": "4.5.7"
+          },
+          {
+            "Version": "4.5.8"
+          },
+          {
+            "Version": "4.5.9"
+          },
+          {
+            "Version": "4.5.10"
+          },
+          {
+            "Version": "4.5.11"
+          },
+          {
+            "Version": "5.0.1"
+          },
+          {
+            "Version": "5.0.2"
+          },
+          {
+            "Version": "5.0.3"
+          },
+          {
+            "Version": "5.0.4"
+          },
+          {
+            "Version": "5.0.5"
+          },
+          {
+            "Version": "5.0.6"
+          },
+          {
+            "Version": "5.0.7"
+          },
+          {
+            "Version": "5.0.8"
+          },
+          {
+            "Version": "6.0.1-beta1"
+          },
+          {
+            "Version": "6.0.1"
+          },
+          {
+            "Version": "6.0.2"
+          },
+          {
+            "Version": "6.0.3"
+          },
+          {
+            "Version": "6.0.4"
+          },
+          {
+            "Version": "6.0.5"
+          },
+          {
+            "Version": "6.0.6"
+          },
+          {
+            "Version": "6.0.7"
+          },
+          {
+            "Version": "6.0.8"
+          },
+          {
+            "Version": "7.0.1-beta1"
+          },
+          {
+            "Version": "7.0.1-beta2"
+          },
+          {
+            "Version": "7.0.1-beta3"
+          },
+          {
+            "Version": "7.0.1"
+          },
+          {
+            "Version": "8.0.1-beta1"
+          },
+          {
+            "Version": "8.0.1-beta2"
+          },
+          {
+            "Version": "8.0.1-beta3"
+          },
+          {
+            "Version": "8.0.1-beta4"
+          },
+          {
+            "Version": "8.0.1"
+          },
+          {
+            "Version": "8.0.2"
+          },
+          {
+            "Version": "8.0.3"
+          },
+          {
+            "Version": "8.0.4-beta1"
+          },
+          {
+            "Version": "9.0.1-beta1"
+          },
+          {
+            "Version": "9.0.1"
+          },
+          {
+            "Version": "9.0.2-beta1"
+          },
+          {
+            "Version": "9.0.2-beta2"
+          },
+          {
+            "Version": "10.0.1-beta1"
+          },
+          {
+            "Version": "10.0.1"
+          },
+          {
+            "Version": "10.0.2",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Newtonsoft.Json/10.0.2",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.CSharp",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": "netstandard10, >= netstandard13"
+                },
+                {
+                  "PackageName": "NETStandard.Library",
+                  "VersionRequirement": ">= 1.6.1",
+                  "FrameworkRestrictions": "netstandard10, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.ComponentModel.TypeConverter",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": "netstandard10, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Formatters",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Primitives",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": "netstandard10, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.XmlDocument",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:14",
+        "PackageName": "System.Spatial",
+        "Versions": [
+          {
+            "Version": "5.8.2",
+            "PackageDetails": {
+              "Name": "System.Spatial",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Spatial/5.8.2",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?linkid=833178",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:10",
+        "PackageName": "Microsoft.Data.Edm",
+        "Versions": [
+          {
+            "Version": "5.8.2",
+            "PackageDetails": {
+              "Name": "Microsoft.Data.Edm",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Data.Edm/5.8.2",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?linkid=833178",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:32.2076335+02:00",
+        "PackageName": "Microsoft.Data.OData",
+        "Versions": [
+          {
+            "Version": "5.0.0.50403"
+          },
+          {
+            "Version": "5.0.1-rc"
+          },
+          {
+            "Version": "5.0.1"
+          },
+          {
+            "Version": "5.0.2-rc"
+          },
+          {
+            "Version": "5.0.2"
+          },
+          {
+            "Version": "5.1.0-rc"
+          },
+          {
+            "Version": "5.1.0-rc1"
+          },
+          {
+            "Version": "5.1.0-rc2"
+          },
+          {
+            "Version": "5.1.0"
+          },
+          {
+            "Version": "5.2.0-rc1"
+          },
+          {
+            "Version": "5.2.0"
+          },
+          {
+            "Version": "5.3.0-rc1"
+          },
+          {
+            "Version": "5.3.0"
+          },
+          {
+            "Version": "5.4.0-rc1"
+          },
+          {
+            "Version": "5.4.0"
+          },
+          {
+            "Version": "5.5.0-alpha1"
+          },
+          {
+            "Version": "5.5.0-alpha2"
+          },
+          {
+            "Version": "5.5.0-rc1"
+          },
+          {
+            "Version": "5.5.0"
+          },
+          {
+            "Version": "5.6.0-alpha1"
+          },
+          {
+            "Version": "5.6.0-rc1"
+          },
+          {
+            "Version": "5.6.0"
+          },
+          {
+            "Version": "5.6.1"
+          },
+          {
+            "Version": "5.6.2"
+          },
+          {
+            "Version": "5.6.3"
+          },
+          {
+            "Version": "5.6.4"
+          },
+          {
+            "Version": "5.6.5-beta"
+          },
+          {
+            "Version": "5.7.0-beta"
+          },
+          {
+            "Version": "5.7.0-rc"
+          },
+          {
+            "Version": "5.7.0"
+          },
+          {
+            "Version": "5.8.0-beta"
+          },
+          {
+            "Version": "5.8.0"
+          },
+          {
+            "Version": "5.8.1"
+          },
+          {
+            "Version": "5.8.2",
+            "PackageDetails": {
+              "Name": "Microsoft.Data.OData",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Data.OData/5.8.2",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?linkid=833178",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Data.Edm",
+                  "VersionRequirement": "5.8.2"
+                },
+                {
+                  "PackageName": "System.Spatial",
+                  "VersionRequirement": "5.8.2"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

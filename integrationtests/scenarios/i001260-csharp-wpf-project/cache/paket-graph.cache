@@ -1,0 +1,3402 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:39:51.2455426+02:00",
+        "PackageName": "MahApps.Metro",
+        "Versions": [
+          {
+            "Version": "0.1"
+          },
+          {
+            "Version": "0.2"
+          },
+          {
+            "Version": "0.3"
+          },
+          {
+            "Version": "0.3.0.1"
+          },
+          {
+            "Version": "0.4.0.17"
+          },
+          {
+            "Version": "0.5.0.0"
+          },
+          {
+            "Version": "0.6.0.0"
+          },
+          {
+            "Version": "0.6.0.1"
+          },
+          {
+            "Version": "0.7.0.41-ALPHA"
+          },
+          {
+            "Version": "0.7.0.42-ALPHA"
+          },
+          {
+            "Version": "0.7.0.43-ALPHA"
+          },
+          {
+            "Version": "0.7.0.44-ALPHA"
+          },
+          {
+            "Version": "0.7.0.45-ALPHA"
+          },
+          {
+            "Version": "0.7.0.46-ALPHA"
+          },
+          {
+            "Version": "0.7.1.0"
+          },
+          {
+            "Version": "0.7.2.0"
+          },
+          {
+            "Version": "0.7.9.47-ALPHA"
+          },
+          {
+            "Version": "0.7.9.48-ALPHA"
+          },
+          {
+            "Version": "0.7.9.49-ALPHA"
+          },
+          {
+            "Version": "0.7.9.50-ALPHA"
+          },
+          {
+            "Version": "0.7.9.51-ALPHA"
+          },
+          {
+            "Version": "0.7.9.52-ALPHA"
+          },
+          {
+            "Version": "0.7.9.53-ALPHA"
+          },
+          {
+            "Version": "0.7.9.54-ALPHA"
+          },
+          {
+            "Version": "0.7.9.55-ALPHA"
+          },
+          {
+            "Version": "0.7.9.56-ALPHA"
+          },
+          {
+            "Version": "0.7.9.57-ALPHA"
+          },
+          {
+            "Version": "0.7.9.58-ALPHA"
+          },
+          {
+            "Version": "0.7.9.59-ALPHA"
+          },
+          {
+            "Version": "0.7.9.60-ALPHA"
+          },
+          {
+            "Version": "0.8.0.0"
+          },
+          {
+            "Version": "0.8.9.8-ALPHA"
+          },
+          {
+            "Version": "0.8.9.9-ALPHA"
+          },
+          {
+            "Version": "0.8.9.10-ALPHA"
+          },
+          {
+            "Version": "0.8.9.16-ALPHA"
+          },
+          {
+            "Version": "0.8.9.17-ALPHA"
+          },
+          {
+            "Version": "0.8.9.18-ALPHA"
+          },
+          {
+            "Version": "0.8.9.19-ALPHA"
+          },
+          {
+            "Version": "0.8.9.20-ALPHA"
+          },
+          {
+            "Version": "0.8.9.21-ALPHA"
+          },
+          {
+            "Version": "0.8.9.22-ALPHA"
+          },
+          {
+            "Version": "0.8.9.23-ALPHA"
+          },
+          {
+            "Version": "0.8.9.24-ALPHA"
+          },
+          {
+            "Version": "0.8.9.25-ALPHA"
+          },
+          {
+            "Version": "0.8.9.26-ALPHA"
+          },
+          {
+            "Version": "0.8.9.27-ALPHA"
+          },
+          {
+            "Version": "0.8.9.28-ALPHA"
+          },
+          {
+            "Version": "0.8.9.29-ALPHA"
+          },
+          {
+            "Version": "0.8.9.30-ALPHA"
+          },
+          {
+            "Version": "0.8.9.32-ALPHA"
+          },
+          {
+            "Version": "0.8.9.33-ALPHA"
+          },
+          {
+            "Version": "0.8.9.34-ALPHA"
+          },
+          {
+            "Version": "0.8.9.35-ALPHA"
+          },
+          {
+            "Version": "0.8.9.36-ALPHA"
+          },
+          {
+            "Version": "0.9.0.0"
+          },
+          {
+            "Version": "0.9.9.37-ALPHA"
+          },
+          {
+            "Version": "0.9.9.40-ALPHA"
+          },
+          {
+            "Version": "0.9.9.41-ALPHA"
+          },
+          {
+            "Version": "0.9.9.42-ALPHA"
+          },
+          {
+            "Version": "0.9.9.43-ALPHA"
+          },
+          {
+            "Version": "0.9.9.44-ALPHA"
+          },
+          {
+            "Version": "0.9.9.45-ALPHA"
+          },
+          {
+            "Version": "0.9.9.46-ALPHA"
+          },
+          {
+            "Version": "0.9.9.47-ALPHA"
+          },
+          {
+            "Version": "0.9.9.48-ALPHA"
+          },
+          {
+            "Version": "0.9.9.49-ALPHA"
+          },
+          {
+            "Version": "0.9.9.50-ALPHA"
+          },
+          {
+            "Version": "0.9.9.51-ALPHA"
+          },
+          {
+            "Version": "0.9.9.52-ALPHA"
+          },
+          {
+            "Version": "0.9.9.53-ALPHA"
+          },
+          {
+            "Version": "0.9.9.54-ALPHA"
+          },
+          {
+            "Version": "0.9.9.55-ALPHA"
+          },
+          {
+            "Version": "0.10.0.0"
+          },
+          {
+            "Version": "0.10.0.1"
+          },
+          {
+            "Version": "0.10.1.1"
+          },
+          {
+            "Version": "0.10.1.6-ALPHA"
+          },
+          {
+            "Version": "0.10.1.7-ALPHA"
+          },
+          {
+            "Version": "0.10.1.8-ALPHA"
+          },
+          {
+            "Version": "0.10.1.9-ALPHA"
+          },
+          {
+            "Version": "0.10.1.10-ALPHA"
+          },
+          {
+            "Version": "0.10.1.11-ALPHA"
+          },
+          {
+            "Version": "0.10.1.12-ALPHA"
+          },
+          {
+            "Version": "0.10.1.13-ALPHA"
+          },
+          {
+            "Version": "0.10.1.14-ALPHA"
+          },
+          {
+            "Version": "0.10.1.17-ALPHA"
+          },
+          {
+            "Version": "0.10.1.20-ALPHA"
+          },
+          {
+            "Version": "0.10.1.21-ALPHA"
+          },
+          {
+            "Version": "0.10.1.22-ALPHA"
+          },
+          {
+            "Version": "0.10.1.23-ALPHA"
+          },
+          {
+            "Version": "0.10.1.24-ALPHA"
+          },
+          {
+            "Version": "0.10.1.25-ALPHA"
+          },
+          {
+            "Version": "0.10.1.26-ALPHA"
+          },
+          {
+            "Version": "0.10.1.27-ALPHA"
+          },
+          {
+            "Version": "0.10.1.28-ALPHA"
+          },
+          {
+            "Version": "0.10.1.29-ALPHA"
+          },
+          {
+            "Version": "0.10.1.30-ALPHA"
+          },
+          {
+            "Version": "0.10.1.31-ALPHA"
+          },
+          {
+            "Version": "0.10.1.32-ALPHA"
+          },
+          {
+            "Version": "0.10.1.33-ALPHA"
+          },
+          {
+            "Version": "0.10.1.34-ALPHA"
+          },
+          {
+            "Version": "0.11.0.0"
+          },
+          {
+            "Version": "0.11.0.1-ALPHA"
+          },
+          {
+            "Version": "0.11.0.2-ALPHA"
+          },
+          {
+            "Version": "0.11.0.3-ALPHA"
+          },
+          {
+            "Version": "0.11.0.4-ALPHA"
+          },
+          {
+            "Version": "0.11.0.8-ALPHA"
+          },
+          {
+            "Version": "0.11.0.9-ALPHA"
+          },
+          {
+            "Version": "0.11.0.10-ALPHA"
+          },
+          {
+            "Version": "0.11.0.12-ALPHA"
+          },
+          {
+            "Version": "0.11.0.13-ALPHA"
+          },
+          {
+            "Version": "0.11.0.14-ALPHA"
+          },
+          {
+            "Version": "0.11.0.15-ALPHA"
+          },
+          {
+            "Version": "0.11.0.16-ALPHA"
+          },
+          {
+            "Version": "0.11.0.17-ALPHA"
+          },
+          {
+            "Version": "0.11.0.18-ALPHA"
+          },
+          {
+            "Version": "0.11.0.19-ALPHA"
+          },
+          {
+            "Version": "0.11.0.20-ALPHA"
+          },
+          {
+            "Version": "0.11.0.21-ALPHA"
+          },
+          {
+            "Version": "0.11.0.22-ALPHA"
+          },
+          {
+            "Version": "0.11.0.23-ALPHA"
+          },
+          {
+            "Version": "0.11.0.24-ALPHA"
+          },
+          {
+            "Version": "0.11.0.25-ALPHA"
+          },
+          {
+            "Version": "0.11.0.26-ALPHA"
+          },
+          {
+            "Version": "0.11.0.27-ALPHA"
+          },
+          {
+            "Version": "0.11.0.28-ALPHA"
+          },
+          {
+            "Version": "0.11.0.29-ALPHA"
+          },
+          {
+            "Version": "0.11.0.30-ALPHA"
+          },
+          {
+            "Version": "0.11.0.31-ALPHA"
+          },
+          {
+            "Version": "0.11.0.32-ALPHA"
+          },
+          {
+            "Version": "0.11.0.34-ALPHA"
+          },
+          {
+            "Version": "0.11.0.35-ALPHA"
+          },
+          {
+            "Version": "0.11.0.36-ALPHA"
+          },
+          {
+            "Version": "0.11.0.37-ALPHA"
+          },
+          {
+            "Version": "0.11.0.38-ALPHA"
+          },
+          {
+            "Version": "0.11.0.39-ALPHA"
+          },
+          {
+            "Version": "0.11.0.40-ALPHA"
+          },
+          {
+            "Version": "0.11.0.41-ALPHA"
+          },
+          {
+            "Version": "0.11.0.42-ALPHA"
+          },
+          {
+            "Version": "0.11.0.43-ALPHA"
+          },
+          {
+            "Version": "0.11.0.44-ALPHA"
+          },
+          {
+            "Version": "0.11.0.45-ALPHA"
+          },
+          {
+            "Version": "0.11.0.46-ALPHA"
+          },
+          {
+            "Version": "0.11.0.47-ALPHA"
+          },
+          {
+            "Version": "0.11.0.48-ALPHA"
+          },
+          {
+            "Version": "0.11.0.49-ALPHA"
+          },
+          {
+            "Version": "0.11.0.50-ALPHA"
+          },
+          {
+            "Version": "0.11.0.51-ALPHA"
+          },
+          {
+            "Version": "0.11.0.53-ALPHA"
+          },
+          {
+            "Version": "0.11.0.54-ALPHA"
+          },
+          {
+            "Version": "0.11.0.59-ALPHA"
+          },
+          {
+            "Version": "0.11.1.1-ALPHA"
+          },
+          {
+            "Version": "0.11.1.2-ALPHA"
+          },
+          {
+            "Version": "0.11.1.3-ALPHA"
+          },
+          {
+            "Version": "0.11.1.4-ALPHA"
+          },
+          {
+            "Version": "0.11.1.5-ALPHA"
+          },
+          {
+            "Version": "0.11.1.6-ALPHA"
+          },
+          {
+            "Version": "0.11.1.7-ALPHA"
+          },
+          {
+            "Version": "0.11.1.8-ALPHA"
+          },
+          {
+            "Version": "0.11.1.9-ALPHA"
+          },
+          {
+            "Version": "0.11.1.11-ALPHA"
+          },
+          {
+            "Version": "0.11.1.12-ALPHA"
+          },
+          {
+            "Version": "0.11.1.15-ALPHA"
+          },
+          {
+            "Version": "0.11.1.16-ALPHA"
+          },
+          {
+            "Version": "0.11.1.17-ALPHA"
+          },
+          {
+            "Version": "0.11.1.18-ALPHA"
+          },
+          {
+            "Version": "0.11.1.19-ALPHA"
+          },
+          {
+            "Version": "0.11.1.20-ALPHA"
+          },
+          {
+            "Version": "0.11.1.21-ALPHA"
+          },
+          {
+            "Version": "0.11.1.22-ALPHA"
+          },
+          {
+            "Version": "0.11.1.23-ALPHA"
+          },
+          {
+            "Version": "0.11.1.24-ALPHA"
+          },
+          {
+            "Version": "0.11.1.25-ALPHA"
+          },
+          {
+            "Version": "0.11.1.26-ALPHA"
+          },
+          {
+            "Version": "0.11.1.27-ALPHA"
+          },
+          {
+            "Version": "0.11.1.28-ALPHA"
+          },
+          {
+            "Version": "0.11.1.30-ALPHA"
+          },
+          {
+            "Version": "0.11.1.31-ALPHA"
+          },
+          {
+            "Version": "0.11.1.32-ALPHA"
+          },
+          {
+            "Version": "0.11.1.33-ALPHA"
+          },
+          {
+            "Version": "0.11.2.1-ALPHA"
+          },
+          {
+            "Version": "0.11.2.2-ALPHA"
+          },
+          {
+            "Version": "0.11.2.3-ALPHA"
+          },
+          {
+            "Version": "0.11.2.4-ALPHA"
+          },
+          {
+            "Version": "0.11.2.5-ALPHA"
+          },
+          {
+            "Version": "0.11.2.6-ALPHA"
+          },
+          {
+            "Version": "0.11.2.7-ALPHA"
+          },
+          {
+            "Version": "0.11.2.9-ALPHA"
+          },
+          {
+            "Version": "0.11.2.10-ALPHA"
+          },
+          {
+            "Version": "0.11.2.11-ALPHA"
+          },
+          {
+            "Version": "0.11.2.12-ALPHA"
+          },
+          {
+            "Version": "0.11.2.13-ALPHA"
+          },
+          {
+            "Version": "0.11.2.14-ALPHA"
+          },
+          {
+            "Version": "0.11.2.15-ALPHA"
+          },
+          {
+            "Version": "0.11.2.17-ALPHA"
+          },
+          {
+            "Version": "0.11.2.18-ALPHA"
+          },
+          {
+            "Version": "0.11.2.19-ALPHA"
+          },
+          {
+            "Version": "0.11.2.20-ALPHA"
+          },
+          {
+            "Version": "0.11.2.21-ALPHA"
+          },
+          {
+            "Version": "0.11.2.22-ALPHA"
+          },
+          {
+            "Version": "0.11.2.23-ALPHA"
+          },
+          {
+            "Version": "0.11.2.24-ALPHA"
+          },
+          {
+            "Version": "0.11.3.1-ALPHA"
+          },
+          {
+            "Version": "0.12.0.0"
+          },
+          {
+            "Version": "0.12.0.1-ALPHA"
+          },
+          {
+            "Version": "0.12.0.2-ALPHA"
+          },
+          {
+            "Version": "0.12.0.3-ALPHA"
+          },
+          {
+            "Version": "0.12.0.4-ALPHA"
+          },
+          {
+            "Version": "0.12.0.5-ALPHA"
+          },
+          {
+            "Version": "0.12.0.6-ALPHA"
+          },
+          {
+            "Version": "0.12.0.7-ALPHA"
+          },
+          {
+            "Version": "0.12.0.8-ALPHA"
+          },
+          {
+            "Version": "0.12.0.9-ALPHA"
+          },
+          {
+            "Version": "0.12.0.10-ALPHA"
+          },
+          {
+            "Version": "0.12.0.11-ALPHA"
+          },
+          {
+            "Version": "0.12.0.13-ALPHA"
+          },
+          {
+            "Version": "0.12.0.14-ALPHA"
+          },
+          {
+            "Version": "0.12.0.15-ALPHA"
+          },
+          {
+            "Version": "0.12.0.16-ALPHA"
+          },
+          {
+            "Version": "0.12.0.17-ALPHA"
+          },
+          {
+            "Version": "0.12.0.18-ALPHA"
+          },
+          {
+            "Version": "0.12.0.20-ALPHA"
+          },
+          {
+            "Version": "0.12.0.21-ALPHA"
+          },
+          {
+            "Version": "0.12.0.22-ALPHA"
+          },
+          {
+            "Version": "0.12.0.23-ALPHA"
+          },
+          {
+            "Version": "0.12.1.0"
+          },
+          {
+            "Version": "0.13.0-ALPHA11"
+          },
+          {
+            "Version": "0.13.0.0"
+          },
+          {
+            "Version": "0.13.0.1-ALPHA"
+          },
+          {
+            "Version": "0.13.0.2-ALPHA"
+          },
+          {
+            "Version": "0.13.0.3-ALPHA"
+          },
+          {
+            "Version": "0.13.0.4-ALPHA"
+          },
+          {
+            "Version": "0.13.0.5-ALPHA"
+          },
+          {
+            "Version": "0.13.0.13-ALPHA"
+          },
+          {
+            "Version": "0.13.0.14-ALPHA"
+          },
+          {
+            "Version": "0.13.0.15-ALPHA"
+          },
+          {
+            "Version": "0.13.0.16-ALPHA"
+          },
+          {
+            "Version": "0.13.0.17-ALPHA"
+          },
+          {
+            "Version": "0.13.0.18-ALPHA"
+          },
+          {
+            "Version": "0.13.0.19-ALPHA"
+          },
+          {
+            "Version": "0.13.0.20-ALPHA"
+          },
+          {
+            "Version": "0.13.0.22-ALPHA"
+          },
+          {
+            "Version": "0.13.0.23-ALPHA"
+          },
+          {
+            "Version": "0.13.0.30-ALPHA"
+          },
+          {
+            "Version": "0.13.0.46-ALPHA"
+          },
+          {
+            "Version": "0.13.0.47-ALPHA"
+          },
+          {
+            "Version": "0.13.0.48-ALPHA"
+          },
+          {
+            "Version": "0.13.0.49-ALPHA"
+          },
+          {
+            "Version": "0.13.0.50-ALPHA"
+          },
+          {
+            "Version": "0.13.0.51-ALPHA"
+          },
+          {
+            "Version": "0.13.0.52-ALPHA"
+          },
+          {
+            "Version": "0.13.0.53-ALPHA"
+          },
+          {
+            "Version": "0.13.0.54-ALPHA"
+          },
+          {
+            "Version": "0.13.0.55-ALPHA"
+          },
+          {
+            "Version": "0.13.0.56-ALPHA"
+          },
+          {
+            "Version": "0.13.0.57-ALPHA"
+          },
+          {
+            "Version": "0.13.0.58-ALPHA"
+          },
+          {
+            "Version": "0.13.0.59-ALPHA"
+          },
+          {
+            "Version": "0.13.0.60-ALPHA"
+          },
+          {
+            "Version": "0.13.0.61-ALPHA"
+          },
+          {
+            "Version": "0.13.0.62-ALPHA"
+          },
+          {
+            "Version": "0.13.0.63-ALPHA"
+          },
+          {
+            "Version": "0.13.0.64-ALPHA"
+          },
+          {
+            "Version": "0.13.0.65-ALPHA"
+          },
+          {
+            "Version": "0.13.0.66-ALPHA"
+          },
+          {
+            "Version": "0.13.0.67-ALPHA"
+          },
+          {
+            "Version": "0.13.0.68-ALPHA"
+          },
+          {
+            "Version": "0.13.0.69-ALPHA"
+          },
+          {
+            "Version": "0.13.0.70-ALPHA"
+          },
+          {
+            "Version": "0.13.0.71-ALPHA"
+          },
+          {
+            "Version": "0.13.0.72-ALPHA"
+          },
+          {
+            "Version": "0.13.0.73-ALPHA"
+          },
+          {
+            "Version": "0.13.0.75-ALPHA"
+          },
+          {
+            "Version": "0.13.0.77-ALPHA"
+          },
+          {
+            "Version": "0.13.0.78-ALPHA"
+          },
+          {
+            "Version": "0.13.0.79-ALPHA"
+          },
+          {
+            "Version": "0.13.0.80-ALPHA"
+          },
+          {
+            "Version": "0.13.0.81-ALPHA"
+          },
+          {
+            "Version": "0.13.0.82-ALPHA"
+          },
+          {
+            "Version": "0.13.0.83-ALPHA"
+          },
+          {
+            "Version": "0.13.0.84-ALPHA"
+          },
+          {
+            "Version": "0.13.0.85-ALPHA"
+          },
+          {
+            "Version": "0.13.0.86-ALPHA"
+          },
+          {
+            "Version": "0.13.0.87-ALPHA"
+          },
+          {
+            "Version": "0.13.0.88-ALPHA"
+          },
+          {
+            "Version": "0.13.0.89-ALPHA"
+          },
+          {
+            "Version": "0.13.0.90-ALPHA"
+          },
+          {
+            "Version": "0.13.0.91-ALPHA"
+          },
+          {
+            "Version": "0.13.0.92-ALPHA"
+          },
+          {
+            "Version": "0.13.0.93-ALPHA"
+          },
+          {
+            "Version": "0.13.0.94-ALPHA"
+          },
+          {
+            "Version": "0.13.0.95-ALPHA"
+          },
+          {
+            "Version": "0.13.0.96-ALPHA"
+          },
+          {
+            "Version": "0.13.0.97-ALPHA"
+          },
+          {
+            "Version": "0.13.0.98-ALPHA"
+          },
+          {
+            "Version": "0.13.0.99-ALPHA"
+          },
+          {
+            "Version": "0.13.0.100-ALPHA"
+          },
+          {
+            "Version": "0.13.0.101-ALPHA"
+          },
+          {
+            "Version": "0.13.0.102-ALPHA"
+          },
+          {
+            "Version": "0.13.0.103-ALPHA"
+          },
+          {
+            "Version": "0.13.0.104-ALPHA"
+          },
+          {
+            "Version": "0.13.0.105-ALPHA"
+          },
+          {
+            "Version": "0.13.0.106-ALPHA"
+          },
+          {
+            "Version": "0.13.0.107-ALPHA"
+          },
+          {
+            "Version": "0.13.0.108-ALPHA"
+          },
+          {
+            "Version": "0.13.0.109-ALPHA"
+          },
+          {
+            "Version": "0.13.0.110-ALPHA"
+          },
+          {
+            "Version": "0.13.0.111-ALPHA"
+          },
+          {
+            "Version": "0.13.0.112-ALPHA"
+          },
+          {
+            "Version": "0.13.0.113-ALPHA"
+          },
+          {
+            "Version": "0.13.0.114-ALPHA"
+          },
+          {
+            "Version": "0.13.0.115-ALPHA"
+          },
+          {
+            "Version": "0.13.0.116-ALPHA"
+          },
+          {
+            "Version": "0.13.0.117-ALPHA"
+          },
+          {
+            "Version": "0.13.0.118-ALPHA"
+          },
+          {
+            "Version": "0.13.0.119-ALPHA"
+          },
+          {
+            "Version": "0.13.0.120-ALPHA"
+          },
+          {
+            "Version": "0.13.0.121-ALPHA"
+          },
+          {
+            "Version": "0.13.0.122-ALPHA"
+          },
+          {
+            "Version": "0.13.0.123-ALPHA"
+          },
+          {
+            "Version": "0.13.0.124-ALPHA"
+          },
+          {
+            "Version": "0.13.0.125-ALPHA"
+          },
+          {
+            "Version": "0.13.0.126-ALPHA"
+          },
+          {
+            "Version": "0.13.0.127-ALPHA"
+          },
+          {
+            "Version": "0.13.1.0"
+          },
+          {
+            "Version": "0.14.0-ALPHA10"
+          },
+          {
+            "Version": "0.14.0-ALPHA11"
+          },
+          {
+            "Version": "0.14.0-ALPHA12"
+          },
+          {
+            "Version": "0.14.0-ALPHA13"
+          },
+          {
+            "Version": "0.14.0-ALPHA14"
+          },
+          {
+            "Version": "0.14.0-ALPHA15"
+          },
+          {
+            "Version": "0.14.0-ALPHA16"
+          },
+          {
+            "Version": "0.14.0-ALPHA17"
+          },
+          {
+            "Version": "0.14.0-ALPHA18"
+          },
+          {
+            "Version": "0.14.0-ALPHA19"
+          },
+          {
+            "Version": "0.14.0-ALPHA20"
+          },
+          {
+            "Version": "0.14.0-ALPHA21"
+          },
+          {
+            "Version": "0.14.0-ALPHA22"
+          },
+          {
+            "Version": "0.14.0-ALPHA23"
+          },
+          {
+            "Version": "0.14.0-ALPHA24"
+          },
+          {
+            "Version": "0.14.0-ALPHA25"
+          },
+          {
+            "Version": "0.14.0-ALPHA26"
+          },
+          {
+            "Version": "0.14.0-ALPHA27"
+          },
+          {
+            "Version": "0.14.0-ALPHA28"
+          },
+          {
+            "Version": "0.14.0-ALPHA29"
+          },
+          {
+            "Version": "0.14.0-ALPHA30"
+          },
+          {
+            "Version": "0.14.0-ALPHA31"
+          },
+          {
+            "Version": "0.14.0-ALPHA32"
+          },
+          {
+            "Version": "0.14.0-ALPHA33"
+          },
+          {
+            "Version": "0.14.0-ALPHA34"
+          },
+          {
+            "Version": "0.14.0-ALPHA35"
+          },
+          {
+            "Version": "0.14.0-ALPHA36"
+          },
+          {
+            "Version": "0.14.0-ALPHA37"
+          },
+          {
+            "Version": "0.14.0-ALPHA38"
+          },
+          {
+            "Version": "0.14.0-ALPHA39"
+          },
+          {
+            "Version": "0.14.0-ALPHA40"
+          },
+          {
+            "Version": "0.14.0-ALPHA41"
+          },
+          {
+            "Version": "0.14.0-ALPHA42"
+          },
+          {
+            "Version": "0.14.0-ALPHA43"
+          },
+          {
+            "Version": "0.14.0-ALPHA44"
+          },
+          {
+            "Version": "0.14.0-ALPHA45"
+          },
+          {
+            "Version": "0.14.0-ALPHA46"
+          },
+          {
+            "Version": "0.14.0-ALPHA47"
+          },
+          {
+            "Version": "0.14.0-ALPHA48"
+          },
+          {
+            "Version": "0.14.0-ALPHA49"
+          },
+          {
+            "Version": "0.14.0-ALPHA50"
+          },
+          {
+            "Version": "0.14.0-ALPHA51"
+          },
+          {
+            "Version": "0.14.0-ALPHA52"
+          },
+          {
+            "Version": "0.14.0-ALPHA53"
+          },
+          {
+            "Version": "0.14.0-ALPHA54"
+          },
+          {
+            "Version": "0.14.0-ALPHA55"
+          },
+          {
+            "Version": "0.14.0-ALPHA56"
+          },
+          {
+            "Version": "0.14.0-ALPHA57"
+          },
+          {
+            "Version": "0.14.0-ALPHA58"
+          },
+          {
+            "Version": "0.14.0-ALPHA59"
+          },
+          {
+            "Version": "0.14.0-ALPHA6"
+          },
+          {
+            "Version": "0.14.0-ALPHA60"
+          },
+          {
+            "Version": "0.14.0-ALPHA61"
+          },
+          {
+            "Version": "0.14.0-ALPHA62"
+          },
+          {
+            "Version": "0.14.0-ALPHA63"
+          },
+          {
+            "Version": "0.14.0-ALPHA64"
+          },
+          {
+            "Version": "0.14.0-ALPHA65"
+          },
+          {
+            "Version": "0.14.0-ALPHA66"
+          },
+          {
+            "Version": "0.14.0-ALPHA67"
+          },
+          {
+            "Version": "0.14.0-ALPHA68"
+          },
+          {
+            "Version": "0.14.0-ALPHA69"
+          },
+          {
+            "Version": "0.14.0-ALPHA70"
+          },
+          {
+            "Version": "0.14.0-ALPHA71"
+          },
+          {
+            "Version": "0.14.0-ALPHA72"
+          },
+          {
+            "Version": "0.14.0-ALPHA73"
+          },
+          {
+            "Version": "0.14.0-ALPHA74"
+          },
+          {
+            "Version": "0.14.0-ALPHA75"
+          },
+          {
+            "Version": "0.14.0-ALPHA76"
+          },
+          {
+            "Version": "0.14.0-ALPHA77"
+          },
+          {
+            "Version": "0.14.0-ALPHA78"
+          },
+          {
+            "Version": "0.14.0-ALPHA79"
+          },
+          {
+            "Version": "0.14.0-ALPHA8"
+          },
+          {
+            "Version": "0.14.0-ALPHA80"
+          },
+          {
+            "Version": "0.14.0-ALPHA81"
+          },
+          {
+            "Version": "0.14.0-ALPHA82"
+          },
+          {
+            "Version": "0.14.0-ALPHA83"
+          },
+          {
+            "Version": "0.14.0-ALPHA84"
+          },
+          {
+            "Version": "0.14.0-ALPHA85"
+          },
+          {
+            "Version": "0.14.0-ALPHA86"
+          },
+          {
+            "Version": "0.14.0-ALPHA87"
+          },
+          {
+            "Version": "0.14.0-ALPHA88"
+          },
+          {
+            "Version": "0.14.0-ALPHA89"
+          },
+          {
+            "Version": "0.14.0-ALPHA9"
+          },
+          {
+            "Version": "0.14.0-ALPHA90"
+          },
+          {
+            "Version": "0.14.0-ALPHA91"
+          },
+          {
+            "Version": "0.14.0-ALPHA92"
+          },
+          {
+            "Version": "0.14.0-ALPHA93"
+          },
+          {
+            "Version": "0.14.0-ALPHA94"
+          },
+          {
+            "Version": "0.14.0-ALPHA95"
+          },
+          {
+            "Version": "0.14.0-ALPHA96"
+          },
+          {
+            "Version": "0.14.0-ALPHA97"
+          },
+          {
+            "Version": "0.14.0-ALPHA98"
+          },
+          {
+            "Version": "0.14.0-ALPHA99"
+          },
+          {
+            "Version": "0.14.0.0"
+          },
+          {
+            "Version": "0.14.0.1-ALPHA"
+          },
+          {
+            "Version": "0.14.0.2-ALPHA"
+          },
+          {
+            "Version": "0.15.0-ALPHA1"
+          },
+          {
+            "Version": "0.15.0-ALPHA10"
+          },
+          {
+            "Version": "0.15.0-ALPHA100"
+          },
+          {
+            "Version": "0.15.0-ALPHA101"
+          },
+          {
+            "Version": "0.15.0-ALPHA102"
+          },
+          {
+            "Version": "0.15.0-ALPHA103"
+          },
+          {
+            "Version": "0.15.0-ALPHA104"
+          },
+          {
+            "Version": "0.15.0-ALPHA105"
+          },
+          {
+            "Version": "0.15.0-ALPHA106"
+          },
+          {
+            "Version": "0.15.0-ALPHA107"
+          },
+          {
+            "Version": "0.15.0-ALPHA108"
+          },
+          {
+            "Version": "0.15.0-ALPHA109"
+          },
+          {
+            "Version": "0.15.0-ALPHA11"
+          },
+          {
+            "Version": "0.15.0-ALPHA110"
+          },
+          {
+            "Version": "0.15.0-ALPHA111"
+          },
+          {
+            "Version": "0.15.0-ALPHA112"
+          },
+          {
+            "Version": "0.15.0-ALPHA113"
+          },
+          {
+            "Version": "0.15.0-ALPHA114"
+          },
+          {
+            "Version": "0.15.0-ALPHA115"
+          },
+          {
+            "Version": "0.15.0-ALPHA12"
+          },
+          {
+            "Version": "0.15.0-ALPHA13"
+          },
+          {
+            "Version": "0.15.0-ALPHA14"
+          },
+          {
+            "Version": "0.15.0-ALPHA15"
+          },
+          {
+            "Version": "0.15.0-ALPHA16"
+          },
+          {
+            "Version": "0.15.0-ALPHA17"
+          },
+          {
+            "Version": "0.15.0-ALPHA18"
+          },
+          {
+            "Version": "0.15.0-ALPHA19"
+          },
+          {
+            "Version": "0.15.0-ALPHA2"
+          },
+          {
+            "Version": "0.15.0-ALPHA20"
+          },
+          {
+            "Version": "0.15.0-ALPHA21"
+          },
+          {
+            "Version": "0.15.0-ALPHA22"
+          },
+          {
+            "Version": "0.15.0-ALPHA23"
+          },
+          {
+            "Version": "0.15.0-ALPHA24"
+          },
+          {
+            "Version": "0.15.0-ALPHA25"
+          },
+          {
+            "Version": "0.15.0-ALPHA26"
+          },
+          {
+            "Version": "0.15.0-ALPHA27"
+          },
+          {
+            "Version": "0.15.0-ALPHA28"
+          },
+          {
+            "Version": "0.15.0-ALPHA29"
+          },
+          {
+            "Version": "0.15.0-ALPHA3"
+          },
+          {
+            "Version": "0.15.0-ALPHA30"
+          },
+          {
+            "Version": "0.15.0-ALPHA31"
+          },
+          {
+            "Version": "0.15.0-ALPHA32"
+          },
+          {
+            "Version": "0.15.0-ALPHA33"
+          },
+          {
+            "Version": "0.15.0-ALPHA34"
+          },
+          {
+            "Version": "0.15.0-ALPHA35"
+          },
+          {
+            "Version": "0.15.0-ALPHA36"
+          },
+          {
+            "Version": "0.15.0-ALPHA38"
+          },
+          {
+            "Version": "0.15.0-ALPHA39"
+          },
+          {
+            "Version": "0.15.0-ALPHA4"
+          },
+          {
+            "Version": "0.15.0-ALPHA40"
+          },
+          {
+            "Version": "0.15.0-ALPHA41"
+          },
+          {
+            "Version": "0.15.0-ALPHA42"
+          },
+          {
+            "Version": "0.15.0-ALPHA43"
+          },
+          {
+            "Version": "0.15.0-ALPHA44"
+          },
+          {
+            "Version": "0.15.0-ALPHA45"
+          },
+          {
+            "Version": "0.15.0-ALPHA46"
+          },
+          {
+            "Version": "0.15.0-ALPHA47"
+          },
+          {
+            "Version": "0.15.0-ALPHA48"
+          },
+          {
+            "Version": "0.15.0-ALPHA49"
+          },
+          {
+            "Version": "0.15.0-ALPHA5"
+          },
+          {
+            "Version": "0.15.0-ALPHA50"
+          },
+          {
+            "Version": "0.15.0-ALPHA51"
+          },
+          {
+            "Version": "0.15.0-ALPHA52"
+          },
+          {
+            "Version": "0.15.0-ALPHA53"
+          },
+          {
+            "Version": "0.15.0-ALPHA54"
+          },
+          {
+            "Version": "0.15.0-ALPHA55"
+          },
+          {
+            "Version": "0.15.0-ALPHA56"
+          },
+          {
+            "Version": "0.15.0-ALPHA57"
+          },
+          {
+            "Version": "0.15.0-ALPHA58"
+          },
+          {
+            "Version": "0.15.0-ALPHA59"
+          },
+          {
+            "Version": "0.15.0-ALPHA6"
+          },
+          {
+            "Version": "0.15.0-ALPHA60"
+          },
+          {
+            "Version": "0.15.0-ALPHA61"
+          },
+          {
+            "Version": "0.15.0-ALPHA62"
+          },
+          {
+            "Version": "0.15.0-ALPHA63"
+          },
+          {
+            "Version": "0.15.0-ALPHA64"
+          },
+          {
+            "Version": "0.15.0-ALPHA65"
+          },
+          {
+            "Version": "0.15.0-ALPHA66"
+          },
+          {
+            "Version": "0.15.0-ALPHA67"
+          },
+          {
+            "Version": "0.15.0-ALPHA68"
+          },
+          {
+            "Version": "0.15.0-ALPHA69"
+          },
+          {
+            "Version": "0.15.0-ALPHA7"
+          },
+          {
+            "Version": "0.15.0-ALPHA70"
+          },
+          {
+            "Version": "0.15.0-ALPHA71"
+          },
+          {
+            "Version": "0.15.0-ALPHA72"
+          },
+          {
+            "Version": "0.15.0-ALPHA73"
+          },
+          {
+            "Version": "0.15.0-ALPHA74"
+          },
+          {
+            "Version": "0.15.0-ALPHA75"
+          },
+          {
+            "Version": "0.15.0-ALPHA76"
+          },
+          {
+            "Version": "0.15.0-ALPHA77"
+          },
+          {
+            "Version": "0.15.0-ALPHA78"
+          },
+          {
+            "Version": "0.15.0-ALPHA79"
+          },
+          {
+            "Version": "0.15.0-ALPHA8"
+          },
+          {
+            "Version": "0.15.0-ALPHA80"
+          },
+          {
+            "Version": "0.15.0-ALPHA81"
+          },
+          {
+            "Version": "0.15.0-ALPHA82"
+          },
+          {
+            "Version": "0.15.0-ALPHA83"
+          },
+          {
+            "Version": "0.15.0-ALPHA84"
+          },
+          {
+            "Version": "0.15.0-ALPHA85"
+          },
+          {
+            "Version": "0.15.0-ALPHA86"
+          },
+          {
+            "Version": "0.15.0-ALPHA87"
+          },
+          {
+            "Version": "0.15.0-ALPHA88"
+          },
+          {
+            "Version": "0.15.0-ALPHA89"
+          },
+          {
+            "Version": "0.15.0-ALPHA9"
+          },
+          {
+            "Version": "0.15.0-ALPHA90"
+          },
+          {
+            "Version": "0.15.0-ALPHA91"
+          },
+          {
+            "Version": "0.15.0-ALPHA92"
+          },
+          {
+            "Version": "0.15.0-ALPHA93"
+          },
+          {
+            "Version": "0.15.0-ALPHA94"
+          },
+          {
+            "Version": "0.15.0-ALPHA95"
+          },
+          {
+            "Version": "0.15.0-ALPHA96"
+          },
+          {
+            "Version": "0.15.0-ALPHA97"
+          },
+          {
+            "Version": "0.15.0-ALPHA98"
+          },
+          {
+            "Version": "0.15.0-ALPHA99"
+          },
+          {
+            "Version": "0.16.0-ALPHA002"
+          },
+          {
+            "Version": "0.16.0-ALPHA1"
+          },
+          {
+            "Version": "1.0.0-ALPHA001"
+          },
+          {
+            "Version": "1.0.0-ALPHA002"
+          },
+          {
+            "Version": "1.0.0-ALPHA003"
+          },
+          {
+            "Version": "1.0.0-ALPHA004"
+          },
+          {
+            "Version": "1.0.0-ALPHA005"
+          },
+          {
+            "Version": "1.0.0-ALPHA006"
+          },
+          {
+            "Version": "1.0.0-ALPHA007"
+          },
+          {
+            "Version": "1.0.0-ALPHA008"
+          },
+          {
+            "Version": "1.0.0-ALPHA009"
+          },
+          {
+            "Version": "1.0.0-ALPHA010"
+          },
+          {
+            "Version": "1.0.0-ALPHA011"
+          },
+          {
+            "Version": "1.0.0-ALPHA012"
+          },
+          {
+            "Version": "1.0.0.0"
+          },
+          {
+            "Version": "1.0.1-ALPHA001"
+          },
+          {
+            "Version": "1.0.1-ALPHA002"
+          },
+          {
+            "Version": "1.0.1-ALPHA003"
+          },
+          {
+            "Version": "1.0.1-ALPHA004"
+          },
+          {
+            "Version": "1.0.1-ALPHA005"
+          },
+          {
+            "Version": "1.0.1-ALPHA006"
+          },
+          {
+            "Version": "1.0.1-ALPHA007"
+          },
+          {
+            "Version": "1.0.1-ALPHA008"
+          },
+          {
+            "Version": "1.0.1-ALPHA009"
+          },
+          {
+            "Version": "1.0.1-ALPHA010"
+          },
+          {
+            "Version": "1.0.1-ALPHA011"
+          },
+          {
+            "Version": "1.0.1-ALPHA012"
+          },
+          {
+            "Version": "1.0.1-ALPHA013"
+          },
+          {
+            "Version": "1.0.1-ALPHA014"
+          },
+          {
+            "Version": "1.0.1-ALPHA015"
+          },
+          {
+            "Version": "1.0.1-ALPHA016"
+          },
+          {
+            "Version": "1.0.1-ALPHA017"
+          },
+          {
+            "Version": "1.0.1-ALPHA018"
+          },
+          {
+            "Version": "1.0.1-ALPHA019"
+          },
+          {
+            "Version": "1.0.1-ALPHA020"
+          },
+          {
+            "Version": "1.0.1-ALPHA021"
+          },
+          {
+            "Version": "1.0.1-ALPHA022"
+          },
+          {
+            "Version": "1.0.1-ALPHA023"
+          },
+          {
+            "Version": "1.0.1-ALPHA024"
+          },
+          {
+            "Version": "1.0.1-ALPHA025"
+          },
+          {
+            "Version": "1.0.1-ALPHA026"
+          },
+          {
+            "Version": "1.0.1-ALPHA027"
+          },
+          {
+            "Version": "1.0.1-ALPHA028"
+          },
+          {
+            "Version": "1.0.1-ALPHA029"
+          },
+          {
+            "Version": "1.0.1-ALPHA030"
+          },
+          {
+            "Version": "1.0.1-ALPHA031"
+          },
+          {
+            "Version": "1.0.1-ALPHA032"
+          },
+          {
+            "Version": "1.0.1-ALPHA033"
+          },
+          {
+            "Version": "1.0.1-ALPHA034"
+          },
+          {
+            "Version": "1.0.1-ALPHA035"
+          },
+          {
+            "Version": "1.0.1-ALPHA036"
+          },
+          {
+            "Version": "1.0.1-ALPHA037"
+          },
+          {
+            "Version": "1.0.1-ALPHA038"
+          },
+          {
+            "Version": "1.0.1-ALPHA039"
+          },
+          {
+            "Version": "1.0.1-ALPHA040"
+          },
+          {
+            "Version": "1.0.1-ALPHA041"
+          },
+          {
+            "Version": "1.0.1-ALPHA042"
+          },
+          {
+            "Version": "1.0.1-ALPHA043"
+          },
+          {
+            "Version": "1.0.1-ALPHA044"
+          },
+          {
+            "Version": "1.0.1-ALPHA045"
+          },
+          {
+            "Version": "1.0.1-ALPHA046"
+          },
+          {
+            "Version": "1.0.1-ALPHA047"
+          },
+          {
+            "Version": "1.0.1-ALPHA048"
+          },
+          {
+            "Version": "1.0.1-ALPHA049"
+          },
+          {
+            "Version": "1.0.1-ALPHA050"
+          },
+          {
+            "Version": "1.0.1-ALPHA051"
+          },
+          {
+            "Version": "1.0.1-ALPHA052"
+          },
+          {
+            "Version": "1.0.1-ALPHA053"
+          },
+          {
+            "Version": "1.0.1-ALPHA054"
+          },
+          {
+            "Version": "1.0.1-ALPHA055"
+          },
+          {
+            "Version": "1.0.1-ALPHA056"
+          },
+          {
+            "Version": "1.0.1-ALPHA057"
+          },
+          {
+            "Version": "1.0.1-ALPHA058"
+          },
+          {
+            "Version": "1.0.1-ALPHA059"
+          },
+          {
+            "Version": "1.0.1-ALPHA060"
+          },
+          {
+            "Version": "1.0.1-ALPHA061"
+          },
+          {
+            "Version": "1.0.1-ALPHA062"
+          },
+          {
+            "Version": "1.0.1-ALPHA063"
+          },
+          {
+            "Version": "1.0.1-ALPHA064"
+          },
+          {
+            "Version": "1.0.1-ALPHA065"
+          },
+          {
+            "Version": "1.0.1-ALPHA066"
+          },
+          {
+            "Version": "1.0.1-ALPHA067"
+          },
+          {
+            "Version": "1.0.1-ALPHA068"
+          },
+          {
+            "Version": "1.0.1-ALPHA069"
+          },
+          {
+            "Version": "1.0.1-ALPHA070"
+          },
+          {
+            "Version": "1.0.1-ALPHA071"
+          },
+          {
+            "Version": "1.0.1-ALPHA072"
+          },
+          {
+            "Version": "1.0.1-ALPHA073"
+          },
+          {
+            "Version": "1.0.1-ALPHA074"
+          },
+          {
+            "Version": "1.0.1-ALPHA075"
+          },
+          {
+            "Version": "1.0.1-ALPHA076"
+          },
+          {
+            "Version": "1.0.1-ALPHA077"
+          },
+          {
+            "Version": "1.0.1-ALPHA078"
+          },
+          {
+            "Version": "1.0.1-ALPHA079"
+          },
+          {
+            "Version": "1.0.1-ALPHA080"
+          },
+          {
+            "Version": "1.0.1-ALPHA081"
+          },
+          {
+            "Version": "1.0.1-ALPHA082"
+          },
+          {
+            "Version": "1.0.1-ALPHA083"
+          },
+          {
+            "Version": "1.0.39-ALPHA"
+          },
+          {
+            "Version": "1.1.0.0"
+          },
+          {
+            "Version": "1.1.1-ALPHA001"
+          },
+          {
+            "Version": "1.1.1-ALPHA002"
+          },
+          {
+            "Version": "1.1.1-ALPHA003"
+          },
+          {
+            "Version": "1.1.1-ALPHA004"
+          },
+          {
+            "Version": "1.1.1.0"
+          },
+          {
+            "Version": "1.1.2-ALPHA001"
+          },
+          {
+            "Version": "1.1.2-ALPHA002"
+          },
+          {
+            "Version": "1.1.2-ALPHA003"
+          },
+          {
+            "Version": "1.1.2-ALPHA004"
+          },
+          {
+            "Version": "1.1.2-ALPHA005"
+          },
+          {
+            "Version": "1.1.2-ALPHA006"
+          },
+          {
+            "Version": "1.1.2-ALPHA007"
+          },
+          {
+            "Version": "1.1.2-ALPHA008"
+          },
+          {
+            "Version": "1.1.2-ALPHA009"
+          },
+          {
+            "Version": "1.1.2-ALPHA010"
+          },
+          {
+            "Version": "1.1.2-ALPHA011"
+          },
+          {
+            "Version": "1.1.2.0"
+          },
+          {
+            "Version": "1.1.3-ALPHA001"
+          },
+          {
+            "Version": "1.1.3-ALPHA002"
+          },
+          {
+            "Version": "1.1.3-ALPHA003"
+          },
+          {
+            "Version": "1.1.3-ALPHA004"
+          },
+          {
+            "Version": "1.1.3-ALPHA005"
+          },
+          {
+            "Version": "1.1.3-ALPHA006"
+          },
+          {
+            "Version": "1.1.3-ALPHA007"
+          },
+          {
+            "Version": "1.1.3-ALPHA008"
+          },
+          {
+            "Version": "1.1.3-ALPHA009"
+          },
+          {
+            "Version": "1.1.3-ALPHA010"
+          },
+          {
+            "Version": "1.1.3-ALPHA011"
+          },
+          {
+            "Version": "1.1.3-ALPHA012"
+          },
+          {
+            "Version": "1.1.3-ALPHA013"
+          },
+          {
+            "Version": "1.1.3-ALPHA014"
+          },
+          {
+            "Version": "1.1.3-ALPHA015"
+          },
+          {
+            "Version": "1.1.3-ALPHA016"
+          },
+          {
+            "Version": "1.1.3-ALPHA017"
+          },
+          {
+            "Version": "1.1.3-ALPHA018"
+          },
+          {
+            "Version": "1.1.3-ALPHA019"
+          },
+          {
+            "Version": "1.1.3-ALPHA020"
+          },
+          {
+            "Version": "1.1.3-ALPHA021"
+          },
+          {
+            "Version": "1.1.3-ALPHA022"
+          },
+          {
+            "Version": "1.1.3-ALPHA023"
+          },
+          {
+            "Version": "1.1.3-ALPHA024"
+          },
+          {
+            "Version": "1.1.3-ALPHA025"
+          },
+          {
+            "Version": "1.1.3-ALPHA026"
+          },
+          {
+            "Version": "1.1.3-ALPHA027"
+          },
+          {
+            "Version": "1.1.3-ALPHA028"
+          },
+          {
+            "Version": "1.1.3-ALPHA047"
+          },
+          {
+            "Version": "1.1.3-ALPHA048"
+          },
+          {
+            "Version": "1.1.3-ALPHA049"
+          },
+          {
+            "Version": "1.1.3-ALPHA050"
+          },
+          {
+            "Version": "1.1.3-ALPHA051"
+          },
+          {
+            "Version": "1.1.3-ALPHA052"
+          },
+          {
+            "Version": "1.1.3-ALPHA053"
+          },
+          {
+            "Version": "1.1.3-ALPHA054"
+          },
+          {
+            "Version": "1.1.3-ALPHA055"
+          },
+          {
+            "Version": "1.1.3-ALPHA056"
+          },
+          {
+            "Version": "1.1.3-ALPHA057"
+          },
+          {
+            "Version": "1.1.3-ALPHA058"
+          },
+          {
+            "Version": "1.1.3-ALPHA059"
+          },
+          {
+            "Version": "1.1.3-ALPHA060"
+          },
+          {
+            "Version": "1.1.3-ALPHA061"
+          },
+          {
+            "Version": "1.1.3-ALPHA062"
+          },
+          {
+            "Version": "1.1.3-ALPHA063"
+          },
+          {
+            "Version": "1.1.3-ALPHA064"
+          },
+          {
+            "Version": "1.1.3-ALPHA065"
+          },
+          {
+            "Version": "1.1.3-ALPHA066"
+          },
+          {
+            "Version": "1.1.3-ALPHA067"
+          },
+          {
+            "Version": "1.1.3-ALPHA068"
+          },
+          {
+            "Version": "1.1.3-ALPHA069"
+          },
+          {
+            "Version": "1.1.3-ALPHA070"
+          },
+          {
+            "Version": "1.1.3-ALPHA071"
+          },
+          {
+            "Version": "1.1.3-ALPHA072"
+          },
+          {
+            "Version": "1.1.3-ALPHA073"
+          },
+          {
+            "Version": "1.1.3-ALPHA074"
+          },
+          {
+            "Version": "1.1.3-ALPHA075"
+          },
+          {
+            "Version": "1.1.3-ALPHA076"
+          },
+          {
+            "Version": "1.1.3-ALPHA077"
+          },
+          {
+            "Version": "1.1.3-ALPHA078"
+          },
+          {
+            "Version": "1.1.3-ALPHA079"
+          },
+          {
+            "Version": "1.1.3-ALPHA080"
+          },
+          {
+            "Version": "1.1.3-ALPHA081"
+          },
+          {
+            "Version": "1.1.3-ALPHA082"
+          },
+          {
+            "Version": "1.1.3-ALPHA083"
+          },
+          {
+            "Version": "1.1.3-ALPHA084"
+          },
+          {
+            "Version": "1.1.3-ALPHA085"
+          },
+          {
+            "Version": "1.1.3-ALPHA086"
+          },
+          {
+            "Version": "1.1.3-ALPHA087"
+          },
+          {
+            "Version": "1.1.3-ALPHA088"
+          },
+          {
+            "Version": "1.1.3-ALPHA089"
+          },
+          {
+            "Version": "1.1.3-ALPHA090"
+          },
+          {
+            "Version": "1.1.3-ALPHA091"
+          },
+          {
+            "Version": "1.1.3-ALPHA092"
+          },
+          {
+            "Version": "1.1.3-ALPHA093"
+          },
+          {
+            "Version": "1.1.3-ALPHA094"
+          },
+          {
+            "Version": "1.1.3-ALPHA095"
+          },
+          {
+            "Version": "1.1.3-ALPHA096"
+          },
+          {
+            "Version": "1.1.3-ALPHA097"
+          },
+          {
+            "Version": "1.1.3-ALPHA098"
+          },
+          {
+            "Version": "1.1.3-ALPHA099"
+          },
+          {
+            "Version": "1.1.3-ALPHA100"
+          },
+          {
+            "Version": "1.1.3-ALPHA101"
+          },
+          {
+            "Version": "1.1.3-ALPHA102"
+          },
+          {
+            "Version": "1.1.3-ALPHA103"
+          },
+          {
+            "Version": "1.1.3-ALPHA104"
+          },
+          {
+            "Version": "1.1.3-ALPHA105"
+          },
+          {
+            "Version": "1.1.3-ALPHA106"
+          },
+          {
+            "Version": "1.1.3-ALPHA107"
+          },
+          {
+            "Version": "1.1.3-ALPHA108"
+          },
+          {
+            "Version": "1.1.3-ALPHA109"
+          },
+          {
+            "Version": "1.1.3-ALPHA110"
+          },
+          {
+            "Version": "1.1.3-ALPHA111"
+          },
+          {
+            "Version": "1.1.3-ALPHA112"
+          },
+          {
+            "Version": "1.1.3-ALPHA113"
+          },
+          {
+            "Version": "1.1.3-ALPHA114"
+          },
+          {
+            "Version": "1.1.3-ALPHA115"
+          },
+          {
+            "Version": "1.1.3-ALPHA116"
+          },
+          {
+            "Version": "1.1.3-ALPHA117"
+          },
+          {
+            "Version": "1.1.3-ALPHA118"
+          },
+          {
+            "Version": "1.1.3-ALPHA119"
+          },
+          {
+            "Version": "1.1.3-ALPHA120"
+          },
+          {
+            "Version": "1.1.3-ALPHA121"
+          },
+          {
+            "Version": "1.1.3-ALPHA122"
+          },
+          {
+            "Version": "1.1.3-ALPHA123"
+          },
+          {
+            "Version": "1.1.3-ALPHA124"
+          },
+          {
+            "Version": "1.1.3-ALPHA125"
+          },
+          {
+            "Version": "1.1.3-ALPHA126"
+          },
+          {
+            "Version": "1.1.3-ALPHA127"
+          },
+          {
+            "Version": "1.1.3-ALPHA128"
+          },
+          {
+            "Version": "1.1.3-ALPHA130"
+          },
+          {
+            "Version": "1.1.3-ALPHA136"
+          },
+          {
+            "Version": "1.1.3-ALPHA138"
+          },
+          {
+            "Version": "1.1.3-ALPHA139"
+          },
+          {
+            "Version": "1.1.3-ALPHA140"
+          },
+          {
+            "Version": "1.1.3-ALPHA141"
+          },
+          {
+            "Version": "1.1.3-ALPHA142"
+          },
+          {
+            "Version": "1.1.3-ALPHA143"
+          },
+          {
+            "Version": "1.1.3-ALPHA144"
+          },
+          {
+            "Version": "1.1.3-ALPHA145"
+          },
+          {
+            "Version": "1.1.3-ALPHA146"
+          },
+          {
+            "Version": "1.1.3-ALPHA147"
+          },
+          {
+            "Version": "1.1.3-ALPHA148"
+          },
+          {
+            "Version": "1.1.3-ALPHA149"
+          },
+          {
+            "Version": "1.1.3-ALPHA150"
+          },
+          {
+            "Version": "1.1.3-ALPHA151"
+          },
+          {
+            "Version": "1.1.3-ALPHA152"
+          },
+          {
+            "Version": "1.1.3-ALPHA153"
+          },
+          {
+            "Version": "1.1.3-ALPHA154"
+          },
+          {
+            "Version": "1.1.3-ALPHA155"
+          },
+          {
+            "Version": "1.1.3-ALPHA156"
+          },
+          {
+            "Version": "1.1.3-ALPHA157"
+          },
+          {
+            "Version": "1.1.3-ALPHA158"
+          },
+          {
+            "Version": "1.1.3-ALPHA159"
+          },
+          {
+            "Version": "1.1.3-ALPHA160"
+          },
+          {
+            "Version": "1.1.3-ALPHA161"
+          },
+          {
+            "Version": "1.1.3-ALPHA162"
+          },
+          {
+            "Version": "1.1.3-ALPHA163"
+          },
+          {
+            "Version": "1.1.3-ALPHA164"
+          },
+          {
+            "Version": "1.1.3-ALPHA165"
+          },
+          {
+            "Version": "1.1.3-ALPHA166"
+          },
+          {
+            "Version": "1.1.3-ALPHA167"
+          },
+          {
+            "Version": "1.1.3-ALPHA168"
+          },
+          {
+            "Version": "1.1.3-ALPHA169"
+          },
+          {
+            "Version": "1.1.3-ALPHA170"
+          },
+          {
+            "Version": "1.1.3-ALPHA171"
+          },
+          {
+            "Version": "1.1.3-ALPHA172"
+          },
+          {
+            "Version": "1.1.3-ALPHA173"
+          },
+          {
+            "Version": "1.1.3-ALPHA174"
+          },
+          {
+            "Version": "1.1.3-ALPHA175"
+          },
+          {
+            "Version": "1.1.3-ALPHA176"
+          },
+          {
+            "Version": "1.1.3-ALPHA177"
+          },
+          {
+            "Version": "1.1.3-ALPHA178"
+          },
+          {
+            "Version": "1.1.3-ALPHA179"
+          },
+          {
+            "Version": "1.1.3-ALPHA180"
+          },
+          {
+            "Version": "1.1.3-ALPHA181"
+          },
+          {
+            "Version": "1.1.3-ALPHA182"
+          },
+          {
+            "Version": "1.1.3-ALPHA183"
+          },
+          {
+            "Version": "1.1.3-ALPHA184"
+          },
+          {
+            "Version": "1.1.3-ALPHA185"
+          },
+          {
+            "Version": "1.1.3-ALPHA186"
+          },
+          {
+            "Version": "1.1.3-ALPHA187"
+          },
+          {
+            "Version": "1.1.3-ALPHA188"
+          },
+          {
+            "Version": "1.1.3-ALPHA189"
+          },
+          {
+            "Version": "1.1.3-ALPHA190"
+          },
+          {
+            "Version": "1.1.3-ALPHA191"
+          },
+          {
+            "Version": "1.1.3-ALPHA192"
+          },
+          {
+            "Version": "1.1.3-ALPHA193"
+          },
+          {
+            "Version": "1.1.3-ALPHA194"
+          },
+          {
+            "Version": "1.1.3-ALPHA195"
+          },
+          {
+            "Version": "1.1.3-ALPHA196"
+          },
+          {
+            "Version": "1.1.3-ALPHA197"
+          },
+          {
+            "Version": "1.1.3-ALPHA198"
+          },
+          {
+            "Version": "1.1.3-ALPHA199"
+          },
+          {
+            "Version": "1.1.3-ALPHA200"
+          },
+          {
+            "Version": "1.1.3-ALPHA201"
+          },
+          {
+            "Version": "1.1.3-ALPHA202"
+          },
+          {
+            "Version": "1.1.3-ALPHA203"
+          },
+          {
+            "Version": "1.1.3-ALPHA204"
+          },
+          {
+            "Version": "1.1.3-ALPHA205"
+          },
+          {
+            "Version": "1.1.3-ALPHA210"
+          },
+          {
+            "Version": "1.1.3-ALPHA211"
+          },
+          {
+            "Version": "1.1.3-ALPHA212"
+          },
+          {
+            "Version": "1.1.3-ALPHA213"
+          },
+          {
+            "Version": "1.1.3-ALPHA214"
+          },
+          {
+            "Version": "1.1.3-ALPHA215"
+          },
+          {
+            "Version": "1.1.3-ALPHA216"
+          },
+          {
+            "Version": "1.1.3-ALPHA217"
+          },
+          {
+            "Version": "1.1.3-ALPHA220"
+          },
+          {
+            "Version": "1.1.3-ALPHA222"
+          },
+          {
+            "Version": "1.1.3-ALPHA223"
+          },
+          {
+            "Version": "1.1.3-ALPHA224"
+          },
+          {
+            "Version": "1.1.3-ALPHA225"
+          },
+          {
+            "Version": "1.1.3-ALPHA226"
+          },
+          {
+            "Version": "1.1.3-ALPHA227"
+          },
+          {
+            "Version": "1.1.3-ALPHA228"
+          },
+          {
+            "Version": "1.1.3-ALPHA229"
+          },
+          {
+            "Version": "1.1.3-ALPHA230"
+          },
+          {
+            "Version": "1.1.3-ALPHA231"
+          },
+          {
+            "Version": "1.1.3-ALPHA232"
+          },
+          {
+            "Version": "1.1.3-ALPHA233"
+          },
+          {
+            "Version": "1.1.3-ALPHA234"
+          },
+          {
+            "Version": "1.1.3-ALPHA236"
+          },
+          {
+            "Version": "1.1.3-ALPHA237"
+          },
+          {
+            "Version": "1.1.3-ALPHA238"
+          },
+          {
+            "Version": "1.1.3-ALPHA239"
+          },
+          {
+            "Version": "1.1.3-ALPHA240"
+          },
+          {
+            "Version": "1.1.3-ALPHA241"
+          },
+          {
+            "Version": "1.1.3-ALPHA242"
+          },
+          {
+            "Version": "1.1.3-ALPHA243"
+          },
+          {
+            "Version": "1.1.3-ALPHA244"
+          },
+          {
+            "Version": "1.1.3-ALPHA245"
+          },
+          {
+            "Version": "1.1.3-ALPHA247"
+          },
+          {
+            "Version": "1.1.3-ALPHA248"
+          },
+          {
+            "Version": "1.1.3-ALPHA249"
+          },
+          {
+            "Version": "1.1.3-ALPHA250"
+          },
+          {
+            "Version": "1.1.3-ALPHA251"
+          },
+          {
+            "Version": "1.1.3-ALPHA252"
+          },
+          {
+            "Version": "1.1.3-ALPHA253"
+          },
+          {
+            "Version": "1.1.3-ALPHA254"
+          },
+          {
+            "Version": "1.1.3-ALPHA256"
+          },
+          {
+            "Version": "1.1.3-ALPHA257"
+          },
+          {
+            "Version": "1.1.3-ALPHA258"
+          },
+          {
+            "Version": "1.1.3-ALPHA259"
+          },
+          {
+            "Version": "1.1.3-ALPHA260"
+          },
+          {
+            "Version": "1.1.3-ALPHA261"
+          },
+          {
+            "Version": "1.1.3-ALPHA262"
+          },
+          {
+            "Version": "1.1.3-ALPHA263"
+          },
+          {
+            "Version": "1.1.3-ALPHA264"
+          },
+          {
+            "Version": "1.1.3-ALPHA265"
+          },
+          {
+            "Version": "1.1.3-ALPHA266"
+          },
+          {
+            "Version": "1.1.3-ALPHA267"
+          },
+          {
+            "Version": "1.1.3-ALPHA268"
+          },
+          {
+            "Version": "1.2.0.0"
+          },
+          {
+            "Version": "1.2.1-ALPHA001"
+          },
+          {
+            "Version": "1.2.1-ALPHA002"
+          },
+          {
+            "Version": "1.2.1-ALPHA008"
+          },
+          {
+            "Version": "1.2.1-ALPHA009"
+          },
+          {
+            "Version": "1.2.1-ALPHA010"
+          },
+          {
+            "Version": "1.2.1.0"
+          },
+          {
+            "Version": "1.2.2-ALPHA011"
+          },
+          {
+            "Version": "1.2.2.0"
+          },
+          {
+            "Version": "1.2.3.0"
+          },
+          {
+            "Version": "1.2.4.0"
+          },
+          {
+            "Version": "1.3.0-ALPHA012"
+          },
+          {
+            "Version": "1.3.0-ALPHA015"
+          },
+          {
+            "Version": "1.3.0-ALPHA016"
+          },
+          {
+            "Version": "1.3.0-ALPHA017"
+          },
+          {
+            "Version": "1.3.0-ALPHA018"
+          },
+          {
+            "Version": "1.3.0-ALPHA020"
+          },
+          {
+            "Version": "1.3.0-ALPHA021"
+          },
+          {
+            "Version": "1.3.0-ALPHA022"
+          },
+          {
+            "Version": "1.3.0-ALPHA023"
+          },
+          {
+            "Version": "1.3.0-ALPHA024"
+          },
+          {
+            "Version": "1.3.0-ALPHA025"
+          },
+          {
+            "Version": "1.3.0-ALPHA026"
+          },
+          {
+            "Version": "1.3.0-ALPHA027"
+          },
+          {
+            "Version": "1.3.0-ALPHA028"
+          },
+          {
+            "Version": "1.3.0-ALPHA030"
+          },
+          {
+            "Version": "1.3.0-ALPHA031"
+          },
+          {
+            "Version": "1.3.0-ALPHA032"
+          },
+          {
+            "Version": "1.3.0-ALPHA033"
+          },
+          {
+            "Version": "1.3.0-ALPHA034"
+          },
+          {
+            "Version": "1.3.0-ALPHA035"
+          },
+          {
+            "Version": "1.3.0-ALPHA036"
+          },
+          {
+            "Version": "1.3.0-ALPHA037"
+          },
+          {
+            "Version": "1.3.0-ALPHA038"
+          },
+          {
+            "Version": "1.3.0-ALPHA039"
+          },
+          {
+            "Version": "1.3.0-ALPHA040"
+          },
+          {
+            "Version": "1.3.0-ALPHA041"
+          },
+          {
+            "Version": "1.3.0-ALPHA042"
+          },
+          {
+            "Version": "1.3.0-ALPHA043"
+          },
+          {
+            "Version": "1.3.0-ALPHA044"
+          },
+          {
+            "Version": "1.3.0-ALPHA045"
+          },
+          {
+            "Version": "1.3.0-ALPHA046"
+          },
+          {
+            "Version": "1.3.0-ALPHA047"
+          },
+          {
+            "Version": "1.3.0-ALPHA048"
+          },
+          {
+            "Version": "1.3.0-ALPHA049"
+          },
+          {
+            "Version": "1.3.0-ALPHA050"
+          },
+          {
+            "Version": "1.3.0-ALPHA051"
+          },
+          {
+            "Version": "1.3.0-ALPHA052"
+          },
+          {
+            "Version": "1.3.0-ALPHA053"
+          },
+          {
+            "Version": "1.3.0-ALPHA054"
+          },
+          {
+            "Version": "1.3.0-ALPHA055"
+          },
+          {
+            "Version": "1.3.0-ALPHA056"
+          },
+          {
+            "Version": "1.3.0-ALPHA057"
+          },
+          {
+            "Version": "1.3.0-ALPHA058"
+          },
+          {
+            "Version": "1.3.0-ALPHA059"
+          },
+          {
+            "Version": "1.3.0-ALPHA060"
+          },
+          {
+            "Version": "1.3.0-ALPHA061"
+          },
+          {
+            "Version": "1.3.0-ALPHA062"
+          },
+          {
+            "Version": "1.3.0-ALPHA063"
+          },
+          {
+            "Version": "1.3.0-ALPHA064"
+          },
+          {
+            "Version": "1.3.0-ALPHA065"
+          },
+          {
+            "Version": "1.3.0-ALPHA066"
+          },
+          {
+            "Version": "1.3.0-ALPHA067"
+          },
+          {
+            "Version": "1.3.0-ALPHA068"
+          },
+          {
+            "Version": "1.3.0-ALPHA069"
+          },
+          {
+            "Version": "1.3.0-ALPHA070"
+          },
+          {
+            "Version": "1.3.0-ALPHA071"
+          },
+          {
+            "Version": "1.3.0-ALPHA072"
+          },
+          {
+            "Version": "1.3.0-ALPHA073"
+          },
+          {
+            "Version": "1.3.0-ALPHA074"
+          },
+          {
+            "Version": "1.3.0-ALPHA075"
+          },
+          {
+            "Version": "1.3.0-ALPHA076"
+          },
+          {
+            "Version": "1.3.0-ALPHA077"
+          },
+          {
+            "Version": "1.3.0-ALPHA078"
+          },
+          {
+            "Version": "1.3.0-ALPHA079"
+          },
+          {
+            "Version": "1.3.0-ALPHA080"
+          },
+          {
+            "Version": "1.3.0-ALPHA081"
+          },
+          {
+            "Version": "1.3.0-ALPHA082"
+          },
+          {
+            "Version": "1.3.0-ALPHA083"
+          },
+          {
+            "Version": "1.3.0-ALPHA084"
+          },
+          {
+            "Version": "1.3.0-ALPHA085"
+          },
+          {
+            "Version": "1.3.0-ALPHA086"
+          },
+          {
+            "Version": "1.3.0-ALPHA087"
+          },
+          {
+            "Version": "1.3.0-ALPHA088"
+          },
+          {
+            "Version": "1.3.0-ALPHA089"
+          },
+          {
+            "Version": "1.3.0-ALPHA090"
+          },
+          {
+            "Version": "1.3.0-ALPHA091"
+          },
+          {
+            "Version": "1.3.0-ALPHA092"
+          },
+          {
+            "Version": "1.3.0-ALPHA093"
+          },
+          {
+            "Version": "1.3.0-ALPHA094"
+          },
+          {
+            "Version": "1.3.0-ALPHA095"
+          },
+          {
+            "Version": "1.3.0-ALPHA096"
+          },
+          {
+            "Version": "1.3.0-ALPHA097"
+          },
+          {
+            "Version": "1.3.0-ALPHA098"
+          },
+          {
+            "Version": "1.3.0-ALPHA099"
+          },
+          {
+            "Version": "1.3.0-ALPHA100"
+          },
+          {
+            "Version": "1.3.0-ALPHA101"
+          },
+          {
+            "Version": "1.3.0-ALPHA102"
+          },
+          {
+            "Version": "1.3.0-ALPHA103"
+          },
+          {
+            "Version": "1.3.0-ALPHA104"
+          },
+          {
+            "Version": "1.3.0-ALPHA105"
+          },
+          {
+            "Version": "1.3.0-ALPHA106"
+          },
+          {
+            "Version": "1.3.0-ALPHA107"
+          },
+          {
+            "Version": "1.3.0-ALPHA108"
+          },
+          {
+            "Version": "1.3.0-ALPHA109"
+          },
+          {
+            "Version": "1.3.0-ALPHA110"
+          },
+          {
+            "Version": "1.3.0-ALPHA111"
+          },
+          {
+            "Version": "1.3.0-ALPHA112"
+          },
+          {
+            "Version": "1.3.0-ALPHA121"
+          },
+          {
+            "Version": "1.3.0-ALPHA122"
+          },
+          {
+            "Version": "1.3.0-ALPHA123"
+          },
+          {
+            "Version": "1.3.0-ALPHA124"
+          },
+          {
+            "Version": "1.3.0-ALPHA125"
+          },
+          {
+            "Version": "1.3.0-ALPHA126"
+          },
+          {
+            "Version": "1.3.0-ALPHA128"
+          },
+          {
+            "Version": "1.3.0-ALPHA129"
+          },
+          {
+            "Version": "1.3.0-ALPHA130"
+          },
+          {
+            "Version": "1.3.0-ALPHA131"
+          },
+          {
+            "Version": "1.3.0-ALPHA132"
+          },
+          {
+            "Version": "1.3.0-ALPHA133"
+          },
+          {
+            "Version": "1.3.0-ALPHA134"
+          },
+          {
+            "Version": "1.3.0-ALPHA135"
+          },
+          {
+            "Version": "1.3.0-ALPHA136"
+          },
+          {
+            "Version": "1.3.0-ALPHA137"
+          },
+          {
+            "Version": "1.3.0-ALPHA138"
+          },
+          {
+            "Version": "1.3.0-ALPHA139"
+          },
+          {
+            "Version": "1.3.0-ALPHA140"
+          },
+          {
+            "Version": "1.3.0-ALPHA141"
+          },
+          {
+            "Version": "1.3.0-ALPHA142"
+          },
+          {
+            "Version": "1.3.0-ALPHA143"
+          },
+          {
+            "Version": "1.3.0-ALPHA144"
+          },
+          {
+            "Version": "1.3.0-ALPHA145"
+          },
+          {
+            "Version": "1.3.0-ALPHA146"
+          },
+          {
+            "Version": "1.3.0-ALPHA147"
+          },
+          {
+            "Version": "1.3.0-ALPHA150"
+          },
+          {
+            "Version": "1.3.0-ALPHA151"
+          },
+          {
+            "Version": "1.3.0-ALPHA152"
+          },
+          {
+            "Version": "1.3.0-ALPHA153"
+          },
+          {
+            "Version": "1.3.0-ALPHA154"
+          },
+          {
+            "Version": "1.3.0-ALPHA155"
+          },
+          {
+            "Version": "1.3.0-ALPHA157"
+          },
+          {
+            "Version": "1.3.0-ALPHA158"
+          },
+          {
+            "Version": "1.3.0-ALPHA159"
+          },
+          {
+            "Version": "1.3.0-ALPHA160"
+          },
+          {
+            "Version": "1.3.0-ALPHA161"
+          },
+          {
+            "Version": "1.3.0-ALPHA162"
+          },
+          {
+            "Version": "1.3.0-ALPHA163"
+          },
+          {
+            "Version": "1.3.0-ALPHA164"
+          },
+          {
+            "Version": "1.3.0-ALPHA165"
+          },
+          {
+            "Version": "1.3.0-ALPHA166"
+          },
+          {
+            "Version": "1.3.0-ALPHA167"
+          },
+          {
+            "Version": "1.3.0-ALPHA169"
+          },
+          {
+            "Version": "1.3.0-ALPHA170"
+          },
+          {
+            "Version": "1.3.0-ALPHA171"
+          },
+          {
+            "Version": "1.3.0-ALPHA172"
+          },
+          {
+            "Version": "1.3.0-ALPHA173"
+          },
+          {
+            "Version": "1.3.0-ALPHA174"
+          },
+          {
+            "Version": "1.3.0-ALPHA175"
+          },
+          {
+            "Version": "1.3.0-ALPHA176"
+          },
+          {
+            "Version": "1.3.0-ALPHA178"
+          },
+          {
+            "Version": "1.3.0-ALPHA179"
+          },
+          {
+            "Version": "1.3.0-ALPHA182"
+          },
+          {
+            "Version": "1.3.0-ALPHA183"
+          },
+          {
+            "Version": "1.3.0-ALPHA184"
+          },
+          {
+            "Version": "1.3.0-ALPHA185"
+          },
+          {
+            "Version": "1.3.0-ALPHA186"
+          },
+          {
+            "Version": "1.3.0-ALPHA188"
+          },
+          {
+            "Version": "1.3.0-ALPHA189"
+          },
+          {
+            "Version": "1.3.0-ALPHA190"
+          },
+          {
+            "Version": "1.3.0-ALPHA192"
+          },
+          {
+            "Version": "1.3.0-ALPHA193"
+          },
+          {
+            "Version": "1.3.0-ALPHA194"
+          },
+          {
+            "Version": "1.3.0-ALPHA195"
+          },
+          {
+            "Version": "1.3.0-ALPHA196"
+          },
+          {
+            "Version": "1.3.0-ALPHA197"
+          },
+          {
+            "Version": "1.3.0-ALPHA198"
+          },
+          {
+            "Version": "1.3.0-ALPHA199"
+          },
+          {
+            "Version": "1.3.0-ALPHA200"
+          },
+          {
+            "Version": "1.3.0-ALPHA201"
+          },
+          {
+            "Version": "1.3.0"
+          },
+          {
+            "Version": "1.4.0-ALPHA001"
+          },
+          {
+            "Version": "1.4.0-ALPHA002"
+          },
+          {
+            "Version": "1.4.0-ALPHA003"
+          },
+          {
+            "Version": "1.4.0-ALPHA004"
+          },
+          {
+            "Version": "1.4.0-ALPHA005"
+          },
+          {
+            "Version": "1.4.0-ALPHA006"
+          },
+          {
+            "Version": "1.4.0-ALPHA007"
+          },
+          {
+            "Version": "1.4.0-ALPHA008"
+          },
+          {
+            "Version": "1.4.0-ALPHA009"
+          },
+          {
+            "Version": "1.4.0-ALPHA015"
+          },
+          {
+            "Version": "1.4.0-ALPHA021"
+          },
+          {
+            "Version": "1.4.0-ALPHA022"
+          },
+          {
+            "Version": "1.4.0-ALPHA023"
+          },
+          {
+            "Version": "1.4.0-ALPHA024"
+          },
+          {
+            "Version": "1.4.0-ALPHA025"
+          },
+          {
+            "Version": "1.4.0-ALPHA026"
+          },
+          {
+            "Version": "1.4.0-ALPHA028"
+          },
+          {
+            "Version": "1.4.0-ALPHA029"
+          },
+          {
+            "Version": "1.4.0-ALPHA030"
+          },
+          {
+            "Version": "1.4.0-ALPHA031"
+          },
+          {
+            "Version": "1.4.0-ALPHA032"
+          },
+          {
+            "Version": "1.4.0-ALPHA033"
+          },
+          {
+            "Version": "1.4.0-ALPHA035"
+          },
+          {
+            "Version": "1.4.0-ALPHA036"
+          },
+          {
+            "Version": "1.4.0-ALPHA037"
+          },
+          {
+            "Version": "1.4.0-ALPHA038"
+          },
+          {
+            "Version": "1.4.0-ALPHA039"
+          },
+          {
+            "Version": "1.4.0-ALPHA040"
+          },
+          {
+            "Version": "1.4.0-ALPHA041"
+          },
+          {
+            "Version": "1.4.0"
+          },
+          {
+            "Version": "1.4.1"
+          },
+          {
+            "Version": "1.4.2"
+          },
+          {
+            "Version": "1.4.3"
+          },
+          {
+            "Version": "1.5.0-alpha001"
+          },
+          {
+            "Version": "1.5.0-alpha002"
+          },
+          {
+            "Version": "1.5.0-alpha003"
+          },
+          {
+            "Version": "1.5.0-alpha004"
+          },
+          {
+            "Version": "1.5.0-alpha005"
+          },
+          {
+            "Version": "1.5.0-alpha006"
+          },
+          {
+            "Version": "1.5.0-alpha007"
+          },
+          {
+            "Version": "1.5.0-alpha008"
+          },
+          {
+            "Version": "1.5.0-alpha009"
+          },
+          {
+            "Version": "1.5.0-alpha010"
+          },
+          {
+            "Version": "1.5.0-alpha011"
+          },
+          {
+            "Version": "1.5.0-alpha012"
+          },
+          {
+            "Version": "1.5.0-alpha013"
+          },
+          {
+            "Version": "1.5.0-alpha014"
+          },
+          {
+            "Version": "1.5.0-alpha015"
+          },
+          {
+            "Version": "1.5.0-alpha016"
+          },
+          {
+            "Version": "1.5.0-alpha017"
+          },
+          {
+            "Version": "1.5.0-alpha018"
+          },
+          {
+            "Version": "1.5.0-alpha019"
+          },
+          {
+            "Version": "1.5.0-alpha020"
+          },
+          {
+            "Version": "1.5.0-alpha021"
+          },
+          {
+            "Version": "1.5.0-alpha022"
+          },
+          {
+            "Version": "1.5.0",
+            "PackageDetails": {
+              "Name": "MahApps.Metro",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MahApps.Metro/1.5.0",
+              "LicenseUrl": "https://github.com/MahApps/MahApps.Metro/blob/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:39:51.3490581+02:00",
+        "PackageName": "MahApps.Metro.Resources",
+        "Versions": [
+          {
+            "Version": "0.5.0",
+            "PackageDetails": {
+              "Name": "MahApps.Metro.Resources",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/MahApps.Metro.Resources/0.5.0.0",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "MahApps.Metro",
+                  "VersionRequirement": ">= 1.2.4"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

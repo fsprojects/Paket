@@ -1,0 +1,114 @@
+{
+  "http://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "0001-01-01T00:00:00",
+        "PackageName": "Castle.Windsor",
+        "Versions": [
+          {
+            "Version": "3.3.0",
+            "PackageDetails": {
+              "Name": "Castle.Windsor",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Castle.Windsor/3.3.0",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Castle.Core",
+                  "VersionRequirement": ">= 3.3"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:25:52.9731581+02:00",
+        "PackageName": "Castle.Core",
+        "Versions": [
+          {
+            "Version": "1.1.0"
+          },
+          {
+            "Version": "1.2.0"
+          },
+          {
+            "Version": "2.5.1"
+          },
+          {
+            "Version": "2.5.2"
+          },
+          {
+            "Version": "3.0.0.2001"
+          },
+          {
+            "Version": "3.0.0.3001"
+          },
+          {
+            "Version": "3.0.0.4001"
+          },
+          {
+            "Version": "3.1.0-RC"
+          },
+          {
+            "Version": "3.1.0"
+          },
+          {
+            "Version": "3.2.0",
+            "PackageDetails": {
+              "Name": "Castle.Core",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Castle.Core/3.2.0",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "3.2.1",
+            "PackageDetails": {
+              "Name": "Castle.Core",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Castle.Core/3.2.1",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "3.2.2",
+            "PackageDetails": {
+              "Name": "Castle.Core",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Castle.Core/3.2.2",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "3.3.0"
+          },
+          {
+            "Version": "3.3.1"
+          },
+          {
+            "Version": "3.3.2"
+          },
+          {
+            "Version": "3.3.3"
+          },
+          {
+            "Version": "4.0.0-alpha001"
+          },
+          {
+            "Version": "4.0.0-beta001"
+          },
+          {
+            "Version": "4.0.0-beta002"
+          },
+          {
+            "Version": "4.0.0"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "nuget_repo": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:39:43.0228875+02:00",
+        "PackageName": "Dapper",
+        "Versions": [
+          {
+            "Version": "1.40"
+          },
+          {
+            "Version": "1.42.0",
+            "PackageDetails": {
+              "Name": "Dapper",
+              "DownloadLink": "Dapper",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:39:43.1553875+02:00",
+        "PackageName": "NUnit",
+        "Versions": [
+          {
+            "Version": "2.6.4",
+            "PackageDetails": {
+              "Name": "NUnit",
+              "DownloadLink": "NUnit",
+              "LicenseUrl": "http://nunit.org/nuget/license.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:39:43.0728868+02:00",
+        "PackageName": "MultiTarget",
+        "Versions": [
+          {
+            "Version": "1.0.0",
+            "PackageDetails": {
+              "Name": "MultiTarget",
+              "DownloadLink": "MultiTarget",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

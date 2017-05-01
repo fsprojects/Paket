@@ -114,6 +114,8 @@ AppPackages/
 # Others
 sql/
 *.Cache
+!/integrationtests/scenarios/*/cache
+!/integrationtests/scenarios/*/cache/*
 ClientBin/
 [Ss]tyle[Cc]op.*
 ~$*

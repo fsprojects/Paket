@@ -1,0 +1,40 @@
+{
+  "https://api.nuget.org/v3/index.json": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:37:40.4027962+02:00",
+        "PackageName": "Newtonsoft.Json",
+        "Versions": [
+          {
+            "Version": "7.0.1",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Newtonsoft.Json/7.0.1",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:37:40.0802436+02:00",
+        "PackageName": "Castle.Core",
+        "Versions": [
+          {
+            "Version": "3.3.3",
+            "PackageDetails": {
+              "Name": "Castle.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Castle.Core/3.3.3",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,899 @@
+{
+  "http://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T00:21:49.2770291+02:00",
+        "PackageName": "FSharp.Formatting",
+        "Versions": [
+          {
+            "Version": "1.0.0"
+          },
+          {
+            "Version": "1.0.1"
+          },
+          {
+            "Version": "1.0.2"
+          },
+          {
+            "Version": "1.0.3"
+          },
+          {
+            "Version": "1.0.4"
+          },
+          {
+            "Version": "1.0.5"
+          },
+          {
+            "Version": "1.0.6"
+          },
+          {
+            "Version": "1.0.7"
+          },
+          {
+            "Version": "1.0.8"
+          },
+          {
+            "Version": "1.0.9"
+          },
+          {
+            "Version": "1.0.10"
+          },
+          {
+            "Version": "1.0.11"
+          },
+          {
+            "Version": "1.0.12"
+          },
+          {
+            "Version": "1.0.13"
+          },
+          {
+            "Version": "1.0.14"
+          },
+          {
+            "Version": "1.0.15"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.0.2"
+          },
+          {
+            "Version": "2.0.3"
+          },
+          {
+            "Version": "2.0.4"
+          },
+          {
+            "Version": "2.1.0-beta"
+          },
+          {
+            "Version": "2.1.1-beta"
+          },
+          {
+            "Version": "2.1.2-beta"
+          },
+          {
+            "Version": "2.1.4"
+          },
+          {
+            "Version": "2.1.5"
+          },
+          {
+            "Version": "2.1.6"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.2.1"
+          },
+          {
+            "Version": "2.2.2"
+          },
+          {
+            "Version": "2.2.3"
+          },
+          {
+            "Version": "2.2.4-beta"
+          },
+          {
+            "Version": "2.2.5-beta"
+          },
+          {
+            "Version": "2.2.6-beta"
+          },
+          {
+            "Version": "2.2.7-beta"
+          },
+          {
+            "Version": "2.2.9-beta"
+          },
+          {
+            "Version": "2.2.10-beta"
+          },
+          {
+            "Version": "2.2.11-beta"
+          },
+          {
+            "Version": "2.2.12-beta"
+          },
+          {
+            "Version": "2.3.1-beta"
+          },
+          {
+            "Version": "2.3.2-beta"
+          },
+          {
+            "Version": "2.3.3-beta"
+          },
+          {
+            "Version": "2.3.4-beta"
+          },
+          {
+            "Version": "2.3.5-beta"
+          },
+          {
+            "Version": "2.3.6-beta"
+          },
+          {
+            "Version": "2.3.7-beta"
+          },
+          {
+            "Version": "2.3.10-beta"
+          },
+          {
+            "Version": "2.4.0",
+            "PackageDetails": {
+              "Name": "FSharp.Formatting",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/FSharp.Formatting/2.4.0",
+              "LicenseUrl": "http://github.com/tpetricek/FSharp.Formatting/blob/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "FSharp.Compiler.Service",
+                  "VersionRequirement": ">= 0.0.20"
+                },
+                {
+                  "PackageName": "Microsoft.AspNet.Razor",
+                  "VersionRequirement": ">= 2.0.30506"
+                },
+                {
+                  "PackageName": "RazorEngine",
+                  "VersionRequirement": ">= 3.3"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.4.1"
+          },
+          {
+            "Version": "2.4.2"
+          },
+          {
+            "Version": "2.4.3"
+          },
+          {
+            "Version": "2.4.4"
+          },
+          {
+            "Version": "2.4.5"
+          },
+          {
+            "Version": "2.4.6"
+          },
+          {
+            "Version": "2.4.7"
+          },
+          {
+            "Version": "2.4.8"
+          },
+          {
+            "Version": "2.4.9"
+          },
+          {
+            "Version": "2.4.10"
+          },
+          {
+            "Version": "2.4.11"
+          },
+          {
+            "Version": "2.4.12"
+          },
+          {
+            "Version": "2.4.13"
+          },
+          {
+            "Version": "2.4.14"
+          },
+          {
+            "Version": "2.4.15"
+          },
+          {
+            "Version": "2.4.16"
+          },
+          {
+            "Version": "2.4.17"
+          },
+          {
+            "Version": "2.4.18"
+          },
+          {
+            "Version": "2.4.19"
+          },
+          {
+            "Version": "2.4.20"
+          },
+          {
+            "Version": "2.4.21"
+          },
+          {
+            "Version": "2.4.22"
+          },
+          {
+            "Version": "2.4.23"
+          },
+          {
+            "Version": "2.4.24"
+          },
+          {
+            "Version": "2.4.25"
+          },
+          {
+            "Version": "2.4.26"
+          },
+          {
+            "Version": "2.4.27"
+          },
+          {
+            "Version": "2.4.28"
+          },
+          {
+            "Version": "2.4.29"
+          },
+          {
+            "Version": "2.4.30"
+          },
+          {
+            "Version": "2.4.31"
+          },
+          {
+            "Version": "2.4.32"
+          },
+          {
+            "Version": "2.4.33"
+          },
+          {
+            "Version": "2.4.34"
+          },
+          {
+            "Version": "2.4.35"
+          },
+          {
+            "Version": "2.4.36"
+          },
+          {
+            "Version": "2.4.37"
+          },
+          {
+            "Version": "2.4.38"
+          },
+          {
+            "Version": "2.5.0"
+          },
+          {
+            "Version": "2.5.1"
+          },
+          {
+            "Version": "2.6.0"
+          },
+          {
+            "Version": "2.6.1"
+          },
+          {
+            "Version": "2.6.2"
+          },
+          {
+            "Version": "2.6.3"
+          },
+          {
+            "Version": "2.7.0"
+          },
+          {
+            "Version": "2.7.1"
+          },
+          {
+            "Version": "2.7.2"
+          },
+          {
+            "Version": "2.7.4"
+          },
+          {
+            "Version": "2.7.5"
+          },
+          {
+            "Version": "2.8.0"
+          },
+          {
+            "Version": "2.9.0"
+          },
+          {
+            "Version": "2.9.1"
+          },
+          {
+            "Version": "2.9.2"
+          },
+          {
+            "Version": "2.9.3"
+          },
+          {
+            "Version": "2.9.4"
+          },
+          {
+            "Version": "2.9.5"
+          },
+          {
+            "Version": "2.9.6"
+          },
+          {
+            "Version": "2.9.7"
+          },
+          {
+            "Version": "2.9.8"
+          },
+          {
+            "Version": "2.9.9"
+          },
+          {
+            "Version": "2.9.10"
+          },
+          {
+            "Version": "2.10.0"
+          },
+          {
+            "Version": "2.10.1"
+          },
+          {
+            "Version": "2.10.2"
+          },
+          {
+            "Version": "2.10.3"
+          },
+          {
+            "Version": "2.11.0-alpha1"
+          },
+          {
+            "Version": "2.11.0-alpha2"
+          },
+          {
+            "Version": "2.11.0"
+          },
+          {
+            "Version": "2.11.1-alpha1"
+          },
+          {
+            "Version": "2.12.0"
+          },
+          {
+            "Version": "2.12.1-alpha1"
+          },
+          {
+            "Version": "2.12.1-alpha2"
+          },
+          {
+            "Version": "2.12.1-alpha3"
+          },
+          {
+            "Version": "2.12.1"
+          },
+          {
+            "Version": "2.13.0"
+          },
+          {
+            "Version": "2.13.1"
+          },
+          {
+            "Version": "2.13.2"
+          },
+          {
+            "Version": "2.13.4"
+          },
+          {
+            "Version": "2.13.5"
+          },
+          {
+            "Version": "2.13.6"
+          },
+          {
+            "Version": "2.14.0"
+          },
+          {
+            "Version": "2.14.1"
+          },
+          {
+            "Version": "2.14.2"
+          },
+          {
+            "Version": "2.14.3"
+          },
+          {
+            "Version": "2.14.4",
+            "PackageDetails": {
+              "Name": "FSharp.Formatting",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/FSharp.Formatting/2.14.4",
+              "LicenseUrl": "http://github.com/tpetricek/FSharp.Formatting/blob/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "FSharp.Compiler.Service",
+                  "VersionRequirement": "2.0.0.6"
+                },
+                {
+                  "PackageName": "FSharpVSPowerTools.Core",
+                  "VersionRequirement": ">= 2.3 < 2.4"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.14.5-alpha1"
+          },
+          {
+            "Version": "3.0.0-beta01"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:21:49.3760404+02:00",
+        "PackageName": "Microsoft.AspNet.Razor",
+        "Versions": [
+          {
+            "Version": "1.0.20105.408"
+          },
+          {
+            "Version": "2.0.20505.0"
+          },
+          {
+            "Version": "2.0.20710.0"
+          },
+          {
+            "Version": "2.0.20715.0"
+          },
+          {
+            "Version": "2.0.30506.0",
+            "PackageDetails": {
+              "Name": "Microsoft.AspNet.Razor",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Microsoft.AspNet.Razor/2.0.30506.0",
+              "LicenseUrl": "http://www.microsoft.com/web/webpi/eula/webpages_2_eula_enu.htm",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "3.0.0-beta1"
+          },
+          {
+            "Version": "3.0.0-beta2"
+          },
+          {
+            "Version": "3.0.0-rc1"
+          },
+          {
+            "Version": "3.0.0"
+          },
+          {
+            "Version": "3.1.0-rc1"
+          },
+          {
+            "Version": "3.1.0"
+          },
+          {
+            "Version": "3.1.1"
+          },
+          {
+            "Version": "3.1.2"
+          },
+          {
+            "Version": "3.2.0-rc"
+          },
+          {
+            "Version": "3.2.0"
+          },
+          {
+            "Version": "3.2.2-rc"
+          },
+          {
+            "Version": "3.2.2"
+          },
+          {
+            "Version": "3.2.3-beta1"
+          },
+          {
+            "Version": "3.2.3"
+          },
+          {
+            "Version": "4.0.0-beta1"
+          },
+          {
+            "Version": "4.0.0-beta2"
+          },
+          {
+            "Version": "4.0.0-beta3"
+          },
+          {
+            "Version": "4.0.0-beta4"
+          },
+          {
+            "Version": "4.0.0-beta5"
+          },
+          {
+            "Version": "4.0.0-beta6"
+          },
+          {
+            "Version": "4.0.0-beta7"
+          },
+          {
+            "Version": "4.0.0-beta8"
+          },
+          {
+            "Version": "4.0.0-rc1-final"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:21:50.6300888+02:00",
+        "PackageName": "RazorEngine",
+        "Versions": [
+          {
+            "Version": "2.1"
+          },
+          {
+            "Version": "3.0.0"
+          },
+          {
+            "Version": "3.0.3"
+          },
+          {
+            "Version": "3.0.4"
+          },
+          {
+            "Version": "3.0.5"
+          },
+          {
+            "Version": "3.0.6"
+          },
+          {
+            "Version": "3.0.7"
+          },
+          {
+            "Version": "3.0.8"
+          },
+          {
+            "Version": "3.1.0"
+          },
+          {
+            "Version": "3.2.0"
+          },
+          {
+            "Version": "3.3.0",
+            "PackageDetails": {
+              "Name": "RazorEngine",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/RazorEngine/3.3.0",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.AspNet.Razor",
+                  "VersionRequirement": ">= 2.0.30506"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "3.4.0"
+          },
+          {
+            "Version": "3.4.1"
+          },
+          {
+            "Version": "3.4.2"
+          },
+          {
+            "Version": "3.5.0-beta1"
+          },
+          {
+            "Version": "3.5.0-beta2"
+          },
+          {
+            "Version": "3.5.0-beta3"
+          },
+          {
+            "Version": "3.5.0"
+          },
+          {
+            "Version": "3.5.1"
+          },
+          {
+            "Version": "3.5.2"
+          },
+          {
+            "Version": "3.5.3"
+          },
+          {
+            "Version": "3.6.0"
+          },
+          {
+            "Version": "3.6.1"
+          },
+          {
+            "Version": "3.6.2"
+          },
+          {
+            "Version": "3.6.3-beta1"
+          },
+          {
+            "Version": "3.6.3-beta2"
+          },
+          {
+            "Version": "3.6.3"
+          },
+          {
+            "Version": "3.6.4"
+          },
+          {
+            "Version": "3.6.5-beta1"
+          },
+          {
+            "Version": "3.6.5"
+          },
+          {
+            "Version": "3.6.6-beta1"
+          },
+          {
+            "Version": "3.6.6-beta2"
+          },
+          {
+            "Version": "3.6.6"
+          },
+          {
+            "Version": "3.7.0-beta1"
+          },
+          {
+            "Version": "3.7.0"
+          },
+          {
+            "Version": "3.7.1-alpha1"
+          },
+          {
+            "Version": "3.7.2"
+          },
+          {
+            "Version": "3.7.3"
+          },
+          {
+            "Version": "3.7.4"
+          },
+          {
+            "Version": "3.7.5-beta1"
+          },
+          {
+            "Version": "3.7.5-beta2"
+          },
+          {
+            "Version": "3.7.5"
+          },
+          {
+            "Version": "3.7.6"
+          },
+          {
+            "Version": "3.7.7"
+          },
+          {
+            "Version": "3.8.0"
+          },
+          {
+            "Version": "3.8.1"
+          },
+          {
+            "Version": "3.8.2"
+          },
+          {
+            "Version": "3.9.0"
+          },
+          {
+            "Version": "3.9.1"
+          },
+          {
+            "Version": "3.9.2"
+          },
+          {
+            "Version": "3.9.3"
+          },
+          {
+            "Version": "4.0.0-beta1"
+          },
+          {
+            "Version": "4.0.0-beta2"
+          },
+          {
+            "Version": "4.0.1-beta1"
+          },
+          {
+            "Version": "4.0.2-beta1"
+          },
+          {
+            "Version": "4.0.3-beta1"
+          },
+          {
+            "Version": "4.1.0-beta1"
+          },
+          {
+            "Version": "4.1.1-beta1"
+          },
+          {
+            "Version": "4.1.2-beta1"
+          },
+          {
+            "Version": "4.1.3-beta2"
+          },
+          {
+            "Version": "4.1.4-beta1"
+          },
+          {
+            "Version": "4.1.5-beta1"
+          },
+          {
+            "Version": "4.1.6-beta1"
+          },
+          {
+            "Version": "4.2.0-beta1"
+          },
+          {
+            "Version": "4.2.0-beta2"
+          },
+          {
+            "Version": "4.2.0-beta3"
+          },
+          {
+            "Version": "4.2.1-beta1"
+          },
+          {
+            "Version": "4.2.2-beta1"
+          },
+          {
+            "Version": "4.2.3-beta1"
+          },
+          {
+            "Version": "4.2.4-beta1"
+          },
+          {
+            "Version": "4.2.5-beta1"
+          },
+          {
+            "Version": "4.2.6-beta1"
+          },
+          {
+            "Version": "4.2.7-beta1"
+          },
+          {
+            "Version": "4.3.0-beta1"
+          },
+          {
+            "Version": "4.3.1-beta1"
+          },
+          {
+            "Version": "4.3.2-beta1"
+          },
+          {
+            "Version": "4.4.0-rc1"
+          },
+          {
+            "Version": "4.4.1-rc1"
+          },
+          {
+            "Version": "4.4.2-rc1"
+          },
+          {
+            "Version": "4.4.3-rc1"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:31:05",
+        "PackageName": "FSharpVSPowerTools.Core",
+        "Versions": [
+          {
+            "Version": "1.2.1"
+          },
+          {
+            "Version": "1.2.5"
+          },
+          {
+            "Version": "1.2.6"
+          },
+          {
+            "Version": "1.3.0"
+          },
+          {
+            "Version": "1.3.1"
+          },
+          {
+            "Version": "1.4.0"
+          },
+          {
+            "Version": "1.5.0"
+          },
+          {
+            "Version": "1.6.0"
+          },
+          {
+            "Version": "1.6.1"
+          },
+          {
+            "Version": "1.7.0"
+          },
+          {
+            "Version": "1.8.0"
+          },
+          {
+            "Version": "1.9.0"
+          },
+          {
+            "Version": "2.0.0-beta"
+          },
+          {
+            "Version": "2.1.0"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.3.0",
+            "PackageDetails": {
+              "Name": "FSharpVSPowerTools.Core",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/FSharpVSPowerTools.Core/2.3.0",
+              "LicenseUrl": "https://github.com/fsprojects/VisualFSharpPowerTools/blob/master/LICENSE.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "FSharp.Compiler.Service",
+                  "VersionRequirement": ">= 2.0.0.3"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.4.0"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:31:05",
+        "PackageName": "FSharp.Compiler.Service",
+        "Versions": [
+          {
+            "Version": "2.0.0.6",
+            "PackageDetails": {
+              "Name": "FSharp.Compiler.Service",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/FSharp.Compiler.Service/2.0.0.6",
+              "LicenseUrl": "https://github.com/fsharp/FSharp.Compiler.Service/blob/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

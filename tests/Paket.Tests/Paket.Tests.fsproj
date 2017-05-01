@@ -321,6 +321,7 @@
     <Compile Include="Packaging\TemplateFileParsing.fs" />
     <Compile Include="Packaging\RemotePushUrlSpecs.fs" />
     <Compile Include="ScriptGeneration\LoadingScriptTests.fs" />
+    <Compile Include="GraphCaching\GraphCachingParsingAndWriting.fs" />
     <Content Include="App.config" />
   </ItemGroup>
   <ItemGroup>

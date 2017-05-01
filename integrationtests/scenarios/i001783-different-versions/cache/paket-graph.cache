@@ -1,0 +1,702 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:37:15.0272123+02:00",
+        "PackageName": "NodaTime",
+        "Versions": [
+          {
+            "Version": "0.1"
+          },
+          {
+            "Version": "0.9.0"
+          },
+          {
+            "Version": "1.0.0-beta1"
+          },
+          {
+            "Version": "1.0.0-beta2"
+          },
+          {
+            "Version": "1.0.0-rc1"
+          },
+          {
+            "Version": "1.0.0"
+          },
+          {
+            "Version": "1.0.1"
+          },
+          {
+            "Version": "1.1.0-dev"
+          },
+          {
+            "Version": "1.1.0-dev-2013-31-01"
+          },
+          {
+            "Version": "1.1.0-rc1"
+          },
+          {
+            "Version": "1.1.0"
+          },
+          {
+            "Version": "1.1.1"
+          },
+          {
+            "Version": "1.2.0-rc1"
+          },
+          {
+            "Version": "1.2.0-rc2"
+          },
+          {
+            "Version": "1.2.0"
+          },
+          {
+            "Version": "1.3.0-beta1"
+          },
+          {
+            "Version": "1.3.0-dev-20140515"
+          },
+          {
+            "Version": "1.3.0-dev-20140518"
+          },
+          {
+            "Version": "1.3.0",
+            "PackageDetails": {
+              "Name": "NodaTime",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/NodaTime/1.3.0",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "1.3.1"
+          },
+          {
+            "Version": "1.3.2"
+          },
+          {
+            "Version": "1.3.3"
+          },
+          {
+            "Version": "1.3.4"
+          },
+          {
+            "Version": "2.0.0-alpha-20160523"
+          },
+          {
+            "Version": "2.0.0-alpha20140807"
+          },
+          {
+            "Version": "2.0.0-alpha20140808"
+          },
+          {
+            "Version": "2.0.0-alpha20150718"
+          },
+          {
+            "Version": "2.0.0-alpha20150728"
+          },
+          {
+            "Version": "2.0.0-alpha20160523"
+          },
+          {
+            "Version": "2.0.0-alpha20160707"
+          },
+          {
+            "Version": "2.0.0-alpha20160729"
+          },
+          {
+            "Version": "2.0.0-beta20170123"
+          },
+          {
+            "Version": "2.0.0-rc1"
+          },
+          {
+            "Version": "2.0.0-rc3"
+          },
+          {
+            "Version": "2.0.0",
+            "PackageDetails": {
+              "Name": "NodaTime",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/NodaTime/2.0.0",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "NETStandard.Library",
+                  "VersionRequirement": ">= 1.6.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Xml",
+                  "VersionRequirement": ">= 4.1.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:37:12.707561+02:00",
+        "PackageName": "Newtonsoft.Json.FSharp",
+        "Versions": [
+          {
+            "Version": "3.2.2",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json.FSharp",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Newtonsoft.Json.FSharp/3.2.2",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "FSharp.Core",
+                  "VersionRequirement": ">= 3.1.2.1"
+                },
+                {
+                  "PackageName": "Newtonsoft.Json",
+                  "VersionRequirement": ">= 6.0.8"
+                },
+                {
+                  "PackageName": "NodaTime",
+                  "VersionRequirement": ">= 1.3"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:37:14.3302134+02:00",
+        "PackageName": "Newtonsoft.Json",
+        "Versions": [
+          {
+            "Version": "3.5.8"
+          },
+          {
+            "Version": "4.0.1"
+          },
+          {
+            "Version": "4.0.2"
+          },
+          {
+            "Version": "4.0.3"
+          },
+          {
+            "Version": "4.0.4"
+          },
+          {
+            "Version": "4.0.5"
+          },
+          {
+            "Version": "4.0.6"
+          },
+          {
+            "Version": "4.0.7"
+          },
+          {
+            "Version": "4.0.8"
+          },
+          {
+            "Version": "4.5.1"
+          },
+          {
+            "Version": "4.5.2"
+          },
+          {
+            "Version": "4.5.3"
+          },
+          {
+            "Version": "4.5.4"
+          },
+          {
+            "Version": "4.5.5"
+          },
+          {
+            "Version": "4.5.6"
+          },
+          {
+            "Version": "4.5.7"
+          },
+          {
+            "Version": "4.5.8"
+          },
+          {
+            "Version": "4.5.9"
+          },
+          {
+            "Version": "4.5.10"
+          },
+          {
+            "Version": "4.5.11"
+          },
+          {
+            "Version": "5.0.1"
+          },
+          {
+            "Version": "5.0.2"
+          },
+          {
+            "Version": "5.0.3"
+          },
+          {
+            "Version": "5.0.4"
+          },
+          {
+            "Version": "5.0.5"
+          },
+          {
+            "Version": "5.0.6"
+          },
+          {
+            "Version": "5.0.7"
+          },
+          {
+            "Version": "5.0.8"
+          },
+          {
+            "Version": "6.0.1-beta1"
+          },
+          {
+            "Version": "6.0.1"
+          },
+          {
+            "Version": "6.0.2"
+          },
+          {
+            "Version": "6.0.3"
+          },
+          {
+            "Version": "6.0.4"
+          },
+          {
+            "Version": "6.0.5"
+          },
+          {
+            "Version": "6.0.6"
+          },
+          {
+            "Version": "6.0.7"
+          },
+          {
+            "Version": "6.0.8"
+          },
+          {
+            "Version": "7.0.1-beta1"
+          },
+          {
+            "Version": "7.0.1-beta2"
+          },
+          {
+            "Version": "7.0.1-beta3"
+          },
+          {
+            "Version": "7.0.1",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Newtonsoft.Json/7.0.1",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "8.0.1-beta1"
+          },
+          {
+            "Version": "8.0.1-beta2"
+          },
+          {
+            "Version": "8.0.1-beta3"
+          },
+          {
+            "Version": "8.0.1-beta4"
+          },
+          {
+            "Version": "8.0.1"
+          },
+          {
+            "Version": "8.0.2"
+          },
+          {
+            "Version": "8.0.3"
+          },
+          {
+            "Version": "8.0.4-beta1"
+          },
+          {
+            "Version": "9.0.1-beta1"
+          },
+          {
+            "Version": "9.0.1",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Newtonsoft.Json/9.0.1",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.CSharp",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Collections",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Dynamic.Runtime",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Globalization",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.IO",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Linq.Expressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.ObjectModel",
+                  "VersionRequirement": ">= 4.0.12",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Resources.ResourceManager",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Runtime",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Primitives",
+                  "VersionRequirement": ">= 4.1.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Text.Encoding",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Text.Encoding.Extensions",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Text.RegularExpressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Threading",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Threading.Tasks",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Xml.ReaderWriter",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Xml.XDocument",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard10"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "9.0.2-beta1"
+          },
+          {
+            "Version": "9.0.2-beta2"
+          },
+          {
+            "Version": "10.0.1-beta1"
+          },
+          {
+            "Version": "10.0.1"
+          },
+          {
+            "Version": "10.0.2"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:37:13.9880473+02:00",
+        "PackageName": "FSharp.Core",
+        "Versions": [
+          {
+            "Version": "2.0.0.0"
+          },
+          {
+            "Version": "3.0.2"
+          },
+          {
+            "Version": "3.1.2"
+          },
+          {
+            "Version": "3.1.2.1",
+            "PackageDetails": {
+              "Name": "FSharp.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/FSharp.Core/3.1.2.1",
+              "LicenseUrl": "https://github.com/fsharp/fsharp/blob/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "3.1.2.5"
+          },
+          {
+            "Version": "4.0.0"
+          },
+          {
+            "Version": "4.0.0.1"
+          },
+          {
+            "Version": "4.0.1.5"
+          },
+          {
+            "Version": "4.0.1.7-alpha"
+          },
+          {
+            "Version": "4.1.0"
+          },
+          {
+            "Version": "4.1.0.2"
+          },
+          {
+            "Version": "4.1.2"
+          },
+          {
+            "Version": "4.1.12"
+          },
+          {
+            "Version": "4.1.17",
+            "PackageDetails": {
+              "Name": "FSharp.Core",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/FSharp.Core/4.1.17",
+              "LicenseUrl": "https://github.com/fsharp/fsharp/blob/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.Collections",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Console",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Tools",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Globalization",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.IO",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Linq.Expressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Linq.Queryable",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Net.Requests",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Resources.ResourceManager",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Runtime",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Runtime.Numerics",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Text.RegularExpressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.Tasks",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.Tasks.Parallel",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.Thread",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.ThreadPool",
+                  "VersionRequirement": ">= 4.0.10",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.Threading.Timer",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard16"
+                },
+                {
+                  "PackageName": "System.ValueTuple",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= net10, netstandard10, netstandard11, netstandard12, netstandard13, netstandard14, netstandard15"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:37:13.005046+02:00",
+        "PackageName": "System.ValueTuple",
+        "Versions": [
+          {
+            "Version": "0.0.1-alpha"
+          },
+          {
+            "Version": "4.0.0-rc3-24212-01"
+          },
+          {
+            "Version": "4.3.0-preview1-24530-04"
+          },
+          {
+            "Version": "4.3.0",
+            "PackageDetails": {
+              "Name": "System.ValueTuple",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.ValueTuple/4.3.0",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.Collections",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Resources.ResourceManager",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard10"
+                },
+                {
+                  "PackageName": "System.Runtime",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard10"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

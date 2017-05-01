@@ -1,0 +1,23 @@
+{
+  "NuGetFeed": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T01:10:01.1418685+02:00",
+        "PackageName": "Composable.Core",
+        "Versions": [
+          {
+            "Version": "3.4.0",
+            "PackageDetails": {
+              "Name": "Composable.Core",
+              "DownloadLink": "Composable.Core",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

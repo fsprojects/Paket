@@ -1,0 +1,23 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:37:07.2195012+02:00",
+        "PackageName": "NUnit",
+        "Versions": [
+          {
+            "Version": "3.0.1",
+            "PackageDetails": {
+              "Name": "NUnit",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/NUnit/3.0.1",
+              "LicenseUrl": "http://nunit.org/nuget/nunit3-license.txt",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

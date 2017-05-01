@@ -1,0 +1,120 @@
+{
+  "my-package-source": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T01:13:23.723531+02:00",
+        "PackageName": "Microsoft.Web.Infrastructure",
+        "Versions": [
+          {
+            "Version": "1.0.0",
+            "PackageDetails": {
+              "Name": "Microsoft.Web.Infrastructure",
+              "DownloadLink": "Microsoft.Web.Infrastructure",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=214339",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:13:23.8665244+02:00",
+        "PackageName": "RazorEngine",
+        "Versions": [
+          {
+            "Version": "3.7.3",
+            "PackageDetails": {
+              "Name": "RazorEngine",
+              "DownloadLink": "RazorEngine",
+              "LicenseUrl": "https://github.com/Antaris/RazorEngine/blob/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.AspNet.Razor",
+                  "VersionRequirement": ">= 3.0",
+                  "FrameworkRestrictions": ">= net45"
+                },
+                {
+                  "PackageName": "Microsoft.AspNet.Razor",
+                  "VersionRequirement": "2.0.30506",
+                  "FrameworkRestrictions": "net40"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:13:23.6720229+02:00",
+        "PackageName": "Microsoft.AspNet.WebPages",
+        "Versions": [
+          {
+            "Version": "3.2.3",
+            "PackageDetails": {
+              "Name": "Microsoft.AspNet.WebPages",
+              "DownloadLink": "Microsoft.AspNet.WebPages",
+              "LicenseUrl": "http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.AspNet.Razor",
+                  "VersionRequirement": ">= 3.2.3 < 3.3"
+                },
+                {
+                  "PackageName": "Microsoft.Web.Infrastructure",
+                  "VersionRequirement": ">= 1.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:13:23.4740226+02:00",
+        "PackageName": "Microsoft.AspNet.Razor",
+        "Versions": [
+          {
+            "Version": "3.2.3",
+            "PackageDetails": {
+              "Name": "Microsoft.AspNet.Razor",
+              "DownloadLink": "Microsoft.AspNet.Razor",
+              "LicenseUrl": "http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:13:23.356525+02:00",
+        "PackageName": "Microsoft.AspNet.Mvc",
+        "Versions": [
+          {
+            "Version": "5.2.3",
+            "PackageDetails": {
+              "Name": "Microsoft.AspNet.Mvc",
+              "DownloadLink": "Microsoft.AspNet.Mvc",
+              "LicenseUrl": "http://www.microsoft.com/web/webpi/eula/net_library_eula_ENU.htm",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.AspNet.Razor",
+                  "VersionRequirement": ">= 3.2.3 < 3.3"
+                },
+                {
+                  "PackageName": "Microsoft.AspNet.WebPages",
+                  "VersionRequirement": ">= 3.2.3 < 3.3"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

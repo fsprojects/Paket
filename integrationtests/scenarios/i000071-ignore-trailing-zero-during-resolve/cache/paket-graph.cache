@@ -1,0 +1,23 @@
+{
+  "http://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:33:09.5460683+02:00",
+        "PackageName": "Newtonsoft.Json",
+        "Versions": [
+          {
+            "Version": "6.0.5.0",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Newtonsoft.Json/6.0.5",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

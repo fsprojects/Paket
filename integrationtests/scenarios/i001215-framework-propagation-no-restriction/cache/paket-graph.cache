@@ -1,0 +1,865 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:56.58514+02:00",
+        "PackageName": "log4net",
+        "Versions": [
+          {
+            "Version": "1.2.10"
+          },
+          {
+            "Version": "1.2.11"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.0.2"
+          },
+          {
+            "Version": "2.0.3",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/log4net/2.0.3",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.0.4",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net/2.0.4",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "2.0.5",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/log4net/2.0.5",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "2.0.6",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net/2.0.6",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.AppContext",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Collections.NonGeneric",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Console",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Process",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.StackTrace",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.TraceSource",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.IO.FileSystem",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.IO.FileSystem.Watcher",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.NameResolution",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.Requests",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.Sockets",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.TypeExtensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.InteropServices",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.InteropServices.RuntimeInformation",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Formatters",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Text.RegularExpressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading.Thread",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading.Timer",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.ReaderWriter",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.XmlDocument",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= net46, >= netstandard13"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.0.7",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/log4net/2.0.7",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.AppContext",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Collections.NonGeneric",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Console",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Process",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.StackTrace",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.TraceSource",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.IO.FileSystem",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.IO.FileSystem.Watcher",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.NameResolution",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.Requests",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.Sockets",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.TypeExtensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.InteropServices",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.InteropServices.RuntimeInformation",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Formatters",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Text.RegularExpressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading.Thread",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading.Timer",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.ReaderWriter",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.XmlDocument",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.0.8",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/log4net/2.0.8",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.AppContext",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Collections.NonGeneric",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Console",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Process",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.StackTrace",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.TraceSource",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.IO.FileSystem",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.IO.FileSystem.Watcher",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.NameResolution",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.Requests",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.Sockets",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.TypeExtensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.InteropServices",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.InteropServices.RuntimeInformation",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Formatters",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Text.RegularExpressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading.Thread",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading.Timer",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.ReaderWriter",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.XmlDocument",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:55.853654+02:00",
+        "PackageName": "Microsoft.Bcl.Async",
+        "Versions": [
+          {
+            "Version": "1.0.11-beta"
+          },
+          {
+            "Version": "1.0.12-beta"
+          },
+          {
+            "Version": "1.0.14-rc"
+          },
+          {
+            "Version": "1.0.16",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl.Async",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Bcl.Async/1.0.16",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=296434",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Bcl",
+                  "VersionRequirement": ">= 1.0.19"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.165",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl.Async",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Bcl.Async/1.0.165",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Bcl",
+                  "VersionRequirement": ">= 1.0.19"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.166-beta"
+          },
+          {
+            "Version": "1.0.166",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl.Async",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Bcl.Async/1.0.166",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Bcl",
+                  "VersionRequirement": ">= 1.0.19",
+                  "FrameworkRestrictions": ">= net10"
+                },
+                {
+                  "PackageName": "Microsoft.Bcl",
+                  "VersionRequirement": ">= 1.1.7",
+                  "FrameworkRestrictions": "wpav8.1"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.168",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl.Async",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Bcl.Async/1.0.168",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Bcl",
+                  "VersionRequirement": ">= 1.1.8"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:24:00.4011409+02:00",
+        "PackageName": "Microsoft.Bcl.Build",
+        "Versions": [
+          {
+            "Version": "1.0.0-rc"
+          },
+          {
+            "Version": "1.0.4"
+          },
+          {
+            "Version": "1.0.5"
+          },
+          {
+            "Version": "1.0.6"
+          },
+          {
+            "Version": "1.0.7"
+          },
+          {
+            "Version": "1.0.8"
+          },
+          {
+            "Version": "1.0.9-beta"
+          },
+          {
+            "Version": "1.0.10"
+          },
+          {
+            "Version": "1.0.13"
+          },
+          {
+            "Version": "1.0.14",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl.Build",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Bcl.Build/1.0.14",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "1.0.16"
+          },
+          {
+            "Version": "1.0.17-beta"
+          },
+          {
+            "Version": "1.0.20-beta"
+          },
+          {
+            "Version": "1.0.21",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl.Build",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Microsoft.Bcl.Build/1.0.21",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:24:00.2661431+02:00",
+        "PackageName": "Microsoft.Bcl",
+        "Versions": [
+          {
+            "Version": "1.0.11-beta"
+          },
+          {
+            "Version": "1.0.16-rc"
+          },
+          {
+            "Version": "1.0.19"
+          },
+          {
+            "Version": "1.1.0-beta"
+          },
+          {
+            "Version": "1.1.2-rc"
+          },
+          {
+            "Version": "1.1.3"
+          },
+          {
+            "Version": "1.1.6"
+          },
+          {
+            "Version": "1.1.7"
+          },
+          {
+            "Version": "1.1.8",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Bcl/1.1.8",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Bcl.Build",
+                  "VersionRequirement": ">= 1.0.14"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "1.1.9"
+          },
+          {
+            "Version": "1.1.10",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Microsoft.Bcl/1.1.10",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Bcl.Build",
+                  "VersionRequirement": ">= 1.0.14"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:32",
+        "PackageName": "Owin",
+        "Versions": [
+          {
+            "Version": "0.5"
+          },
+          {
+            "Version": "0.7"
+          },
+          {
+            "Version": "0.11"
+          },
+          {
+            "Version": "0.12"
+          },
+          {
+            "Version": "0.14"
+          },
+          {
+            "Version": "1.0",
+            "PackageDetails": {
+              "Name": "Owin",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Owin/1.0",
+              "LicenseUrl": "https://github.com/owin-contrib/owin-hosting/blob/master/LICENSE.txt",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:24:00.8486416+02:00",
+        "PackageName": "Microsoft.Owin",
+        "Versions": [
+          {
+            "Version": "1.1.0-beta1"
+          },
+          {
+            "Version": "1.1.0-beta2"
+          },
+          {
+            "Version": "2.0.0-rc1"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.0.2"
+          },
+          {
+            "Version": "2.1.0-rc1"
+          },
+          {
+            "Version": "2.1.0",
+            "PackageDetails": {
+              "Name": "Microsoft.Owin",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Owin/2.1.0",
+              "LicenseUrl": "http://www.microsoft.com/web/webpi/eula/aspnetcomponent_rtw_enu.htm",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Owin",
+                  "VersionRequirement": ">= 1.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "3.0.0-alpha1"
+          },
+          {
+            "Version": "3.0.0-beta1"
+          },
+          {
+            "Version": "3.0.0-rc1"
+          },
+          {
+            "Version": "3.0.0-rc2"
+          },
+          {
+            "Version": "3.0.0",
+            "PackageDetails": {
+              "Name": "Microsoft.Owin",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Owin/3.0.0",
+              "LicenseUrl": "http://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Owin",
+                  "VersionRequirement": ">= 1.0"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "3.0.1",
+            "PackageDetails": {
+              "Name": "Microsoft.Owin",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Owin/3.0.1",
+              "LicenseUrl": "http://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Owin",
+                  "VersionRequirement": ">= 1.0"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "3.1.0-rc1"
+          },
+          {
+            "Version": "3.1.0",
+            "PackageDetails": {
+              "Name": "Microsoft.Owin",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Microsoft.Owin/3.1.0",
+              "LicenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Owin",
+                  "VersionRequirement": ">= 1.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:32",
+        "PackageName": "OwinMiddlewares.Log4net",
+        "Versions": [
+          {
+            "Version": "1.0.0",
+            "PackageDetails": {
+              "Name": "OwinMiddlewares.Log4net",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/OwinMiddlewares.Log4net/1.0.0",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 2.0.3",
+                  "FrameworkRestrictions": ">= net40"
+                },
+                {
+                  "PackageName": "Microsoft.Bcl.Async",
+                  "VersionRequirement": ">= 1.0.168",
+                  "FrameworkRestrictions": ">= net40"
+                },
+                {
+                  "PackageName": "Microsoft.Owin",
+                  "VersionRequirement": ">= 2.1",
+                  "FrameworkRestrictions": ">= net40"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

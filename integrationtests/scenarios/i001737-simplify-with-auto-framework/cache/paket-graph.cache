@@ -1,0 +1,191 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T01:00:42.5501703+02:00",
+        "PackageName": "Microsoft.Owin.Host.SystemWeb",
+        "Versions": [
+          {
+            "Version": "0.12-alpha2"
+          },
+          {
+            "Version": "1.0.0-rc1"
+          },
+          {
+            "Version": "1.0.0-rc2"
+          },
+          {
+            "Version": "1.0.0"
+          },
+          {
+            "Version": "1.0.1"
+          },
+          {
+            "Version": "1.1.0-beta1"
+          },
+          {
+            "Version": "1.1.0-beta2"
+          },
+          {
+            "Version": "2.0.0-rc1"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.0.2"
+          },
+          {
+            "Version": "2.1.0-rc1"
+          },
+          {
+            "Version": "2.1.0"
+          },
+          {
+            "Version": "3.0.0-alpha1"
+          },
+          {
+            "Version": "3.0.0-beta1"
+          },
+          {
+            "Version": "3.0.0-rc1"
+          },
+          {
+            "Version": "3.0.0-rc2"
+          },
+          {
+            "Version": "3.0.0"
+          },
+          {
+            "Version": "3.0.1"
+          },
+          {
+            "Version": "3.1.0-rc1"
+          },
+          {
+            "Version": "3.1.0",
+            "PackageDetails": {
+              "Name": "Microsoft.Owin.Host.SystemWeb",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Owin.Host.SystemWeb/3.1.0",
+              "LicenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Owin",
+                  "VersionRequirement": ">= 3.1"
+                },
+                {
+                  "PackageName": "Owin",
+                  "VersionRequirement": ">= 1.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:00:42.5906705+02:00",
+        "PackageName": "Owin",
+        "Versions": [
+          {
+            "Version": "0.5"
+          },
+          {
+            "Version": "0.7"
+          },
+          {
+            "Version": "0.11"
+          },
+          {
+            "Version": "0.12"
+          },
+          {
+            "Version": "0.14"
+          },
+          {
+            "Version": "1.0",
+            "PackageDetails": {
+              "Name": "Owin",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Owin/1.0",
+              "LicenseUrl": "https://github.com/owin-contrib/owin-hosting/blob/master/LICENSE.txt",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:00:42.3766683+02:00",
+        "PackageName": "Microsoft.Owin",
+        "Versions": [
+          {
+            "Version": "1.1.0-beta1"
+          },
+          {
+            "Version": "1.1.0-beta2"
+          },
+          {
+            "Version": "2.0.0-rc1"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.0.2"
+          },
+          {
+            "Version": "2.1.0-rc1"
+          },
+          {
+            "Version": "2.1.0"
+          },
+          {
+            "Version": "3.0.0-alpha1"
+          },
+          {
+            "Version": "3.0.0-beta1"
+          },
+          {
+            "Version": "3.0.0-rc1"
+          },
+          {
+            "Version": "3.0.0-rc2"
+          },
+          {
+            "Version": "3.0.0"
+          },
+          {
+            "Version": "3.0.1"
+          },
+          {
+            "Version": "3.1.0-rc1"
+          },
+          {
+            "Version": "3.1.0",
+            "PackageDetails": {
+              "Name": "Microsoft.Owin",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Microsoft.Owin/3.1.0",
+              "LicenseUrl": "https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Owin",
+                  "VersionRequirement": ">= 1.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}
