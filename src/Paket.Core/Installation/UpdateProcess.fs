@@ -140,7 +140,13 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRunti
 
         getVersionsF,getPackageDetailsF,groups
 
-    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, getRuntimeGraphFromPackage, groupsToUpdate, updateMode)
+    let resolution =
+        dependenciesFile.Resolve(
+            force, getSha1,
+            getVersionsF |> GraphCache.liftGetVersionsF,
+            getPackageDetailsF |> GraphCache.liftGetPackageDetailsF,
+            getRuntimeGraphFromPackage |> GraphCache.liftGetRuntimeGraphFromPackage,
+            groupsToUpdate, updateMode)
 
     let groups = 
         dependenciesFile.Groups

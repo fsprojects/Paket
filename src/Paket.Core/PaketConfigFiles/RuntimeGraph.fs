@@ -121,6 +121,51 @@ module RuntimeGraphParser =
     let readRuntimeGraph (s:string) =
         readRuntimeGraphJ (JObject.Parse(s))
 
+    let inline (!>) (x:^a) : ^b = ((^a or ^b) : (static member op_Implicit : ^a -> ^b) x)
+    let writeRuntime (desc:RuntimeDescription) =
+        let r = JObject()
+        let imp = JArray()
+        desc.InheritedRids |> Seq.iter (fun rid -> imp.Add( !> (rid.ToString())))
+        r.Add("#import", imp)
+        desc.RuntimeDependencies
+        |> Map.toSeq
+        |> Seq.iter (fun (nameO, deps) ->
+            let d = JObject()
+            deps
+            |> Seq.iter (fun (nameI, req) ->
+                d.Add(nameI.Name, !> req.ToString()))
+            r.Add(nameO.Name, d)
+            )
+        r
+
+    let writeRuntimes (seq:seq<Rid * RuntimeDescription>) =
+        let r = JObject()
+        seq
+        |> Seq.iter (fun (rid, desc) ->
+            r.Add(rid.ToString(), writeRuntime desc))
+        r
+    let writeSupport (profile:CompatibilityProfile) =
+        let p = JObject()
+        profile.Supported
+        |> Map.toSeq
+        |> Seq.iter (fun (tfm, ridList) ->
+            let ridL = JArray()
+            ridList |> Seq.iter (fun rid -> ridL.Add( !> rid.ToString()))
+            p.Add(tfm.ToString(), ridL))
+        p
+
+    let writeSupports (seq:seq<CompatibilityProfileName * CompatibilityProfile>) =
+        let s = JObject()
+        seq
+        |> Seq.iter (fun (name, profile) ->
+            s.Add(name.ToString(), writeSupport profile))
+        s
+    let writeRuntimeGraphJ (graph:RuntimeGraph) =
+        let g = JObject()
+        g.Add("runtimes", writeRuntimes (graph.Runtimes |> Map.toSeq))
+        g.Add("supports", writeSupports (graph.Supports |> Map.toSeq))
+        g
+
 module Map =
     let merge (f:'b -> 'b -> 'b) (m1:Map<'a,'b>) (m2:Map<'a,'b>) =
         m1
