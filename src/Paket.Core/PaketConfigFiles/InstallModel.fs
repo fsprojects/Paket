@@ -10,45 +10,57 @@ open ProviderImplementation.AssemblyReader.Utils.SHA1
 
 type UnparsedPackageFile = Paket.NuGet.UnparsedPackageFile
 type Tfm = PlatformMatching.ParsedPlatformPath
+
 //type Rid = Paket.Rid
-type FrameworkDependentFile =
-  { Path : Tfm
+type FrameworkDependentFile = { 
+    Path : Tfm
     File : UnparsedPackageFile
-    Runtime : Rid option }
-type Library =
-    { Name : string
-      Path : string
-      PathWithinPackage : string }
+    Runtime : Rid option 
+}
+
+type Library = { 
+    Name : string
+    Path : string
+    PathWithinPackage : string 
+}
+
 module Library =
     let ofFile (f:FrameworkDependentFile) =
         let fi = FileInfo(normalizePath f.File.FullPath)
         let name = fi.Name.Replace(fi.Extension, "")
         { Name = name; Path = f.File.FullPath; PathWithinPackage = f.File.PathWithinPackage }
 
-type RuntimeLibrary =
-    { Library : Library
-      Rid : Rid option }
+type RuntimeLibrary = { 
+    Library : Library
+    Rid : Rid option 
+}
+
 module RuntimeLibrary =
     let ofFile (f:FrameworkDependentFile) =
         { Library = Library.ofFile f; Rid = f.Runtime }
 
-type MsBuildFile =
-    { Name : string
-      Path : string }
+type MsBuildFile = { 
+    Name : string
+    Path : string 
+}
+
 module MsBuildFile =
     let ofFile (f:FrameworkDependentFile) =
         let fi = FileInfo(normalizePath f.File.FullPath)
         let name = fi.Name.Replace(fi.Extension, "")
         { Name = name; Path = f.File.FullPath }
 
-type FrameworkReference =
-    { Name : string }
+type FrameworkReference = {
+    Name : string 
+}
+
 module FrameworkReference =
     let ofName n = { FrameworkReference.Name = n }
 
-type ReferenceOrLibraryFolder =
-   { FrameworkReferences : FrameworkReference Set
-     Libraries : Library Set }
+type ReferenceOrLibraryFolder = {
+    FrameworkReferences : FrameworkReference Set
+    Libraries : Library Set 
+}
 
 module ReferenceOrLibraryFolder =
    let empty = { FrameworkReferences = Set.empty; Libraries = Set.empty }
@@ -58,20 +70,21 @@ module ReferenceOrLibraryFolder =
       { old with ReferenceOrLibraryFolder.FrameworkReferences = Set.add item old.FrameworkReferences }
 
 /// Represents a subfolder of a nuget package that provides files (content, references, etc) for one or more Target Profiles.  This is a logical representation of the 'net45' folder in a NuGet package, for example.
-type FrameworkFolder<'T> =
-    { Path : ParsedPlatformPath
-      Targets : TargetProfile list
-      FolderContents : 'T  }
-
+type FrameworkFolder<'T> = { 
+    Path : ParsedPlatformPath
+    Targets : TargetProfile list
+    FolderContents : 'T
+} with
     member this.GetSinglePlatforms() =
         this.Targets
         |> List.choose (function SinglePlatform t -> Some t | _ -> None)
 
 module FrameworkFolder =
-    let map f (l:FrameworkFolder<_>) =
-        { Path = l.Path
-          Targets = l.Targets
-          FolderContents = f l.FolderContents }
+    let map f (l:FrameworkFolder<_>) = { 
+        Path = l.Path
+        Targets = l.Targets
+        FolderContents = f l.FolderContents 
+    }
 
 type AnalyzerLanguage =
     | Any | CSharp | FSharp | VisualBasic
@@ -86,29 +99,29 @@ type AnalyzerLanguage =
     static member FromDirectory(dir : DirectoryInfo) =
         AnalyzerLanguage.FromDirectoryName(dir.Name)
 
-type AnalyzerLib =
-    {
-        /// Path of the analyzer dll
-        Path : string
-        /// Target language for the analyzer
-        Language : AnalyzerLanguage }
-    static member FromFile(file : FileInfo) =
-        {
-            Path = file.FullName
-            Language = AnalyzerLanguage.FromDirectory(file.Directory)
-        }
+type AnalyzerLib = {
+    /// Path of the analyzer dll
+    Path : string
+    /// Target language for the analyzer
+    Language : AnalyzerLanguage 
+} with
+    static member FromFile(file : FileInfo) = {
+        Path = file.FullName
+        Language = AnalyzerLanguage.FromDirectory(file.Directory)
+    }
 
 /// Represents the contents of a particular package at a particular version.  Any install-specific actions like Content files, References, Roslyn Analyzers, MsBuild targets are represented here.
-type InstallModel =
-    { PackageName : PackageName
-      PackageVersion : SemVerInfo
-      CompileLibFolders : FrameworkFolder<ReferenceOrLibraryFolder> list
-      CompileRefFolders : FrameworkFolder<Library Set> list
-      RuntimeAssemblyFolders : FrameworkFolder<RuntimeLibrary Set> list
-      RuntimeLibFolders : FrameworkFolder<RuntimeLibrary Set> list
-      TargetsFileFolders : FrameworkFolder<MsBuildFile Set> list
-      Analyzers: AnalyzerLib list
-      LicenseUrl: string option }
+type InstallModel = { 
+    PackageName : PackageName
+    PackageVersion : SemVerInfo
+    CompileLibFolders : FrameworkFolder<ReferenceOrLibraryFolder> list
+    CompileRefFolders : FrameworkFolder<Library Set> list
+    RuntimeAssemblyFolders : FrameworkFolder<RuntimeLibrary Set> list
+    RuntimeLibFolders : FrameworkFolder<RuntimeLibrary Set> list
+    TargetsFileFolders : FrameworkFolder<MsBuildFile Set> list
+    Analyzers: AnalyzerLib list
+    LicenseUrl: string option 
+}
 
 module FolderScanner =
     // Stolen and modifed to our needs from http://www.fssnip.net/4I/title/sscanf-parsing-with-format-strings
@@ -157,9 +170,11 @@ module FolderScanner =
                      'c', check "Could not parse character (c)" (String.length >> (=) 1) >> ParseResult.map char >> ParseResult.box
                      'A', (fun s -> ParseSucceeded s) >> ParseResult.box
                     ]
-    type AdvancedScanner =
-      { Name : string
-        Parser : string -> ParseResult<obj> }
+
+    type AdvancedScanner = {
+        Name : string
+        Parser : string -> ParseResult<obj> 
+    }
 
     // array of all possible formatters, i.e. [|"%b"; "%d"; ...|]
     let separators =
@@ -176,13 +191,17 @@ module FolderScanner =
                        else failwithf "Unknown formatter %%%c" x
        | x::xr -> getFormatters xr
        | [] -> []
+    
     type private ScanResult =
        | ScanSuccess of obj[]
        | ScanRegexFailure of stringToScan:string * regex:string
        | ScanParserFailure of error:string
-    type ScanOptions =
-        { IgnoreCase : bool }
+    
+    type ScanOptions = { 
+        IgnoreCase : bool
+    } with
         static member Default = { IgnoreCase = false }
+
     let private sscanfHelper (opts:ScanOptions) (pf:PrintfFormat<_,_,_,_,'t>) s : ScanResult =
         let formatStr = pf.Value.Replace("%%", "%")
         let constants = formatStr.Split(separators, StringSplitOptions.None)
@@ -307,16 +326,17 @@ module InstallModel =
     open Logging
     open PlatformMatching
 
-    let emptyModel packageName packageVersion =
-        { PackageName = packageName
-          PackageVersion = packageVersion
-          CompileLibFolders = []
-          CompileRefFolders = []
-          RuntimeLibFolders = []
-          RuntimeAssemblyFolders = []
-          TargetsFileFolders = []
-          Analyzers = []
-          LicenseUrl = None }
+    let emptyModel packageName packageVersion = {
+        PackageName = packageName
+        PackageVersion = packageVersion
+        CompileLibFolders = []
+        CompileRefFolders = []
+        RuntimeLibFolders = []
+        RuntimeAssemblyFolders = []
+        TargetsFileFolders = []
+        Analyzers = []
+        LicenseUrl = None 
+    }
 
     type Tfm = PlatformMatching.ParsedPlatformPath
     type Rid = Paket.Rid
@@ -539,7 +559,8 @@ module InstallModel =
             CompileLibFolders = legacyLibFolders
             CompileRefFolders = refFolders
             RuntimeAssemblyFolders = runtimeAssemblyFolders
-            RuntimeLibFolders = runtimeLibraryFolders }
+            RuntimeLibFolders = runtimeLibraryFolders 
+        }
         |> addItem libs getCompileLibAssembly (addPackageLegacyLibFile references) (fun i -> i.CompileLibFolders)
         |> addItem libs getCompileRefAssembly (addPackageRefFile references) (fun i -> i.CompileRefFolders)
         |> addItem libs getRuntimeAssembly (addPackageRuntimeAssemblyFile references) (fun i -> i.RuntimeAssemblyFolders)
@@ -739,7 +760,8 @@ module InstallModel =
                 TargetsFileFolders =
                     installModel.TargetsFileFolders
                     |> List.map applyRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])  }
+                    |> List.filter (fun folder -> folder.Targets <> [])  
+            }
 
     let rec addTargetsFiles (targetsFiles:UnparsedPackageFile list) (this:InstallModel) : InstallModel =
         let targetsFileFolders =
@@ -780,12 +802,7 @@ type InstallModel with
     [<Obsolete("usually this should not be used")>]
     member this.GetReferenceFolders() = InstallModel.getCompileLibFolders this
 
-    //member this.MapFolders mapfn = InstallModel.mapFolders mapfn this
 
-    //member this.MapFiles mapfn = InstallModel.mapFiles mapfn this
-
-    [<Obsolete("usually this should not be used, use GetLegacyReferences for the full .net and GetCompileReferences/GetRuntimeLibraries for dotnetcore")>]
-    member this.GetLibReferences target = InstallModel.getLegacyReferences target this
     member this.GetLegacyReferences target = InstallModel.getLegacyReferences target this
     member this.GetCompileReferences target = InstallModel.getCompileReferences target this
     member this.GetRuntimeAssemblies graph rid target = InstallModel.getRuntimeAssemblies graph rid target this
@@ -829,19 +846,7 @@ type InstallModel with
         this.GetAllLegacyFrameworkReferences() |> Seq.map (fun r -> r.Name)
         |> Seq.append (this.GetAllLegacyReferences() |> Seq.map (fun r -> r.Name))
         |> Set.ofSeq
-    //[<Obsolete("usually this should not be used, use GetLegacyFrameworkAssembliesLazy for the full .net and remove this call for dotnetcore (dnc has no reference assemblies)")>]
-    //member this.GetFrameworkAssembliesLazy =  InstallModel.getLegacyFrameworkAssembliesLazy this
-    //member this.GetLegacyFrameworkAssembliesLazy =  InstallModel.getLegacyFrameworkAssembliesLazy this
 
-    //[<Obsolete("usually this should not be used, use GetLegacyReferencesLazy for the full .net and GetCompileReferencesLazy for dotnetcore")>]
-    //member this.GetLibReferencesLazy = InstallModel.getLegacyReferencesLazy this
-    //member this.GetLegacyReferencesLazy = InstallModel.getLegacyReferencesLazy this
-    //member this.GetCompileReferencesLazy = InstallModel.getReferencesLazy this
-    //
-    //member this.GetTargetsFilesLazy =  InstallModel.getTargetsFilesLazy this
-
-    [<Obsolete("usually this should not be used, use CalcLegacyReferencesFolders for the full .net and CalcReferencesFolders for dotnetcore")>]
-    member this.CalcLibFolders libs = InstallModel.calcLegacyReferenceLibFolders libs
     member this.CalcLegacyReferencesFolders libs = InstallModel.calcLegacyReferenceLibFolders libs
     member this.CalcReferencesFolders libs = InstallModel.calcReferenceFolders libs
 
