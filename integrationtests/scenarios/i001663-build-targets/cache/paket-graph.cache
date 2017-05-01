@@ -1,0 +1,40 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:41:13.8662999+02:00",
+        "PackageName": "BuildWebCompiler",
+        "Versions": [
+          {
+            "Version": "1.10.310",
+            "PackageDetails": {
+              "Name": "BuildWebCompiler",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/BuildWebCompiler/1.10.310",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:41:13.5593014+02:00",
+        "PackageName": "BuildBundlerMinifier",
+        "Versions": [
+          {
+            "Version": "1.8.154",
+            "PackageDetails": {
+              "Name": "BuildBundlerMinifier",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/BuildBundlerMinifier/1.8.154",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

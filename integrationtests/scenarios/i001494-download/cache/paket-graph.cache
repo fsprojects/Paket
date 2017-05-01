@@ -1,0 +1,23 @@
+{
+  "nuget_repo": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:54.448988+02:00",
+        "PackageName": "simpleinjector",
+        "Versions": [
+          {
+            "Version": "3.1.2",
+            "PackageDetails": {
+              "Name": "SimpleInjector",
+              "DownloadLink": "simpleinjector",
+              "LicenseUrl": "https://simpleinjector.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

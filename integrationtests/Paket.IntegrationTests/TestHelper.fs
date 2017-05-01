@@ -14,7 +14,12 @@ let scenarios = System.Collections.Generic.List<_>()
 let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
 let scenarioTempPath scenario = Path.Combine(integrationTestPath,scenario,"temp")
+let scenarioCachePath scenario = Path.Combine(integrationTestPath,scenario,"cache")
 let originalScenarioPath scenario = Path.Combine(integrationTestPath,scenario,"before")
+
+let useCache = true
+let cleanCache = false
+let preventLiveData = false
 
 let cleanup scenario =
     let scenarioPath = scenarioTempPath scenario
@@ -32,7 +37,10 @@ let prepare scenario =
     scenarios.Add scenario
     let originalScenarioPath = originalScenarioPath scenario
     let scenarioPath = scenarioTempPath scenario
+    let cachePath = scenarioCachePath scenario
     CleanDir scenarioPath
+    if useCache then
+        if cleanCache || not (Directory.Exists cachePath) then CleanDir cachePath
     CopyDir scenarioPath originalScenarioPath (fun _ -> true)
     Directory.GetFiles(scenarioPath, "*.fsprojtemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "fsproj")))
@@ -45,10 +53,14 @@ let prepare scenario =
     Directory.GetFiles(scenarioPath, "*.jsontemplate", SearchOption.AllDirectories)
     |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "json")))
 
-let directPaketInPath command scenarioPath =
+let directPaketInPath command scenarioPath cachePath =
     #if INTERACTIVE
     let result =
         ExecProcessWithLambdas (fun info ->
+          if useCache then
+            info.EnvironmentVariables.["PAKET_GRAPH_CACHE"] <- Path.Combine(cachePath, "paket-graph.cache")
+            if preventLiveData then
+              info.EnvironmentVariables.["PAKET_GRAPH_CACHE_PREVENT_ONLINE"] <- "true"
           info.FileName <- paketToolPath
           info.WorkingDirectory <- scenarioPath
           info.Arguments <- command) 
@@ -60,6 +72,10 @@ let directPaketInPath command scenarioPath =
     #else
     let result =
         ExecProcessAndReturnMessages (fun info ->
+          if useCache then
+            info.EnvironmentVariables.["PAKET_GRAPH_CACHE"] <- Path.Combine(cachePath, "paket-graph.cache")
+            if preventLiveData then
+              info.EnvironmentVariables.["PAKET_GRAPH_CACHE_PREVENT_ONLINE"] <- "true"
           info.FileName <- paketToolPath
           info.WorkingDirectory <- scenarioPath
           info.Arguments <- command) (System.TimeSpan.FromMinutes 5.)
@@ -71,7 +87,7 @@ let directPaketInPath command scenarioPath =
     #endif
 
 let directPaket command scenario =
-    directPaketInPath command (scenarioTempPath scenario)
+    directPaketInPath command (scenarioTempPath scenario) (scenarioCachePath scenario)
 
 let paket command scenario =
     prepare scenario

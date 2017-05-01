@@ -1,0 +1,276 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:41:18.0413017+02:00",
+        "PackageName": "jQuery",
+        "Versions": [
+          {
+            "Version": "1.4.1"
+          },
+          {
+            "Version": "1.4.2"
+          },
+          {
+            "Version": "1.4.3"
+          },
+          {
+            "Version": "1.4.4"
+          },
+          {
+            "Version": "1.5"
+          },
+          {
+            "Version": "1.5.1"
+          },
+          {
+            "Version": "1.5.2"
+          },
+          {
+            "Version": "1.6"
+          },
+          {
+            "Version": "1.6.1"
+          },
+          {
+            "Version": "1.6.2"
+          },
+          {
+            "Version": "1.6.3"
+          },
+          {
+            "Version": "1.6.4"
+          },
+          {
+            "Version": "1.7"
+          },
+          {
+            "Version": "1.7.1"
+          },
+          {
+            "Version": "1.7.1.1"
+          },
+          {
+            "Version": "1.7.2"
+          },
+          {
+            "Version": "1.8.0"
+          },
+          {
+            "Version": "1.8.1"
+          },
+          {
+            "Version": "1.8.2"
+          },
+          {
+            "Version": "1.8.3"
+          },
+          {
+            "Version": "1.9.0"
+          },
+          {
+            "Version": "1.9.1"
+          },
+          {
+            "Version": "1.10.0"
+          },
+          {
+            "Version": "1.10.0.1"
+          },
+          {
+            "Version": "1.10.1"
+          },
+          {
+            "Version": "1.10.2"
+          },
+          {
+            "Version": "1.11.0"
+          },
+          {
+            "Version": "1.11.1"
+          },
+          {
+            "Version": "1.11.2"
+          },
+          {
+            "Version": "1.11.3"
+          },
+          {
+            "Version": "1.12.0"
+          },
+          {
+            "Version": "1.12.1"
+          },
+          {
+            "Version": "1.12.2"
+          },
+          {
+            "Version": "1.12.3"
+          },
+          {
+            "Version": "1.12.4"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.0.1.1"
+          },
+          {
+            "Version": "2.0.2"
+          },
+          {
+            "Version": "2.0.3"
+          },
+          {
+            "Version": "2.1.0"
+          },
+          {
+            "Version": "2.1.1"
+          },
+          {
+            "Version": "2.1.2"
+          },
+          {
+            "Version": "2.1.3"
+          },
+          {
+            "Version": "2.1.4"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.2.1"
+          },
+          {
+            "Version": "2.2.2"
+          },
+          {
+            "Version": "2.2.3"
+          },
+          {
+            "Version": "2.2.4",
+            "PackageDetails": {
+              "Name": "jQuery",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/jQuery/2.2.4",
+              "LicenseUrl": "http://jquery.org/license",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "3.0.0"
+          },
+          {
+            "Version": "3.0.0.1"
+          },
+          {
+            "Version": "3.1.0"
+          },
+          {
+            "Version": "3.1.1"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:41:17.7328019+02:00",
+        "PackageName": "bootstrap",
+        "Versions": [
+          {
+            "Version": "1.0.0"
+          },
+          {
+            "Version": "2.3.1"
+          },
+          {
+            "Version": "2.3.2"
+          },
+          {
+            "Version": "3.0.0"
+          },
+          {
+            "Version": "3.0.1"
+          },
+          {
+            "Version": "3.0.2"
+          },
+          {
+            "Version": "3.0.3"
+          },
+          {
+            "Version": "3.1.0"
+          },
+          {
+            "Version": "3.1.1"
+          },
+          {
+            "Version": "3.2.0"
+          },
+          {
+            "Version": "3.3.0"
+          },
+          {
+            "Version": "3.3.1"
+          },
+          {
+            "Version": "3.3.2"
+          },
+          {
+            "Version": "3.3.4"
+          },
+          {
+            "Version": "3.3.5"
+          },
+          {
+            "Version": "3.3.6-jQuery3"
+          },
+          {
+            "Version": "3.3.6"
+          },
+          {
+            "Version": "3.3.6.1"
+          },
+          {
+            "Version": "3.3.7",
+            "PackageDetails": {
+              "Name": "bootstrap",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/bootstrap/3.3.7",
+              "LicenseUrl": "https://github.com/twbs/bootstrap/blob/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "jQuery",
+                  "VersionRequirement": ">= 1.9.1 < 4.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "4.0.0-alpha"
+          },
+          {
+            "Version": "4.0.0-alpha2"
+          },
+          {
+            "Version": "4.0.0-alpha3"
+          },
+          {
+            "Version": "4.0.0-alpha4"
+          },
+          {
+            "Version": "4.0.0-alpha5"
+          },
+          {
+            "Version": "4.0.0-alpha6"
+          }
+        ]
+      }
+    ]
+  }
+}

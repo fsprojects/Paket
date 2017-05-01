@@ -1,0 +1,646 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:40:38.5650848+02:00",
+        "PackageName": "Rx-Linq",
+        "Versions": [
+          {
+            "Version": "2.0.20304-beta"
+          },
+          {
+            "Version": "2.0.20612-rc"
+          },
+          {
+            "Version": "2.0.20622-rc"
+          },
+          {
+            "Version": "2.0.20814"
+          },
+          {
+            "Version": "2.0.20823"
+          },
+          {
+            "Version": "2.0.21030"
+          },
+          {
+            "Version": "2.0.21103"
+          },
+          {
+            "Version": "2.0.21114"
+          },
+          {
+            "Version": "2.1.30204.0"
+          },
+          {
+            "Version": "2.1.30214.0"
+          },
+          {
+            "Version": "2.2.0-beta"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.2.1-beta"
+          },
+          {
+            "Version": "2.2.1"
+          },
+          {
+            "Version": "2.2.2"
+          },
+          {
+            "Version": "2.2.4"
+          },
+          {
+            "Version": "2.2.5",
+            "PackageDetails": {
+              "Name": "Rx-Linq",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-Linq/2.2.5",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Core",
+                  "VersionRequirement": ">= 2.2.5"
+                },
+                {
+                  "PackageName": "Rx-Interfaces",
+                  "VersionRequirement": ">= 2.2.5"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.3.0-beta1"
+          },
+          {
+            "Version": "2.3.0-beta2"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:40:37.8950867+02:00",
+        "PackageName": "Rx-Interfaces",
+        "Versions": [
+          {
+            "Version": "2.0.20304-beta"
+          },
+          {
+            "Version": "2.0.20612-rc"
+          },
+          {
+            "Version": "2.0.20622-rc"
+          },
+          {
+            "Version": "2.0.20814"
+          },
+          {
+            "Version": "2.0.20823"
+          },
+          {
+            "Version": "2.0.21030"
+          },
+          {
+            "Version": "2.0.21103"
+          },
+          {
+            "Version": "2.0.21114"
+          },
+          {
+            "Version": "2.1.30204.0"
+          },
+          {
+            "Version": "2.1.30214.0"
+          },
+          {
+            "Version": "2.2.0-beta"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.2.1-beta"
+          },
+          {
+            "Version": "2.2.1"
+          },
+          {
+            "Version": "2.2.2"
+          },
+          {
+            "Version": "2.2.4"
+          },
+          {
+            "Version": "2.2.5",
+            "PackageDetails": {
+              "Name": "Rx-Interfaces",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-Interfaces/2.2.5",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.3.0-beta1"
+          },
+          {
+            "Version": "2.3.0-beta2"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:40:39.0680854+02:00",
+        "PackageName": "Rx-WinRT",
+        "Versions": [
+          {
+            "Version": "2.0.20304-beta"
+          },
+          {
+            "Version": "2.0.20612-rc"
+          },
+          {
+            "Version": "2.0.20622-rc"
+          },
+          {
+            "Version": "2.0.20814",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.0.20814",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.0.20814"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.0.20823",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.0.20823",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.0.20823"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.0.21030",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.0.21030",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.0.21030"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.0.21103",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.0.21103",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.0.21103"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.0.21114",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.0.21114",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.0.21114"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.1.30204.0",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.1.30204.0",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.1.30204"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.1.30214.0",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.1.30214.0",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.1.30214"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.2.0-beta"
+          },
+          {
+            "Version": "2.2.0",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.2.0",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.2"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.2.1-beta"
+          },
+          {
+            "Version": "2.2.1",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.2.1",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.2.1"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.2.2",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.2.2",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.2.2"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.2.4",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.2.4",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.2.4"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.2.5",
+            "PackageDetails": {
+              "Name": "Rx-WinRT",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-WinRT/2.2.5",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Main",
+                  "VersionRequirement": ">= 2.2.5"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.3.0-beta1"
+          },
+          {
+            "Version": "2.3.0-beta2"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:40:38.6160851+02:00",
+        "PackageName": "Rx-Main",
+        "Versions": [
+          {
+            "Version": "1.0.2856.0"
+          },
+          {
+            "Version": "1.0.10605"
+          },
+          {
+            "Version": "1.0.10621"
+          },
+          {
+            "Version": "1.0.11221"
+          },
+          {
+            "Version": "1.0.11226"
+          },
+          {
+            "Version": "2.0.20304-beta"
+          },
+          {
+            "Version": "2.0.20612-rc"
+          },
+          {
+            "Version": "2.0.20622-rc"
+          },
+          {
+            "Version": "2.0.20814"
+          },
+          {
+            "Version": "2.0.20823"
+          },
+          {
+            "Version": "2.0.21030"
+          },
+          {
+            "Version": "2.0.21103"
+          },
+          {
+            "Version": "2.0.21114"
+          },
+          {
+            "Version": "2.1.30204.0"
+          },
+          {
+            "Version": "2.1.30214.0"
+          },
+          {
+            "Version": "2.2.0-beta"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.2.1-beta"
+          },
+          {
+            "Version": "2.2.1"
+          },
+          {
+            "Version": "2.2.2"
+          },
+          {
+            "Version": "2.2.4"
+          },
+          {
+            "Version": "2.2.5",
+            "PackageDetails": {
+              "Name": "Rx-Main",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-Main/2.2.5",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Core",
+                  "VersionRequirement": ">= 2.2.5"
+                },
+                {
+                  "PackageName": "Rx-Interfaces",
+                  "VersionRequirement": ">= 2.2.5"
+                },
+                {
+                  "PackageName": "Rx-Linq",
+                  "VersionRequirement": ">= 2.2.5"
+                },
+                {
+                  "PackageName": "Rx-PlatformServices",
+                  "VersionRequirement": ">= 2.2.5"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.3.0-beta1"
+          },
+          {
+            "Version": "2.3.0-beta2"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:40:38.9300855+02:00",
+        "PackageName": "Rx-PlatformServices",
+        "Versions": [
+          {
+            "Version": "2.0.20304-beta"
+          },
+          {
+            "Version": "2.0.20612-rc"
+          },
+          {
+            "Version": "2.0.20622-rc"
+          },
+          {
+            "Version": "2.0.20814"
+          },
+          {
+            "Version": "2.0.20823"
+          },
+          {
+            "Version": "2.0.21030"
+          },
+          {
+            "Version": "2.0.21103"
+          },
+          {
+            "Version": "2.0.21114"
+          },
+          {
+            "Version": "2.1.30204.0"
+          },
+          {
+            "Version": "2.1.30214.0"
+          },
+          {
+            "Version": "2.2.0-beta"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.2.1-beta"
+          },
+          {
+            "Version": "2.2.1"
+          },
+          {
+            "Version": "2.2.2"
+          },
+          {
+            "Version": "2.2.3"
+          },
+          {
+            "Version": "2.2.4"
+          },
+          {
+            "Version": "2.2.5",
+            "PackageDetails": {
+              "Name": "Rx-PlatformServices",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-PlatformServices/2.2.5",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Core",
+                  "VersionRequirement": ">= 2.2.5"
+                },
+                {
+                  "PackageName": "Rx-Interfaces",
+                  "VersionRequirement": ">= 2.2.5"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "2.3.0-beta1"
+          },
+          {
+            "Version": "2.3.0-beta2"
+          },
+          {
+            "Version": "2.3",
+            "PackageDetails": {
+              "Name": "Rx-PlatformServices",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-PlatformServices/2.3",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Core",
+                  "VersionRequirement": ">= 2.2"
+                },
+                {
+                  "PackageName": "Rx-Interfaces",
+                  "VersionRequirement": ">= 2.2"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:40:37.5705843+02:00",
+        "PackageName": "Rx-Core",
+        "Versions": [
+          {
+            "Version": "2.0.20304-beta"
+          },
+          {
+            "Version": "2.0.20612-rc"
+          },
+          {
+            "Version": "2.0.20622-rc"
+          },
+          {
+            "Version": "2.0.20814"
+          },
+          {
+            "Version": "2.0.20823"
+          },
+          {
+            "Version": "2.0.21030"
+          },
+          {
+            "Version": "2.0.21103"
+          },
+          {
+            "Version": "2.0.21114"
+          },
+          {
+            "Version": "2.1.30204.0"
+          },
+          {
+            "Version": "2.1.30214.0"
+          },
+          {
+            "Version": "2.2.0-beta"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.2.1-beta"
+          },
+          {
+            "Version": "2.2.1"
+          },
+          {
+            "Version": "2.2.2"
+          },
+          {
+            "Version": "2.2.4"
+          },
+          {
+            "Version": "2.2.5",
+            "PackageDetails": {
+              "Name": "Rx-Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Rx-Core/2.2.5",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=261272",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "Rx-Interfaces",
+                  "VersionRequirement": ">= 2.2.5"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.3.0-beta1"
+          },
+          {
+            "Version": "2.3.0-beta2"
+          }
+        ]
+      }
+    ]
+  }
+}

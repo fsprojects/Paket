@@ -1,0 +1,34 @@
+{
+  "paket-files/github.com/forki/nupkgtest/source": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T00:25:19.593093+02:00",
+        "PackageName": "Argu",
+        "Versions": [
+          {
+            "Version": "1.1.3",
+            "PackageDetails": {
+              "Name": "Argu",
+              "DownloadLink": "Argu",
+              "LicenseUrl": "https://github.com/nessos/Argu/blob/master/License.md",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.0.0",
+            "PackageDetails": {
+              "Name": "Argu",
+              "DownloadLink": "Argu",
+              "LicenseUrl": "https://github.com/fsprojects/Argu/blob/master/License.md",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

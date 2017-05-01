@@ -1,0 +1,103 @@
+{
+  "bin": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T01:10:12.4896503+02:00",
+        "PackageName": "Paket.Test.D",
+        "Versions": [
+          {
+            "Version": "1.0.0-prerelease",
+            "PackageDetails": {
+              "Name": "Paket.Test.D",
+              "DownloadLink": "Paket.Test.D",
+              "LicenseUrl": "https://github.com/LICENSE.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Paket.Test.B",
+                  "VersionRequirement": ">= 0.0.0-prerelease"
+                },
+                {
+                  "PackageName": "Paket.Test.C",
+                  "VersionRequirement": ">= 0.0.0-prerelease"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:10:12.4196528+02:00",
+        "PackageName": "Paket.Test.B",
+        "Versions": [
+          {
+            "Version": "1.0.0",
+            "PackageDetails": {
+              "Name": "Paket.Test.B",
+              "DownloadLink": "Paket.Test.B",
+              "LicenseUrl": "https://github.com/LICENSE.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Paket.Test.A",
+                  "VersionRequirement": ""
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:10:12.4531507+02:00",
+        "PackageName": "Paket.Test.C",
+        "Versions": [
+          {
+            "Version": "1.0.0-prerelease",
+            "PackageDetails": {
+              "Name": "Paket.Test.C",
+              "DownloadLink": "Paket.Test.C",
+              "LicenseUrl": "https://github.com/LICENSE.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Paket.Test.A",
+                  "VersionRequirement": ">= 0.0.0-prerelease"
+                },
+                {
+                  "PackageName": "Paket.Test.B",
+                  "VersionRequirement": ">= 0.0.0-prerelease"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T01:10:12.3866548+02:00",
+        "PackageName": "Paket.Test.A",
+        "Versions": [
+          {
+            "Version": "1.0.0-prerelease"
+          },
+          {
+            "Version": "1.0.0",
+            "PackageDetails": {
+              "Name": "Paket.Test.A",
+              "DownloadLink": "Paket.Test.A",
+              "LicenseUrl": "https://github.com/LICENSE.txt",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "1.1.0-prerelease"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,64 @@
+{
+  "http://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:42:08.1138207+02:00",
+        "PackageName": "Machine.Specifications",
+        "Versions": [
+          {
+            "Version": "0.11",
+            "PackageDetails": {
+              "Name": "Machine.Specifications",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Machine.Specifications/0.11.0",
+              "LicenseUrl": "http://github.com/machine/machine.specifications/blob/master/License.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "NETStandard.Library",
+                  "VersionRequirement": ">= 1.6",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.TextWriterTraceListener",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.TraceSource",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.TypeExtensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.XPath",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.XPath.XDocument",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:41:27.9943144+02:00",
+        "PackageName": "Microsoft.Bcl.Build",
+        "Versions": [
+          {
+            "Version": "1.0.0-rc"
+          },
+          {
+            "Version": "1.0.4"
+          },
+          {
+            "Version": "1.0.5"
+          },
+          {
+            "Version": "1.0.6"
+          },
+          {
+            "Version": "1.0.7"
+          },
+          {
+            "Version": "1.0.8"
+          },
+          {
+            "Version": "1.0.9-beta"
+          },
+          {
+            "Version": "1.0.10"
+          },
+          {
+            "Version": "1.0.13"
+          },
+          {
+            "Version": "1.0.14"
+          },
+          {
+            "Version": "1.0.16"
+          },
+          {
+            "Version": "1.0.17-beta"
+          },
+          {
+            "Version": "1.0.20-beta"
+          },
+          {
+            "Version": "1.0.21",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl.Build",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Microsoft.Bcl.Build/1.0.21",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:41:27.9293047+02:00",
+        "PackageName": "microsoft.bcl.async",
+        "Versions": [
+          {
+            "Version": "1.0.11-beta"
+          },
+          {
+            "Version": "1.0.12-beta"
+          },
+          {
+            "Version": "1.0.14-rc"
+          },
+          {
+            "Version": "1.0.16"
+          },
+          {
+            "Version": "1.0.165"
+          },
+          {
+            "Version": "1.0.166-beta"
+          },
+          {
+            "Version": "1.0.166"
+          },
+          {
+            "Version": "1.0.168",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl.Async",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Microsoft.Bcl.Async/1.0.168",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Bcl",
+                  "VersionRequirement": ">= 1.1.8"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:41:27.2898042+02:00",
+        "PackageName": "Microsoft.Bcl",
+        "Versions": [
+          {
+            "Version": "1.0.11-beta"
+          },
+          {
+            "Version": "1.0.16-rc"
+          },
+          {
+            "Version": "1.0.19"
+          },
+          {
+            "Version": "1.1.0-beta"
+          },
+          {
+            "Version": "1.1.2-rc"
+          },
+          {
+            "Version": "1.1.3"
+          },
+          {
+            "Version": "1.1.6"
+          },
+          {
+            "Version": "1.1.7"
+          },
+          {
+            "Version": "1.1.8"
+          },
+          {
+            "Version": "1.1.9"
+          },
+          {
+            "Version": "1.1.10",
+            "PackageDetails": {
+              "Name": "Microsoft.Bcl",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Microsoft.Bcl/1.1.10",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkId=329770",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.Bcl.Build",
+                  "VersionRequirement": ">= 1.0.14"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

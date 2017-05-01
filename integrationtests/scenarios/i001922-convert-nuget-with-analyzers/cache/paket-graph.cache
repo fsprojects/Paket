@@ -1,0 +1,23 @@
+{
+  "https://api.nuget.org/v3/index.json": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:04.5323281+02:00",
+        "PackageName": "StyleCop.Analyzers",
+        "Versions": [
+          {
+            "Version": "1.0.0",
+            "PackageDetails": {
+              "Name": "StyleCop.Analyzers",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/StyleCop.Analyzers/1.0.0",
+              "LicenseUrl": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/1.0.0/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

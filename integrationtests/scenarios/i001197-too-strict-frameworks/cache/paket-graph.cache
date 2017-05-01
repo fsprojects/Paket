@@ -1,0 +1,1500 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:47.5886402+02:00",
+        "PackageName": "NEST",
+        "Versions": [
+          {
+            "Version": "0.9.0.2"
+          },
+          {
+            "Version": "0.9.1.0"
+          },
+          {
+            "Version": "0.9.2.0"
+          },
+          {
+            "Version": "0.9.3.0"
+          },
+          {
+            "Version": "0.9.4.0"
+          },
+          {
+            "Version": "0.9.5.0"
+          },
+          {
+            "Version": "0.9.6.0"
+          },
+          {
+            "Version": "0.9.7.0"
+          },
+          {
+            "Version": "0.9.8.0"
+          },
+          {
+            "Version": "0.9.9.0"
+          },
+          {
+            "Version": "0.9.10.0"
+          },
+          {
+            "Version": "0.9.11.0"
+          },
+          {
+            "Version": "0.9.12.0"
+          },
+          {
+            "Version": "0.9.13.0"
+          },
+          {
+            "Version": "0.9.14.0"
+          },
+          {
+            "Version": "0.9.15.0"
+          },
+          {
+            "Version": "0.9.16.0"
+          },
+          {
+            "Version": "0.9.17.0"
+          },
+          {
+            "Version": "0.9.18.0"
+          },
+          {
+            "Version": "0.9.19.0"
+          },
+          {
+            "Version": "0.9.20.0"
+          },
+          {
+            "Version": "0.9.21.0"
+          },
+          {
+            "Version": "0.9.22.0"
+          },
+          {
+            "Version": "0.9.23.0"
+          },
+          {
+            "Version": "0.9.24.0"
+          },
+          {
+            "Version": "0.10.0.0"
+          },
+          {
+            "Version": "0.10.1.0"
+          },
+          {
+            "Version": "0.11.0.0"
+          },
+          {
+            "Version": "0.11.1.0"
+          },
+          {
+            "Version": "0.11.2.0"
+          },
+          {
+            "Version": "0.11.3.0"
+          },
+          {
+            "Version": "0.11.4.0"
+          },
+          {
+            "Version": "0.11.5.0"
+          },
+          {
+            "Version": "0.11.7.0"
+          },
+          {
+            "Version": "0.12.0.0"
+          },
+          {
+            "Version": "1.0.0-beta1"
+          },
+          {
+            "Version": "1.0.0-rc1"
+          },
+          {
+            "Version": "1.0.0"
+          },
+          {
+            "Version": "1.0.1"
+          },
+          {
+            "Version": "1.0.2"
+          },
+          {
+            "Version": "1.1.0"
+          },
+          {
+            "Version": "1.1.1"
+          },
+          {
+            "Version": "1.1.2"
+          },
+          {
+            "Version": "1.2.0"
+          },
+          {
+            "Version": "1.2.1"
+          },
+          {
+            "Version": "1.2.2"
+          },
+          {
+            "Version": "1.2.3"
+          },
+          {
+            "Version": "1.3.0"
+          },
+          {
+            "Version": "1.3.1"
+          },
+          {
+            "Version": "1.4.0"
+          },
+          {
+            "Version": "1.4.1"
+          },
+          {
+            "Version": "1.4.2"
+          },
+          {
+            "Version": "1.4.3"
+          },
+          {
+            "Version": "1.5.0"
+          },
+          {
+            "Version": "1.5.1"
+          },
+          {
+            "Version": "1.6.0"
+          },
+          {
+            "Version": "1.6.1"
+          },
+          {
+            "Version": "1.7.0"
+          },
+          {
+            "Version": "1.7.1"
+          },
+          {
+            "Version": "1.7.2"
+          },
+          {
+            "Version": "1.8.0"
+          },
+          {
+            "Version": "1.8.1"
+          },
+          {
+            "Version": "1.8.2"
+          },
+          {
+            "Version": "1.8.3"
+          },
+          {
+            "Version": "1.9.0"
+          },
+          {
+            "Version": "1.9.1"
+          },
+          {
+            "Version": "1.9.2"
+          },
+          {
+            "Version": "2.0.0-alpha1"
+          },
+          {
+            "Version": "2.0.0-alpha2"
+          },
+          {
+            "Version": "2.0.0-rc1"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.0.2"
+          },
+          {
+            "Version": "2.0.3"
+          },
+          {
+            "Version": "2.0.4"
+          },
+          {
+            "Version": "2.0.5"
+          },
+          {
+            "Version": "2.1.0"
+          },
+          {
+            "Version": "2.1.1"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.3.0"
+          },
+          {
+            "Version": "2.3.1"
+          },
+          {
+            "Version": "2.3.2"
+          },
+          {
+            "Version": "2.3.3"
+          },
+          {
+            "Version": "2.4.0"
+          },
+          {
+            "Version": "2.4.1"
+          },
+          {
+            "Version": "2.4.2"
+          },
+          {
+            "Version": "2.4.3"
+          },
+          {
+            "Version": "2.4.4"
+          },
+          {
+            "Version": "2.4.5"
+          },
+          {
+            "Version": "2.4.6"
+          },
+          {
+            "Version": "2.4.7"
+          },
+          {
+            "Version": "2.5.0"
+          },
+          {
+            "Version": "2.5.1"
+          },
+          {
+            "Version": "2.5.2"
+          },
+          {
+            "Version": "2.5.3"
+          },
+          {
+            "Version": "2.5.4"
+          },
+          {
+            "Version": "5.0.0-alpha1"
+          },
+          {
+            "Version": "5.0.0-alpha2"
+          },
+          {
+            "Version": "5.0.0-alpha3"
+          },
+          {
+            "Version": "5.0.0-beta1"
+          },
+          {
+            "Version": "5.0.0-rc1"
+          },
+          {
+            "Version": "5.0.0-rc2"
+          },
+          {
+            "Version": "5.0.0-rc3"
+          },
+          {
+            "Version": "5.0.0-rc4"
+          },
+          {
+            "Version": "5.0.0"
+          },
+          {
+            "Version": "5.0.1"
+          },
+          {
+            "Version": "5.2.0"
+          },
+          {
+            "Version": "5.3.0"
+          },
+          {
+            "Version": "5.3.1",
+            "PackageDetails": {
+              "Name": "NEST",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/NEST/5.3.1",
+              "LicenseUrl": "https://github.com/elastic/elasticsearch-net/blob/master/license.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Elasticsearch.Net",
+                  "VersionRequirement": ">= 5.3.1 < 6.0",
+                  "FrameworkRestrictions": "net45, >= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "NETStandard.Library",
+                  "VersionRequirement": ">= 1.6",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "Newtonsoft.Json",
+                  "VersionRequirement": ">= 10.0 < 11.0",
+                  "FrameworkRestrictions": "net45, >= net46, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Collections.Specialized",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Linq.Queryable",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.TypeExtensions",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:45.7356632+02:00",
+        "PackageName": "log4net",
+        "Versions": [
+          {
+            "Version": "1.2.10"
+          },
+          {
+            "Version": "1.2.11"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.0.2"
+          },
+          {
+            "Version": "2.0.3",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/log4net/2.0.3",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.0.4"
+          },
+          {
+            "Version": "2.0.5"
+          },
+          {
+            "Version": "2.0.6"
+          },
+          {
+            "Version": "2.0.7"
+          },
+          {
+            "Version": "2.0.8",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/log4net/2.0.8",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "System.AppContext",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Collections.NonGeneric",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Console",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Debug",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.Process",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.StackTrace",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Diagnostics.TraceSource",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.IO.FileSystem",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.IO.FileSystem.Watcher",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Linq",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.NameResolution",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.Requests",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Net.Sockets",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.Extensions",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.TypeExtensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Extensions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.InteropServices",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.InteropServices.RuntimeInformation",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Formatters",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Text.RegularExpressions",
+                  "VersionRequirement": ">= 4.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading.Thread",
+                  "VersionRequirement": ">= 4.0",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Threading.Timer",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.ReaderWriter",
+                  "VersionRequirement": ">= 4.0.11",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.XmlDocument",
+                  "VersionRequirement": ">= 4.0.1",
+                  "FrameworkRestrictions": ">= netstandard13"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:46.8101381+02:00",
+        "PackageName": "log4net.ElasticSearch",
+        "Versions": [
+          {
+            "Version": "0.2.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.2.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.19.16"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.3.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.3.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.9.16"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.3.1",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.3.1",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.9.16"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.4.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.4.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.9.16"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.5.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.5.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.9.16"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.6.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.6.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.9.16"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.7.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.7.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.10.1"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.8.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.8.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.10.1"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.9.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.9.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.10"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.10.1"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.9.1",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.9.1",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.10"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.10.1"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.9.2",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.9.2",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.10"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.10.1"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.9.3",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.9.3",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.11.4"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.9.4",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.9.4",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.11.4"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.9.5",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.9.5",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.11.4"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.10.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.10.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.11.4"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "0.11.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/0.11.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 1.2.11"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.11.4"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.0-alpha"
+          },
+          {
+            "Version": "1.0.0-beta"
+          },
+          {
+            "Version": "1.0.0-beta1"
+          },
+          {
+            "Version": "1.0.0-beta2"
+          },
+          {
+            "Version": "1.0.0-beta3"
+          },
+          {
+            "Version": "1.0.0-beta4"
+          },
+          {
+            "Version": "1.0.0",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/1.0.0",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 2.0.3",
+                  "FrameworkRestrictions": ">= net40"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.12",
+                  "FrameworkRestrictions": ">= net40"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.1.0-beta"
+          },
+          {
+            "Version": "1.1",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/1.1",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 2.0.3",
+                  "FrameworkRestrictions": ">= net40"
+                },
+                {
+                  "PackageName": "NEST",
+                  "VersionRequirement": ">= 0.12",
+                  "FrameworkRestrictions": ">= net40"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "1.2-beta"
+          },
+          {
+            "Version": "1.2.0-beta2"
+          },
+          {
+            "Version": "1.2.0-beta3"
+          },
+          {
+            "Version": "1.2.0-beta4"
+          },
+          {
+            "Version": "1.2.0"
+          },
+          {
+            "Version": "1.2.1"
+          },
+          {
+            "Version": "1.3.0-alpha"
+          },
+          {
+            "Version": "1.3.0-alpha1"
+          },
+          {
+            "Version": "2.0.0-beta"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.1.0-beta"
+          },
+          {
+            "Version": "2.1.0"
+          },
+          {
+            "Version": "2.1.1"
+          },
+          {
+            "Version": "2.1.2"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.2.1"
+          },
+          {
+            "Version": "2.3.0"
+          },
+          {
+            "Version": "2.3.1"
+          },
+          {
+            "Version": "2.3.2"
+          },
+          {
+            "Version": "2.3.3"
+          },
+          {
+            "Version": "2.3.4",
+            "PackageDetails": {
+              "Name": "log4net.ElasticSearch",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/log4net.ElasticSearch/2.3.4",
+              "LicenseUrl": "https://github.com/jptoto/log4net.ElasticSearch/blob/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "log4net",
+                  "VersionRequirement": ">= 2.0.3",
+                  "FrameworkRestrictions": ">= net40"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:48.0901373+02:00",
+        "PackageName": "Newtonsoft.Json",
+        "Versions": [
+          {
+            "Version": "3.5.8"
+          },
+          {
+            "Version": "4.0.1"
+          },
+          {
+            "Version": "4.0.2"
+          },
+          {
+            "Version": "4.0.3"
+          },
+          {
+            "Version": "4.0.4"
+          },
+          {
+            "Version": "4.0.5"
+          },
+          {
+            "Version": "4.0.6"
+          },
+          {
+            "Version": "4.0.7"
+          },
+          {
+            "Version": "4.0.8"
+          },
+          {
+            "Version": "4.5.1"
+          },
+          {
+            "Version": "4.5.2"
+          },
+          {
+            "Version": "4.5.3"
+          },
+          {
+            "Version": "4.5.4"
+          },
+          {
+            "Version": "4.5.5"
+          },
+          {
+            "Version": "4.5.6"
+          },
+          {
+            "Version": "4.5.7"
+          },
+          {
+            "Version": "4.5.8"
+          },
+          {
+            "Version": "4.5.9"
+          },
+          {
+            "Version": "4.5.10"
+          },
+          {
+            "Version": "4.5.11"
+          },
+          {
+            "Version": "5.0.1"
+          },
+          {
+            "Version": "5.0.2"
+          },
+          {
+            "Version": "5.0.3"
+          },
+          {
+            "Version": "5.0.4"
+          },
+          {
+            "Version": "5.0.5"
+          },
+          {
+            "Version": "5.0.6"
+          },
+          {
+            "Version": "5.0.7"
+          },
+          {
+            "Version": "5.0.8"
+          },
+          {
+            "Version": "6.0.1-beta1"
+          },
+          {
+            "Version": "6.0.1"
+          },
+          {
+            "Version": "6.0.2"
+          },
+          {
+            "Version": "6.0.3"
+          },
+          {
+            "Version": "6.0.4"
+          },
+          {
+            "Version": "6.0.5"
+          },
+          {
+            "Version": "6.0.6"
+          },
+          {
+            "Version": "6.0.7"
+          },
+          {
+            "Version": "6.0.8"
+          },
+          {
+            "Version": "7.0.1-beta1"
+          },
+          {
+            "Version": "7.0.1-beta2"
+          },
+          {
+            "Version": "7.0.1-beta3"
+          },
+          {
+            "Version": "7.0.1"
+          },
+          {
+            "Version": "8.0.1-beta1"
+          },
+          {
+            "Version": "8.0.1-beta2"
+          },
+          {
+            "Version": "8.0.1-beta3"
+          },
+          {
+            "Version": "8.0.1-beta4"
+          },
+          {
+            "Version": "8.0.1"
+          },
+          {
+            "Version": "8.0.2"
+          },
+          {
+            "Version": "8.0.3"
+          },
+          {
+            "Version": "8.0.4-beta1"
+          },
+          {
+            "Version": "9.0.1-beta1"
+          },
+          {
+            "Version": "9.0.1"
+          },
+          {
+            "Version": "9.0.2-beta1"
+          },
+          {
+            "Version": "9.0.2-beta2"
+          },
+          {
+            "Version": "10.0.1-beta1"
+          },
+          {
+            "Version": "10.0.1"
+          },
+          {
+            "Version": "10.0.2",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Newtonsoft.Json/10.0.2",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.CSharp",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": "netstandard10, >= netstandard13"
+                },
+                {
+                  "PackageName": "NETStandard.Library",
+                  "VersionRequirement": ">= 1.6.1",
+                  "FrameworkRestrictions": "netstandard10, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.ComponentModel.TypeConverter",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": "netstandard10, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Formatters",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Primitives",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": "netstandard10, >= netstandard13"
+                },
+                {
+                  "PackageName": "System.Xml.XmlDocument",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:23:45.2826362+02:00",
+        "PackageName": "Elasticsearch.Net",
+        "Versions": [
+          {
+            "Version": "1.0.0-beta1"
+          },
+          {
+            "Version": "1.0.0-rc1"
+          },
+          {
+            "Version": "1.0.0"
+          },
+          {
+            "Version": "1.0.1"
+          },
+          {
+            "Version": "1.0.2"
+          },
+          {
+            "Version": "1.1.0"
+          },
+          {
+            "Version": "1.1.1"
+          },
+          {
+            "Version": "1.1.2"
+          },
+          {
+            "Version": "1.2.0"
+          },
+          {
+            "Version": "1.2.1"
+          },
+          {
+            "Version": "1.2.2"
+          },
+          {
+            "Version": "1.2.3"
+          },
+          {
+            "Version": "1.3.0"
+          },
+          {
+            "Version": "1.3.1"
+          },
+          {
+            "Version": "1.4.0"
+          },
+          {
+            "Version": "1.4.1"
+          },
+          {
+            "Version": "1.4.2"
+          },
+          {
+            "Version": "1.4.3"
+          },
+          {
+            "Version": "1.5.0"
+          },
+          {
+            "Version": "1.5.1"
+          },
+          {
+            "Version": "1.6.0"
+          },
+          {
+            "Version": "1.6.1"
+          },
+          {
+            "Version": "1.7.0"
+          },
+          {
+            "Version": "1.7.1"
+          },
+          {
+            "Version": "1.7.2"
+          },
+          {
+            "Version": "1.8.0"
+          },
+          {
+            "Version": "1.8.1"
+          },
+          {
+            "Version": "1.8.2"
+          },
+          {
+            "Version": "1.8.3"
+          },
+          {
+            "Version": "1.9.0"
+          },
+          {
+            "Version": "1.9.1"
+          },
+          {
+            "Version": "1.9.2"
+          },
+          {
+            "Version": "2.0.0-alpha1"
+          },
+          {
+            "Version": "2.0.0-alpha2"
+          },
+          {
+            "Version": "2.0.0-rc1"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.1"
+          },
+          {
+            "Version": "2.0.2"
+          },
+          {
+            "Version": "2.0.3"
+          },
+          {
+            "Version": "2.0.4"
+          },
+          {
+            "Version": "2.0.5"
+          },
+          {
+            "Version": "2.1.0"
+          },
+          {
+            "Version": "2.1.1"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.3.0"
+          },
+          {
+            "Version": "2.3.1"
+          },
+          {
+            "Version": "2.3.2"
+          },
+          {
+            "Version": "2.3.3"
+          },
+          {
+            "Version": "2.4.0"
+          },
+          {
+            "Version": "2.4.1"
+          },
+          {
+            "Version": "2.4.2"
+          },
+          {
+            "Version": "2.4.3"
+          },
+          {
+            "Version": "2.4.4"
+          },
+          {
+            "Version": "2.4.5"
+          },
+          {
+            "Version": "2.4.6"
+          },
+          {
+            "Version": "2.4.7"
+          },
+          {
+            "Version": "2.5.0"
+          },
+          {
+            "Version": "2.5.1"
+          },
+          {
+            "Version": "2.5.2"
+          },
+          {
+            "Version": "2.5.3"
+          },
+          {
+            "Version": "2.5.4"
+          },
+          {
+            "Version": "5.0.0-alpha1"
+          },
+          {
+            "Version": "5.0.0-alpha2"
+          },
+          {
+            "Version": "5.0.0-alpha3"
+          },
+          {
+            "Version": "5.0.0-beta1"
+          },
+          {
+            "Version": "5.0.0-rc1"
+          },
+          {
+            "Version": "5.0.0-rc2"
+          },
+          {
+            "Version": "5.0.0-rc3"
+          },
+          {
+            "Version": "5.0.0-rc4"
+          },
+          {
+            "Version": "5.0.0"
+          },
+          {
+            "Version": "5.0.1"
+          },
+          {
+            "Version": "5.2.0"
+          },
+          {
+            "Version": "5.3.0"
+          },
+          {
+            "Version": "5.3.1",
+            "PackageDetails": {
+              "Name": "Elasticsearch.Net",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Elasticsearch.Net/5.3.1",
+              "LicenseUrl": "https://github.com/elastic/elasticsearch-net/blob/master/license.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Microsoft.CSharp",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "NETStandard.Library",
+                  "VersionRequirement": ">= 1.6",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Collections.Specialized",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.ComponentModel.TypeConverter",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Dynamic.Runtime",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Reflection.TypeExtensions",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                },
+                {
+                  "PackageName": "System.Runtime.Serialization.Primitives",
+                  "VersionRequirement": ">= 4.3",
+                  "FrameworkRestrictions": ">= netstandard13"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

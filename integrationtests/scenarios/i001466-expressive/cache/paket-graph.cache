@@ -1,0 +1,23 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:40:44.2455868+02:00",
+        "PackageName": "ExpressiveAnnotations.dll",
+        "Versions": [
+          {
+            "Version": "2.3.6",
+            "PackageDetails": {
+              "Name": "ExpressiveAnnotations.dll",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/ExpressiveAnnotations.dll/2.3.6",
+              "LicenseUrl": "https://github.com/jwaliszko/ExpressiveAnnotations/blob/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

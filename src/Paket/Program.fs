@@ -359,6 +359,8 @@ let why (results: ParseResults<WhyArgs>) =
 
 
 let main() =
+    //System.Environment.SetEnvironmentVariable("PAKET_GRAPH_CACHE_PREVENT_ONLINE", "true")
+    //System.Environment.SetEnvironmentVariable("PAKET_GRAPH_CACHE", @"C:\PROJ\Paket\integrationtests\scenarios\i001270-force-redirects\cache\paket-graph.cache")
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 

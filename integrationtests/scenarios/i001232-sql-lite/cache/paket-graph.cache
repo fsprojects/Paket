@@ -1,0 +1,559 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T00:24:05.8101415+02:00",
+        "PackageName": "System.Data.SQLite.Core",
+        "Versions": [
+          {
+            "Version": "1.0.91.0"
+          },
+          {
+            "Version": "1.0.91.3"
+          },
+          {
+            "Version": "1.0.92.0"
+          },
+          {
+            "Version": "1.0.93.0"
+          },
+          {
+            "Version": "1.0.94.0"
+          },
+          {
+            "Version": "1.0.95.0"
+          },
+          {
+            "Version": "1.0.96.0"
+          },
+          {
+            "Version": "1.0.97.0"
+          },
+          {
+            "Version": "1.0.98.0"
+          },
+          {
+            "Version": "1.0.98.1",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.98.1",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.99.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.99.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.100.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.100.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.101.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.101.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.102.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.102.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.103",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.103",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.104.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.104.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.105.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Core/1.0.105.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:24:07.4699185+02:00",
+        "PackageName": "System.Data.SQLite.EF6",
+        "Versions": [
+          {
+            "Version": "1.0.91.0"
+          },
+          {
+            "Version": "1.0.91.3"
+          },
+          {
+            "Version": "1.0.92.0"
+          },
+          {
+            "Version": "1.0.93.0"
+          },
+          {
+            "Version": "1.0.94.0"
+          },
+          {
+            "Version": "1.0.95.0"
+          },
+          {
+            "Version": "1.0.96.0"
+          },
+          {
+            "Version": "1.0.97.0"
+          },
+          {
+            "Version": "1.0.98.0"
+          },
+          {
+            "Version": "1.0.98.1",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.EF6",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.98.1",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "EntityFramework",
+                  "VersionRequirement": ">= 6.0",
+                  "FrameworkRestrictions": "net40, net45, net451, >= net46"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.99.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.EF6",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.99.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "EntityFramework",
+                  "VersionRequirement": ">= 6.0",
+                  "FrameworkRestrictions": "net40, net45, net451, >= net46"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.100.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.EF6",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.100.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "EntityFramework",
+                  "VersionRequirement": ">= 6.0",
+                  "FrameworkRestrictions": "net40, net45, net451, >= net46"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.101.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.EF6",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.101.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "EntityFramework",
+                  "VersionRequirement": ">= 6.0",
+                  "FrameworkRestrictions": "net40, net45, net451, >= net46"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.102.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.EF6",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.102.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "EntityFramework",
+                  "VersionRequirement": ">= 6.0",
+                  "FrameworkRestrictions": "net40, net45, net451, >= net46"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.103",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.EF6",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.103",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "EntityFramework",
+                  "VersionRequirement": ">= 6.0",
+                  "FrameworkRestrictions": "net40, net45, net451, >= net46"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.104.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.EF6",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.104.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "EntityFramework",
+                  "VersionRequirement": ">= 6.0",
+                  "FrameworkRestrictions": "net40, net45, net451, >= net46"
+                }
+              ]
+            }
+          },
+          {
+            "Version": "1.0.105.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.EF6",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.EF6/1.0.105.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "EntityFramework",
+                  "VersionRequirement": ">= 6.0",
+                  "FrameworkRestrictions": "net40, net45, net451, >= net46"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:24:12.5796209+02:00",
+        "PackageName": "EntityFramework",
+        "Versions": [
+          {
+            "Version": "4.1.10311.0"
+          },
+          {
+            "Version": "4.1.10331.0"
+          },
+          {
+            "Version": "4.1.10715.0"
+          },
+          {
+            "Version": "4.2.0.0"
+          },
+          {
+            "Version": "4.3.0-beta1"
+          },
+          {
+            "Version": "4.3.0"
+          },
+          {
+            "Version": "4.3.1"
+          },
+          {
+            "Version": "5.0.0-beta1"
+          },
+          {
+            "Version": "5.0.0-beta2"
+          },
+          {
+            "Version": "5.0.0-rc"
+          },
+          {
+            "Version": "5.0.0"
+          },
+          {
+            "Version": "6.0.0-alpha1"
+          },
+          {
+            "Version": "6.0.0-alpha2"
+          },
+          {
+            "Version": "6.0.0-alpha3"
+          },
+          {
+            "Version": "6.0.0-beta1"
+          },
+          {
+            "Version": "6.0.0-rc1"
+          },
+          {
+            "Version": "6.0.0",
+            "PackageDetails": {
+              "Name": "EntityFramework",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/EntityFramework/6.0.0",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=320539",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "6.0.1"
+          },
+          {
+            "Version": "6.0.2-beta1"
+          },
+          {
+            "Version": "6.0.2"
+          },
+          {
+            "Version": "6.1.0-alpha1"
+          },
+          {
+            "Version": "6.1.0-beta1"
+          },
+          {
+            "Version": "6.1.0"
+          },
+          {
+            "Version": "6.1.1-beta1"
+          },
+          {
+            "Version": "6.1.1"
+          },
+          {
+            "Version": "6.1.2-beta1"
+          },
+          {
+            "Version": "6.1.2-beta2"
+          },
+          {
+            "Version": "6.1.2"
+          },
+          {
+            "Version": "6.1.3-beta1"
+          },
+          {
+            "Version": "6.1.3-beta1-40122"
+          },
+          {
+            "Version": "6.1.3",
+            "PackageDetails": {
+              "Name": "EntityFramework",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/EntityFramework/6.1.3",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=320539",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "7.0.0-beta1"
+          },
+          {
+            "Version": "7.0.0-beta2"
+          },
+          {
+            "Version": "7.0.0-beta3"
+          },
+          {
+            "Version": "7.0.0-beta4"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:24:08.9764174+02:00",
+        "PackageName": "System.Data.SQLite.Linq",
+        "Versions": [
+          {
+            "Version": "1.0.91.0"
+          },
+          {
+            "Version": "1.0.91.3"
+          },
+          {
+            "Version": "1.0.92.0"
+          },
+          {
+            "Version": "1.0.93.0"
+          },
+          {
+            "Version": "1.0.94.0"
+          },
+          {
+            "Version": "1.0.94.1"
+          },
+          {
+            "Version": "1.0.95.0"
+          },
+          {
+            "Version": "1.0.96.0"
+          },
+          {
+            "Version": "1.0.97.0"
+          },
+          {
+            "Version": "1.0.98.0"
+          },
+          {
+            "Version": "1.0.98.1",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Linq",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.98.1",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.99.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Linq",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.99.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.100.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Linq",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.100.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.101.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Linq",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.101.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.102.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Linq",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.102.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.103",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Linq",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.103",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.104.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Linq",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.104.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": []
+            }
+          },
+          {
+            "Version": "1.0.105.0",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite.Linq",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite.Linq/1.0.105.0",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:38:36",
+        "PackageName": "System.Data.SQLite",
+        "Versions": [
+          {
+            "Version": "1.0.98.1",
+            "PackageDetails": {
+              "Name": "System.Data.SQLite",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/System.Data.SQLite/1.0.98.1",
+              "LicenseUrl": "https://www.sqlite.org/copyright.html",
+              "IsUnlisted": true,
+              "Dependencies": [
+                {
+                  "PackageName": "System.Data.SQLite.Core",
+                  "VersionRequirement": ">= 1.0.98.1",
+                  "FrameworkRestrictions": "net20, net40, net45, net451, >= net46"
+                },
+                {
+                  "PackageName": "System.Data.SQLite.EF6",
+                  "VersionRequirement": ">= 1.0.98.1",
+                  "FrameworkRestrictions": "net40, net45, net451, >= net46"
+                },
+                {
+                  "PackageName": "System.Data.SQLite.Linq",
+                  "VersionRequirement": ">= 1.0.98.1",
+                  "FrameworkRestrictions": "net20, net40, net45, net451, >= net46"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

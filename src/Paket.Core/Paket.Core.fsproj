@@ -123,6 +123,7 @@
     <Compile Include="Dependencies\NuGetV2.fs" />
     <Compile Include="Dependencies\DependenciesFileParser.fs" />
     <Compile Include="PaketConfigFiles\RuntimeGraph.fs" />
+    <Compile Include="PaketConfigFiles\GraphCache.fs" />
     <Compile Include="PaketConfigFiles\InstallModel.fs" />
     <Compile Include="PaketConfigFiles\ReferencesFile.fs" />
     <Compile Include="PaketConfigFiles/SolutionFile.fs" />

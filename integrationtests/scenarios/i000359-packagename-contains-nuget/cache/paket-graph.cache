@@ -1,0 +1,199 @@
+{
+  "http://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T00:22:14.5161272+02:00",
+        "PackageName": "nuget.CommandLine",
+        "Versions": [
+          {
+            "Version": "1.0.11220.26",
+            "PackageDetails": {
+              "Name": "NuGet.CommandLine",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/NuGet.CommandLine/1.0.11220.26",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "1.1.2120.134"
+          },
+          {
+            "Version": "1.1.2120.136"
+          },
+          {
+            "Version": "1.1.2121.140"
+          },
+          {
+            "Version": "1.1.2122.156"
+          },
+          {
+            "Version": "1.2.2128.11"
+          },
+          {
+            "Version": "1.2.20216.59"
+          },
+          {
+            "Version": "1.2.20310.1"
+          },
+          {
+            "Version": "1.2.20311.3"
+          },
+          {
+            "Version": "1.2.20325.10"
+          },
+          {
+            "Version": "1.2.20401.11"
+          },
+          {
+            "Version": "1.2.20409.25"
+          },
+          {
+            "Version": "1.2.20415.26"
+          },
+          {
+            "Version": "1.2.20416.28"
+          },
+          {
+            "Version": "1.2.20416.30"
+          },
+          {
+            "Version": "1.2.20417.31"
+          },
+          {
+            "Version": "1.3.20425.372"
+          },
+          {
+            "Version": "1.4.20615.182"
+          },
+          {
+            "Version": "1.5.20830.9001"
+          },
+          {
+            "Version": "1.5.20905.5"
+          },
+          {
+            "Version": "1.5.21005.9019"
+          },
+          {
+            "Version": "1.6.0"
+          },
+          {
+            "Version": "1.7.0"
+          },
+          {
+            "Version": "1.8.0"
+          },
+          {
+            "Version": "1.8.1"
+          },
+          {
+            "Version": "1.8.4"
+          },
+          {
+            "Version": "1.8.40000"
+          },
+          {
+            "Version": "1.8.40001"
+          },
+          {
+            "Version": "1.8.40002"
+          },
+          {
+            "Version": "2.0.0"
+          },
+          {
+            "Version": "2.0.40000"
+          },
+          {
+            "Version": "2.0.40001"
+          },
+          {
+            "Version": "2.1.0"
+          },
+          {
+            "Version": "2.1.1"
+          },
+          {
+            "Version": "2.1.2"
+          },
+          {
+            "Version": "2.2.0"
+          },
+          {
+            "Version": "2.2.1"
+          },
+          {
+            "Version": "2.5.0"
+          },
+          {
+            "Version": "2.6.0"
+          },
+          {
+            "Version": "2.6.1"
+          },
+          {
+            "Version": "2.7.0"
+          },
+          {
+            "Version": "2.7.1"
+          },
+          {
+            "Version": "2.7.2"
+          },
+          {
+            "Version": "2.7.3"
+          },
+          {
+            "Version": "2.8.0"
+          },
+          {
+            "Version": "2.8.1"
+          },
+          {
+            "Version": "2.8.2-beta"
+          },
+          {
+            "Version": "2.8.2"
+          },
+          {
+            "Version": "2.8.3"
+          },
+          {
+            "Version": "2.8.5"
+          },
+          {
+            "Version": "2.8.6"
+          },
+          {
+            "Version": "2.12.0"
+          },
+          {
+            "Version": "3.3.0"
+          },
+          {
+            "Version": "3.4.3"
+          },
+          {
+            "Version": "3.4.4-rtm-final"
+          },
+          {
+            "Version": "3.5.0",
+            "PackageDetails": {
+              "Name": "NuGet.CommandLine",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/NuGet.CommandLine/3.5.0",
+              "LicenseUrl": "https://raw.githubusercontent.com/NuGet/NuGet.Client/dev/LICENSE.txt",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "4.0.0-rc2"
+          }
+        ]
+      }
+    ]
+  }
+}

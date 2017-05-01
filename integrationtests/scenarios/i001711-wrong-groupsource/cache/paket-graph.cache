@@ -1,0 +1,44 @@
+{
+  "TestA": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T01:00:47.2181721+02:00",
+        "PackageName": "Test",
+        "Versions": [
+          {
+            "Version": "0.0.1",
+            "PackageDetails": {
+              "Name": "Test",
+              "DownloadLink": "Test",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  },
+  "TestB": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-02T01:00:47.1696711+02:00",
+        "PackageName": "Test",
+        "Versions": [
+          {
+            "Version": "0.0.1",
+            "PackageDetails": {
+              "Name": "Test",
+              "DownloadLink": "Test",
+              "LicenseUrl": "",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

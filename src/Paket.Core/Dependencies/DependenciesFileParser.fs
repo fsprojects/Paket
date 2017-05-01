@@ -36,7 +36,7 @@ module DependenciesFileParser =
         let penultimateItem = Math.Max(parts.Length - 2, 0)
         let promoted = parts |> promote penultimateItem
         String.Join(".", promoted)
-
+        
     let parseVersionRequirement (text : string) : VersionRequirement =
         try
             let inline parsePrerelease (versions:SemVerInfo list) (texts : string list) = 

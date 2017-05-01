@@ -1,0 +1,23 @@
+{
+  "https://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:41:10.6313001+02:00",
+        "PackageName": "WebSharper",
+        "Versions": [
+          {
+            "Version": "3.6.11.234",
+            "PackageDetails": {
+              "Name": "WebSharper",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/WebSharper/3.6.11.234",
+              "LicenseUrl": "http://websharper.com/licensing",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

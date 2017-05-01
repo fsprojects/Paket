@@ -51,7 +51,13 @@ let FindOutdated strict includingPrereleases groupNameFilter environment = trial
         | None -> dependenciesFile.Groups
         | Some gname -> dependenciesFile.Groups |> Map.filter(fun k g -> k.ToString() = gname)
 
-    let newResolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, NuGetV2.GetPackageDetails alternativeProjectRoot root true, RuntimeGraph.getRuntimeGraphFromNugetCache root, checkedDepsGroups, PackageResolver.UpdateMode.UpdateAll)
+    let newResolution =
+        dependenciesFile.Resolve(
+            force, getSha1,
+            getVersionsF |> GraphCache.liftGetVersionsF,
+            NuGetV2.GetPackageDetails alternativeProjectRoot root true |> GraphCache.liftGetPackageDetailsF,
+            RuntimeGraph.getRuntimeGraphFromNugetCache root |> GraphCache.liftGetRuntimeGraphFromPackage,
+            checkedDepsGroups, PackageResolver.UpdateMode.UpdateAll)
 
     let checkedLockGroups = 
         match groupNameFilter with

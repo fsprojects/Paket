@@ -1,0 +1,291 @@
+{
+  "http://www.nuget.org/api/v2": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:56",
+        "PackageName": "Castle.Windsor",
+        "Versions": [
+          {
+            "Version": "3.0.0.3001",
+            "PackageDetails": {
+              "Name": "Castle.Windsor",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Castle.Windsor/3.0.0.3001",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Castle.Core",
+                  "VersionRequirement": ">= 3.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:56",
+        "PackageName": "Albedo",
+        "Versions": [
+          {
+            "Version": "1.0.2",
+            "PackageDetails": {
+              "Name": "Albedo",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Albedo/1.0.2",
+              "LicenseUrl": "https://raw2.github.com/ploeh/Albedo/master/LICENSE",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:56",
+        "PackageName": "AutoFixture.Idioms",
+        "Versions": [
+          {
+            "Version": "3.35.1",
+            "PackageDetails": {
+              "Name": "AutoFixture.Idioms",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/AutoFixture.Idioms/3.35.1",
+              "LicenseUrl": "https://github.com/AutoFixture/AutoFixture/blob/master/LICENCE.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Albedo",
+                  "VersionRequirement": ">= 1.0.1"
+                },
+                {
+                  "PackageName": "autofixture",
+                  "VersionRequirement": ">= 3.35.1"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:56",
+        "PackageName": "Castle.Core",
+        "Versions": [
+          {
+            "Version": "3.3.3",
+            "PackageDetails": {
+              "Name": "Castle.Core",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Castle.Core/3.3.3",
+              "LicenseUrl": "http://www.apache.org/licenses/LICENSE-2.0.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:57",
+        "PackageName": "Castle.Windsor.Extensions",
+        "Versions": [
+          {
+            "Version": "2.1.1",
+            "PackageDetails": {
+              "Name": "Castle.Windsor.Extensions",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Castle.Windsor.Extensions/2.1.1",
+              "LicenseUrl": "http://www.gnu.org/licenses/lgpl-2.1.html",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Castle.Core",
+                  "VersionRequirement": ">= 3.0.0.3001",
+                  "FrameworkRestrictions": ">= net40"
+                },
+                {
+                  "PackageName": "Castle.Windsor",
+                  "VersionRequirement": ">= 3.0.0.3001",
+                  "FrameworkRestrictions": ">= net40"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-02T00:22:37.0136692+02:00",
+        "PackageName": "xunit.extensions",
+        "Versions": [
+          {
+            "Version": "1.7.0.1540"
+          },
+          {
+            "Version": "1.8.0.1545"
+          },
+          {
+            "Version": "1.8.0.1549",
+            "PackageDetails": {
+              "Name": "xunit.extensions",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/xunit.extensions/1.8.0.1549",
+              "LicenseUrl": "http://xunit.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "xunit",
+                  "VersionRequirement": ">= 1.8.0.1549"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "1.9.0.1566"
+          },
+          {
+            "Version": "1.9.1"
+          },
+          {
+            "Version": "1.9.2",
+            "PackageDetails": {
+              "Name": "xunit.extensions",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/xunit.extensions/1.9.2",
+              "LicenseUrl": "http://xunit.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "xunit",
+                  "VersionRequirement": "1.9.2"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          },
+          {
+            "Version": "2.0.0-alpha-build1611"
+          },
+          {
+            "Version": "2.0.0-rc4-build2924"
+          },
+          {
+            "Version": "2.0.0"
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:57",
+        "PackageName": "log4net",
+        "Versions": [
+          {
+            "Version": "2.0.3",
+            "PackageDetails": {
+              "Name": "log4net",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/log4net/2.0.3",
+              "LicenseUrl": "http://logging.apache.org/log4net/license.html",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:58",
+        "PackageName": "Newtonsoft.Json.Schema",
+        "Versions": [
+          {
+            "Version": "1.0.11",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json.Schema",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/Newtonsoft.Json.Schema/1.0.11",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json.Schema/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "Newtonsoft.Json",
+                  "VersionRequirement": ">= 6.0.8"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:58",
+        "PackageName": "xunit",
+        "Versions": [
+          {
+            "Version": "1.9.2",
+            "PackageDetails": {
+              "Name": "xunit",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/xunit/1.9.2",
+              "LicenseUrl": "http://xunit.codeplex.com/license",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:56",
+        "PackageName": "AutoFixture.Xunit",
+        "Versions": [
+          {
+            "Version": "3.36.9",
+            "PackageDetails": {
+              "Name": "AutoFixture.Xunit",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/AutoFixture.Xunit/3.36.9",
+              "LicenseUrl": "https://github.com/AutoFixture/AutoFixture/blob/master/LICENCE.txt",
+              "IsUnlisted": false,
+              "Dependencies": [
+                {
+                  "PackageName": "autofixture",
+                  "VersionRequirement": ">= 3.36.9"
+                },
+                {
+                  "PackageName": "xunit.extensions",
+                  "VersionRequirement": ">= 1.8.0.1549 < 2.0"
+                }
+              ]
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:56",
+        "PackageName": "AutoFixture",
+        "Versions": [
+          {
+            "Version": "3.36.9",
+            "PackageDetails": {
+              "Name": "AutoFixture",
+              "DownloadLink": "http://www.nuget.org/api/v2/package/AutoFixture/3.36.9",
+              "LicenseUrl": "https://github.com/AutoFixture/AutoFixture/blob/master/LICENCE.txt",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      },
+      {
+        "VersionsRetrieved": "2017-05-01T23:34:57",
+        "PackageName": "Newtonsoft.Json",
+        "Versions": [
+          {
+            "Version": "7.0.1",
+            "PackageDetails": {
+              "Name": "Newtonsoft.Json",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/Newtonsoft.Json/7.0.1",
+              "LicenseUrl": "https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

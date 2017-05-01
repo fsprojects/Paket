@@ -1,0 +1,23 @@
+{
+  "https://api.nuget.org/v3/index.json": {
+    "Packages": [
+      {
+        "VersionsRetrieved": "2017-05-01T23:37:48.0077974+02:00",
+        "PackageName": "EntityFramework",
+        "Versions": [
+          {
+            "Version": "6.1.0",
+            "PackageDetails": {
+              "Name": "EntityFramework",
+              "DownloadLink": "https://www.nuget.org/api/v2/package/EntityFramework/6.1.0",
+              "LicenseUrl": "http://go.microsoft.com/fwlink/?LinkID=320539",
+              "IsUnlisted": false,
+              "Dependencies": []
+            },
+            "RuntimeGraphData": {}
+          }
+        ]
+      }
+    ]
+  }
+}

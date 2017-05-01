@@ -42,6 +42,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\Dependencies\NuGetV2.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Dependencies\DependenciesFileParser.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PaketConfigFiles\RuntimeGraph.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\PaketConfigFiles\GraphCache.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PaketConfigFiles\InstallModel.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PaketConfigFiles\ReferencesFile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\PaketConfigFiles/SolutionFile.fs" />
