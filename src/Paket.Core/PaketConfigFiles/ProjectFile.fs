@@ -551,9 +551,10 @@ module ProjectFile =
                     | Some CopyToOutputDirectorySettings.Never  -> addChild (createNodeSet "CopyToOutputDirectory" "Never" project) n
                     | Some CopyToOutputDirectorySettings.PreserveNewest  -> addChild (createNodeSet "CopyToOutputDirectory" "PreserveNewest" project) n
                     | None -> n
-                |> fun n -> match fileItem.Link with
-                            | Some link -> addChild (createNodeSet "Link" (link.Replace("\\","/")) project) n
-                            | _ -> n
+                |> fun n -> 
+                    match fileItem.Link with
+                    | Some link -> addChild (createNodeSet "Link" (link.Replace("\\","/")) project) n
+                    | _ -> n
 
             let fileItemsInSameDir =
                 project.Document 
@@ -611,15 +612,15 @@ module ProjectFile =
         let nodesToDelete = 
             getCustomModelNodes model project
             |> List.filter (fun node ->
-                let isFrameworkNode = ref true
-                let isManualNode = ref false
+                let mutable isFrameworkNode = true
+                let mutable isManualNode = false
                 for child in node.ChildNodes do
-                    if child.Name = "HintPath" then isFrameworkNode := false
-                    if child.Name = "Private" then isFrameworkNode := false
+                    if child.Name = "HintPath" then isFrameworkNode <- false
+                    if child.Name = "Private" then isFrameworkNode  <- false
                     if child.Name = "Paket" && String.equalsIgnoreCase child.InnerText "false" then 
-                        isManualNode := true
+                        isManualNode <- true
 
-                not !isFrameworkNode && not !isManualNode)
+                not isFrameworkNode && not isManualNode)
         
         if nodesToDelete <> [] then
             verbosefn "    - Deleting custom projects nodes for %O" model.PackageName
@@ -713,10 +714,10 @@ module ProjectFile =
                 references
                 |> Seq.map (fun lib ->
                     let targetsFile = lib.Path
-                    let fi = new FileInfo(normalizePath targetsFile)
+                    let fi = FileInfo (normalizePath targetsFile)
                     let propertyName = "__paket__" + fi.Name.ToString().Replace(" ","_").Replace(".","_")
 
-                    let path = createRelativePath project.FileName (fi.FullName.Replace(fi.Extension,""))
+                    let path = createRelativePath project.FileName (fi.FullName.Replace (fi.Extension,""))
                     let s = path.Substring(path.LastIndexOf("build\\") + 6)
                     let node = createNode propertyName project
                     node.InnerText <- s
