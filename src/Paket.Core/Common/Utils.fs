@@ -607,7 +607,8 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             return Some raw
         with e ->
-            Logging.verbosefn "Error while retrieving '%s': %O" url e
+            if verbose then
+                Logging.verbosefn "Error while retrieving '%s': %O" url e
             return None
     }
 

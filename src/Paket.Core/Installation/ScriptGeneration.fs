@@ -125,7 +125,8 @@ module ScriptGeneration =
         member self.Save (directory:DirectoryInfo) = 
             directory.Create()
             let scriptFile = FileInfo (directory.FullName </> self.PartialPath)
-            verbosefn "generating script - %s" scriptFile.FullName
+            if verbose then
+                verbosefn "generating script - %s" scriptFile.FullName
             scriptFile.Directory.Create()
             let text = self.Render directory
             File.WriteAllText (scriptFile.FullName, text)
@@ -241,10 +242,11 @@ module ScriptGeneration =
         let groups = 
             if groups = [] then dependenciesFile.Groups |> Seq.map (fun kvp -> kvp.Key) |> Seq.toList 
             else groups
-
-        verbosefn "Generating Load Scripts" 
-        verbosefn "Using Paket dependency file\n - %s" dependenciesFile.FileName
-        verbosefn "Using LockFile \n - %s" lockFile.FileName
+        
+        if verbose then
+            verbosefn "Generating Load Scripts" 
+            verbosefn "Using Paket dependency file\n - %s" dependenciesFile.FileName
+            verbosefn "Using LockFile \n - %s" lockFile.FileName
 
         let tupleMap f v = (v, f v)
         let failOnMismatch toParse parsed fn message =

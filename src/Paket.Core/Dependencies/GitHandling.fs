@@ -152,7 +152,8 @@ let fetchCache repoCacheFolder cloneUrl =
             CommandHelper.runSimpleGitCommand Constants.GitRepoCacheFolder ("clone --mirror " + quote cloneUrl + " " + quote repoCacheFolder) |> ignore
         else
             CommandHelper.runSimpleGitCommand repoCacheFolder ("remote set-url origin " + quote cloneUrl) |> ignore
-            verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder
+            if verbose then
+                verbosefn "Fetching %s to %s" cloneUrl repoCacheFolder
 
         CommandHelper.runSimpleGitCommand repoCacheFolder "remote update --prune" |> ignore
     with
@@ -185,13 +186,15 @@ let checkoutToPaketFolder repoFolder cloneUrl cacheCloneUrl commit =
     try
         // checkout to local folder
         if Directory.Exists repoFolder then
-            verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder
+            if verbose then
+                verbosefn "Fetching %s to %s" cacheCloneUrl repoFolder
             CommandHelper.runSimpleGitCommand repoFolder (sprintf "fetch --tags --prune %s +refs/heads/*:refs/remotes/origin/*" <| quote cacheCloneUrl) |> ignore
         else
             let destination = DirectoryInfo(repoFolder).Parent.FullName
             if not <| Directory.Exists destination then
                 Directory.CreateDirectory destination |> ignore
-            verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
+            if verbose then
+                verbosefn "Cloning %s to %s" cacheCloneUrl repoFolder
             CommandHelper.runSimpleGitCommand destination (sprintf "clone %s %s" (quote cacheCloneUrl) (quote repoFolder)) |> ignore
             CommandHelper.runSimpleGitCommand repoFolder (sprintf "remote set-url origin %s" <| quote cloneUrl) |> ignore
 

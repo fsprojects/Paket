@@ -499,7 +499,8 @@ module ProjectFile =
     let deletePaketNodes name (project:ProjectFile) =
         let nodesToDelete = findPaketNodes name project
         if nodesToDelete |> Seq.isEmpty |> not then
-            verbosefn "    - Deleting Paket %s nodes" name
+            if verbose then
+                verbosefn "    - Deleting Paket %s nodes" name
 
         for node in nodesToDelete do
             node.ParentNode.RemoveChild node |> ignore
@@ -622,7 +623,8 @@ module ProjectFile =
                 not !isFrameworkNode && not !isManualNode)
         
         if nodesToDelete <> [] then
-            verbosefn "    - Deleting custom projects nodes for %O" model.PackageName
+            if verbose then
+                verbosefn "    - Deleting custom projects nodes for %O" model.PackageName
 
         for node in nodesToDelete do
             node.ParentNode.RemoveChild node |> ignore
@@ -1131,7 +1133,8 @@ module ProjectFile =
 
     let save forceTouch project =
         if Utils.normalizeXml project.Document <> project.OriginalText || not (File.Exists(project.FileName)) then
-            verbosefn "Project %s changed" project.FileName
+            if verbose then
+                verbosefn "Project %s changed" project.FileName
             use f = File.Open(project.FileName, FileMode.Create)
             project.Document.Save(f)
         elif forceTouch then

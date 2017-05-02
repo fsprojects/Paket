@@ -63,7 +63,8 @@ let Encrypt (password : string) =
         try 
             ProtectedData.Protect(Encoding.UTF8.GetBytes password, salt, DataProtectionScope.CurrentUser)
         with | :? CryptographicException as e ->
-            verbosefn "could not protect password: %s\n for current user" e.Message
+            if verbose then
+                verbosefn "could not protect password: %s\n for current user" e.Message
             ProtectedData.Protect(Encoding.UTF8.GetBytes password, salt, DataProtectionScope.LocalMachine)
     salt |> Convert.ToBase64String ,
     encryptedPassword |> Convert.ToBase64String

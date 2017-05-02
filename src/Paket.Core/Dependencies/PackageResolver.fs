@@ -414,12 +414,14 @@ let private getExploredPackage (pkgConfig:PackageConfig) getPackageDetailsF (sta
     | true, package ->
         let package = updateRestrictions pkgConfig package
         stackpack.ExploredPackages.[key] <- package
-        verbosefn "   Retrieved Explored Package  %O" package
+        if verbose then
+            verbosefn "   Retrieved Explored Package  %O" package
         stackpack, Some(true, package)
     | false,_ ->
         match explorePackageConfig getPackageDetailsF pkgConfig with
         | Some explored ->
-            verbosefn "   Found Explored Package  %O" explored
+            if verbose then
+                verbosefn "   Found Explored Package  %O" explored
             stackpack.ExploredPackages.Add(key,explored)
             stackpack, Some(false, explored)
         | None ->
@@ -435,7 +437,8 @@ let private getCompatibleVersions
                 globalOverride
                 globalStrategyForDirectDependencies
                 globalStrategyForTransitives        =
-    verbosefn "  Trying to resolve %O" currentRequirement
+    if verbose then
+        verbosefn "  Trying to resolve %O" currentRequirement
 
     match Map.tryFind currentRequirement.Name currentStep.FilteredVersions with
     | None ->
@@ -798,7 +801,8 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                      && not currentConflict.Status.IsDone 
                      then
                      // if it's been determined that an unlisted package must be used, ready must be set to false
-                        verbosefn "\nSearching for compatible unlisted package\n"
+                        if verbose then
+                            verbosefn "\nSearching for compatible unlisted package\n"
                         { flags with 
                             Ready = false
                             UseUnlisted = true

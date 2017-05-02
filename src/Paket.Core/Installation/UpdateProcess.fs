@@ -17,7 +17,8 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRunti
         match allVersions.TryGetValue key with
         | false,_ ->
             let versions = 
-                verbosefn "  - fetching versions for %O" packageName
+                if verbose then
+                    verbosefn "  - fetching versions for %O" packageName
                 getSortedVersionsF sources resolverStrategy groupName packageName
 
             if Seq.isEmpty versions then

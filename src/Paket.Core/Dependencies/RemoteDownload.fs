@@ -289,7 +289,8 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                     false
 
             if isInCorrectVersion then
-                verbosefn "%s is already up-to-date." repoFolder
+                if verbose then
+                    verbosefn "%s is already up-to-date." repoFolder
             else
                 do! downloadRemoteFiles(gitRepo,destination) 
         })
@@ -324,7 +325,8 @@ let DownloadSourceFiles(rootPath, groupName, force, sourceFiles:ModuleResolver.R
                     File.Exists destination
 
             if not force && exists then
-                verbosefn "Sourcefile %O is already there." source
+                if verbose then
+                    verbosefn "Sourcefile %O is already there." source
             else 
                 tracefn "Downloading %O to %s" source destination
                 Async.RunSynchronously <| downloadRemoteFiles(source,destination))

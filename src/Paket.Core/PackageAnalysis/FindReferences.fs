@@ -39,7 +39,8 @@ let TouchReferencesOfPackages packages environment = trial {
     |> List.collect id
     |> List.distinctBy (fun project-> project.FileName)
     |> List.iter (fun project ->
-        verbosefn "Touching project %s" project.FileName
+        if verbose then
+            verbosefn "Touching project %s" project.FileName
         project.Save(true))
 }
 

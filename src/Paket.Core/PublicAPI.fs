@@ -26,7 +26,8 @@ type Dependencies(dependenciesFileName: string) =
     /// Clears the NuGet cache
     static member ClearCache() =
         let emptyDir path =
-            verbosefn "Emptying '%s'" path
+            if verbose then
+               verbosefn "Emptying '%s'" path
             Utils.emptyDir (DirectoryInfo path)
         
         emptyDir (Constants.UserNuGetPackagesFolder)
@@ -62,7 +63,8 @@ type Dependencies(dependenciesFileName: string) =
                 | _ -> findInPath(parent, withError)
 
         let dependenciesFileName = findInPath(DirectoryInfo path,true)
-        verbosefn "found: %s" dependenciesFileName
+        if verbose then
+            verbosefn "found: %s" dependenciesFileName
         Dependencies(dependenciesFileName)
 
     /// Initialize paket.dependencies file in current directory

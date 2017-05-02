@@ -55,7 +55,8 @@ let deleteUnusedPackages root (lockFile:LockFile) =
 /// Removes older packages from the cache
 let removeOlderVersionsFromCache(cache:Cache, packageName:PackageName, versions:SemVerInfo seq) =
     if Cache.isInaccessible cache then
-        verbosefn "Cache %s is inaccessible, skipping" cache.Location
+        if verbose then
+            verbosefn "Cache %s is inaccessible, skipping" cache.Location
     else
         let targetFolder = DirectoryInfo(cache.Location)
         let cont =

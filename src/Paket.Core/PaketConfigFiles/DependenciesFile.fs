@@ -667,7 +667,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         DependenciesFile(DependenciesFileParser.parseDependenciesFile "" true <| source.Replace("\r\n","\n").Replace("\r","\n").Split('\n'))
 
     static member ReadFromFile fileName : DependenciesFile = 
-        verbosefn "Parsing %s" fileName
+        if verbose then
+            verbosefn "Parsing %s" fileName
         DependenciesFile(DependenciesFileParser.parseDependenciesFile fileName true <| File.ReadAllLines fileName)    
 
     /// Find the matching lock file to a dependencies file

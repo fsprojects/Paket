@@ -58,7 +58,8 @@ let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageNa
     async {
         try
             let url = sprintf "%s/Packages?$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
-            verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
+            if verbose then
+                verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
@@ -68,7 +69,8 @@ let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName
     async {
         try
             let url = sprintf "%s/FindPackagesById()?id='%O'" nugetURL package
-            verbosefn "getAllVersionsFromNugetODataFindById from url '%s'" url
+            if verbose then
+                verbosefn "getAllVersionsFromNugetODataFindById from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
@@ -78,7 +80,8 @@ let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:
     async {
         try
             let url = sprintf "%s/FindPackagesById()?id='%O'&$orderby=Published desc" nugetURL package
-            verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
+            if verbose then
+                verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
             let! result = followODataLink auth url
             return Some result
         with _ -> return None
@@ -189,7 +192,8 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
                      match FrameworkDetection.Extract restriction with
                      | Some x -> Some [ FrameworkRestriction.Exactly x ]
                      | None ->
-                        verbosefn "Unable to parse framework restriction '%s' for package '%s' in package '%s'" restriction a.[0] (packageName.ToString())
+                        if verbose then
+                            verbosefn "Unable to parse framework restriction '%s' for package '%s' in package '%s'" restriction a.[0] (packageName.ToString())
                         None
              else Some [])
 
@@ -479,7 +483,8 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
     async {
         let directory = DirectoryInfo(targetFolder)
         if isExtracted directory fileName then
-             verbosefn "%O %O already extracted" packageName version
+             if verbose then
+                 verbosefn "%O %O already extracted" packageName version
         else
             Directory.CreateDirectory(targetFolder) |> ignore
 
@@ -494,7 +499,8 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
 
 
             cleanup directory
-            verbosefn "%O %O unzipped to %s" packageName version targetFolder
+            if verbose then
+                verbosefn "%O %O unzipped to %s" packageName version targetFolder
         let! _ = ExtractPackageToUserFolder(fileName, packageName, version, detailed)
         return targetFolder
     }
@@ -507,7 +513,8 @@ let CopyLicenseFromCache(root, groupName, cacheFileName, packageName:PackageName
             if cacheFile.Exists then
                 let targetFile = FileInfo(Path.Combine(getTargetFolder root groupName packageName version includeVersionInPath, "license.html"))
                 if not force && targetFile.Exists then
-                    verbosefn "License %O %O already copied" packageName version
+                    if verbose then
+                       verbosefn "License %O %O already copied" packageName version
                 else
                     File.Copy(cacheFile.FullName, targetFile.FullName, true)
         with
@@ -521,7 +528,8 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
         let fi = FileInfo(cacheFileName)
         let targetFile = FileInfo(Path.Combine(targetFolder, fi.Name))
         if not force && targetFile.Exists then
-            verbosefn "%O %O already copied" packageName version
+            if verbose then
+                verbosefn "%O %O already copied" packageName version
         else
             CleanDir targetFolder
             File.Copy(cacheFileName, targetFile.FullName)
@@ -540,7 +548,8 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
 let CopyToCache(cache:Cache, fileName, force) =
     try
         if Cache.isInaccessible cache then
-            verbosefn "Cache %s is inaccessible, skipping" cache.Location
+            if verbose then
+                verbosefn "Cache %s is inaccessible, skipping" cache.Location
         else
             let targetFolder = DirectoryInfo(cache.Location)
             if not targetFolder.Exists then
@@ -550,7 +559,8 @@ let CopyToCache(cache:Cache, fileName, force) =
             let targetFile = FileInfo(Path.Combine(targetFolder.FullName, fi.Name))
 
             if not force && targetFile.Exists then
-                verbosefn "%s already in cache %s" fi.Name targetFolder.FullName
+                if verbose then
+                    verbosefn "%s already in cache %s" fi.Name targetFolder.FullName
             else
                 File.Copy(fileName, targetFile.FullName, force)
     with
@@ -564,10 +574,12 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
 
         let targetFile = FileInfo targetFileName
         if not force && targetFile.Exists && targetFile.Length > 0L then
-            verbosefn "License for %O %O already downloaded" packageName version
+            if verbose then
+                verbosefn "License for %O %O already downloaded" packageName version
         else
             try
-                verbosefn "Downloading license for %O %O to %s" packageName version targetFileName
+                if verbose then
+                    verbosefn "Downloading license for %O %O to %s" packageName version targetFileName
 
                 let request = HttpWebRequest.Create(Uri licenseUrl) :?> HttpWebRequest
 #if NETSTANDARD1_6
@@ -722,7 +734,8 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                     let! result = getDetailsFromLocalNuGetPackage false alternativeProjectRoot root path packageName version
                     return Some(source,result)
             with e ->
-                verbosefn "Source '%O' exception: %O" source e
+                if verbose then
+                    verbosefn "Source '%O' exception: %O" source e
                 return None })
         |> List.tryPick Async.RunSynchronously
 
@@ -942,7 +955,8 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
     let rec download authenticated attempt =
         async {
             if not force && targetFile.Exists && targetFile.Length > 0L then
-                verbosefn "%O %O already downloaded." packageName version
+                if verbose then
+                    verbosefn "%O %O already downloaded." packageName version
             elif not force && getFromCache caches then
                 ()
             else
