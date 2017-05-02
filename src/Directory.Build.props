@@ -3,6 +3,7 @@
     <DebugType>portable</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.1.0" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.1.0-b459" PrivateAssets="all" />
+    <PackageReference Include="SourceLink.Embed.PaketFiles" Version="2.1.0-b459" PrivateAssets="all" />
   </ItemGroup>
 </Project>
