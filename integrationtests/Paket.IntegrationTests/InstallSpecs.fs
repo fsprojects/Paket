@@ -22,6 +22,10 @@ open System.Diagnostics
 open Paket
 open Paket.Domain
 
+// set this to true and the tests will overwrite the baseline files with the new result.
+// then you can easily diff them in git and decide if the changes are OK or represent a bug.
+let updateBaselines = false
+
 [<Test>]
 let ``#1135 should keep lockfile stable when using framework restrictions``() = 
     let newLockFile = install "i001135-stable-install-on-framework-restrictions"
@@ -34,6 +38,8 @@ let ``#1219 install props``() =
     let newLockFile = install "i001219-props-files"
     let newFile = Path.Combine(scenarioTempPath "i001219-props-files","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001219-props-files","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -96,6 +102,8 @@ let ``#1270 install net461``() =
     let newLockFile = install "i001270-net461"
     let newFile = Path.Combine(scenarioTempPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -105,6 +113,8 @@ let ``#1427 install content once from dependencies file``() =
     let newLockFile = install "i001427-content-once"
     let newFile = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -112,6 +122,8 @@ let ``#1427 install content once from dependencies file``() =
 
     let newWeavers = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let oldWeavers = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -123,6 +135,8 @@ let ``#1427 install content once from dependencies file stays stable``() =
 
     let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -130,6 +144,8 @@ let ``#1427 install content once from dependencies file stays stable``() =
 
     let newWeavers = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let oldWeavers = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    if updateBaselines then
+        File.Copy (newWeavers, oldWeavers, overwrite=true)
     let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -141,6 +157,8 @@ let ``#1427 install content once from dependencies file removes paket tag``() =
 
     let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -161,6 +179,8 @@ let ``#1427 install content once from dependencies file stays stable 2 installs`
 
     let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -177,6 +197,8 @@ let ``#1427 install content once from references file``() =
     let newLockFile = install "i001427-ref-content-once"
     let newFile = Path.Combine(scenarioTempPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -184,6 +206,8 @@ let ``#1427 install content once from references file``() =
 
     let newWeavers = Path.Combine(scenarioTempPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
     let oldWeavers = Path.Combine(originalScenarioPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","FodyWeavers.xml")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldWeavers |> normalizeLineEndings
     let s2 = File.ReadAllText newWeavers |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -193,6 +217,8 @@ let ``#1427 install content``() =
     let newLockFile = install "i001427-content-true"
     let newFile = Path.Combine(scenarioTempPath "i001427-content-true","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001427-content-true","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -209,6 +235,8 @@ let ``#1427 won't install content when content:none``() =
     let newLockFile = install "i001427-content-none"
     let newFile = Path.Combine(scenarioTempPath "i001427-content-none","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001427-content-none","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -235,6 +263,8 @@ let ``#1522 install content and copy to output dir``() =
     let newLockFile = install "i001522-copy-content"
     let newFile = Path.Combine(scenarioTempPath "i001522-copy-content","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001522-copy-content","MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -344,6 +374,8 @@ let ``#1663 should import build targets``() =
     install "i001663-build-targets" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001663-build-targets","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001663-build-targets","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -353,6 +385,8 @@ let ``#1145 don't install excludes``() =
     let newLockFile = install "i001145-excludes"
     let newFile = Path.Combine(scenarioTempPath "i001145-excludes","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001145-excludes","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -362,6 +396,8 @@ let ``#346 set aliases``() =
     let newLockFile = install "i000346-aliases"
     let newFile = Path.Combine(scenarioTempPath "i000346-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i000346-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -380,6 +416,8 @@ let ``#1732 aliases ignore cases``() =
     let newLockFile = install "i001732-lowercase-aliases"
     let newFile = Path.Combine(scenarioTempPath "i001732-lowercase-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001732-lowercase-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
