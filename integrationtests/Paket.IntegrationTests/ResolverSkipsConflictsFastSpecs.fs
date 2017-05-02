@@ -27,6 +27,16 @@ let ``#1166 Should resolve Nancy without timeout``() =
     |> shouldBeGreaterThan (SemVer.Parse "1.1")
 
 [<Test>]
+let ``#2289 Paket 4.x install command takes hours to complete``() =
+    let lockFile = install "i002289-resolve-nunit-timeout"
+    let nunitVersion =
+        lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NUnit"].Version
+    nunitVersion
+    |> shouldBeGreaterThan (SemVer.Parse "2.0")
+    nunitVersion
+    |> shouldBeSmallerThan (SemVer.Parse "3.0")
+
+[<Test>]
 let ``#2294 Cannot pin NETStandard.Library = 1.6.0``() =
     let lockFile = update "i002294-pin-netstandard-1-6"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "NETStandard.Library"].Version

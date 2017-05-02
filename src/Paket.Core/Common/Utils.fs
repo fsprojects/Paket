@@ -999,3 +999,14 @@ module Seq =
         ) |> fun (xs,ys) ->
             List.rev xs :> seq<_>, List.rev ys :> seq<_>
 
+[<RequireQualifiedAccess>]
+module List =
+    // Try to find an element in a list.
+    // If found, return the element and the list WITHOUT the element.
+    // If not found, return None and the whole original list.
+    let tryExtractOne fn values =
+        match List.tryFindIndex fn values with
+        | Some i ->
+            let v = values.[i]
+            Some v, (values.[0 .. i - 1 ] @ values.[i + 1 .. ])
+        | None -> None, values

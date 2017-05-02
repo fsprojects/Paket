@@ -1,6 +1,7 @@
 ﻿module Paket.PlatformMatching
 
 open System
+open ProviderImplementation.AssemblyReader.Utils.SHA1
 
 [<Literal>]
 let MaxPenalty = 1000000
@@ -27,7 +28,7 @@ let tryGetProfile platforms =
       |> List.filter (fun p -> knownInPortable |> Seq.exists ((=) p))
       |> List.sort
 
-    KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> List.sort >> (=) filtered)
+    KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> (=) filtered)
     |> Option.map PortableProfile
 
 let getPlatformPenalty =
@@ -77,36 +78,43 @@ let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
     // prefer full framework over portable
     if platformCount1 = 1 && platformCount2 > 1 then
         -1
-    else if platformCount1 > 1 && platformCount2 = 1 then
+    elif platformCount1 > 1 && platformCount2 = 1 then
         1
     // prefer lower version penalty
-    else if snd p1 < snd p2 then
+    elif snd p1 < snd p2 then
        -1
-    else if snd p1 > snd p2 then
+    elif snd p1 > snd p2 then
        1
     // prefer portable platform whith less platforms
-    else if platformCount1 < platformCount2 then
+    elif platformCount1 < platformCount2 then
         -1
-    else if platformCount1 > platformCount2 then
+    elif platformCount1 > platformCount2 then
         1
     else
         0
+
+
+let collectPlatforms =
+    let rec loop (acc:FrameworkIdentifier list) (framework:FrameworkIdentifier) (profls:TargetProfile list) =
+        match profls with 
+        | [] -> acc 
+        | (SinglePlatform f)::tl -> 
+            if f.SupportedPlatforms |> List.exists ((=) framework) 
+            then loop (f::acc) framework tl 
+            else loop acc framework tl 
+        | _::tl -> loop acc framework tl
+    memoize (fun (framework,profls) -> loop ([]:FrameworkIdentifier list) framework profls)
 
 let platformsSupport = 
     let rec platformsSupport platform platforms = 
         if List.isEmpty platforms then MaxPenalty
         elif platforms |> List.exists ((=) platform) then 1
         else 
-            platforms
-            |> List.collect (fun (p : FrameworkIdentifier) -> 
-                    KnownTargetProfiles.AllProfiles
-                    |> List.choose (function 
-                            | SinglePlatform f -> Some f
-                            | _ -> None)
-                    |> List.filter (fun f -> f.SupportedPlatforms |> List.exists ((=) p)))
-            |> platformsSupport platform
-            |> (+) 1
-
+            platforms |> Array.ofList 
+            |> Array.Parallel.map (fun (p : FrameworkIdentifier) -> 
+                collectPlatforms (p,KnownTargetProfiles.AllProfiles)
+            ) |> List.concat
+            |> platformsSupport platform |> (+) 1
     memoize (fun (platform,platforms) -> platformsSupport platform platforms)
 
 
