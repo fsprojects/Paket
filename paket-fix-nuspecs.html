@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>paket fix-nuspec
+    <title>paket fix-nuspecs
 </title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
@@ -56,25 +56,27 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="paket-fix-nuspec" class="anchor" href="#paket-fix-nuspec">paket fix-nuspec</a></h1>
-<p>[ Obsolete ] see fix-nuspecs.</p>
+<h1><a name="paket-fix-nuspecs" class="anchor" href="#paket-fix-nuspecs">paket fix-nuspecs</a></h1>
+<p>Patch a list of .nuspec files to correct transitive dependencies.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="console">paket fix-nuspec [--help] file &lt;text&gt; references-file &lt;text&gt;
+<td class="snippet"><pre class="fssnip"><code lang="console">paket fix-nuspecs [--help] files [&lt;nuspecPaths&gt;...] references-file &lt;referencePath&gt;
 </code></pre></td></tr></table>
 <p>OPTIONS:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-<span class="l">7: </span>
-<span class="l">8: </span>
-<span class="l">9: </span>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">file</span> <span class="o">&lt;</span><span class="i">text</span><span class="o">&gt;</span>           <span class="i">FileName</span> <span class="k">of</span> <span class="i">the</span> <span class="i">nuspec</span> <span class="i">file</span><span class="o">.</span>
-<span class="i">references</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">text</span><span class="o">&gt;</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">files</span> [&lt;<span class="i">nuspecPaths</span><span class="o">&gt;</span>]
+                      <span class="i">List</span> <span class="k">of</span> <span class="o">.</span><span class="i">nuspec</span> <span class="i">files</span> <span class="k">to</span> <span class="i">fix</span> <span class="i">transitive</span> <span class="i">dependencies</span> <span class="i">within</span><span class="o">.</span>
+<span class="i">references</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">referencePath</span><span class="o">&gt;</span>
                       <span class="i">FileName</span> <span class="k">of</span> <span class="i">the</span> <span class="i">nuspec</span> <span class="i">file</span><span class="o">.</span>
 <span class="o">--</span><span class="i">verbose</span>, <span class="o">-</span><span class="i">v</span>         <span class="i">Enable</span> <span class="i">verbose</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
 <span class="o">--</span><span class="i">log</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">a</span> <span class="i">log</span> <span class="i">file</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
