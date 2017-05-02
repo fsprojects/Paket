@@ -201,7 +201,12 @@ Target "CleanDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
- Target "Build" (fun _ ->
+Target "MSBuildRestore" (fun _ ->
+    !! solutionFile
+    |> Seq.iter (build (fun p -> {p with RestorePackagesFlag=true; Targets=["Restore"]}))
+)
+
+Target "Build" (fun _ ->
     if isMono then
         !! solutionFile
         |> MSBuildReleaseExt "" [
@@ -213,8 +218,7 @@ Target "CleanDocs" (fun _ ->
         !! solutionFile
         |> MSBuildReleaseExt "" [] "Rebuild"
         |> ignore
- )
-
+)
 
 let assertExitCodeZero x = 
     if x = 0 then () else 
@@ -567,6 +571,7 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
+  =?> ("MSBuildRestore", not isMono)
   ==> "Build"
   <=> "BuildCore"
   ==> "RunTests"
