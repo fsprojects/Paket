@@ -202,19 +202,19 @@ Target "CleanDocs" (fun _ ->
 // Build library & test project
 
  Target "Build" (fun _ ->
- -    if isMono then
- -        !! solutionFile
- -        |> MSBuildReleaseExt "" [
- -                "VisualStudioVersion", "14.0"
- -                "ToolsVersion"       , "14.0"  
- -        ] "Rebuild"
- -        |> ignore
- -    else
- -        !! solutionFile
- -        |> MSBuildReleaseExt "" [] "Rebuild"
- -        |> ignore
+    if isMono then
+        !! solutionFile
+        |> MSBuildReleaseExt "" [
+                "VisualStudioVersion", "14.0"
+                "ToolsVersion"       , "14.0"  
+        ] "Rebuild"
+        |> ignore
+    else
+        !! solutionFile
+        |> MSBuildReleaseExt "" [] "Rebuild"
+        |> ignore
  )
- 
+
 
 let assertExitCodeZero x = 
     if x = 0 then () else 
