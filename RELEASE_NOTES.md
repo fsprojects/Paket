@@ -1,20 +1,21 @@
-#### 5.0.0-alpha007 - 28.04.2017
+#### 5.0.0-alpha009 - 02.05.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
   * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
 * New command `paket generate-nuspec`
-* BUGFIX: Paket now accepts multiple nuspec files in fix-nuspec - https://github.com/fsprojects/Paket/pull/2296
+* New Command: `FixNuspecs` - Can fix a list of nuspec files now
+* BREAKING CHANGE: Paket.PowerShell is no longer supported
+* BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
+* DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * BUGFIX: Improved C++ support
+* BUGFIX: Paket now accepts multiple nuspec files in fix-nuspec - https://github.com/fsprojects/Paket/pull/2296
+* BUGFIX: Fixed pinning of .NETSTANDARD 1.6 packages - https://github.com/fsprojects/Paket/pull/2307
 * BUGFIX: Fixed bug with ignored argument of getPackageDetails - https://github.com/fsprojects/Paket/pull/2293
 * BUGFIX: HTTP dependency - strip query string to detect a file name - https://github.com/fsprojects/Paket/pull/2295
 * BUGFIX: Proper encoding "+" in package download url - https://github.com/fsprojects/Paket/pull/2288
 * BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
-* BREAKING CHANGE: Paket.PowerShell is no longer supported
-* BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
-* New Command: `FixNuspecs` - Can fix a list of nuspec files now 
-* DEPRECATED: `FixNuspec`is now obsolete, use `FixNuspecs` instead
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
 
 #### 4.8.1 - 25.04.2017
