@@ -12,6 +12,46 @@ open Paket.PackageSources
 
 type DependencySet = Set<PackageName * VersionRequirement * FrameworkRestrictions>
 
+/// Represents package details
+[<StructuredFormatDisplay "{Display}">]
+type PackageDetails = {
+    Name               : PackageName
+    Source             : PackageSource
+    DownloadLink       : string
+    LicenseUrl         : string
+    Unlisted           : bool
+    DirectDependencies : DependencySet
+}
+
+/// Represents data about resolved packages
+[<StructuredFormatDisplay "{Display}">]
+type ResolvedPackage = {
+    Name                : PackageName
+    Version             : SemVerInfo
+    Dependencies        : DependencySet
+    Unlisted            : bool
+    IsRuntimeDependency : bool
+    Settings            : InstallSettings
+    Source              : PackageSource
+} with
+    override this.ToString () = sprintf "%O %O" this.Name this.Version
+
+    member self.HasFrameworkRestrictions =
+        not (getRestrictionList self.Settings.FrameworkRestrictions = [])
+
+    member private self.Display
+        with get() =
+            let deps =
+                self.Dependencies
+                |> Seq.map (fun (name,ver,restrict) ->
+                    sprintf "  <%A - %A - %A>\n" name ver restrict)
+                |> String.Concat
+            sprintf
+                "%A\nDependencies -\n%s\nSource - %A\nInstall Settings\n%A"
+                    self.Name deps self.Source self.Settings
+
+type PackageResolution = Map<PackageName, ResolvedPackage>
+
 module DependencySetFilter =
     let isIncluded (restriction:FrameworkRestriction) (dependency:PackageName * VersionRequirement * FrameworkRestrictions) =
         let _,_,restrictions = dependency
@@ -55,46 +95,16 @@ module DependencySetFilter =
             |> Set.filter (fun dependency ->
                 restrictions |> List.exists (fun r -> isIncluded r dependency))
 
+    let isPackageCompatible (dependencies:DependencySet) (package:ResolvedPackage) : bool =
+        dependencies
+        // exists any not matching stuff
+        |> Seq.exists (fun (name, requirement, restriction) ->
+            if name = package.Name then
+                requirement.IsInRange package.Version |> not
+            else false
+            )
+        |> not // then we are not compatible
 
-/// Represents package details
-[<StructuredFormatDisplay "{Display}">]
-type PackageDetails = {
-    Name               : PackageName
-    Source             : PackageSource
-    DownloadLink       : string
-    LicenseUrl         : string
-    Unlisted           : bool
-    DirectDependencies : DependencySet
-}
-
-/// Represents data about resolved packages
-[<StructuredFormatDisplay "{Display}">]
-type ResolvedPackage = {
-    Name                : PackageName
-    Version             : SemVerInfo
-    Dependencies        : DependencySet
-    Unlisted            : bool
-    IsRuntimeDependency : bool
-    Settings            : InstallSettings
-    Source              : PackageSource
-} with
-    override this.ToString () = sprintf "%O %O" this.Name this.Version
-
-    member self.HasFrameworkRestrictions =
-        not (getRestrictionList self.Settings.FrameworkRestrictions = [])
-    
-    member private self.Display 
-        with get() =
-            let deps = 
-                self.Dependencies 
-                |> Seq.map (fun (name,ver,restrict) -> 
-                    sprintf "  <%A - %A - %A>\n" name ver restrict)
-                |> String.Concat
-            sprintf
-                "%A\nDependencies -\n%s\nSource - %A\nInstall Settings\n%A"                
-                    self.Name deps self.Source self.Settings
-
-type PackageResolution = Map<PackageName, ResolvedPackage>
 
 let cleanupNames (model : PackageResolution) : PackageResolution =
     model
@@ -356,7 +366,9 @@ let private explorePackageConfig getPackageDetailsF  (pkgConfig:PackageConfig) =
     | _ ->
         match dependency.VersionRequirement.Range with
         | Specific _ when dependency.Parent.IsRootRequirement() -> traceWarnfn " - %O is pinned to %O" dependency.Name version
-        | _ -> tracefn  " - %O %A" dependency.Name version
+        | _ ->
+            let compareString = dependency.Name.CompareString
+            tracefn  " - %O %A" dependency.Name version
 
     let newRestrictions =
         filterRestrictions dependency.Settings.FrameworkRestrictions pkgConfig.GlobalRestrictions
@@ -622,7 +634,6 @@ type private Stage =
     | Outer of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
     | Inner of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
 
-
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
@@ -636,6 +647,15 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
         rootDependencies
         |> Seq.map (fun x -> x.Name,x.Settings)
         |> dict
+
+    let lockedPackages =
+        rootDependencies
+        |> Seq.choose (fun d ->
+            match d.VersionRequirement with
+            | VersionRequirement.VersionRequirement(VersionRange.OverrideAll v, _) -> Some (d.Name)
+            | _ -> None)
+        |> Set.ofSeq
+
 
     if Set.isEmpty rootDependencies then Resolution.Ok Map.empty 
     else
@@ -693,7 +713,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                         currentStep.CurrentResolution.Count 
                         (currentStep.CurrentResolution |> Seq.map (fun x -> sprintf "\n     - %O, %O" x.Key x.Value.Version) |> String.Concat)
                         currentStep.OpenRequirements.Count
-                        (currentStep.OpenRequirements  |> Seq.map (fun x -> sprintf "\n     - %O, %O" x.Parent x.VersionRequirement) |> String.Concat)
+                        (currentStep.OpenRequirements  |> Seq.map (fun x -> sprintf "\n     - %O, %O (from %O)" x.Name x.VersionRequirement x.Parent) |> String.Concat)
 
                 let currentRequirement = 
                     getCurrentRequirement packageFilter currentStep.OpenRequirements stackpack.ConflictHistory
@@ -795,19 +815,30 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                             tracefn "     %O %O was unlisted" exploredPackage.Name exploredPackage.Version
                         step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags 
                     else
-                        let nextStep =
-                            {   Relax              = currentStep.Relax
-                                FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],currentConflict.GlobalOverride) currentStep.FilteredVersions
-                                CurrentResolution  = Map.add exploredPackage.Name exploredPackage currentStep.CurrentResolution
-                                ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
-                                OpenRequirements   = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep)
-                            }
-                        if nextStep.OpenRequirements = currentStep.OpenRequirements then
-                            failwithf "The resolver confused itself. The new open requirements are the same as the old ones.\n\
-                                       This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A" 
-                                            Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements                        
-                        step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
-
+                        // It might be that this version is already not possible because of our current set.
+                        // Example: We took A with version 1.0.0 (in our current resolution), but this version depends on A > 1.0.0
+                        let canTakePackage =
+                            currentStep.CurrentResolution
+                            |> Map.toSeq
+                            |> Seq.map snd
+                            // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
+                            |> Seq.filter (fun resolved -> lockedPackages.Contains resolved.Name |> not)
+                            |> Seq.forall (DependencySetFilter.isPackageCompatible exploredPackage.Dependencies)
+                        if canTakePackage then
+                            let nextStep =
+                                {   Relax              = currentStep.Relax
+                                    FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],currentConflict.GlobalOverride) currentStep.FilteredVersions
+                                    CurrentResolution  = Map.add exploredPackage.Name exploredPackage currentStep.CurrentResolution
+                                    ClosedRequirements = Set.add currentRequirement currentStep.ClosedRequirements
+                                    OpenRequirements   = calcOpenRequirements(exploredPackage,globalFrameworkRestrictions,versionToExplore,currentRequirement,currentStep)
+                                }
+                            if nextStep.OpenRequirements = currentStep.OpenRequirements then
+                                failwithf "The resolver confused itself. The new open requirements are the same as the old ones.\n\
+                                           This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A"
+                                                Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
+                            step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
+                        else
+                            step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
 
     let startingStep = {
         Relax              = false
