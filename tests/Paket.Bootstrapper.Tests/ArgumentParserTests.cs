@@ -103,6 +103,16 @@ namespace Paket.Bootstrapper.Tests
             {
                 return Path.Combine(rootDir, "temp");
             }
+
+            public IEnumerable<string> ReadAllLines(string filename)
+            {
+                return Enumerable.Empty<string>();
+            }
+
+            public Stream OpenRead(string filename)
+            {
+                return Stream.Null;
+            }
         }
 
         private static readonly IFileSystemProxy NormalModeFileSystemSystem = new DummyFileSystemProxy(Path.Combine(rootDir, "repo", ".paket", "paket.bootstrapper.exe"));

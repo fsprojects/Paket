@@ -117,6 +117,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 ConsoleImpl.WriteInfo("Could not update the timestamps.");
             }
         }
+
+        protected override void DownloadHashFileCore(string latestVersion)
+        {
+            _effectiveStrategy.DownloadHashFile(latestVersion);
+        }
     }
 }
 

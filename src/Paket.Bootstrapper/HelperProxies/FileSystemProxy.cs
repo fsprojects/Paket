@@ -35,5 +35,15 @@ namespace Paket.Bootstrapper.HelperProxies
         {
             return Directory.EnumerateFiles(path, filter, searchOption);
         }
+
+        public IEnumerable<string> ReadAllLines(string filename)
+        {
+            return File.ReadAllLines(filename);
+        }
+
+        public Stream OpenRead(string filename)
+        {
+            return File.OpenRead(filename);
+        }
     }
 }
