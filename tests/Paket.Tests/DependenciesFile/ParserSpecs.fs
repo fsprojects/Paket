@@ -455,6 +455,45 @@ let ``should read http source file from config without quotes with file specs``(
             PackagePath = None
             AuthKey = None } ]
 
+[<Test>]
+let ``should read http source with file protocol and interpret three slashes as localhost`` () =
+    let config = """http file:///absolute/path/to/file1.dll"""
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
+    |> shouldEqual
+        [ { Owner = "localhost"
+            Project = ""
+            Name = "file1.dll"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "file://localhost"
+            Commit = Some "/absolute/path/to/"
+            AuthKey = None } ]
+
+[<Test>]
+let ``should read http source with file protocol and file specs`` () =
+    let config = """http file://localhost/absolute/path/to/file1.dll file1/file1.dll"""
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
+    |> shouldEqual
+        [ { Owner = "localhost"
+            Project = ""
+            Name = "file1/file1.dll"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "file://localhost"
+            Commit = Some "/absolute/path/to/"
+            AuthKey = None } ]  
+            
+[<Test>]     
+let ``should read http source with file protocol and absolute windows paths`` () =
+    let config = """http file://localhost/C:/absolute/path/to/file1.dll"""
+    let dependencies = DependenciesFile.FromCode(config)
+    dependencies.Groups.[Constants.MainDependencyGroup].RemoteFiles
+    |> shouldEqual
+        [ { Owner = "localhost"
+            Project = ""
+            Name = "file1.dll"
+            Origin = ModuleResolver.SingleSourceFileOrigin.HttpLink "file://localhost"
+            Commit = Some "/C:/absolute/path/to/"
+            AuthKey = None } ]  
+
 
 [<Test>]
 let ``should read http source file from config without quotes with file specs and project and query string after filename``() =

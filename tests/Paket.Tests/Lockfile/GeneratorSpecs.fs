@@ -273,6 +273,38 @@ let ``should generate lock file for http source files``() =
     |> LockFileSerializer.serializeSourceFiles
     |> shouldEqual (normalizeLineEndings expectedWithHttp)
 
+let expectedWithHttpFileProtocol = """HTTP
+  remote: file://localhost
+  specs:
+    file1.dll (/absolute/path/to/file1.dll)"""
+
+[<Test>]
+let ``should generate lock file for http source files with file protocol``() =
+    let config = """http file://localhost/absolute/path/to/file1.dll"""
+
+    let cfg = DependenciesFile.FromCode(config)
+    
+    cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
+    |> List.map trivialResolve
+    |> LockFileSerializer.serializeSourceFiles
+    |> shouldEqual (normalizeLineEndings expectedWithHttpFileProtocol)
+
+let expectedWithHttpFileProtocolWindowsPath = """HTTP
+  remote: file://localhost
+  specs:
+    file1.dll (/C:/absolute/path/to/file1.dll)"""
+
+[<Test>]
+let ``should generate lock file for http source files with file protocol and absolute windows path``() =
+    let config = """http file://localhost/C:/absolute/path/to/file1.dll"""
+
+    let cfg = DependenciesFile.FromCode(config)
+    
+    cfg.Groups.[Constants.MainDependencyGroup].RemoteFiles
+    |> List.map trivialResolve
+    |> LockFileSerializer.serializeSourceFiles
+    |> shouldEqual (normalizeLineEndings expectedWithHttpFileProtocolWindowsPath)
+
 let expectedMultiple = """HTTP
   remote: http://www.fssnip.net
     myFile.fs (/raw/1M)
