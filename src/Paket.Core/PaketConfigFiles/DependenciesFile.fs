@@ -115,7 +115,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
     member __.Lines = textRepresentation
 
-    member this.RootPath = 
+    member __.RootPath = 
         if String.IsNullOrWhiteSpace fileName then String.Empty 
         else FileInfo(fileName).Directory.FullName
 
@@ -128,7 +128,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             |> Seq.map (fun p -> p.Name, p.VersionRequirement)
             |> Map.ofSeq
 
-    member this.CheckIfPackageExistsInAnyGroup (packageName:PackageName) =
+    member __.CheckIfPackageExistsInAnyGroup (packageName:PackageName) =
         match groups |> Seq.tryFind (fun g -> g.Value.Packages |> List.exists (fun p -> p.Name = packageName)) with
         | Some group -> sprintf "%sHowever, %O was found in group %O." Environment.NewLine packageName group.Value.Name
         | None -> ""
@@ -338,6 +338,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                 { v with IsRuntimeDependency = true })
                         |> Resolution.Ok
                     | _ -> resolution
+                | Resolution.Ok _ -> resolution
                 | Resolution.Conflict _ -> resolution
 
             { ResolvedPackages = runtimeResolution
@@ -404,7 +405,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
         match groups |> Map.tryFind groupName with
         | None -> list.Add(strategyString)
-        | Some group ->
+        | Some _ ->
             let firstGroupLine,_ = findGroupBorders groupName
             let pos = ref firstGroupLine
             while list.Count > !pos && list.[!pos].TrimStart().StartsWith "source" do

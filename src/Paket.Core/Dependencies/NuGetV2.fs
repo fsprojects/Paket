@@ -823,7 +823,11 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
         let getVersionsFailedCacheFileName (source:PackageSource) =
             let h = source.Url |> normalizeUrl |> hash |> abs
             let packageUrl = sprintf "Versions.%O.s%d.failed" packageName h
-            FileInfo(Path.Combine(Constants.NuGetCacheFolder,packageUrl))
+            let fileName = Path.Combine(Constants.NuGetCacheFolder,packageUrl)
+            try
+                FileInfo fileName
+            with
+            | exn -> failwithf "%s is not a valid file name. Message: %s" fileName exn.Message
 
         let sources =
             sources

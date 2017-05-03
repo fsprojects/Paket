@@ -34,7 +34,10 @@ type PackageName =
           | _ -> invalidArg "that" "cannot compare value of different types"
 
 /// Function to convert a string into a NuGet package name
-let PackageName(name:string) = PackageName.PackageName(name.Trim(),name.ToLowerInvariant().Trim())
+let PackageName(name:string) =
+    if name.Contains(":") then
+        failwithf "PackageName can't contain ':'"
+    PackageName.PackageName(name.Trim(),name.ToLowerInvariant().Trim())
 
 
 /// Represents a normalized group name
