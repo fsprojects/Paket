@@ -201,20 +201,24 @@ Target "CleanDocs" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Build library & test project
 
-let msbuild14 = ProgramFilesX86</>"MSBuild"</>"14.0"</>"Bin"</>"MSBuild.exe"
-
-if isWindows && fileExists msbuild14 then
-    setEnvironVar "MSBUILD"  msbuild14
-
-Target "Build" (fun _ ->
+Target "MSBuildRestore" (fun _ ->
     !! solutionFile
-    |> MSBuildReleaseExt "" [
-            "VisualStudioVersion", "14.0"
-            "ToolsVersion"       , "14.0"  
-    ] "Build"
-    |> ignore
+    |> Seq.iter (build (fun p -> {p with RestorePackagesFlag=true; Targets=["Restore"]}))
 )
 
+Target "Build" (fun _ ->
+    if isMono then
+        !! solutionFile
+        |> MSBuildReleaseExt "" [
+                "VisualStudioVersion", "14.0"
+                "ToolsVersion"       , "14.0"  
+        ] "Rebuild"
+        |> ignore
+    else
+        !! solutionFile
+        |> MSBuildReleaseExt "" [] "Rebuild"
+        |> ignore
+)
 
 let assertExitCodeZero x = 
     if x = 0 then () else 
@@ -567,6 +571,7 @@ Target "All" DoNothing
 
 "Clean"
   ==> "AssemblyInfo"
+  =?> ("MSBuildRestore", not isMono)
   ==> "Build"
   <=> "BuildCore"
   ==> "RunTests"
