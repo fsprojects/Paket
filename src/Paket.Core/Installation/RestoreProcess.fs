@@ -274,7 +274,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                             if not (Seq.isEmpty refs) then
                                 true
                             else 
-                                false
+                                true
 
                     if restore then
                         let _,packageName = package.Key
