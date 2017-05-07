@@ -8,11 +8,9 @@ open System
 open System.Xml
 open System.IO
 open Chessie.ErrorHandling
-open InstallProcess
 
 /// Paket API which is optimized for F# Interactive use.
 type Dependencies(dependenciesFileName: string) =
-
     let listPackages (packages: System.Collections.Generic.KeyValuePair<GroupName*PackageName, PackageResolver.ResolvedPackage> seq) =
         packages
         |> Seq.map (fun kv ->
@@ -21,14 +19,13 @@ type Dependencies(dependenciesFileName: string) =
         |> Seq.toList
         
 
-    member val Verbose = Logging.verbose with get, set
 
     /// Clears the NuGet cache
     static member ClearCache() =
         let emptyDir path =
             if verbose then
                verbosefn "Emptying '%s'" path
-            Utils.emptyDir (DirectoryInfo path)
+            emptyDir (DirectoryInfo path)
         
         emptyDir (Constants.UserNuGetPackagesFolder)
         emptyDir (Constants.NuGetCacheFolder)
@@ -77,7 +74,7 @@ type Dependencies(dependenciesFileName: string) =
     static member Init(directory,fromBootstrapper) =
         let directory = DirectoryInfo(directory)
 
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             directory.FullName,
             fun () ->
                 PaketEnv.init directory
@@ -90,15 +87,15 @@ type Dependencies(dependenciesFileName: string) =
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, ?directory: DirectoryInfo) : unit =
         match directory with
-        |Some d -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false, d)
-        |None -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false)
+        | Some d -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false, d)
+        | None -> Dependencies.ConvertFromNuget(force, installAfter, initAutoRestore, credsMigrationMode, false)
 
     /// Converts the solution from NuGet to Paket.
     static member ConvertFromNuget(force: bool,installAfter: bool, initAutoRestore: bool,credsMigrationMode: string option, fromBootstrapper, ?directory: DirectoryInfo) : unit =
         let dir = defaultArg directory (DirectoryInfo(Directory.GetCurrentDirectory()))
         let rootDirectory = dir
 
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             rootDirectory.FullName,
             fun () ->
                 NuGetConvert.convertR rootDirectory force credsMigrationMode
@@ -108,7 +105,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Converts the current package dependency graph to the simplest dependency graph.
     member this.Simplify(interactive : bool) =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () ->
                 PaketEnv.fromRootDirectory this.RootDirectory
@@ -147,7 +144,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Adds the given package with the given version to the dependencies file.
     member this.Add(groupName: string option, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool,  createNewBindingFiles:bool, interactive: bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.Add(dependenciesFileName, groupName, PackageName(package.Trim()), version,
                                      InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
@@ -155,7 +152,7 @@ type Dependencies(dependenciesFileName: string) =
 
    /// Adds the given package with the given version to the dependencies file.
     member this.AddToProject(groupName, package: string,version: string,force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, projectName: string, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> AddProcess.AddToProject(dependenciesFileName, groupName, PackageName package, version,
                                               InstallerOptions.CreateLegacyOptions(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, semVerUpdateMode, touchAffectedRefs, false, [], [], None),
@@ -163,13 +160,13 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Adds credentials for a Nuget feed
     member this.AddCredentials(source: string, username: string, password : string) : unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> ConfigFile.askAndAddAuth source username password |> returnOrFail )
   
     /// Adds a token for a source
     member this.AddToken(source : string, token : string) : unit =
-        Utils.RunInLockedAccessMode(this.RootPath, fun () -> ConfigFile.AddToken(source, token) |> returnOrFail)
+        RunInLockedAccessMode(this.RootPath, fun () -> ConfigFile.AddToken(source, token) |> returnOrFail)
 
     /// Installs all dependencies.
     member this.Install(force: bool) = this.Install(force, false, false, false, false, SemVerUpdateMode.NoRestriction, false, false, [], [], None)
@@ -180,7 +177,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Installs all dependencies.
     member private this.Install(options: InstallerOptions): unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.SmartInstall(
                             DependenciesFile.ReadFromFile(dependenciesFileName), 
@@ -236,7 +233,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Updates all dependencies.
     member this.Update(force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode, touchAffectedRefs): unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> 
             UpdateProcess.Update(
@@ -250,7 +247,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Updates dependencies in single group.
     member this.UpdateGroup(groupName, force: bool, withBindingRedirects: bool, cleanBindingRedirects: bool, createNewBindingFiles:bool, installAfter: bool, semVerUpdateMode:SemVerUpdateMode, touchAffectedRefs): unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.UpdateGroup(
                             dependenciesFileName,
@@ -266,7 +263,7 @@ type Dependencies(dependenciesFileName: string) =
             | None -> Constants.MainDependencyGroup
             | Some name -> GroupName name
 
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.UpdateFilteredPackages(dependenciesFileName, groupName, package, version,
                                                   { UpdaterOptions.Default with
@@ -284,7 +281,7 @@ type Dependencies(dependenciesFileName: string) =
             | None -> Constants.MainDependencyGroup
             | Some name -> GroupName name
 
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> UpdateProcess.UpdatePackage(dependenciesFileName, groupName, PackageName package, version,
                                                   { UpdaterOptions.Default with
@@ -305,7 +302,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Restores the given paket.references files.
     member this.Restore(force: bool, group: string option, files: string list, touchAffectedRefs: bool, ignoreChecks, failOnChecks) : unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () ->
                 if touchAffectedRefs then
@@ -315,7 +312,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Restores the given paket.references files.
     member this.Restore(force: bool, group: string option, project: string, touchAffectedRefs: bool, ignoreChecks, failOnChecks) : unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () ->
                 if touchAffectedRefs then
@@ -354,7 +351,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Downloads the latest paket.bootstrapper into the .paket folder andtry to rename it to paket.exe in order to activate magic mode.
     member this.DownloadLatestBootstrapper(fromBootstrapper) : unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> 
                 Releases.downloadLatestBootstrapperAndTargets fromBootstrapper |> this.Process
@@ -379,7 +376,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(fromBootstrapper: bool): unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> VSIntegration.TurnOnAutoRestore fromBootstrapper |> this.Process)
 
@@ -389,7 +386,7 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Removes paket.targets file and Import section from project files.
     member this.TurnOffAutoRestore(): unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> VSIntegration.TurnOffAutoRestore |> this.Process)
 
@@ -526,13 +523,13 @@ type Dependencies(dependenciesFileName: string) =
 
     /// Removes the given package from dependencies file.
     member this.Remove(groupName, package: string, force: bool, interactive: bool,installAfter: bool): unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> RemoveProcess.Remove(dependenciesFileName, groupName, PackageName package, force, interactive, installAfter))
 
     /// Removes the given package from the specified project
     member this.RemoveFromProject(groupName,package: string,force: bool, projectName: string,installAfter: bool): unit =
-        Utils.RunInLockedAccessMode(
+        RunInLockedAccessMode(
             this.RootPath,
             fun () -> RemoveProcess.RemoveFromProject(dependenciesFileName, groupName, PackageName package, force, projectName, installAfter))
 
