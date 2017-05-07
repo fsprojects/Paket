@@ -242,7 +242,6 @@ module ProjectFile =
         let defaultProperties = appendMap defaultProperties (getReservedProperties projectFile)
 
         let processPlaceholders (data : Map<string, string>) text =
-            
             let getPlaceholderValue (name:string) =
                 // Change "$(Configuration)" to "Configuration",
                 // then find in the data map
@@ -269,8 +268,7 @@ module ProjectFile =
 
 
         let rec parseWord (data:StringBuilder) (input:string) index inQuotes =
-            if input.Length <= index
-            then
+            if input.Length <= index then
                 if data.Length > 0 && not inQuotes then Some(data.ToString(), index)
                 else None
             else
@@ -304,7 +302,7 @@ module ProjectFile =
                 | Some _ -> Some(s, index)
 
 
-        let parseCondition (data:System.Text.StringBuilder) (input:string) index =
+        let parseCondition (data:StringBuilder) (input:string) index =
             if input.Length <= index
             then None
             else
@@ -323,7 +321,7 @@ module ProjectFile =
                         | Some(right, index) ->
                             Some(left, comp, right, index)
 
-        let rec parseAndOr (data:System.Text.StringBuilder) (input:string) index =
+        let rec parseAndOr (data:StringBuilder) (input:string) index =
             if input.Length <= index then None else
 
             let c = input.[index]
@@ -342,7 +340,7 @@ module ProjectFile =
             | _ -> true
 
 
-        let rec parseFullCondition data (sb:System.Text.StringBuilder) (input:string) index =
+        let rec parseFullCondition data (sb:StringBuilder) (input:string) index =
             if input.Length <= index
             then data
             else
@@ -405,8 +403,8 @@ module ProjectFile =
 
 
         let conditionMatches data condition =
-            let allConditions = 
-                parseFullCondition (Some []) (StringBuilder()) condition 0
+            let allConditions = parseFullCondition (Some []) (StringBuilder()) condition 0
+                
             match allConditions with
             | None -> false
             | Some conditions -> handleConditions data conditions true
@@ -458,8 +456,6 @@ module ProjectFile =
 
     let getProperty propertyName (projectFile:ProjectFile) =
         getPropertyWithDefaults propertyName Map.empty<string, string> projectFile
-
-
 
     let deleteIfEmpty name (project:ProjectFile) =
         let nodesToDelete = List<_>()
