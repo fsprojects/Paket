@@ -93,7 +93,7 @@ The following files should *not* be committed to your version control system, an
 
 ## Why should I commit the lock file?
 
-Committing the [`paket.lock` file](lock-file.html) to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when [`paket install`](paket-install.html) is run.
+Committing the [`paket.lock` file](lock-file.html) to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when [`paket restore`](paket-restore.html) is run.
 
 If your *project is an application* you should always commit the [`paket.lock` file](lock-file.html).
 
