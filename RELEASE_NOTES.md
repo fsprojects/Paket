@@ -1,5 +1,5 @@
 #### 4.8.5 - 08.05.2017
-* BUGFIX: Proper encoding "+" in package download url  - https://github.com/fsprojects/Paket/pull/2288
+* BUGFIX: Support .NET moniker ">= monoandroid" - https://github.com/fsprojects/Paket/issues/2246
 
 #### 4.8.4 - 26.04.2017
 * BUGFIX: Proper encoding "+" in package download url  - https://github.com/fsprojects/Paket/pull/2288

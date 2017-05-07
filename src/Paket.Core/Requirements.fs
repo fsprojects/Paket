@@ -146,7 +146,7 @@ let rec optimizeRestrictions restrictions =
             | _ -> odered
 
         let filtered =
-            match newRestrictions |> Seq.rev |> Seq.tryFind (function | FrameworkRestriction.AtLeast r -> true | _ -> false) with
+            match newRestrictions |> Seq.rev |> Seq.tryFind (function | FrameworkRestriction.AtLeast(DotNetFramework r) -> true | FrameworkRestriction.AtLeast(DotNetStandard r) -> true | _ -> false) with
             | None -> newRestrictions
             | Some r ->
                 let currentVersion =
