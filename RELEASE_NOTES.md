@@ -1,4 +1,4 @@
-#### 5.0.0-alpha013 - 04.05.2017
+#### 5.0.0-alpha014 - 07.05.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
@@ -10,6 +10,7 @@
 * DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
 * BUGFIX: Improved C++ support
+* BUGFIX: Support .NET moniker ">= monoandroid" - https://github.com/fsprojects/Paket/issues/2246
 * BUGFIX: Better dependencies file parser errors
 * BUGFIX: Paket now accepts multiple nuspec files in fix-nuspec - https://github.com/fsprojects/Paket/pull/2296
 * BUGFIX: Fixed pinning of .NETSTANDARD 1.6 packages - https://github.com/fsprojects/Paket/pull/2307
