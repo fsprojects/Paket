@@ -247,7 +247,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             createAlternativeNuGetConfig alternativeConfigFileName.FullName
 
             for kv in groups do
-                let hull = lockFile.GetPackageHull(kv.Key,referencesFile)
+                let hull = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
                 let depsGroup =
                     match dependenciesFile.Groups |> Map.tryFind kv.Key with
                     | Some group -> group
@@ -261,13 +261,13 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     targetFramework
                     |> Option.bind FrameworkDetection.Extract
 
-                for package in hull do
+                for (key,_,_) in hull do
                     let restore =
                         match target with
                         | None -> true
                         | Some target ->
                             let (_), (_,model) = 
-                                CreateInstallModel(alternativeProjectRoot, root, kv.Key, depsGroup.Sources, depsGroup.Caches, force, resolved.[package.Key])
+                                CreateInstallModel(alternativeProjectRoot, root, kv.Key, depsGroup.Sources, depsGroup.Caches, force, resolved.[key])
                                 |> Async.RunSynchronously
                         
                             let refs = model.GetLibReferenceFiles(target)
@@ -277,11 +277,11 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                                 true
 
                     if restore then
-                        let _,packageName = package.Key
+                        let _,packageName = key
                         let direct = allDirectPackages.Contains packageName
                         let line =
                             packageName.ToString() + "," + 
-                            resolved.[package.Key].Version.ToString() + "," + 
+                            resolved.[key].Version.ToString() + "," + 
                             (if direct then "Direct" else "Transitive")
 
                         list.Add line

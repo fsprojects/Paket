@@ -603,7 +603,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             failwithf "Package %O was referenced in %s, but it was not found in the paket.lock file in group %O.%s" package context groupName (this.CheckIfPackageExistsInAnyGroup package)
 
     /// Gets all dependencies of the given package in the given group.
-    member this.GetAllDependenciesOfSafe(groupName:GroupName,package) =
+    member __.GetAllDependenciesOfSafe(groupName:GroupName,package) =
         let group = groups.[groupName]
         let allDependenciesOf package =
             let usedPackages = HashSet<_>()
@@ -625,8 +625,23 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         match group.Resolution |> Map.tryFind package with
         | Some v -> Some(allDependenciesOf v.Name)
         | None -> None
-        
-    member this.GetTransitiveDependencies(groupName) =
+
+    /// Gets only direct dependencies of the given package in the given group.
+    member this.GetDirectDependenciesOfSafe(groupName:GroupName,package,context) =
+        let group = groups.[groupName]
+
+        match group.Resolution |> Map.tryFind package with
+        | Some v -> 
+            let usedPackages = HashSet<_>()
+            
+            for d,_,_ in v.Dependencies do
+                if group.Resolution.ContainsKey d then
+                    usedPackages.Add d |> ignore
+                
+            usedPackages |> Set.ofSeq
+        | None -> failwithf "Package %O was referenced in %s, but it was not found in the paket.lock file in group %O.%s" package context groupName (this.CheckIfPackageExistsInAnyGroup package)
+
+    member __.GetTransitiveDependencies(groupName) =
         let collectDependenciesForGroup group = 
             let fromNuGets =
                 group.Resolution 
@@ -766,8 +781,49 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     for p,_ in lockRemote.Dependencies do
                         yield PackageInstallSettings.Default(p.ToString())]
 
+    member this.GetOrderedPackageHull(groupName,referencesFile:ReferencesFile) =
+        let usedPackageKeys = HashSet<_>()
+        let toVisit = ref Set.empty
+        let visited = ref Set.empty
+
+        match referencesFile.Groups |> Map.tryFind groupName with
+        | Some g ->
+            for p in g.NugetPackages do
+                let k = groupName,p.Name
+                if usedPackageKeys.Contains k then
+                    failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
+                usedPackageKeys.Add k |> ignore
+
+                let deps = this.GetDirectDependenciesOfSafe(groupName,p.Name,referencesFile.FileName) 
+                
+                toVisit := Set.add (k,p,deps) !toVisit
+        | None -> ()
+
+        while !toVisit <> Set.empty do
+            let current = Set.minElement !toVisit
+            toVisit := Set.remove current !toVisit
+            if Set.contains current !visited then () else
+            visited := Set.add current !visited
+            let (groupName,_),p,deps = current
+            for dep in deps do
+                let deps = this.GetDirectDependenciesOfSafe(groupName,dep,referencesFile.FileName)
+                toVisit := Set.add ((groupName,dep),p,deps) !toVisit
+       
+        let emitted = HashSet<_>()
+        [while !visited <> Set.empty do
+            let ((groupName,packageName),p,deps) = Seq.minBy (fun (_,_,c) -> Set.count c) !visited
+            if emitted.Add (groupName,packageName) then 
+                yield ((groupName,packageName),p,deps)
+                
+            visited := 
+                !visited
+                |> Set.remove ((groupName,packageName),p,deps)
+                |> Set.map (fun ((g,p),b,c) -> if g = groupName then (g,p),b,Set.filter ((<>) packageName) c else (g,p),b,c)]
+
+
     member this.GetPackageHull(groupName,referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
+
         match referencesFile.Groups |> Map.tryFind groupName with
         | Some g ->
             for p in g.NugetPackages do
@@ -787,7 +843,6 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         | None -> ()
 
         usedPackages
-
 
     member this.GetDependencyLookupTable () = 
         groups |> Seq.map (fun kv ->

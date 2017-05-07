@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>restore --project "D:\code\fable-suave-scaffold\src\Server\Server.fsproj" --target-framework net462</StartArguments>
-    <StartWorkingDirectory>D:\code\fable-suave-scaffold</StartWorkingDirectory>
+    <StartArguments>restore --project "D:\temp\TestProject\TestProject.fsproj"</StartArguments>
+    <StartWorkingDirectory>D:\temp\TestProject</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

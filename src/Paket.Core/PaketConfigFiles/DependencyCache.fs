@@ -79,16 +79,11 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
         |> ignore
     
     do loadPackages ()
-
-    //let getPackageOrderFromLockFile (lockFile:LockFile) =
-    //    lockFile.GetResolvedPackages ()
-    //    |> Seq.map (fun kvp -> kvp.Key , getPackageOrderResolvedPackage kvp.Value)
-    //    |> Map.ofSeq
         
 
     let getDllOrder (dllFiles : AssemblyDefinition list) =
         // this check saves looking at assembly metadata when we know this is not needed
-        if List.length dllFiles = 1 then dllFiles  else
+        if List.length dllFiles = 1 then dllFiles else
         // we ignore all unknown references as they are most likely resolved on package level
         let known = dllFiles |> Seq.map (fun a -> a.FullName) |> Set.ofSeq
         getPackageOrderGeneric
@@ -153,7 +148,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
             refs 
             
 
-    member self.GetOrderedPackageReferences groupName packageName framework =
+    member __.GetOrderedPackageReferences groupName packageName framework =
         match tryGet (groupName,packageName) installModelCache with
         | None -> []
         | Some model -> 
