@@ -161,6 +161,15 @@ let extractBuildTask root =
         copiedElements := true
         result
 
+let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
+    async {
+        let! (package, files, targetsFiles, analyzerFiles) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
+        let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
+        let targetsFiles = targetsFiles |> Array.toList
+        let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions |> Requirements.getRestrictionList, files, targetsFiles, analyzerFiles, nuspec)
+        return (groupName,package.Name), (package,model)
+    }
+
 let createAlternativeNuGetConfig alternativeConfigFileName =
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
@@ -173,7 +182,7 @@ let createAlternativeNuGetConfig alternativeConfigFileName =
 </configuration>"""
     File.WriteAllText(alternativeConfigFileName,config)
 
-let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks) = 
+let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFramework: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -188,7 +197,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         else
             let localFile =
                 LocalFile.readFile localFileName.FullName
-                |> Chessie.ErrorHandling.Trial.returnOrFail
+                |> returnOrFail
             LocalFile.overrideLockFile localFile lockFile,localFile,true
 
     if not hasLocalFile && not ignoreChecks then
@@ -231,7 +240,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let fi = FileInfo projectFile.FileName
             let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
             let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))
-
+            
             if not newFileName.Directory.Exists then
                 newFileName.Directory.Create()
 
@@ -239,20 +248,43 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
             for kv in groups do
                 let hull = lockFile.GetPackageHull(kv.Key,referencesFile)
+                let depsGroup =
+                    match dependenciesFile.Groups |> Map.tryFind kv.Key with
+                    | Some group -> group
+                    | None -> failwithf "Dependencies file '%s' does not contain group '%O' but it is used in '%s'" dependenciesFile.FileName kv.Key lockFile.FileName
                 let allDirectPackages =
                     match referencesFile.Groups |> Map.tryFind kv.Key with
                     | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
                     | None -> Set.empty
+                
+                let target = 
+                    targetFramework
+                    |> Option.bind FrameworkDetection.Extract
 
                 for package in hull do
-                    let _,packageName = package.Key
-                    let direct = allDirectPackages.Contains packageName
-                    let line =
-                        packageName.ToString() + "," + 
-                        resolved.[package.Key].Version.ToString() + "," + 
-                        (if direct then "Direct" else "Transitive")
+                    let restore =
+                        match target with
+                        | None -> true
+                        | Some target ->
+                            let (_), (_,model) = 
+                                CreateInstallModel(alternativeProjectRoot, root, kv.Key, depsGroup.Sources, depsGroup.Caches, force, resolved.[package.Key])
+                                |> Async.RunSynchronously
+                        
+                            let refs = model.GetLibReferenceFiles(target)
+                            if not (Seq.isEmpty refs) then
+                                true
+                            else 
+                                false
 
-                    list.Add line
+                    if restore then
+                        let _,packageName = package.Key
+                        let direct = allDirectPackages.Contains packageName
+                        let line =
+                            packageName.ToString() + "," + 
+                            resolved.[package.Key].Version.ToString() + "," + 
+                            (if direct then "Direct" else "Transitive")
+
+                        list.Add line
                 
             let output = String.Join(Environment.NewLine,list)
             if output = "" then
@@ -262,7 +294,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                 File.WriteAllText(newFileName.FullName,output)                
                 tracefn " - %s created" newFileName.FullName
             else
-                tracefn " - %s already up-to-date" newFileName.FullName
+                if verbose then
+                    tracefn " - %s already up-to-date" newFileName.FullName
 
             [referencesFile.FileName]
         | None -> referencesFileNames
@@ -291,6 +324,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let overriden = 
                 packages
                 |> Set.filter (fun p -> LocalFile.overrides localFile (p,depFileGroup.Name))
+
             restore(alternativeProjectRoot, root, kv.Key, depFileGroup.Sources, depFileGroup.Caches, force, lockFile, packages, overriden)
             |> Async.RunSynchronously
             |> ignore
@@ -306,6 +340,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     if groupsToGenerate <> [] then
         let depsCache = DependencyCache(dependenciesFile,lockFile) 
         (LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] [])
-        //(LoadingScripts.ScriptGeneration.constructScriptsFromDisk groupsToGenerate (DirectoryInfo dependenciesFile.RootPath) [] [])
         |> Seq.iter (fun sd -> sd.Save (DirectoryInfo dependenciesFile.Directory))
-    GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
+    
+    if targetFramework <> None then
+        GarbageCollection.CleanUp(root, dependenciesFile, lockFile)

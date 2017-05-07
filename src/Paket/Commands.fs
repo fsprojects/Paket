@@ -167,9 +167,10 @@ type RestoreArgs =
     | [<CustomCommandLine("--touch-affected-refs")>] Touch_Affected_Refs
     | [<CustomCommandLine("--ignore-checks")>] Ignore_Checks
     | [<CustomCommandLine("--fail-on-checks")>] Fail_On_Checks
-    | [<CustomCommandLine("group")>] Group of name:string
+    | [<CustomCommandLine("group")>] Group of name:string    
     | [<Unique>] Project of file_name:string
     | [<Unique>] References_Files of file_name:string list
+    | [<Unique>] Target_Framework of target_framework:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -182,6 +183,7 @@ with
             | Fail_On_Checks -> "Causes the restore to fail if any of the checks fail."
             | Project(_) -> "Allows to restore dependencies for a project."
             | References_Files(_) -> "Allows to restore all packages from the given paket.references files."
+            | Target_Framework(_) -> "Allows to restore only for a specified target framework."
 
 type SimplifyArgs =
     | [<AltCommandLine("-i")>] Interactive

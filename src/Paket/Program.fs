@@ -175,15 +175,16 @@ let restore (results : ParseResults<_>) =
     let touchAffectedRefs = results.Contains <@ RestoreArgs.Touch_Affected_Refs @>
     let ignoreChecks = results.Contains <@ RestoreArgs.Ignore_Checks @>
     let failOnChecks = results.Contains <@ RestoreArgs.Fail_On_Checks @>
+    let targetFramework = results.TryGetResult <@ RestoreArgs.Target_Framework @>
     
     match project with
     | Some project ->
-        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks)
+        Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
     | None ->
         if List.isEmpty files then 
-            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks)
+            Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
         else 
-            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks)
+            Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
 
 let simplify (results : ParseResults<_>) =
     let interactive = results.Contains <@ SimplifyArgs.Interactive @>

@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Paket\integrationtests\scenarios\i001145-excludes\temp</StartWorkingDirectory>
+    <StartArguments>restore --project "D:\code\fable-suave-scaffold\src\Server\Server.fsproj" --target-framework net462</StartArguments>
+    <StartWorkingDirectory>D:\code\fable-suave-scaffold</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
