@@ -64,7 +64,7 @@
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="console">paket restore [--help] [--force] [--only-referenced] [--touch-affected-refs] [--ignore-checks]
               [--fail-on-checks] [group &lt;name&gt;] [--project &lt;file name&gt;]
-              [--references-files [&lt;file name&gt;...]] [--target-framework &lt;target framework&gt;]
+              [--references-files [&lt;file name&gt;...]]
 </code></pre></td></tr></table>
 <p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
 <p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
@@ -88,8 +88,6 @@ No packages are downloaded in that case. Please see <code>paket install</code> a
 <span class="l">15: </span>
 <span class="l">16: </span>
 <span class="l">17: </span>
-<span class="l">18: </span>
-<span class="l">19: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">--</span><span class="i">force</span>, <span class="o">-</span><span class="i">f</span>           <span class="i">Forces</span> <span class="i">the</span> <span class="i">download</span> <span class="k">of</span> <span class="i">all</span> <span class="i">packages</span><span class="o">.</span>
 <span class="o">--</span><span class="i">only</span><span class="o">-</span><span class="i">referenced</span>     <span class="i">Allows</span> <span class="k">to</span> <span class="i">restore</span> <span class="i">packages</span> <span class="i">that</span> <span class="i">are</span> <span class="i">referenced</span> <span class="k">in</span> <span class="i">paket</span><span class="o">.</span><span class="i">references</span> <span class="i">files</span>,
@@ -102,8 +100,6 @@ No packages are downloaded in that case. Please see <code>paket install</code> a
 <span class="o">--</span><span class="i">project</span> <span class="o">&lt;</span><span class="i">file</span> <span class="i">name</span><span class="o">&gt;</span> <span class="i">Allows</span> <span class="k">to</span> <span class="i">restore</span> <span class="i">dependencies</span> <span class="k">for</span> <span class="i">a</span> <span class="i">project</span><span class="o">.</span>
 <span class="o">--</span><span class="i">references</span><span class="o">-</span><span class="i">files</span> [&lt;<span class="i">file</span> <span class="i">name</span><span class="o">&gt;</span>]
                       <span class="i">Allows</span> <span class="k">to</span> <span class="i">restore</span> <span class="i">all</span> <span class="i">packages</span> <span class="i">from</span> <span class="i">the</span> <span class="i">given</span> <span class="i">paket</span><span class="o">.</span><span class="i">references</span> <span class="i">files</span><span class="o">.</span>
-<span class="o">--</span><span class="i">target</span><span class="o">-</span><span class="i">framework</span> <span class="o">&lt;</span><span class="i">target</span> <span class="i">framework</span><span class="o">&gt;</span>
-                      <span class="i">Allows</span> <span class="k">to</span> <span class="i">restore</span> <span class="i">only</span> <span class="k">for</span> <span class="i">a</span> <span class="i">specified</span> <span class="i">target</span> <span class="i">framework</span><span class="o">.</span>
 <span class="o">--</span><span class="i">verbose</span>, <span class="o">-</span><span class="i">v</span>         <span class="i">Enable</span> <span class="i">verbose</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
 <span class="o">--</span><span class="i">log</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">a</span> <span class="i">log</span> <span class="i">file</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
 <span class="o">--</span><span class="i">silent</span>, <span class="o">-</span><span class="i">s</span>          <span class="i">Suppress</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
