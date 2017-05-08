@@ -1,3 +1,6 @@
+#### 4.8.5 - 08.05.2017
+* BUGFIX: Proper encoding "+" in package download url  - https://github.com/fsprojects/Paket/pull/2288
+
 #### 4.8.4 - 26.04.2017
 * BUGFIX: Proper encoding "+" in package download url  - https://github.com/fsprojects/Paket/pull/2288
 
