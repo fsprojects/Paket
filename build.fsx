@@ -211,12 +211,14 @@ Target "Build" (fun _ ->
         !! solutionFile
         |> MSBuildReleaseExt "" [
                 "VisualStudioVersion", "14.0"
-                "ToolsVersion"       , "14.0"  
+                "ToolsVersion"       , "14.0"
         ] "Rebuild"
         |> ignore
     else
         !! solutionFile
-        |> MSBuildReleaseExt "" [] "Rebuild"
+        |> MSBuildReleaseExt "" [
+                "SourceLinkCreate"   , "true"
+        ] "Rebuild"
         |> ignore
 )
 
@@ -258,6 +260,7 @@ Target "DotnetBuild" (fun _ ->
             { c with
                 Project = proj
                 ToolPath = dotnetExePath
+                AdditionalArgs = [ "/p:SourceLinkCreate=true" ]
             })
     )
 )
