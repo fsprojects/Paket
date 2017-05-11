@@ -55,21 +55,34 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="4-8-5-08-05-2017" class="anchor" href="#4-8-5-08-05-2017">4.8.5 - 08.05.2017</a></h4>
+<h4><a name="5-0-0-alpha021-11-05-2017" class="anchor" href="#5-0-0-alpha021-11-05-2017">5.0.0-alpha021 - 11.05.2017</a></h4>
 <ul>
+<li>
+BUGFIX: Fixed dotnetcore integration:
+<ul>
+<li>Paket now properly understands runtime and reference assemblies</li>
+<li>Paket now understands the runtime graph and restores runtime dependencies</li>
+<li>New API <code>InstallModel.GetRuntimeAssemblies</code> and <code>InstallModel.GetRuntimeLibraries</code> can be used to retrieve the correct assets for a particular RID and TFM</li>
+</ul>
+</li>
+<li>New command <code>paket generate-nuspec</code></li>
+<li>New Command: <code>FixNuspecs</code> - Can fix a list of nuspec files now</li>
+<li>BREAKING CHANGE: Paket.PowerShell is no longer supported</li>
+<li>BREAKING CHANGE: <code>InstallModel</code> API changed and Paket.Core.dll users might need to adapt</li>
+<li>DEPRECATED: <code>FixNuspec</code> function is now obsolete, use <code>FixNuspecs</code> instead</li>
+<li>PERFORMANCE: Improved performance for some edge case - <a href="https://github.com/fsprojects/Paket/pull/2299">https://github.com/fsprojects/Paket/pull/2299</a></li>
+<li>BUGFIX: Improved C++ support</li>
+<li>BUGFIX: Sort dependencies on obj/references files - <a href="https://github.com/fsprojects/Paket/issues/2310">https://github.com/fsprojects/Paket/issues/2310</a></li>
 <li>BUGFIX: Support .NET moniker "&gt;= monoandroid" - <a href="https://github.com/fsprojects/Paket/issues/2246">https://github.com/fsprojects/Paket/issues/2246</a></li>
-</ul>
-<h4><a name="4-8-4-26-04-2017" class="anchor" href="#4-8-4-26-04-2017">4.8.4 - 26.04.2017</a></h4>
-<ul>
-<li>BUGFIX: Proper encoding "+" in package download url  - <a href="https://github.com/fsprojects/Paket/pull/2288">https://github.com/fsprojects/Paket/pull/2288</a></li>
-</ul>
-<h4><a name="4-8-3-26-04-2017" class="anchor" href="#4-8-3-26-04-2017">4.8.3 - 26.04.2017</a></h4>
-<ul>
+<li>BUGFIX: Better dependencies file parser errors</li>
+<li>BUGFIX: Paket now accepts multiple nuspec files in fix-nuspec - <a href="https://github.com/fsprojects/Paket/pull/2296">https://github.com/fsprojects/Paket/pull/2296</a></li>
+<li>BUGFIX: Fixed pinning of .NETSTANDARD 1.6 packages - <a href="https://github.com/fsprojects/Paket/pull/2307">https://github.com/fsprojects/Paket/pull/2307</a></li>
+<li>BUGFIX: Fixed bug with ignored argument of getPackageDetails - <a href="https://github.com/fsprojects/Paket/pull/2293">https://github.com/fsprojects/Paket/pull/2293</a></li>
+<li>BUGFIX: HTTP dependency - strip query string to detect a file name - <a href="https://github.com/fsprojects/Paket/pull/2295">https://github.com/fsprojects/Paket/pull/2295</a></li>
+<li>BUGFIX: Proper encoding "+" in package download url - <a href="https://github.com/fsprojects/Paket/pull/2288">https://github.com/fsprojects/Paket/pull/2288</a></li>
 <li>BUGFIX: Paket failed when group is removed (or renamed) - <a href="https://github.com/fsprojects/Paket/pull/2281">https://github.com/fsprojects/Paket/pull/2281</a></li>
-</ul>
-<h4><a name="4-8-2-26-04-2017" class="anchor" href="#4-8-2-26-04-2017">4.8.2 - 26.04.2017</a></h4>
-<ul>
 <li>BUGFIX: Filter .targets / .props earlier - <a href="https://github.com/fsprojects/Paket/pull/2286">https://github.com/fsprojects/Paket/pull/2286</a></li>
+<li>USABILITY: Don't let build continue when paket failed - <a href="https://github.com/fsprojects/Paket/pull/2302">https://github.com/fsprojects/Paket/pull/2302</a></li>
 </ul>
 <h4><a name="4-8-1-25-04-2017" class="anchor" href="#4-8-1-25-04-2017">4.8.1 - 25.04.2017</a></h4>
 <ul>
