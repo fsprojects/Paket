@@ -160,8 +160,11 @@ module Resolution =
         match conflicts with
         | [] -> errorReport
         | req::conflicts ->
-            
-            errorReport.AddLine (sprintf "  Could not resolve package %O %O:" req.Name req.VersionRequirement.Range)
+            match req.Parent with
+            | DependenciesFile _ ->
+                errorReport.AddLine (sprintf "  Could not resolve package %O %O (from dependencies file):" req.Name req.VersionRequirement.Range)
+            | Package (parentName,version,_) ->
+                errorReport.AddLine (sprintf "  Could not resolve package %O %O (from %O %O):" req.Name req.VersionRequirement.Range parentName version)
             let hasPrereleases =
                 conflicts |> List.exists (fun r -> r.VersionRequirement.PreReleases <> PreReleaseStatus.No)
 
@@ -202,7 +205,7 @@ module Resolution =
                 "  Could not resolve package %O. Unknown resolution error."
                     (Seq.head currentStep.OpenRequirements)
         | [c] ->
-            let errorText = buildConflictReport errorText  [c]
+            let errorText = buildConflictReport errorText [c]
             match getVersionF c.Name |> Seq.toList with
             | [] -> errorText.AppendLinef  "   - No versions available."
             | avalaibleVersions ->
