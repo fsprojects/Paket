@@ -157,29 +157,35 @@ module Resolution =
             |> Seq.toList
 
     let buildConflictReport (errorReport:StringBuilder)  (conflicts:PackageRequirement list) =
+        let formatVR (vr:VersionRequirement) =
+            vr.ToString ()
+            |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else s
+
+        let formatPR hasPrereleases (vr:VersionRequirement) = 
+            if hasPrereleases && vr.PreReleases = PreReleaseStatus.No then " (no prereleases)" else
+            match vr.PreReleases with
+            | PreReleaseStatus.Concrete [x] -> sprintf " (%s)" x
+            | PreReleaseStatus.Concrete x -> sprintf " %A" x
+            | _ -> ""
+
         match conflicts with
         | [] -> errorReport
         | req::conflicts ->
+            let hasPrereleases = List.exists (fun r -> r.VersionRequirement.PreReleases <> PreReleaseStatus.No) conflicts
+
             match req.Parent with
             | DependenciesFile _ ->
-                errorReport.AddLine (sprintf "  Could not resolve package %O %O (from dependencies file):" req.Name req.VersionRequirement.Range)
+                errorReport.AddLine (sprintf "  Dependencies file requested package %O: %s%s" req.Name (formatVR req.VersionRequirement) (formatPR hasPrereleases req.VersionRequirement))
             | Package (parentName,version,_) ->
-                errorReport.AddLine (sprintf "  Could not resolve package %O %O (from %O %O):" req.Name req.VersionRequirement.Range parentName version)
-            let hasPrereleases =
-                conflicts |> List.exists (fun r -> r.VersionRequirement.PreReleases <> PreReleaseStatus.No)
-
+                errorReport.AddLine (sprintf "  %O %O package %O: %s%s" parentName version req.Name (formatVR req.VersionRequirement) (formatPR hasPrereleases req.VersionRequirement))
+            
             let rec loop conflicts (errorReport:StringBuilder) =
                 match conflicts with
                 | [] -> errorReport
                 | hd::tl ->
-                    let vr =
-                        hd.VersionRequirement.ToString ()
-                        |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else s
-                    let pr = if hasPrereleases && hd.VersionRequirement.PreReleases = PreReleaseStatus.No then " (no prereleases)" else
-                             match hd.VersionRequirement.PreReleases with
-                             | PreReleaseStatus.Concrete [x] -> sprintf " (%s)" x
-                             | PreReleaseStatus.Concrete x -> sprintf " %A" x
-                             | _ -> ""
+                    let vr = formatVR hd.VersionRequirement
+                    let pr = formatPR hasPrereleases hd.VersionRequirement
+
                     match hd.Parent with
                     | DependenciesFile _ ->
                         loop tl (errorReport.AppendLinef "   - Dependencies file requested package %O: %s%s" req.Name vr pr)

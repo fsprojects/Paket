@@ -164,7 +164,7 @@ let ``should resolve simple config with servers with RC requirement``() =
         |> ignore
         failwith "expected exception"
     with
-    | exn when exn.Message.Contains " Could not resolve package My.Company.PackageA.Server" -> ()
+    | exn when exn.Message.Contains " package My.Company.PackageA.Server" -> ()
 
 let configWithServersWithVersionRequirement = """
 source https://www.nuget.org/api/v2
@@ -183,7 +183,7 @@ let ``should resolve simple config with servers with version requirement``() =
         |> ignore
         failwith "expected exception"
     with
-    | exn when exn.Message.Contains " Could not resolve package My.Company.PackageA.Server" -> ()
+    | exn when exn.Message.Contains " package My.Company.PackageA.Server" -> ()
 
 
 let configWithServersWithoutVersionRequirement = """

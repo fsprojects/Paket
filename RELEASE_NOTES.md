@@ -1,4 +1,4 @@
-#### 5.0.0-alpha022 - 11.05.2017
+#### 5.0.0-alpha023 - 11.05.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
