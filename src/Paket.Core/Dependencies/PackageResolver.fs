@@ -95,15 +95,13 @@ module DependencySetFilter =
             |> Set.filter (fun dependency ->
                 restrictions |> List.exists (fun r -> isIncluded r dependency))
 
-    let isPackageCompatible (dependencies:DependencySet) (package:ResolvedPackage) : bool =
+    let findIncompatibleDependencies (dependencies:DependencySet) (package:ResolvedPackage) =
         dependencies
         // exists any not matching stuff
-        |> Seq.exists (fun (name, requirement, restriction) ->
+        |> Seq.filter (fun (name, requirement, restriction) ->
             if name = package.Name then
                 requirement.IsInRange package.Version |> not
-            else false
-            )
-        |> not // then we are not compatible
+            else false)
 
 
 let cleanupNames (model : PackageResolution) : PackageResolution =
@@ -177,7 +175,7 @@ module Resolution =
             | DependenciesFile _ ->
                 errorReport.AddLine (sprintf "  Dependencies file requested package %O: %s%s" req.Name (formatVR req.VersionRequirement) (formatPR hasPrereleases req.VersionRequirement))
             | Package (parentName,version,_) ->
-                errorReport.AddLine (sprintf "  %O %O package %O: %s%s" parentName version req.Name (formatVR req.VersionRequirement) (formatPR hasPrereleases req.VersionRequirement))
+                errorReport.AddLine (sprintf "  %O %O requested package %O: %s%s" parentName version req.Name (formatVR req.VersionRequirement) (formatPR hasPrereleases req.VersionRequirement))
             
             let rec loop conflicts (errorReport:StringBuilder) =
                 match conflicts with
@@ -215,8 +213,7 @@ module Resolution =
             match getVersionF c.Name |> Seq.toList with
             | [] -> errorText.AppendLinef  "   - No versions available."
             | avalaibleVersions ->
-                ( errorText.AppendLinef  "   - Available versions:"
-                , avalaibleVersions )
+                (errorText.AppendLinef  "   - Available versions:" , avalaibleVersions)
                 ||> List.fold (fun sb elem -> sb.AppendLinef "     - %O" elem)
         | conflicts -> buildConflictReport errorText conflicts
         |> string
@@ -424,13 +421,13 @@ let private getExploredPackage (pkgConfig:PackageConfig) getPackageDetailsF (sta
         let package = updateRestrictions pkgConfig package
         stackpack.ExploredPackages.[key] <- package
         if verbose then
-            verbosefn "   Retrieved Explored Package  %O" package
+            verbosefn "   Retrieved explored package %O" package
         stackpack, Some(true, package)
     | false,_ ->
         match explorePackageConfig getPackageDetailsF pkgConfig with
         | Some explored ->
             if verbose then
-                verbosefn "   Found Explored Package  %O" explored
+                verbosefn "   Found explored package %O" explored
             stackpack.ExploredPackages.Add(key,explored)
             stackpack, Some(false, explored)
         | None ->
@@ -857,14 +854,22 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                     else
                         // It might be that this version is already not possible because of our current set.
                         // Example: We took A with version 1.0.0 (in our current resolution), but this version depends on A > 1.0.0
-                        let canTakePackage =
+                        let packageErrors =
                             currentStep.CurrentResolution
                             |> Map.toSeq
                             |> Seq.map snd
                             // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
                             |> Seq.filter (fun resolved -> lockedPackages.Contains resolved.Name |> not)
-                            |> Seq.forall (DependencySetFilter.isPackageCompatible exploredPackage.Dependencies)
-                        if canTakePackage then
+                            |> Seq.choose (fun r ->
+                                let incompatible = DependencySetFilter.findIncompatibleDependencies exploredPackage.Dependencies r
+                                if Seq.isEmpty incompatible  then
+                                    None
+                                else
+                                    Some incompatible)
+                            |> Seq.toList
+                        
+                        match packageErrors with
+                        | [] ->
                             let nextStep =
                                 {   Relax              = currentStep.Relax
                                     FilteredVersions   = Map.add currentRequirement.Name ([versionToExplore],currentConflict.GlobalOverride) currentStep.FilteredVersions
@@ -877,8 +882,25 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                                            This will result in an endless loop.%sCurrent Requirement: %A%sRequirements: %A"
                                                 Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
                             step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
-                        else
-                            step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
+                        | firstError :: _ ->
+                            match currentConflict.Status with
+                            | Resolution.Ok _ -> 
+                                step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
+                            | Resolution.Conflict(resolveStep,requirementSet,requirement,getPackageVersions) ->
+                                let requirements =
+                                    firstError
+                                    |> Seq.map (fun (name,vr,_) -> 
+                                            { currentRequirement with
+                                                  Name = name
+                                                  VersionRequirement = vr
+                                                  Parent = PackageRequirementSource.Package(currentRequirement.Name, exploredPackage.Version, exploredPackage.Source)
+                                                  Graph = currentRequirement :: currentRequirement.Graph })
+                                    |> Seq.fold (fun requirements r -> Set.add r requirements) requirementSet
+                                let currentConflict = 
+                                    { currentConflict with
+                                        Status = Resolution.Conflict(resolveStep,requirements,requirement,getPackageVersions) }
+                                
+                                step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
 
     let startingStep = {
         Relax              = false
