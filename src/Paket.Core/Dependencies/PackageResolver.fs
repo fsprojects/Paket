@@ -883,17 +883,24 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                                                 Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
                             step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
                         | firstError :: _ ->
-                            let conflict =
-                                firstError
-                                |> Seq.map (fun (name,vr,_) -> 
-                                        { currentRequirement with
-                                              Name = name
-                                              VersionRequirement = vr
-                                              Parent = PackageRequirementSource.Package(currentRequirement.Name, exploredPackage.Version, exploredPackage.Source)
-                                              Graph = currentRequirement :: currentRequirement.Graph })
-                                |> Seq.fold (fun conflict r -> { conflict with Conflicts = Set.add r currentConflict.Conflicts }) currentConflict
+                            match currentConflict.Status with
+                            | Resolution.Ok _ -> 
+                                step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
+                            | Resolution.Conflict(resolveStep,requirementSet,requirement,getPackageVersions) ->
+                                let requirements =
+                                    firstError
+                                    |> Seq.map (fun (name,vr,_) -> 
+                                            { currentRequirement with
+                                                  Name = name
+                                                  VersionRequirement = vr
+                                                  Parent = PackageRequirementSource.Package(currentRequirement.Name, exploredPackage.Version, exploredPackage.Source)
+                                                  Graph = currentRequirement :: currentRequirement.Graph })
+                                    |> Seq.fold (fun requirements r -> Set.add r requirements) requirementSet
+                                let currentConflict = 
+                                    { currentConflict with
+                                        Status = Resolution.Conflict(resolveStep,requirements,requirement,getPackageVersions) }
                                 
-                            step (Inner ((conflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
+                                step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
 
     let startingStep = {
         Relax              = false
