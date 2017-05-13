@@ -190,6 +190,11 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     if not lockFileName.Exists then 
         failwithf "%s doesn't exist." lockFileName.FullName
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
+
+    let targetFilter = 
+        targetFramework
+        |> Option.bind FrameworkDetection.Extract
+
     let lockFile,localFile,hasLocalFile =
         let lockFile = LockFile.LoadFrom(lockFileName.FullName)
         if not localFileName.Exists then
@@ -217,6 +222,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             | None -> failwithf "The group %O was not found in the paket.lock file." groupName
             | Some group -> [groupName,group] |> Map.ofList
 
+    let resolved = lazy (lockFile.GetGroupedResolution())
+
     let referencesFileNames =
         match projectFile with
         | Some projectFile ->
@@ -235,7 +242,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
                     ReferencesFile.New fileName
 
-            let resolved = lockFile.GetGroupedResolution()        
             let list = System.Collections.Generic.List<_>()
             let fi = FileInfo projectFile.FileName
             let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
@@ -246,42 +252,38 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
             createAlternativeNuGetConfig alternativeConfigFileName.FullName
 
+            
             for kv in groups do
                 let hull = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
                 let depsGroup =
                     match dependenciesFile.Groups |> Map.tryFind kv.Key with
                     | Some group -> group
                     | None -> failwithf "Dependencies file '%s' does not contain group '%O' but it is used in '%s'" dependenciesFile.FileName kv.Key lockFile.FileName
+
                 let allDirectPackages =
                     match referencesFile.Groups |> Map.tryFind kv.Key with
                     | Some g -> g.NugetPackages |> List.map (fun p -> p.Name) |> Set.ofList
                     | None -> Set.empty
                 
-                let target = 
-                    targetFramework
-                    |> Option.bind FrameworkDetection.Extract
 
                 for (key,_,_) in hull do
                     let restore =
-                        match target with
+                        match targetFilter with
                         | None -> true
                         | Some target ->
-                            let (_), (_,model) = 
-                                CreateInstallModel(alternativeProjectRoot, root, kv.Key, depsGroup.Sources, depsGroup.Caches, force, resolved.[key])
-                                |> Async.RunSynchronously
-                        
-                            let refs = model.GetLibReferenceFiles(target)
-                            if not (Seq.isEmpty refs) then
-                                true
-                            else 
-                                true
+                            let resolvedPackage = resolved.Force().[key]
 
+                            match resolvedPackage.Settings.FrameworkRestrictions with
+                            | Requirements.FrameworkRestrictionList restrictions ->
+                                Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target)
+                            | _ -> true
+                            
                     if restore then
                         let _,packageName = key
                         let direct = allDirectPackages.Contains packageName
                         let line =
                             packageName.ToString() + "," + 
-                            resolved.[key].Version.ToString() + "," + 
+                            resolved.Force().[key].Version.ToString() + "," + 
                             (if direct then "Direct" else "Transitive")
 
                         list.Add line
@@ -300,10 +302,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             [referencesFile.FileName]
         | None -> referencesFileNames
 
-
-
     for kv in groups do
-        let packages = 
+        let allPackages = 
             if List.isEmpty referencesFileNames then 
                 kv.Value.Resolution
                 |> Seq.map (fun kv -> kv.Key) 
@@ -311,6 +311,21 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                 referencesFileNames
                 |> List.toSeq
                 |> computePackageHull kv.Key lockFile
+
+        let packages =
+            allPackages
+            |> Seq.filter (fun p ->
+                match targetFilter with
+                | None -> true
+                | Some target ->
+                    let key = kv.Key,p
+                    let resolvedPackage = resolved.Force().[key]
+
+                    match resolvedPackage.Settings.FrameworkRestrictions with
+                    | Requirements.FrameworkRestrictionList restrictions ->
+                        Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target)
+                    | _ -> true)
+ 
 
         match dependenciesFile.Groups |> Map.tryFind kv.Value.Name with
         | None ->

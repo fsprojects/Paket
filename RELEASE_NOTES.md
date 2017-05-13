@@ -1,4 +1,4 @@
-#### 5.0.0-alpha023 - 11.05.2017
+#### 5.0.0-beta001 - 13.05.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
@@ -13,6 +13,7 @@
 * BUGFIX: Sort dependencies on obj/references files - https://github.com/fsprojects/Paket/issues/2310
 * BUGFIX: Support .NET moniker ">= monoandroid" - https://github.com/fsprojects/Paket/issues/2246
 * BUGFIX: Better dependencies file parser errors
+* BUGFIX: "Dotnet restore" failed on .netstandard projects under 1.6 - https://github.com/fsprojects/Paket/issues/2243
 * BUGFIX: Paket now accepts multiple nuspec files in fix-nuspec - https://github.com/fsprojects/Paket/pull/2296
 * BUGFIX: Fixed pinning of .NETSTANDARD 1.6 packages - https://github.com/fsprojects/Paket/pull/2307
 * BUGFIX: Fixed bug with ignored argument of getPackageDetails - https://github.com/fsprojects/Paket/pull/2293

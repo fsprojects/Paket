@@ -704,7 +704,6 @@ module InstallModel =
         model |> mapCompileLibFolders(fun folder ->
             if referenceApplies folder then
                 FrameworkFolder.map (fun c -> { c with FrameworkReferences = Set.add (FrameworkReference.ofName reference.AssemblyName) c.FrameworkReferences }) folder
-                //{ folder with FolderContents = { folder.FolderContents with FrameworkReferences = Set.add reference.AssemblyName  folder.FolderContents.FrameworkReferences } }
             else
                 folder)
 
@@ -774,11 +773,6 @@ module InstallModel =
         this
         |> mapCompileLibReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
         |> mapCompileLibFrameworkReferences (Set.filter (fun reference -> Set.contains reference.Name references |> not))
-        //let inline mapfn (files:InstallFiles) =
-        //    { files with
-        //        References = files.References |> Set.filter (fun reference -> Set.contains reference.ReferenceName references |> not)
-        //    }
-        //mapFiles mapfn this
 
     let addLicense url (model: InstallModel) =
         if String.IsNullOrWhiteSpace url then model

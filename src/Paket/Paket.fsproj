@@ -22,7 +22,7 @@
     <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
     <Tailcalls>false</Tailcalls>
-    <OutputPath>..\..\bin\</OutputPath>
+    <OutputPath>C:\temp\PaketRepro\.paket</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\temp\TestProject</StartWorkingDirectory>
+    <StartArguments>restore --target-framework netstandard1.3 --project "C:\temp\PaketRepro\PaketRepro\PaketRepro.csproj"</StartArguments>
+    <StartWorkingDirectory>C:\temp\PaketRepro</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
