@@ -390,17 +390,20 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
             d, Seq.append errorMessages groupErrors
 
         let usedPackages, errorMessages =
-            let dict = System.Collections.Generic.Dictionary<PackageName,SemVerInfo>()
+            let dict = System.Collections.Generic.Dictionary<PackageName,SemVerInfo*bool>()
             let errors = ResizeArray ()
             usedPackages
-            |> Map.filter (fun (_groupName,packageName) (v,_) ->
+            |> Map.filter (fun (_groupName,packageName) (v,model) ->
+                let hasCondition = model.ReferenceCondition.IsSome
                 match dict.TryGetValue packageName with
-                | true,v' ->
+                | true,(v',true) when hasCondition ->
+                    true
+                | true,(v',hasCondition') ->
                     if v' = v then false else
-                    errors.Add <| sprintf "Package %O is referenced in different versions in %s (%O vs %O), check the lock-file." packageName project.FileName v' v
+                    errors.Add <| sprintf "Package %O is referenced in different versions in %s (%O vs %O), to resolve this either add all dependencies to a single group (to get a unified resolution) or use a condition on both groups and control compilation yourself." packageName project.FileName v' v
                     false
                 | _ ->
-                    dict.Add(packageName,v)
+                    dict.Add(packageName,(v,hasCondition))
                     true)
             |> fun usedPackages -> usedPackages, Seq.append errorMessages errors
 

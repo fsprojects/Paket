@@ -341,7 +341,7 @@ let ``#1458 should not install conflicting deps from different groups``() =
 
 [<Test>]
 let ``#2335 should install deps from different groups when using conditions``() =
-    let scenario = "i002335-razorengine-support"
+    let scenario = "i002335-razorengine"
     install scenario |> ignore
     let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
