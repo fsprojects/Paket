@@ -399,9 +399,12 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                 | true,(v',true) when hasCondition ->
                     true
                 | true,(v',hasCondition') ->
-                    if v' = v then false else
-                    errors.Add <| sprintf "Package %O is referenced in different versions in %s (%O vs %O), to resolve this either add all dependencies to a single group (to get a unified resolution) or use a condition on both groups and control compilation yourself." packageName project.FileName v' v
-                    false
+                    if v' = v then
+                        traceWarnfn "Package %O is referenced through multiple groups in %s (inspect lockfile for details). To resolve this warning use a single group for this project to get a unified dependency resolution or use conditions on the groups if you know what you are doing." packageName project.FileName
+                        false
+                    else
+                        errors.Add <| sprintf "Package %O is referenced in different versions in %s (%O vs %O), (inspect the lockfile for details) to resolve this either add all dependencies to a single group (to get a unified resolution) or use a condition on both groups and control compilation yourself." packageName project.FileName v' v
+                        false
                 | _ ->
                     dict.Add(packageName,(v,hasCondition))
                     true)
