@@ -820,7 +820,10 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
        
         let emitted = HashSet<_>()
         [while !visited <> Set.empty do
-            let ((groupName,packageName),p,deps) = Seq.minBy (fun (_,_,c) -> Set.count c) !visited
+            let ((groupName,packageName),p,deps) = 
+                !visited
+                |> Seq.minBy (fun ((groupName,packageName),_,c) -> Set.count c,groupName,packageName) 
+
             if emitted.Add (groupName,packageName) then 
                 yield ((groupName,packageName),p,deps)
                 
