@@ -212,7 +212,9 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         if hasAnyChanges then 
             checkResponse "paket.dependencies and paket.lock are out of sync in %s.%sPlease run 'paket install' or 'paket update' to recompute the paket.lock file." lockFileName.Directory.FullName Environment.NewLine
             for (group, package, changes) in nugetChanges do
-                traceWarnfn "Changes %A were detected in %s/%s" changes (group.ToString()) (package.ToString())
+                traceWarnfn "Changes were detected for %s/%s" (group.ToString()) (package.ToString())
+                for change in changes do
+                     traceWarnfn "    - %A" change
 
     let groups =
         match group with

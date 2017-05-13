@@ -644,24 +644,22 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
     member __.GetTransitiveDependencies(groupName) =
         let collectDependenciesForGroup group = 
             let fromNuGets =
-                group.Resolution 
-                |> Seq.map (fun d -> d.Value.Dependencies |> Seq.map (fun (n,_,_) -> n))
-                |> Seq.concat
+                group.Resolution
+                |> Seq.collect (fun d -> 
+                    d.Value.Dependencies 
+                    |> Seq.map (fun (n,_,_) -> n))
                 |> Set.ofSeq
 
             let fromSourceFiles =
                 group.RemoteFiles
-                |> Seq.map (fun d -> d.Dependencies |> Seq.map fst)
-                |> Seq.concat
+                |> Seq.collect (fun d -> d.Dependencies |> Seq.map fst)
                 |> Set.ofSeq
 
             Set.union fromNuGets fromSourceFiles
-
-        let group = groups.TryFind groupName
-        match group with
+            
+        match groups.TryFind groupName with
         | None -> Set.empty
         | Some group -> collectDependenciesForGroup group
-            
 
     member this.GetTopLevelDependencies(groupName) = 
         match groups |> Map.tryFind groupName with

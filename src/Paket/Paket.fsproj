@@ -30,7 +30,7 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>restore --target-framework netstandard1.3 --project "C:\temp\PaketRepro\PaketRepro\PaketRepro.csproj"</StartArguments>
+    <StartArguments>restore</StartArguments>
     <StartWorkingDirectory>C:\temp\PaketRepro</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">

@@ -86,7 +86,9 @@ let findNuGetChangesInDependenciesFile(dependenciesFile:DependenciesFile,lockFil
             | _ -> yield groupName, name, [PackageNotFoundInDependenciesFile] // Removed
         ]
         |> List.filter (fun (_,_, changes) -> changes.Length > 0)
-        |> List.map (fun (g,p, changes) -> lockFile.GetAllNormalizedDependenciesOf(g,p,lockFile.FileName) |> Seq.map (fun (a,b) -> a,b,changes))
+        |> List.map (fun (g,p, changes) -> 
+            lockFile.GetAllNormalizedDependenciesOf(g,p,lockFile.FileName) 
+            |> Seq.map (fun (a,b) -> a,b,changes))
         |> Seq.concat
         |> Set.ofSeq
 
