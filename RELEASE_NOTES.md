@@ -10,6 +10,7 @@
 * DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
 * BUGFIX: Improved C++ support
+* BUGFIX: Treat runtime dependencies as transitive deps - https://github.com/fsprojects/Paket/issues/2334
 * BUGFIX: Sort dependencies on obj/references files - https://github.com/fsprojects/Paket/issues/2310
 * BUGFIX: Support .NET moniker ">= monoandroid" - https://github.com/fsprojects/Paket/issues/2246
 * BUGFIX: Better dependencies file parser errors

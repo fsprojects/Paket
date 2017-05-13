@@ -649,13 +649,24 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     d.Value.Dependencies 
                     |> Seq.map (fun (n,_,_) -> n))
                 |> Set.ofSeq
+                
+            let runtimeDeps =
+                group.Resolution
+                |> Seq.choose (fun d -> 
+                    if d.Value.IsRuntimeDependency then
+                        Some d.Value.Name
+                    else
+                        None)
+                |> Set.ofSeq
 
             let fromSourceFiles =
                 group.RemoteFiles
                 |> Seq.collect (fun d -> d.Dependencies |> Seq.map fst)
                 |> Set.ofSeq
-
-            Set.union fromNuGets fromSourceFiles
+            
+            fromSourceFiles
+            |> Set.union fromNuGets
+            |> Set.union runtimeDeps
             
         match groups.TryFind groupName with
         | None -> Set.empty
