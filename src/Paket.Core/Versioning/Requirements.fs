@@ -20,6 +20,7 @@ type FrameworkRestriction =
         | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
         | FrameworkRestriction.Between(min,max) -> sprintf ">= %O < %O" min max
 
+    // TODO: remove broken api
     member x.GetOneIdentifier =
         match x with
         | Exactly r -> Some r
@@ -27,6 +28,7 @@ type FrameworkRestriction =
         | AtLeast r -> Some r
         | Between(r, _) -> Some r
 
+    // TODO: remove broken api
     /// Return if the parameter is a restriction of the same framework category (dotnet, windows phone, silverlight, ...)
     member x.IsSameCategoryAs (y : FrameworkRestriction) =
         match (x.GetOneIdentifier, y.GetOneIdentifier) with
@@ -85,9 +87,13 @@ let parseRestrictions failImmediatly (text:string) =
             else
                 yield FrameworkRestriction.Exactly x]
 
+// TODO: remove broken api
 let private minRestriction = FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1))
+
+// TODO: remove broken api
 let private minStandardRestriction = FrameworkRestriction.Exactly(DotNetStandard(DotNetStandardVersion.V1_0))
 
+// TODO: remove broken api
 let findMaxDotNetRestriction restrictions =
     minRestriction :: restrictions
     |> List.filter (fun (r:FrameworkRestriction) ->
@@ -100,6 +106,7 @@ let findMaxDotNetRestriction restrictions =
         | FrameworkRestriction.Exactly r -> r
         | _ -> failwith "error"
 
+// TODO: remove broken api
 let findMaxStandardRestriction restrictions =
     minStandardRestriction :: restrictions
     |> List.filter (fun (r:FrameworkRestriction) ->
@@ -377,26 +384,26 @@ let optimizeDependencies originalDependencies =
                 newRestictions 
             else
                 newRestictions
-                |> List.map (fun (name,vr,rs) ->
-                    let newRs = 
-                        rs
-                        |> List.collect (function
-                            | FrameworkRestriction.Exactly(DotNetStandard(r)) -> 
-                                let compatible = 
-                                    KnownTargetProfiles.DotNetFrameworkIdentifiers
-                                    |> List.filter (fun p -> p.IsCompatible(DotNetStandard r))
-                                    |> List.map (fun p -> FrameworkRestriction.Exactly p)
-                                FrameworkRestriction.AtLeast(DotNetStandard(r)) :: compatible
-                            | FrameworkRestriction.AtLeast(DotNetStandard(r)) -> 
-                                let compatible = 
-                                    KnownTargetProfiles.DotNetFrameworkIdentifiers
-                                    |> List.filter (fun p -> p.IsCompatible(DotNetStandard r))
-                                    |> List.map (fun p -> FrameworkRestriction.AtLeast p)
-                                FrameworkRestriction.AtLeast(DotNetStandard(r)) :: compatible
-                            | r -> [r])
-                        |> optimizeRestrictions
-
-                    name,vr,newRs)
+                //|> List.map (fun (name,vr,rs) ->
+                //    let newRs = 
+                //        rs
+                //        |> List.collect (function
+                //            | FrameworkRestriction.Exactly(DotNetStandard(r)) -> 
+                //                let compatible = 
+                //                    KnownTargetProfiles.DotNetFrameworkIdentifiers
+                //                    |> List.filter (fun p -> p.IsCompatible(DotNetStandard r))
+                //                    |> List.map (fun p -> FrameworkRestriction.Exactly p)
+                //                FrameworkRestriction.AtLeast(DotNetStandard(r)) :: compatible
+                //            | FrameworkRestriction.AtLeast(DotNetStandard(r)) -> 
+                //                let compatible = 
+                //                    KnownTargetProfiles.DotNetFrameworkIdentifiers
+                //                    |> List.filter (fun p -> p.IsCompatible(DotNetStandard r))
+                //                    |> List.map (fun p -> FrameworkRestriction.AtLeast p)
+                //                FrameworkRestriction.AtLeast(DotNetStandard(r)) :: compatible
+                //            | r -> [r])
+                //        |> optimizeRestrictions
+                //
+                //    name,vr,newRs)
                     
 
         newRestictions
@@ -511,22 +518,13 @@ let isTargetMatchingRestrictions =
                         match pf with 
                         | Native(_) -> true 
                         | _ -> false
-                    | FrameworkRestriction.Exactly fw -> 
-                            match fw, pf with
-                            | DotNetFramework _, DotNetStandard _ -> false
-                            | DotNetStandard _,  DotNetFramework _ -> false
-                            | _ -> pf.IsCompatible(fw)
+                    | FrameworkRestriction.Exactly fw ->
+                        pf = fw
                     | FrameworkRestriction.Portable _ -> false
                     | FrameworkRestriction.AtLeast fw ->
-                        match fw, pf with
-                        | DotNetFramework _, DotNetStandard _ -> false
-                        | DotNetStandard _,  DotNetFramework _ -> false
-                        | _ -> pf.IsAtLeast(fw)
+                        pf.IsAtLeast(fw)
                     | FrameworkRestriction.Between(min,max) -> 
-                        match min, pf with
-                        | DotNetFramework _, DotNetStandard _ -> false
-                        | DotNetStandard _, DotNetFramework _ -> false
-                        | _ -> pf.IsBetween(min,max))
+                        pf.IsBetween(min,max))
         | _ ->
             restrictions
             |> List.exists (fun restriction ->

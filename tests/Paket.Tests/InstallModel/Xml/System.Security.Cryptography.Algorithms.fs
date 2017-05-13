@@ -97,4 +97,5 @@ let ``should generate Xml for System.Security.Cryptography.Algorithms in CSharp 
       ctx.ChooseNodes
       |> (fun n -> n.Head.OuterXml)
       |> normalizeXml
-    result |> shouldEqual (normalizeXml expected)
+    let expectedXml = normalizeXml expected
+    result |> shouldEqual expectedXml

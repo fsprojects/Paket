@@ -57,6 +57,7 @@ module DependencySetFilter =
         let _,_,restrictions = dependency
         let restrictions = restrictions |> getRestrictionList
         if Seq.isEmpty restrictions then true else
+        // TODO: fix broken logic
         match restriction with
         | FrameworkRestriction.Exactly v1 ->
             restrictions
