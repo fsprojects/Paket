@@ -1104,11 +1104,6 @@
           <Private>False</Private>
           <Paket>True</Paket>
         </Reference>
-        <Reference Include="System.Net.Http">
-          <HintPath>..\..\packages\test\System.Net.Http\ref\netstandard1.3\System.Net.Http.xml</HintPath>
-          <Private>False</Private>
-          <Paket>True</Paket>
-        </Reference>
       </ItemGroup>
     </When>
   </Choose>
