@@ -59,7 +59,7 @@ let expected = """
 let ``should generate Xml for System.Net.Http 2.2.8``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", [],
+        InstallModel.CreateFromLibs(PackageName "System.Net.Http", SemVer.Parse "2.2.8", FrameworkRestriction.NoRestriction,
             [ @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll"
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll"
               @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll"
@@ -76,8 +76,8 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
                  LicenseUrl = ""
                  IsDevelopmentDependency = false
                  FrameworkAssemblyReferences =
-                 [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))] }
-                  { AssemblyName = "System.Net.Http.WebRequest"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]})
+                 [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = makeOrList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))] }
+                  { AssemblyName = "System.Net.Http.WebRequest"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]})
 
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
     let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml

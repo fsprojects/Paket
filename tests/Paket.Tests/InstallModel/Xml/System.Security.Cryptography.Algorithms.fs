@@ -3,6 +3,7 @@
 open FsUnit
 open NUnit.Framework
 open Paket
+open Paket.Requirements
 open Paket.Domain
 open Paket.TestHelpers
 
@@ -68,7 +69,7 @@ let expected = """
 let ``should generate Xml for System.Security.Cryptography.Algorithms in CSharp project``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Security.Cryptography.Algorithms", SemVer.Parse "1.2.0", [],
+        InstallModel.CreateFromLibs(PackageName "System.Security.Cryptography.Algorithms", SemVer.Parse "1.2.0", FrameworkRestriction.NoRestriction,
             [ @"..\System.Security.Cryptography.Algorithms\lib\net46\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\lib\net461\System.Security.Cryptography.Algorithms.dll"
               @"..\System.Security.Cryptography.Algorithms\lib\net463\System.Security.Cryptography.Algorithms.dll"

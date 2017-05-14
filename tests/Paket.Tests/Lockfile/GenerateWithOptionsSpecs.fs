@@ -191,14 +191,14 @@ NUGET
     let cfg = DependenciesFile.FromSource(config)
     let group = cfg.Groups.[Constants.MainDependencyGroup]
     group.Packages.Head.Settings.FrameworkRestrictions 
-    |> getRestrictionList
-    |> shouldEqual [FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)) ]
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)))
 
     let resolved = ResolveWithGraph(cfg,noSha1,VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
     getVersion resolved.[PackageName "NLog"] |> shouldEqual "1.0.1"
     resolved.[PackageName "NLog"].Settings.FrameworkRestrictions 
-    |> getRestrictionList
-    |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)) ]
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)))
 
     resolved
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options

@@ -176,7 +176,8 @@ let getSupportedTargetProfiles =
 
 let getTargetCondition (target:TargetProfile) =
     match target with
-    | SinglePlatform(platform) -> 
+    | SinglePlatform(platform) ->
+        // BUG: Pattern incomplete!
         match platform with
         | DotNetFramework(version) when version = FrameworkVersion.V4_Client ->
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Client')" version

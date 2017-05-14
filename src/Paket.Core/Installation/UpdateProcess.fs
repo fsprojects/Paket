@@ -165,19 +165,22 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let groups =
         let targetFrameworks = lazy (
-            RestoreProcess.findAllReferencesFiles root |> returnOrFail
-            |> List.map (fun (p,_) -> 
-                match p.GetTargetFramework() with
-                | Some fw -> Requirements.FrameworkRestriction.Exactly fw
-                | None -> failwithf "Could not detect target framework for project %s" p.FileName)
-            |> List.distinct)
+            let rawRestrictions =
+                RestoreProcess.findAllReferencesFiles root |> returnOrFail
+                |> List.map (fun (p,_) -> 
+                    match p.GetTargetFramework() with
+                    | Some fw -> Requirements.FrameworkRestriction.Exactly fw
+                    | None -> failwithf "Could not detect target framework for project %s" p.FileName)
+                |> List.distinct
+            if rawRestrictions.IsEmpty then Paket.Requirements.FrameworkRestriction.NoRestriction
+            else rawRestrictions |> Seq.fold Paket.Requirements.combineRestrictionsWithOr Paket.Requirements.FrameworkRestriction.EmptySet)
 
         dependenciesFile.Groups
         |> Map.map (fun groupName group -> 
             let restrictions =
                 match group.Options.Settings.FrameworkRestrictions with
                 | Requirements.FrameworkRestrictions.AutoDetectFramework ->
-                    Requirements.FrameworkRestrictions.FrameworkRestrictionList (targetFrameworks.Force())
+                    Requirements.FrameworkRestrictions.ExplicitRestriction (targetFrameworks.Force())
                 | x -> x
 
             let settings = { group.Options.Settings with FrameworkRestrictions = restrictions }

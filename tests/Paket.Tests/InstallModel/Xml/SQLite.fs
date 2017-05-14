@@ -142,7 +142,7 @@ let ``should init model for SQLite``() =
 [<Test>]
 let ``should generate model for SQLite``() =
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", [],
+        InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", FrameworkRestriction.NoRestriction,
             [ @"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"
@@ -164,7 +164,7 @@ let ``should generate model for SQLite``() =
 let ``should generate Xml for SQLite``() =
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", [],
+        InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", FrameworkRestriction.NoRestriction,
             [ @"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"

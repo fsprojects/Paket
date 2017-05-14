@@ -253,12 +253,12 @@ nuget Chessie"""
     getVersion netStandard |> shouldEqual "1.6.0"
     // Don't install netstandard to net45
     Requirements.isTargetMatchingRestrictions 
-      (Requirements.getRestrictionList netStandard.Settings.FrameworkRestrictions,
+      (Requirements.getExplicitRestriction netStandard.Settings.FrameworkRestrictions,
        (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5)))
       |> shouldEqual false
     // Don't install netstandard to net463
     Requirements.isTargetMatchingRestrictions 
-      (Requirements.getRestrictionList netStandard.Settings.FrameworkRestrictions,
+      (Requirements.getExplicitRestriction netStandard.Settings.FrameworkRestrictions,
        (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6_3)))
       |> shouldEqual false
     // This also tests that "UnknownPackage" is not pulled unexpectedly (because this dependency is never relevant)

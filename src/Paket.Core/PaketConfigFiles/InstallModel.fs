@@ -671,27 +671,30 @@ module InstallModel =
 
     let addFrameworkAssemblyReference (installModel:InstallModel) (reference:FrameworkAssemblyReference) : InstallModel =
         let referenceApplies (folder : FrameworkFolder<_>) =
-            match reference.FrameworkRestrictions |> getRestrictionList with
-            | [] -> true
-            | restrictions ->
-                restrictions
-                |> List.exists (fun restriction ->
-                      match restriction with
-                      | FrameworkRestriction.Portable _ ->
-                            folder.Targets
-                            |> List.exists (fun target ->
-                                match target with
-                                | SinglePlatform _ -> false
-                                | _ -> true)
-                      | FrameworkRestriction.Exactly target ->
-                            folder.GetSinglePlatforms()
-                            |> List.exists ((=) target)
-                        | FrameworkRestriction.AtLeast target ->
-                            folder.GetSinglePlatforms()
-                            |> List.exists (fun t -> t >= target && t.IsSameCategoryAs(target))
-                        | FrameworkRestriction.Between(min,max) ->
-                            folder.GetSinglePlatforms()
-                            |> List.exists (fun t -> t >= min && t < max && t.IsSameCategoryAs(min)))
+            applyRestrictionsToTargets (reference.FrameworkRestrictions |> getExplicitRestriction) folder.Targets
+            |> Seq.isEmpty
+            |> not
+            //match reference.FrameworkRestrictions |> getRestrictionList with
+            //| [] -> true
+            //| restrictions ->
+            //    restrictions
+            //    |> List.exists (fun restriction ->
+            //          match restriction with
+            //          | FrameworkRestriction.Portable _ ->
+            //                folder.Targets
+            //                |> List.exists (fun target ->
+            //                    match target with
+            //                    | SinglePlatform _ -> false
+            //                    | _ -> true)
+            //          | FrameworkRestriction.Exactly target ->
+            //                folder.GetSinglePlatforms()
+            //                |> List.exists ((=) target)
+            //            | FrameworkRestriction.AtLeast target ->
+            //                folder.GetSinglePlatforms()
+            //                |> List.exists (fun t -> t >= target && t.IsSameCategoryAs(target))
+            //            | FrameworkRestriction.Between(min,max) ->
+            //                folder.GetSinglePlatforms()
+            //                |> List.exists (fun t -> t >= min && t < max && t.IsSameCategoryAs(min)))
 
         let model =
             if List.isEmpty installModel.CompileLibFolders then
@@ -733,12 +736,12 @@ module InstallModel =
             let targetsFile = t.Path
             (String.endsWithIgnoreCase ".props" targetsFile|| String.endsWithIgnoreCase ".targets" targetsFile)))
 
-    let applyFrameworkRestrictions (restrictions:FrameworkRestriction list) (installModel:InstallModel) =
-        match restrictions with
-        | [] -> installModel
-        | restrictions ->
+    let applyFrameworkRestrictions (restriction:FrameworkRestriction) (installModel:InstallModel) =
+        match restriction with
+        | FrameworkRestriction.NoRestriction -> installModel
+        | restriction ->
             let applyRestriction folder =
-                { folder with Targets = applyRestrictionsToTargets restrictions folder.Targets}
+                { folder with Targets = applyRestrictionsToTargets restriction folder.Targets}
 
             { installModel with
                 CompileLibFolders =
@@ -869,5 +872,5 @@ type InstallModel with
 
     member this.RemoveIfCompletelyEmpty() = InstallModel.removeIfCompletelyEmpty this
 
-    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestriction list, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
-        InstallModel.createFromLibs packageName packageVersion frameworkRestrictions libs targetsFiles analyzerFiles nuspec
+    static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
+        InstallModel.createFromLibs packageName packageVersion frameworkRestriction libs targetsFiles analyzerFiles nuspec

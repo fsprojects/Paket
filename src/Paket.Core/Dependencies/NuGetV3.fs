@@ -244,8 +244,8 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                 |> Seq.map(fun (dep, targetFramework) ->
                     let targetFramework =
                         match targetFramework with
-                        | null -> []
-                        | x -> Requirements.parseRestrictions false x
+                        | null -> FrameworkRestriction.NoRestriction
+                        | x -> Requirements.parseRestrictionsLegacy false x
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
         let unlisted =

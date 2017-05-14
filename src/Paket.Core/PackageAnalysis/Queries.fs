@@ -32,7 +32,7 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
             let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" lockFile.RootPath groupFolder packageName packageName)
             let nuspec = Nuspec.Load nuspec.FullName
             let files = NuGetV2.GetLibFiles(folder.FullName)
-            InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
+            InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, files, [], [], nuspec)
 
 let getRuntimeGraph (lockFile: LockFile) (groupName:GroupName) =
     lockFile.Groups
@@ -66,14 +66,14 @@ let resolveFrameworkForScriptGeneration (dependencies: DependenciesFile) = lazy 
         |> Seq.map(fun restrictions ->
             match restrictions with
             | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
-            | Paket.Requirements.FrameworkRestrictionList list ->
-              list |> Seq.collect (
-                function
-                | Paket.Requirements.FrameworkRestriction.Exactly framework
-                | Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
-                | Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
-                | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
-              )
+            | Paket.Requirements.ExplicitRestriction list -> list.RepresentedFrameworks
+              //list |> Seq.collect (
+              //  function
+              //  | Paket.Requirements.FrameworkRestriction.Exactly framework
+              //  | Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
+              //  | Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
+              //  | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
+              //)
           )
         |> Seq.concat
     )

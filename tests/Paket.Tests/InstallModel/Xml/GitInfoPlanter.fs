@@ -20,7 +20,7 @@ let expectedPropertyNodes = """<?xml version="1.0" encoding="utf-16"?>
 let ``should generate Xml for GitInfoPlanter2.0.0``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "GitInfoPlanter", SemVer.Parse "0.21", [],
+        InstallModel.CreateFromLibs(PackageName "GitInfoPlanter", SemVer.Parse "0.21", FrameworkRestriction.NoRestriction,
             [ ],
             [ @"..\GitInfoPlanter\build\GitInfoPlanter.targets" ]
             |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\GitInfoPlanter\",

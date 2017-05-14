@@ -143,35 +143,38 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let dir = (lockFile : FileInfo).DirectoryName
                     let projects = ProjectFile.FindAllProjects dir
                     let frameworks = projects |> Array.choose ProjectFile.getTargetFramework |> Array.distinct
-                    frameworks |> Array.map FrameworkRestriction.Exactly |> List.ofArray
+                    let restrictions = frameworks |> Array.map FrameworkRestriction.Exactly
+                    if restrictions |> Array.isEmpty then FrameworkRestriction.NoRestriction
+                    else restrictions |> Array.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet
                 )
                 fun restrictions -> 
                     match restrictions with 
-                    | FrameworkRestrictionList l -> l
+                    | ExplicitRestriction l -> l
                     | AutoDetectFramework -> projectFrameworks.Force()
 
-            if group.Options.Settings.FrameworkRestrictions |> getRestrictionList <> [] then dependenciesFile else
+            if group.Options.Settings.FrameworkRestrictions |> getRestrictionList <> FrameworkRestriction.NoRestriction then dependenciesFile else
             match group.Packages with
             | [] -> dependenciesFile
-            | package::rest ->
-                let commonRestrictions =
-                    package.Settings.FrameworkRestrictions
-                    |> getRestrictionList
-                    |> List.filter (fun r -> rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions |> getRestrictionList |> List.contains r))
-
-                match commonRestrictions with
-                | [] -> dependenciesFile
-                | _ ->
-                    let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,commonRestrictions)
-                    group.Packages
-                    |> List.fold (fun (d:DependenciesFile) package ->
-                        let oldRestrictions = package.Settings.FrameworkRestrictions |> getRestrictionList
-                        let newRestrictions = oldRestrictions |> List.filter (fun r -> commonRestrictions |> List.contains r |> not)
-                        if oldRestrictions = newRestrictions then d else
-                        let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
-                        let installSettings = { package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions }
-                        let vr = { VersionRequirement = package.VersionRequirement; ResolverStrategy = package.ResolverStrategyForDirectDependencies }
-                        d.AddAdditionalPackage(group.Name, package.Name,vr,installSettings)) newDependenciesFile
+            | package::rest -> dependenciesFile
+                //let commonRestrictions =
+                //    package.Settings.FrameworkRestrictions
+                //    |> getRestrictionList
+                //    |> List.filter (fun r ->
+                //        rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions |> getRestrictionList |> List.contains r))
+                //
+                //match commonRestrictions with
+                //| [] -> dependenciesFile
+                //| _ ->
+                //    let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,commonRestrictions)
+                //    group.Packages
+                //    |> List.fold (fun (d:DependenciesFile) package ->
+                //        let oldRestrictions = package.Settings.FrameworkRestrictions |> getRestrictionList
+                //        let newRestrictions = oldRestrictions |> List.filter (fun r -> commonRestrictions |> List.contains r |> not)
+                //        if oldRestrictions = newRestrictions then d else
+                //        let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
+                //        let installSettings = { package.Settings with FrameworkRestrictions = ExplicitRestriction newRestrictions }
+                //        let vr = { VersionRequirement = package.VersionRequirement; ResolverStrategy = package.ResolverStrategyForDirectDependencies }
+                //        d.AddAdditionalPackage(group.Name, package.Name,vr,installSettings)) newDependenciesFile
 
         this.Groups
         |> Seq.map (fun kv -> kv.Value)
@@ -301,10 +304,10 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
 
                     if Environment.GetEnvironmentVariable "PAKET_DEBUG_RUNTIME_DEPS" = "true" then
                         tracefn "Runtime dependencies: "
-                        let runtimeDepsFile = DependenciesFile.FromSource ""
-                        let runtimeDepsFile = runtimeDepsFile.AddFrameworkRestriction(Constants.MainDependencyGroup, getRestrictionList group.Options.Settings.FrameworkRestrictions)
-                        let runtimeDepsFile = runtimeDepsFile.AddResolverStrategyForTransitives(Constants.MainDependencyGroup, group.Options.ResolverStrategyForTransitives)
-                        let runtimeDepsFile = (runtimeDepsFile:DependenciesFile).AddResolverStrategyForDirectDependencies(Constants.MainDependencyGroup, group.Options.ResolverStrategyForDirectDependencies)
+                        let (runtimeDepsFile:DependenciesFile) = DependenciesFile.FromSource ""
+                        let (runtimeDepsFile:DependenciesFile) = runtimeDepsFile.AddFrameworkRestriction(Constants.MainDependencyGroup, getExplicitRestriction group.Options.Settings.FrameworkRestrictions)
+                        let (runtimeDepsFile:DependenciesFile) = runtimeDepsFile.AddResolverStrategyForTransitives(Constants.MainDependencyGroup, group.Options.ResolverStrategyForTransitives)
+                        let (runtimeDepsFile:DependenciesFile) = runtimeDepsFile.AddResolverStrategyForDirectDependencies(Constants.MainDependencyGroup, group.Options.ResolverStrategyForDirectDependencies)
                         let runtimeDepsFile =
                             runtimeResolutionDeps
                             |> Seq.fold (fun (deps:DependenciesFile) dep -> deps.AddAdditionalPackage(Constants.MainDependencyGroup, dep.Name, dep.VersionRequirement, dep.ResolverStrategyForTransitives, dep.Settings)) runtimeDepsFile
@@ -348,9 +351,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         |> Map.map resolveGroup 
 
 
-    member private this.AddFrameworkRestriction(groupName, frameworkRestrictions:FrameworkRestriction list) =
-        if List.isEmpty frameworkRestrictions then this else
-        let restrictionString = sprintf "framework %s" (String.Join(", ",frameworkRestrictions))
+    member private this.AddFrameworkRestriction(groupName, frameworkRestriction:FrameworkRestriction) =
+        if frameworkRestriction = FrameworkRestriction.NoRestriction then this else
+        let restrictionString = sprintf "restriction: %O" frameworkRestriction
 
         let list = new System.Collections.Generic.List<_>()
         list.AddRange textRepresentation
@@ -689,13 +692,13 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         |> Seq.map(fun restrictions ->
             match restrictions with
             | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
-            | Paket.Requirements.FrameworkRestrictionList list ->
-                list |> Seq.collect (function
-                | Paket.Requirements.FrameworkRestriction.Exactly framework
-                | Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
-                | Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
-                | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
-                )
+            | Paket.Requirements.ExplicitRestriction list -> list.RepresentedFrameworks
+                //list |> Seq.collect (function
+                //| Paket.Requirements.FrameworkRestriction.Exactly framework
+                //| Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
+                //| Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
+                //| Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
+                //)
           )
         |> Seq.concat
     )

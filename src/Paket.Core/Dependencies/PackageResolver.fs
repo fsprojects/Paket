@@ -37,7 +37,7 @@ type ResolvedPackage = {
     override this.ToString () = sprintf "%O %O" this.Name this.Version
 
     member self.HasFrameworkRestrictions =
-        not (getRestrictionList self.Settings.FrameworkRestrictions = [])
+        getExplicitRestriction self.Settings.FrameworkRestrictions <> FrameworkRestriction.NoRestriction
 
     member private self.Display
         with get() =
@@ -54,47 +54,51 @@ type PackageResolution = Map<PackageName, ResolvedPackage>
 
 module DependencySetFilter =
     let isIncluded (restriction:FrameworkRestriction) (dependency:PackageName * VersionRequirement * FrameworkRestrictions) =
-        let _,_,restrictions = dependency
-        let restrictions = restrictions |> getRestrictionList
-        if Seq.isEmpty restrictions then true else
+        let _,_,dependencyRestrictions = dependency
+        let dependencyRestrictions = dependencyRestrictions |> getExplicitRestriction
+        if dependencyRestrictions = FrameworkRestriction.NoRestriction then true else
         // TODO: fix broken logic
-        match restriction with
-        | FrameworkRestriction.Exactly v1 ->
-            restrictions
-            |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
-            |> Seq.exists (fun r2 ->
-                match r2 with
-                | FrameworkRestriction.Exactly v2 when v1 = v2 -> true
-                | FrameworkRestriction.AtLeast v2 when v1 >= v2 -> true
-                | FrameworkRestriction.Between(v2,v3) when v1 >= v2 && v1 < v3 -> true
-                | _ -> false)
-        | FrameworkRestriction.AtLeast v1 ->
-            restrictions
-            |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
-            |> Seq.exists (fun r2 ->
-                match r2 with
-                | FrameworkRestriction.Exactly v2 when v1 <= v2 -> true
-                | FrameworkRestriction.AtLeast v2 -> true
-                | FrameworkRestriction.Between(v2,v3) when v1 < v3 -> true
-                | _ -> false)
-        | FrameworkRestriction.Between (min, max) ->
-            restrictions
-            |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
-            |> Seq.exists (fun r2 ->
-                match r2 with
-                | FrameworkRestriction.Exactly v when v >= min && v < max -> true
-                | FrameworkRestriction.AtLeast v when v < max -> true
-                | FrameworkRestriction.Between(min',max') when max' >= min && min' < max -> true
-                | _ -> false)
-        | _ -> true
+
+        // This is the framework restriction we build for (example = net46)
+        // While the dependency specifies the framework restrictions of the dependency ([ >= netstandard13 ])
+        // we need to take the dependency, when 'restriction' is a subset of any of 'dependencyRestrictions'
+        restriction.IsSubsetOf dependencyRestrictions
+        //match restriction with
+        //| FrameworkRestriction.Exactly v1 ->
+        //    dependencyRestrictions
+        //    |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
+        //    |> Seq.exists (fun r2 ->
+        //        match r2 with
+        //        | FrameworkRestriction.Exactly v2 when v1 = v2 -> true
+        //        | FrameworkRestriction.AtLeast v2 when v1 >= v2 -> true
+        //        | FrameworkRestriction.Between(v2,v3) when v1 >= v2 && v1 < v3 -> true
+        //        | _ -> false)
+        //| FrameworkRestriction.AtLeast v1 ->
+        //    restrictions
+        //    |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
+        //    |> Seq.exists (fun r2 ->
+        //        match r2 with
+        //        | FrameworkRestriction.Exactly v2 when v1 <= v2 -> true
+        //        | FrameworkRestriction.AtLeast v2 -> true
+        //        | FrameworkRestriction.Between(v2,v3) when v1 < v3 -> true
+        //        | _ -> false)
+        //| FrameworkRestriction.Between (min, max) ->
+        //    restrictions
+        //    |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
+        //    |> Seq.exists (fun r2 ->
+        //        match r2 with
+        //        | FrameworkRestriction.Exactly v when v >= min && v < max -> true
+        //        | FrameworkRestriction.AtLeast v when v < max -> true
+        //        | FrameworkRestriction.Between(min',max') when max' >= min && min' < max -> true
+        //        | _ -> false)
+        //| _ -> true
 
     let filterByRestrictions (restrictions:FrameworkRestrictions) (dependencies:DependencySet) : DependencySet =
-        match getRestrictionList restrictions with
-        | [] -> dependencies
+        match getExplicitRestriction restrictions with
+        | FrameworkRestriction.NoRestriction -> dependencies
         | restrictions ->
             dependencies
-            |> Set.filter (fun dependency ->
-                restrictions |> List.exists (fun r -> isIncluded r dependency))
+            |> Set.filter (isIncluded restrictions)
 
     let isPackageCompatible (dependencies:DependencySet) (package:ResolvedPackage) : bool =
         dependencies
@@ -255,11 +259,11 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
                 | VersionRequirement(ra1,p1),VersionRequirement(ra2,p2) when p1 = p2 ->
                     let newRestrictions =
                         match r with
-                        | FrameworkRestrictionList r ->
+                        | ExplicitRestriction r ->
                             match r2 with
-                            | FrameworkRestrictionList r2 ->
-                                FrameworkRestrictionList (r @ r2)
-                            | AutoDetectFramework -> FrameworkRestrictionList r
+                            | ExplicitRestriction r2 ->
+                                combineRestrictionsWithOr r r2 |> ExplicitRestriction
+                            | AutoDetectFramework -> ExplicitRestriction r
                         | AutoDetectFramework -> r
 
                     if ra1.IsIncludedIn ra2 then
@@ -282,7 +286,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
         let newRestrictions =
             filterRestrictions restriction exploredPackage.Settings.FrameworkRestrictions
             |> filterRestrictions globalFrameworkRestrictions
-            |> fun xs -> if xs = FrameworkRestrictionList [] then exploredPackage.Settings.FrameworkRestrictions else xs
+            |> fun xs -> if xs = ExplicitRestriction FrameworkRestriction.NoRestriction then exploredPackage.Settings.FrameworkRestrictions else xs
 
         { dependency with
             Name = n
@@ -343,27 +347,29 @@ type private PackageConfig = {
     UpdateMode         : UpdateMode
 } with
     member self.HasGlobalRestrictions =
-        not(getRestrictionList self.GlobalRestrictions = [])
+        not(getExplicitRestriction self.GlobalRestrictions = FrameworkRestriction.NoRestriction)
 
     member self.HasDependencyRestrictions =
-        not(getRestrictionList self.Dependency.Settings.FrameworkRestrictions = [])
+        not(getExplicitRestriction self.Dependency.Settings.FrameworkRestrictions = FrameworkRestriction.NoRestriction)
 
 
 let private updateRestrictions (pkgConfig:PackageConfig) (package:ResolvedPackage) =
     let newRestrictions =
         if  not pkgConfig.HasGlobalRestrictions
-            && (List.isEmpty (package.Settings.FrameworkRestrictions |> getRestrictionList)
+            && (FrameworkRestriction.NoRestriction = (package.Settings.FrameworkRestrictions |> getExplicitRestriction)
             ||  not pkgConfig.HasDependencyRestrictions )
         then
-            []
+            FrameworkRestriction.NoRestriction
         else
-            let packageSettings = package.Settings.FrameworkRestrictions |> getRestrictionList
-            let dependencySettings = pkgConfig.Dependency.Settings.FrameworkRestrictions |> getRestrictionList
-            let globalSettings = pkgConfig.GlobalRestrictions |> getRestrictionList
-            optimizeRestrictions (List.concat[packageSettings;dependencySettings;globalSettings])
+            let packageSettings = package.Settings.FrameworkRestrictions |> getExplicitRestriction
+            let dependencySettings = pkgConfig.Dependency.Settings.FrameworkRestrictions |> getExplicitRestriction
+            let globalSettings = pkgConfig.GlobalRestrictions |> getExplicitRestriction
+            [packageSettings;dependencySettings;globalSettings]
+            |> Seq.fold (combineRestrictionsWithAnd) FrameworkRestriction.NoRestriction
+            //optimizeRestrictions (List.concat)
 
     { package with
-        Settings = { package.Settings with FrameworkRestrictions = FrameworkRestrictionList newRestrictions }
+        Settings = { package.Settings with FrameworkRestrictions = ExplicitRestriction newRestrictions }
     }
 
 

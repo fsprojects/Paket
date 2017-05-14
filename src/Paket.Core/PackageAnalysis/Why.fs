@@ -64,13 +64,8 @@ module DependencyChain =
         let formatFxReq (fr : FrameworkRestrictions) = 
             match fr with
             | AutoDetectFramework 
-            | FrameworkRestrictionList [] -> ""
-            | FrameworkRestrictionList [fx] -> sprintf " (%O)" fx
-            | FrameworkRestrictionList fxs -> 
-                fxs
-                |> List.map string
-                |> String.concat ","
-                |> sprintf " (%s)"
+            | ExplicitRestriction Paket.Requirements.FrameworkRestriction.NoRestriction -> ""
+            | ExplicitRestriction fr -> sprintf " (%O)" fr
         let formatName name i = sprintf "%s-> %O" (String.replicate i "  ") name
         let rec format' i (name,chain) =
             let rest = 

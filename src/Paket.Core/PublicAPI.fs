@@ -460,7 +460,7 @@ type Dependencies(dependenciesFileName: string) =
                 let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
                 let nuspec = Nuspec.Load nuspec.FullName
                 let files = NuGetV2.GetLibFiles(folder.FullName)
-                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
+                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, files, [], [], nuspec)
 
     /// Returns all libraries for the given package and framework.
     member this.GetLibraries(groupName,packageName,frameworkIdentifier:FrameworkIdentifier) =

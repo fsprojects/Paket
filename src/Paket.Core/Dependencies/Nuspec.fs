@@ -34,25 +34,26 @@ module internal NuSpecParserHelper =
         | n , Some framework when String.equalsIgnoreCase n "group" -> 
             let framework = framework.Replace(".NETPortable0.0","portable")
             if String.startsWithIgnoreCase "portable" framework then
-                Some(name,version,[FrameworkRestriction.Portable framework])
+                let fws = (PlatformMatching.extractPlatforms framework).Platforms
+                Some(name,version,FrameworkRestriction.Portable (framework, fws))
             else 
                 match FrameworkDetection.Extract framework with
-                | Some x -> Some(name,version,[FrameworkRestriction.Exactly x])
+                | Some x -> Some(name,version,FrameworkRestriction.Exactly x)
                 | None -> None
-        | _ -> Some(name,version,[])
+        | _ -> Some(name,version,FrameworkRestriction.NoRestriction)
 
     let getAssemblyRefs node =
         let name = node |> getAttribute "assemblyName"
         let targetFrameworks = node |> getAttribute "targetFramework"
         match name,targetFrameworks with
         | Some name, Some targetFrameworks when targetFrameworks = "" ->
-            [{ AssemblyName = name; FrameworkRestrictions = FrameworkRestrictionList [] }]
+            [{ AssemblyName = name; FrameworkRestrictions = ExplicitRestriction FrameworkRestriction.NoRestriction }]
         | Some name, None ->
-            [{ AssemblyName = name; FrameworkRestrictions = FrameworkRestrictionList [] }]
+            [{ AssemblyName = name; FrameworkRestrictions = ExplicitRestriction FrameworkRestriction.NoRestriction }]
         | Some name, Some targetFrameworks ->
             targetFrameworks.Split([|','; ' '|],System.StringSplitOptions.RemoveEmptyEntries)
             |> Array.choose FrameworkDetection.Extract
-            |> Array.map (fun fw -> { AssemblyName = name; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly fw] })
+            |> Array.map (fun fw -> { AssemblyName = name; FrameworkRestrictions = ExplicitRestriction (FrameworkRestriction.Exactly fw) })
             |> Array.toList
         | _ -> []
 
@@ -82,48 +83,48 @@ type Nuspec =
                 match node |> getAttribute "targetFramework" with
                 | Some framework when framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable").StartsWith "portable" ->
                     let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
+                    let fws = (PlatformMatching.extractPlatforms framework).Platforms
                     [PackageName "",
-                      VersionRequirement.NoRestriction, 
-                      [ yield FrameworkRestriction.Portable framework]]
+                      VersionRequirement.NoRestriction, FrameworkRestriction.Portable (framework, fws)]
 
                 | Some framework ->
                     match FrameworkDetection.Extract framework with
-                    | Some x -> [PackageName "",VersionRequirement.NoRestriction, [FrameworkRestriction.Exactly x]]
+                    | Some x -> [PackageName "",VersionRequirement.NoRestriction, FrameworkRestriction.Exactly x]
                     | None -> []
                 | _ -> [])
             |> List.concat
 
-        let framworks = 
-            let isMatch (n',v',r') =
-                r' 
-                |> List.exists (fun r -> 
-                    match r with 
-                    | FrameworkRestriction.Exactly(DotNetFramework _) -> true 
-                    | FrameworkRestriction.Exactly(DotNetStandard _) -> true 
-                    |_ -> false)
-
-            frameworks
-            |> Seq.collect (fun (n,v,r) ->
-                match r with
-                | [ FrameworkRestriction.Portable p ] -> 
-                    [ yield n,v,r
-                      let standardAliases = KnownTargetProfiles.portableStandards p
-                      for alias in standardAliases do
-                         let s = FrameworkRestriction.Exactly(DotNetStandard alias)
-                         let s2 = FrameworkRestriction.AtLeast(DotNetStandard alias)
-                         if frameworks |> List.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s || r = s2)) |> not then
-                             yield n,v,[s2]
-
-                      if standardAliases = [] && not <| List.exists isMatch frameworks then
-                          for p in p.Split([|'+'; '-'|]) do
-                            match FrameworkDetection.Extract p with
-                            | Some(DotNetFramework _ as r) ->
-                                yield n,v,[FrameworkRestriction.Exactly r]
-                            | Some(DotNetStandard _ as r) ->
-                                yield n,v,[FrameworkRestriction.Exactly r]
-                            | _ -> () ]
-                |  _ -> [n,v,r])
-            |> Seq.toList
+        //let framworks = 
+        //    let isMatch (n',v',r') =
+        //        r' 
+        //        |> List.exists (fun r -> 
+        //            match r with 
+        //            | FrameworkRestriction.Exactly(DotNetFramework _) -> true 
+        //            | FrameworkRestriction.Exactly(DotNetStandard _) -> true 
+        //            |_ -> false)
+        //
+        //    frameworks
+        //    |> Seq.collect (fun (n,v,r) ->
+        //        match r with
+        //        | [ FrameworkRestriction.Portable p ] -> 
+        //            [ yield n,v,r
+        //              let standardAliases = KnownTargetProfiles.portableStandards p
+        //              for alias in standardAliases do
+        //                 let s = FrameworkRestriction.Exactly(DotNetStandard alias)
+        //                 let s2 = FrameworkRestriction.AtLeast(DotNetStandard alias)
+        //                 if frameworks |> List.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s || r = s2)) |> not then
+        //                     yield n,v,[s2]
+        //
+        //              if standardAliases = [] && not <| List.exists isMatch frameworks then
+        //                  for p in p.Split([|'+'; '-'|]) do
+        //                    match FrameworkDetection.Extract p with
+        //                    | Some(DotNetFramework _ as r) ->
+        //                        yield n,v,[FrameworkRestriction.Exactly r]
+        //                    | Some(DotNetStandard _ as r) ->
+        //                        yield n,v,[FrameworkRestriction.Exactly r]
+        //                    | _ -> () ]
+        //        |  _ -> [n,v,r])
+        //    |> Seq.toList
 
         let depsTags =
             doc 
@@ -168,7 +169,11 @@ type Nuspec =
 
             [for name,restrictions in grouped do
                 yield { AssemblyName = name
-                        FrameworkRestrictions = FrameworkRestrictionList(List.collect (fun x -> x.FrameworkRestrictions |> getRestrictionList) restrictions) } ] }
+                        FrameworkRestrictions =
+                            ExplicitRestriction(
+                                restrictions
+                                |> List.map (fun x -> x.FrameworkRestrictions |> getExplicitRestriction)
+                                |> List.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet) } ] }
 
     /// load the file from an nuspec text stream. The fileName is only used for error reporting.
     static member internal Load(fileName:string, f:Stream) =

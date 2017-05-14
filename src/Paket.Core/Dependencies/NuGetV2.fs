@@ -187,15 +187,16 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
             (if a.Length > 2 && a.[2] <> "" then
                  let restriction = a.[2]
                  if String.startsWithIgnoreCase "portable" restriction then
-                    Some [ yield FrameworkRestriction.Portable restriction ]
+                    let fws = (PlatformMatching.extractPlatforms restriction).Platforms
+                    Some (FrameworkRestriction.Portable (restriction, fws))
                  else
                      match FrameworkDetection.Extract restriction with
-                     | Some x -> Some [ FrameworkRestriction.Exactly x ]
+                     | Some x -> Some (FrameworkRestriction.Exactly x)
                      | None ->
                         if verbose then
                             verbosefn "Unable to parse framework restriction '%s' for package '%s' in package '%s'" restriction a.[0] (packageName.ToString())
                         None
-             else Some [])
+             else Some (FrameworkRestriction.NoRestriction))
 
         dependencies
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
@@ -205,37 +206,39 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
             | Some(restrictions) -> Some (name, version, restrictions)
             | None -> None)
 
+    //let expandedPackages =
+    //    let isMatch (n',v',r') =
+    //        r'
+    //        |> List.exists (fun r ->
+    //            match r with
+    //            | FrameworkRestriction.Exactly(DotNetFramework _) -> true
+    //            | FrameworkRestriction.Exactly(DotNetStandard _) -> true
+    //            |_ -> false)
+    //
+    //    packages
+    //    |> Seq.collect (fun (n,v,r) ->
+    //        match r with
+    //        | [ FrameworkRestriction.Portable p ] ->
+    //            [yield n,v,r
+    //             let standardAliases = KnownTargetProfiles.portableStandards p
+    //             for alias in standardAliases do
+    //                let s = FrameworkRestriction.Exactly(DotNetStandard alias)
+    //                let s2 = FrameworkRestriction.AtLeast(DotNetStandard alias)
+    //                if packages |> Array.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s || r = s2)) |> not then
+    //                    yield n,v,[s2]
+    //
+    //             if standardAliases = [] && not <| Array.exists isMatch packages then
+    //                 for p in p.Split([|'+'; '-'|]) do
+    //                    match FrameworkDetection.Extract p with
+    //                    | Some(DotNetFramework _ as r) ->
+    //                        yield n,v,[FrameworkRestriction.Exactly r]
+    //                    | Some(DotNetStandard _ as r) ->
+    //                        yield n,v,[FrameworkRestriction.Exactly r]
+    //                    | _ -> () ]
+    //        |  _ -> [n,v,r])
+    //    |> Seq.toList
     let expandedPackages =
-        let isMatch (n',v',r') =
-            r'
-            |> List.exists (fun r ->
-                match r with
-                | FrameworkRestriction.Exactly(DotNetFramework _) -> true
-                | FrameworkRestriction.Exactly(DotNetStandard _) -> true
-                |_ -> false)
-
-        packages
-        |> Seq.collect (fun (n,v,r) ->
-            match r with
-            | [ FrameworkRestriction.Portable p ] ->
-                [yield n,v,r
-                 let standardAliases = KnownTargetProfiles.portableStandards p
-                 for alias in standardAliases do
-                    let s = FrameworkRestriction.Exactly(DotNetStandard alias)
-                    let s2 = FrameworkRestriction.AtLeast(DotNetStandard alias)
-                    if packages |> Array.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s || r = s2)) |> not then
-                        yield n,v,[s2]
-
-                 if standardAliases = [] && not <| Array.exists isMatch packages then
-                     for p in p.Split([|'+'; '-'|]) do
-                        match FrameworkDetection.Extract p with
-                        | Some(DotNetFramework _ as r) ->
-                            yield n,v,[FrameworkRestriction.Exactly r]
-                        | Some(DotNetStandard _ as r) ->
-                            yield n,v,[FrameworkRestriction.Exactly r]
-                        | _ -> () ]
-            |  _ -> [n,v,r])
-        |> Seq.toList
+        packages |> Seq.toList
 
     let dependencies = Requirements.optimizeDependencies expandedPackages
 

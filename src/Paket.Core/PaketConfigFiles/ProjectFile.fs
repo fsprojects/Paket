@@ -737,7 +737,8 @@ module ProjectFile =
         let netCoreRestricted =
             model.ApplyFrameworkRestrictions
                 ((List.map DotNetCore KnownTargetProfiles.DotNetCoreVersions @ List.map DotNetStandard KnownTargetProfiles.DotNetStandardVersions)
-                 |> List.map FrameworkRestriction.Exactly)
+                 |> List.map FrameworkRestriction.Exactly
+                 |> List.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet)
 
         // handle legacy conditions
         let conditions =
@@ -1041,7 +1042,7 @@ module ProjectFile =
         |> Seq.map (fun kv -> 
             deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
-            let restrictionList = installSettings.FrameworkRestrictions |> getRestrictionList
+            let restrictionList = installSettings.FrameworkRestrictions |> getExplicitRestriction
 
             let projectModel =
                 (snd kv.Value)
