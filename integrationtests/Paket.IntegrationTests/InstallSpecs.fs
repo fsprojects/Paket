@@ -27,14 +27,14 @@ open Paket.Domain
 let updateBaselines = false
 
 [<Test>]
-let ``#1135 should keep lockfile stable when using framework restrictions``() = 
+let ``#1135 should keep lockfile stable when using framework restrictions``() =
     let newLockFile = install "i001135-stable-install-on-framework-restrictions"
     let oldLockFile = LockFile.LoadFrom(Path.Combine(originalScenarioPath "i001135-stable-install-on-framework-restrictions","paket.lock"))
     newLockFile.ToString()
     |> shouldEqual (oldLockFile.ToString())
 
 [<Test>]
-let ``#1219 install props``() = 
+let ``#1219 install props``() =
     let newLockFile = install "i001219-props-files"
     let newFile = Path.Combine(scenarioTempPath "i001219-props-files","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001219-props-files","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -58,7 +58,7 @@ let ``#1219 install props``() =
 
 
 [<Test>]
-let ``#1487 install props stays stable``() = 
+let ``#1487 install props stays stable``() =
     let newLockFile = install "i001487-stable-props"
     let newFile = Path.Combine(scenarioTempPath "i001487-stable-props","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001487-stable-props","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -67,7 +67,7 @@ let ``#1487 install props stays stable``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1585 install props with for websharper``() = 
+let ``#1585 install props with for websharper``() =
     let newLockFile = install "i001585-websharper-props"
     let newFile = Path.Combine(scenarioTempPath "i001585-websharper-props","xUnitTests","xUnitTests.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001585-websharper-props","xUnitTests","xUnitTests.expected.csprojtemplate")
@@ -98,7 +98,7 @@ let ``#1260 install wpf\xaml and media files``() =
     countNodes "Content" 2
 
 [<Test>]
-let ``#1270 install net461``() = 
+let ``#1270 install net461``() =
     let newLockFile = install "i001270-net461"
     let newFile = Path.Combine(scenarioTempPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001270-net461","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -109,7 +109,7 @@ let ``#1270 install net461``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1427 install content once from dependencies file``() = 
+let ``#1427 install content once from dependencies file``() =
     let newLockFile = install "i001427-content-once"
     let newFile = Path.Combine(scenarioTempPath "i001427-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001427-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
@@ -129,7 +129,7 @@ let ``#1427 install content once from dependencies file``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1427 install content once from dependencies file stays stable``() = 
+let ``#1427 install content once from dependencies file stays stable``() =
     let scenario = "i001427-content-once-stable"
     let newLockFile = install scenario
 
@@ -151,7 +151,7 @@ let ``#1427 install content once from dependencies file stays stable``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1427 install content once from dependencies file removes paket tag``() = 
+let ``#1427 install content once from dependencies file removes paket tag``() =
     let scenario = "i001427-content-once-remove"
     let newLockFile = install scenario
 
@@ -171,7 +171,7 @@ let ``#1427 install content once from dependencies file removes paket tag``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1427 install content once from dependencies file stays stable 2 installs``() = 
+let ``#1427 install content once from dependencies file stays stable 2 installs``() =
     let scenario = "i001427-content-once"
     let newLockFile = install scenario
 
@@ -193,7 +193,7 @@ let ``#1427 install content once from dependencies file stays stable 2 installs`
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1427 install content once from references file``() = 
+let ``#1427 install content once from references file``() =
     let newLockFile = install "i001427-ref-content-once"
     let newFile = Path.Combine(scenarioTempPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001427-ref-content-once","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -213,7 +213,7 @@ let ``#1427 install content once from references file``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1427 install content``() = 
+let ``#1427 install content``() =
     let newLockFile = install "i001427-content-true"
     let newFile = Path.Combine(scenarioTempPath "i001427-content-true","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001427-content-true","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -231,7 +231,7 @@ let ``#1427 install content``() =
     s1 |> shouldNotEqual s2
 
 [<Test>]
-let ``#1427 won't install content when content:none``() = 
+let ``#1427 won't install content when content:none``() =
     let newLockFile = install "i001427-content-none"
     let newFile = Path.Combine(scenarioTempPath "i001427-content-none","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001427-content-none","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -249,17 +249,17 @@ let ``#1427 won't install content when content:none``() =
     s2 |> shouldEqual s1 // we do not touch it
 
 [<Test>]
-let ``#1701 won't install content when content:none and --keep-major``() = 
+let ``#1701 won't install content when content:none and --keep-major``() =
     let newLockFile = paket "update --keep-major" "i001701-keep-major"
     let newFile = Path.Combine(scenarioTempPath "i001701-keep-major","TestPaket","TestPaket.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001701-keep-major","TestPaket","TestPaket.csprojtemplate")
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
-    s2 |> shouldEqual s1    
+    s2 |> shouldEqual s1
 
 
 [<Test>]
-let ``#1522 install content and copy to output dir``() = 
+let ``#1522 install content and copy to output dir``() =
     let newLockFile = install "i001522-copy-content"
     let newFile = Path.Combine(scenarioTempPath "i001522-copy-content","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001522-copy-content","MyClassLibrary","MyClassLibrary","MyClassLibrary.expected")
@@ -277,7 +277,7 @@ let ``#1522 install content and copy to output dir``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1440 auto-detect framework``() = 
+let ``#1440 auto-detect framework``() =
     let newLockFile = install "i001440-auto-detect"
     let newFile = Path.Combine(scenarioTempPath "i001440-auto-detect","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001440-auto-detect","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -286,7 +286,7 @@ let ``#1440 auto-detect framework``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1466 install package with dll in name``() = 
+let ``#1466 install package with dll in name``() =
     let newLockFile = install "i001466-expressive"
     let newFile = Path.Combine(scenarioTempPath "i001466-expressive","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001466-expressive","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -295,7 +295,7 @@ let ``#1466 install package with dll in name``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1467 install package into vcxproj``() = 
+let ``#1467 install package into vcxproj``() =
     let newLockFile = install "i001467-cpp"
     let newFile = Path.Combine(scenarioTempPath "i001467-cpp","MyClassLibrary","ConsoleApplication1","ConsoleApplication1.vcxproj")
     let oldFile = Path.Combine(originalScenarioPath "i001467-cpp","MyClassLibrary","ConsoleApplication1","ConsoleApplication1.vcxprojtemplate")
@@ -304,7 +304,7 @@ let ``#1467 install package into vcxproj``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1467 install native package into vcxproj``() = 
+let ``#1467 install native package into vcxproj``() =
     let newLockFile = install "i001467-cpp-native"
     let newFile = Path.Combine(scenarioTempPath "i001467-cpp-native","MyClassLibrary","PaketTest.vcxproj")
     let oldFile = Path.Combine(originalScenarioPath "i001467-cpp-native","MyClassLibrary","PaketTest.vcxprojtemplate")
@@ -313,7 +313,7 @@ let ``#1467 install native package into vcxproj``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1505 should install conditionals``() = 
+let ``#1505 should install conditionals``() =
     install "i001505-conditionals" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj.expected")
@@ -322,7 +322,7 @@ let ``#1505 should install conditionals``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1578 should reference transitive dep from ref``() = 
+let ``#1578 should reference transitive dep from ref``() =
     let scenario = "i001578-transitive-ref"
     install scenario |> ignore
     let newFile = Path.Combine(scenarioTempPath scenario,"TestPaketDotNet","TestPaketDotNet.csproj")
@@ -340,12 +340,22 @@ let ``#1458 should not install conflicting deps from different groups``() =
     | exn when exn.Message.Contains "Package Nancy is referenced in different versions" -> ()
 
 [<Test>]
-let ``#1442 should not warn on SonarLint``() = 
+let ``#2335 should install deps from different groups when using conditions``() =
+    let scenario = "i002335-razorengine"
+    install scenario |> ignore
+    let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
+    let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    let s1 = File.ReadAllText oldFile |> normalizeLineEndings
+    let s2 = File.ReadAllText newFile |> normalizeLineEndings
+    s2 |> shouldEqual s1
+
+[<Test>]
+let ``#1442 should not warn on SonarLint``() =
     let result = paket "install" "i001442-dont-warn"
     result |> shouldNotContainText "contains libraries, but not for the selected TargetFramework"
 
 [<Test>]
-let ``#1442 should warn on Rx-WinRT``() = 
+let ``#1442 should warn on Rx-WinRT``() =
     let result = paket "install" "i001442-warn-Rx"
     result |> shouldContainText "contains libraries, but not for the selected TargetFramework"
 
@@ -354,7 +364,7 @@ let ``#1442 should warn on Rx-WinRT``() =
 [<Ignore("")>]
 let ``#1507 allows to download remote dependencies``() =
     let scenario = "i001507-privateeye"
-    
+
     install scenario |> ignore
 
     File.Exists (Path.Combine(scenarioTempPath scenario, "paket-files", "forki", "PrivateEye", "privateeye.fsx")) |> shouldEqual true
@@ -381,7 +391,7 @@ let ``#1663 should import build targets``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1145 don't install excludes``() = 
+let ``#1145 don't install excludes``() =
     let newLockFile = install "i001145-excludes"
     let newFile = Path.Combine(scenarioTempPath "i001145-excludes","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001145-excludes","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -392,7 +402,7 @@ let ``#1145 don't install excludes``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#346 set aliases``() = 
+let ``#346 set aliases``() =
     let newLockFile = install "i000346-aliases"
     let newFile = Path.Combine(scenarioTempPath "i000346-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i000346-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -403,7 +413,7 @@ let ``#346 set aliases``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1720 install concrete net45``() = 
+let ``#1720 install concrete net45``() =
     let newLockFile = install "i001720-explicit-net45"
     let newFile = Path.Combine(scenarioTempPath "i001720-explicit-net45","projectA","projectA.fsproj")
     let oldFile = Path.Combine(originalScenarioPath "i001720-explicit-net45","projectA","projectA.fsprojtemplate")
@@ -412,7 +422,7 @@ let ``#1720 install concrete net45``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1732 aliases ignore cases``() = 
+let ``#1732 aliases ignore cases``() =
     let newLockFile = install "i001732-lowercase-aliases"
     let newFile = Path.Combine(scenarioTempPath "i001732-lowercase-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001732-lowercase-aliases","MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
@@ -450,16 +460,16 @@ let ``#1779 net20 only in net461``() =
     s2 |> shouldEqual s1
 
 [<Test>]
-let ``#1871 should install suave``() = 
+let ``#1871 should install suave``() =
     install "i001871-suave" |> ignore
 
 [<Test>]
-let ``#1883 install FSharp.Core from Chessie``() = 
+let ``#1883 install FSharp.Core from Chessie``() =
     let newLockFile = install "i001883-chessie"
     newLockFile.Groups.[GroupName "main"].Resolution.[PackageName "FSharp.Core"].Version |> shouldBeGreaterThan (SemVer.Parse "4.1")
 
 [<Test>]
-let ``#1883 should not install .NET Standard``() = 
+let ``#1883 should not install .NET Standard``() =
     let newLockFile = install "i001883-machine"
     newLockFile.Groups.[GroupName "main"].Resolution.ContainsKey (PackageName "System.Reflection") |> shouldEqual false
 

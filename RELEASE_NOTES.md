@@ -1,4 +1,4 @@
-#### 5.0.0-beta003 - 13.05.2017
+#### 5.0.0-beta004 - 13.05.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
@@ -10,6 +10,7 @@
 * DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
 * BUGFIX: Improved C++ support
+* BUGFIX: Fix Conditional Group Dependencies not working as expected - https://github.com/fsprojects/Paket/pull/2335
 * BUGFIX: Treat runtime dependencies as transitive deps - https://github.com/fsprojects/Paket/issues/2334
 * BUGFIX: Sort dependencies on obj/references files - https://github.com/fsprojects/Paket/issues/2310
 * BUGFIX: Support .NET moniker ">= monoandroid" - https://github.com/fsprojects/Paket/issues/2246
