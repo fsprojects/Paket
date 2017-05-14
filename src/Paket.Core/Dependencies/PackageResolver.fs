@@ -170,27 +170,24 @@ module Resolution =
 
         match conflicts with
         | [] -> errorReport
-        | req::conflicts ->
+        | conflicts ->
             let hasPrereleases = List.exists (fun r -> r.VersionRequirement.PreReleases <> PreReleaseStatus.No) conflicts
 
-            match req.Parent with
-            | DependenciesFile _ ->
-                errorReport.AddLine (sprintf "  Dependencies file requested package %O: %s%s" req.Name (formatVR req.VersionRequirement) (formatPR hasPrereleases req.VersionRequirement))
-            | Package (parentName,version,_) ->
-                errorReport.AddLine (sprintf "  %O %O package %O: %s%s" parentName version req.Name (formatVR req.VersionRequirement) (formatPR hasPrereleases req.VersionRequirement))
-            
+            errorReport.AddLine (sprintf "  Conflict detected:")
+
+            let getConflictMessage req =
+                let vr = formatVR req.VersionRequirement
+                let pr = formatPR hasPrereleases req.VersionRequirement
+                match req.Parent with
+                | DependenciesFile _ ->
+                    sprintf "   - Dependencies file requested package %O: %s%s" req.Name vr pr
+                | Package (parentName,version,_) ->
+                    sprintf "   - %O %O requested package %O: %s%s" parentName version req.Name vr pr
+
             let rec loop conflicts (errorReport:StringBuilder) =
                 match conflicts with
                 | [] -> errorReport
-                | hd::tl ->
-                    let vr = formatVR hd.VersionRequirement
-                    let pr = formatPR hasPrereleases hd.VersionRequirement
-
-                    match hd.Parent with
-                    | DependenciesFile _ ->
-                        loop tl (errorReport.AppendLinef "   - Dependencies file requested package %O: %s%s" req.Name vr pr)
-                    | Package (parentName,version,_) ->
-                        loop tl (errorReport.AppendLinef  "   - %O %O requested package %O: %s%s" parentName version req.Name vr pr)
+                | hd::tl -> loop tl (errorReport.AppendLine (getConflictMessage hd))
             loop conflicts errorReport
 
 
