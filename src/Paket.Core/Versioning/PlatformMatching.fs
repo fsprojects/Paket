@@ -105,6 +105,20 @@ let collectPlatforms =
         | _::tl -> loop acc framework tl
     memoize (fun (framework,profls) -> loop ([]:FrameworkIdentifier list) framework profls)
 
+/// Returns all framework identifiers which (transitively) support the given framework identifier
+let getFrameworksSupporting =
+    let cache = System.Collections.Concurrent.ConcurrentDictionary<_,FrameworkIdentifier list>()
+    fun (x:FrameworkIdentifier) ->
+        cache.GetOrAdd(x, fun _ ->
+            // calculate
+            KnownTargetProfiles.AllProfiles
+            |> List.collect(function
+                | SinglePlatform p -> [p]
+                | PortableProfile (_, fws) -> fws)
+            |> List.distinct
+            |> List.filter (fun fw -> fw.SupportedPlatformsTransitive |> Seq.contains x)
+            )
+
 let platformsSupport = 
     let rec platformsSupport platform platforms = 
         if List.isEmpty platforms then MaxPenalty

@@ -41,10 +41,10 @@ type FrameworkRestriction =
             fws
             |> List.collect (fun fw -> (FrameworkRestriction.AtLeast fw).RepresentedFrameworks)
             |> List.distinct
-        | FrameworkRestriction.AtLeast r -> r.SupportedPlatformsTransitive
+        | FrameworkRestriction.AtLeast r -> PlatformMatching.getFrameworksSupporting r
         | FrameworkRestriction.Between(min,max) ->
-            let minSupported = min.SupportedPlatformsTransitive
-            let maxSupported = max.SupportedPlatformsTransitive
+            let minSupported = PlatformMatching.getFrameworksSupporting min
+            let maxSupported = PlatformMatching.getFrameworksSupporting max
             minSupported
             |> List.filter (fun fw -> maxSupported |> Seq.contains fw |> not)
         | FrameworkRestriction.Or (fr1, fr2) ->

@@ -87,12 +87,12 @@ let ``#1117 can understand portable``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001117-aws","paket.lock"))
     let restrictions = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "PCLStorage"].Settings.FrameworkRestrictions
     match restrictions with
-    | FrameworkRestrictionList l -> l.ToString() |> shouldEqual ("[portable-net45+win8+wp8+wpa81]")
+    | ExplicitRestriction l -> l.ToString() |> shouldEqual ("[portable-net45+win8+wp8+wpa81]")
     | _ -> failwith "wrong"
 
     let restrictions = lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
     match restrictions with
-    | FrameworkRestrictionList l -> l.ToString() |> shouldEqual ("[portable-net45+win8+wp8+wpa81]")
+    | ExplicitRestriction l -> l.ToString() |> shouldEqual ("[portable-net45+win8+wp8+wpa81]")
     | _ -> failwith "wrong"
 
 [<Test>]

@@ -44,13 +44,13 @@ let ``#1225 should convert simple C# project with non-matching framework restric
     requirement.Name |> shouldEqual (PackageName "Castle.Core")
     requirement.VersionRequirement.ToString() |> shouldEqual "3.3.3"
     requirement.ResolverStrategyForTransitives |> shouldEqual None
-    requirement.Settings.FrameworkRestrictions  |> getRestrictionList |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))]
+    requirement.Settings.FrameworkRestrictions  |> getExplicitRestriction |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5)))
 
     let requirement2 = depsFile.GetGroup(Constants.MainDependencyGroup).Packages.Tail.Head
     requirement2.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     requirement2.VersionRequirement.ToString() |> shouldEqual "7.0.1"
     requirement2.ResolverStrategyForTransitives |> shouldEqual None
-    requirement2.Settings.FrameworkRestrictions  |> getRestrictionList |> shouldEqual [FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))]
+    requirement2.Settings.FrameworkRestrictions  |> getExplicitRestriction |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)))
 
 [<Test>]
 let ``#1217 should replace packages.config files in project``() = 

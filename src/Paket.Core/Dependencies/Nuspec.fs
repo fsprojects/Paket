@@ -76,23 +76,23 @@ type Nuspec =
     
     /// load the file from an XmlDocument. The fileName is only used for error reporting.
     static member private Load(fileName:string, doc:XmlDocument) =
-        let frameworks =
-            doc 
-            |> getDescendants "group" 
-            |> List.map (fun node ->
-                match node |> getAttribute "targetFramework" with
-                | Some framework when framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable").StartsWith "portable" ->
-                    let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
-                    let fws = (PlatformMatching.extractPlatforms framework).Platforms
-                    [PackageName "",
-                      VersionRequirement.NoRestriction, FrameworkRestriction.Portable (framework, fws)]
-
-                | Some framework ->
-                    match FrameworkDetection.Extract framework with
-                    | Some x -> [PackageName "",VersionRequirement.NoRestriction, FrameworkRestriction.Exactly x]
-                    | None -> []
-                | _ -> [])
-            |> List.concat
+        //let frameworks =
+        //    doc 
+        //    |> getDescendants "group" 
+        //    |> List.map (fun node ->
+        //        match node |> getAttribute "targetFramework" with
+        //        | Some framework when framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable").StartsWith "portable" ->
+        //            let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
+        //            let fws = (PlatformMatching.extractPlatforms framework).Platforms
+        //            [PackageName "",
+        //              VersionRequirement.NoRestriction, FrameworkRestriction.Portable (framework, fws)]
+        //
+        //        | Some framework ->
+        //            match FrameworkDetection.Extract framework with
+        //            | Some x -> [PackageName "",VersionRequirement.NoRestriction, FrameworkRestriction.Exactly x]
+        //            | None -> []
+        //        | _ -> [])
+        //    |> List.concat
 
         //let framworks = 
         //    let isMatch (n',v',r') =
@@ -133,7 +133,7 @@ type Nuspec =
         let referenced =
             depsTags
             |> List.choose (NuSpecParserHelper.getDependency fileName)
-            |> List.append frameworks
+            //|> List.append frameworks
 
         let dependencies = Requirements.optimizeDependencies referenced
             
