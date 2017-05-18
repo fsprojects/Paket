@@ -694,7 +694,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                     currentStep.CurrentResolution.Count 
                     (currentStep.CurrentResolution |> Seq.map (fun x -> sprintf "\n     - %O, %O" x.Key x.Value.Version) |> String.Concat)
                     currentStep.OpenRequirements.Count
-                    (currentStep.OpenRequirements  |> Seq.map (fun x -> sprintf "\n     - %O, %O" x.Parent x.VersionRequirement) |> String.Concat)
+                    (currentStep.OpenRequirements  |> Seq.map (fun x -> sprintf "\n     - %O, %O %O" x.Parent x.Name x.VersionRequirement) |> String.Concat)
 
                 let currentRequirement = 
                     getCurrentRequirement packageFilter currentStep.OpenRequirements stackpack.ConflictHistory
