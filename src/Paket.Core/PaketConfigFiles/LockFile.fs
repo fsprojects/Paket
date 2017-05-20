@@ -63,7 +63,7 @@ module LockFileSerializer =
         | None -> ()
 
         match options.Settings.FrameworkRestrictions |> getExplicitRestriction with
-        | FrameworkRestriction.NoRestriction -> ()
+        | FrameworkRestriction.HasNoRestriction -> ()
         | list  -> yield "RESTRICTION: " + list.ToString() ]
 
     /// [omit]

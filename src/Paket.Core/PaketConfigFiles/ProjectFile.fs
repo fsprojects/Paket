@@ -738,7 +738,7 @@ module ProjectFile =
             model.ApplyFrameworkRestrictions
                 ((List.map DotNetCore KnownTargetProfiles.DotNetCoreVersions @ List.map DotNetStandard KnownTargetProfiles.DotNetStandardVersions)
                  |> List.map FrameworkRestriction.Exactly
-                 |> List.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet)
+                 |> List.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet)
 
         // handle legacy conditions
         let conditions =

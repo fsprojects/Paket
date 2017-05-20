@@ -11,7 +11,7 @@ open Paket.Domain
 
 let makeOrList (l:_ list) =
     if l.IsEmpty then FrameworkRestriction.NoRestriction
-    else Seq.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet l
+    else Seq.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet l
     |> ExplicitRestriction
 
 let getPortableRestriction s =

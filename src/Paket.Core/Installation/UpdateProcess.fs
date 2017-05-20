@@ -173,7 +173,7 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
                     | None -> failwithf "Could not detect target framework for project %s" p.FileName)
                 |> List.distinct
             if rawRestrictions.IsEmpty then Paket.Requirements.FrameworkRestriction.NoRestriction
-            else rawRestrictions |> Seq.fold Paket.Requirements.combineRestrictionsWithOr Paket.Requirements.FrameworkRestriction.EmptySet)
+            else rawRestrictions |> Seq.fold Paket.Requirements.FrameworkRestriction.combineRestrictionsWithOr Paket.Requirements.FrameworkRestriction.EmptySet)
 
         dependenciesFile.Groups
         |> Map.map (fun groupName group -> 

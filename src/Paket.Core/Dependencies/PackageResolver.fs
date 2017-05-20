@@ -95,7 +95,7 @@ module DependencySetFilter =
 
     let filterByRestrictions (restrictions:FrameworkRestrictions) (dependencies:DependencySet) : DependencySet =
         match getExplicitRestriction restrictions with
-        | FrameworkRestriction.NoRestriction -> dependencies
+        | FrameworkRestriction.HasNoRestriction -> dependencies
         | restrictions ->
             dependencies
             |> Set.filter (isIncluded restrictions)
@@ -262,7 +262,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
                         | ExplicitRestriction r ->
                             match r2 with
                             | ExplicitRestriction r2 ->
-                                combineRestrictionsWithOr r r2 |> ExplicitRestriction
+                                FrameworkRestriction.combineRestrictionsWithOr r r2 |> ExplicitRestriction
                             | AutoDetectFramework -> ExplicitRestriction r
                         | AutoDetectFramework -> r
 
@@ -365,7 +365,7 @@ let private updateRestrictions (pkgConfig:PackageConfig) (package:ResolvedPackag
             let dependencySettings = pkgConfig.Dependency.Settings.FrameworkRestrictions |> getExplicitRestriction
             let globalSettings = pkgConfig.GlobalRestrictions |> getExplicitRestriction
             [packageSettings;dependencySettings;globalSettings]
-            |> Seq.fold (combineRestrictionsWithAnd) FrameworkRestriction.NoRestriction
+            |> Seq.fold (FrameworkRestriction.combineRestrictionsWithAnd) FrameworkRestriction.NoRestriction
             //optimizeRestrictions (List.concat)
 
     { package with

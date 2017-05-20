@@ -263,7 +263,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 | _ -> []
             let restrictions =
                 if restrictions = [] then FrameworkRestriction.NoRestriction
-                else restrictions |> Seq.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet
+                else restrictions |> Seq.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet
             name, latestVersion, restrictions)
 
     let packages = 

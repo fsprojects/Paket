@@ -136,7 +136,7 @@ type Nuspec =
                             ExplicitRestriction(
                                 restrictions
                                 |> List.map (fun x -> x.FrameworkRestrictions |> getExplicitRestriction)
-                                |> List.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet) } ] }
+                                |> List.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet) } ] }
 
     /// load the file from an nuspec text stream. The fileName is only used for error reporting.
     static member internal Load(fileName:string, f:Stream) =

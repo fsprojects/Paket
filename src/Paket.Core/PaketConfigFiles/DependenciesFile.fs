@@ -145,7 +145,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let frameworks = projects |> Array.choose ProjectFile.getTargetFramework |> Array.distinct
                     let restrictions = frameworks |> Array.map FrameworkRestriction.Exactly
                     if restrictions |> Array.isEmpty then FrameworkRestriction.NoRestriction
-                    else restrictions |> Array.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet
+                    else restrictions |> Array.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet
                 )
                 fun restrictions -> 
                     match restrictions with 

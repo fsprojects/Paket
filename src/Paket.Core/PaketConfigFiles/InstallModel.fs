@@ -738,7 +738,7 @@ module InstallModel =
 
     let applyFrameworkRestrictions (restriction:FrameworkRestriction) (installModel:InstallModel) =
         match restriction with
-        | FrameworkRestriction.NoRestriction -> installModel
+        | FrameworkRestriction.HasNoRestriction -> installModel
         | restriction ->
             let applyRestriction folder =
                 { folder with Targets = applyRestrictionsToTargets restriction folder.Targets}
