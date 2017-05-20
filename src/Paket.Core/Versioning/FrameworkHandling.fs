@@ -238,7 +238,6 @@ type FrameworkIdentifier =
     | WindowsPhoneApp of string
     | Silverlight of string
 
-    
     override x.ToString() = 
         match x with
         | DotNetFramework v -> "net" + v.ShortString()

@@ -184,7 +184,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
     Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"ReadOnlyCollectionExtensions.nuspec")).Dependencies
     |> shouldEqual 
         [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), 
-            makeOrList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))]
+            makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V2), DotNetFramework(FrameworkVersion.V3_5))]
          PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),
             makeOrList
              [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
@@ -240,7 +240,7 @@ let ``can detect dependencies for MathNet.Numerics``() =
     |> shouldEqual 
         [ PackageName "TaskParallelLibrary",
           DependenciesFileParser.parseVersionRequirement(">= 1.0.2856.0"),
-            makeOrList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))] ]
+            makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_Client))] ]
 
 [<Test>]
 let ``can detect dependencies for MathNet.Numerics.FSharp``() = 
@@ -311,7 +311,7 @@ let ``can detect explicit dependencies for EasyNetQ``() =
         (PackageName "Microsoft.Bcl",
           DependenciesFileParser.parseVersionRequirement(">= 1.1.10"),
           makeOrList
-            [FrameworkRestriction.And(
-                FrameworkRestriction.NoRestriction,
-                FrameworkRestriction.Not (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))))
+            [FrameworkRestriction.And[
+                FrameworkRestriction.NoRestriction
+                FrameworkRestriction.Not (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5)))]
             ])

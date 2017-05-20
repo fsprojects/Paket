@@ -126,7 +126,7 @@ let ``should filter >= net20 < net40 and >= net40``() =
 let ``should not filter native, net452``() =
     //FrameworkRestriction.Exactly(Native(NoBuildMode,NoPlatform)).IsSameCategoryAs(FrameworkRestriction.Exactly(Native(NoBuildMode,NoPlatform))) |> shouldEqual (Some true)
 
-    let l1 = ExplicitRestriction (FrameworkRestriction.Or (FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5_2)), FrameworkRestriction.Exactly(Native(NoBuildMode,NoPlatform))))
+    let l1 = ExplicitRestriction (FrameworkRestriction.Or [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5_2)); FrameworkRestriction.Exactly(Native(NoBuildMode,NoPlatform))])
     let l2 = ExplicitRestriction (FrameworkRestriction.Exactly(Native(NoBuildMode,NoPlatform)))
 
     filterRestrictions l1 l2
