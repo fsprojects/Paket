@@ -291,7 +291,7 @@ let ``can detect explicit dependencies for FluentAssertions 4``() =
     |> shouldEqual 
         (PackageName "System.Collections",
           DependenciesFileParser.parseVersionRequirement(">= 4.0.10"),
-          makeOrList [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])
+          makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
 
 
 

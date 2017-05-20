@@ -40,6 +40,7 @@ type FrameworkRestriction =
             KnownTargetProfiles.AllProfiles |> List.collect (function
                 | SinglePlatform fw -> [fw]
                 | PortableProfile (_, fws) -> fws)
+            |> List.distinct
             |> List.sort
         | FrameworkRestriction.Exactly r -> [ r ]
         | FrameworkRestriction.EmptySet -> [ ]
@@ -112,7 +113,8 @@ let combineRestrictionsWithOr (x : FrameworkRestriction) y =
             let combined = FrameworkRestriction.Or(x, y)
             if combined.RepresentedFrameworks.Length = FrameworkRestriction.NoRestriction.RepresentedFrameworks.Length then
                 FrameworkRestriction.NoRestriction
-            else combined
+            else
+                combined
 
 let parseRestrictionsLegacy failImmediatly (text:string) =
     // TODO: Change this code to convert old "framework" sematics in
@@ -867,3 +869,54 @@ type PackageRequirement =
           | :? PackageRequirement as that ->
                 PackageRequirement.Compare(this,that,None,0,0)
           | _ -> invalidArg "that" "cannot compare value of different types"
+
+let addFrameworkRestrictionsToDependencies rawDependencies frameworkGroups =
+
+    let referenced =
+        rawDependencies
+        |> List.groupBy (fun (n:PackageName,req,pp:PlatformMatching.ParsedPlatformPath) -> n,req)
+        |> List.map (fun ((name, req), group) ->
+            // We need to append all the other platforms we support.
+            // TODO: this might miss out intersections!
+            let pps = group |> List.map (fun (_,_,pp) -> pp)
+            let restrictions =
+                pps
+                |> List.map (fun pp ->
+                    let restriction =
+                        match pp.Platforms with
+                        | _ when System.String.IsNullOrEmpty pp.Name -> FrameworkRestriction.NoRestriction
+                        | [] -> FrameworkRestriction.NoRestriction
+                        | [ pf ] -> FrameworkRestriction.AtLeast pf
+                        | _ -> FrameworkRestriction.Portable(pp.Name, pp.Platforms)
+                    let minimalRestriction =
+                        frameworkGroups
+                        |> Seq.filter (fun fw ->
+                            // special casing for portable -> should be removed once portable is a normal FrameworkIdentifier
+                            if pp.Platforms.Length < 2 then pp.Platforms |> Seq.contains fw |> not else true)
+                        |> Seq.filter (fun fw ->
+                            // filter all restrictions which would render this group to nothing (ie smaller restrictions)
+                            // filter out unrelated restrictions
+                            restriction.IsSubsetOf (FrameworkRestriction.AtLeast fw) |> not)
+                        |> Seq.fold (fun curRestr fw ->
+                            FrameworkRestriction.And(curRestr, FrameworkRestriction.Not (FrameworkRestriction.AtLeast fw))) restriction
+                    minimalRestriction)
+            name, req, restrictions |> List.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet
+        )
+        //|> List.append frameworks
+
+    // While this is correct we want a more generic representation, such that future platforms "just work"
+    // I'll leave this code for now to better understand that the above is doing the same thing, but resulting in a more generallized restriction.
+    //let availablePlatforms = referenced |> List.map (fun (_,_,pp) -> pp)
+    //let calculateDistribution = PlatformMatching.getSupportedTargetProfiles availablePlatforms
+    //
+    //let referenced =
+    //    referenced
+    //    |> List.map (fun (name, req, pp) ->
+    //        let restriction =
+    //            calculateDistribution.[pp]
+    //            |> Seq.fold (fun state profile ->
+    //                FrameworkRestriction.Or(state, FrameworkRestriction.ExactlyProfile profile)) FrameworkRestriction.EmptySet
+    //        name, req, restriction)
+    //
+
+    optimizeDependencies referenced

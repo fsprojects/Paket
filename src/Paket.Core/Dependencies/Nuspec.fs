@@ -93,89 +93,12 @@ type Nuspec =
                 | _ -> [])
             |> List.concat
 
-        //let framworks = 
-        //    let isMatch (n',v',r') =
-        //        r' 
-        //        |> List.exists (fun r -> 
-        //            match r with 
-        //            | FrameworkRestriction.Exactly(DotNetFramework _) -> true 
-        //            | FrameworkRestriction.Exactly(DotNetStandard _) -> true 
-        //            |_ -> false)
-        //
-        //    frameworks
-        //    |> Seq.collect (fun (n,v,r) ->
-        //        match r with
-        //        | [ FrameworkRestriction.Portable p ] -> 
-        //            [ yield n,v,r
-        //              let standardAliases = KnownTargetProfiles.portableStandards p
-        //              for alias in standardAliases do
-        //                 let s = FrameworkRestriction.Exactly(DotNetStandard alias)
-        //                 let s2 = FrameworkRestriction.AtLeast(DotNetStandard alias)
-        //                 if frameworks |> List.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s || r = s2)) |> not then
-        //                     yield n,v,[s2]
-        //
-        //              if standardAliases = [] && not <| List.exists isMatch frameworks then
-        //                  for p in p.Split([|'+'; '-'|]) do
-        //                    match FrameworkDetection.Extract p with
-        //                    | Some(DotNetFramework _ as r) ->
-        //                        yield n,v,[FrameworkRestriction.Exactly r]
-        //                    | Some(DotNetStandard _ as r) ->
-        //                        yield n,v,[FrameworkRestriction.Exactly r]
-        //                    | _ -> () ]
-        //        |  _ -> [n,v,r])
-        //    |> Seq.toList
-
-        let depsTags =
+        let rawDependencies =
             doc 
             |> getDescendants "dependency"
-
-        let referenced =
-            depsTags
             |> List.choose (NuSpecParserHelper.getDependency fileName)
-            // We need to append all the other platforms we support.
-            |> List.map (fun (name, req, pp) ->
-                let restriction =
-                    match pp.Platforms with
-                    | _ when System.String.IsNullOrEmpty pp.Name -> FrameworkRestriction.NoRestriction
-                    | [] -> FrameworkRestriction.NoRestriction
-                    | [ pf ] -> FrameworkRestriction.AtLeast pf
-                    | _ -> FrameworkRestriction.Portable(pp.Name, pp.Platforms)
-                let minimalRestriction =
-                    frameworks
-                    |> Seq.filter (fun fw -> pp.Platforms |> Seq.contains fw |> not)
-                    |> Seq.filter (fun fw ->
-                        // filter all restrictions which would render this group to nothing (ie smaller restrictions)
-                        restriction.IsSubsetOf (FrameworkRestriction.AtLeast fw) |> not)
-                    |> Seq.fold (fun curRestr fw ->
-                        FrameworkRestriction.And(curRestr, FrameworkRestriction.Not (FrameworkRestriction.AtLeast fw))) restriction
-                name, req, minimalRestriction
-            )
-            //|> List.append frameworks
 
-        let referenced =
-            referenced 
-            |> List.groupBy (fun (n,req,_) -> n,req)
-            |> List.map (fun ((n, req), group) ->
-                let restrictions = group |> List.map (fun (_,_,r) -> r)
-                n, req, restrictions |> List.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet)
-
-        // While this is correct we want a more generic representation, such that future platforms "just work"
-        //let availablePlatforms = referenced |> List.map (fun (_,_,pp) -> pp)
-        //let calculateDistribution = PlatformMatching.getSupportedTargetProfiles availablePlatforms
-        //
-        //let referenced =
-        //    referenced
-        //    |> List.map (fun (name, req, pp) ->
-        //        let restriction =
-        //            calculateDistribution.[pp]
-        //            |> Seq.fold (fun state profile ->
-        //                FrameworkRestriction.Or(state, FrameworkRestriction.ExactlyProfile profile)) FrameworkRestriction.EmptySet
-        //        name, req, restriction)
-        //
-
-
-
-        let dependencies = Requirements.optimizeDependencies referenced
+        let dependencies = addFrameworkRestrictionsToDependencies rawDependencies frameworks
             
         let references = 
             doc

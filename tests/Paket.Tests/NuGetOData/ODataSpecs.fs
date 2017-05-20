@@ -14,6 +14,7 @@ open Domain
 let fakeUrl = "http://doesntmatter"
 
 let parse fileName =
+    System.Environment.CurrentDirectory <- Path.GetDirectoryName __SOURCE_DIRECTORY__
     parseODataDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",File.ReadAllText fileName)
 
 [<Test>]

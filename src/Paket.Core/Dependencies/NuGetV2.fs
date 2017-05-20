@@ -179,7 +179,7 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
         | Some node -> node.InnerText
         | None -> failwithf "unable to find dependencies for package %O %O" packageName version
 
-    let packages =
+    let rawPackages =
         let split (d : string) =
             let a = d.Split ':'
             PackageName a.[0],
@@ -188,15 +188,18 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
                  let restriction = a.[2]
                  if String.startsWithIgnoreCase "portable" restriction then
                     let fws = (PlatformMatching.extractPlatforms restriction).Platforms
-                    Some (FrameworkRestriction.Portable (restriction, fws))
+                    Some { PlatformMatching.ParsedPlatformPath.Name = restriction; PlatformMatching.ParsedPlatformPath.Platforms = fws }
+                    //Some (FrameworkRestriction.Portable (restriction, fws))
                  else
                      match FrameworkDetection.Extract restriction with
-                     | Some x -> Some (FrameworkRestriction.Exactly x)
+                     | Some x -> Some { PlatformMatching.ParsedPlatformPath.Name = restriction; PlatformMatching.ParsedPlatformPath.Platforms = [x] }
+                     //(FrameworkRestriction.Exactly x)
                      | None ->
-                        if verbose then
-                            verbosefn "Unable to parse framework restriction '%s' for package '%s' in package '%s'" restriction a.[0] (packageName.ToString())
+                        traceWarnfn "Unable to parse framework restriction '%s' for package '%s' in package '%s'" restriction a.[0] (packageName.ToString())
+                        //if verbose then
+                        //    verbosefn "Unable to parse framework restriction '%s' for package '%s' in package '%s'" restriction a.[0] (packageName.ToString())
                         None
-             else Some (FrameworkRestriction.NoRestriction))
+             else Some PlatformMatching.ParsedPlatformPath.Empty)
 
         dependencies
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
@@ -206,41 +209,19 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
             | Some(restrictions) -> Some (name, version, restrictions)
             | None -> None)
 
-    //let expandedPackages =
-    //    let isMatch (n',v',r') =
-    //        r'
-    //        |> List.exists (fun r ->
-    //            match r with
-    //            | FrameworkRestriction.Exactly(DotNetFramework _) -> true
-    //            | FrameworkRestriction.Exactly(DotNetStandard _) -> true
-    //            |_ -> false)
-    //
-    //    packages
-    //    |> Seq.collect (fun (n,v,r) ->
-    //        match r with
-    //        | [ FrameworkRestriction.Portable p ] ->
-    //            [yield n,v,r
-    //             let standardAliases = KnownTargetProfiles.portableStandards p
-    //             for alias in standardAliases do
-    //                let s = FrameworkRestriction.Exactly(DotNetStandard alias)
-    //                let s2 = FrameworkRestriction.AtLeast(DotNetStandard alias)
-    //                if packages |> Array.exists (fun (n,v,r) -> r |> List.exists (fun r -> r = s || r = s2)) |> not then
-    //                    yield n,v,[s2]
-    //
-    //             if standardAliases = [] && not <| Array.exists isMatch packages then
-    //                 for p in p.Split([|'+'; '-'|]) do
-    //                    match FrameworkDetection.Extract p with
-    //                    | Some(DotNetFramework _ as r) ->
-    //                        yield n,v,[FrameworkRestriction.Exactly r]
-    //                    | Some(DotNetStandard _ as r) ->
-    //                        yield n,v,[FrameworkRestriction.Exactly r]
-    //                    | _ -> () ]
-    //        |  _ -> [n,v,r])
-    //    |> Seq.toList
-    let expandedPackages =
-        packages |> Seq.toList
-
-    let dependencies = Requirements.optimizeDependencies expandedPackages
+    let frameworks =
+        rawPackages
+        |> Seq.collect (fun (_,_,pp) -> 
+            match pp.Platforms with
+            | [h] -> [h]
+            | _ -> [])
+        |> Seq.toList
+    let cleanedPackages =
+        rawPackages
+        |> Seq.filter (fun (n,_,_) -> System.String.IsNullOrEmpty (n.ToString()) |> not)
+        |> Seq.toList
+    let dependencies =
+        addFrameworkRestrictionsToDependencies cleanedPackages frameworks
 
     { PackageName = officialName
       DownloadUrl = downloadLink
