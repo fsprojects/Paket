@@ -7,16 +7,21 @@ open Paket.PackageSources
 open Paket.Logging
 
 [<RequireQualifiedAccess>]
+// To make reasoning and writing tests easier.
+// Ideally we would "simplify" the trees to a "normal" form internally
+[<CustomEquality; CustomComparison>] 
 type FrameworkRestriction =
-// TODO: make this presentation private and add helper -> prevents different presentations of empty set
-| NoRestriction
-| EmptySet
-| Exactly of FrameworkIdentifier
-| Portable of string * FrameworkIdentifier list
-| AtLeast of FrameworkIdentifier
-| Between of FrameworkIdentifier * FrameworkIdentifier
-| Or of FrameworkRestriction * FrameworkRestriction
-| And of FrameworkRestriction * FrameworkRestriction
+    // TODO: private
+    | NoRestriction
+    | EmptySet
+    | Exactly of FrameworkIdentifier
+    //[<Obsolete("Portable is a mess, don't use it")>]
+    | Portable of string * FrameworkIdentifier list
+    | AtLeast of FrameworkIdentifier
+    // Means: Take all frameworks NOT given by the restriction
+    | Not of FrameworkRestriction
+    | Or of FrameworkRestriction * FrameworkRestriction
+    | And of FrameworkRestriction * FrameworkRestriction
     override this.ToString() =
         match this with
         | FrameworkRestriction.NoRestriction -> "norestriction"
@@ -24,7 +29,7 @@ type FrameworkRestriction =
         | FrameworkRestriction.Exactly r -> r.ToString()
         | FrameworkRestriction.Portable (r,_) -> r
         | FrameworkRestriction.AtLeast r -> ">= " + r.ToString()
-        | FrameworkRestriction.Between(min,max) -> sprintf ">= %O < %O" min max
+        | FrameworkRestriction.Not(fr) -> sprintf "NOT (%O)" fr
         | FrameworkRestriction.Or(fr1, fr2) -> sprintf "|| (%O) (%O)" fr1 fr2
         | FrameworkRestriction.And(fr1, fr2) -> sprintf "&& (%O) (%O)" fr1 fr2
 
@@ -35,22 +40,24 @@ type FrameworkRestriction =
             KnownTargetProfiles.AllProfiles |> List.collect (function
                 | SinglePlatform fw -> [fw]
                 | PortableProfile (_, fws) -> fws)
+            |> List.sort
         | FrameworkRestriction.Exactly r -> [ r ]
         | FrameworkRestriction.EmptySet -> [ ]
         | FrameworkRestriction.Portable (r, fws) ->
             fws
             |> List.collect (fun fw -> (FrameworkRestriction.AtLeast fw).RepresentedFrameworks)
             |> List.distinct
+            |> List.sort
         | FrameworkRestriction.AtLeast r -> PlatformMatching.getFrameworksSupporting r
-        | FrameworkRestriction.Between(min,max) ->
-            let minSupported = PlatformMatching.getFrameworksSupporting min
-            let maxSupported = PlatformMatching.getFrameworksSupporting max
-            minSupported
-            |> List.filter (fun fw -> maxSupported |> Seq.contains fw |> not)
+        | FrameworkRestriction.Not(fr) ->
+            let notTaken = fr.RepresentedFrameworks
+            FrameworkRestriction.NoRestriction.RepresentedFrameworks
+            |> List.filter (fun fw -> notTaken |> Seq.contains fw |> not)
         | FrameworkRestriction.Or (fr1, fr2) ->
             [ fr1; fr2 ]
             |> List.collect (fun fr -> fr.RepresentedFrameworks)
             |> List.distinct
+            |> List.sort
         | FrameworkRestriction.And (fr1, fr2) ->
             let l1 = fr1.RepresentedFrameworks
             fr2.RepresentedFrameworks
@@ -62,6 +69,18 @@ type FrameworkRestriction =
         let superset = y.RepresentedFrameworks
         x.RepresentedFrameworks
         |> List.forall (fun inner -> superset |> Seq.contains inner)
+    static member Between (x, y) =
+        FrameworkRestriction.And(FrameworkRestriction.AtLeast x, FrameworkRestriction.Not (FrameworkRestriction.AtLeast y))
+    static member ExactlyProfile (pf: TargetProfile) =
+        match pf with
+        | SinglePlatform f -> Exactly f
+        | PortableProfile(name,fws) -> Portable(name, fws)
+        
+    override x.Equals(y) = (match y with :? FrameworkRestriction as r -> r.RepresentedFrameworks = x.RepresentedFrameworks | _ -> false)
+    override x.GetHashCode() = x.RepresentedFrameworks.GetHashCode()
+    interface System.IComparable with
+        member x.CompareTo(y) = (match y with :? FrameworkRestriction as r -> compare x.RepresentedFrameworks r.RepresentedFrameworks | _ -> failwith "wrong type")
+
 
 
 type FrameworkRestrictions =
@@ -84,10 +103,16 @@ let combineRestrictionsWithOr (x : FrameworkRestriction) y =
     elif y.IsSubsetOf x then
         x
     else
-        let combined = FrameworkRestriction.Or(x, y)
-        if combined.RepresentedFrameworks.Length = FrameworkRestriction.NoRestriction.RepresentedFrameworks.Length then
-            FrameworkRestriction.NoRestriction
-        else combined
+        match x, y with
+        | FrameworkRestriction.And(FrameworkRestriction.Not a, b), _ when a = y -> b
+        | FrameworkRestriction.And(a, FrameworkRestriction.Not b), _ when b = y -> a
+        | _, FrameworkRestriction.And(FrameworkRestriction.Not a, b) when a = x -> b
+        | _, FrameworkRestriction.And(a, FrameworkRestriction.Not b) when b = x -> a
+        | _ -> 
+            let combined = FrameworkRestriction.Or(x, y)
+            if combined.RepresentedFrameworks.Length = FrameworkRestriction.NoRestriction.RepresentedFrameworks.Length then
+                FrameworkRestriction.NoRestriction
+            else combined
 
 let parseRestrictionsLegacy failImmediatly (text:string) =
     // TODO: Change this code to convert old "framework" sematics in
@@ -133,7 +158,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
                     match FrameworkDetection.Extract(item) with
                     | None ->
                         handleError <| sprintf "Could not parse second framework of between operator '%s'. Try to update or install again or report a paket bug." item
-                    | Some y -> yield FrameworkRestriction.Between(x,y)
+                    | Some y -> yield FrameworkRestriction.Between(x, y)
             else
                 yield FrameworkRestriction.Exactly x]
     |> List.fold (fun state item -> combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet

@@ -507,7 +507,6 @@ module FrameworkDetection =
 type TargetProfile =
     | SinglePlatform of FrameworkIdentifier
     | PortableProfile of string * FrameworkIdentifier list
-
     member this.ProfilesCompatibleWithPortableProfile =
         match this with
         | SinglePlatform _ -> [ ]

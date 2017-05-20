@@ -35,12 +35,12 @@ module internal NuSpecParserHelper =
             let framework = framework.Replace(".NETPortable0.0","portable")
             if String.startsWithIgnoreCase "portable" framework then
                 let fws = (PlatformMatching.extractPlatforms framework).Platforms
-                Some(name,version,FrameworkRestriction.Portable (framework, fws))
+                Some(name,version, { PlatformMatching.ParsedPlatformPath.Name = framework; PlatformMatching.ParsedPlatformPath.Platforms = fws})
             else 
                 match FrameworkDetection.Extract framework with
-                | Some x -> Some(name,version,FrameworkRestriction.Exactly x)
+                | Some x -> Some(name,version, { Name = framework; Platforms = [x]})
                 | None -> None
-        | _ -> Some(name,version,FrameworkRestriction.NoRestriction)
+        | _ -> Some(name,version, { Name = ""; Platforms = [] })
 
     let getAssemblyRefs node =
         let name = node |> getAttribute "assemblyName"
@@ -76,23 +76,22 @@ type Nuspec =
     
     /// load the file from an XmlDocument. The fileName is only used for error reporting.
     static member private Load(fileName:string, doc:XmlDocument) =
-        //let frameworks =
-        //    doc 
-        //    |> getDescendants "group" 
-        //    |> List.map (fun node ->
-        //        match node |> getAttribute "targetFramework" with
-        //        | Some framework when framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable").StartsWith "portable" ->
-        //            let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
-        //            let fws = (PlatformMatching.extractPlatforms framework).Platforms
-        //            [PackageName "",
-        //              VersionRequirement.NoRestriction, FrameworkRestriction.Portable (framework, fws)]
-        //
-        //        | Some framework ->
-        //            match FrameworkDetection.Extract framework with
-        //            | Some x -> [PackageName "",VersionRequirement.NoRestriction, FrameworkRestriction.Exactly x]
-        //            | None -> []
-        //        | _ -> [])
-        //    |> List.concat
+        let frameworks =
+            doc 
+            |> getDescendants "group" 
+            |> List.map (fun node ->
+                match node |> getAttribute "targetFramework" with
+                | Some framework when framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable").StartsWith "portable" ->
+                    let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
+                    let fws = (PlatformMatching.extractPlatforms framework).Platforms
+                    [] // TODO: Maybe fws?
+        
+                | Some framework ->
+                    match FrameworkDetection.Extract framework with
+                    | Some x -> [x]
+                    | None -> []
+                | _ -> [])
+            |> List.concat
 
         //let framworks = 
         //    let isMatch (n',v',r') =
@@ -133,7 +132,48 @@ type Nuspec =
         let referenced =
             depsTags
             |> List.choose (NuSpecParserHelper.getDependency fileName)
+            // We need to append all the other platforms we support.
+            |> List.map (fun (name, req, pp) ->
+                let restriction =
+                    match pp.Platforms with
+                    | _ when System.String.IsNullOrEmpty pp.Name -> FrameworkRestriction.NoRestriction
+                    | [] -> FrameworkRestriction.NoRestriction
+                    | [ pf ] -> FrameworkRestriction.AtLeast pf
+                    | _ -> FrameworkRestriction.Portable(pp.Name, pp.Platforms)
+                let minimalRestriction =
+                    frameworks
+                    |> Seq.filter (fun fw -> pp.Platforms |> Seq.contains fw |> not)
+                    |> Seq.filter (fun fw ->
+                        // filter all restrictions which would render this group to nothing (ie smaller restrictions)
+                        restriction.IsSubsetOf (FrameworkRestriction.AtLeast fw) |> not)
+                    |> Seq.fold (fun curRestr fw ->
+                        FrameworkRestriction.And(curRestr, FrameworkRestriction.Not (FrameworkRestriction.AtLeast fw))) restriction
+                name, req, minimalRestriction
+            )
             //|> List.append frameworks
+
+        let referenced =
+            referenced 
+            |> List.groupBy (fun (n,req,_) -> n,req)
+            |> List.map (fun ((n, req), group) ->
+                let restrictions = group |> List.map (fun (_,_,r) -> r)
+                n, req, restrictions |> List.fold combineRestrictionsWithOr FrameworkRestriction.EmptySet)
+
+        // While this is correct we want a more generic representation, such that future platforms "just work"
+        //let availablePlatforms = referenced |> List.map (fun (_,_,pp) -> pp)
+        //let calculateDistribution = PlatformMatching.getSupportedTargetProfiles availablePlatforms
+        //
+        //let referenced =
+        //    referenced
+        //    |> List.map (fun (name, req, pp) ->
+        //        let restriction =
+        //            calculateDistribution.[pp]
+        //            |> Seq.fold (fun state profile ->
+        //                FrameworkRestriction.Or(state, FrameworkRestriction.ExactlyProfile profile)) FrameworkRestriction.EmptySet
+        //        name, req, restriction)
+        //
+
+
 
         let dependencies = Requirements.optimizeDependencies referenced
             

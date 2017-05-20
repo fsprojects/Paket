@@ -102,7 +102,7 @@ let ``can detect deps assemblies for RazorEngine``() =
     Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"RazorEngine.nuspec")).Dependencies
     |> shouldEqual 
         [PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement("= 2.0.30506.0"), 
-            makeOrList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_Client))]
+            makeOrList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4_Client), DotNetFramework(FrameworkVersion.V4_5))]
          PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement(">= 3.0.0"),
             makeOrList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))]]
 
@@ -311,10 +311,7 @@ let ``can detect explicit dependencies for EasyNetQ``() =
         (PackageName "Microsoft.Bcl",
           DependenciesFileParser.parseVersionRequirement(">= 1.1.10"),
           makeOrList
-            [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V1_1))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))
-             FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4)) ])
+            [FrameworkRestriction.And(
+                FrameworkRestriction.NoRestriction,
+                FrameworkRestriction.Not (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))))
+            ])
