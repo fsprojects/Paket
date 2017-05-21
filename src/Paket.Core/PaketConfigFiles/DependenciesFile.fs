@@ -142,8 +142,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let lockFile = dependenciesFile.FindLockfile()
                     let dir = (lockFile : FileInfo).DirectoryName
                     let projects = ProjectFile.FindAllProjects dir
-                    let frameworks = projects |> Array.choose ProjectFile.getTargetFramework |> Array.distinct
-                    let restrictions = frameworks |> Array.map FrameworkRestriction.Exactly
+                    let frameworks = projects |> Array.map ProjectFile.getTargetProfile |> Array.distinct
+                    let restrictions = frameworks |> Array.map FrameworkRestriction.ExactlyPlatform
                     if restrictions |> Array.isEmpty then FrameworkRestriction.NoRestriction
                     else restrictions |> Array.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet
                 )

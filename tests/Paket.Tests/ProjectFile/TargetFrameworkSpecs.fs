@@ -5,7 +5,9 @@ open NUnit.Framework
 open FsUnit
 open Paket.TestHelpers
 
-let TestData: obj[][] = 
+let portable = TargetProfile.FindPortable [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+    
+let TestData: obj[][] =
     [|
         // project file name, 
         //  expected TargetProfile 
@@ -24,11 +26,16 @@ let TestData: obj[][] =
             "sl50";
             (Some(Silverlight SilverlightVersion.V5))|];
         [|"FSharp.Core.Fluent-3.1.fsprojtest";
-            (PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]));
+            portable;
             "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1";
             (Some(DotNetFramework FrameworkVersion.V4_5))|];
     |]
-
+    
+[<Test>]
+let ``should detect profile259`` () =
+    portable
+    |> shouldEqual (PortableProfile PortableProfileType.Profile259)
+    
 [<Test>]
 [<TestCaseSource("TestData")>]
 let ``should detect the correct framework on test projects`` projectFile expectedProfile expectedProfileString expectedTargetFramework =
@@ -36,5 +43,5 @@ let ``should detect the correct framework on test projects`` projectFile expecte
     let p = ProjectFile.TryLoad("./ProjectFile/TestData/" + projectFile).Value
     p.GetTargetProfile() |> shouldEqual expectedProfile
     p.GetTargetProfile().ToString() |> shouldEqual expectedProfileString
-    p.GetTargetFramework() |> shouldEqual expectedTargetFramework
+    p.GetTargetProfile() |> shouldEqual (SinglePlatform expectedTargetFramework)
 

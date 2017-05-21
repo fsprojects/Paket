@@ -72,14 +72,14 @@ let getPathPenalty =
         | [] -> handleEmpty()
         | [ h ] -> getPlatformPenalty(platform,SinglePlatform h)
         | _ ->
-            getPlatformPenalty(platform, PortableProfile(path.Name, path.Platforms)))
+            getPlatformPenalty(platform, TargetProfile.FindPortable path.Platforms))
 
 [<Obsolete("Used in test code, use getPathPenalty instead.")>]
 let getFrameworkPathPenalty fr path =
     match fr with
     | [ h ] -> getPathPenalty (path, SinglePlatform h)
     | _ ->
-        getPathPenalty (path, PortableProfile("unknown", fr))
+        getPathPenalty (path, TargetProfile.FindPortable fr)
 
 type PathPenalty = (ParsedPlatformPath * int)
 
@@ -255,7 +255,7 @@ let getTargetCondition (target:TargetProfile) =
         | Native(NoBuildMode,NoPlatform) -> "true", ""
         | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
-    | PortableProfile(name, _) -> sprintf "$(TargetFrameworkProfile) == '%O'" name,""
+    | PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
 let getCondition (referenceCondition:string option) (allTargets: TargetProfile list list) (targets : TargetProfile list) =
     let inline CheckIfFullyInGroup typeName matchF (processed,targets) =

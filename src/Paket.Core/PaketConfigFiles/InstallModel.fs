@@ -460,7 +460,7 @@ module InstallModel =
 
     /// This is for library references, which at the same time can be used for references (old world - pre dotnetcore)
     let getLegacyPlatformReferences frameworkIdentifier installModel =
-        getLegacyReferences (SinglePlatform frameworkIdentifier) installModel
+        getLegacyReferences frameworkIdentifier installModel
 
     let isEmpty (lib: FrameworkFolder<Set<'T>> list) =
         lib

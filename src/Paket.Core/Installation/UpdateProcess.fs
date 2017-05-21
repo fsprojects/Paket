@@ -168,9 +168,8 @@ let detectProjectFrameworksForDependenciesFile (dependenciesFile:DependenciesFil
             let rawRestrictions =
                 RestoreProcess.findAllReferencesFiles root |> returnOrFail
                 |> List.map (fun (p,_) -> 
-                    match p.GetTargetFramework() with
-                    | Some fw -> Requirements.FrameworkRestriction.Exactly fw
-                    | None -> failwithf "Could not detect target framework for project %s" p.FileName)
+                    p.GetTargetProfile() 
+                    |> Requirements.FrameworkRestriction.ExactlyPlatform)
                 |> List.distinct
             if rawRestrictions.IsEmpty then Paket.Requirements.FrameworkRestriction.NoRestriction
             else rawRestrictions |> Seq.fold Paket.Requirements.FrameworkRestriction.combineRestrictionsWithOr Paket.Requirements.FrameworkRestriction.EmptySet)

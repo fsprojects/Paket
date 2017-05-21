@@ -166,9 +166,10 @@ module FrameworkRestriction =
     let EmptySet = { OrFormulas = [] } // false
     let NoRestriction = { OrFormulas = [ { Literals = [] } ] } // true
     let AtLeastPlatform pf = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (AtLeastL pf) ] } ] }
-    let Exactly id = AtLeastPlatform (SinglePlatform id)
-    let AtLeastPortable (name, fws)= AtLeastPlatform (PortableProfile (name, fws))
-    let AtLeast id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (AtLeastL (SinglePlatform id)) ] } ] }
+    let ExactlyPlatform pf = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (ExactlyL pf) ] } ] }
+    let Exactly id = ExactlyPlatform (SinglePlatform id)
+    let AtLeastPortable (name, fws)= AtLeastPlatform (TargetProfile.FindPortable fws)
+    let AtLeast id = AtLeastPlatform (SinglePlatform id)
     let NotAtLeast id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL (SinglePlatform id)) ] } ] }
 
     let private simplify (fr:FrameworkRestriction) =

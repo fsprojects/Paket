@@ -113,7 +113,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
                 match tryGet (group,pack.Name) installModelCache with
                 | None -> ()
                 | Some model ->
-                    model.GetLibReferenceFiles framework |> Seq.iter (libs.Add >> ignore)
+                    model.GetLibReferenceFiles (SinglePlatform framework) |> Seq.iter (libs.Add >> ignore)
                     model.GetAllLegacyFrameworkReferences ()|> Seq.iter (sysLibs.Add >> ignore)
             )
 

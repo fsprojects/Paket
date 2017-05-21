@@ -992,12 +992,6 @@ module ProjectFile =
                 | None -> defaultResult
                 | Some x -> SinglePlatform x
 
-    let getTargetFramework (project:ProjectFile) = 
-        match getTargetProfile project with
-        | SinglePlatform x -> Some x
-        | PortableProfile (_, x::_) -> Some x
-        | _ -> None
-
     let updateReferences
             rootPath
             (completeModel: Map<GroupName*PackageName,_*InstallModel>) 
@@ -1051,17 +1045,15 @@ module ProjectFile =
                     .RemoveIfCompletelyEmpty()
 
             if directPackages.ContainsKey kv.Key then
-                match getTargetFramework project with 
-                | Some targetFramework ->
-                    if isTargetMatchingRestrictions(restrictionList,SinglePlatform targetFramework) then
-                        if projectModel.GetLibReferenceFiles targetFramework |> Seq.isEmpty then
-                            let libReferences = 
-                                projectModel.GetAllLegacyReferences() 
+                let targetProfile = getTargetProfile project 
+                if isTargetMatchingRestrictions(restrictionList,targetProfile) then
+                    if projectModel.GetLibReferenceFiles targetProfile |> Seq.isEmpty then
+                        let libReferences = 
+                            projectModel.GetAllLegacyReferences() 
 
-                            if not (Seq.isEmpty libReferences) then
-                                traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
-                                    (snd kv.Key) targetFramework project.FileName
-                | _ -> ()
+                        if not (Seq.isEmpty libReferences) then
+                            traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
+                                (snd kv.Key) targetProfile project.FileName
 
             let importTargets = defaultArg installSettings.ImportTargets true
             
@@ -1499,8 +1491,6 @@ type ProjectFile with
     member this.OutputType =  ProjectFile.outputType this
 
     member this.GetTargetFrameworkIdentifier () =  ProjectFile.getTargetFrameworkIdentifier this
-
-    member this.GetTargetFramework () =  ProjectFile.getTargetFramework this
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
 

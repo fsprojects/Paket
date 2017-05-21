@@ -351,7 +351,7 @@ type FrameworkIdentifier =
         | Native(_) -> [ ]
         | XamariniOS -> [ ]
         | XamarinMac -> [ ]
-        | UAP UAPVersion.V10 -> [ ]
+        | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
         | DotNetFramework FrameworkVersion.V2 -> [ DotNetFramework FrameworkVersion.V1_1 ]
@@ -516,50 +516,162 @@ module FrameworkDetection =
             else 
                 Extract(path.Substring(startPos + 4, endPos - startPos - 5))
 
+
+type PortableProfileType =
+    | UnsupportedProfile of FrameworkIdentifier list
+    | Profile2
+    | Profile3
+    | Profile4
+    | Profile5
+    | Profile6
+    | Profile7   
+    | Profile14
+    | Profile18
+    | Profile19
+    | Profile23
+    | Profile24
+    | Profile31
+    | Profile32
+    | Profile36
+    | Profile37
+    | Profile41
+    | Profile42
+    | Profile44
+    | Profile46
+    | Profile47
+    | Profile49
+    | Profile78
+    | Profile84
+    | Profile88
+    | Profile92
+    | Profile95
+    | Profile96    
+    | Profile102
+    | Profile104
+    | Profile111
+    | Profile136
+    | Profile143
+    | Profile147
+    | Profile151
+    | Profile154
+    | Profile157
+    | Profile158
+    | Profile225
+    | Profile240
+    | Profile255
+    | Profile259
+    | Profile328
+    | Profile336
+    | Profile344
+    member x.ProfileName =
+        match x with
+        | UnsupportedProfile fws -> x.FolderName
+        | Profile2   -> "Profile2"
+        | Profile3   -> "Profile3"
+        | Profile4   -> "Profile4"
+        | Profile5   -> "Profile5"
+        | Profile6   -> "Profile6"
+        | Profile7   -> "Profile7"
+        | Profile14  -> "Profile14"
+        | Profile18  -> "Profile18"
+        | Profile19  -> "Profile19"
+        | Profile23  -> "Profile23"
+        | Profile24  -> "Profile24"
+        | Profile31  -> "Profile31"
+        | Profile32  -> "Profile32"
+        | Profile36  -> "Profile36"
+        | Profile37  -> "Profile37"
+        | Profile41  -> "Profile41"
+        | Profile42  -> "Profile42"
+        | Profile44  -> "Profile44"
+        | Profile46  -> "Profile46"
+        | Profile47  -> "Profile47"
+        | Profile49  -> "Profile49"
+        | Profile78  -> "Profile78"
+        | Profile84  -> "Profile84"
+        | Profile88  -> "Profile88"
+        | Profile92  -> "Profile92"
+        | Profile95  -> "Profile95"
+        | Profile96  -> "Profile96"
+        | Profile102 -> "Profile102"
+        | Profile104 -> "Profile104"
+        | Profile111 -> "Profile111"
+        | Profile136 -> "Profile136"
+        | Profile143 -> "Profile143"
+        | Profile147 -> "Profile147"
+        | Profile151 -> "Profile151"
+        | Profile154 -> "Profile154"
+        | Profile157 -> "Profile157"
+        | Profile158 -> "Profile158"
+        | Profile225 -> "Profile225"
+        | Profile240 -> "Profile240"
+        | Profile255 -> "Profile255"
+        | Profile259 -> "Profile259"
+        | Profile328 -> "Profile328"
+        | Profile336 -> "Profile336"
+        | Profile344 -> "Profile344"
+        
+    member x.Frameworks =
+        // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile3
+        match x with
+        | UnsupportedProfile fws -> fws
+        | Profile2   -> [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7 ]
+        | Profile3   -> [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V4 ]
+        | Profile4   -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4; Windows  WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7 ]
+        | Profile5   -> [ DotNetFramework FrameworkVersion.V4; Windows WindowsVersion.V8 ]
+        | Profile6   -> [ DotNetFramework FrameworkVersion.V4_0_3; Windows WindowsVersion.V8 ]
+        | Profile7   -> [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8 ]
+        | Profile14  -> [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V5 ]
+        | Profile18  -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4 ]
+        | Profile19  -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5 ]
+        | Profile23  -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4 ]
+        | Profile24  -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5 ]
+        | Profile31  -> [ Windows WindowsVersion.V8_1; WindowsPhone WindowsPhoneVersion.V8_1 ]
+        | Profile32  -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile36  -> [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ]
+        | Profile37  -> [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8 ]
+        | Profile41  -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8 ]
+        | Profile42  -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8 ]
+        | Profile44  -> [ DotNetFramework FrameworkVersion.V4_5_1; Windows WindowsVersion.V8_1 ]
+        | Profile46  -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8 ]
+        | Profile47  -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8 ]
+        | Profile49  -> [ DotNetFramework FrameworkVersion.V4_5; WindowsPhone WindowsPhoneVersion.V8 ]
+        | Profile78  -> [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ]
+        | Profile84  -> [ WindowsPhone WindowsPhoneVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile88  -> [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7_5 ]
+        | Profile92  -> [ DotNetFramework FrameworkVersion.V4; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile95  -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7 ]
+        | Profile96  -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7_5 ]
+        | Profile102 -> [ DotNetFramework FrameworkVersion.V4_0_3; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile104 -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7_5 ]
+        | Profile111 -> [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile136 -> [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ]
+        | Profile143 -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ]
+        | Profile147 -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ]
+        | Profile151 -> [ DotNetFramework FrameworkVersion.V4_5_1; Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile154 -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ]
+        | Profile157 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; WindowsPhone WindowsPhoneVersion.V8_1 ]
+        | Profile158 -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ]
+        | Profile225 -> [ DotNetFramework  FrameworkVersion.V4; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile240 -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile255 -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile259 -> [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile328 -> [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile336 -> [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+        | Profile344 -> [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]
+    member x.FolderName =
+        "portable-" +
+        String.Join ("+",
+            x.Frameworks
+            |> List.sort
+            |> List.map (fun fw -> fw.ToString()))
 type TargetProfile =
     | SinglePlatform of FrameworkIdentifier
-    | PortableProfile of string * FrameworkIdentifier list
+    | PortableProfile of PortableProfileType
     override this.ToString() =
         match this with
         | SinglePlatform x -> x.ToString()
-        | PortableProfile(name,fws) ->
-            "portable-" +
-            String.Join ("+",
-                fws
-                |> List.sort
-                |> List.map (fun fw -> fw.ToString()))
-            //match name with
-            //| "Profile5" -> "portable-net4+netcore45+MonoAndroid1+MonoTouch1"
-            //| "Profile6" -> "portable-net403+netcore45+MonoAndroid1+MonoTouch1"
-            //| "Profile7" -> "portable-net45+netcore45+MonoAndroid1+MonoTouch1"
-            //| "Profile14" -> "portable-net4+sl5+MonoAndroid1+MonoTouch1"
-            //| "Profile19" -> "portable-net403+sl5+MonoAndroid1+MonoTouch1"
-            //| "Profile24" -> "portable-net45+sl5+MonoAndroid1+MonoTouch1"
-            //| "Profile31" -> "portable-netcore451+wp81"
-            //| "Profile32" -> "portable-netcore451+wpa81"
-            //| "Profile37" -> "portable-net4+sl5+netcore45+MonoAndroid1+MonoTouch1"
-            //| "Profile42" -> "portable-net403+sl5+netcore45+MonoAndroid1+MonoTouch1"
-            //| "Profile44" -> "portable-net451+netcore451"
-            //| "Profile47" -> "portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1"
-            //| "Profile49" -> "portable-net45+wp8+MonoAndroid1+MonoTouch1"
-            //| "Profile78" -> "portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1"
-            //| "Profile84" -> "portable-wpa81+wp81"
-            //| "Profile92" -> "portable-net4+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-            //| "Profile102" -> "portable-net403+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-            //| "Profile111" -> "portable-net45+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-            //| "Profile136" -> "portable-net4+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
-            //| "Profile147" -> "portable-net403+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
-            //| "Profile151" -> "portable-net451+netcore451+wpa81"
-            //| "Profile157" -> "portable-netcore451+wpa81+wp81"
-            //| "Profile158" -> "portable-net45+sl5+netcore45+wp8+MonoAndroid1+MonoTouch1"
-            //| "Profile225" -> "portable-net4+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-            //| "Profile240" -> "portable-net403+sl5+netcore45+wpa81"
-            //| "Profile255" -> "portable-net45+sl5+netcore45+wpa81+MonoAndroid1+MonoTouch1"
-            //| "Profile259" -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-            //| "Profile328" -> "portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-            //| "Profile336" -> "portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-            //| "Profile344" -> "portable-net45+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"
-            //| _ -> "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1" // Use Portable259 as default
+        | PortableProfile p -> p.FolderName
 
 module KnownTargetProfiles =
     let DotNetFrameworkVersions = [
@@ -660,67 +772,52 @@ module KnownTargetProfiles =
        WindowsPhoneVersions
        |> List.map (WindowsPhone >> SinglePlatform)
 
-    let portableStandards p =
-        match p with
-        | "portable-net45+win8" -> [DotNetStandardVersion.V1_1]
-        | "portable-win81+wp81" -> [DotNetStandardVersion.V1_0]
-        | "portable-win81+wpa81" -> [DotNetStandardVersion.V1_2]
-        | "portable-net451+win81" -> [DotNetStandardVersion.V1_2]
-        | "portable-net45+wp8" -> [DotNetStandardVersion.V1_0]
-        | "portable-net45+win8+wp8" -> [DotNetStandardVersion.V1_0]
-        | "portable-wp81+wpa81" -> [DotNetStandardVersion.V1_0]
-        | "portable-net45+win8+wpa81" -> [DotNetStandardVersion.V1_1]
-        | "portable-net451+win81+wpa81" -> [DotNetStandardVersion.V1_2]
-        | "portable-win81+wp81+wpa81" -> [DotNetStandardVersion.V1_0]
-        | "portable-net45+win8+wpa81+wp8" -> [DotNetStandardVersion.V1_0]
-        | _ -> []
-
     // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=.NETPortable%2CVersion%3Dv0.0%2CProfile%3DProfile3
     let AllPortableProfiles =
-       [("Profile2", [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7 ])
-        ("Profile3", [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V4 ])
-        ("Profile4", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4; Windows  WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7 ])
-        ("Profile5", [ DotNetFramework FrameworkVersion.V4; Windows WindowsVersion.V8 ])
-        ("Profile6", [ DotNetFramework FrameworkVersion.V4_0_3; Windows WindowsVersion.V8 ])
-        ("Profile7" , [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8 ])
-        ("Profile14", [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V5 ])
-        ("Profile18", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4 ])
-        ("Profile19", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5 ])
-        ("Profile23", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4 ])
-        ("Profile24", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5 ])
-        ("Profile31", [ Windows WindowsVersion.V8_1; WindowsPhone WindowsPhoneVersion.V8_1 ])
-        ("Profile32", [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile36", [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ])
-        ("Profile37", [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8 ])
-        ("Profile41", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8 ])
-        ("Profile42", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8 ])
-        ("Profile44", [ DotNetFramework FrameworkVersion.V4_5_1; Windows WindowsVersion.V8_1 ])
-        ("Profile46", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8 ])
-        ("Profile47", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8 ])
-        ("Profile49", [ DotNetFramework FrameworkVersion.V4_5; WindowsPhone WindowsPhoneVersion.V8 ])
-        ("Profile78", [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ])
-        ("Profile84", [ WindowsPhone WindowsPhoneVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile88", [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7_5 ])
-        ("Profile92", [ DotNetFramework FrameworkVersion.V4; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile95", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7 ])
-        ("Profile96", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7_5 ])
-        ("Profile102", [ DotNetFramework FrameworkVersion.V4_0_3; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile104", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V7_5 ])
-        ("Profile111", [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile136", [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ])
-        ("Profile143", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ])
-        ("Profile147", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ])
-        ("Profile151", [ DotNetFramework FrameworkVersion.V4_5_1; Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile154", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V4; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ])
-        ("Profile157", [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; WindowsPhone WindowsPhoneVersion.V8_1 ])
-        ("Profile158", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8 ])
-        ("Profile225", [ DotNetFramework  FrameworkVersion.V4; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile240", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile255", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile328", [ DotNetFramework FrameworkVersion.V4; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile336", [ DotNetFramework FrameworkVersion.V4_0_3; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ])
-        ("Profile344", [ DotNetFramework FrameworkVersion.V4_5; Silverlight SilverlightVersion.V5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]) ]
+       [PortableProfileType.Profile2  
+        PortableProfileType.Profile3  
+        PortableProfileType.Profile4  
+        PortableProfileType.Profile5  
+        PortableProfileType.Profile6  
+        PortableProfileType.Profile7  
+        PortableProfileType.Profile14 
+        PortableProfileType.Profile18 
+        PortableProfileType.Profile19 
+        PortableProfileType.Profile23 
+        PortableProfileType.Profile24 
+        PortableProfileType.Profile31 
+        PortableProfileType.Profile32 
+        PortableProfileType.Profile36 
+        PortableProfileType.Profile37 
+        PortableProfileType.Profile41 
+        PortableProfileType.Profile42 
+        PortableProfileType.Profile44 
+        PortableProfileType.Profile46 
+        PortableProfileType.Profile47 
+        PortableProfileType.Profile49 
+        PortableProfileType.Profile78 
+        PortableProfileType.Profile84 
+        PortableProfileType.Profile88 
+        PortableProfileType.Profile92 
+        PortableProfileType.Profile95 
+        PortableProfileType.Profile96 
+        PortableProfileType.Profile102
+        PortableProfileType.Profile104
+        PortableProfileType.Profile111
+        PortableProfileType.Profile136
+        PortableProfileType.Profile143
+        PortableProfileType.Profile147
+        PortableProfileType.Profile151
+        PortableProfileType.Profile154
+        PortableProfileType.Profile157
+        PortableProfileType.Profile158
+        PortableProfileType.Profile225
+        PortableProfileType.Profile240
+        PortableProfileType.Profile255
+        PortableProfileType.Profile259
+        PortableProfileType.Profile328
+        PortableProfileType.Profile336
+        PortableProfileType.Profile344 ] 
 
     let AllDotNetProfiles =
        DotNetFrameworkProfiles @ 
@@ -766,11 +863,38 @@ module KnownTargetProfiles =
     let FindPortableProfile name =
         AllProfiles
         |> List.pick (function
-                      | PortableProfile(n, _) as p when n = name -> Some p
+                      | PortableProfile p when p.ProfileName = name -> Some (PortableProfile p)
                       | _ -> None)
 
 
 type TargetProfile with
+    static member FindPortable (fws) =
+        let minimal =
+            fws
+            |> List.filter (function
+                | MonoTouch
+                | DNXCore _
+                | UAP _
+                | MonoAndroid -> false
+                | DotNetCore _
+                | DotNetStandard _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
+                | _ -> true)
+        let firstMatch =
+            KnownTargetProfiles.AllPortableProfiles
+            |> List.filter (fun p ->
+                let otherFws = p.Frameworks
+                minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
+            |> List.sortBy (fun p -> p.Frameworks.Length)
+            |> List.tryHead
+        match firstMatch with
+        | Some p -> PortableProfile p
+        | None ->
+#if DEBUG
+            failwithf "Could not find pcl profile"
+#else
+            PortableProfile (UnsupportedProfile fws)
+#endif
+
     // TODO: some notion of an increasing/decreasing sequence of FrameworkIdentitifers, so that Between(bottom, top) constraints can enumerate the list
     /// true when x is supported by y, for example netstandard15 is supported by netcore10
     member x.IsSupportedBy y =
@@ -833,62 +957,66 @@ type TargetProfile with
                 // See https://docs.microsoft.com/en-us/dotnet/articles/standard/library
                 match tf with
                 | DotNetStandard DotNetStandardVersion.V1_0 ->
-                    [ "Profile31" 
-                      "Profile49"
-                      "Profile78"
-                      "Profile84"
-                      "Profile157"
-                      "Profile259" ]
+                    [ Profile31 
+                      Profile49
+                      Profile78
+                      Profile84
+                      Profile157
+                      Profile259 ]
                 | DotNetStandard DotNetStandardVersion.V1_1 ->
-                    [ "Profile7" 
-                      "Profile111" ]
+                    [ Profile7
+                      Profile111 ]
                 | DotNetStandard DotNetStandardVersion.V1_2 ->
-                    [ "Profile32" 
-                      "Profile44" 
-                      "Profile151" ]
+                    [ Profile32
+                      Profile44 
+                      Profile151 ]
                 | MonoTouch
                 | MonoAndroid
                 | XamariniOS
                 | XamarinMac ->
                     // http://danrigby.com/2014/05/14/supported-pcl-profiles-xamarin-for-visual-studio-2/
-                    [ "Profile5"
-                      "Profile6"
-                      "Profile7" 
-                      "Profile14"
-                      "Profile19"
-                      "Profile24"
-                      "Profile37"
-                      "Profile42"
-                      "Profile44"
-                      "Profile47"
-                      "Profile49"
-                      "Profile78"
-                      "Profile92"
-                      "Profile102"
-                      "Profile111"
-                      "Profile136"
-                      "Profile147"
-                      "Profile151"
-                      "Profile158"
-                      "Profile225"
-                      "Profile259"
-                      "Profile328"
-                      "Profile336"
-                      "Profile344" ]
+                    [ Profile5
+                      Profile6
+                      Profile7 
+                      Profile14
+                      Profile19
+                      Profile24
+                      Profile37
+                      Profile42
+                      Profile44
+                      Profile47
+                      Profile49
+                      Profile78
+                      Profile92
+                      Profile102
+                      Profile111
+                      Profile136
+                      Profile147
+                      Profile151
+                      Profile158
+                      Profile225
+                      Profile259
+                      Profile328
+                      Profile336
+                      Profile344 ]
                 | _ ->
                     // Regular supported logic is to enumerate all profiles and select compatible ones
-                    KnownTargetProfiles.AllPortableProfiles
-                    |> List.filter (fun (_, fws) ->
-                        // Portable profile is compatible as soon as it contains a fw which supports us
-                        fws
-                        |> List.exists (fun fw -> fw.RawSupportedPlatformsTransitive |> Seq.exists ((=) tf)))
-                    |> List.map fst
-                |> List.map KnownTargetProfiles.FindPortableProfile
+                    let supported = tf.RawSupportedPlatformsTransitive
+                    let profiles =
+                        KnownTargetProfiles.AllPortableProfiles
+                        |> List.filter (fun (p) ->
+                            // Portable profile is compatible as soon as it contains a fw which is supported by us
+                            p.Frameworks
+                            |> List.exists (fun fw -> supported |> Seq.exists ((=) fw)))
+                    profiles
+                |> List.map PortableProfile
             rawSupported @ profilesSupported
-        | PortableProfile (name, tfs) ->
+        | PortableProfile p ->
+            let name, tfs = p.ProfileName, p.Frameworks
             KnownTargetProfiles.AllPortableProfiles
-            |> List.filter (fun (otherName, _) -> otherName <> name)
-            |> List.filter (fun (otherName, fws) ->
+            |> List.filter (fun p -> p.ProfileName <> name)
+            |> List.filter (fun other ->
+                let otherName, fws = other.ProfileName, other.Frameworks
                 let weSupport =
                     tfs
                     |> List.collect (fun tf -> tf.RawSupportedPlatformsTransitive)
@@ -904,7 +1032,7 @@ type TargetProfile with
                 let isReverseSupported =
                     weSupport
                     |> Seq.forall (fun fw -> otherSupport |> List.exists ((=) fw))
-                let isSupportedI = (PortableProfile (otherName ,fws)).ToString() < x.ToString()
+                let isSupportedI = other < p
                 let result =
                     if isSupported && isReverseSupported then
                         // Some profiles are identical, which means we need to watch out to get a nice tree here
