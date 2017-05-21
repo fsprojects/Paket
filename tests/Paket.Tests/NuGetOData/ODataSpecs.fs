@@ -78,7 +78,8 @@ let ``can detect explicit dependencies for Fleece``() =
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
-    parse "NuGetOData/ReadOnlyCollectionExtensions.xml"
+    let item = parse "NuGetOData/ReadOnlyCollectionExtensions.xml"
+    item
     |> shouldEqual 
         { PackageName = "ReadOnlyCollectionExtensions"
           DownloadUrl = "http://www.nuget.org/api/v2/package/ReadOnlyCollectionExtensions/1.2.0"
@@ -87,11 +88,11 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
           LicenseUrl = "https://github.com/mausch/ReadOnlyCollections/blob/master/license.txt"
           Version = "1.2.0"
           Dependencies = 
-            [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"),makeOrList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))]
+            [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"),
+              makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V2), DotNetFramework(FrameworkVersion.V3_5))]
              PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), 
               makeOrList
-               [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
-                FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V3_5))]]
+               [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V2))]]
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -141,7 +142,7 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
     let dependencies = odata.Dependencies |> Array.ofList
     dependencies.[0] |> shouldEqual 
         (PackageName "Microsoft.Data.OData", DependenciesFileParser.parseVersionRequirement(">= 5.6.3"), 
-           makeOrList [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])
+           makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
 
     let vr,pr = 
         match DependenciesFileParser.parseVersionRequirement(">= 4.0.0-beta-22231") with
@@ -149,11 +150,11 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
 
     dependencies.[18] |> shouldEqual 
         (PackageName "System.Net.Http", VersionRequirement(vr,PreReleaseStatus.All), 
-           makeOrList [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])
+           makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
 
     dependencies.[44] |> shouldEqual 
         (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.8"), 
-            makeOrList [FrameworkRestriction.Exactly(WindowsPhone WindowsPhoneVersion.V8); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))])
+            makeOrList [FrameworkRestriction.AtLeast(WindowsPhone WindowsPhoneVersion.V8); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))])
 
 [<Test>]
 let ``can ignore unknown frameworks``() = 

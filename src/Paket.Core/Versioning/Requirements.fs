@@ -243,12 +243,20 @@ module FrameworkRestriction =
                 fr.OrFormulas
                 |> Seq.exists (fun andFormular -> andFormular.Literals |> Seq.isEmpty)
             if containsEmptyAnd then NoRestriction else fr
+        
+        let sortClauses (fr:FrameworkRestriction) =
+            { OrFormulas = 
+                fr.OrFormulas
+                |> List.map (fun andFormula -> { Literals = andFormula.Literals |> List.distinct |> List.sort })
+                |> List.distinct
+                |> List.sort }
 
         fr
         |> removeNegatedLiteralsWhichOccurSinglePositive
         |> removeSubsetLiteralsInAndClause
         |> removeSubsetLiteralsInOrClause
         |> replaceWithNoRestrictionIfAnyLiteralListIsEmpty
+        |> sortClauses
 
     let rec private And2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
         match left.OrFormulas with

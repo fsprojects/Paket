@@ -32,29 +32,34 @@ let extractPlatforms = memoize (fun path -> { Name = path; Platforms = split pat
 //    |> Option.map PortableProfile
 
 // TODO: In future work this stuff should be rewritten. This penalty stuff is more random than a proper implementation.
-let getPlatformPenalty =
-    let rec getPlatformPenalty alreadyChecked (targetPlatform:TargetProfile) (packagePlatform:TargetProfile) =
+let rec getPlatformPenalty =
+    memoize (fun (targetPlatform:TargetProfile,packagePlatform:TargetProfile) ->
+    //let rec getPlatformPenalty alreadyChecked (targetPlatform:TargetProfile) (packagePlatform:TargetProfile) =
         if packagePlatform = targetPlatform then
             0
         else
-            let penalty =
-                targetPlatform.SupportedPlatforms
-                |> List.filter (fun x ->
-                    System.Diagnostics.Debug.WriteLine(sprintf "Supported %O -> %O (trying to find %O)" targetPlatform x packagePlatform)
-                    Set.contains x alreadyChecked |> not)
-                |> List.map (fun target -> getPlatformPenalty (Set.add target alreadyChecked) target packagePlatform)
-                |> List.append [MaxPenalty]
-                |> List.min
-                |> fun p -> p + 1
-
             match targetPlatform, packagePlatform with
-            | SinglePlatform (DotNetFramework _), SinglePlatform (DotNetStandard _) -> 200 + penalty
-            | SinglePlatform (DotNetStandard _), SinglePlatform(DotNetFramework _) -> 200 + penalty
-            | SinglePlatform _, PortableProfile _ -> 500 + penalty
-            | PortableProfile _, SinglePlatform _ -> 500 + penalty
-            | _ -> penalty
+            // There is no point in searching for frameworks in portables...
+            | PortableProfile _, SinglePlatform _ -> MaxPenalty
+            | _ ->
+                let penalty =
+                    targetPlatform.SupportedPlatforms
+                    //|> List.filter (fun x ->
+                    //    System.Diagnostics.Debug.WriteLine(sprintf "Supported %O -> %O (trying to find %O)" targetPlatform x packagePlatform)
+                    //    Set.contains x alreadyChecked |> not)
+                    |> List.map (fun target ->
+                        //System.Diagnostics.Debug.WriteLine(sprintf "Supported %O -> %O (trying to find %O)" targetPlatform target packagePlatform)
+                        getPlatformPenalty (target, packagePlatform))
+                    |> List.append [MaxPenalty]
+                    |> List.min
+                    |> fun p -> p + 1
 
-    memoize (fun (targetPlatform:TargetProfile,packagePlatform:TargetProfile) -> getPlatformPenalty Set.empty targetPlatform packagePlatform)
+                match targetPlatform, packagePlatform with
+                | SinglePlatform (DotNetFramework _), SinglePlatform (DotNetStandard _) -> 200 + penalty
+                | SinglePlatform (DotNetStandard _), SinglePlatform(DotNetFramework _) -> 200 + penalty
+                | SinglePlatform _, PortableProfile _ -> 500 + penalty
+                | PortableProfile _, SinglePlatform _ -> 500 + penalty
+                | _ -> penalty)
 
 let getFrameworkPenalty (fr1, fr2) =
     getPlatformPenalty (SinglePlatform fr1, SinglePlatform fr2)

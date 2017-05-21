@@ -187,8 +187,7 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
             makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V2), DotNetFramework(FrameworkVersion.V3_5))]
          PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),
             makeOrList
-             [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V2))
-              FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V3_5))]]
+             [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V2))]]
 
 [<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNetCore.Antiforgery``() = 

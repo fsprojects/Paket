@@ -76,7 +76,7 @@ module ``Given an empty path`` =
     [<Test>]
     let ``it should be okay to use from .NET``() =
         let path = extractPlatforms ""
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4_5 ] path |> shouldBeSmallerThan 1000
+        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4_5 ] path |> shouldBeSmallerThan 2000
 
     [<Test>]
     let ``it should be okay to use from a portable profile``() =

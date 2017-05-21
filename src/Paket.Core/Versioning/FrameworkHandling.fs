@@ -519,49 +519,93 @@ module FrameworkDetection =
 
 type PortableProfileType =
     | UnsupportedProfile of FrameworkIdentifier list
+    /// portable-net40+sl4+win8+wp7
     | Profile2
+    /// portable-net40+sl4
     | Profile3
+    /// portable-net45+sl4+win8+wp7
     | Profile4
+    /// portable-net40+win8
     | Profile5
+    /// portable-net403+win8
     | Profile6
-    | Profile7   
+    /// portable-net45+win8
+    | Profile7
+    /// portable-net40+sl5
     | Profile14
+    /// portable-net403+sl4
     | Profile18
+    /// portable-net403+sl5
     | Profile19
+    /// portable-net45+sl4
     | Profile23
+    /// portable-net45+sl5
     | Profile24
+    /// portable-win81+wp81
     | Profile31
+    /// portable-win81+wpa81
     | Profile32
+    /// portable-net40+sl4+win8+wp8
     | Profile36
+    /// portable-net40+sl5+win8
     | Profile37
+    /// portable-net403+sl4+win8
     | Profile41
+    /// portable-net403+sl5+win8
     | Profile42
+    /// portable-net451+win81
     | Profile44
+    /// portable-net45+sl4+win8
     | Profile46
+    /// portable-net45+sl5+win8
     | Profile47
+    /// portable-net45+wp8
     | Profile49
+    /// portable-net45+win8+wp8
     | Profile78
+    /// portable-wp81+wpa81
     | Profile84
+    /// portable-net40+sl4+win8+wp75
     | Profile88
+    /// portable-net40+win8+wpa81
     | Profile92
+    /// portable-net403+sl4+win8+wp7
     | Profile95
-    | Profile96    
+    /// portable-net403+sl4+win8+wp75
+    | Profile96
+    /// portable-net403+win8+wpa81
     | Profile102
+    /// portable-net45+sl4+win8+wp75
     | Profile104
+    /// portable-net45+win8+wpa81
     | Profile111
+    /// portable-net40+sl5+win8+wp8
     | Profile136
+    /// portable-net403+sl4+win8+wp8
     | Profile143
+    /// portable-net403+sl5+win8+wp8
     | Profile147
+    /// portable-net451+win81+wpa81
     | Profile151
+    /// portable-net45+sl4+win8+wp8
     | Profile154
+    /// portable-win81+wp81+wpa81
     | Profile157
+    /// portable-net45+sl5+win8+wp8
     | Profile158
+    /// portable-net40+sl5+win8+wpa81
     | Profile225
+    /// portable-net403+sl5+win8+wpa81
     | Profile240
+    /// portable-net45+sl5+win8+wpa81
     | Profile255
+    /// portable-net45+win8+wp8+wpa81
     | Profile259
+    /// portable-net40+sl5+win8+wp8+wpa81
     | Profile328
+    /// portable-net403+sl5+win8+wp8+wpa81
     | Profile336
+    /// portable-net45+sl5+win8+wp8+wpa81
     | Profile344
     member x.ProfileName =
         match x with
@@ -879,21 +923,30 @@ type TargetProfile with
                 | DotNetCore _
                 | DotNetStandard _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
                 | _ -> true)
-        let firstMatch =
-            KnownTargetProfiles.AllPortableProfiles
-            |> List.filter (fun p ->
-                let otherFws = p.Frameworks
-                minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
-            |> List.sortBy (fun p -> p.Frameworks.Length)
-            |> List.tryHead
-        match firstMatch with
-        | Some p -> PortableProfile p
-        | None ->
+        if minimal.Length > 0 then
+            let matches = 
+                KnownTargetProfiles.AllPortableProfiles
+                |> List.filter (fun p ->
+                    let otherFws = p.Frameworks
+                    minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
+                |> List.sortBy (fun p -> p.Frameworks.Length)
+                |> Seq.toArray // Debug
+            let firstMatch =
+                KnownTargetProfiles.AllPortableProfiles
+                |> List.filter (fun p ->
+                    let otherFws = p.Frameworks
+                    minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
+                |> List.sortBy (fun p -> p.Frameworks.Length)
+                |> List.tryHead
+            match firstMatch with
+            | Some p -> PortableProfile p
+            | None ->
 #if DEBUG
-            failwithf "Could not find pcl profile"
+                failwithf "Could not find pcl profile"
 #else
-            PortableProfile (UnsupportedProfile fws)
+                PortableProfile (UnsupportedProfile fws)
 #endif
+        else PortableProfile (UnsupportedProfile fws)
 
     // TODO: some notion of an increasing/decreasing sequence of FrameworkIdentitifers, so that Between(bottom, top) constraints can enumerate the list
     /// true when x is supported by y, for example netstandard15 is supported by netcore10
@@ -1001,46 +1054,233 @@ type TargetProfile with
                       Profile344 ]
                 | _ ->
                     // Regular supported logic is to enumerate all profiles and select compatible ones
-                    let supported = tf.RawSupportedPlatformsTransitive
                     let profiles =
                         KnownTargetProfiles.AllPortableProfiles
                         |> List.filter (fun (p) ->
-                            // Portable profile is compatible as soon as it contains a fw which is supported by us
+                            // Portable profile is compatible as soon as if contains us
                             p.Frameworks
-                            |> List.exists (fun fw -> supported |> Seq.exists ((=) fw)))
+                            |> List.exists (fun fw -> fw = tf))
                     profiles
                 |> List.map PortableProfile
             rawSupported @ profilesSupported
         | PortableProfile p ->
-            let name, tfs = p.ProfileName, p.Frameworks
-            KnownTargetProfiles.AllPortableProfiles
-            |> List.filter (fun p -> p.ProfileName <> name)
-            |> List.filter (fun other ->
-                let otherName, fws = other.ProfileName, other.Frameworks
-                let weSupport =
-                    tfs
-                    |> List.collect (fun tf -> tf.RawSupportedPlatformsTransitive)
-                    |> List.distinct
-                let otherSupport =
-                    fws
-                    |> List.collect (fun fw -> fw.RawSupportedPlatformsTransitive)
-                    |> List.distinct
-                // Portable profile is compatible when it supports less frameworks.
-                let isSupported =
-                    otherSupport
-                    |> Seq.forall (fun fw -> weSupport |> List.exists ((=) fw))
-                let isReverseSupported =
-                    weSupport
-                    |> Seq.forall (fun fw -> otherSupport |> List.exists ((=) fw))
-                let isSupportedI = other < p
-                let result =
-                    if isSupported && isReverseSupported then
-                        // Some profiles are identical, which means we need to watch out to get a nice tree here
-                        isSupportedI
-                    else
-                        isSupported
-                //if result then System.Diagnostics.Debug.WriteLine(
-                //    sprintf "reverse %s < %s, result: %O" otherName name result)
-                result
-                )
+            // This is generated by the "Generate Support Table" test case!
+            let supported =
+                match p with
+                | Profile2 ->
+                    [ 
+                    ] 
+                | Profile3 ->
+                    [ 
+                      Profile36
+                    ] 
+                | Profile4 ->
+                    [ 
+                      Profile95
+                    ] 
+                | Profile5 ->
+                    [ 
+                      Profile37
+                      Profile92
+                    ] 
+                | Profile6 ->
+                    [ 
+                      Profile5
+                      Profile42
+                      Profile102
+                    ] 
+                | Profile7 ->
+                    [ 
+                      Profile6
+                      Profile47
+                      Profile78
+                      Profile111
+                    ] 
+                | Profile14 ->
+                    [ 
+                      Profile3
+                      Profile37
+                    ] 
+                | Profile18 ->
+                    [ 
+                      Profile3
+                      Profile41
+                    ] 
+                | Profile19 ->
+                    [ 
+                      Profile14
+                      Profile18
+                      Profile42
+                    ] 
+                | Profile23 ->
+                    [ 
+                      Profile18
+                      Profile46
+                    ] 
+                | Profile24 ->
+                    [ 
+                      Profile19
+                      Profile23
+                      Profile47
+                    ] 
+                | Profile31 ->
+                    [ 
+                      Profile78
+                      Profile157
+                    ] 
+                | Profile32 ->
+                    [ 
+                      Profile151
+                      Profile157
+                    ] 
+                | Profile36 ->
+                    [ 
+                      Profile88
+                    ] 
+                | Profile37 ->
+                    [ 
+                      Profile136
+                      Profile225
+                    ] 
+                | Profile41 ->
+                    [ 
+                      Profile143
+                    ] 
+                | Profile42 ->
+                    [ 
+                      Profile37
+                      Profile41
+                      Profile147
+                      Profile240
+                    ] 
+                | Profile44 ->
+                    [ 
+                      Profile7
+                      Profile151
+                    ] 
+                | Profile46 ->
+                    [ 
+                      Profile41
+                      Profile154
+                    ] 
+                | Profile47 ->
+                    [ 
+                      Profile42
+                      Profile46
+                      Profile158
+                      Profile255
+                    ] 
+                | Profile49 ->
+                    [ 
+                      Profile78
+                    ] 
+                | Profile78 ->
+                    [ 
+                      Profile158
+                      Profile259
+                    ] 
+                | Profile84 ->
+                    [ 
+                      Profile157
+                    ] 
+                | Profile88 ->
+                    [ 
+                      Profile2
+                    ] 
+                | Profile92 ->
+                    [ 
+                      Profile225
+                    ] 
+                | Profile95 ->
+                    [ 
+                      Profile2
+                    ] 
+                | Profile96 ->
+                    [ 
+                      Profile88
+                      Profile95
+                    ] 
+                | Profile102 ->
+                    [ 
+                      Profile92
+                      Profile240
+                    ] 
+                | Profile104 ->
+                    [ 
+                      Profile4
+                      Profile96
+                    ] 
+                | Profile111 ->
+                    [ 
+                      Profile102
+                      Profile255
+                      Profile259
+                    ] 
+                | Profile136 ->
+                    [ 
+                      Profile36
+                      Profile328
+                    ] 
+                | Profile143 ->
+                    [ 
+                      Profile36
+                      Profile96
+                    ] 
+                | Profile147 ->
+                    [ 
+                      Profile136
+                      Profile143
+                      Profile336
+                    ] 
+                | Profile151 ->
+                    [ 
+                      Profile111
+                    ] 
+                | Profile154 ->
+                    [ 
+                      Profile104
+                      Profile143
+                    ] 
+                | Profile157 ->
+                    [ 
+                      Profile259
+                    ] 
+                | Profile158 ->
+                    [ 
+                      Profile147
+                      Profile154
+                      Profile344
+                    ] 
+                | Profile225 ->
+                    [ 
+                      Profile328
+                    ] 
+                | Profile240 ->
+                    [ 
+                      Profile225
+                      Profile336
+                    ] 
+                | Profile255 ->
+                    [ 
+                      Profile240
+                      Profile344
+                    ] 
+                | Profile259 ->
+                    [ 
+                      Profile344
+                    ] 
+                | Profile328 ->
+                    [ 
+                    ] 
+                | Profile336 ->
+                    [ 
+                      Profile328
+                    ] 
+                | Profile344 ->
+                    [ 
+                      Profile336
+                    ]
+                | UnsupportedProfile _ -> []
+
+            supported
             |> List.map PortableProfile
