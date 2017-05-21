@@ -770,7 +770,7 @@ let ``should read config with single framework restriction``() =
 
     let p = cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.Settings.FrameworkRestrictions |> getExplicitRestriction |> shouldEqual (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client)))
+    p.Settings.FrameworkRestrictions |> getExplicitRestriction |> shouldEqual (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4)))
     p.Settings.ImportTargets |> shouldEqual None
 
 
@@ -783,7 +783,7 @@ let ``should read config with framework restriction``() =
 
     let p = cfg.Groups.[Constants.MainDependencyGroup].Packages |> List.find (fun x-> x.Name = PackageName "Foobar")
     p.VersionRequirement.Range |> shouldEqual (VersionRange.Specific (SemVer.Parse "1.2.3"))
-    p.Settings.FrameworkRestrictions |> getExplicitRestriction |> shouldEqual (makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))] |> getExplicitRestriction)
+    p.Settings.FrameworkRestrictions |> getExplicitRestriction |> shouldEqual (makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))] |> getExplicitRestriction)
     p.Settings.ImportTargets |> shouldEqual None
     p.Settings.CopyLocal |> shouldEqual None
 
@@ -1128,7 +1128,7 @@ let ``should read config with target framework``() =
 
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.FrameworkRestrictions
     |> getExplicitRestriction
-    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)))
+    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 
 [<Test>]
 let ``should read packages with redirects``() = 

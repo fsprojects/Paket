@@ -5,6 +5,21 @@ open FsUnit
 open NUnit.Framework
 open Paket.Requirements
 [<Test>]
+let ``PortableProfile supports PortableProfiles but it is not recursive``() = 
+    let portableProfiles =
+        KnownTargetProfiles.AllPortableProfiles
+        |> List.map PortableProfile
+    let getSupported (p:TargetProfile) = p.SupportedPlatforms 
+    let supportTree = ()
+        //Seq.initInfinite (fun _ -> 0)
+        //|> Seq.fold (fun (lastItems) _ -> ()
+        //    ) portableProfiles
+            
+        
+    ()
+
+
+[<Test>]
 let ``PlatformMatching works with portable ``() = 
     // portable-net40-sl4
     let l = PlatformMatching.getPlatformsSupporting (KnownTargetProfiles.FindPortableProfile "Profile18")
@@ -29,13 +44,13 @@ let ``Simplify || (&& (< net40) (< net35)) (&& (< net40) (>= net35)) (>= net40))
     // Test simplify || (&& (< net40) (< net35)) (&& (< net40) (>= net35)) (>= net40))
     let smaller =
         (FrameworkRestriction.And[
-            FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_Client)
+            FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4)
             FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V3_5)])
     let between =
         (FrameworkRestriction.And[
-            FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_Client)
+            FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4)
             FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V3_5)])
-    let rest = FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V4_Client)
+    let rest = FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V4)
 
     let combined = FrameworkRestriction.Or [ smaller ; between; rest ]
     combined
@@ -59,11 +74,11 @@ let ``combineOr can simplify the NoRestriction set``() =
               [ FrameworkRestriction.And 
                    [ FrameworkRestriction.NoRestriction
                      FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V3_5)]
-                FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_Client)]
+                FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4)]
              FrameworkRestriction.And
                 [FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V3_5)
-                 FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_Client)]])
-    let right = FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V4_Client)
+                 FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4)]])
+    let right = FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V4)
     FrameworkRestriction.combineRestrictionsWithOr left right
     |> shouldEqual FrameworkRestriction.NoRestriction
 

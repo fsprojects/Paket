@@ -105,7 +105,7 @@ let ``can detect explicit dependencies for Math.Numerics``() =
           LicenseUrl = "http://numerics.mathdotnet.com/docs/License.html"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Dependencies = 
-            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), makeOrList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4_Client))]]
+            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), makeOrList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4))]]
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -153,7 +153,7 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
 
     dependencies.[44] |> shouldEqual 
         (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.8"), 
-            makeOrList [FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0")); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))])
+            makeOrList [FrameworkRestriction.Exactly(WindowsPhone WindowsPhoneVersion.V8); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))])
 
 [<Test>]
 let ``can ignore unknown frameworks``() = 

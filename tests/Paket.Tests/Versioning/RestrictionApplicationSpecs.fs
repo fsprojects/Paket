@@ -9,18 +9,7 @@ let dotnet x = SinglePlatform(DotNetFramework(x))
 
 module TestTargetProfiles =
     let DotNetFrameworkVersions =
-       [FrameworkVersion.V1
-        FrameworkVersion.V1_1
-        FrameworkVersion.V2
-        FrameworkVersion.V3
-        FrameworkVersion.V3_5
-        FrameworkVersion.V4_Client
-        FrameworkVersion.V4
-        FrameworkVersion.V4_5
-        FrameworkVersion.V4_5_1
-        FrameworkVersion.V4_5_2
-        FrameworkVersion.V4_5_3
-        FrameworkVersion.V4_6]
+        KnownTargetProfiles.DotNetFrameworkVersions
 
     let DotNetFrameworkProfiles = DotNetFrameworkVersions |> List.map dotnet
 
@@ -34,19 +23,19 @@ module TestTargetProfiles =
     let DotNetUnityProfiles = DotNetUnityVersions |> List.map (DotNetUnity >> SinglePlatform)
 
     let WindowsProfiles =
-       [SinglePlatform(Windows "v4.5")
-        SinglePlatform(Windows "v4.5.1")]
+       [SinglePlatform(Windows WindowsVersion.V8)
+        SinglePlatform(Windows WindowsVersion.V8_1)]
 
     let SilverlightProfiles =
-       [SinglePlatform(Silverlight "v3.0")
-        SinglePlatform(Silverlight "v4.0")
-        SinglePlatform(Silverlight "v5.0")]
+       [SinglePlatform(Silverlight SilverlightVersion.V3)
+        SinglePlatform(Silverlight SilverlightVersion.V4)
+        SinglePlatform(Silverlight SilverlightVersion.V5)]
 
     let WindowsPhoneSilverlightProfiles =
-       [SinglePlatform(WindowsPhoneSilverlight "v7.0")
-        SinglePlatform(WindowsPhoneSilverlight "v7.1")
-        SinglePlatform(WindowsPhoneSilverlight "v8.0")
-        SinglePlatform(WindowsPhoneSilverlight "v8.1")]
+       [SinglePlatform(WindowsPhone WindowsPhoneVersion.V7)
+        SinglePlatform(WindowsPhone WindowsPhoneVersion.V7_5)
+        SinglePlatform(WindowsPhone WindowsPhoneVersion.V8)
+        SinglePlatform(WindowsPhone WindowsPhoneVersion.V8_1)]
 
     let AllProfiles =
        DotNetFrameworkProfiles @ 
@@ -58,7 +47,7 @@ module TestTargetProfiles =
         SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
-        SinglePlatform(WindowsPhoneApp "v8.1")
+        SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)
        ]
 
 [<Test>]
@@ -87,7 +76,7 @@ let ``>= net40 < net451 contains 4.0 and 4.5`` () =
 
 [<Test>]
 let ``>= sl30 contains all but only silverlight versions`` () =
-    let restrictions = FrameworkRestriction.AtLeast(Silverlight "v3.0")
+    let restrictions = FrameworkRestriction.AtLeast(Silverlight SilverlightVersion.V3)
     let restricted = applyRestrictionsToTargets restrictions TestTargetProfiles.AllProfiles
     
     restricted |> shouldEqual TestTargetProfiles.SilverlightProfiles

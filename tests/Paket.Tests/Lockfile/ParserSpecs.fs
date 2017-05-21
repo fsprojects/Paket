@@ -307,7 +307,7 @@ let ``should parse framework restricted lock file``() =
     packages.[0].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
     |> List.item 2
     |> getExplicitRestriction
-    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)))
+    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 
     packages.[3].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
@@ -327,7 +327,7 @@ let ``should parse framework restricted lock file``() =
     |> getExplicitRestriction
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
-                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))] |> makeOrList |> getExplicitRestriction)
+                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4))] |> makeOrList |> getExplicitRestriction)
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
@@ -336,7 +336,7 @@ let ``should parse framework restricted lock file``() =
     |> getExplicitRestriction
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
-                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))] |> makeOrList |> getExplicitRestriction)
+                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4))] |> makeOrList |> getExplicitRestriction)
 
 let frameworkRestricted' = """NUGET
   remote: https://www.nuget.org/api/v2
@@ -366,7 +366,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[0].Dependencies |> Set.toList |> List.map (fun (_, _, r) -> r)
     |> List.item 2
     |> getExplicitRestriction
-    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)))
+    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 
     packages.[3].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[3].Name |> shouldEqual (PackageName "LinqBridge")
@@ -390,7 +390,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     |> getExplicitRestriction
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
-                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))] |> makeOrList |> getExplicitRestriction)
+                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4))] |> makeOrList |> getExplicitRestriction)
 
     packages.[5].Source |> shouldEqual PackageSources.DefaultNuGetSource
     packages.[5].Name |> shouldEqual (PackageName "ReadOnlyCollectionInterfaces")
@@ -403,7 +403,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     |> getExplicitRestriction
     |> shouldEqual ([FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2))
                      FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
-                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client))] |> makeOrList |> getExplicitRestriction)
+                     FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4))] |> makeOrList |> getExplicitRestriction)
 
 let simpleHTTP = """
 HTTP

@@ -30,7 +30,7 @@ let ``should optimize 2 restriction set with only exactly``() =
 [<Test>]
 let ``should optimize 2 restriction set with only exactly and client framework``() = 
     let original =
-        [PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_Client)))
+        [PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
          PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5)))
          PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))
          PackageName("P2"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))]
@@ -49,11 +49,11 @@ let ``should optimize 2 restriction sets with between``() =
         [PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
          PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5)))
          PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("P2"), VersionRequirement.AllReleases, (FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_Client)))]
+         PackageName("P2"), VersionRequirement.AllReleases, (FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4)))]
 
     let expected =
         [PackageName("P1"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("P2"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_Client)))]
+         PackageName("P2"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4)))]
 
     original
     |> optimizeDependencies
@@ -226,7 +226,7 @@ let ``should optimize real world restrictions``() =
 let ``should optimize real world restrictions 2``() = 
     let original =
         [PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_Client)))
+         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
          PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5)))
          PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1)))
          PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_6)))]
@@ -235,7 +235,7 @@ let ``should optimize real world restrictions 2``() =
         [PackageName("P1"), VersionRequirement.AllReleases, 
           makeOrList
            [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))
-            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_Client))
+            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4))
             FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))
             FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1))
             FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_6))]]
@@ -246,10 +246,10 @@ let ``should optimize real world restrictions 2``() =
 [<Test>]
 let ``should optimize real world restrictions 3``() = 
     let original =
-        [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_Client))
+        [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))
          FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1))]
 
-    let expected = FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_Client))
+    let expected = FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))
 
     let result = makeOrList original |> getExplicitRestriction
     result |> shouldEqual expected

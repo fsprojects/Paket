@@ -102,7 +102,7 @@ let ``can detect deps assemblies for RazorEngine``() =
     Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"RazorEngine.nuspec")).Dependencies
     |> shouldEqual 
         [PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement("= 2.0.30506.0"), 
-            makeOrList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4_Client), DotNetFramework(FrameworkVersion.V4_5))]
+            makeOrList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4), DotNetFramework(FrameworkVersion.V4_5))]
          PackageName "Microsoft.AspNet.Razor",DependenciesFileParser.parseVersionRequirement(">= 3.0.0"),
             makeOrList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))]]
 
@@ -150,15 +150,15 @@ let ``can detect framework assemblies for Octokit``() =
            FrameworkRestrictions = 
             makeOrList
               [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
-               FrameworkRestriction.Exactly(Windows "v4.5")] }]
+               FrameworkRestriction.Exactly(Windows WindowsVersion.V8)] }]
 
 [<Test>]
 let ``can detect framework assemblies for FSharp.Data.SqlEnumProvider``() = 
     //ensureDir()
     Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"FSharp.Data.SqlEnumProvider.nuspec")).FrameworkAssemblyReferences
     |> shouldEqual 
-        [{ AssemblyName = "System.Data"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] }
-         { AssemblyName = "System.Xml"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))] }]
+        [{ AssemblyName = "System.Data"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))] }
+         { AssemblyName = "System.Xml"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))] }]
 
 [<Test>]
 let ``can detect empty framework assemblies for ReadOnlyCollectionExtensions``() = 
@@ -226,9 +226,9 @@ let ``can detect framework assemblies for MathNet.Numerics``() =
         [{ AssemblyName = "System.Numerics"
            FrameworkRestrictions = 
              makeOrList
-                [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client))
-                 FrameworkRestriction.Exactly(Windows("v4.5"))
-                 FrameworkRestriction.Exactly(Silverlight("v5.0"))
+                [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))
+                 FrameworkRestriction.Exactly(Windows WindowsVersion.V8)
+                 FrameworkRestriction.Exactly(Silverlight SilverlightVersion.V5)
                  FrameworkRestriction.Exactly(MonoAndroid)
                  FrameworkRestriction.Exactly(MonoTouch)] }]
 
@@ -240,7 +240,7 @@ let ``can detect dependencies for MathNet.Numerics``() =
     |> shouldEqual 
         [ PackageName "TaskParallelLibrary",
           DependenciesFileParser.parseVersionRequirement(">= 1.0.2856.0"),
-            makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_Client))] ]
+            makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4))] ]
 
 [<Test>]
 let ``can detect dependencies for MathNet.Numerics.FSharp``() = 
@@ -263,8 +263,8 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
         (PackageName "Newtonsoft.Json",
           DependenciesFileParser.parseVersionRequirement(">= 5.0.8"),
           makeOrList
-            [FrameworkRestriction.Exactly(WindowsPhoneSilverlight("v8.0"))
-             FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_Client))])
+            [FrameworkRestriction.Exactly(WindowsPhone WindowsPhoneVersion.V8)
+             FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))])
 
 [<Test>]
 let ``can detect framework assemblies for Microsoft.Framework.Logging``() = 

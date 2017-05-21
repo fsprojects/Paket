@@ -50,7 +50,7 @@ let ``#1225 should convert simple C# project with non-matching framework restric
     requirement2.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     requirement2.VersionRequirement.ToString() |> shouldEqual "7.0.1"
     requirement2.ResolverStrategyForTransitives |> shouldEqual None
-    requirement2.Settings.FrameworkRestrictions  |> getExplicitRestriction |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_Client)))
+    requirement2.Settings.FrameworkRestrictions  |> getExplicitRestriction |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 
 [<Test>]
 let ``#1217 should replace packages.config files in project``() = 

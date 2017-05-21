@@ -110,8 +110,8 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                  FrameworkAssemblyReferences =
                  [{ AssemblyName = "WindowsBase"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4_5)] }
                   { AssemblyName = "WindowsBase"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4)] }
-                  { AssemblyName = "System.Windows"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(Silverlight "v5.0")] }
-                  { AssemblyName = "System.Windows"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(WindowsPhoneSilverlight "v7.1")] }]})
+                  { AssemblyName = "System.Windows"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(Silverlight SilverlightVersion.V5)] }
+                  { AssemblyName = "System.Windows"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(WindowsPhone WindowsPhoneVersion.V7_5)] }]})
 
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
     let currentXml = ctx.ChooseNodes.Head.OuterXml  |> normalizeXml

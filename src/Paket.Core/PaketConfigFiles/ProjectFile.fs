@@ -974,8 +974,8 @@ module ProjectFile =
 
     let getTargetProfile (project:ProjectFile) =
         match getTargetFrameworkProfile project with
-        | Some profile when profile = "Client" ->
-            SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)
+        //| Some profile when profile = "Client" ->
+        //    SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)
         | Some profile when String.IsNullOrWhiteSpace profile |> not ->
             KnownTargetProfiles.FindPortableProfile profile
         | _ ->

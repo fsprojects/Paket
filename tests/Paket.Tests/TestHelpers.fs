@@ -16,7 +16,7 @@ let makeOrList (l:_ list) =
 
 let getPortableRestriction s =
     let pf = PlatformMatching.extractPlatforms s
-    FrameworkRestriction.Portable(s, pf.Platforms)
+    FrameworkRestriction.AtLeastPortable(s, pf.Platforms)
 
 type GraphDependency = string * VersionRequirement * FrameworkRestrictions
 

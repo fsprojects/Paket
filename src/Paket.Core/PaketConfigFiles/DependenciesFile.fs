@@ -692,7 +692,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         |> Seq.map(fun restrictions ->
             match restrictions with
             | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
-            | Paket.Requirements.ExplicitRestriction list -> list.RepresentedFrameworks
+            | Paket.Requirements.ExplicitRestriction list ->
+                list.RepresentedFrameworks |> Seq.choose (function SinglePlatform tf -> Some tf | _ -> None)
                 //list |> Seq.collect (function
                 //| Paket.Requirements.FrameworkRestriction.Exactly framework
                 //| Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework

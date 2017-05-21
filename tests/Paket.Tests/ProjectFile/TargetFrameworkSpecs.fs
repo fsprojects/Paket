@@ -12,19 +12,19 @@ let TestData: obj[][] =
         //  expected TargetProfile.ToString
         //  expected TargetFramework
         [|"Project2.fsprojtest";
-            (SinglePlatform(DotNetFramework FrameworkVersion.V4_Client));
+            (SinglePlatform(DotNetFramework FrameworkVersion.V4));
             "net40";
-            (Some(DotNetFramework FrameworkVersion.V4_Client))|];
+            (Some(DotNetFramework FrameworkVersion.V4))|];
         [|"Empty.fsprojtest";
             (SinglePlatform(DotNetFramework FrameworkVersion.V4));
             "net40-full";
             (Some(DotNetFramework FrameworkVersion.V4))|];
         [|"NewSilverlightClassLibrary.csprojtest";
-            (SinglePlatform(Silverlight("v5.0")));
+            (SinglePlatform(Silverlight SilverlightVersion.V5));
             "sl50";
-            (Some(Silverlight "v5.0"))|];
+            (Some(Silverlight SilverlightVersion.V5))|];
         [|"FSharp.Core.Fluent-3.1.fsprojtest";
-            (PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows "v4.5"; WindowsPhoneSilverlight "v8.0"; WindowsPhoneApp "v8.1" ]));
+            (PortableProfile("Profile259", [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhone WindowsPhoneVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ]));
             "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1";
             (Some(DotNetFramework FrameworkVersion.V4_5))|];
     |]

@@ -8,11 +8,11 @@ open Paket.Logging
 
 let private allFrameworks =
     KnownTargetProfiles.AllProfiles
-    |> List.collect (function
-        | SinglePlatform fw -> [fw]
-        | PortableProfile (_, fws) -> fws)
-    |> List.distinct
-    |> List.sort
+    //|> List.collect (function
+    //    | SinglePlatform fw -> [fw]
+    //    | PortableProfile (_, fws) -> fws)
+    //|> List.distinct
+    //|> List.sort
 [<RequireQualifiedAccess>]
 // To make reasoning and writing tests easier.
 // Ideally we would "simplify" the trees to a "normal" form internally
@@ -22,10 +22,10 @@ type FrameworkRestrictionP =
     private
     //| NoRestrictionP // = AndP []
     //| EmptySetP // = OrP []
-    | ExactlyP of FrameworkIdentifier
+    | ExactlyP of TargetProfile
     //[<Obsolete("Portable is a mess, don't use it")>]
-    | PortableP of string * FrameworkIdentifier list
-    | AtLeastP of FrameworkIdentifier
+    //| PortableP of string * FrameworkIdentifier list
+    | AtLeastP of TargetProfile
     // Means: Take all frameworks NOT given by the restriction
     | NotP of FrameworkRestrictionP
     | OrP of FrameworkRestrictionP list
@@ -33,7 +33,7 @@ type FrameworkRestrictionP =
     member x.InfixNotation =
         match x with
         | FrameworkRestrictionP.ExactlyP r -> r.ToString()
-        | FrameworkRestrictionP.PortableP (r,_) -> r
+        //| FrameworkRestrictionP.PortableP (r,_) -> r
         | FrameworkRestrictionP.AtLeastP r -> ">= " + r.ToString()
         | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP r) -> sprintf "< " + r.ToString()
         | FrameworkRestrictionP.NotP(fr) -> sprintf "NOT (%O)" fr
@@ -50,7 +50,7 @@ type FrameworkRestrictionP =
     override this.ToString() =
         match this with
         | FrameworkRestrictionP.ExactlyP r -> r.ToString()
-        | FrameworkRestrictionP.PortableP (r,_) -> r
+        //| FrameworkRestrictionP.PortableP (r,_) -> r
         | FrameworkRestrictionP.AtLeastP r -> ">= " + r.ToString()
         | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP r) -> sprintf "< " + r.ToString()
         | FrameworkRestrictionP.NotP(fr) -> sprintf "NOT (%O)" fr
@@ -69,13 +69,13 @@ type FrameworkRestrictionP =
     member x.RepresentedFrameworks =
         match x with
         | FrameworkRestrictionP.ExactlyP r -> [ r ]
-        | FrameworkRestrictionP.PortableP (r, fws) ->
-            fws
-            |> List.collect (fun fw -> (FrameworkRestrictionP.AtLeastP fw).RepresentedFrameworks)
-            |> List.distinct
-            |> List.sort
+        //| FrameworkRestrictionP.PortableP (r, fws) ->
+        //    fws
+        //    |> List.collect (fun fw -> (FrameworkRestrictionP.AtLeastP fw).RepresentedFrameworks)
+        //    |> List.distinct
+        //    |> List.sort
         | FrameworkRestrictionP.AtLeastP r ->
-            PlatformMatching.getFrameworksSupporting r
+            PlatformMatching.getPlatformsSupporting r
         | FrameworkRestrictionP.NotP(fr) ->
             let notTaken = fr.RepresentedFrameworks
             allFrameworks
@@ -94,17 +94,33 @@ type FrameworkRestrictionP =
             | [] -> 
                 allFrameworks
 
+    member x.IsMatch (tp:TargetProfile) =
+        match x with
+        | FrameworkRestrictionP.ExactlyP r -> r = tp
+        //| FrameworkRestrictionP.PortableP (r, fws) ->
+        //    fws
+        //    |> List.collect (fun fw -> (FrameworkRestrictionP.AtLeastP fw).RepresentedFrameworks)
+        //    |> List.distinct
+        //    |> List.sort
+        | FrameworkRestrictionP.AtLeastP r ->
+            tp.SupportedPlatformsTransitive |> Seq.contains r
+        | FrameworkRestrictionP.NotP(fr) ->
+            fr.IsMatch tp |> not
+        | FrameworkRestrictionP.OrP (frl) ->
+            frl
+            |> List.exists (fun fr -> fr.IsMatch tp)
+        | FrameworkRestrictionP.AndP (frl) ->
+            frl
+            |> List.forall (fun fr -> fr.IsMatch tp)
+
     /// Returns true if the restriction x is a subset of the restriction y (a restriction basically represents a list, see RepresentedFrameworks)
     /// For example =net46 is a subset of >=netstandard13
     member x.IsSubsetOf (y:FrameworkRestrictionP) =
         let superset = y.RepresentedFrameworks
         x.RepresentedFrameworks
         |> List.forall (fun inner -> superset |> Seq.contains inner)
-    static member ExactlyProfile (pf: TargetProfile) =
-        match pf with
-        | SinglePlatform f -> ExactlyP f
-        | PortableProfile(name,fws) -> PortableP(name, fws)
-    
+    static member ExactlyFramework (tf: FrameworkIdentifier) =
+        ExactlyP (SinglePlatform tf)
 
     override x.Equals(y) = (match y with :? FrameworkRestrictionP as r -> r.RepresentedFrameworks = x.RepresentedFrameworks | _ -> false)
     override x.GetHashCode() = x.RepresentedFrameworks.GetHashCode()
@@ -112,13 +128,13 @@ type FrameworkRestrictionP =
         member x.CompareTo(y) = (match y with :? FrameworkRestrictionP as r -> compare x.RepresentedFrameworks r.RepresentedFrameworks | _ -> failwith "wrong type")
 
 type FrameworkRestrictionLiteralI =
-    | ExactlyL of FrameworkIdentifier
-    | PortableL of string * FrameworkIdentifier list
-    | AtLeastL of FrameworkIdentifier
+    | ExactlyL of TargetProfile
+    //| PortableL of string * FrameworkIdentifier list
+    | AtLeastL of TargetProfile
     member internal x.RawFormular =
         match x with
         | ExactlyL id -> FrameworkRestrictionP.ExactlyP id
-        | PortableL (name, fws) -> FrameworkRestrictionP.PortableP (name, fws)
+        //| PortableL (name, fws) -> FrameworkRestrictionP.PortableP (name, fws)
         | AtLeastL id -> FrameworkRestrictionP.AtLeastP id
 type FrameworkRestrictionLiteral =
     { LiteraL : FrameworkRestrictionLiteralI; IsNegated : bool }
@@ -144,14 +160,16 @@ type FrameworkRestriction =
         x.RawFormular.IsSubsetOf y.RawFormular
     member x.RepresentedFrameworks =
         x.RawFormular.RepresentedFrameworks
-
+    member x.IsMatch tp =
+        x.RawFormular.IsMatch tp
 module FrameworkRestriction =
     let EmptySet = { OrFormulas = [] } // false
     let NoRestriction = { OrFormulas = [ { Literals = [] } ] } // true
-    let Exactly id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (ExactlyL id) ] } ] }
-    let Portable (name, fws)= { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (PortableL (name, fws)) ] } ] }
-    let AtLeast id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (AtLeastL id) ] } ] }
-    let NotAtLeast id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL id) ] } ] }
+    let AtLeastPlatform pf = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (AtLeastL pf) ] } ] }
+    let Exactly id = AtLeastPlatform (SinglePlatform id)
+    let AtLeastPortable (name, fws)= AtLeastPlatform (PortableProfile (name, fws))
+    let AtLeast id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (AtLeastL (SinglePlatform id)) ] } ] }
+    let NotAtLeast id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL (SinglePlatform id)) ] } ] }
 
     let private simplify (fr:FrameworkRestriction) =
         /// When we have a restriction like (>=net35 && <net45) || >=net45
@@ -363,7 +381,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
         | None -> 
                 let platforms = (PlatformMatching.extractPlatforms framework).Platforms
                 if platforms |> List.isEmpty |> not then
-                    yield FrameworkRestriction.Portable (framework, platforms)
+                    yield FrameworkRestriction.AtLeastPortable (framework, platforms)
                 else
                     handleError <| sprintf "Could not parse framework '%s'. Try to update or install again or report a paket bug." framework
         | Some x -> 
@@ -736,14 +754,15 @@ let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestriction
 
 /// Get if a target should be considered with the specified restrictions
 let isTargetMatchingRestrictions (restriction:FrameworkRestriction, target)=
-    match target with
-    | SinglePlatform pf ->
-        restriction.RepresentedFrameworks |> Seq.contains pf
-    | PortableProfile (_, fws) ->
-        // TODO: Review - check if we need to use exists instead of forall?
-        fws
-        |> Seq.forall (fun fw ->
-            restriction.RepresentedFrameworks |> Seq.contains fw)
+    restriction.IsMatch target
+    
+    //match target with
+    //| SinglePlatform pf -> restriction.RepresentedFrameworks |> Seq.contains pf
+    //| PortableProfile (_, fws) ->
+    //    // TODO: Review - check if we need to use exists instead of forall?
+    //    fws
+    //    |> Seq.forall (fun fw ->
+    //        restriction.RepresentedFrameworks |> Seq.contains fw)
 
     //memoize <| fun (restrictions:FrameworkRestriction list, target) ->
     //    if List.isEmpty restrictions then true else
@@ -1083,7 +1102,7 @@ let addFrameworkRestrictionsToDependencies rawDependencies frameworkGroups =
                         | _ when System.String.IsNullOrEmpty packageGroup.Name -> FrameworkRestriction.NoRestriction
                         | [] -> FrameworkRestriction.NoRestriction
                         | [ pf ] -> FrameworkRestriction.AtLeast pf
-                        | _ -> FrameworkRestriction.Portable(packageGroup.Name, packageGroup.Platforms)
+                        | _ -> FrameworkRestriction.AtLeastPortable(packageGroup.Name, packageGroup.Platforms)
                     
                     frameworkGroups
                     |> Seq.filter (fun frameworkGroup ->
@@ -1108,7 +1127,7 @@ let addFrameworkRestrictionsToDependencies rawDependencies frameworkGroups =
                         match packageGroup.Platforms, missing.RepresentedFrameworks with
                         | [ packageGroupFw ], firstMissing :: _ ->
                             // the common set goes to the better matching one
-                            match PlatformMatching.findBestMatch (frameworkGroupPaths, SinglePlatform firstMissing) with
+                            match PlatformMatching.findBestMatch (frameworkGroupPaths, firstMissing) with
                             | Some { PlatformMatching.ParsedPlatformPath.Platforms = [ cfw ] } when cfw = packageGroupFw -> curRestr
                             | _ -> combined
                         | _ -> combined) packageGroupRestriction)
