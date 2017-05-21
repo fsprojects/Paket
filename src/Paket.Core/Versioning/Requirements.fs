@@ -6,130 +6,302 @@ open Paket.Domain
 open Paket.PackageSources
 open Paket.Logging
 
+let private allFrameworks =
+    KnownTargetProfiles.AllProfiles
+    |> List.collect (function
+        | SinglePlatform fw -> [fw]
+        | PortableProfile (_, fws) -> fws)
+    |> List.distinct
+    |> List.sort
 [<RequireQualifiedAccess>]
 // To make reasoning and writing tests easier.
 // Ideally we would "simplify" the trees to a "normal" form internally
-[<CustomEquality; CustomComparison>] 
-type FrameworkRestriction =
+[<CustomEquality; CustomComparison>]
+[<System.Diagnostics.DebuggerDisplay("{InfixNotation}")>]
+type FrameworkRestrictionP =
     private
-    | NoRestrictionP
-    | EmptySetP
+    //| NoRestrictionP // = AndP []
+    //| EmptySetP // = OrP []
     | ExactlyP of FrameworkIdentifier
     //[<Obsolete("Portable is a mess, don't use it")>]
     | PortableP of string * FrameworkIdentifier list
     | AtLeastP of FrameworkIdentifier
     // Means: Take all frameworks NOT given by the restriction
-    | NotP of FrameworkRestriction
-    | OrP of FrameworkRestriction list
-    | AndP of FrameworkRestriction list
+    | NotP of FrameworkRestrictionP
+    | OrP of FrameworkRestrictionP list
+    | AndP of FrameworkRestrictionP list
+    member x.InfixNotation =
+        match x with
+        | FrameworkRestrictionP.ExactlyP r -> r.ToString()
+        | FrameworkRestrictionP.PortableP (r,_) -> r
+        | FrameworkRestrictionP.AtLeastP r -> ">= " + r.ToString()
+        | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP r) -> sprintf "< " + r.ToString()
+        | FrameworkRestrictionP.NotP(fr) -> sprintf "NOT (%O)" fr
+        | FrameworkRestrictionP.OrP(frl) ->
+            match frl with
+            | [] -> "false"
+            | [single] -> sprintf "%O" single
+            | _ -> sprintf "(%s)" (System.String.Join(" || ", frl |> Seq.map (fun inner -> sprintf "(%s)" inner.InfixNotation)))
+        | FrameworkRestrictionP.AndP(frl) ->
+            match frl with
+            | [] -> "true"
+            | [single] -> sprintf "%O" single
+            | _ -> sprintf "(%s)" (System.String.Join(" && ", frl |> Seq.map (fun inner -> sprintf "(%s)" inner.InfixNotation)))
     override this.ToString() =
         match this with
-        | FrameworkRestriction.NoRestrictionP -> "norestriction"
-        | FrameworkRestriction.EmptySetP -> "emptyset"
-        | FrameworkRestriction.ExactlyP r -> r.ToString()
-        | FrameworkRestriction.PortableP (r,_) -> r
-        | FrameworkRestriction.AtLeastP r -> ">= " + r.ToString()
-        | FrameworkRestriction.NotP(fr) -> sprintf "NOT (%O)" fr
-        | FrameworkRestriction.OrP(frl) -> sprintf "|| %s" (System.String.Join(" ", frl |> Seq.map (sprintf "(%O)")))
-        | FrameworkRestriction.AndP(frl) -> sprintf "&& %s" (System.String.Join(" ", frl |> Seq.map (sprintf "(%O)")))
+        | FrameworkRestrictionP.ExactlyP r -> r.ToString()
+        | FrameworkRestrictionP.PortableP (r,_) -> r
+        | FrameworkRestrictionP.AtLeastP r -> ">= " + r.ToString()
+        | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP r) -> sprintf "< " + r.ToString()
+        | FrameworkRestrictionP.NotP(fr) -> sprintf "NOT (%O)" fr
+        | FrameworkRestrictionP.OrP(frl) ->
+            match frl with
+            | [] -> "false"
+            | [single] -> sprintf "%O" single
+            | _ -> sprintf "|| %s" (System.String.Join(" ", frl |> Seq.map (sprintf "(%O)")))
+        | FrameworkRestrictionP.AndP(frl) ->
+            match frl with
+            | [] -> "true"
+            | [single] -> sprintf "%O" single
+            | _ -> sprintf "&& %s" (System.String.Join(" ", frl |> Seq.map (sprintf "(%O)")))
 
     /// The list represented by this restriction (ie the included set of frameworks)
     member x.RepresentedFrameworks =
         match x with
-        | FrameworkRestriction.NoRestrictionP ->
-            KnownTargetProfiles.AllProfiles |> List.collect (function
-                | SinglePlatform fw -> [fw]
-                | PortableProfile (_, fws) -> fws)
-            |> List.distinct
-            |> List.sort
-        | FrameworkRestriction.ExactlyP r -> [ r ]
-        | FrameworkRestriction.EmptySetP -> [ ]
-        | FrameworkRestriction.PortableP (r, fws) ->
+        | FrameworkRestrictionP.ExactlyP r -> [ r ]
+        | FrameworkRestrictionP.PortableP (r, fws) ->
             fws
-            |> List.collect (fun fw -> (FrameworkRestriction.AtLeastP fw).RepresentedFrameworks)
+            |> List.collect (fun fw -> (FrameworkRestrictionP.AtLeastP fw).RepresentedFrameworks)
             |> List.distinct
             |> List.sort
-        | FrameworkRestriction.AtLeastP r -> PlatformMatching.getFrameworksSupporting r
-        | FrameworkRestriction.NotP(fr) ->
+        | FrameworkRestrictionP.AtLeastP r ->
+            PlatformMatching.getFrameworksSupporting r
+        | FrameworkRestrictionP.NotP(fr) ->
             let notTaken = fr.RepresentedFrameworks
-            FrameworkRestriction.NoRestrictionP.RepresentedFrameworks
+            allFrameworks
             |> List.filter (fun fw -> notTaken |> Seq.contains fw |> not)
-        | FrameworkRestriction.OrP (frl) ->
+        | FrameworkRestrictionP.OrP (frl) ->
             frl
             |> List.collect (fun fr -> fr.RepresentedFrameworks)
             |> List.distinct
             |> List.sort
-        | FrameworkRestriction.AndP (frl) ->
+        | FrameworkRestrictionP.AndP (frl) ->
             match frl with
             | h :: _ ->
                 let allLists = frl |> List.map (fun fr -> fr.RepresentedFrameworks)
                 h.RepresentedFrameworks
                 |> List.filter (fun fw -> allLists |> List.forall(fun l1 -> l1 |> Seq.contains fw))
-            | _ -> []
+            | [] -> 
+                allFrameworks
 
     /// Returns true if the restriction x is a subset of the restriction y (a restriction basically represents a list, see RepresentedFrameworks)
     /// For example =net46 is a subset of >=netstandard13
-    member x.IsSubsetOf (y:FrameworkRestriction) =
+    member x.IsSubsetOf (y:FrameworkRestrictionP) =
         let superset = y.RepresentedFrameworks
         x.RepresentedFrameworks
         |> List.forall (fun inner -> superset |> Seq.contains inner)
-    static member NoRestriction = NoRestrictionP
-    static member EmptySet = EmptySetP
-    static member Exactly = ExactlyP
-    static member Portable = PortableP
-    static member AtLeast = AtLeastP
-    static member Between (x, y) =
-        FrameworkRestriction.AndP[FrameworkRestriction.AtLeastP x; FrameworkRestriction.NotP (FrameworkRestriction.AtLeastP y)]
     static member ExactlyProfile (pf: TargetProfile) =
         match pf with
         | SinglePlatform f -> ExactlyP f
         | PortableProfile(name,fws) -> PortableP(name, fws)
     
 
-    override x.Equals(y) = (match y with :? FrameworkRestriction as r -> r.RepresentedFrameworks = x.RepresentedFrameworks | _ -> false)
+    override x.Equals(y) = (match y with :? FrameworkRestrictionP as r -> r.RepresentedFrameworks = x.RepresentedFrameworks | _ -> false)
     override x.GetHashCode() = x.RepresentedFrameworks.GetHashCode()
     interface System.IComparable with
-        member x.CompareTo(y) = (match y with :? FrameworkRestriction as r -> compare x.RepresentedFrameworks r.RepresentedFrameworks | _ -> failwith "wrong type")
+        member x.CompareTo(y) = (match y with :? FrameworkRestrictionP as r -> compare x.RepresentedFrameworks r.RepresentedFrameworks | _ -> failwith "wrong type")
+
+type FrameworkRestrictionLiteralI =
+    | ExactlyL of FrameworkIdentifier
+    | PortableL of string * FrameworkIdentifier list
+    | AtLeastL of FrameworkIdentifier
+    member internal x.RawFormular =
+        match x with
+        | ExactlyL id -> FrameworkRestrictionP.ExactlyP id
+        | PortableL (name, fws) -> FrameworkRestrictionP.PortableP (name, fws)
+        | AtLeastL id -> FrameworkRestrictionP.AtLeastP id
+type FrameworkRestrictionLiteral =
+    { LiteraL : FrameworkRestrictionLiteralI; IsNegated : bool }
+    member internal x.RawFormular =
+        let raw = x.LiteraL.RawFormular
+        if x.IsNegated then FrameworkRestrictionP.NotP raw else raw
+    static member FromLiteral l =
+        { LiteraL = l ; IsNegated = false }
+    static member FromNegatedLiteral l =
+        { LiteraL = l ; IsNegated = true }
+type FrameworkRestrictionAndList =
+    { Literals : FrameworkRestrictionLiteral list }
+    member internal x.RawFormular =
+        FrameworkRestrictionP.AndP (x.Literals |> List.map (fun literal -> literal.RawFormular))
+
+type FrameworkRestriction =
+    { OrFormulas : FrameworkRestrictionAndList list }
+    member internal x.RawFormular =
+        FrameworkRestrictionP.OrP (x.OrFormulas |> List.map (fun andList -> andList.RawFormular))
+    override x.ToString() =
+        x.RawFormular.ToString()
+    member x.IsSubsetOf (y:FrameworkRestriction) =
+        x.RawFormular.IsSubsetOf y.RawFormular
+    member x.RepresentedFrameworks =
+        x.RawFormular.RepresentedFrameworks
 
 module FrameworkRestriction =
-    let And = FrameworkRestriction.AndP
-    let Or = FrameworkRestriction.OrP
-    let Not = FrameworkRestriction.NotP
+    let EmptySet = { OrFormulas = [] } // false
+    let NoRestriction = { OrFormulas = [ { Literals = [] } ] } // true
+    let Exactly id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (ExactlyL id) ] } ] }
+    let Portable (name, fws)= { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (PortableL (name, fws)) ] } ] }
+    let AtLeast id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (AtLeastL id) ] } ] }
+    let NotAtLeast id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL id) ] } ] }
+
+    let private simplify (fr:FrameworkRestriction) =
+        /// When we have a restriction like (>=net35 && <net45) || >=net45
+        /// then we can "optimize" / simplify to (>=net35 || >= net45)
+        /// because we don't need to "pseudo" restrict the set with the first restriction 
+        /// when we add back later all the things we removed.
+        /// Generally: We can remove all negated literals in all clauses when a positive literal exists as a standalone Or clause
+        let rec removeNegatedLiteralsWhichOccurSinglePositive (fr:FrameworkRestriction) =
+            let positiveSingles =
+                fr.OrFormulas
+                |> List.choose (fun andFormular -> match andFormular.Literals with [ h ] -> Some h | _ -> None)
+            let workDone, reworked =
+                fr.OrFormulas
+                |> List.fold (fun (workDone, reworkedOrFormulas) andFormula ->
+                    let reworkedAnd =
+                        andFormula.Literals
+                        |> List.filter (fun literal ->
+                            positiveSingles
+                            |> List.exists (fun p -> literal.IsNegated && literal.LiteraL = p.LiteraL)
+                            |> not
+                        )
+                    if reworkedAnd.Length < andFormula.Literals.Length then
+                        true, { Literals = reworkedAnd } :: reworkedOrFormulas
+                    else
+                        workDone, andFormula :: reworkedOrFormulas
+                    ) (false, [])
+            if workDone then removeNegatedLiteralsWhichOccurSinglePositive { OrFormulas = reworked }
+            else fr
+        /// (>= net40-full) && (< net46) && (>= net20) can be simplified to (< net46) && (>= net40-full) because (>= net40-full) is a subset of (>= net20)
+        // NOTE: This optimization is kind of dangerous as future frameworks might make it invalid
+        // However a lot of tests expect this simplification... We maybe want to remove it (or at least test) after we know the new framework restriction works.
+        let removeSubsetLiteralsInAndClause (fr:FrameworkRestriction) =
+            let simplifyAndClause (andClause:FrameworkRestrictionAndList) =
+                let literals = andClause.Literals
+                { Literals =
+                    andClause.Literals
+                    |> List.filter (fun literal ->
+                        // we filter out literals, for which another literal exists which is a subset
+                        literals
+                        |> Seq.filter (fun l -> l <> literal)
+                        |> Seq.exists (fun otherLiteral ->
+                            otherLiteral.RawFormular.IsSubsetOf literal.RawFormular)
+                        |> not) }
+                //andClause
+            { OrFormulas = fr.OrFormulas |> List.map simplifyAndClause }
+        
+        /// (>= net40-full) || (< net46) || (>= net20) can be simplified to (< net46) || (>= net20) because (>= net40-full) is a subset of (>= net20)
+        // NOTE: This optimization is kind of dangerous as future frameworks might make it invalid
+        // However a lot of tests expect this simplification... We maybe want to remove it (or at least test) after we know the new framework restriction works.
+        let removeSubsetLiteralsInOrClause (fr:FrameworkRestriction) =
+            let simpleOrLiterals =
+                fr.OrFormulas
+                |> List.choose (function { Literals = [h] } -> Some h | _ -> None)
+            { OrFormulas = 
+                fr.OrFormulas
+                |> List.filter (function
+                    | { Literals = [h] } ->
+                        simpleOrLiterals
+                        |> Seq.filter (fun l -> l <> h)
+                        |> Seq.exists (fun otherLiteral ->
+                            h.RawFormular.IsSubsetOf otherLiteral.RawFormular)
+                        |> not
+                    | _ -> true) }
+
+        /// When we optmized a clause away completely we can replace the hole formula with "NoRestriction"
+        /// This happens for example with ( <net45 || >=net45) and the removeNegatedLiteralsWhichOccurSinglePositive
+        /// optimization
+        let replaceWithNoRestrictionIfAnyLiteralListIsEmpty (fr:FrameworkRestriction) =
+            let containsEmptyAnd =
+                fr.OrFormulas
+                |> Seq.exists (fun andFormular -> andFormular.Literals |> Seq.isEmpty)
+            if containsEmptyAnd then NoRestriction else fr
+
+        fr
+        |> removeNegatedLiteralsWhichOccurSinglePositive
+        |> removeSubsetLiteralsInAndClause
+        |> removeSubsetLiteralsInOrClause
+        |> replaceWithNoRestrictionIfAnyLiteralListIsEmpty
+
+    let rec private And2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
+        match left.OrFormulas with
+        | [] -> right
+        | [h] ->
+            { OrFormulas =
+                right.OrFormulas
+                |> List.map (fun andFormula -> { Literals = andFormula.Literals @ h.Literals } ) }
+        | h :: t ->
+            { OrFormulas = (And2 {OrFormulas = [h]} right).OrFormulas @ ((And2 {OrFormulas = t} right).OrFormulas) }
+    
+    let And (rst:FrameworkRestriction list) =
+        List.fold And2 EmptySet rst
+        |> simplify
+    
+    let private Or2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
+        { OrFormulas = left.OrFormulas @ right.OrFormulas }
+    
+    let Or (rst:FrameworkRestriction list) =
+        List.fold Or2 NoRestriction rst
+        |> simplify
+    
+    //[<Obsolete ("Method is provided for completeness sake. But I don't think its needed")>]
+    //let Not (rst:FrameworkRestriction) =
+    //    Unchecked.defaultof<_>
+
+    //let NotLiteral (lit : FrameworkRestrictionLiteral) = { lit with IsNegated = not lit.IsNegated }
+
+    //let fromLiteral = { OrFormulas = [ { Literals = [lit] } ] }
+
+    let Between (x, y) =
+        And2 (AtLeast x) (NotAtLeast y)
+        //FrameworkRestrictionP.AndP[FrameworkRestrictionP.AtLeastP x; FrameworkRestrictionP.NotP (FrameworkRestrictionP.AtLeastP y)]
     
     let combineRestrictionsWithOr (x : FrameworkRestriction) y =
-        if x.IsSubsetOf y then
-            y
-        elif y.IsSubsetOf x then
-            x
-        else
-            match x, y with
-            | FrameworkRestriction.AndP[FrameworkRestriction.NotP negate; general], other
-            | FrameworkRestriction.AndP[general; FrameworkRestriction.NotP negate], other
-            | other, FrameworkRestriction.AndP[FrameworkRestriction.NotP negate; general]
-            | other, FrameworkRestriction.AndP[general; FrameworkRestriction.NotP negate] when negate = other ->
-                // "negate && NOT general" might not be empty, ie general might not be a superset of negate
-                if other.IsSubsetOf general then general else FrameworkRestriction.OrP[general; other]
-            | _ -> 
-                let combined = FrameworkRestriction.OrP[x; y]
-                if combined.RepresentedFrameworks.Length = FrameworkRestriction.NoRestriction.RepresentedFrameworks.Length then
-                    FrameworkRestriction.NoRestriction
-                else
-                    combined
+        Or2 x y
+        |> simplify
+        //if x.IsSubsetOf y then
+        //    y
+        //elif y.IsSubsetOf x then
+        //    x
+        //else
+        //    match x, y with
+        //    | FrameworkRestriction.AndP[FrameworkRestriction.NotP negate; general], other
+        //    | FrameworkRestriction.AndP[general; FrameworkRestriction.NotP negate], other
+        //    | other, FrameworkRestriction.AndP[FrameworkRestriction.NotP negate; general]
+        //    | other, FrameworkRestriction.AndP[general; FrameworkRestriction.NotP negate] when negate = other ->
+        //        // "negate && NOT general" might not be empty, ie general might not be a superset of negate
+        //        if other.IsSubsetOf general then general else FrameworkRestriction.OrP[general; other]
+        //    | _ -> 
+        //        let combined = FrameworkRestriction.OrP[x; y]
+        //        if combined.RepresentedFrameworks.Length = FrameworkRestriction.NoRestriction.RepresentedFrameworks.Length then
+        //            FrameworkRestriction.NoRestriction
+        //        else
+        //            combined
 
     let (|HasNoRestriction|_|) x =
-        if x = FrameworkRestriction.NoRestrictionP then Some () else None
+        if x = NoRestriction then Some () else None
 
-    let combineRestrictionsWithAnd (x : FrameworkRestriction) y =
+    let combineRestrictionsWithAnd (x : FrameworkRestriction) y = 
+        And2 x y
+        |> simplify
         // combine means basically we say AND (both need to be satisfied)
-        if x.IsSubsetOf y then
-            x
-        elif y.IsSubsetOf x then
-            y
-        else
-            let combined = FrameworkRestriction.AndP[x; y]
-            if combined.RepresentedFrameworks |> Seq.isEmpty then
-                FrameworkRestriction.EmptySet
-            else combined
+        //if x.IsSubsetOf y then
+        //    x
+        //elif y.IsSubsetOf x then
+        //    y
+        //else
+        //    let combined = FrameworkRestriction.AndP[x; y]
+        //    if combined.RepresentedFrameworks |> Seq.isEmpty then
+        //        FrameworkRestriction.EmptySet
+        //    else combined
         //if x.IsSameCategoryAs(y) <> Some false then
         //    combineSameCategoryOrPortableRestrictions x y
         //else
@@ -143,6 +315,10 @@ module FrameworkRestriction =
 type FrameworkRestrictions =
 | ExplicitRestriction of FrameworkRestriction
 | AutoDetectFramework
+    override x.ToString() =
+        match x with
+        | ExplicitRestriction r -> r.ToString()
+        | AutoDetectFramework -> "AutoDetect"
     member x.GetExplicitRestriction () =
         match x with
         | ExplicitRestriction list -> list
@@ -928,7 +1104,7 @@ let addFrameworkRestrictionsToDependencies rawDependencies frameworkGroups =
                         // but now net461 which supports netstandard13 is nowhere -> we need to decide here and add back the intersection
 
                         let missing = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.AtLeast frameworkGroup)
-                        let combined = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.Not (FrameworkRestriction.AtLeast frameworkGroup))
+                        let combined = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.NotAtLeast frameworkGroup)
                         match packageGroup.Platforms, missing.RepresentedFrameworks with
                         | [ packageGroupFw ], firstMissing :: _ ->
                             // the common set goes to the better matching one

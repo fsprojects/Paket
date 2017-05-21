@@ -770,6 +770,8 @@ module KnownTargetProfiles =
         (AllNativeProfiles |> List.map SinglePlatform) @ 
           AllDotNetStandardAndCoreProfiles @
           AllDotNetProfiles
+        |> List.distinct
+        |> List.sort
 
     let FindPortableProfile name =
         AllProfiles

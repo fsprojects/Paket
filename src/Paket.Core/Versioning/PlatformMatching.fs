@@ -107,17 +107,49 @@ let collectPlatforms =
 
 /// Returns all framework identifiers which (transitively) support the given framework identifier
 let getFrameworksSupporting =
-    let cache = System.Collections.Concurrent.ConcurrentDictionary<_,FrameworkIdentifier list>()
-    fun (x:FrameworkIdentifier) ->
-        cache.GetOrAdd(x, fun _ ->
-            // calculate
+    let calculate (x:FrameworkIdentifier) =
+        // calculate
+        KnownTargetProfiles.AllProfiles
+        |> List.collect(function
+            | SinglePlatform p -> [p]
+            | PortableProfile (_, fws) -> fws)
+        |> List.distinct
+        |> List.filter (fun fw -> fw.SupportedPlatformsTransitive |> Seq.contains x)
+    memoize calculate
+
+let getPlatformsSupporting =
+    // http://nugettoolsdev.azurewebsites.net
+    let calculate (x:TargetProfile) =
+        match x with
+        | PortableProfile (name,fws) ->
+            // Portables can be supported by other portables and by all fws given.
             KnownTargetProfiles.AllProfiles
-            |> List.collect(function
-                | SinglePlatform p -> [p]
-                | PortableProfile (_, fws) -> fws)
-            |> List.distinct
-            |> List.filter (fun fw -> fw.SupportedPlatformsTransitive |> Seq.contains x)
-            )
+            |> List.filter (function
+                | PortableProfile (otherName,otherfws) ->
+                    // the other portable profile is supported, when the transitive supported set is a superset
+                    let currentSupportedFrameworks =
+                        fws
+                        |> List.collect (fun fw -> fw.SupportedPlatformsTransitive)
+                        |> List.distinct
+                        |> List.sort
+                    let otherSupportedFrameworks =
+                        otherfws
+                        |> List.collect (fun fw -> fw.SupportedPlatformsTransitive)
+                        |> List.distinct
+                        |> List.sort
+
+                    // take if the other profile supports all frameworks we support
+                    currentSupportedFrameworks
+                    |> Seq.forall (fun fw -> otherSupportedFrameworks |> Seq.exists ((=) fw))
+                | SinglePlatform otherfw ->
+                    // otherfw is supported if it is supported by of any fw in fws
+                    fws
+                    |> Seq.exists (fun fw -> fw.SupportedPlatformsTransitive |> Seq.contains otherfw))
+        | SinglePlatform tf ->
+            // SinglePlatforms are only supported by other SinglePlatforms
+            getFrameworksSupporting tf
+            |> List.map SinglePlatform
+    memoize calculate
 
 let platformsSupport = 
     let rec platformsSupport platform platforms = 

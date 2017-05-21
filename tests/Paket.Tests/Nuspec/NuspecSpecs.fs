@@ -245,8 +245,10 @@ let ``can detect dependencies for MathNet.Numerics``() =
 [<Test>]
 let ``can detect dependencies for MathNet.Numerics.FSharp``() = 
     //ensureDir()
-    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"MathNet.Numerics.FSharp.nuspec")).Dependencies
-    |> Seq.head
+    let s =
+        Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"MathNet.Numerics.FSharp.nuspec")).Dependencies
+        |> Seq.head
+    s
     |> shouldEqual 
         (PackageName "MathNet.Numerics",
          DependenciesFileParser.parseVersionRequirement("3.3.0"),makeOrList [])
@@ -313,5 +315,5 @@ let ``can detect explicit dependencies for EasyNetQ``() =
           makeOrList
             [FrameworkRestriction.And[
                 FrameworkRestriction.NoRestriction
-                FrameworkRestriction.Not (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5)))]
+                FrameworkRestriction.NotAtLeast(DotNetFramework(FrameworkVersion.V4_5))]
             ])

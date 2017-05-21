@@ -105,7 +105,7 @@ let ``can detect explicit dependencies for Math.Numerics``() =
           LicenseUrl = "http://numerics.mathdotnet.com/docs/License.html"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Dependencies = 
-            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), makeOrList [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))]]
+            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), makeOrList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4_Client))]]
           SourceUrl = fakeUrl }
 
 [<Test>]
