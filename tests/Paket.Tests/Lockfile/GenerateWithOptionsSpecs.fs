@@ -23,7 +23,7 @@ let graph1 =
 
 let expected1 = """REFERENCES: STRICT
 COPY-LOCAL: FALSE
-RESTRICTION: >= NET45
+RESTRICTION: >= net45
 NUGET
   remote: http://www.nuget.org/api/v2
     Castle.Windsor-log4net (3.2)"""
@@ -181,10 +181,10 @@ nuget NLog.Contrib
         "NLog.Contrib","1.0.0",["NLog",DependenciesFileParser.parseVersionRequirement ">= 1.0.1"]
       ]
 
-    let expected = """FRAMEWORK: >= NET40
+    let expected = """RESTRICTION: >= net40
 NUGET
   remote: https://www.nuget.org/api/v2
-    NLog (1.0.1)
+    NLog (1.0.1) - restriction: net40
     NLog.Contrib (1.0)
       NLog (>= 1.0.1)"""
 
@@ -198,7 +198,7 @@ NUGET
     getVersion resolved.[PackageName "NLog"] |> shouldEqual "1.0.1"
     resolved.[PackageName "NLog"].Settings.FrameworkRestrictions 
     |> getExplicitRestriction
-    |> shouldEqual (FrameworkRestriction.AtLeast(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
+    |> shouldEqual (FrameworkRestriction.Exactly(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4)))
 
     resolved
     |> LockFileSerializer.serializePackages cfg.Groups.[Constants.MainDependencyGroup].Options

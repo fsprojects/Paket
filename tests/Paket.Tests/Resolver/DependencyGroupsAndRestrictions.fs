@@ -216,8 +216,47 @@ nuget Marten"""
     getVersion resolved.[PackageName "Npgsql"] |> shouldEqual "3.1.4"
 
 let graph6 =
-  graph1 @
   GraphOfNuspecs [
+    """<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>Chessie</id>
+    <version>0.6.0</version>
+    <dependencies>
+      <group>
+        <dependency id="FSharp.Core"></dependency>
+      </group>
+      <group targetFramework=".NETFramework4.5">
+        <dependency id="FSharp.Core"></dependency>
+      </group>
+      <group targetFramework=".NETStandard1.6">
+        <dependency id="MyNetStandardDummy" version="[1.6.0, )" />
+        <dependency id="FSharp.Core" version="[4.0.1.7-alpha, )"></dependency>
+      </group>
+    </dependencies>
+  </metadata>
+</package>
+    """
+    """<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>FSharp.Core</id>
+    <version>4.0.0.1</version>
+  </metadata>
+</package>
+    """
+    """<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>FSharp.Core</id>
+    <version>4.0.1.7-alpha</version>
+    <dependencies>
+      <group targetFramework=".NETStandard1.6">
+        <dependency id="MyNetStandardDummy" version="[1.6.0, )" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>"""
     """<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>

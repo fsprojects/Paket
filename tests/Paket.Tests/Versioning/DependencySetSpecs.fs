@@ -10,55 +10,6 @@ open Paket.Requirements
 open Paket.Domain
 open Paket.TestHelpers
 
-
-[<Test>]
-let ``should optimize 2 restriction set with only exactly``() = 
-    let original =
-        [PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("P2"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))]
-
-    let expected =
-        [PackageName("P1"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("P2"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))]
-
-    original
-    |> optimizeDependencies
-    |> shouldEqual expected
-
-[<Test>]
-let ``should optimize 2 restriction set with only exactly and client framework``() = 
-    let original =
-        [PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("P2"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))]
-
-    let expected =
-        [PackageName("P1"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("P2"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))]
-
-    original
-    |> optimizeDependencies
-    |> shouldEqual expected
-
-[<Test>]
-let ``should optimize 2 restriction sets with between``() = 
-    let original =
-        [PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("P2"), VersionRequirement.AllReleases, (FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4)))]
-
-    let expected =
-        [PackageName("P1"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("P2"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4)))]
-
-    original
-    |> optimizeDependencies
-    |> shouldEqual expected
-
 [<Test>]
 let ``empty set filtered with empty restrictions should give empty set``() = 
     Set.empty
@@ -254,20 +205,4 @@ let ``should optimize real world restrictions 3``() =
     let expected = FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))
 
     let result = makeOrList original |> getExplicitRestriction
-    result |> shouldEqual expected
-
-
-
-[<Test>]
-let ``should optimize real world .NET Standard restrictions``() = 
-    let original =
-        [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1))
-         FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_1))
-         FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_3))]
-
-    let expected = 
-        [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_5_1))
-         FrameworkRestriction.AtLeast (DotNetStandard(DotNetStandardVersion.V1_1))]
-
-    let result = optimizeRestrictions original
     result |> shouldEqual expected

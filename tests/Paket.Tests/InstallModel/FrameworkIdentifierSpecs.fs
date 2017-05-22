@@ -24,7 +24,7 @@ let ``should serialize basic framework versions net20, net40, net45 ...``() =
 
 [<Test>]
 let ``should serialize silverlight framework identifier correctly``() =
-    (Silverlight SilverlightVersion.V5).ToString() |> shouldEqual "sl50"
+    (Silverlight SilverlightVersion.V5).ToString() |> shouldEqual "sl5"
 
 [<Test>]
 let ``should understand basic dnx``() = 

@@ -9,7 +9,7 @@ open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.0.3')">
     <ItemGroup>
       <Reference Include="WindowsBase">
         <Paket>True</Paket>
