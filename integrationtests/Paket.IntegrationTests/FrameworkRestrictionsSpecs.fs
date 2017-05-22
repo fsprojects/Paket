@@ -1,4 +1,5 @@
 module Paket.IntegrationTests.FrameworkRestrictionsSpecs
+
 open Fake
 open Paket
 open System
@@ -27,11 +28,10 @@ let ``#1182 framework restrictions overwrite each other``() =
 [<Platform("Mono")>] // PATH TOO LONG on Windows...
 let ``#1190 paket add nuget should handle transitive dependencies``() = 
     paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restr" |> ignore
-    failwithf "Fix Me"
-    //let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))
-    //lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
-    //|> getExplicitRestriction
-    //|> shouldContain (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5)))
+    let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5)))
     
 [<Test>]
 let ``#1190 paket add nuget should handle transitive dependencies with restrictions``() = 
@@ -70,10 +70,9 @@ let ``#1215 framework dependencies propagate``() =
 [<Test>]
 let ``#1232 framework dependencies propagate``() = 
     let lockFile = update "i001232-sql-lite"
-    failwithf "Fix me"
-    //lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "System.Data.SQLite.Core"].Settings.FrameworkRestrictions
-    //|> getExplicitRestriction
-    //|> shouldContain (FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client)))
+    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "System.Data.SQLite.Core"].Settings.FrameworkRestrictions
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4)))
 
 [<Test>]
 let ``#1494 detect platform 5.0``() = 

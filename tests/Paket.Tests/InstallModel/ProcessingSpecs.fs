@@ -281,8 +281,6 @@ let ``should install not use net40-full for client profile``() =
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll"     
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Newtonsoft.Json\lib\net40-full\Newtonsoft.Json.dll" 
-    //model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
-    //    |> Seq.map (fun f -> f.Path) |> shouldNotContain @"..\Newtonsoft.Json\lib\net40-full\Newtonsoft.Json.dll" 
 
 [<Test>]
 let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() = 

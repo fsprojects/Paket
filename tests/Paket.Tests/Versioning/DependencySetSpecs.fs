@@ -136,12 +136,12 @@ let ``filtered with Between restriction should filter non-matching`` () =
 [<Ignore "Probably a bug in addFrameworkRestrictionsToDependencies, but in practice its probably good enough ignoring for now.">]
 let ``should optimize ZendeskApi_v2 ``() = 
     let original =
-        [PackageName("Newtonsoft.Json"),    (), PlatformMatching.extractPlatforms "net35"
-         PackageName("Newtonsoft.Json"),    (), PlatformMatching.extractPlatforms "net4"
-         PackageName("AsyncCTP"),           (), PlatformMatching.extractPlatforms "net4"
-         PackageName("Newtonsoft.Json"),    (), PlatformMatching.extractPlatforms "net45"
-         PackageName("Newtonsoft.Json"),    (), PlatformMatching.extractPlatforms "portable-net45+sl40+wp71+win80"
-         PackageName("Microsoft.Bcl.Async"),(), PlatformMatching.extractPlatforms "portable-net45+sl40+wp71+win80"]
+        [PackageName("Newtonsoft.Json"),    (), PlatformMatching.forceExtractPlatforms "net35"
+         PackageName("Newtonsoft.Json"),    (), PlatformMatching.forceExtractPlatforms "net4"
+         PackageName("AsyncCTP"),           (), PlatformMatching.forceExtractPlatforms "net4"
+         PackageName("Newtonsoft.Json"),    (), PlatformMatching.forceExtractPlatforms "net45"
+         PackageName("Newtonsoft.Json"),    (), PlatformMatching.forceExtractPlatforms "portable-net45+sl40+wp71+win80"
+         PackageName("Microsoft.Bcl.Async"),(), PlatformMatching.forceExtractPlatforms "portable-net45+sl40+wp71+win80"]
 
     let expected =
         [PackageName("Newtonsoft.Json"), (), 
@@ -152,21 +152,21 @@ let ``should optimize ZendeskApi_v2 ``() =
          PackageName("Microsoft.Bcl.Async"), (),ExplicitRestriction (getPortableRestriction "portable-net45+sl40+wp71+win80")]
     let result =
         addFrameworkRestrictionsToDependencies original [
-            SinglePlatform (DotNetFramework(FrameworkVersion.V3_5))
-            SinglePlatform (DotNetFramework(FrameworkVersion.V4))
-            SinglePlatform (DotNetFramework(FrameworkVersion.V4_5))
-            (PlatformMatching.extractPlatforms "portable-net45+sl40+wp71+win80").ToTargetProfile.Value ]
+            PlatformMatching.forceExtractPlatforms "net35"
+            PlatformMatching.forceExtractPlatforms "net40"
+            PlatformMatching.forceExtractPlatforms "net45"
+            PlatformMatching.forceExtractPlatforms "portable-net45+sl40+wp71+win80" ]
     result
     |> shouldEqual expected
 
 [<Test>]
 let ``should optimize real world restrictions``() = 
     let original =
-        [PackageName("P1"), (), PlatformMatching.extractPlatforms "net20"
-         PackageName("P1"), (), PlatformMatching.extractPlatforms "net35"
-         PackageName("P1"), (), PlatformMatching.extractPlatforms "net45"
-         PackageName("P1"), (), PlatformMatching.extractPlatforms "net451"
-         PackageName("P1"), (), PlatformMatching.extractPlatforms "net46"]
+        [PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net20"
+         PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net35"
+         PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net45"
+         PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net451"
+         PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net46"]
 
     let expected =
         [PackageName("P1"), (), 
@@ -175,19 +175,21 @@ let ``should optimize real world restrictions``() =
 
     let result =
         addFrameworkRestrictionsToDependencies original
-            ([  FrameworkVersion.V2; FrameworkVersion.V3_5
-                FrameworkVersion.V4_5; FrameworkVersion.V4_5_1
-                FrameworkVersion.V4_6] |> List.map (DotNetFramework >> SinglePlatform))
+            [  PlatformMatching.forceExtractPlatforms "net2"
+               PlatformMatching.forceExtractPlatforms "net35"
+               PlatformMatching.forceExtractPlatforms "net45"
+               PlatformMatching.forceExtractPlatforms "net451"
+               PlatformMatching.forceExtractPlatforms "net46" ]
     result |> shouldEqual expected
 
 [<Test>]
 let ``should optimize real world restrictions 2``() = 
     let original =
-        [PackageName("P1"), (), PlatformMatching.extractPlatforms "net20" 
-         PackageName("P1"), (), PlatformMatching.extractPlatforms "net4"  
-         PackageName("P1"), (), PlatformMatching.extractPlatforms "net45" 
-         PackageName("P1"), (), PlatformMatching.extractPlatforms "net451"
-         PackageName("P1"), (), PlatformMatching.extractPlatforms "net46"] 
+        [PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net20" 
+         PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net4"  
+         PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net45" 
+         PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net451"
+         PackageName("P1"), (), PlatformMatching.forceExtractPlatforms "net46"] 
 
     let expected =
         [PackageName("P1"), (), 
@@ -196,9 +198,11 @@ let ``should optimize real world restrictions 2``() =
 
     let result =
         addFrameworkRestrictionsToDependencies original 
-            ([  FrameworkVersion.V2; FrameworkVersion.V4
-                FrameworkVersion.V4_5; FrameworkVersion.V4_5_1
-                FrameworkVersion.V4_6] |> List.map (DotNetFramework >> SinglePlatform))
+            [  PlatformMatching.forceExtractPlatforms "net2"
+               PlatformMatching.forceExtractPlatforms "net4"
+               PlatformMatching.forceExtractPlatforms "net45"
+               PlatformMatching.forceExtractPlatforms "net451"
+               PlatformMatching.forceExtractPlatforms "net46" ]
     result |> shouldEqual expected
 
 [<Test>]

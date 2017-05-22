@@ -43,5 +43,4 @@ let ``should detect the correct framework on test projects`` projectFile expecte
     let p = ProjectFile.TryLoad("./ProjectFile/TestData/" + projectFile).Value
     p.GetTargetProfile() |> shouldEqual expectedProfile
     p.GetTargetProfile().ToString() |> shouldEqual expectedProfileString
-    //p.GetTargetProfile() |> shouldEqual (portable)
 

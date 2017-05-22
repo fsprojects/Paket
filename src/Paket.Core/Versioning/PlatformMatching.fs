@@ -19,13 +19,15 @@ type ParsedPlatformPath =
         | [] -> None // Not detected earlier.
         | [p] -> Some (SinglePlatform p)
         | plats -> Some (TargetProfile.FindPortable plats)
+    member pp.IsEmpty = String.IsNullOrEmpty pp.Name || pp.Platforms.IsEmpty
+
 let inline split (path : string) =
     path.Split('+')
     |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(s, @"portable[\d\.]*-",""))
 
 // TODO: This function does now quite a lot, there probably should be several functions.
 let extractPlatforms = memoize (fun path ->
-    if System.String.IsNullOrEmpty path then ParsedPlatformPath.Empty
+    if System.String.IsNullOrEmpty path then Some ParsedPlatformPath.Empty
     else
         let splits = split path
         let platforms = splits |> Array.choose FrameworkDetection.Extract |> Array.toList
@@ -35,16 +37,20 @@ let extractPlatforms = memoize (fun path ->
                 let found =
                     KnownTargetProfiles.FindPortableProfile splits.[0]
                     |> ParsedPlatformPath.FromTargetProfile
-                { found with Name = path }
+                Some { found with Name = path }
             else
-                failwithf "Could not detect any platforms from '%s'" path
-            //traceWarnfn "Could not detect any platforms from '%s'" path
-        else { Name = path; Platforms = platforms })
+                traceWarnfn "Could not detect any platforms from '%s'" path
+                None
+        else Some { Name = path; Platforms = platforms })
+
+let forceExtractPlatforms path =
+    match extractPlatforms path with
+    | Some s -> s
+    | None -> failwithf "Extracting platforms from path '%s' failed" path
 
 // TODO: In future work this stuff should be rewritten. This penalty stuff is more random than a proper implementation.
 let rec getPlatformPenalty =
     memoize (fun (targetPlatform:TargetProfile,packagePlatform:TargetProfile) ->
-    //let rec getPlatformPenalty alreadyChecked (targetPlatform:TargetProfile) (packagePlatform:TargetProfile) =
         if packagePlatform = targetPlatform then
             0
         else
@@ -62,12 +68,7 @@ let rec getPlatformPenalty =
             | _ ->
                 let penalty =
                     targetPlatform.SupportedPlatforms
-                    //|> List.filter (fun x ->
-                    //    System.Diagnostics.Debug.WriteLine(sprintf "Supported %O -> %O (trying to find %O)" targetPlatform x packagePlatform)
-                    //    Set.contains x alreadyChecked |> not)
-                    |> List.map (fun target ->
-                        //System.Diagnostics.Debug.WriteLine(sprintf "Supported %O -> %O (trying to find %O)" targetPlatform target packagePlatform)
-                        getPlatformPenalty (target, packagePlatform))
+                    |> List.map (fun target -> getPlatformPenalty (target, packagePlatform))
                     |> List.append [MaxPenalty]
                     |> List.min
                     |> fun p -> p + 1
@@ -137,7 +138,6 @@ let collectPlatforms =
             if f.SupportedPlatforms |> List.exists ((=) framework) 
             then loop (f::acc) framework tl 
             else loop acc framework tl 
-        //| _::tl -> loop acc framework tl
     memoize (fun (framework,profls) -> loop ([]:TargetProfile list) framework profls)
 
 let getPlatformsSupporting =
@@ -145,13 +145,6 @@ let getPlatformsSupporting =
     let calculate (x:TargetProfile) =
         KnownTargetProfiles.AllProfiles
         |> List.filter (fun plat -> x.IsSupportedBy plat)
-        //match x with
-        //| PortableProfile (PortableProfileType.UnsupportedProfile fws) ->
-        //    
-        //    
-        //| _ ->
-        //    KnownTargetProfiles.AllProfiles
-        //    |> List.filter (fun plat -> plat.SupportedPlatformsTransitive |> Seq.contains x)
     memoize calculate
 
 let platformsSupport = 
@@ -169,38 +162,12 @@ let platformsSupport =
 
 let findBestMatch = 
     let rec findBestMatch (paths : ParsedPlatformPath list, targetProfile : TargetProfile) = 
-
-        //let supported =
-            paths
-            |> List.map (fun path -> path, (getPathPenalty (path, targetProfile)))
-            |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
-            |> List.sortWith comparePaths
-            |> List.map fst
-            |> List.tryHead
-
-        //let findBestPortableMatch findPenalty (portableProfile:TargetProfile) paths =
-        //    paths
-        //    |> Seq.tryFind (fun p -> tryGetProfile p = Some portableProfile)
-        //    |> Option.map (fun p -> p, findPenalty)
-        //
-        //match supported with
-        //| None ->
-        //    // Fallback Portable Library
-        //    KnownTargetProfiles.AllProfiles
-        //    |> List.choose (fun p ->
-        //        match targetProfile with
-        //        | SinglePlatform x ->
-        //            match platformsSupport(x,p.ProfilesCompatibleWithPortableProfile) with
-        //            | pen when pen < MaxPenalty ->
-        //                findBestPortableMatch pen p paths
-        //            | _ -> 
-        //                None
-        //        | _ -> None)
-        //    |> List.distinct
-        //    |> List.sortBy (fun (x, pen) -> pen, x.Platforms.Length) // prefer portable platform with less platforms
-        //    |> List.map fst
-        //    |> List.tryHead
-        //| path -> path
+        paths
+        |> List.map (fun path -> path, (getPathPenalty (path, targetProfile)))
+        |> List.filter (fun (_, penalty) -> penalty < MaxPenalty)
+        |> List.sortWith comparePaths
+        |> List.map fst
+        |> List.tryHead
 
     memoize (fun (paths : ParsedPlatformPath list,targetProfile : TargetProfile) -> findBestMatch(paths,targetProfile))
 
@@ -222,22 +189,19 @@ let getSupportedTargetProfiles =
 let getTargetCondition (target:TargetProfile) =
     match target with
     | SinglePlatform(platform) ->
-        // BUG: Pattern incomplete!
         match platform with
-        //| DotNetFramework(version) when version = FrameworkVersion.V4 ->
-        //    "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O')" version
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNX(version) ->"$(TargetFrameworkIdentifier) == 'DNX'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNXCore(version) ->"$(TargetFrameworkIdentifier) == 'DNXCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DotNetStandard(version) ->"$(TargetFrameworkIdentifier) == '.NETStandard'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DotNetCore(version) ->"$(TargetFrameworkIdentifier) == '.NETCoreApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | DotNetUnity(version) when version = DotNetUnityVersion.V3_5_Full ->
+        | DotNetUnity(DotNetUnityVersion.V3_5_Full as version) ->
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Full v3.5')" version
-        | DotNetUnity(version) when version = DotNetUnityVersion.V3_5_Subset ->
+        | DotNetUnity(DotNetUnityVersion.V3_5_Subset as version) ->
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Subset v3.5')" version
-        | DotNetUnity(version) when version = DotNetUnityVersion.V3_5_Micro ->
+        | DotNetUnity(DotNetUnityVersion.V3_5_Micro as version) ->
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Micro v3.5')" version
-        | DotNetUnity(version) when version = DotNetUnityVersion.V3_5_Web ->
+        | DotNetUnity(DotNetUnityVersion.V3_5_Web as version) ->
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Web v3.5')" version               
         | Windows(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version.NetCoreVersion
         | Silverlight(version) -> "$(TargetFrameworkIdentifier) == 'Silverlight'", sprintf "$(TargetFrameworkVersion) == '%O'" version
@@ -247,8 +211,7 @@ let getTargetCondition (target:TargetProfile) =
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
-        | UAP(version) -> // "$(TargetPlatformIdentifier) == 'UAP'", sprintf "$(TargetPlatformVersion.StartsWith('%O'))" version
-                          "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version.NetCoreVersion
+        | UAP(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version.NetCoreVersion
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
         | Native(NoBuildMode,NoPlatform) -> "true", ""
         | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
@@ -277,17 +240,6 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile l
         |> CheckIfFullyInGroupS "WindowsPhoneApp" (function SinglePlatform (WindowsPhoneApp _) -> true | _ -> false)
         |> CheckIfFullyInGroupS "WindowsPhone" (function SinglePlatform (WindowsPhone _) -> true | _ -> false)
 
-    //let targets =
-    //    targets 
-    //    |> List.map (fun target ->
-    //        match target with
-    //        | SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)) ->
-    //            if allTargets |> List.exists (List.contains (SinglePlatform(DotNetFramework(FrameworkVersion.V4)))) |> not then
-    //                SinglePlatform(DotNetFramework(FrameworkVersion.V4))
-    //            else
-    //                target
-    //        | _ -> target)
-
     let conditions =
         if targets = [ SinglePlatform(Native(NoBuildMode,NoPlatform)) ] then 
             targets
@@ -295,8 +247,6 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile l
             targets 
             |> List.filter (function
                            | SinglePlatform(Native(NoBuildMode,NoPlatform)) -> false
-                           //| SinglePlatform(DotNetFramework(FrameworkVersion.V4)) ->
-                           //     targets |> List.contains (SinglePlatform(DotNetFramework(FrameworkVersion.V4))) |> not
                            | _ -> true)
         |> List.map getTargetCondition
         |> List.filter (fun (_, v) -> v <> "false")

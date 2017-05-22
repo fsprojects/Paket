@@ -159,7 +159,8 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
 
 [<Test>]
 let ``can ignore unknown frameworks``() = 
-    parse "NuGetOData/BenchmarkDotNet-UnknownFramework.xml"
+    let parsed = parse "NuGetOData/BenchmarkDotNet-UnknownFramework.xml"
+    parsed
     |> shouldEqual 
         { PackageName = "BenchmarkDotNet"
           DownloadUrl = "https://www.nuget.org/api/v2/package/BenchmarkDotNet/0.10.1"

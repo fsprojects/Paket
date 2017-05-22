@@ -182,42 +182,22 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
     let rawPackages =
         let split (d : string) =
             let a = d.Split ':'
-            PackageName a.[0],
-            VersionRequirement.Parse(if a.Length > 1 then a.[1] else "0"),
+            let name = PackageName a.[0]
+            let version = VersionRequirement.Parse(if a.Length > 1 then a.[1] else "0")
             (if a.Length > 2 && a.[2] <> "" then
-                 let restriction = a.[2]
-                 if String.startsWithIgnoreCase "portable" restriction then
-                    let fws = (PlatformMatching.extractPlatforms restriction).Platforms
-                    Some { PlatformMatching.ParsedPlatformPath.Name = restriction; PlatformMatching.ParsedPlatformPath.Platforms = fws }
-                    //Some (FrameworkRestriction.Portable (restriction, fws))
-                 else
-                     match FrameworkDetection.Extract restriction with
-                     | Some x -> Some { PlatformMatching.ParsedPlatformPath.Name = restriction; PlatformMatching.ParsedPlatformPath.Platforms = [x] }
-                     //(FrameworkRestriction.Exactly x)
-                     | None ->
-                        traceWarnfn "Unable to parse framework restriction '%s' for package '%s' in package '%s'" restriction a.[0] (packageName.ToString())
-                        //if verbose then
-                        //    verbosefn "Unable to parse framework restriction '%s' for package '%s' in package '%s'" restriction a.[0] (packageName.ToString())
-                        None
+                let restriction = a.[2]
+                PlatformMatching.extractPlatforms restriction
              else Some PlatformMatching.ParsedPlatformPath.Empty)
+            |> Option.map (fun pp -> name, version, pp)
 
         dependencies
         |> fun s -> s.Split([| '|' |], System.StringSplitOptions.RemoveEmptyEntries)
-        |> Array.map split
-        |> Array.choose (fun (name, version, restrictions) ->
-            match restrictions with
-            | Some(restrictions) -> Some (name, version, restrictions)
-            | None -> None)
+        |> Array.choose split
 
     let frameworks =
         rawPackages
-        |> Seq.collect (fun (_,_,pp) -> 
-            match pp.Platforms with
-            | [h] -> [SinglePlatform h]
-            | plats when plats.Length > 1 -> [TargetProfile.FindPortable plats]
-            | _ ->
-                traceWarnfn "Could not detect frameworks in '%s', ignoring..." pp.Name
-                [])
+        |> Seq.map (fun (_,_,pp) -> pp)
+        |> Seq.distinctBy (fun pp -> pp.Platforms |> List.sort)
         |> Seq.toList
     let cleanedPackages =
         rawPackages

@@ -417,12 +417,6 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V8 -> [ WindowsPhone WindowsPhoneVersion.V7_5; DotNetStandard DotNetStandardVersion.V1_0 ]
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
 
-        // wildcards for future versions. new versions should be added above, though, so the penalty will be calculated correctly.
-        //| Silverlight _ -> [ Silverlight "v5.0" ]
-        //| Windows _ -> [ Windows "v4.5.1" ]
-        //| WindowsPhoneApp _ -> [ WindowsPhoneApp "v8.1" ]
-        //| WindowsPhoneSilverlight _ -> [ WindowsPhoneSilverlight "v8.1" ]
-
 module FrameworkDetection =
 
     /// Used for script generation
@@ -445,6 +439,7 @@ module FrameworkDetection =
 
     open Logging
     /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
+    [<Obsolete "Use PlatformMatching.extractPlatforms instead">]
     let Extract =
         memoize 
           (fun (path:string) ->
@@ -1067,7 +1062,6 @@ type TargetProfile with
             traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
             fallback
 
-    // TODO: some notion of an increasing/decreasing sequence of FrameworkIdentitifers, so that Between(bottom, top) constraints can enumerate the list
     /// true when x is supported by y, for example netstandard15 is supported by netcore10
     member x.IsSupportedBy y =
         match x with
@@ -1082,26 +1076,12 @@ type TargetProfile with
         | _ ->
             x = y ||
               (y.SupportedPlatforms |> Seq.exists (fun s -> x.IsSupportedBy s))
-        //x = y ||
-        //  (x.SupportedPlatforms |> Seq.exists (fun x' -> x' = y && not (x'.IsSameCategoryAs x))) ||
-        //  (y.SupportedPlatforms |> Seq.exists (fun y' -> y' = x && not (y'.IsSameCategoryAs y)))
 
     /// true when x is at least (>=) y ie when y is supported by x, for example netcore10 >= netstandard15 as netstandard15 is supported by netcore10.
     /// Note that this relation is not complete, for example for WindowsPhoneSilverlightv7.0 and Windowsv4.5 both <= and >= are false from this definition as
     /// no platform supports the other.
     member x.IsAtLeast (y:TargetProfile) =
         y.IsSupportedBy x
-        //if x.IsSameCategoryAs y then
-        //    x >= y
-        //else
-        //    let isCompatible() =
-        //        y.SupportedPlatforms
-        //        |> Seq.exists x.IsAtLeast
-        //
-        //    match x,y with
-        //    | DotNetStandard _, DotNetFramework _ -> isCompatible()
-        //    | DotNetFramework _, DotNetStandard _ -> isCompatible()
-        //    | _ -> false
 
     /// Get all platforms y for which x >= y holds
     member x.SupportedPlatformsTransitive =

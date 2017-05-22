@@ -8,7 +8,7 @@ open Paket.Requirements
 [<Test>]
 let ``Simplify || (>= net45) (>= portable-net45+win8+wp8+wp81+wpa81)`` () =
     // because that is a custom portable profile!
-    let portable = (PlatformMatching.extractPlatforms "portable-net45+win8+wp8+wp81+wpa81").ToTargetProfile.Value
+    let portable = (PlatformMatching.forceExtractPlatforms "portable-net45+win8+wp8+wp81+wpa81").ToTargetProfile.Value
     let atLeastPortable = FrameworkRestriction.AtLeastPlatform portable
 
     // this was the underlying bug
@@ -23,7 +23,7 @@ let ``Simplify || (>= net45) (>= portable-net45+win8+wp8+wp81+wpa81)`` () =
 [<Test>]
 let ``CustomProfile is Supported by its Platforms``() =
     let unknownProfile =
-        (PlatformMatching.extractPlatforms "portable-net45+monoandroid10+monotouch10+xamarinios10").ToTargetProfile.Value
+        (PlatformMatching.forceExtractPlatforms "portable-net45+monoandroid10+monotouch10+xamarinios10").ToTargetProfile.Value
 
     unknownProfile.IsSupportedBy (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
     |> shouldEqual true
@@ -99,7 +99,7 @@ let ``Generate Support Table``() =
 
 [<Test>]
 let ``Unknown Portables are detected correctly``() = 
-    PlatformMatching.extractPlatforms "portable-monotouch+monoandroid"
+    PlatformMatching.forceExtractPlatforms "portable-monotouch+monoandroid"
     |> function { Platforms = o } -> TargetProfile.FindPortable o
     |> shouldEqual (PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid; MonoTouch]))
 [<Test>]
@@ -113,7 +113,7 @@ let ``Portables are detected correctly``() =
           "portable-windows8+net45+wp8"
           "sl5"; "win8"
           "wp8" ]
-        |> List.map PlatformMatching.extractPlatforms
+        |> List.map PlatformMatching.forceExtractPlatforms
         |> List.map (function { Platforms = [ h] } -> SinglePlatform h | {Platforms = o} -> TargetProfile.FindPortable o)
     let expected =
         [ SinglePlatform (DotNetFramework FrameworkVersion.V4);
@@ -125,21 +125,6 @@ let ``Portables are detected correctly``() =
           SinglePlatform (WindowsPhone WindowsPhoneVersion.V8) ]
     portables
     |> shouldEqual expected
-
-[<Test>]
-let ``PortableProfile supports PortableProfiles but it is not recursive``() = 
-    let portableProfiles =
-        KnownTargetProfiles.AllPortableProfiles
-        |> List.map PortableProfile
-    let getSupported (p:TargetProfile) = p.SupportedPlatforms 
-    let supportTree = ()
-        //Seq.initInfinite (fun _ -> 0)
-        //|> Seq.fold (fun (lastItems) _ -> ()
-        //    ) portableProfiles
-            
-        
-    ()
-
 
 [<Test>]
 let ``PlatformMatching works with portable ``() = 

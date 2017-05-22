@@ -144,10 +144,15 @@ module FolderScanner =
     let toParseResult error (wasSuccess, result) =
         if wasSuccess then ParseSucceeded result
         else ParseError error
-
+        
     let check errorMsg f x =
         if f x then ParseSucceeded x
         else ParseError (errorMsg)
+
+    let choose errorMsg f x =
+        match f x with
+        | Some y -> ParseSucceeded y
+        | None -> ParseError (errorMsg)
 
     let parseDecimal x = Decimal.TryParse(x, Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture)
 
@@ -344,7 +349,7 @@ module InstallModel =
         [ { FolderScanner.AdvancedScanner.Name = "noSeperator";
             FolderScanner.AdvancedScanner.Parser = FolderScanner.check "seperator not allowed" (fun s -> not (s.Contains "/" || s.Contains "\\")) >> FolderScanner.ParseResult.box }
           { FolderScanner.AdvancedScanner.Name = "tfm";
-            FolderScanner.AdvancedScanner.Parser = PlatformMatching.extractPlatforms >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }
+            FolderScanner.AdvancedScanner.Parser = FolderScanner.choose "invalid tfm" PlatformMatching.extractPlatforms >> FolderScanner.ParseResult.box }
           { FolderScanner.AdvancedScanner.Name = "rid";
             FolderScanner.AdvancedScanner.Parser = (fun rid -> { Rid = rid }) >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }]
     let trySscanf pf s =

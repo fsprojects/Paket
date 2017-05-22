@@ -83,10 +83,10 @@ let expectedPropertyNodes = """
 let ``can get supported target profile``()=
     let profiles =
         ["net20"; "net40"; "net45"; "net451"; "netstandard14" ]
-        |> List.map extractPlatforms
+        |> List.map forceExtractPlatforms
         |> PlatformMatching.getSupportedTargetProfiles
     let folder = profiles |> Seq.item 2
-    folder.Key |> shouldEqual (extractPlatforms "net45")
+    folder.Key |> shouldEqual (forceExtractPlatforms "net45")
     folder.Value |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 [<Test>]

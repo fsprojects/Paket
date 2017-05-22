@@ -33,14 +33,9 @@ module internal NuSpecParserHelper =
         match parent.Name, parent |> getAttribute "targetFramework" with
         | n , Some framework when String.equalsIgnoreCase n "group" -> 
             let framework = framework.Replace(".NETPortable0.0","portable")
-            if String.startsWithIgnoreCase "portable" framework then
-                let fws = (PlatformMatching.extractPlatforms framework).Platforms
-                Some(name,version, { PlatformMatching.ParsedPlatformPath.Name = framework; PlatformMatching.ParsedPlatformPath.Platforms = fws})
-            else 
-                match FrameworkDetection.Extract framework with
-                | Some x -> Some(name,version, { Name = framework; Platforms = [x]})
-                | None -> None
-        | _ -> Some(name,version, { Name = ""; Platforms = [] })
+            PlatformMatching.extractPlatforms framework
+            |> Option.map (fun pp -> name, version, pp)
+        | _ -> Some(name,version, PlatformMatching.ParsedPlatformPath.Empty)
 
     let getAssemblyRefs node =
         let name = node |> getAttribute "assemblyName"
@@ -79,20 +74,12 @@ type Nuspec =
         let frameworks =
             doc 
             |> getDescendants "group" 
-            |> List.map (fun node ->
+            |> List.choose (fun node ->
                 match node |> getAttribute "targetFramework" with
-                | Some framework when framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable").StartsWith "portable" ->
-                    let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
-                    let fws = (PlatformMatching.extractPlatforms framework).Platforms
-                    [TargetProfile.FindPortable(fws)]
-                    //[] // TODO: Maybe fws?
-        
                 | Some framework ->
-                    match FrameworkDetection.Extract framework with
-                    | Some x -> [SinglePlatform x]
-                    | None -> []
-                | _ -> [])
-            |> List.concat
+                    let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
+                    PlatformMatching.extractPlatforms framework
+                | _ -> Some PlatformMatching.ParsedPlatformPath.Empty)
 
         let rawDependencies =
             doc 
