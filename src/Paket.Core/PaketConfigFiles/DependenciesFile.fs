@@ -155,26 +155,36 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             if group.Options.Settings.FrameworkRestrictions |> getRestrictionList <> FrameworkRestriction.NoRestriction then dependenciesFile else
             match group.Packages with
             | [] -> dependenciesFile
-            | package::rest -> dependenciesFile
-                //let commonRestrictions =
-                //    package.Settings.FrameworkRestrictions
-                //    |> getRestrictionList
-                //    |> List.filter (fun r ->
-                //        rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions |> getRestrictionList |> List.contains r))
-                //
-                //match commonRestrictions with
-                //| [] -> dependenciesFile
-                //| _ ->
-                //    let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,commonRestrictions)
-                //    group.Packages
-                //    |> List.fold (fun (d:DependenciesFile) package ->
-                //        let oldRestrictions = package.Settings.FrameworkRestrictions |> getRestrictionList
-                //        let newRestrictions = oldRestrictions |> List.filter (fun r -> commonRestrictions |> List.contains r |> not)
-                //        if oldRestrictions = newRestrictions then d else
-                //        let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
-                //        let installSettings = { package.Settings with FrameworkRestrictions = ExplicitRestriction newRestrictions }
-                //        let vr = { VersionRequirement = package.VersionRequirement; ResolverStrategy = package.ResolverStrategyForDirectDependencies }
-                //        d.AddAdditionalPackage(group.Name, package.Name,vr,installSettings)) newDependenciesFile
+            | package::rest -> //dependenciesFile
+                let commonRestrictions =
+                    group.Packages
+                    |> Seq.map (fun p' -> p'.Settings.FrameworkRestrictions)
+                    |> Seq.fold (fun a b -> FrameworkRestriction.And [a;b.GetExplicitRestriction()]) FrameworkRestriction.EmptySet
+                    //package.Settings.FrameworkRestrictions
+                    //|> getRestrictionList
+                    //|> List.filter (fun r ->
+                    //    rest |> Seq.forall (fun p' -> p'.Settings.FrameworkRestrictions |> getRestrictionList |> List.contains r))
+                
+                match commonRestrictions.RepresentedFrameworks with
+                | [] -> dependenciesFile
+                // Only take when our commonRestriction formula is actually "simple"
+                | _ when commonRestrictions.OrFormulas |> List.forall (fun andFormula -> andFormula.Literals.Length <= 1) ->
+                    let newDependenciesFile = dependenciesFile.AddFrameworkRestriction(group.Name,commonRestrictions)
+                    let newNegatedLiterals =
+                        commonRestrictions.OrFormulas |> List.collect (fun andFormala -> andFormala.Literals)
+                        |> List.map (fun lit -> FrameworkRestriction.FromLiteral { lit with IsNegated = not lit.IsNegated })
+                        |> List.fold (fun a b -> FrameworkRestriction.Or [ a; b]) FrameworkRestriction.EmptySet
+
+                    group.Packages
+                    |> List.fold (fun (d:DependenciesFile) package ->
+                        let oldRestrictions = package.Settings.FrameworkRestrictions |> getRestrictionList
+                        let newRestrictions = FrameworkRestriction.Or [ oldRestrictions; newNegatedLiterals ]// |> List.filter (fun r -> commonRestrictions |> List.contains r |> not)
+                        if oldRestrictions = newRestrictions then d else
+                        let (d:DependenciesFile) = d.Remove(group.Name,package.Name)
+                        let installSettings = { package.Settings with FrameworkRestrictions = ExplicitRestriction newRestrictions }
+                        let vr = { VersionRequirement = package.VersionRequirement; ResolverStrategy = package.ResolverStrategyForDirectDependencies }
+                        d.AddAdditionalPackage(group.Name, package.Name,vr,installSettings)) newDependenciesFile
+                | _  -> dependenciesFile
 
         this.Groups
         |> Seq.map (fun kv -> kv.Value)
@@ -694,12 +704,6 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
             | Paket.Requirements.ExplicitRestriction list ->
                 list.RepresentedFrameworks |> Seq.choose (function SinglePlatform tf -> Some tf | _ -> None)
-                //list |> Seq.collect (function
-                //| Paket.Requirements.FrameworkRestriction.Exactly framework
-                //| Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
-                //| Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
-                //| Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
-                //)
           )
         |> Seq.concat
     )

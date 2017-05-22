@@ -674,27 +674,6 @@ module InstallModel =
             applyRestrictionsToTargets (reference.FrameworkRestrictions |> getExplicitRestriction) folder.Targets
             |> Seq.isEmpty
             |> not
-            //match reference.FrameworkRestrictions |> getRestrictionList with
-            //| [] -> true
-            //| restrictions ->
-            //    restrictions
-            //    |> List.exists (fun restriction ->
-            //          match restriction with
-            //          | FrameworkRestriction.Portable _ ->
-            //                folder.Targets
-            //                |> List.exists (fun target ->
-            //                    match target with
-            //                    | SinglePlatform _ -> false
-            //                    | _ -> true)
-            //          | FrameworkRestriction.Exactly target ->
-            //                folder.GetSinglePlatforms()
-            //                |> List.exists ((=) target)
-            //            | FrameworkRestriction.AtLeast target ->
-            //                folder.GetSinglePlatforms()
-            //                |> List.exists (fun t -> t >= target && t.IsSameCategoryAs(target))
-            //            | FrameworkRestriction.Between(min,max) ->
-            //                folder.GetSinglePlatforms()
-            //                |> List.exists (fun t -> t >= min && t < max && t.IsSameCategoryAs(min)))
 
         let model =
             if List.isEmpty installModel.CompileLibFolders then

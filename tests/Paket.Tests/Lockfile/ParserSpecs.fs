@@ -465,7 +465,7 @@ let ``should parse portable lockfile``() =
     
     packages.[1].Name |> shouldEqual (PackageName "Zlib.Portable")
     packages.[1].Version |> shouldEqual (SemVer.Parse "1.10.0")
-    (packages.[1].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "[portable-net40+sl50+wp80+win80]"
+    (packages.[1].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual ">= portable-net40+win8+wp8+sl5"
 
 let reactiveuiLockFile = """NUGET
   remote: https://www.nuget.org/api/v2
@@ -518,7 +518,7 @@ let ``should parse reactiveui lockfile``() =
     packages.[10].Version |> shouldEqual (SemVer.Parse "2.2.5")
     (packages.[10].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "|| (win8) (wp8) (>= net45)"
 
-let multipleFeedLockFile = """NUGET
+let multipleFeedLockFileLegacy = """NUGET
   remote: http://internalfeed/NugetWebFeed/nuget
     Internal_1 (1.2.10)
       Newtonsoft.Json (>= 6.0 < 6.1)
@@ -536,27 +536,47 @@ let multipleFeedLockFile = """NUGET
       Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3)
 """
 
+let multipleFeedLockFile = """NUGET
+  remote: http://internalfeed/NugetWebFeed/nuget
+    Internal_1 (1.2.10)
+      Newtonsoft.Json (>= 6.0 < 6.1)
+    log4net (1.2.10)
+    Newtonsoft.Json (6.0.6)
+  remote: https://www.nuget.org/api/v2
+    Microsoft.AspNet.WebApi (5.2.3)
+      Microsoft.AspNet.WebApi.WebHost (>= 5.2.3 < 5.3)
+    Microsoft.AspNet.WebApi.Client (5.2.3)
+      Microsoft.Net.Http (>= 2.2.22) - restriction: >= portable-net45+win8+wp8+wp81+wpa81
+      Newtonsoft.Json (>= 6.0.4) - restriction: >= portable-net45+win8+wp8+wp81+wpa81
+    Microsoft.AspNet.WebApi.Core (5.2.3)
+      Microsoft.AspNet.WebApi.Client (>= 5.2.3)
+    Microsoft.AspNet.WebApi.WebHost (5.2.3)
+      Microsoft.AspNet.WebApi.Core (>= 5.2.3 < 5.3)
+"""
+
 [<Test>]
 let ``should parse lockfile with multiple feeds``() =
-    let lockFile = LockFileParser.Parse(toLines multipleFeedLockFile) |> List.head
-    let references = lockFile.SourceFiles
+    for lockFileText in [multipleFeedLockFileLegacy;multipleFeedLockFile] do
+        let lockFile = LockFileParser.Parse(toLines lockFileText) |> List.head
+        let references = lockFile.SourceFiles
 
-    references.Length |> shouldEqual 0
+        references.Length |> shouldEqual 0
 
-    let packages = List.rev lockFile.Packages
-    packages.Length |> shouldEqual 7
+        let packages = List.rev lockFile.Packages
+        packages.Length |> shouldEqual 7
     
-    packages.[3].Name |> shouldEqual (PackageName "Microsoft.AspNet.WebApi")
-    packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
-    packages.[3].Source.ToString() |> shouldEqual "https://www.nuget.org/api/v2"
+        packages.[3].Name |> shouldEqual (PackageName "Microsoft.AspNet.WebApi")
+        packages.[3].Version |> shouldEqual (SemVer.Parse "5.2.3")
+        packages.[3].Source.ToString() |> shouldEqual "https://www.nuget.org/api/v2"
 
 [<Test>]
 let ``should parse and serialise multiple feed lockfile``() =
-    let lockFile = LockFile.Parse("",toLines multipleFeedLockFile)
-    let lockFile' = lockFile.ToString()
+    for lockFileText in [multipleFeedLockFileLegacy;multipleFeedLockFile] do
+        let lockFile = LockFile.Parse("",toLines lockFileText)
+        let lockFile' = lockFile.ToString()
 
-    normalizeLineEndings lockFile' 
-    |> shouldEqual (normalizeLineEndings multipleFeedLockFile)
+        normalizeLineEndings lockFile' 
+        |> shouldEqual (normalizeLineEndings multipleFeedLockFile)
 
 
 let groupsLockFile = """REDIRECTS: ON
@@ -753,26 +773,33 @@ let ``should parse lock file from auto-detect settings``() =
     let deps = packages.Tail.Head.Dependencies |> Seq.toList |> List.map (fun (n,_,_) -> n)
     deps.Head |> shouldEqual (PackageName "Autofac")
 
-let lockFileWithManyFrameworks = """NUGET
+let lockFileWithManyFrameworksLegacy = """NUGET
   remote: https://www.nuget.org/api/v2
     CommonServiceLocator (1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50
     MvvmLightLibs (5.2)
       CommonServiceLocator (>= 1.0) - framework: net35, sl40
       CommonServiceLocator (>= 1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""
+let lockFileWithManyFrameworks = """NUGET
+  remote: https://www.nuget.org/api/v2
+    CommonServiceLocator (1.3) - restriction: || (sl5) (>= net40) (>= portable-net45+monoandroid+xamarinios+win8+wp8+wpa81)
+    MvvmLightLibs (5.2)
+      CommonServiceLocator (>= 1.0) - restriction: || (net35) (sl4)
+      CommonServiceLocator (>= 1.3) - restriction: || (sl5) (>= net40) (>= portable-net45+monoandroid+xamarinios+win8+wp8+wpa81)"""
 
 [<Test>]
 let ``should parse lock file many frameworks``() = 
-    let lockFile = LockFileParser.Parse(toLines lockFileWithManyFrameworks)
-    let main = lockFile.Head
-    let packages = List.rev main.Packages
+    for lockFile in [lockFileWithManyFrameworksLegacy;lockFileWithManyFrameworks] do
+        let lockFile = LockFileParser.Parse(toLines lockFile)
+        let main = lockFile.Head
+        let packages = List.rev main.Packages
     
-    packages.Length |> shouldEqual 2
+        packages.Length |> shouldEqual 2
 
-    packages.Head.Name |> shouldEqual (PackageName "CommonServiceLocator")
-    packages.Tail.Head.Name |> shouldEqual (PackageName "MvvmLightLibs")
-    LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
-    |> normalizeLineEndings
-    |> shouldEqual (normalizeLineEndings lockFileWithManyFrameworks)
+        packages.Head.Name |> shouldEqual (PackageName "CommonServiceLocator")
+        packages.Tail.Head.Name |> shouldEqual (PackageName "MvvmLightLibs")
+        LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
+        |> normalizeLineEndings
+        |> shouldEqual (normalizeLineEndings lockFileWithManyFrameworks)
 
 let lockFileWithDependencies = """NUGET
   remote: https://www.nuget.org/api/v2

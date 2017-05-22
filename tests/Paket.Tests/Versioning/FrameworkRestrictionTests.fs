@@ -6,6 +6,21 @@ open NUnit.Framework
 open Paket.Requirements
 
 [<Test>]
+let ``Simplify || (>= net45) (>= portable-net45+win8+wp8+wp81+wpa81)`` () =
+    // because that is a custom portable profile!
+    let portable = (PlatformMatching.extractPlatforms "portable-net45+win8+wp8+wp81+wpa81").ToTargetProfile.Value
+    let atLeastPortable = FrameworkRestriction.AtLeastPlatform portable
+
+    // this was the underlying bug
+    atLeastPortable.RepresentedFrameworks
+    |> shouldContain (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
+
+    let formula = FrameworkRestriction.Or [ atLeastPortable; FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V4_5) ]
+    
+    formula
+    |> shouldEqual (atLeastPortable)
+
+[<Test>]
 let ``CustomProfile is Supported by its Platforms``() =
     let unknownProfile =
         (PlatformMatching.extractPlatforms "portable-net45+monoandroid10+monotouch10+xamarinios10").ToTargetProfile.Value

@@ -57,43 +57,11 @@ module DependencySetFilter =
         let _,_,dependencyRestrictions = dependency
         let dependencyRestrictions = dependencyRestrictions |> getExplicitRestriction
         if dependencyRestrictions = FrameworkRestriction.NoRestriction then true else
-        // TODO: fix broken logic
-
-        // This is the framework restriction we build for (example = net46)
         // While the dependency specifies the framework restrictions of the dependency ([ >= netstandard13 ])
-        // we need to take the dependency, when 'restriction' is a subset of any of 'dependencyRestrictions'
+        // we need to take the dependency, when the combination still contains packages.
+        // NOTE: This is not forwards compatible...
         let combined = FrameworkRestriction.And [ restriction; dependencyRestrictions ]
         combined.RepresentedFrameworks.Length > 0
-        //restriction.IsSubsetOf dependencyRestrictions
-        //match restriction with
-        //| FrameworkRestriction.Exactly v1 ->
-        //    dependencyRestrictions
-        //    |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
-        //    |> Seq.exists (fun r2 ->
-        //        match r2 with
-        //        | FrameworkRestriction.Exactly v2 when v1 = v2 -> true
-        //        | FrameworkRestriction.AtLeast v2 when v1 >= v2 -> true
-        //        | FrameworkRestriction.Between(v2,v3) when v1 >= v2 && v1 < v3 -> true
-        //        | _ -> false)
-        //| FrameworkRestriction.AtLeast v1 ->
-        //    restrictions
-        //    |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
-        //    |> Seq.exists (fun r2 ->
-        //        match r2 with
-        //        | FrameworkRestriction.Exactly v2 when v1 <= v2 -> true
-        //        | FrameworkRestriction.AtLeast v2 -> true
-        //        | FrameworkRestriction.Between(v2,v3) when v1 < v3 -> true
-        //        | _ -> false)
-        //| FrameworkRestriction.Between (min, max) ->
-        //    restrictions
-        //    |> Seq.filter (fun r2 -> restriction.IsSameCategoryAs(r2) = Some(true))
-        //    |> Seq.exists (fun r2 ->
-        //        match r2 with
-        //        | FrameworkRestriction.Exactly v when v >= min && v < max -> true
-        //        | FrameworkRestriction.AtLeast v when v < max -> true
-        //        | FrameworkRestriction.Between(min',max') when max' >= min && min' < max -> true
-        //        | _ -> false)
-        //| _ -> true
 
     let filterByRestrictions (restrictions:FrameworkRestrictions) (dependencies:DependencySet) : DependencySet =
         match getExplicitRestriction restrictions with
@@ -368,7 +336,6 @@ let private updateRestrictions (pkgConfig:PackageConfig) (package:ResolvedPackag
             let globalSettings = pkgConfig.GlobalRestrictions |> getExplicitRestriction
             [packageSettings;dependencySettings;globalSettings]
             |> Seq.fold (FrameworkRestriction.combineRestrictionsWithAnd) FrameworkRestriction.NoRestriction
-            //optimizeRestrictions (List.concat)
 
     { package with
         Settings = { package.Settings with FrameworkRestrictions = ExplicitRestriction newRestrictions }

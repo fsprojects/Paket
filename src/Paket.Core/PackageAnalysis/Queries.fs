@@ -67,13 +67,6 @@ let resolveFrameworkForScriptGeneration (dependencies: DependenciesFile) = lazy 
             match restrictions with
             | Paket.Requirements.AutoDetectFramework -> failwithf "couldn't detect framework"
             | Paket.Requirements.ExplicitRestriction list -> list.RepresentedFrameworks
-              //list |> Seq.collect (
-              //  function
-              //  | Paket.Requirements.FrameworkRestriction.Exactly framework
-              //  | Paket.Requirements.FrameworkRestriction.AtLeast framework -> Seq.singleton framework
-              //  | Paket.Requirements.FrameworkRestriction.Between (bottom,top) -> [bottom; top] |> Seq.ofList //TODO: do we need to cap the list of generated frameworks based on this? also see todo in Requirements.fs for potential generation of range for 'between'
-              //  | Paket.Requirements.FrameworkRestriction.Portable portable -> failwithf "unhandled portable framework %s" portable
-              //)
           )
         |> Seq.concat
     )

@@ -285,15 +285,23 @@ module FrameworkRestriction =
                 |> List.map (fun andFormula -> { Literals = andFormula.Literals |> List.distinct |> List.sort })
                 |> List.distinct
                 |> List.sort }
-
-        fr
-        |> removeNegatedLiteralsWhichOccurSinglePositive
-        |> removeSubsetLiteralsInAndClause
-        |> removeSubsetLiteralsInOrClause
-        |> removeUneccessaryAndClauses
-        |> removeUneccessaryOrClauses
-        |> replaceWithNoRestrictionIfAnyLiteralListIsEmpty
-        |> sortClauses
+        let optimize fr =
+            fr
+            |> removeNegatedLiteralsWhichOccurSinglePositive
+            |> removeSubsetLiteralsInAndClause
+            |> removeSubsetLiteralsInOrClause
+            |> removeUneccessaryAndClauses
+            |> removeUneccessaryOrClauses
+            |> replaceWithNoRestrictionIfAnyLiteralListIsEmpty
+            |> sortClauses
+        let mutable hasChanged = true
+        let mutable newFormula = fr
+        while hasChanged do
+            let old = newFormula
+            newFormula <- optimize newFormula
+            if old = newFormula then hasChanged <- false
+        newFormula
+            
 
     let rec private And2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
         match left.OrFormulas with
@@ -402,6 +410,9 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
             else
                 yield FrameworkRestriction.Exactly x]
     |> List.fold (fun state item -> FrameworkRestriction.combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet
+
+let parseRestrictions failImmediatly (text:string) =
+    parseRestrictionsLegacy failImmediatly text
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
     match list1,list2 with 
@@ -534,9 +545,7 @@ type InstallSettings =
                 | _ -> None
               FrameworkRestrictions =
                 match getPair "restriction" with
-                | Some s ->
-                    // TODO: Change to new parser.
-                    ExplicitRestriction(parseRestrictionsLegacy true s)
+                | Some s -> ExplicitRestriction(parseRestrictions true s)
                 | _ ->
                     match getPair "framework" with
                     | Some s -> ExplicitRestriction(parseRestrictionsLegacy true s)

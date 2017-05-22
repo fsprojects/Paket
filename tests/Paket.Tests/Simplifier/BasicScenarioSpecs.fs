@@ -204,7 +204,7 @@ nuget Autofac.WebApi2 3.4.0 framework: >= net45
 nuget Autofac.WebApi2.Owin 3.2.0 framework: >= net45"""
 
     let expected = """source https://www.nuget.org/api/v2/
-framework >= net45
+restriction: >= net45
 
 nuget angularjs 1.4.3
 nuget AngularTemplates.Compile 1.0.0
@@ -233,6 +233,16 @@ nuget Autofac.Owin 3.1.0 framework: >= net40
 nuget Autofac.WebApi 3.1.0 framework: >= net45
 nuget Autofac.WebApi2 3.4.0 framework: >= net45
 nuget Autofac.WebApi2.Owin 3.2.0 framework: >= net45"""
+    let after = """source https://www.nuget.org/api/v2/
+
+nuget angularjs 1.4.3 restriction: >= net45
+nuget AngularTemplates.Compile 1.0.0 restriction: >= net45
+nuget Antlr 3.4.1.9004 restriction: >= net45
+nuget Autofac 3.5.0 restriction: >= net45
+nuget Autofac.Owin 3.1.0 restriction: >= net40
+nuget Autofac.WebApi 3.1.0 restriction: >= net45
+nuget Autofac.WebApi2 3.4.0 restriction: >= net45
+nuget Autofac.WebApi2.Owin 3.2.0 restriction: >= net45"""
 
     let originalLockFile = DependenciesFile.FromSource(before)
     originalLockFile.SimplifyFrameworkRestrictions().ToString()
@@ -256,7 +266,7 @@ nuget Autofac.WebApi2 3.4.0 framework: >= net40
 nuget Autofac.WebApi2.Owin 3.2.0 framework: >= net40"""
 
     let expected = """source https://www.nuget.org/api/v2/
-framework >= net45
+restriction: >= net45
 
 nuget angularjs 1.4.3
 nuget AngularTemplates.Compile 1.0.0
@@ -265,7 +275,7 @@ nuget Autofac 3.5.0
 
 group Build
 source https://www.nuget.org/api/v2/
-framework >= net40
+restriction: >= net40
 nuget Autofac.Owin 3.1.0
 nuget Autofac.WebApi 3.1.0
 nuget Autofac.WebApi2 3.4.0
@@ -303,7 +313,7 @@ nuget Autofac.WebApi2 3.4.0 framework: sl5, sl4
 nuget Autofac.WebApi2.Owin 3.2.0 framework: sl4, sl5"""
 
     let expected = """source https://www.nuget.org/api/v2/
-framework net40, net45
+restriction: || (net40) (net45)
 
 nuget angularjs 1.4.3
 nuget AngularTemplates.Compile 1.0.0
@@ -312,7 +322,8 @@ nuget Autofac 3.5.0
 
 group Build
 source https://www.nuget.org/api/v2/
-framework sl40, sl50
+restriction: || (sl40) (sl50)
+
 nuget Autofac.Owin 3.1.0
 nuget Autofac.WebApi 3.1.0
 nuget Autofac.WebApi2 3.4.0
@@ -341,19 +352,19 @@ nuget Autofac.WebApi2 3.4.0 framework: sl5, sl4, >= net45
 nuget Autofac.WebApi2.Owin 3.2.0 framework: sl4, sl5"""
 
     let expected = """source https://www.nuget.org/api/v2/
-framework net40, net45
+restriction: || (net40) (net45)
 
-nuget angularjs 1.4.3 framework: net20
+nuget angularjs 1.4.3 restriction: net20
 nuget AngularTemplates.Compile 1.0.0
 nuget Antlr 3.4.1.9004
 nuget Autofac 3.5.0
 
 group Build
 source https://www.nuget.org/api/v2/
-framework sl40, sl50
+restriction: || (sl4) (sl5)
 nuget Autofac.Owin 3.1.0
 nuget Autofac.WebApi 3.1.0
-nuget Autofac.WebApi2 3.4.0 framework: >= net45
+nuget Autofac.WebApi2 3.4.0 restriction: >= net45
 nuget Autofac.WebApi2.Owin 3.2.0"""
 
 

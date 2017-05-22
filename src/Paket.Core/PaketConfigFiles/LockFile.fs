@@ -128,7 +128,7 @@ module LockFileSerializer =
                           if FrameworkRestriction.NoRestriction = restrictions || restrictions = getExplicitRestriction options.Settings.FrameworkRestrictions then
                             yield sprintf "      %O %s" name versionStr
                           else
-                            yield sprintf "      %O %s - framework: %s" name versionStr (String.Join(", ",restrictions).ToLower())]
+                            yield sprintf "      %O %s - restriction: %O" name versionStr restrictions]
     
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
@@ -281,8 +281,7 @@ module LockFileParser =
                                             
             InstallOption (CopyContentToOutputDir setting)
         | _, String.RemovePrefix "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictionsLegacy true)))
-        // TODO: use new parser here.
-        | _, String.RemovePrefix "RESTRICTION:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictionsLegacy true)))
+        | _, String.RemovePrefix "RESTRICTION:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictions true)))
         | _, String.RemovePrefix "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
         | _, String.RemovePrefix "CONTENT:" trimmed -> 
             let setting =
