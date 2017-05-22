@@ -129,10 +129,10 @@ let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() =
     let dependencies = odata.Dependencies |> Array.ofList
     dependencies.[0] |> shouldEqual 
         (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.4"), 
-            makeOrList [getPortableRestriction("portable-wp80+win+wp81+wpa81"); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))])
+            makeOrList [getPortableRestriction("portable-net45+win8+wp8+wp81+wpa81"); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))])
     dependencies.[1] |> shouldEqual
         (PackageName "Microsoft.Net.Http", DependenciesFileParser.parseVersionRequirement(">= 2.2.22"), 
-            makeOrList [getPortableRestriction("portable-wp80+win+wp81+wpa81")])
+            makeOrList [getPortableRestriction("portable-net45+win8+wp8+wp81+wpa81")])
 
 [<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 

@@ -3,6 +3,7 @@
 open System.IO
 open System
 open System.Diagnostics
+open Logging
 
 
 /// The .NET Standard version.
@@ -922,11 +923,106 @@ module KnownTargetProfiles =
         |> List.distinct
         |> List.sort
 
-    let FindPortableProfile name =
+    let TryFindPortableProfile (name:string) =
+        let lowerName = name.ToLowerInvariant()
         AllProfiles
-        |> List.pick (function
-                      | PortableProfile p when p.ProfileName = name -> Some (PortableProfile p)
-                      | _ -> None)
+        |> List.tryPick (function
+            | PortableProfile p when p.ProfileName.ToLowerInvariant() = lowerName -> Some (PortableProfile p)
+            | _ -> None)
+    let FindPortableProfile name =
+        match TryFindPortableProfile name with
+        | Some s -> s
+        | None -> failwithf "tried to find portable profile '%s' but it is unknown to paket" name
+
+module PortableProfileSupportCalculation =
+    let isSupported (portable:PortableProfileType) (other:PortableProfileType) =
+        let name, tfs = portable.ProfileName, portable.Frameworks
+        
+        let otherName, otherfws = other.ProfileName, other.Frameworks
+        let weSupport =
+            tfs
+            |> List.collect (fun tf -> tf.RawSupportedPlatformsTransitive)
+
+        let relevantFrameworks =
+            otherfws
+            |> Seq.filter (fun fw ->
+                weSupport |> List.exists ((=) fw))
+            |> Seq.length
+        relevantFrameworks >= tfs.Length && portable <> other
+        
+    let getSupported (portable:PortableProfileType) =
+        let name, tfs = portable.ProfileName, portable.Frameworks
+        KnownTargetProfiles.AllPortableProfiles
+        |> List.filter (fun p -> p.ProfileName <> name)
+        |> List.filter (fun other -> isSupported portable other)
+        |> List.map PortableProfile
+    type SupportMap = System.Collections.Concurrent.ConcurrentDictionary<PortableProfileType,PortableProfileType list>
+    let ofSeq s = s|> dict |> System.Collections.Concurrent.ConcurrentDictionary
+    let toSeq s = s|> Seq.map (fun (kv:System.Collections.Generic.KeyValuePair<_,_>) -> kv.Key, kv.Value)
+    let rec buildSupportMap (supportMap:SupportMap) p =
+        let directMap = supportMap.[p]
+        directMap
+        |> List.append (directMap |> List.collect (buildSupportMap supportMap))
+        
+    let filterMap pos (supportMap:SupportMap) : SupportMap =
+        supportMap
+        |> toSeq
+        |> Seq.map (fun (profile, supported) ->
+            profile,
+            if supported.Length < pos + 1 then
+                supported
+            else
+                // try to optimize on the 'pos' position
+                let curPos = supported.[pos]
+                let supportList = buildSupportMap supportMap curPos // supportMap.[curPos] // 
+                (supported |> List.take pos |> List.filter (fun s -> supportList |> List.contains s |> not))
+                @ [curPos] @
+                (supported
+                 |> List.skip (pos + 1)
+                 |> List.filter (fun s -> supportList |> List.contains s |> not))
+            ) 
+        |> ofSeq
+
+    // Optimize support map, ie remove entries which are not needed
+    let optimizeSupportMap (supportMap:SupportMap) =
+        let mutable sup = supportMap
+        let mutable hasChanged = true
+        while hasChanged do
+            hasChanged <- false
+            let maxNum =  sup.Values |> Seq.map (fun l -> l.Length) |> Seq.max
+            for i in 0 .. maxNum - 1 do
+                let old = sup
+                sup <- filterMap i sup
+                if old.Count <> sup.Count then
+                    hasChanged <- true
+        sup
+    let private getSupportedPortables p =
+        getSupported p
+        |> List.choose (function PortableProfile p -> Some p | _ -> failwithf "Expected portable")
+        
+    let createInitialSupportMap () =
+        KnownTargetProfiles.AllPortableProfiles
+        |> List.map (fun p -> p, getSupportedPortables p)
+        |> ofSeq
+
+    let mutable private supportMap = optimizeSupportMap (createInitialSupportMap())
+
+    let getSupportedPreCalculated (p:PortableProfileType) =
+        match supportMap.TryGetValue p with
+        | true, v -> v
+        | _ ->
+            match p with
+            | UnsupportedProfile tfs ->
+                match supportMap.TryGetValue p with
+                | true, v -> v
+                | _ ->
+                    let clone = supportMap |> toSeq |> ofSeq
+                    clone.[p] <- getSupportedPortables p
+                    let opt = optimizeSupportMap clone
+                    let result = opt.[p]
+                    supportMap <- opt
+                    result
+            | _ -> failwithf "Expected that default profiles are already created."
 
 
 type TargetProfile with
@@ -936,6 +1032,7 @@ type TargetProfile with
         | PortableProfile p -> p.Frameworks
     static member FindPortable (fws: _ list) =
         if fws.Length = 0 then failwithf "can not find portable for an empty list (Details: Empty lists need to be handled earlier with a warning)!"
+        let fallback = PortableProfile (UnsupportedProfile (fws |> List.sort))
         let minimal =
             fws
             |> List.filter (function
@@ -964,19 +1061,27 @@ type TargetProfile with
             match firstMatch with
             | Some p -> PortableProfile p
             | None ->
-#if DEBUG
-                failwithf "Could not find pcl profile"
-#else
-                PortableProfile (UnsupportedProfile fws)
-#endif
+                traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
+                fallback
         else
-            PortableProfile (UnsupportedProfile fws)
+            traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
+            fallback
 
     // TODO: some notion of an increasing/decreasing sequence of FrameworkIdentitifers, so that Between(bottom, top) constraints can enumerate the list
     /// true when x is supported by y, for example netstandard15 is supported by netcore10
     member x.IsSupportedBy y =
-        x = y ||
-          (y.SupportedPlatforms |> Seq.exists (fun s -> x.IsSupportedBy s))
+        match x with
+        | PortableProfile (PortableProfileType.UnsupportedProfile xs' as x') ->
+            // custom profiles are not in our lists -> custom logic
+            match y with
+            | PortableProfile y' ->
+                PortableProfileSupportCalculation.isSupported y' x'
+            | SinglePlatform y' ->
+                y'.RawSupportedPlatformsTransitive |> Seq.exists (fun y'' ->
+                    xs' |> Seq.contains y'')
+        | _ ->
+            x = y ||
+              (y.SupportedPlatforms |> Seq.exists (fun s -> x.IsSupportedBy s))
         //x = y ||
         //  (x.SupportedPlatforms |> Seq.exists (fun x' -> x' = y && not (x'.IsSameCategoryAs x))) ||
         //  (y.SupportedPlatforms |> Seq.exists (fun y' -> y' = x && not (y'.IsSameCategoryAs y)))
@@ -1088,223 +1193,5 @@ type TargetProfile with
                 |> List.map PortableProfile
             rawSupported @ profilesSupported
         | PortableProfile p ->
-            // This is generated by the "Generate Support Table" test case!
-            let supported =
-                match p with
-                | Profile2 ->
-                    [ 
-                    ] 
-                | Profile3 ->
-                    [ 
-                      Profile36
-                    ] 
-                | Profile4 ->
-                    [ 
-                      Profile95
-                    ] 
-                | Profile5 ->
-                    [ 
-                      Profile37
-                      Profile92
-                    ] 
-                | Profile6 ->
-                    [ 
-                      Profile5
-                      Profile42
-                      Profile102
-                    ] 
-                | Profile7 ->
-                    [ 
-                      Profile6
-                      Profile47
-                      Profile78
-                      Profile111
-                    ] 
-                | Profile14 ->
-                    [ 
-                      Profile3
-                      Profile37
-                    ] 
-                | Profile18 ->
-                    [ 
-                      Profile3
-                      Profile41
-                    ] 
-                | Profile19 ->
-                    [ 
-                      Profile14
-                      Profile18
-                      Profile42
-                    ] 
-                | Profile23 ->
-                    [ 
-                      Profile18
-                      Profile46
-                    ] 
-                | Profile24 ->
-                    [ 
-                      Profile19
-                      Profile23
-                      Profile47
-                    ] 
-                | Profile31 ->
-                    [ 
-                      Profile78
-                      Profile157
-                    ] 
-                | Profile32 ->
-                    [ 
-                      Profile151
-                      Profile157
-                    ] 
-                | Profile36 ->
-                    [ 
-                      Profile88
-                    ] 
-                | Profile37 ->
-                    [ 
-                      Profile136
-                      Profile225
-                    ] 
-                | Profile41 ->
-                    [ 
-                      Profile143
-                    ] 
-                | Profile42 ->
-                    [ 
-                      Profile37
-                      Profile41
-                      Profile147
-                      Profile240
-                    ] 
-                | Profile44 ->
-                    [ 
-                      Profile7
-                      Profile151
-                    ] 
-                | Profile46 ->
-                    [ 
-                      Profile41
-                      Profile154
-                    ] 
-                | Profile47 ->
-                    [ 
-                      Profile42
-                      Profile46
-                      Profile158
-                      Profile255
-                    ] 
-                | Profile49 ->
-                    [ 
-                      Profile78
-                    ] 
-                | Profile78 ->
-                    [ 
-                      Profile158
-                      Profile259
-                    ] 
-                | Profile84 ->
-                    [ 
-                      Profile157
-                    ] 
-                | Profile88 ->
-                    [ 
-                      Profile2
-                    ] 
-                | Profile92 ->
-                    [ 
-                      Profile225
-                    ] 
-                | Profile95 ->
-                    [ 
-                      Profile2
-                    ] 
-                | Profile96 ->
-                    [ 
-                      Profile88
-                      Profile95
-                    ] 
-                | Profile102 ->
-                    [ 
-                      Profile92
-                      Profile240
-                    ] 
-                | Profile104 ->
-                    [ 
-                      Profile4
-                      Profile96
-                    ] 
-                | Profile111 ->
-                    [ 
-                      Profile102
-                      Profile255
-                      Profile259
-                    ] 
-                | Profile136 ->
-                    [ 
-                      Profile36
-                      Profile328
-                    ] 
-                | Profile143 ->
-                    [ 
-                      Profile36
-                      Profile96
-                    ] 
-                | Profile147 ->
-                    [ 
-                      Profile136
-                      Profile143
-                      Profile336
-                    ] 
-                | Profile151 ->
-                    [ 
-                      Profile111
-                    ] 
-                | Profile154 ->
-                    [ 
-                      Profile104
-                      Profile143
-                    ] 
-                | Profile157 ->
-                    [ 
-                      Profile259
-                    ] 
-                | Profile158 ->
-                    [ 
-                      Profile147
-                      Profile154
-                      Profile344
-                    ] 
-                | Profile225 ->
-                    [ 
-                      Profile328
-                    ] 
-                | Profile240 ->
-                    [ 
-                      Profile225
-                      Profile336
-                    ] 
-                | Profile255 ->
-                    [ 
-                      Profile240
-                      Profile344
-                    ] 
-                | Profile259 ->
-                    [ 
-                      Profile344
-                    ] 
-                | Profile328 ->
-                    [ 
-                    ] 
-                | Profile336 ->
-                    [ 
-                      Profile328
-                    ] 
-                | Profile344 ->
-                    [ 
-                      Profile336
-                    ]
-                | UnsupportedProfile _ -> []
-
-            supported
+            PortableProfileSupportCalculation.getSupportedPreCalculated p
             |> List.map PortableProfile

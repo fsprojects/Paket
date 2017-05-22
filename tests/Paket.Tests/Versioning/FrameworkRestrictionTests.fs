@@ -5,20 +5,22 @@ open FsUnit
 open NUnit.Framework
 open Paket.Requirements
 
-let isSupported (portable:PortableProfileType) (other:PortableProfileType) =
-    let name, tfs = portable.ProfileName, portable.Frameworks
-        
-    let otherName, otherfws = other.ProfileName, other.Frameworks
-    let weSupport =
-        tfs
-        |> List.collect (fun tf -> tf.RawSupportedPlatformsTransitive)
+[<Test>]
+let ``CustomProfile is Supported by its Platforms``() =
+    let unknownProfile =
+        (PlatformMatching.extractPlatforms "portable-net45+monoandroid10+monotouch10+xamarinios10").ToTargetProfile.Value
 
-    let relevantFrameworks =
-        otherfws
-        |> Seq.filter (fun fw ->
-            weSupport |> List.exists ((=) fw))
-        |> Seq.length
-    relevantFrameworks >= tfs.Length && portable <> other
+    unknownProfile.IsSupportedBy (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
+    |> shouldEqual true
+    unknownProfile.IsSupportedBy (SinglePlatform (DotNetFramework FrameworkVersion.V4))
+    |> shouldEqual false
+
+    unknownProfile.IsSupportedBy (SinglePlatform (MonoAndroid))
+    |> shouldEqual true
+    unknownProfile.IsSupportedBy (SinglePlatform (MonoTouch))
+    |> shouldEqual true
+    unknownProfile.IsSupportedBy (SinglePlatform (Silverlight SilverlightVersion.V5))
+    |> shouldEqual false
 
 [<Test>]
 let ``__unknowntfm__ should not match everything`` () =
@@ -46,71 +48,30 @@ let ``__unknowntfm__ should not match everything`` () =
 
 [<Test>]
 let ``Profile 158 should not support itself``() = 
-    isSupported Profile158 Profile158
+    PortableProfileSupportCalculation.isSupported Profile158 Profile158
     |> shouldEqual false
 [<Test>]
 let ``Profile 158 should not support Profile 78, as there is no silverlight on 78``() = 
-    isSupported Profile158 Profile78
+    PortableProfileSupportCalculation.isSupported Profile158 Profile78
     |> shouldEqual false
-    isSupported Profile78 Profile158
+    PortableProfileSupportCalculation.isSupported Profile78 Profile158
     |> shouldEqual true
 [<Test>]
 let ``Profile 344 should support Profile 336, as it has the same frameworks but is lower``() =
-    isSupported Profile336 Profile344
+    PortableProfileSupportCalculation.isSupported Profile336 Profile344
     |> shouldEqual false
-    isSupported Profile344 Profile336
+    PortableProfileSupportCalculation.isSupported Profile344 Profile336
     |> shouldEqual true
 
 [<Test>]
 let ``Generate Support Table``() = 
     // TODO: Should we include this?
-    let getSupported (portable:PortableProfileType) =
-            let name, tfs = portable.ProfileName, portable.Frameworks
-            KnownTargetProfiles.AllPortableProfiles
-            |> List.filter (fun p -> p.ProfileName <> name)
-            |> List.filter (fun other -> isSupported portable other)
-            |> List.map PortableProfile
-    let mutable supportMap =
-        KnownTargetProfiles.AllPortableProfiles
-        |> List.map (fun p ->
-            p,
-            getSupported p
-            |> List.choose (function PortableProfile p -> Some p | _ -> failwithf "Expected portable"))
-        |> dict
-
-    let rec buildSupportMap p =
-        let directMap = supportMap.[p]
-        directMap
-        |> List.append (directMap |> List.collect buildSupportMap)
-        
-    let filterMap pos (supportMap:System.Collections.Generic.IDictionary<_,_>) =
-        supportMap
-        |> Seq.map (fun (kv:System.Collections.Generic.KeyValuePair<_,_>) -> 
-            let profile = kv.Key
-            let supported : PortableProfileType list = kv.Value
-            
-            profile,
-            if supported.Length < pos + 1 then
-                supported
-            else
-                // try to optimize on the 'pos' position
-                let curPos = supported.[pos]
-                let supportList = buildSupportMap curPos // supportMap.[curPos] // 
-                (supported |> List.take pos |> List.filter (fun s -> supportList |> List.contains s |> not))
-                @ [curPos] @
-                (supported
-                 |> List.skip (pos + 1)
-                 |> List.filter (fun s -> supportList |> List.contains s |> not))
-            ) 
-        |> dict
-
-    for i in 0 .. 10 do
-        for i in 0 .. 15 do supportMap <- filterMap i supportMap
+    let mutable supportMap = PortableProfileSupportCalculation.createInitialSupportMap()
+    supportMap <- PortableProfileSupportCalculation.optimizeSupportMap supportMap
     
     supportMap
-    |> Seq.iter (fun (kv:System.Collections.Generic.KeyValuePair<_,_>) -> 
-        let p = kv.Key
-        let supported : PortableProfileType list = kv.Value
+    |> PortableProfileSupportCalculation.toSeq
+    |> Seq.iter (fun (p, supported) ->
         System.Diagnostics.Debug.WriteLine(sprintf "| %s ->" p.ProfileName)
         System.Diagnostics.Debug.WriteLine("    [ ")
         supported
@@ -125,7 +86,7 @@ let ``Generate Support Table``() =
 let ``Unknown Portables are detected correctly``() = 
     PlatformMatching.extractPlatforms "portable-monotouch+monoandroid"
     |> function { Platforms = o } -> TargetProfile.FindPortable o
-    |> shouldEqual (PortableProfile (PortableProfileType.UnsupportedProfile [MonoTouch; MonoAndroid]))
+    |> shouldEqual (PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid; MonoTouch]))
 [<Test>]
 let ``Portables are detected correctly``() = 
     // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=portable-net451%2Bwin81%2Bwpa81%2Bwaspt2
@@ -141,7 +102,7 @@ let ``Portables are detected correctly``() =
         |> List.map (function { Platforms = [ h] } -> SinglePlatform h | {Platforms = o} -> TargetProfile.FindPortable o)
     let expected =
         [ SinglePlatform (DotNetFramework FrameworkVersion.V4);
-          PortableProfile (PortableProfileType.UnsupportedProfile [MonoTouch; MonoAndroid])
+          PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid; MonoTouch])
           PortableProfile (PortableProfileType.Profile328); PortableProfile (PortableProfileType.Profile259)
           PortableProfile (PortableProfileType.Profile32)
           PortableProfile (PortableProfileType.Profile78)

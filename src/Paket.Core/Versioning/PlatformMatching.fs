@@ -21,16 +21,25 @@ type ParsedPlatformPath =
         | plats -> Some (TargetProfile.FindPortable plats)
 let inline split (path : string) =
     path.Split('+')
-    |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(s, "portable\\d*-",""))
+    |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(s, @"portable[\d\.]*-",""))
 
+// TODO: This function does now quite a lot, there probably should be several functions.
 let extractPlatforms = memoize (fun path ->
     if System.String.IsNullOrEmpty path then ParsedPlatformPath.Empty
     else
-        let platforms = split path |> Array.choose FrameworkDetection.Extract |> Array.toList
+        let splits = split path
+        let platforms = splits |> Array.choose FrameworkDetection.Extract |> Array.toList
         if platforms.Length = 0 then
-            failwithf "Could not detect any platforms from '%s'" path
+            if splits.Length = 1 && splits.[0].ToLowerInvariant().StartsWith "profile" then
+                // might be something like portable4.6-profile151
+                let found =
+                    KnownTargetProfiles.FindPortableProfile splits.[0]
+                    |> ParsedPlatformPath.FromTargetProfile
+                { found with Name = path }
+            else
+                failwithf "Could not detect any platforms from '%s'" path
             //traceWarnfn "Could not detect any platforms from '%s'" path
-        { Name = path; Platforms = platforms })
+        else { Name = path; Platforms = platforms })
 
 // TODO: In future work this stuff should be rewritten. This penalty stuff is more random than a proper implementation.
 let rec getPlatformPenalty =
@@ -40,8 +49,16 @@ let rec getPlatformPenalty =
             0
         else
             match targetPlatform, packagePlatform with
-            // There is no point in searching for frameworks in portables...
-            | PortableProfile _, SinglePlatform _ -> MaxPenalty
+            | PortableProfile _, SinglePlatform _ ->
+                // There is no point in searching for frameworks in portables...
+                MaxPenalty
+            | _, PortableProfile (PortableProfileType.UnsupportedProfile fws) ->
+                // We cannot find unsupported profiles in our "SupportedPlatforms" list
+                // Just check if we are compatible at all and return a high penalty
+                
+                if packagePlatform.IsSupportedBy targetPlatform then
+                    700
+                else MaxPenalty
             | _ ->
                 let penalty =
                     targetPlatform.SupportedPlatforms
