@@ -232,8 +232,8 @@ let getTargetCondition (target:TargetProfile) =
     | SinglePlatform(platform) ->
         // BUG: Pattern incomplete!
         match platform with
-        | DotNetFramework(version) when version = FrameworkVersion.V4 ->
-            "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O')" version
+        //| DotNetFramework(version) when version = FrameworkVersion.V4 ->
+        //    "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O')" version
         | DotNetFramework(version) ->"$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNX(version) ->"$(TargetFrameworkIdentifier) == 'DNX'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | DNXCore(version) ->"$(TargetFrameworkIdentifier) == 'DNXCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version

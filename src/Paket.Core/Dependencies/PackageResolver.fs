@@ -62,7 +62,9 @@ module DependencySetFilter =
         // This is the framework restriction we build for (example = net46)
         // While the dependency specifies the framework restrictions of the dependency ([ >= netstandard13 ])
         // we need to take the dependency, when 'restriction' is a subset of any of 'dependencyRestrictions'
-        restriction.IsSubsetOf dependencyRestrictions
+        let combined = FrameworkRestriction.And [ restriction; dependencyRestrictions ]
+        combined.RepresentedFrameworks.Length > 0
+        //restriction.IsSubsetOf dependencyRestrictions
         //match restriction with
         //| FrameworkRestriction.Exactly v1 ->
         //    dependencyRestrictions

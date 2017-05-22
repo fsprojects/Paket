@@ -15,7 +15,7 @@ module ``Given a target platform`` =
     [<Test>]
     let ``it should return the right penalty for a compatible platform``() =
         getFrameworkPenalty (DotNetFramework FrameworkVersion.V4_5, DotNetFramework FrameworkVersion.V4)
-        |> shouldEqual 1
+        |> shouldEqual 2
 
     [<Test>]
     let ``it should return > 1000 for an incompatible platform``() =
@@ -235,7 +235,7 @@ module ``General Penalty checks`` =
     let ``make sure not all portable profiles match``()=
         // Not all portable profiles have a match.
         Paket.PlatformMatching.findBestMatch
-          (["portable-net403+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1"]|> List.map extractPlatforms,
+          (["portable-net45+win8"]|> List.map extractPlatforms,
            SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
         |> shouldEqual (None)
 

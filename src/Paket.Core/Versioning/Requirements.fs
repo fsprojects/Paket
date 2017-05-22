@@ -235,6 +235,39 @@ module FrameworkRestriction =
                         |> not
                     | _ -> true) }
 
+        /// ((>= net20) && (>= net40)) || (>= net20) can be simplified to (>= net20) because any AND clause with (>= net20) can be removed.
+        let removeUneccessaryOrClauses (fr:FrameworkRestriction) =
+            let orClauses =
+                fr.OrFormulas
+            let isContained (andList:FrameworkRestrictionAndList) (item:FrameworkRestrictionAndList) =
+                if item.Literals.Length >= andList.Literals.Length then false
+                else
+                    item.Literals
+                    |> Seq.forall (fun lit -> andList.Literals |> Seq.contains lit)
+
+            { OrFormulas = 
+                fr.OrFormulas
+                |> List.filter (fun orClause ->
+                    orClauses |> Seq.exists (isContained orClause) |> not)
+                    }
+
+        /// clauses with ((>= net20) && (< net20) && ...) can be removed because they contains a literal and its negation.
+        let removeUneccessaryAndClauses (fr:FrameworkRestriction) =
+            { OrFormulas = 
+                fr.OrFormulas
+                |> List.filter (fun andList ->
+                    let normalizeLiterals =
+                        andList.Literals
+                        |> List.map (function
+                            | { LiteraL = FrameworkRestrictionLiteralI.ExactlyL l; IsNegated = n } ->
+                                { LiteraL = FrameworkRestrictionLiteralI.AtLeastL l; IsNegated = n }
+                            | lit -> lit)
+                    let foundLiteralAndNegation =
+                        normalizeLiterals
+                        |> Seq.exists (fun l ->
+                            normalizeLiterals |> Seq.contains { l with IsNegated = not l.IsNegated})
+                    not foundLiteralAndNegation) }
+
         /// When we optmized a clause away completely we can replace the hole formula with "NoRestriction"
         /// This happens for example with ( <net45 || >=net45) and the removeNegatedLiteralsWhichOccurSinglePositive
         /// optimization
@@ -255,6 +288,8 @@ module FrameworkRestriction =
         |> removeNegatedLiteralsWhichOccurSinglePositive
         |> removeSubsetLiteralsInAndClause
         |> removeSubsetLiteralsInOrClause
+        |> removeUneccessaryAndClauses
+        |> removeUneccessaryOrClauses
         |> replaceWithNoRestrictionIfAnyLiteralListIsEmpty
         |> sortClauses
 
@@ -269,14 +304,14 @@ module FrameworkRestriction =
             { OrFormulas = (And2 {OrFormulas = [h]} right).OrFormulas @ ((And2 {OrFormulas = t} right).OrFormulas) }
     
     let And (rst:FrameworkRestriction list) =
-        List.fold And2 EmptySet rst
+        List.fold And2 NoRestriction rst
         |> simplify
     
     let private Or2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
         { OrFormulas = left.OrFormulas @ right.OrFormulas }
     
     let Or (rst:FrameworkRestriction list) =
-        List.fold Or2 NoRestriction rst
+        List.fold Or2 EmptySet rst
         |> simplify
     
     //[<Obsolete ("Method is provided for completeness sake. But I don't think its needed")>]
@@ -289,6 +324,7 @@ module FrameworkRestriction =
 
     let Between (x, y) =
         And2 (AtLeast x) (NotAtLeast y)
+        |> simplify
         //FrameworkRestrictionP.AndP[FrameworkRestrictionP.AtLeastP x; FrameworkRestrictionP.NotP (FrameworkRestrictionP.AtLeastP y)]
     
     let combineRestrictionsWithOr (x : FrameworkRestriction) y =

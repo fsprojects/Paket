@@ -262,7 +262,7 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
         (PackageName "Newtonsoft.Json",
           DependenciesFileParser.parseVersionRequirement(">= 5.0.8"),
           makeOrList
-            [FrameworkRestriction.Exactly(WindowsPhone WindowsPhoneVersion.V8)
+            [FrameworkRestriction.AtLeast(WindowsPhone WindowsPhoneVersion.V8)
              FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))])
 
 [<Test>]
@@ -281,7 +281,7 @@ let ``can detect framework assemblies for Microsoft.Framework.Logging``() =
     
     let name,_,restrictions = nuspec.Dependencies.[2]
     name  |> shouldEqual (PackageName "System.Collections.Concurrent")
-    restrictions |> shouldEqual (makeOrList [FrameworkRestriction.Exactly(DNXCore(FrameworkVersion.V5_0))])
+    restrictions |> shouldEqual (makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
 
 [<Test>]
 let ``can detect explicit dependencies for FluentAssertions 4``() = 

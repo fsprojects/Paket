@@ -18,7 +18,7 @@ let isSupported (portable:PortableProfileType) (other:PortableProfileType) =
         |> Seq.filter (fun fw ->
             weSupport |> List.exists ((=) fw))
         |> Seq.length
-    relevantFrameworks >= tfs.Length
+    relevantFrameworks >= tfs.Length && portable <> other
 
 [<Test>]
 let ``Profile 158 should not support itself``() = 
@@ -160,6 +160,17 @@ let ``Simplify && (&& (>= net40-full) (< net46)  (>= net20)``() =
             FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V2)])
     toSimplify
     |> shouldEqual (FrameworkRestriction.Between (DotNetFramework FrameworkVersion.V4, DotNetFramework FrameworkVersion.V4_6))
+
+[<Test>]
+let ``Simplify <|| (&& (net452) (native)) (native)>`` () =
+    let toSimplify = 
+        (FrameworkRestriction.Or[
+            FrameworkRestriction.And[
+                FrameworkRestriction.Exactly (DotNetFramework FrameworkVersion.V4_5_2)
+                FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform))]
+            FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform))])
+    toSimplify
+    |> shouldEqual (FrameworkRestriction.Exactly (Native(NoBuildMode,NoPlatform)))
 
 [<Test>]
 let ``Simplify (>=net20) && (>=net20)``() = 

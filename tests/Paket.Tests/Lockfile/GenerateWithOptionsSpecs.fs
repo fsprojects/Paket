@@ -23,7 +23,7 @@ let graph1 =
 
 let expected1 = """REFERENCES: STRICT
 COPY-LOCAL: FALSE
-FRAMEWORK: >= NET45
+RESTRICTION: >= NET45
 NUGET
   remote: http://www.nuget.org/api/v2
     Castle.Windsor-log4net (3.2)"""

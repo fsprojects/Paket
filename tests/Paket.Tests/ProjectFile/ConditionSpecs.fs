@@ -51,7 +51,7 @@ let ``should detect Silverlight version from path``() =
 
 [<Test>]
 let ``should detect WindowsPhone version from path``() =
-    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp71\RestSharp.WindowsPhone.dll")|> element |> shouldEqual (WindowsPhone WindowsPhoneVersion.V7_5)
+    FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp75\RestSharp.WindowsPhone.dll")|> element |> shouldEqual (WindowsPhone WindowsPhoneVersion.V7_5)
     FrameworkDetection.DetectFromPath(@"..\..\packages\RestSharp\lib\sl4-wp\TechTalk.SpecFlow.WindowsPhone7.dll")|> element |> shouldEqual (WindowsPhone WindowsPhoneVersion.V7_5)
 
 [<Test>]

@@ -16,19 +16,19 @@ let TestData: obj[][] =
         [|"Project2.fsprojtest";
             (SinglePlatform(DotNetFramework FrameworkVersion.V4));
             "net40";
-            (Some(DotNetFramework FrameworkVersion.V4))|];
+            (DotNetFramework FrameworkVersion.V4)|];
         [|"Empty.fsprojtest";
             (SinglePlatform(DotNetFramework FrameworkVersion.V4));
             "net40-full";
-            (Some(DotNetFramework FrameworkVersion.V4))|];
+            (DotNetFramework FrameworkVersion.V4)|];
         [|"NewSilverlightClassLibrary.csprojtest";
             (SinglePlatform(Silverlight SilverlightVersion.V5));
             "sl50";
-            (Some(Silverlight SilverlightVersion.V5))|];
+            (Silverlight SilverlightVersion.V5)|];
         [|"FSharp.Core.Fluent-3.1.fsprojtest";
             portable;
             "portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1";
-            (Some(DotNetFramework FrameworkVersion.V4_5))|];
+            (DotNetFramework FrameworkVersion.V4_5)|];
     |]
     
 [<Test>]

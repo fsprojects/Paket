@@ -138,10 +138,12 @@ let ``filtered with AtLeast restriction should filter non-matching``() =
        PackageName("P9"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V3_5),DotNetFramework(FrameworkVersion.V4_5_2)))]
       |> Set.ofList
 
-
-    original
-    |> DependencySetFilter.filterByRestrictions ( ExplicitRestriction (FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))))
-    |> shouldEqual expected
+    let result =
+        original
+        |> DependencySetFilter.filterByRestrictions ( ExplicitRestriction (FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4))))
+        |> Seq.toArray
+    result
+    |> shouldEqual (expected |> Seq.toArray)
 
 [<Test>]
 let ``filtered with Between restriction should filter non-matching`` () =
