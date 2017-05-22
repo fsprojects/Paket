@@ -234,8 +234,8 @@ let legacyRefFileContentWithMultipleSettings = """Castle.Windsor copy_local: fal
 Newtonsoft.Json content: none, framework: net40
 xUnit import_targets: false"""
 
-let refFileContentWithMultipleSettings = """Castle.Windsor copy_local: false, import_targets: false, restriction: || (net35) (>= net40)
-Newtonsoft.Json content: none, restriction: net40
+let refFileContentWithMultipleSettings = """Castle.Windsor copy_local: false, import_targets: false, restriction: || (== net35) (>= net40)
+Newtonsoft.Json content: none, restriction: == net40
 xUnit import_targets: false"""
 
 [<Test>]

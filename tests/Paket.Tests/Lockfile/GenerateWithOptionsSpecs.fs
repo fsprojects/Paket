@@ -184,7 +184,7 @@ nuget NLog.Contrib
     let expected = """RESTRICTION: >= net40
 NUGET
   remote: https://www.nuget.org/api/v2
-    NLog (1.0.1) - restriction: net40
+    NLog (1.0.1) - restriction: == net40
     NLog.Contrib (1.0)
       NLog (>= 1.0.1)"""
 

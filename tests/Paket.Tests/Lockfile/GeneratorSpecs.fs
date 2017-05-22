@@ -59,12 +59,12 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 let ``should generate lock file with framework restrictions for packages``() = 
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-    Castle.Windsor (2.1) - restriction: net35
-    Castle.Windsor-log4net (3.3) - restriction: net35
+    Castle.Windsor (2.1) - restriction: == net35
+    Castle.Windsor-log4net (3.3) - restriction: == net35
       Castle.Windsor (>= 2.0)
       log4net (>= 1.0)
-    log (1.2) - restriction: net35
-    log4net (1.1) - restriction: net35
+    log (1.2) - restriction: == net35
+    log4net (1.1) - restriction: == net35
       log (>= 1.0)
     Rx-Core (2.1) - restriction: >= net40
     Rx-Main (2.0) - restriction: >= net40
@@ -86,12 +86,12 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 let ``should generate lock file with no targets import for packages``() = 
     let expected = """NUGET
   remote: "D:\code\temp with space"
-    Castle.Windsor (2.1) - import_targets: false, restriction: net35
-    Castle.Windsor-log4net (3.3) - import_targets: false, restriction: net35
+    Castle.Windsor (2.1) - import_targets: false, restriction: == net35
+    Castle.Windsor-log4net (3.3) - import_targets: false, restriction: == net35
       Castle.Windsor (>= 2.0)
       log4net (>= 1.0)
-    log (1.2) - import_targets: false, restriction: net35
-    log4net (1.1) - import_targets: false, restriction: net35
+    log (1.2) - import_targets: false, restriction: == net35
+    log4net (1.1) - import_targets: false, restriction: == net35
       log (>= 1.0)
     Rx-Core (2.1) - restriction: >= net40
     Rx-Main (2.0) - restriction: >= net40
@@ -112,12 +112,12 @@ nuget "Rx-Main" "~> 2.0" framework: >= net40 """
 let ``should generate lock file with no copy local for packages``() = 
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-    Castle.Windsor (2.1) - copy_local: false, import_targets: false, restriction: net35
-    Castle.Windsor-log4net (3.3) - copy_local: false, import_targets: false, restriction: net35
+    Castle.Windsor (2.1) - copy_local: false, import_targets: false, restriction: == net35
+    Castle.Windsor-log4net (3.3) - copy_local: false, import_targets: false, restriction: == net35
       Castle.Windsor (>= 2.0)
       log4net (>= 1.0)
-    log (1.2) - copy_local: false, import_targets: false, restriction: net35
-    log4net (1.1) - copy_local: false, import_targets: false, restriction: net35
+    log (1.2) - copy_local: false, import_targets: false, restriction: == net35
+    log4net (1.1) - copy_local: false, import_targets: false, restriction: == net35
       log (>= 1.0)
     Rx-Core (2.1) - restriction: >= net40
     Rx-Main (2.0) - restriction: >= net40
@@ -138,12 +138,12 @@ nuget "Rx-Main" "~> 2.0" content: none, framework: >= net40 """
 let ``should generate lock file with disabled content for packages``() = 
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
-    Castle.Windsor (2.1) - restriction: net35
-    Castle.Windsor-log4net (3.3) - restriction: net35
+    Castle.Windsor (2.1) - restriction: == net35
+    Castle.Windsor-log4net (3.3) - restriction: == net35
       Castle.Windsor (>= 2.0)
       log4net (>= 1.0)
-    log (1.2) - restriction: net35
-    log4net (1.1) - restriction: net35
+    log (1.2) - restriction: == net35
+    log4net (1.1) - restriction: == net35
       log (>= 1.0)
     Rx-Core (2.1) - content: none, restriction: >= net40
     Rx-Main (2.0) - content: none, restriction: >= net40
@@ -356,7 +356,7 @@ let ``should generate lock file with second group``() =
     let expected = """NUGET
   remote: http://www.nuget.org/api/v2
     Castle.Windsor (2.1) - copy_content_to_output_dir: preserve_newest
-    Castle.Windsor-log4net (3.3) - restriction: net35
+    Castle.Windsor-log4net (3.3) - restriction: == net35
       Castle.Windsor (>= 2.0)
       log4net (>= 1.0)
     log (1.2)

@@ -132,7 +132,8 @@ let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() =
             makeOrList [getPortableRestriction("portable-net45+win8+wp8+wp81+wpa81"); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))])
     dependencies.[1] |> shouldEqual
         (PackageName "Microsoft.Net.Http", DependenciesFileParser.parseVersionRequirement(">= 2.2.22"), 
-            makeOrList [getPortableRestriction("portable-net45+win8+wp8+wp81+wpa81")])
+            FrameworkRestriction.And [getPortableRestriction("portable-net45+win8+wp8+wp81+wpa81"); FrameworkRestriction.NotAtLeast(DotNetFramework(FrameworkVersion.V4_5))]
+            |> ExplicitRestriction)
 
 [<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 

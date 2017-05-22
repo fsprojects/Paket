@@ -32,7 +32,7 @@ type FrameworkRestrictionP =
     | AndP of FrameworkRestrictionP list
     member x.InfixNotation =
         match x with
-        | FrameworkRestrictionP.ExactlyP r -> r.ToString()
+        | FrameworkRestrictionP.ExactlyP r -> "== " + r.ToString()
         //| FrameworkRestrictionP.PortableP (r,_) -> r
         | FrameworkRestrictionP.AtLeastP r -> ">= " + r.ToString()
         | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP r) -> sprintf "< " + r.ToString()
@@ -49,7 +49,7 @@ type FrameworkRestrictionP =
             | _ -> sprintf "(%s)" (System.String.Join(" && ", frl |> Seq.map (fun inner -> sprintf "(%s)" inner.InfixNotation)))
     override this.ToString() =
         match this with
-        | FrameworkRestrictionP.ExactlyP r -> r.ToString()
+        | FrameworkRestrictionP.ExactlyP r -> "== " + r.ToString()
         //| FrameworkRestrictionP.PortableP (r,_) -> r
         | FrameworkRestrictionP.AtLeastP r -> ">= " + r.ToString()
         | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP r) -> sprintf "< " + r.ToString()
@@ -363,7 +363,6 @@ let getExplicitRestriction (frameworkRestrictions:FrameworkRestrictions) =
 
 
 let parseRestrictionsLegacy failImmediatly (text:string) =
-    // TODO: Change this code to convert old "framework" sematics in
     // older lockfiles to the new "restriction" semantics
     let handleError =
         if failImmediatly then
@@ -378,7 +377,7 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
         // workaround missing spaces
         text.Replace("<=","<= ").Replace(">=",">= ").Replace("=","= ")
     if text.StartsWith("||") || text.StartsWith("&&") then
-        raise <| NotImplementedException("&& and || are not yet implemented.")
+        raise <| InvalidOperationException("&& and || are not allowed in a legacy 'framework' section.")
 
     let commaSplit = text.Trim().Split(',')
     [for p in commaSplit do
@@ -412,7 +411,78 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
     |> List.fold (fun state item -> FrameworkRestriction.combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet
 
 let parseRestrictions failImmediatly (text:string) =
-    parseRestrictionsLegacy failImmediatly text
+    let handleError =
+        if failImmediatly then
+            failwith
+        else
+            if verbose then
+                (fun s ->
+                    traceError s
+                    traceVerbose Environment.StackTrace)
+            else traceError
+
+    let rec parseOperator (text:string) =
+        match text.Trim() with
+        | t when String.IsNullOrEmpty t -> failwithf "trying to parse an otherator but got no content"
+        | h when h.StartsWith ">=" || h.StartsWith "==" || h.StartsWith "<" ->
+            // parse >= 
+            let smallerThan = h.StartsWith "<"
+            let isEquals = h.StartsWith "=="
+            let rest = h.Substring 2
+            let splitted = rest.Split([|' '|], StringSplitOptions.RemoveEmptyEntries)
+            if splitted.Length < 1 then failwithf "No parameter after >= or < in '%s'" text
+            let rawOperator = splitted.[0]
+            let operator = rawOperator.TrimEnd([|')'|])
+            match (PlatformMatching.extractPlatforms operator).ToTargetProfile with
+            | None -> failwithf "invalid parameter '%s' after >= or < in '%s'" operator text
+            | Some plat ->
+                let f = 
+                    if smallerThan then FrameworkRestriction.NotAtLeastPlatform 
+                    elif isEquals then FrameworkRestriction.ExactlyPlatform
+                    else FrameworkRestriction.AtLeastPlatform
+                let operatorIndex = text.IndexOf operator
+                f plat, text.Substring(operatorIndex + operator.Length)
+        | h when h.StartsWith "&&" || h.StartsWith "||" ->
+            let isAnd = h.StartsWith "&&"
+            let next = h.Substring 2
+            let rec parseOperand cur (next:string) =
+                let trimmed = next.TrimStart()
+                if trimmed.StartsWith "(" then
+                    let operand, remaining = parseOperator (trimmed.Substring 1)
+                    let remaining = remaining.TrimStart()
+                    if remaining.StartsWith ")" |> not then failwithf "expected ')' after operand, '%s'" text
+                    parseOperand (operand::cur) (remaining.Substring 1)
+                else
+                    cur, next
+            
+            let operands, next = parseOperand [] next
+            if operands.Length = 0 then failwithf "Operand '%s' without argument is invalid in '%s'" (h.Substring (0, 2)) text
+            let f, def = if isAnd then FrameworkRestriction.And, FrameworkRestriction.NoRestriction else FrameworkRestriction.Or, FrameworkRestriction.EmptySet
+            operands |> List.fold (fun a b -> f [a;b]) def, next
+        | h when h.StartsWith "NOT" ->
+            let next = h.Substring 2
+            
+            if next.TrimStart().StartsWith "(" then
+                let operand, remaining = parseOperator (next.Substring 1)
+                let remaining = remaining.TrimStart()
+                if remaining.StartsWith ")" |> not then failwithf "expected ')' after operand, '%s'" text
+                let next = remaining.Substring 1
+                
+                let negated =
+                    match operand with
+                    | { OrFormulas = [ {Literals = [ lit] } ] } -> 
+                        { OrFormulas = [ {Literals = [ { lit with IsNegated = not lit.IsNegated } ] } ] }
+                    |  _ -> failwithf "a general NOT is not implemted jet (and shouldn't be emitted for now)"
+                negated, next
+            else
+                failwithf "Expected operand after NOT, '%s'" text
+        | _ ->
+            failwithf "Expected operator, but got '%s'" text
+            
+    let result, next = parseOperator text
+    if String.IsNullOrEmpty next |> not then
+        failwithf "Successfully parsed '%O' but got additional text '%s'" result next
+    result
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
     match list1,list2 with 

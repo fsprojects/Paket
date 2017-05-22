@@ -325,7 +325,11 @@ module LockFileParser =
                     InstallSettings.Default
             if trimmed.Contains "(" then
                 let parts = trimmed.Split '(' 
-                NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim(),frameworkSettings)
+                let first = parts.[0]
+                let rest = String.Join ("(", parts |> Seq.skip 1)
+                let versionEndPos = rest.IndexOf(")")
+                if versionEndPos < 0 then failwithf "Missing matching ') in line '%s'" line
+                NugetDependency (parts.[0].Trim(),rest.Substring(0, versionEndPos).Trim(),frameworkSettings)
             else
                 if trimmed.Contains("  -") then
                     let pos = trimmed.IndexOf("  -")

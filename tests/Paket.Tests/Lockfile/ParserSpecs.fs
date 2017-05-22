@@ -512,11 +512,11 @@ let ``should parse reactiveui lockfile``() =
     
     packages.[8].Name |> shouldEqual (PackageName "Rx-WindowStoreApps")
     packages.[8].Version |> shouldEqual (SemVer.Parse "2.2.5")
-    (packages.[8].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "win8"
+    (packages.[8].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "== win8"
 
     packages.[10].Name |> shouldEqual (PackageName "Rx-Xaml")
     packages.[10].Version |> shouldEqual (SemVer.Parse "2.2.5")
-    (packages.[10].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "|| (win8) (wp8) (>= net45)"
+    (packages.[10].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "|| (== win8) (== wp8) (>= net45)"
 
 let multipleFeedLockFileLegacy = """NUGET
   remote: http://internalfeed/NugetWebFeed/nuget
@@ -781,10 +781,10 @@ let lockFileWithManyFrameworksLegacy = """NUGET
       CommonServiceLocator (>= 1.3) - framework: >= net40, monoandroid, portable-net45+wp80+wpa81+win+monoandroid10+xamarinios10, xamarinios, winv4.5, winv4.5.1, wpv8.0, wpv8.1, sl50"""
 let lockFileWithManyFrameworks = """NUGET
   remote: https://www.nuget.org/api/v2
-    CommonServiceLocator (1.3) - restriction: || (sl5) (>= net40) (>= portable-net45+monoandroid+xamarinios+win8+wp8+wpa81)
+    CommonServiceLocator (1.3) - restriction: || (== sl5) (>= net40) (>= portable-net45+monoandroid+xamarinios+win8+wp8+wpa81)
     MvvmLightLibs (5.2)
-      CommonServiceLocator (>= 1.0) - restriction: || (net35) (sl4)
-      CommonServiceLocator (>= 1.3) - restriction: || (sl5) (>= net40) (>= portable-net45+monoandroid+xamarinios+win8+wp8+wpa81)"""
+      CommonServiceLocator (>= 1.0) - restriction: || (== net35) (== sl4)
+      CommonServiceLocator (>= 1.3) - restriction: || (== sl5) (>= net40) (>= portable-net45+monoandroid+xamarinios+win8+wp8+wpa81)"""
 
 [<Test>]
 let ``should parse lock file many frameworks``() = 
