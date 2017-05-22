@@ -135,65 +135,69 @@ let ``filtered with Between restriction should filter non-matching`` () =
 [<Test>]
 let ``should optimize ZendeskApi_v2 ``() = 
     let original =
-        [PackageName("Newtonsoft.Json"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("Newtonsoft.Json"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
-         PackageName("AsyncCTP"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
-         PackageName("Newtonsoft.Json"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5)))
-         PackageName("Newtonsoft.Json"), VersionRequirement.AllReleases, (getPortableRestriction "portable-net45+sl40+wp71+win80")
-         PackageName("Microsoft.Bcl.Async"), VersionRequirement.AllReleases, (getPortableRestriction "portable-net45+sl40+wp71+win80")]
+        [PackageName("Newtonsoft.Json"),    (), PlatformMatching.extractPlatforms "net35"
+         PackageName("Newtonsoft.Json"),    (), PlatformMatching.extractPlatforms "net4"
+         PackageName("AsyncCTP"),           (), PlatformMatching.extractPlatforms "net4"
+         PackageName("Newtonsoft.Json"),    (), PlatformMatching.extractPlatforms "net45"
+         PackageName("Newtonsoft.Json"),    (), PlatformMatching.extractPlatforms "portable-net45+sl40+wp71+win80"
+         PackageName("Microsoft.Bcl.Async"),(), PlatformMatching.extractPlatforms "portable-net45+sl40+wp71+win80"]
 
     let expected =
-        [PackageName("Newtonsoft.Json"), VersionRequirement.AllReleases, 
+        [PackageName("Newtonsoft.Json"), (), 
           makeOrList
             [getPortableRestriction "portable-net45+sl40+wp71+win80"
              FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V3_5))]
-         PackageName("AsyncCTP"), VersionRequirement.AllReleases,ExplicitRestriction (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
-         PackageName("Microsoft.Bcl.Async"), VersionRequirement.AllReleases,ExplicitRestriction (getPortableRestriction "portable-net45+sl40+wp71+win80")]
-
-    original
-    |> optimizeDependencies
+         PackageName("AsyncCTP"), (),ExplicitRestriction (FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V4), DotNetFramework(FrameworkVersion.V4_5)))
+         PackageName("Microsoft.Bcl.Async"), (),ExplicitRestriction (getPortableRestriction "portable-net45+sl40+wp71+win80")]
+    let result =
+        addFrameworkRestrictionsToDependencies original [
+            SinglePlatform (DotNetFramework(FrameworkVersion.V3_5))
+            SinglePlatform (DotNetFramework(FrameworkVersion.V4))
+            SinglePlatform (DotNetFramework(FrameworkVersion.V4_5))
+            (PlatformMatching.extractPlatforms "portable-net45+sl40+wp71+win80").ToTargetProfile.Value ]
+    result
     |> shouldEqual expected
 
 [<Test>]
 let ``should optimize real world restrictions``() = 
     let original =
-        [PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_6)))]
+        [PackageName("P1"), (), PlatformMatching.extractPlatforms "net20"
+         PackageName("P1"), (), PlatformMatching.extractPlatforms "net35"
+         PackageName("P1"), (), PlatformMatching.extractPlatforms "net45"
+         PackageName("P1"), (), PlatformMatching.extractPlatforms "net451"
+         PackageName("P1"), (), PlatformMatching.extractPlatforms "net46"]
 
     let expected =
-        [PackageName("P1"), VersionRequirement.AllReleases, 
+        [PackageName("P1"), (), 
           makeOrList
-           [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))
-            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V3_5))
-            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))
-            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1))
-            FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_6))]]
+           [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V2))]]
 
-    let result = optimizeDependencies original
+    let result =
+        addFrameworkRestrictionsToDependencies original
+            ([  FrameworkVersion.V2; FrameworkVersion.V3_5
+                FrameworkVersion.V4_5; FrameworkVersion.V4_5_1
+                FrameworkVersion.V4_6] |> List.map (DotNetFramework >> SinglePlatform))
     result |> shouldEqual expected
 
 [<Test>]
 let ``should optimize real world restrictions 2``() = 
     let original =
-        [PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1)))
-         PackageName("P1"), VersionRequirement.AllReleases, (FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_6)))]
+        [PackageName("P1"), (), PlatformMatching.extractPlatforms "net20" 
+         PackageName("P1"), (), PlatformMatching.extractPlatforms "net4"  
+         PackageName("P1"), (), PlatformMatching.extractPlatforms "net45" 
+         PackageName("P1"), (), PlatformMatching.extractPlatforms "net451"
+         PackageName("P1"), (), PlatformMatching.extractPlatforms "net46"] 
 
     let expected =
-        [PackageName("P1"), VersionRequirement.AllReleases, 
+        [PackageName("P1"), (), 
           makeOrList
-           [FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V2))
-            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4))
-            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5))
-            FrameworkRestriction.Exactly (DotNetFramework(FrameworkVersion.V4_5_1))
-            FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V4_6))]]
+           [FrameworkRestriction.AtLeast (DotNetFramework(FrameworkVersion.V2))]]
 
-    let result = optimizeDependencies original
+    let result =
+        addFrameworkRestrictionsToDependencies original 
+            ([  FrameworkVersion.V2; FrameworkVersion.V4
+                FrameworkVersion.V4_5; FrameworkVersion.V4_5_1
+                FrameworkVersion.V4_6] |> List.map (DotNetFramework >> SinglePlatform))
     result |> shouldEqual expected
 
 [<Test>]

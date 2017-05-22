@@ -84,11 +84,12 @@ type Nuspec =
                 | Some framework when framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable").StartsWith "portable" ->
                     let framework = framework.ToLower().Replace(".netportable","portable").Replace("netportable","portable")
                     let fws = (PlatformMatching.extractPlatforms framework).Platforms
-                    [] // TODO: Maybe fws?
+                    [TargetProfile.FindPortable(fws)]
+                    //[] // TODO: Maybe fws?
         
                 | Some framework ->
                     match FrameworkDetection.Extract framework with
-                    | Some x -> [x]
+                    | Some x -> [SinglePlatform x]
                     | None -> []
                 | _ -> [])
             |> List.concat

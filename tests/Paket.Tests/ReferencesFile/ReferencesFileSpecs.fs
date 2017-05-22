@@ -230,31 +230,36 @@ xUnit import_targets: false"""
     |> shouldEqual (normalizeLineEndings expected)
 
 
-let refFileContentWithMultipleSettings = """Castle.Windsor copy_local: false, import_targets: false, framework: net35, >= net40
+let legacyRefFileContentWithMultipleSettings = """Castle.Windsor copy_local: false, import_targets: false, framework: net35, >= net40
 Newtonsoft.Json content: none, framework: net40
+xUnit import_targets: false"""
+
+let refFileContentWithMultipleSettings = """Castle.Windsor copy_local: false, import_targets: false, restriction: || (net35) (>= net40)
+Newtonsoft.Json content: none, restriction: net40
 xUnit import_targets: false"""
 
 [<Test>]
 let ``should parse and serialize lines with multiple settings settings correctly``() = 
-    let refFile = ReferencesFile.FromLines(toLines refFileContentWithMultipleSettings)
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 3
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.ImportTargets |> shouldEqual (Some false)
+    for refFileContent in [legacyRefFileContentWithMultipleSettings; refFileContentWithMultipleSettings] do
+        let refFile = ReferencesFile.FromLines(toLines refFileContent)
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 3
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.ImportTargets |> shouldEqual (Some false)
 
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual None
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual None
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
 
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.CopyLocal |> shouldEqual None
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.ImportTargets |> shouldEqual (Some false)
-    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.OmitContent |> shouldEqual None
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.CopyLocal |> shouldEqual None
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.ImportTargets |> shouldEqual (Some false)
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.OmitContent |> shouldEqual None
 
-    refFile.ToString()
-    |> normalizeLineEndings
-    |> shouldEqual (normalizeLineEndings refFileContentWithMultipleSettings)
+        refFile.ToString()
+        |> normalizeLineEndings
+        |> shouldEqual (normalizeLineEndings refFileContentWithMultipleSettings)
 
 
 [<Test>]

@@ -21,6 +21,30 @@ let isSupported (portable:PortableProfileType) (other:PortableProfileType) =
     relevantFrameworks >= tfs.Length && portable <> other
 
 [<Test>]
+let ``__unknowntfm__ should not match everything`` () =
+    try
+        let model =
+            InstallModel.CreateFromLibs(Paket.Domain.PackageName "Rx-XAML", SemVer.Parse "2.2.4", FrameworkRestriction.NoRestriction,
+                [  { Paket.NuGet.UnparsedPackageFile.FullPath = @"..\Rx-XAML\lib\__unknowntfm__\System.Reactive.Windows.Threading.dll"
+                     Paket.NuGet.UnparsedPackageFile.PathWithinPackage = "lib/__unknowntfm__/System.Reactive.Windows.Threading.dll" }  ],
+                   [],
+                   [],
+                   { References = NuspecReferences.All
+                     OfficialName = "Reactive Extensions - XAML Support Library"
+                     Version = "2.2.4"
+                     Dependencies = []
+                     LicenseUrl = ""
+                     IsDevelopmentDependency = false
+                     FrameworkAssemblyReferences = []})
+        let target = PortableProfile PortableProfileType.Profile344
+        let newModel = model.ApplyFrameworkRestrictions (FrameworkRestriction.ExactlyPlatform target)
+        newModel.GetCompileReferences target |> Seq.toArray
+        |> shouldEqual [||]
+    with e ->
+        // Throwing is OK as well.
+        ()
+
+[<Test>]
 let ``Profile 158 should not support itself``() = 
     isSupported Profile158 Profile158
     |> shouldEqual false

@@ -112,6 +112,12 @@ type UAPVersion =
         match this with
         | UAPVersion.V10 -> "100"
 
+    member this.NetCoreVersion =
+        // WTF: https://github.com/onovotny/MSBuildSdkExtras/blob/8d2d4ad63b552481da06e646dbb6504abc415260/src/build/platforms/Windows.targets
+        match this with
+        // Assumed from C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore
+        | UAPVersion.V10 -> "v5.0"
+
 
 [<RequireQualifiedAccess>]
 /// The .NET Standard version.
@@ -220,18 +226,21 @@ type Platform =
 [<RequireQualifiedAccess>]
 type WindowsPhoneVersion =
     | V7
+    | V7_1
     | V7_5
     | V8
     | V8_1
     member this.ShortString() =
         match this with
         | WindowsPhoneVersion.V7 -> "7"
+        | WindowsPhoneVersion.V7_1 -> "71"
         | WindowsPhoneVersion.V7_5 -> "75"
         | WindowsPhoneVersion.V8 -> "8"
         | WindowsPhoneVersion.V8_1 -> "81"
     override this.ToString() =
         match this with
         | WindowsPhoneVersion.V7 -> "v7.0"
+        | WindowsPhoneVersion.V7_1 -> "v7.1"
         | WindowsPhoneVersion.V7_5 -> "v7.5"
         | WindowsPhoneVersion.V8 -> "v8.0"
         | WindowsPhoneVersion.V8_1 -> "v8.1"
@@ -270,6 +279,13 @@ type WindowsVersion =
     | V8
     | V8_1
     | V10
+    member this.NetCoreVersion =
+        // WTF: https://github.com/onovotny/MSBuildSdkExtras/blob/8d2d4ad63b552481da06e646dbb6504abc415260/src/build/platforms/Windows.targets
+        match this with
+        | WindowsVersion.V8 -> "v4.5"
+        | WindowsVersion.V8_1 -> "v4.5.1"
+        // Assumed from C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETCore
+        | WindowsVersion.V10 -> "v5.0"
     member this.ShortString() =
         match this with
         | WindowsVersion.V8 -> "8"
@@ -395,7 +411,8 @@ type FrameworkIdentifier =
         | WindowsPhoneApp WindowsPhoneAppVersion.V8 -> [ ]
         | WindowsPhoneApp WindowsPhoneAppVersion.V8_1 -> [ DotNetStandard DotNetStandardVersion.V1_2 ]
         | WindowsPhone WindowsPhoneVersion.V7 -> [ ]
-        | WindowsPhone WindowsPhoneVersion.V7_5 -> [ WindowsPhone WindowsPhoneVersion.V7 ]
+        | WindowsPhone WindowsPhoneVersion.V7_1 -> [ WindowsPhone WindowsPhoneVersion.V7 ]
+        | WindowsPhone WindowsPhoneVersion.V7_5 -> [ WindowsPhone WindowsPhoneVersion.V7_1 ]
         | WindowsPhone WindowsPhoneVersion.V8 -> [ WindowsPhone WindowsPhoneVersion.V7_5; DotNetStandard DotNetStandardVersion.V1_0 ]
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
 
@@ -481,8 +498,8 @@ module FrameworkDetection =
                 | "win8" | "windows8" | "win80" | "netcore45" | "win" | "winv45" -> Some (Windows WindowsVersion.V8)
                 | "win81" | "windows81"  | "netcore46" | "netcore451" | "winv451" -> Some (Windows WindowsVersion.V8_1)
                 | "wp7" | "wp70" | "wpv7" | "wpv70" | "sl4-wp7"| "sl4-wp70" -> Some (WindowsPhone WindowsPhoneVersion.V7)
-                //| "wp71" | "wpv71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhone WindowsPhoneVersion.V7_5)
-                | "wp75" | "wpv75" | "sl4-wp75" | "sl4-wp" -> Some (WindowsPhone WindowsPhoneVersion.V7_5)
+                | "wp71" | "wpv71" | "sl4-wp71" | "sl4-wp"  -> Some (WindowsPhone WindowsPhoneVersion.V7_1)
+                | "wp75" | "wpv75" | "sl4-wp75" -> Some (WindowsPhone WindowsPhoneVersion.V7_5)
                 | "wp8" | "wp80"  | "wpv80" -> Some (WindowsPhone WindowsPhoneVersion.V8)
                 | "wpa00" | "wpa" | "wpa81" | "wpav81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp WindowsPhoneAppVersion.V8_1)
                 | "wp81"  | "wpv81" -> Some (WindowsPhone WindowsPhoneVersion.V8_1)
@@ -807,6 +824,7 @@ module KnownTargetProfiles =
 
     let WindowsPhoneVersions = [
         WindowsPhoneVersion.V7
+        WindowsPhoneVersion.V7_1
         WindowsPhoneVersion.V7_5
         WindowsPhoneVersion.V8
         WindowsPhoneVersion.V8_1
@@ -912,7 +930,12 @@ module KnownTargetProfiles =
 
 
 type TargetProfile with
-    static member FindPortable (fws) =
+    member p.Frameworks =
+        match p with
+        | SinglePlatform fw -> [fw]
+        | PortableProfile p -> p.Frameworks
+    static member FindPortable (fws: _ list) =
+        if fws.Length = 0 then failwithf "can not find portable for an empty list (Details: Empty lists need to be handled earlier with a warning)!"
         let minimal =
             fws
             |> List.filter (function
@@ -946,7 +969,8 @@ type TargetProfile with
 #else
                 PortableProfile (UnsupportedProfile fws)
 #endif
-        else PortableProfile (UnsupportedProfile fws)
+        else
+            PortableProfile (UnsupportedProfile fws)
 
     // TODO: some notion of an increasing/decreasing sequence of FrameworkIdentitifers, so that Between(bottom, top) constraints can enumerate the list
     /// true when x is supported by y, for example netstandard15 is supported by netcore10

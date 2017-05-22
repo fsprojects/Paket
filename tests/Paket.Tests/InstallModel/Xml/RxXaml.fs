@@ -63,7 +63,7 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == 'v7.1'">
+  <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhone' And ($(TargetFrameworkVersion) == 'v7.1' Or $(TargetFrameworkVersion) == 'v7.5')">
     <ItemGroup>
       <Reference Include="System.Windows">
         <Paket>True</Paket>

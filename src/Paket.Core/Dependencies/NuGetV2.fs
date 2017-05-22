@@ -213,8 +213,11 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
         rawPackages
         |> Seq.collect (fun (_,_,pp) -> 
             match pp.Platforms with
-            | [h] -> [h]
-            | _ -> [])
+            | [h] -> [SinglePlatform h]
+            | plats when plats.Length > 1 -> [TargetProfile.FindPortable plats]
+            | _ ->
+                traceWarnfn "Could not detect frameworks in '%s', ignoring..." pp.Name
+                [])
         |> Seq.toList
     let cleanedPackages =
         rawPackages

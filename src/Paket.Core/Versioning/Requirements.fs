@@ -165,12 +165,14 @@ type FrameworkRestriction =
 module FrameworkRestriction =
     let EmptySet = { OrFormulas = [] } // false
     let NoRestriction = { OrFormulas = [ { Literals = [] } ] } // true
-    let AtLeastPlatform pf = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (AtLeastL pf) ] } ] }
-    let ExactlyPlatform pf = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromLiteral (ExactlyL pf) ] } ] }
+    let FromLiteral lit = { OrFormulas = [ { Literals = [ lit ] } ] }
+    let AtLeastPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromLiteral (AtLeastL pf))
+    let ExactlyPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromLiteral (ExactlyL pf))
     let Exactly id = ExactlyPlatform (SinglePlatform id)
     let AtLeastPortable (name, fws)= AtLeastPlatform (TargetProfile.FindPortable fws)
     let AtLeast id = AtLeastPlatform (SinglePlatform id)
-    let NotAtLeast id = { OrFormulas = [ { Literals = [ FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL (SinglePlatform id)) ] } ] }
+    let NotAtLeastPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromNegatedLiteral (AtLeastL pf))
+    let NotAtLeast id = NotAtLeastPlatform (SinglePlatform id)
 
     let private simplify (fr:FrameworkRestriction) =
         /// When we have a restriction like (>=net35 && <net45) || >=net45
@@ -400,12 +402,6 @@ let parseRestrictionsLegacy failImmediatly (text:string) =
             else
                 yield FrameworkRestriction.Exactly x]
     |> List.fold (fun state item -> FrameworkRestriction.combineRestrictionsWithOr state item) FrameworkRestriction.EmptySet
-
-
-let optimizeDependencies originalDependencies =
-    originalDependencies
-    |> List.map (fun (a,b,c) -> a,b, ExplicitRestriction c)
-
 
 let filterRestrictions (list1:FrameworkRestrictions) (list2:FrameworkRestrictions) =
     match list1,list2 with 
@@ -713,10 +709,10 @@ type PackageRequirement =
                 PackageRequirement.Compare(this,that,None,0,0)
           | _ -> invalidArg "that" "cannot compare value of different types"
 
-let addFrameworkRestrictionsToDependencies rawDependencies frameworkGroups =
+let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:TargetProfile list) =
     let frameworkGroupPaths =
         frameworkGroups
-        |> Seq.map (fun fw -> {PlatformMatching.ParsedPlatformPath.Name = fw.ToString(); PlatformMatching.ParsedPlatformPath.Platforms = [fw] })
+        |> Seq.map (PlatformMatching.ParsedPlatformPath.FromTargetProfile)
         |> Seq.toList
     let referenced =
         rawDependencies
@@ -735,14 +731,14 @@ let addFrameworkRestrictionsToDependencies rawDependencies frameworkGroups =
                         | _ -> FrameworkRestriction.AtLeastPortable(packageGroup.Name, packageGroup.Platforms)
                     
                     frameworkGroups
-                    |> Seq.filter (fun frameworkGroup ->
-                        // special casing for portable -> should be removed once portable is a normal FrameworkIdentifier
-                        if packageGroup.Platforms.Length < 2 then packageGroup.Platforms |> Seq.contains frameworkGroup |> not else true)
+                    //|> Seq.filter (fun frameworkGroup ->
+                    //    // special casing for portable -> should be removed once portable is a normal FrameworkIdentifier
+                    //    if packageGroup.Platforms.Length < 2 then packageGroup.Platforms |> Seq.contains frameworkGroup |> not else true)
                     // TODO: Check if this is needed (I think the logic below is a general version of this subset logic)
                     |> Seq.filter (fun frameworkGroup ->
                         // filter all restrictions which would render this group to nothing (ie smaller restrictions)
                         // filter out unrelated restrictions
-                        packageGroupRestriction.IsSubsetOf (FrameworkRestriction.AtLeast frameworkGroup) |> not)
+                        packageGroupRestriction.IsSubsetOf (FrameworkRestriction.AtLeastPlatform frameworkGroup) |> not)
                     |> Seq.fold (fun curRestr frameworkGroup ->
                         // We start with the restriction inherently given by the current group,
                         // But this is too broad as other groups might "steal" better suited frameworks
@@ -752,8 +748,8 @@ let addFrameworkRestrictionsToDependencies rawDependencies frameworkGroups =
                         // (>=net451 && <=netstandard13) for one and (>=netstandard13 && <=net451) for the other group
                         // but now net461 which supports netstandard13 is nowhere -> we need to decide here and add back the intersection
 
-                        let missing = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.AtLeast frameworkGroup)
-                        let combined = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.NotAtLeast frameworkGroup)
+                        let missing = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.AtLeastPlatform frameworkGroup)
+                        let combined = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.NotAtLeastPlatform frameworkGroup)
                         match packageGroup.Platforms, missing.RepresentedFrameworks with
                         | [ packageGroupFw ], firstMissing :: _ ->
                             // the common set goes to the better matching one
@@ -781,4 +777,5 @@ let addFrameworkRestrictionsToDependencies rawDependencies frameworkGroups =
     //        name, req, restriction)
     //
 
-    optimizeDependencies referenced
+    referenced
+    |> List.map (fun (a,b,c) -> a,b, ExplicitRestriction c)

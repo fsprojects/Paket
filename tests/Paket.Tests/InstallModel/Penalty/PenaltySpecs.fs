@@ -127,6 +127,7 @@ module ``Given a list of paths`` =
             flattend |> shouldNotContain (KnownTargetProfiles.FindPortableProfile "Profile41")
 
 module ``ProfileAnalyzer tests`` =
+    ()
     //[<Test>]
     //let ``test that we cannot detect portable-net40+sl4+win8+wp71+wpa81`` () =
     //    let res = Paket.PlatformMatching.tryGetProfile (extractPlatforms "portable-net40+sl4+win8+wp71+wpa81")

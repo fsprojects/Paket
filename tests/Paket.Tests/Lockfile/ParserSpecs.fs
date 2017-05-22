@@ -512,11 +512,11 @@ let ``should parse reactiveui lockfile``() =
     
     packages.[8].Name |> shouldEqual (PackageName "Rx-WindowStoreApps")
     packages.[8].Version |> shouldEqual (SemVer.Parse "2.2.5")
-    (packages.[8].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "[winv4.5]"
+    (packages.[8].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "win8"
 
     packages.[10].Name |> shouldEqual (PackageName "Rx-Xaml")
     packages.[10].Version |> shouldEqual (SemVer.Parse "2.2.5")
-    (packages.[10].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "[winv4.5; wpv8.0; >= net45]"
+    (packages.[10].Settings.FrameworkRestrictions |> getExplicitRestriction).ToString() |> shouldEqual "|| (win8) (wp8) (>= net45)"
 
 let multipleFeedLockFile = """NUGET
   remote: http://internalfeed/NugetWebFeed/nuget

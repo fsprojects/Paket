@@ -2,6 +2,7 @@
 
 open System
 open ProviderImplementation.AssemblyReader.Utils.SHA1
+open Logging
 
 [<Literal>]
 let MaxPenalty = 1000000
@@ -9,27 +10,27 @@ let MaxPenalty = 1000000
 type ParsedPlatformPath =
   { Name : string
     Platforms : FrameworkIdentifier list }
-  static member Empty = { Name = ""; Platforms = [] }
-
+    static member Empty = { Name = ""; Platforms = [] }
+    static member FromTargetProfile (p:TargetProfile) =
+        { Name = p.ToString(); Platforms = p.Frameworks }
+    member x.ToTargetProfile =
+        match x.Platforms with
+        | _ when System.String.IsNullOrEmpty x.Name -> None
+        | [] -> None // Not detected earlier.
+        | [p] -> Some (SinglePlatform p)
+        | plats -> Some (TargetProfile.FindPortable plats)
 let inline split (path : string) =
     path.Split('+')
     |> Array.map (fun s -> System.Text.RegularExpressions.Regex.Replace(s, "portable\\d*-",""))
 
-let extractPlatforms = memoize (fun path -> { Name = path; Platforms = split path |> Array.choose FrameworkDetection.Extract |> Array.toList })
-
-//let knownInPortable =
-//  KnownTargetProfiles.AllPortableProfiles 
-//  |> List.collect snd
-//  |> List.distinct
-
-//let tryGetProfile platforms =
-//    let filtered =
-//      platforms.Platforms
-//      |> List.filter (fun p -> knownInPortable |> Seq.exists ((=) p))
-//      |> List.sort
-
-//    KnownTargetProfiles.AllPortableProfiles |> Seq.tryFind (snd >> (=) filtered)
-//    |> Option.map PortableProfile
+let extractPlatforms = memoize (fun path ->
+    if System.String.IsNullOrEmpty path then ParsedPlatformPath.Empty
+    else
+        let platforms = split path |> Array.choose FrameworkDetection.Extract |> Array.toList
+        if platforms.Length = 0 then
+            failwithf "Could not detect any platforms from '%s'" path
+            //traceWarnfn "Could not detect any platforms from '%s'" path
+        { Name = path; Platforms = platforms })
 
 // TODO: In future work this stuff should be rewritten. This penalty stuff is more random than a proper implementation.
 let rec getPlatformPenalty =
@@ -74,7 +75,7 @@ let getPathPenalty =
             | _ -> 2000 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
         match path.Platforms with
         | _ when String.IsNullOrWhiteSpace path.Name -> handleEmpty()
-        | [] -> handleEmpty()
+        | [] -> MaxPenalty // Ignore this path as it contains no platforms, but the folder apparently has a name -> we failed to detect the framework and ignore it
         | [ h ] -> getPlatformPenalty(platform,SinglePlatform h)
         | _ ->
             getPlatformPenalty(platform, TargetProfile.FindPortable path.Platforms))
@@ -247,7 +248,7 @@ let getTargetCondition (target:TargetProfile) =
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Micro v3.5')" version
         | DotNetUnity(version) when version = DotNetUnityVersion.V3_5_Web ->
             "$(TargetFrameworkIdentifier) == '.NETFramework'", sprintf "($(TargetFrameworkVersion) == '%O' And $(TargetFrameworkProfile) == 'Unity Web v3.5')" version               
-        | Windows(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version
+        | Windows(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version.NetCoreVersion
         | Silverlight(version) -> "$(TargetFrameworkIdentifier) == 'Silverlight'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | WindowsPhoneApp(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | WindowsPhone(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhone'", sprintf "$(TargetFrameworkVersion) == '%O'" version
@@ -255,7 +256,8 @@ let getTargetCondition (target:TargetProfile) =
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
-        | UAP(version) ->"$(TargetPlatformIdentifier) == 'UAP'", sprintf "$(TargetPlatformVersion.StartsWith('%O'))" version
+        | UAP(version) -> // "$(TargetPlatformIdentifier) == 'UAP'", sprintf "$(TargetPlatformVersion.StartsWith('%O'))" version
+                          "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version.NetCoreVersion
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
         | Native(NoBuildMode,NoPlatform) -> "true", ""
         | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
@@ -263,25 +265,26 @@ let getTargetCondition (target:TargetProfile) =
     | PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
 let getCondition (referenceCondition:string option) (allTargets: TargetProfile list list) (targets : TargetProfile list) =
-    let inline CheckIfFullyInGroup typeName matchF (processed,targets) =
+    let inline CheckIfFullyInGroup typeName matchF filterRestF (processed,targets) =
         let fullyContained = 
             KnownTargetProfiles.AllDotNetProfiles 
             |> List.filter matchF
             |> List.forall (fun p -> targets |> Seq.exists ((=) p))
 
         if fullyContained then
-            (sprintf "$(TargetFrameworkIdentifier) == '%s'" typeName,"") :: processed,targets |> List.filter (matchF >> not)
+            (sprintf "$(TargetFrameworkIdentifier) == '%s'" typeName,"") :: processed,targets |> List.filter (filterRestF >> not)
         else
             processed,targets
-
+    let inline CheckIfFullyInGroupS typeName matchF (processed,targets) =
+        CheckIfFullyInGroup typeName matchF matchF (processed,targets)
     let grouped,targets =
         ([],targets)
-        |> CheckIfFullyInGroup "true" (fun _ -> true)
-        |> CheckIfFullyInGroup ".NETFramework" (function SinglePlatform (DotNetFramework _) -> true | _ -> false)
-        |> CheckIfFullyInGroup ".NETCore" (function SinglePlatform (Windows _) -> true | _ -> false)
-        |> CheckIfFullyInGroup "Silverlight" (function SinglePlatform (Silverlight _) -> true | _ -> false)
-        |> CheckIfFullyInGroup "WindowsPhoneApp" (function SinglePlatform (WindowsPhoneApp _) -> true | _ -> false)
-        |> CheckIfFullyInGroup "WindowsPhone" (function SinglePlatform (WindowsPhone _) -> true | _ -> false)
+        |> CheckIfFullyInGroupS "true" (fun _ -> true)
+        |> CheckIfFullyInGroupS ".NETFramework" (function SinglePlatform (DotNetFramework _) -> true | _ -> false)
+        |> CheckIfFullyInGroup ".NETCore"  (function SinglePlatform (Windows _) -> true | _ -> false) (function SinglePlatform (Windows _) -> true | SinglePlatform (UAP _) -> true | _ -> false)
+        |> CheckIfFullyInGroupS "Silverlight" (function SinglePlatform (Silverlight _) -> true | _ -> false)
+        |> CheckIfFullyInGroupS "WindowsPhoneApp" (function SinglePlatform (WindowsPhoneApp _) -> true | _ -> false)
+        |> CheckIfFullyInGroupS "WindowsPhone" (function SinglePlatform (WindowsPhone _) -> true | _ -> false)
 
     //let targets =
     //    targets 
@@ -318,6 +321,8 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile l
                 | [] -> "false"
                 | [ detail ] -> sprintf "%s And %s" group detail
                 | conditions ->
+                    if conditions |> Seq.exists (String.IsNullOrEmpty) then
+                        failwithf "Something went wrong (Details: probably in CheckIfFullyInGroup). Please open an issue."
                     let detail =
                         conditions
                         |> fun cs -> String.Join(" Or ",cs)

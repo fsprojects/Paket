@@ -39,14 +39,6 @@ let ``should filter >=net40 and >= net45``() =
     |> shouldEqual l2
 
 [<Test>]
-let ``should filter >= net40 and portable``() =
-    let l1 = ExplicitRestriction (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4)))
-    let l2 = ExplicitRestriction (getPortableRestriction("net45"))
-
-    filterRestrictions l1 l2
-    |> shouldEqual (ExplicitRestriction FrameworkRestriction.NoRestriction)
-
-[<Test>]
 let ``should filter >= net40 and >= net20 < net46``() = 
     let l1 = ExplicitRestriction (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4)))
     let l2 = ExplicitRestriction (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V2),DotNetFramework(FrameworkVersion.V4_6)))

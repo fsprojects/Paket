@@ -253,8 +253,9 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                not catalogData.Listed.Value 
             else
                 false
-
-        let optimized = Requirements.optimizeDependencies dependencies 
+        // TODO: We probably need our new restriction logic here because I guess what nuget gives us is not enough...
+        let optimized = 
+            dependencies |> List.map (fun (m,v,r) -> m,v, ExplicitRestriction r)
         return 
             { Dependencies = optimized
               PackageName = packageName.ToString()
