@@ -577,7 +577,7 @@ let private boostConflicts
     let lastConflictReported =
         match conflicts with
         | _ when not conflicts.IsEmpty  ->
-            let c = conflicts.MinimumElement
+            let c = conflicts |> Seq.minBy (fun c -> c.Parent)
             let selectedVersion = Map.tryFind c.Name filteredVersions
             let key = conflicts |> HashSet,selectedVersion
             stackpack.KnownConflicts.Add key |> ignore
