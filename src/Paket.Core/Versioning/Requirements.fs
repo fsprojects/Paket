@@ -933,11 +933,11 @@ type PackageRequirement =
         if c <> 0 then c else
         let c = -compare x.VersionRequirement y.VersionRequirement
         if c <> 0 then c else
-        let c = compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions
-        if c <> 0 then c else
         let c = compare x.Parent y.Parent
         if c <> 0 then c else
         let c = compare x.Name y.Name
+        if c <> 0 then c else
+        let c = compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions
         if c <> 0 then c else 0
 
     interface System.IComparable with
