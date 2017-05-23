@@ -264,22 +264,42 @@ type FrameworkRestrictionAndList =
     member internal x.RawFormular =
         FrameworkRestrictionP.AndP (x.Literals |> List.map (fun literal -> literal.RawFormular))
 
+[<CustomEquality; CustomComparison>]
 type FrameworkRestriction =
-    { OrFormulas : FrameworkRestrictionAndList list }
+    private { OrFormulas : FrameworkRestrictionAndList list
+              mutable PrivateRawFormula : FrameworkRestrictionP option ref
+              mutable PrivateRepresentedFrameworks : TargetProfile Set option ref }
+    static member FromOrList l = { OrFormulas = l; PrivateRepresentedFrameworks = ref None; PrivateRawFormula = ref None }
+    static member internal WithOrListInternal orList l = { l with OrFormulas = orList }
     member internal x.RawFormular =
-        FrameworkRestrictionP.OrP (x.OrFormulas |> List.map (fun andList -> andList.RawFormular))
+        match !x.PrivateRawFormula with
+        | Some f -> f
+        | None ->
+            let raw = FrameworkRestrictionP.OrP (x.OrFormulas |> List.map (fun andList -> andList.RawFormular))
+            x.PrivateRawFormula := Some raw
+            raw
     override x.ToString() =
         x.RawFormular.ToString()
     member x.IsSubsetOf (y:FrameworkRestriction) =
         x.RawFormular.IsSubsetOf y.RawFormular
     member x.RepresentedFrameworks =
-        x.RawFormular.RepresentedFrameworks
+        match !x.PrivateRepresentedFrameworks with
+        | Some s -> s
+        | None ->
+            let set = x.RawFormular.RepresentedFrameworks
+            x.PrivateRepresentedFrameworks := Some set
+            set
     member x.IsMatch tp =
         x.RawFormular.IsMatch tp
+    override x.Equals(y) = (match y with :? FrameworkRestriction as r -> r.RepresentedFrameworks = x.RepresentedFrameworks | _ -> false)
+    override x.GetHashCode() = x.RepresentedFrameworks.GetHashCode()
+    interface System.IComparable with
+        member x.CompareTo(y) = (match y with :? FrameworkRestriction as r -> compare x.RepresentedFrameworks r.RepresentedFrameworks | _ -> failwith "wrong type")
+
 module FrameworkRestriction =
-    let EmptySet = { OrFormulas = [] } // false
-    let NoRestriction = { OrFormulas = [ { Literals = [] } ] } // true
-    let FromLiteral lit = { OrFormulas = [ { Literals = [ lit ] } ] }
+    let EmptySet = FrameworkRestriction.FromOrList [] // false
+    let NoRestriction = FrameworkRestriction.FromOrList [ { Literals = [] } ] // true
+    let FromLiteral lit = FrameworkRestriction.FromOrList [ { Literals = [ lit ] } ]
     let AtLeastPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromLiteral (AtLeastL pf))
     let ExactlyPlatform pf = FromLiteral (FrameworkRestrictionLiteral.FromLiteral (ExactlyL pf))
     let Exactly id = ExactlyPlatform (SinglePlatform id)
@@ -313,7 +333,7 @@ module FrameworkRestriction =
                     else
                         workDone, andFormula :: reworkedOrFormulas
                     ) (false, [])
-            if workDone then removeNegatedLiteralsWhichOccurSinglePositive { OrFormulas = reworked }
+            if workDone then removeNegatedLiteralsWhichOccurSinglePositive (FrameworkRestriction.WithOrListInternal reworked fr)
             else fr
         /// (>= net40-full) && (< net46) && (>= net20) can be simplified to (< net46) && (>= net40-full) because (>= net40-full) is a subset of (>= net20)
         // NOTE: This optimization is kind of dangerous as future frameworks might make it invalid
@@ -321,7 +341,7 @@ module FrameworkRestriction =
         let removeSubsetLiteralsInAndClause (fr:FrameworkRestriction) =
             let simplifyAndClause (andClause:FrameworkRestrictionAndList) =
                 let literals = andClause.Literals
-                { Literals =
+                let newLiterals =
                     andClause.Literals
                     |> List.filter (fun literal ->
                         // we filter out literals, for which another literal exists which is a subset
@@ -329,9 +349,19 @@ module FrameworkRestriction =
                         |> Seq.filter (fun l -> l <> literal)
                         |> Seq.exists (fun otherLiteral ->
                             otherLiteral.RawFormular.IsSubsetOf literal.RawFormular)
-                        |> not) }
+                        |> not)
+                if newLiterals.Length <> literals.Length
+                then true, {Literals = newLiterals}
+                else false, andClause
                 //andClause
-            { OrFormulas = fr.OrFormulas |> List.map simplifyAndClause }
+            let wasChanged, newOrList =
+                fr.OrFormulas
+                |> List.fold (fun (oldWasChanged, newList) andList ->
+                    let wasChanged, newAndList = simplifyAndClause andList
+                    oldWasChanged || wasChanged, newAndList :: newList) (false, [])
+            if wasChanged then
+                FrameworkRestriction.WithOrListInternal newOrList fr
+            else fr
         
         /// (>= net40-full) || (< net46) || (>= net20) can be simplified to (< net46) || (>= net20) because (>= net40-full) is a subset of (>= net20)
         // NOTE: This optimization is kind of dangerous as future frameworks might make it invalid
@@ -340,7 +370,7 @@ module FrameworkRestriction =
             let simpleOrLiterals =
                 fr.OrFormulas
                 |> List.choose (function { Literals = [h] } -> Some h | _ -> None)
-            { OrFormulas = 
+            let newOrList =
                 fr.OrFormulas
                 |> List.filter (function
                     | { Literals = [h] } ->
@@ -349,7 +379,10 @@ module FrameworkRestriction =
                         |> Seq.exists (fun otherLiteral ->
                             h.RawFormular.IsSubsetOf otherLiteral.RawFormular)
                         |> not
-                    | _ -> true) }
+                    | _ -> true)
+            if newOrList.Length < fr.OrFormulas.Length then
+                FrameworkRestriction.WithOrListInternal newOrList fr
+            else fr
 
         /// ((>= net20) && (>= net40)) || (>= net20) can be simplified to (>= net20) because any AND clause with (>= net20) can be removed.
         let removeUneccessaryOrClauses (fr:FrameworkRestriction) =
@@ -361,15 +394,18 @@ module FrameworkRestriction =
                     item.Literals
                     |> Seq.forall (fun lit -> andList.Literals |> Seq.contains lit)
 
-            { OrFormulas = 
+            let newOrList =
                 fr.OrFormulas
                 |> List.filter (fun orClause ->
                     orClauses |> Seq.exists (isContained orClause) |> not)
-                    }
+
+            if newOrList.Length < fr.OrFormulas.Length then
+                FrameworkRestriction.WithOrListInternal newOrList fr
+            else fr
 
         /// clauses with ((>= net20) && (< net20) && ...) can be removed because they contains a literal and its negation.
         let removeUneccessaryAndClauses (fr:FrameworkRestriction) =
-            { OrFormulas = 
+            let newOrList =
                 fr.OrFormulas
                 |> List.filter (fun andList ->
                     let normalizeLiterals =
@@ -382,7 +418,12 @@ module FrameworkRestriction =
                         normalizeLiterals
                         |> Seq.exists (fun l ->
                             normalizeLiterals |> Seq.contains { l with IsNegated = not l.IsNegated})
-                    not foundLiteralAndNegation) }
+                    not foundLiteralAndNegation)
+                    
+            if newOrList.Length < fr.OrFormulas.Length then
+                FrameworkRestriction.WithOrListInternal newOrList fr
+            else fr
+
 
         /// When we optmized a clause away completely we can replace the hole formula with "NoRestriction"
         /// This happens for example with ( <net45 || >=net45) and the removeNegatedLiteralsWhichOccurSinglePositive
@@ -394,11 +435,11 @@ module FrameworkRestriction =
             if containsEmptyAnd then NoRestriction else fr
         
         let sortClauses (fr:FrameworkRestriction) =
-            { OrFormulas = 
-                fr.OrFormulas
-                |> List.map (fun andFormula -> { Literals = andFormula.Literals |> List.distinct |> List.sort })
-                |> List.distinct
-                |> List.sort }
+            fr.OrFormulas
+            |> List.map (fun andFormula -> { Literals = andFormula.Literals |> List.distinct |> List.sort })
+            |> List.distinct
+            |> List.sort 
+            |> fun newOrList -> FrameworkRestriction.WithOrListInternal newOrList fr
         let optimize fr =
             fr
             |> removeNegatedLiteralsWhichOccurSinglePositive
@@ -421,18 +462,20 @@ module FrameworkRestriction =
         match left.OrFormulas with
         | [] -> right
         | [h] ->
-            { OrFormulas =
-                right.OrFormulas
-                |> List.map (fun andFormula -> { Literals = andFormula.Literals @ h.Literals } ) }
+            right.OrFormulas
+            |> List.map (fun andFormula -> { Literals = andFormula.Literals @ h.Literals } )
+            |> FrameworkRestriction.FromOrList
         | h :: t ->
-            { OrFormulas = (And2 {OrFormulas = [h]} right).OrFormulas @ ((And2 {OrFormulas = t} right).OrFormulas) }
+            (And2 (FrameworkRestriction.FromOrList [h]) right).OrFormulas @ (And2 (FrameworkRestriction.FromOrList t) right).OrFormulas
+            |> FrameworkRestriction.FromOrList
     
     let And (rst:FrameworkRestriction list) =
         List.fold And2 NoRestriction rst
         |> simplify
     
     let private Or2 (left : FrameworkRestriction) (right : FrameworkRestriction) =
-        { OrFormulas = left.OrFormulas @ right.OrFormulas }
+        left.OrFormulas @ right.OrFormulas
+        |> FrameworkRestriction.FromOrList
     
     let Or (rst:FrameworkRestriction list) =
         List.fold Or2 EmptySet rst
@@ -585,7 +628,8 @@ let parseRestrictions failImmediatly (text:string) =
                 let negated =
                     match operand with
                     | { OrFormulas = [ {Literals = [ lit] } ] } -> 
-                        { OrFormulas = [ {Literals = [ { lit with IsNegated = not lit.IsNegated } ] } ] }
+                        [ {Literals = [ { lit with IsNegated = not lit.IsNegated } ] } ]
+                        |> FrameworkRestriction.FromOrList
                     |  _ -> failwithf "a general NOT is not implemted jet (and shouldn't be emitted for now)"
                 negated, next
             else
