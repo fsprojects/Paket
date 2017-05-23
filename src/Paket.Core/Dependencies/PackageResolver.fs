@@ -626,7 +626,7 @@ type private Stage =
     | Inner of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
 
 /// Resolves all direct and transitive dependencies
-let Resolve (getVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
+let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
        
     use d = Profile.startCategory Profile.Category.ResolverAlgorithm
@@ -635,7 +635,7 @@ let Resolve (getVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalSt
     let startRequestGetPackageDetails sources groupName packageName semVer =
         let key = (sources, packageName, semVer)
         startedGetPackageDetailsRequests.GetOrAdd (key, fun _ ->
-            (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
+        (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
             |> Async.StartAsTask)
     let getPackageDetailsBlock sources groupName packageName semVer =
         use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked Profile.BlockReason.PackageDetails)
@@ -643,14 +643,21 @@ let Resolve (getVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalSt
 
     
     let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
-    let startRequestGetVersions sources resolverStrategy groupName packageName =
+    let startRequestGetVersions sources groupName packageName =
         let key = (sources, packageName)
         startedGetVersionsRequests.GetOrAdd (key, fun _ ->
-            getVersionsRaw sources resolverStrategy groupName packageName
+            getVersionsRaw sources groupName packageName
             |> Async.StartAsTask)
     let getVersionsBlock sources resolverStrategy groupName packageName =
         use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked Profile.BlockReason.GetVersion)
-        (startRequestGetVersions sources resolverStrategy groupName packageName).GetAwaiter().GetResult()
+        let versions = (startRequestGetVersions sources groupName packageName).GetAwaiter().GetResult() |> Seq.toList
+        d.Dispose()
+        let sorted =
+            match resolverStrategy with
+            | ResolverStrategy.Max -> List.sortDescending versions
+            | ResolverStrategy.Min -> List.sort versions
+        let pref = getPreferredVersionsRaw sources resolverStrategy groupName packageName
+        pref @ sorted |> List.toSeq
 
     let packageFilter =
         match updateMode with
@@ -854,7 +861,7 @@ let Resolve (getVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalSt
                     // Start pre-loading infos about dependencies.
                     for (pack,verReq,restr) in exploredPackage.Dependencies do
                         async {
-                            let! versions = startRequestGetVersions currentRequirement.Sources ResolverStrategy.Max groupName pack |> Async.AwaitTask
+                            let! versions = startRequestGetVersions currentRequirement.Sources groupName pack |> Async.AwaitTask
                             // Preload the first version in range of this requirement
                             match versions |> Seq.map fst |> Seq.tryFind (verReq.IsInRange) with
                             | Some verToPreload ->
@@ -903,7 +910,7 @@ let Resolve (getVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalSt
     }
 
     for openReq in startingStep.OpenRequirements do
-        startRequestGetVersions openReq.Sources ResolverStrategy.Max groupName openReq.Name
+        startRequestGetVersions openReq.Sources groupName openReq.Name
         |> ignore
 
     let currentRequirement = getCurrentRequirement packageFilter startingStep.OpenRequirements (Dictionary())

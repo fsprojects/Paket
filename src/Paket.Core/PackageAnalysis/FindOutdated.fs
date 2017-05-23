@@ -37,20 +37,17 @@ let FindOutdated strict includingPrereleases groupNameFilter environment = trial
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let alternativeProjectRoot = None
 
-    let getVersionsF sources resolverStrategy groupName packageName = async {
+    let getVersionsF sources groupName packageName = async {
         let! versions = NuGetV2.GetVersions force alternativeProjectRoot root (sources, packageName)
-                
-        match resolverStrategy with
-        | ResolverStrategy.Max -> return List.sortDescending versions |> List.toSeq
-        | ResolverStrategy.Min -> return List.sort versions |> List.toSeq }
-
+        return versions |> List.toSeq }
+    let getPreferredVersionsF sources resolverStrategy groupName packageName = []
     let dependenciesFile = UpdateProcess.detectProjectFrameworksForDependenciesFile dependenciesFile
     let checkedDepsGroups = 
         match groupNameFilter with
         | None -> dependenciesFile.Groups
         | Some gname -> dependenciesFile.Groups |> Map.filter(fun k g -> k.ToString() = gname)
 
-    let newResolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, NuGetV2.GetPackageDetails alternativeProjectRoot root true, RuntimeGraph.getRuntimeGraphFromNugetCache root, checkedDepsGroups, PackageResolver.UpdateMode.UpdateAll)
+    let newResolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPreferredVersionsF, NuGetV2.GetPackageDetails alternativeProjectRoot root true, RuntimeGraph.getRuntimeGraphFromNugetCache root, checkedDepsGroups, PackageResolver.UpdateMode.UpdateAll)
 
     let checkedLockGroups = 
         match groupNameFilter with

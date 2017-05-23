@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>restore</StartArguments>
-    <StartWorkingDirectory>C:\temp\PaketRepro</StartWorkingDirectory>
+    <StartArguments>auto-restore on</StartArguments>
+    <StartWorkingDirectory>C:\PROJ\Yaaf\Paket\integrationtests\scenarios\i001835-auto-restore-on-twice\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

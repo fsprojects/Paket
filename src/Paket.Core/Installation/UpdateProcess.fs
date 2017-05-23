@@ -10,15 +10,15 @@ open Chessie.ErrorHandling
 open Paket.Logging
 open InstallProcess
 
-let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
-    let getSortedVersionsF sources resolverStrategy groupName packageName : Async<seq<SemVerInfo * PackageSources.PackageSource list>> = async {
+let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
+    let getSortedVersionsF sources groupName packageName : Async<seq<SemVerInfo * PackageSources.PackageSource list>> = async {
         if verbose then
             verbosefn "  - fetching versions for %O" packageName
         let! versions = 
-            getSortedVersionsF sources resolverStrategy groupName packageName
+            getVersionsF sources groupName packageName
         if Seq.isEmpty versions then
             failwithf "Couldn't retrieve versions for %O." packageName
-        return versions |> List.toSeq }
+        return versions }
         
     let dependenciesFile =
         let processFile createRequirementF =
@@ -49,7 +49,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRunti
         | SemVerUpdateMode.KeepMinor -> processFile (fun v -> sprintf "~> %d.%d.%d" v.Major v.Minor v.Patch + formatPrerelease v)
         | SemVerUpdateMode.KeepPatch -> processFile (fun v -> sprintf "~> %d.%d.%d.%s" v.Major v.Minor v.Patch v.Build + formatPrerelease v)
 
-    let getVersionsF,getPackageDetailsF,groupsToUpdate =
+    let getPreferredVersionsF,getPackageDetailsF,groupsToUpdate =
         let changes,groups =
             match updateMode with
             | UpdateAll ->
@@ -114,19 +114,14 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRunti
 
                 v,s :: (List.map PackageSources.PackageSource.FromCache caches))
 
-        let getVersionsF sources resolverStrategy groupName packageName =
-            async { 
-                let pre =
-                    match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy with
-                    | Some x, ResolverStrategy.Min -> [x]
-                    | Some x, _ -> 
-                        if not (changes |> Set.contains (groupName, packageName)) then
-                            [x]
-                        else []
-                    | _ -> []
-                let! results = getSortedVersionsF sources resolverStrategy groupName packageName
-                return Seq.append pre results |> Seq.cache
-            }
+        let getPreferredVersionsF sources resolverStrategy groupName packageName =
+            match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy with
+            | Some x, ResolverStrategy.Min -> [x]
+            | Some x, _ -> 
+                if not (changes |> Set.contains (groupName, packageName)) then
+                    [x]
+                else []
+            | _ -> []
 
         let getPackageDetailsF sources groupName packageName version = async {
             let! (exploredPackage:PackageDetails) = getPackageDetailsF sources groupName packageName version
@@ -134,9 +129,9 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRunti
             | Some (preferedVersion,_) when version = preferedVersion -> return { exploredPackage with Unlisted = false }
             | _ -> return exploredPackage }
 
-        getVersionsF,getPackageDetailsF,groups
+        getPreferredVersionsF,getPackageDetailsF,groups
         
-    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, getRuntimeGraphFromPackage, groupsToUpdate, updateMode)
+    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPreferredVersionsF, getPackageDetailsF, getRuntimeGraphFromPackage, groupsToUpdate, updateMode)
 
     let groups = 
         dependenciesFile.Groups
@@ -193,11 +188,9 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
 
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let inline getVersionsF sources resolverStrategy groupName packageName = async {
-        let! versions = NuGetV2.GetVersions force alternativeProjectRoot root (sources, packageName)
-        match resolverStrategy with
-        | ResolverStrategy.Max -> return List.sortDescending versions
-        | ResolverStrategy.Min -> return List.sort versions }
+    let inline getVersionsF sources groupName packageName = async {
+        let! result = NuGetV2.GetVersions force alternativeProjectRoot root (sources, packageName) 
+        return result |> List.toSeq }
 
     let dependenciesFile = detectProjectFrameworksForDependenciesFile dependenciesFile
 

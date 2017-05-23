@@ -305,6 +305,8 @@ Target "MergePaketTool" (fun _ ->
 
 Target "RunIntegrationTests" (fun _ ->
     mergePaketTool ()
+    // improves the speed of the test-suite by disabling the runtime resolution.
+    System.Environment.SetEnvironmentVariable("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     !! integrationTestAssemblies    
     |> NUnit3 (fun p ->
         { p with

@@ -207,7 +207,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         try self.GetPackage (groupName,name) |> Some
         with _ -> None
 
-    member this.Resolve(force, getSha1, getVersionF, getPackageDetailsF, getPackageRuntimeGraph, groupsToResolve:Map<GroupName,_>, updateMode) =
+    member this.Resolve(force, getSha1, getVersionF, getPreferredVersionF, getPackageDetailsF, getPackageRuntimeGraph, groupsToResolve:Map<GroupName,_>, updateMode) =
         let resolveGroup groupName _ =
             let group = this.GetGroup groupName
 
@@ -245,6 +245,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             let resolution =
                 PackageResolver.Resolve(
                     getVersionF, 
+                    getPreferredVersionF,
                     getPackageDetailsF, 
                     groupName,
                     group.Options.ResolverStrategyForDirectDependencies,
@@ -328,6 +329,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     let runtimeResolution =
                         PackageResolver.Resolve(
                             getVersionF,
+                            getPreferredVersionF,
                             getPackageDetailsF,
                             groupName,
                             group.Options.ResolverStrategyForDirectDependencies,
