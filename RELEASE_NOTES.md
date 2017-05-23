@@ -1,3 +1,6 @@
+#### 4.8.6 - 23.05.2017
+* USABILITY: Better error reporting - https://github.com/fsprojects/Paket/pull/2349
+
 #### 4.8.5 - 08.05.2017
 * BUGFIX: Support .NET moniker ">= monoandroid" - https://github.com/fsprojects/Paket/issues/2246
 
