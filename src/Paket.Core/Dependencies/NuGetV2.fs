@@ -333,6 +333,7 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
 
 /// Reads package name from a nupkg file
 let getPackageNameFromLocalFile fileName =
+    use __ = Profile.startCategory Profile.Categories.FileCopy
     fixArchive fileName
     use zipToCreate = new FileStream(fileName, FileMode.Open, FileAccess.Read)
     use zip = new ZipArchive(zipToCreate, ZipArchiveMode.Read)
@@ -349,7 +350,8 @@ let getDetailsFromLocalNuGetPackage isCache alternativeProjectRoot root localNuG
         let localNugetPath = Utils.normalizeLocalPath localNuGetPath
         let di = getDirectoryInfoForLocalNuGetFeed localNugetPath alternativeProjectRoot root
         let nupkg = findLocalPackage di.FullName packageName version
-
+        
+        use _ = Profile.startCategory Profile.Categories.FileCopy
         fixArchive nupkg.FullName
         use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open, FileAccess.Read)
         use zip = new ZipArchive(zipToCreate,ZipArchiveMode.Read)
@@ -423,7 +425,8 @@ let rec private cleanup (dir : DirectoryInfo) =
 let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
         let targetFolder = DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize()))
-
+        
+        use _ = Profile.startCategory Profile.Categories.FileCopy
         if isExtracted targetFolder fileName |> not then
             Directory.CreateDirectory(targetFolder.FullName) |> ignore
             let fi = FileInfo fileName
@@ -448,6 +451,7 @@ let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version
 /// Extracts the given package to the ./packages folder
 let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo, detailed) =
     async {
+        use _ = Profile.startCategory Profile.Categories.FileCopy
         let directory = DirectoryInfo(targetFolder)
         if isExtracted directory fileName then
              if verbose then
@@ -483,6 +487,7 @@ let CopyLicenseFromCache(root, groupName, cacheFileName, packageName:PackageName
                     if verbose then
                        verbosefn "License %O %O already copied" packageName version
                 else
+                    use _ = Profile.startCategory Profile.Categories.FileCopy
                     File.Copy(cacheFile.FullName, targetFile.FullName, true)
         with
         | exn -> traceWarnfn "Could not copy license for %O %O from %s.%s    %s" packageName version cacheFileName Environment.NewLine exn.Message
@@ -498,6 +503,7 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
             if verbose then
                 verbosefn "%O %O already copied" packageName version
         else
+            use _ = Profile.startCategory Profile.Categories.FileCopy
             CleanDir targetFolder
             File.Copy(cacheFileName, targetFile.FullName)
         try
@@ -506,6 +512,7 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
             return extracted
         with
         | exn ->
+            use _ = Profile.startCategory Profile.Categories.FileCopy
             File.Delete targetFile.FullName
             Directory.Delete(targetFolder,true)
             return! raise exn
@@ -514,6 +521,7 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
 /// Puts the package into the cache
 let CopyToCache(cache:Cache, fileName, force) =
     try
+        use __ = Profile.startCategory Profile.Categories.FileCopy
         if Cache.isInaccessible cache then
             if verbose then
                 verbosefn "Cache %s is inaccessible, skipping" cache.Location
@@ -563,6 +571,7 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
 
                 request.UseDefaultCredentials <- true
                 request.Proxy <- Utils.getDefaultProxyFor licenseUrl
+                use _ = Profile.startCategory Profile.Categories.NuGetRequest
                 use! httpResponse = request.AsyncGetResponse()
 
                 use httpResponseStream = httpResponse.GetResponseStream()
@@ -936,7 +945,8 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                     let path = Utils.normalizeLocalPath path
                     let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root
                     let nupkg = findLocalPackage di.FullName packageName version
-
+                    
+                    use _ = Profile.startCategory Profile.Categories.FileCopy
                     File.Copy(nupkg.FullName,targetFileName)
                 | _ ->
                 // discover the link on the fly
@@ -961,7 +971,8 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                     if authenticated && verbose then
                         tracefn "  from %O" !downloadUrl
                         tracefn "  to %s" targetFileName
-
+                    
+                    use trackDownload = Profile.startCategory Profile.Categories.NuGetDownload
                     let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
                     let request = HttpWebRequest.Create(downloadUri) :?> HttpWebRequest
@@ -1007,7 +1018,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                         let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
                         bytesRead := bytes
                         do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
-
+                    
                     match (httpResponse :?> HttpWebResponse).StatusCode with
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode

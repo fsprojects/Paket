@@ -13,8 +13,7 @@ open PackageSources
 open System.Xml
 open Paket.Domain
 
-let private stopWatch = new Stopwatch()
-stopWatch.Start()
+do Paket.Profile.reset()
 
 type PaketExiter() =
     interface IExiter with
@@ -35,10 +34,18 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
         Environment.ExitCode <- 1
 #endif
     else
-        commandF result
-        let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
-        if not silent then
-            tracefn "%s - ready." elapsedTime
+        try
+            commandF result
+        finally
+            if not silent then
+                let results =
+                    Profile.watches
+                    |> Seq.map (fun (kv) -> kv.Key, kv.Value.Elapsed)
+                    |> Seq.toList
+                let combined = results |> List.map snd |> List.fold (+) (TimeSpan())
+                let elapsedTime = Utils.TimeSpanToReadableString combined
+                for (cat, elapsed) in results do tracefn "%s - %A." (Utils.TimeSpanToReadableString elapsed) cat
+                tracefn "%s - ready." elapsedTime
 
 let processCommand silent commandF result =
     processWithValidation silent (fun _ -> true) commandF result

@@ -122,26 +122,49 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRunti
 
                 v,s :: (List.map PackageSources.PackageSource.FromCache caches))
 
-        let getVersionsF sources resolverStrategy groupName packageName = 
-            seq { 
-                match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy with
-                | Some x, ResolverStrategy.Min -> yield x
-                | Some x, _ -> 
-                    if not (changes |> Set.contains (groupName, packageName)) then
-                        yield x
-                | _ -> ()
-                yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
-            } |> Seq.cache
+        let getVersionsF sources resolverStrategy groupName packageName =
+            Profile.startCategoryRaw Profile.Categories.Other
+            try
+                seq { 
+                    match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy with
+                    | Some x, ResolverStrategy.Min -> yield x
+                    | Some x, _ -> 
+                        if not (changes |> Set.contains (groupName, packageName)) then
+                            yield x
+                    | _ -> ()
+                    yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
+                } |> Seq.cache
+            finally
+                Profile.startCategoryRaw Profile.Categories.ResolverAlgorithm
 
         let getPackageDetailsF sources groupName packageName version =
-            let exploredPackage:PackageDetails = getPackageDetailsF sources groupName packageName version
-            match preferredVersions |> Map.tryFind (groupName,packageName) with
-            | Some (preferedVersion,_) when version = preferedVersion -> { exploredPackage with Unlisted = false }
-            | _ -> exploredPackage
+            Profile.startCategoryRaw Profile.Categories.Other
+            try
+                let exploredPackage:PackageDetails = getPackageDetailsF sources groupName packageName version
+                match preferredVersions |> Map.tryFind (groupName,packageName) with
+                | Some (preferedVersion,_) when version = preferedVersion -> { exploredPackage with Unlisted = false }
+                | _ -> exploredPackage
+            finally
+                Profile.startCategoryRaw Profile.Categories.ResolverAlgorithm
 
         getVersionsF,getPackageDetailsF,groups
 
-    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, getRuntimeGraphFromPackage, groupsToUpdate, updateMode)
+    let getRuntimeGraphFromPackageF groupName resolvedPackage =
+        Profile.startCategoryRaw Profile.Categories.Other
+        try
+            getRuntimeGraphFromPackage groupName resolvedPackage
+        finally
+            Profile.startCategoryRaw Profile.Categories.ResolverAlgorithm
+     
+    let getSha1F origin s1 s2 restriction s3 =
+        Profile.startCategoryRaw Profile.Categories.Other
+        try
+            getSha1 origin s1 s2 restriction s3
+        finally
+            Profile.startCategoryRaw Profile.Categories.ResolverAlgorithm   
+    use d = Profile.startCategory Profile.Categories.ResolverAlgorithm
+    let resolution = dependenciesFile.Resolve(force, getSha1F, getVersionsF, getPackageDetailsF, getRuntimeGraphFromPackageF, groupsToUpdate, updateMode)
+    d.Dispose()
 
     let groups = 
         dependenciesFile.Groups

@@ -552,6 +552,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
             use client = createWebClient (url,auth)
+            use _ = Profile.startCategory Profile.Categories.NuGetDownload
             let task = client.DownloadFileTaskAsync (Uri url, filePath) |> Async.AwaitTask
             do! task
         with
@@ -566,7 +567,8 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
             use client = createWebClient(url,auth)
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
-
+                
+            use _ = Profile.startCategory Profile.Categories.NuGetRequest
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
@@ -584,6 +586,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             addHeader client "DataServiceVersion" "1.0;NetFx"
             addHeader client "MaxDataServiceVersion" "2.0;NetFx"
             
+            use _ = Profile.startCategory Profile.Categories.NuGetRequest
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
@@ -604,6 +607,7 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
 #else
             client.Encoding <- Encoding.UTF8
 #endif
+            use _ = Profile.startCategory Profile.Categories.NuGetRequest
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             return Some raw
         with e ->
