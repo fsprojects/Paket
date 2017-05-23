@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>RuntimeGraphParser - Paket</title>
+    <title>PaketFiles - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,35 +58,31 @@
 
 
 
-<h1>RuntimeGraphParser</h1>
+<h1>PaketFiles</h1>
 <p>
   <span>Namespace: Paket</span><br />
+  <span>Parent Module: <a href="paket-queries.html">Queries</a></span>
 </p>
 <div class="xmldoc">
-<p>A module for parsing runtime.json files contained in various packages.</p>
-
 </div>
-
-<!-- Render nested types and modules, if there are any -->
-
-  <h3>Functions and values</h3>
+  <h3>Union Cases</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Function or value</td><td>Description</td></tr>
+      <tr><td>Union Case</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '433', 433)" onmouseover="showTip(event, '433', 433)">
-            readCompatiblityProfilesJ json
+          <code onmouseout="hideTip(event, '767', 767)" onmouseover="showTip(event, '767', 767)">
+            DependenciesAndLock(...)
           </code>
-          <div class="tip" id="433">
-            <strong>Signature:</strong> json:JObject -&gt; CompatibilityProfile list<br />
+          <div class="tip" id="767">
+            <strong>Signature:</strong> DependenciesFile * LockFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L56-56" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L19-19" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -96,51 +92,41 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '434', 434)" onmouseover="showTip(event, '434', 434)">
-            readRuntimeDescriptionJ json
+          <code onmouseout="hideTip(event, '768', 768)" onmouseover="showTip(event, '768', 768)">
+            JustDependencies(DependenciesFile)
           </code>
-          <div class="tip" id="434">
-            <strong>Signature:</strong> json:JObject -&gt; RuntimeDescription list<br />
+          <div class="tip" id="768">
+            <strong>Signature:</strong> DependenciesFile<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L73-73" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L18-18" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
         </td>
       </tr>
+    </tbody>
+  </table>
+  <h3>Static members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Static member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '435', 435)" onmouseover="showTip(event, '435', 435)">
-            readRuntimeGraph s
+          <code onmouseout="hideTip(event, '769', 769)" onmouseover="showTip(event, '769', 769)">
+            LocateFromDirectory(directory)
           </code>
-          <div class="tip" id="435">
-            <strong>Signature:</strong> s:string -&gt; RuntimeGraph<br />
+          <div class="tip" id="769">
+            <strong>Signature:</strong> directory:DirectoryInfo -&gt; PaketFiles<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L121-121" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '436', 436)" onmouseover="showTip(event, '436', 436)">
-            readRuntimeGraphJ json
-          </code>
-          <div class="tip" id="436">
-            <strong>Signature:</strong> json:JObject -&gt; RuntimeGraph<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L103-103" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L21-21" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
