@@ -131,20 +131,19 @@ let comparePaths (p1 : PathPenalty) (p2 : PathPenalty) =
 
 
 let collectPlatforms =
-    let rec loop (acc:TargetProfile list) (framework:TargetProfile) (profls:TargetProfile list) =
-        match profls with 
-        | [] -> acc 
-        | f::tl -> 
-            if f.SupportedPlatforms |> List.exists ((=) framework) 
-            then loop (f::acc) framework tl 
-            else loop acc framework tl 
+    let rec loop (acc:TargetProfile list) (framework:TargetProfile) (profls:TargetProfile Set) =
+        profls
+        |> Seq.fold (fun acc f ->
+            if f.SupportedPlatforms |> List.exists ((=) framework) then
+                f::acc
+            else acc) []
     memoize (fun (framework,profls) -> loop ([]:TargetProfile list) framework profls)
 
 let getPlatformsSupporting =
     // http://nugettoolsdev.azurewebsites.net
     let calculate (x:TargetProfile) =
         KnownTargetProfiles.AllProfiles
-        |> List.filter (fun plat -> x.IsSupportedBy plat)
+        |> Set.filter (fun plat -> x.IsSupportedBy plat)
     memoize calculate
 
 let platformsSupport = 
@@ -177,13 +176,13 @@ let getSupportedTargetProfiles =
     memoize 
         (fun (paths : ParsedPlatformPath list) ->
             KnownTargetProfiles.AllProfiles
-            |> List.choose (fun target ->
+            |> Seq.choose (fun target ->
                 match findBestMatch(paths,target) with
                 | Some p -> Some(p, target)
                 | _ -> None)
-            |> List.groupBy fst
-            |> List.map (fun (path, group) -> path, List.map snd group)
-            |> Map.ofList)
+            |> Seq.groupBy fst
+            |> Seq.map (fun (path, group) -> path, Seq.map snd group |> Set.ofSeq)
+            |> Map.ofSeq)
 
 
 let getTargetCondition (target:TargetProfile) =
@@ -218,15 +217,15 @@ let getTargetCondition (target:TargetProfile) =
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
     | PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
-let getCondition (referenceCondition:string option) (allTargets: TargetProfile list list) (targets : TargetProfile list) =
+let getCondition (referenceCondition:string option) (allTargets: TargetProfile Set list) (targets : TargetProfile Set) =
     let inline CheckIfFullyInGroup typeName matchF filterRestF (processed,targets) =
         let fullyContained = 
             KnownTargetProfiles.AllDotNetProfiles 
             |> List.filter matchF
-            |> List.forall (fun p -> targets |> Seq.exists ((=) p))
+            |> List.forall (fun p -> targets |> Set.contains p)
 
         if fullyContained then
-            (sprintf "$(TargetFrameworkIdentifier) == '%s'" typeName,"") :: processed,targets |> List.filter (filterRestF >> not)
+            (sprintf "$(TargetFrameworkIdentifier) == '%s'" typeName,"") :: processed,targets |> Set.filter (filterRestF >> not)
         else
             processed,targets
     let inline CheckIfFullyInGroupS typeName matchF (processed,targets) =
@@ -241,15 +240,16 @@ let getCondition (referenceCondition:string option) (allTargets: TargetProfile l
         |> CheckIfFullyInGroupS "WindowsPhone" (function SinglePlatform (WindowsPhone _) -> true | _ -> false)
 
     let conditions =
-        if targets = [ SinglePlatform(Native(NoBuildMode,NoPlatform)) ] then 
+        if targets.Count = 1 && targets |> Set.minElement = SinglePlatform(Native(NoBuildMode,NoPlatform)) then 
             targets
         else 
             targets 
-            |> List.filter (function
+            |> Set.filter (function
                            | SinglePlatform(Native(NoBuildMode,NoPlatform)) -> false
                            | _ -> true)
-        |> List.map getTargetCondition
-        |> List.filter (fun (_, v) -> v <> "false")
+        |> Seq.map getTargetCondition
+        |> Seq.filter (fun (_, v) -> v <> "false")
+        |> Seq.toList
         |> List.append grouped
         |> List.groupBy fst
 

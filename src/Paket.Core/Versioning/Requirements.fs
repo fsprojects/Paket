@@ -53,26 +53,27 @@ type FrameworkRestrictionP =
             | _ -> sprintf "&& %s" (System.String.Join(" ", frl |> Seq.map (sprintf "(%O)")))
 
     /// The list represented by this restriction (ie the included set of frameworks)
+    // NOTE: All critical paths test only if this set is empty, so we use lazy seq here
     member x.RepresentedFrameworks =
         match x with
-        | FrameworkRestrictionP.ExactlyP r -> [ r ]
+        | FrameworkRestrictionP.ExactlyP r -> [ r ] |> Set.ofList
         | FrameworkRestrictionP.AtLeastP r ->
             PlatformMatching.getPlatformsSupporting r
+            //KnownTargetProfiles.AllProfiles
+            //|> Set.filter (fun plat -> r.IsSupportedBy plat)
         | FrameworkRestrictionP.NotP(fr) ->
             let notTaken = fr.RepresentedFrameworks
-            KnownTargetProfiles.AllProfiles
-            |> List.filter (fun fw -> notTaken |> Seq.contains fw |> not)
+            Set.difference KnownTargetProfiles.AllProfiles notTaken
         | FrameworkRestrictionP.OrP (frl) ->
             frl
-            |> List.collect (fun fr -> fr.RepresentedFrameworks)
-            |> List.distinct
-            |> List.sort
+            |> Seq.map (fun fr -> fr.RepresentedFrameworks)
+            |> Set.unionMany
         | FrameworkRestrictionP.AndP (frl) ->
             match frl with
             | h :: _ ->
-                let allLists = frl |> List.map (fun fr -> fr.RepresentedFrameworks)
-                h.RepresentedFrameworks
-                |> List.filter (fun fw -> allLists |> List.forall(fun l1 -> l1 |> Seq.contains fw))
+                frl
+                |> Seq.map (fun fr -> fr.RepresentedFrameworks)
+                |> Set.intersectMany
             | [] -> 
                 KnownTargetProfiles.AllProfiles
 
@@ -95,7 +96,7 @@ type FrameworkRestrictionP =
     member x.IsSubsetOf (y:FrameworkRestrictionP) =
         let superset = y.RepresentedFrameworks
         x.RepresentedFrameworks
-        |> List.forall (fun inner -> superset |> Seq.contains inner)
+        |> Seq.forall (fun inner -> superset |> Seq.contains inner)
     static member ExactlyFramework (tf: FrameworkIdentifier) =
         ExactlyP (SinglePlatform tf)
 
@@ -472,9 +473,10 @@ let isTargetMatchingRestrictions (restriction:FrameworkRestriction, target)=
     restriction.IsMatch target
 
 /// Get all targets that should be considered with the specified restrictions
-let applyRestrictionsToTargets (restriction:FrameworkRestriction) (targets: TargetProfile list) =
-    targets 
-    |> List.filter (fun t -> isTargetMatchingRestrictions(restriction,t))
+let applyRestrictionsToTargets (restriction:FrameworkRestriction) (targets: TargetProfile Set) =
+    Set.intersect targets restriction.RepresentedFrameworks
+    //targets 
+    //|> List.filter (fun t -> isTargetMatchingRestrictions(restriction,t))
 
 type ContentCopySettings =
 | Omit
@@ -798,10 +800,10 @@ let addFrameworkRestrictionsToDependencies rawDependencies (frameworkGroups:Plat
 
                         let missing = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.AtLeastPlatform frameworkGroup)
                         let combined = FrameworkRestriction.combineRestrictionsWithAnd curRestr (FrameworkRestriction.NotAtLeastPlatform frameworkGroup)
-                        match packageGroup.Platforms, missing.RepresentedFrameworks with
-                        | [ packageGroupFw ], firstMissing :: _ ->
+                        match packageGroup.Platforms, missing.RepresentedFrameworks.IsEmpty with
+                        | [ packageGroupFw ], false ->
                             // the common set goes to the better matching one
-                            match PlatformMatching.findBestMatch (frameworkGroups, firstMissing) with
+                            match PlatformMatching.findBestMatch (frameworkGroups, missing.RepresentedFrameworks.MinimumElement) with
                             | Some { PlatformMatching.ParsedPlatformPath.Platforms = [ cfw ] } when cfw = packageGroupFw -> curRestr
                             | _ -> combined
                         | _ -> combined) packageGroupRestriction)

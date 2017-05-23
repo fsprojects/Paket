@@ -72,12 +72,12 @@ module ReferenceOrLibraryFolder =
 /// Represents a subfolder of a nuget package that provides files (content, references, etc) for one or more Target Profiles.  This is a logical representation of the 'net45' folder in a NuGet package, for example.
 type FrameworkFolder<'T> = { 
     Path : ParsedPlatformPath
-    Targets : TargetProfile list
+    Targets : TargetProfile Set
     FolderContents : 'T
 } with
     member this.GetSinglePlatforms() =
         this.Targets
-        |> List.choose (function SinglePlatform t -> Some t | _ -> None)
+        |> Seq.choose (function SinglePlatform t -> Some t | _ -> None)
 
 module FrameworkFolder =
     let map f (l:FrameworkFolder<_>) = { 
@@ -676,7 +676,7 @@ module InstallModel =
 
     let addFrameworkAssemblyReference (installModel:InstallModel) (reference:FrameworkAssemblyReference) : InstallModel =
         let referenceApplies (folder : FrameworkFolder<_>) =
-            applyRestrictionsToTargets (reference.FrameworkRestrictions |> getExplicitRestriction) folder.Targets
+            applyRestrictionsToTargets (reference.FrameworkRestrictions |> getExplicitRestriction) (folder.Targets)
             |> Seq.isEmpty
             |> not
 
@@ -731,22 +731,22 @@ module InstallModel =
                 CompileLibFolders =
                     installModel.CompileLibFolders
                     |> List.map applyRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])
+                    |> List.filter (fun folder -> not folder.Targets.IsEmpty)
 
                 CompileRefFolders =
                     installModel.CompileRefFolders
                     |> List.map applyRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])
+                    |> List.filter (fun folder -> not folder.Targets.IsEmpty)
 
                 RuntimeAssemblyFolders =
                     installModel.RuntimeAssemblyFolders
                     |> List.map applyRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])
+                    |> List.filter (fun folder -> not folder.Targets.IsEmpty)
 
                 TargetsFileFolders =
                     installModel.TargetsFileFolders
                     |> List.map applyRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])  
+                    |> List.filter (fun folder -> not folder.Targets.IsEmpty)  
             }
 
     let rec addTargetsFiles (targetsFiles:UnparsedPackageFile list) (this:InstallModel) : InstallModel =

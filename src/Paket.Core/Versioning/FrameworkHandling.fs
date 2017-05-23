@@ -915,13 +915,13 @@ module KnownTargetProfiles =
         (AllNativeProfiles |> List.map SinglePlatform) @ 
           AllDotNetStandardAndCoreProfiles @
           AllDotNetProfiles
-        |> List.distinct
-        |> List.sort
+        |> Set.ofList
 
     let TryFindPortableProfile (name:string) =
         let lowerName = name.ToLowerInvariant()
         AllProfiles
-        |> List.tryPick (function
+        |> Set.toSeq
+        |> Seq.tryPick (function
             | PortableProfile p when p.ProfileName.ToLowerInvariant() = lowerName -> Some (PortableProfile p)
             | _ -> None)
     let FindPortableProfile name =
@@ -1018,49 +1018,51 @@ module PortableProfileSupportCalculation =
                     supportMap <- opt
                     result
             | _ -> failwithf "Expected that default profiles are already created."
-
+    
+    let findPortable =
+        memoize (fun (fws: _ list) ->
+            if fws.Length = 0 then failwithf "can not find portable for an empty list (Details: Empty lists need to be handled earlier with a warning)!"
+            let fallback = PortableProfile (UnsupportedProfile (fws |> List.sort))
+            let minimal =
+                fws
+                |> List.filter (function
+                    | MonoTouch
+                    | DNXCore _
+                    | UAP _
+                    | MonoAndroid -> false
+                    | DotNetCore _
+                    | DotNetStandard _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
+                    | _ -> true)
+            if minimal.Length > 0 then
+                let matches = 
+                    KnownTargetProfiles.AllPortableProfiles
+                    |> List.filter (fun p ->
+                        let otherFws = p.Frameworks
+                        minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
+                    |> List.sortBy (fun p -> p.Frameworks.Length)
+                    |> Seq.toArray // Debug
+                let firstMatch =
+                    KnownTargetProfiles.AllPortableProfiles
+                    |> List.filter (fun p ->
+                        let otherFws = p.Frameworks
+                        minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
+                    |> List.sortBy (fun p -> p.Frameworks.Length)
+                    |> List.tryHead
+                match firstMatch with
+                | Some p -> PortableProfile p
+                | None ->
+                    traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
+                    fallback
+            else
+                traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
+                fallback)
 
 type TargetProfile with
     member p.Frameworks =
         match p with
         | SinglePlatform fw -> [fw]
         | PortableProfile p -> p.Frameworks
-    static member FindPortable (fws: _ list) =
-        if fws.Length = 0 then failwithf "can not find portable for an empty list (Details: Empty lists need to be handled earlier with a warning)!"
-        let fallback = PortableProfile (UnsupportedProfile (fws |> List.sort))
-        let minimal =
-            fws
-            |> List.filter (function
-                | MonoTouch
-                | DNXCore _
-                | UAP _
-                | MonoAndroid -> false
-                | DotNetCore _
-                | DotNetStandard _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
-                | _ -> true)
-        if minimal.Length > 0 then
-            let matches = 
-                KnownTargetProfiles.AllPortableProfiles
-                |> List.filter (fun p ->
-                    let otherFws = p.Frameworks
-                    minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
-                |> List.sortBy (fun p -> p.Frameworks.Length)
-                |> Seq.toArray // Debug
-            let firstMatch =
-                KnownTargetProfiles.AllPortableProfiles
-                |> List.filter (fun p ->
-                    let otherFws = p.Frameworks
-                    minimal |> List.forall(fun mfw -> otherFws |> Seq.contains mfw))
-                |> List.sortBy (fun p -> p.Frameworks.Length)
-                |> List.tryHead
-            match firstMatch with
-            | Some p -> PortableProfile p
-            | None ->
-                traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
-                fallback
-        else
-            traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
-            fallback
+    static member FindPortable (fws: _ list) = PortableProfileSupportCalculation.findPortable fws
 
     /// true when x is supported by y, for example netstandard15 is supported by netcore10
     member x.IsSupportedBy y =

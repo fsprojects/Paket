@@ -670,7 +670,7 @@ module ProjectFile =
             |> Set.ofList
 
         let model = model.FilterReferences references
-        let createItemGroup (targets:TargetProfile list) (frameworkReferences:FrameworkReference list) (libraries:Library list) = 
+        let createItemGroup (targets:TargetProfile Set) (frameworkReferences:FrameworkReference list) (libraries:Library list) = 
             let itemGroup = createNode "ItemGroup" project
 
             for ref in frameworkReferences |> List.sortBy (fun f -> f.Name) do
@@ -762,7 +762,7 @@ module ProjectFile =
                         for frameworkAssembly in frameworkReferences do
                             for t in libFolder.Targets do
                                 if not <| usedFrameworkLibs.Add(t,frameworkAssembly.Name) then
-                                    assemblyTargets := List.filter ((<>) t) !assemblyTargets
+                                    assemblyTargets := Set.remove t !assemblyTargets // List.filter ((<>) t) !assemblyTargets
                                     duplicates.Add frameworkAssembly.Name |> ignore
 
                         if !assemblyTargets = libFolder.Targets then

@@ -87,7 +87,7 @@ let ``can get supported target profile``()=
         |> PlatformMatching.getSupportedTargetProfiles
     let folder = profiles |> Seq.item 2
     folder.Key |> shouldEqual (forceExtractPlatforms "net45")
-    folder.Value |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
+    folder.Value |> Set.toList |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 [<Test>]
 let ``should extract lib folders for SQLite``() =
@@ -118,7 +118,7 @@ let ``should calc lib folders for SQLite``() =
 
     let model = calcLegacyReferenceLibFolders libs
     let folder = model |> List.item 2
-    folder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
+    folder.Targets |> Set.toList |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 
 [<Test>]
@@ -136,7 +136,7 @@ let ``should init model for SQLite``() =
 
     let libFolder = model.CompileLibFolders |> List.item 2
     libFolder.Path.Name |> shouldEqual "net45"
-    libFolder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
+    libFolder.Targets |> Set.toList |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 
 [<Test>]
@@ -158,7 +158,7 @@ let ``should generate model for SQLite``() =
 
     let libFolder = model.CompileLibFolders |> List.item 2
     libFolder.Path.Name |> shouldEqual "net45"
-    libFolder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
+    libFolder.Targets |> Set.toList |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 [<Test>]
 let ``should generate Xml for SQLite``() =

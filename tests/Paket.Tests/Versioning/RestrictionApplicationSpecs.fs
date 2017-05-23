@@ -20,6 +20,7 @@ module TestTargetProfiles =
         FrameworkVersion.V4_5_2
         FrameworkVersion.V4_5_3
         FrameworkVersion.V4_6]
+        
 
     let DotNetFrameworkProfiles = DotNetFrameworkVersions |> List.map dotnet
 
@@ -58,7 +59,7 @@ module TestTargetProfiles =
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
         SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)
-       ]
+       ]|> Set.ofList
 
 [<Test>]
 let ``>= net10 contains all but only dotnet versions (#1124)`` () =
@@ -66,13 +67,13 @@ let ``>= net10 contains all but only dotnet versions (#1124)`` () =
     let restrictions = FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V1))
     let restricted = applyRestrictionsToTargets restrictions TestTargetProfiles.AllProfiles
     
-    restricted |> shouldEqual TestTargetProfiles.DotNetFrameworkProfiles
+    restricted |> shouldEqual (TestTargetProfiles.DotNetFrameworkProfiles |> Set.ofList)
 
 [<Test>]
 let ``>= net452 contains 4.5.2 and following versions`` () =
     let restrictions = FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5_2))
     let restricted = applyRestrictionsToTargets restrictions TestTargetProfiles.AllProfiles
-    let expected = [FrameworkVersion.V4_5_2; FrameworkVersion.V4_5_3; FrameworkVersion.V4_6] |> List.map dotnet
+    let expected = [FrameworkVersion.V4_5_2; FrameworkVersion.V4_5_3; FrameworkVersion.V4_6] |> List.map dotnet |> Set.ofList
 
     restricted |> shouldEqual expected
 
@@ -80,7 +81,7 @@ let ``>= net452 contains 4.5.2 and following versions`` () =
 let ``>= net40 < net451 contains 4.0 and 4.5`` () =
     let restrictions = FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4), DotNetFramework(FrameworkVersion.V4_5_1))
     let restricted = applyRestrictionsToTargets restrictions TestTargetProfiles.AllProfiles
-    let expected = [FrameworkVersion.V4; FrameworkVersion.V4_5] |> List.map dotnet
+    let expected = [FrameworkVersion.V4; FrameworkVersion.V4_5] |> List.map dotnet|> Set.ofList
 
     restricted |> shouldEqual expected
 
@@ -89,4 +90,4 @@ let ``>= sl30 contains all but only silverlight versions`` () =
     let restrictions = FrameworkRestriction.AtLeast(Silverlight SilverlightVersion.V3)
     let restricted = applyRestrictionsToTargets restrictions TestTargetProfiles.AllProfiles
     
-    restricted |> shouldEqual TestTargetProfiles.SilverlightProfiles
+    restricted |> shouldEqual (TestTargetProfiles.SilverlightProfiles|> Set.ofList)

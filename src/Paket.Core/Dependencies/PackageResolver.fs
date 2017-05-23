@@ -61,7 +61,7 @@ module DependencySetFilter =
         // we need to take the dependency, when the combination still contains packages.
         // NOTE: This is not forwards compatible...
         let combined = FrameworkRestriction.And [ restriction; dependencyRestrictions ]
-        combined.RepresentedFrameworks.Length > 0
+        not combined.RepresentedFrameworks.IsEmpty
 
     let filterByRestrictions (restrictions:FrameworkRestrictions) (dependencies:DependencySet) : DependencySet =
         match getExplicitRestriction restrictions with

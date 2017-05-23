@@ -22,7 +22,7 @@ let ``should create empty model with net40, net45 ...``() =
 
     let targets =
         model.CompileLibFolders
-        |> List.map (fun folder -> folder.Targets)
+        |> List.map (fun folder -> folder.Targets |> Set.toList)
         |> List.concat
 
     targets |> shouldContain (SinglePlatform (DotNetFramework FrameworkVersion.V4))

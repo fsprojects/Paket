@@ -194,13 +194,13 @@ let ``Simplify || (&& (< net40) (< net35)) (&& (< net40) (>= net35)) (>= net40))
 
 [<Test>]
 let ``Empty set should be empty``() = 
-    FrameworkRestriction.EmptySet.RepresentedFrameworks
-    |> shouldEqual []
+    FrameworkRestriction.EmptySet.RepresentedFrameworks.IsEmpty
+    |> shouldEqual true
     
 [<Test>]
 let ``NoRestriction set should not be empty``() = 
-    FrameworkRestriction.NoRestriction.RepresentedFrameworks
-    |> shouldNotEqual []
+    FrameworkRestriction.NoRestriction.RepresentedFrameworks.IsEmpty
+    |> shouldEqual false
 
 [<Test>]
 let ``combineOr can simplify the NoRestriction set``() = 
