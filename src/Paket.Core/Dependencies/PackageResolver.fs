@@ -633,7 +633,7 @@ let Resolve (getVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalSt
 
     let startedGetPackageDetailsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
     let startRequestGetPackageDetails sources groupName packageName semVer =
-        let key = (sources, groupName, packageName, semVer)
+        let key = (sources, packageName, semVer)
         startedGetPackageDetailsRequests.GetOrAdd (key, fun _ ->
             (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
             |> Async.StartAsTask)
@@ -644,7 +644,7 @@ let Resolve (getVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalSt
     
     let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
     let startRequestGetVersions sources resolverStrategy groupName packageName =
-        let key = (sources, resolverStrategy, groupName, packageName)
+        let key = (sources, packageName)
         startedGetVersionsRequests.GetOrAdd (key, fun _ ->
             getVersionsRaw sources resolverStrategy groupName packageName
             |> Async.StartAsTask)

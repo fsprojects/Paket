@@ -11,21 +11,14 @@ open Paket.Logging
 open InstallProcess
 
 let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
-    let allVersions = Dictionary<PackageName*PackageSources.PackageSource list,(SemVerInfo * (PackageSources.PackageSource list)) list>()
-    let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName : Async<seq<SemVerInfo * PackageSources.PackageSource list>> = async {
-        let key = packageName,sources
-        match allVersions.TryGetValue key with
-        | false,_ ->
-            if verbose then
-                verbosefn "  - fetching versions for %O" packageName
-            let! versions = 
-                getSortedVersionsF sources resolverStrategy groupName packageName
-
-            if Seq.isEmpty versions then
-                failwithf "Couldn't retrieve versions for %O." packageName
-            allVersions.Add(key,versions)
-            return versions |> List.toSeq
-        | true,versions -> return versions |> List.toSeq }
+    let getSortedVersionsF sources resolverStrategy groupName packageName : Async<seq<SemVerInfo * PackageSources.PackageSource list>> = async {
+        if verbose then
+            verbosefn "  - fetching versions for %O" packageName
+        let! versions = 
+            getSortedVersionsF sources resolverStrategy groupName packageName
+        if Seq.isEmpty versions then
+            failwithf "Couldn't retrieve versions for %O." packageName
+        return versions |> List.toSeq }
         
     let dependenciesFile =
         let processFile createRequirementF =
@@ -131,7 +124,7 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRunti
                             [x]
                         else []
                     | _ -> []
-                let! results = getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
+                let! results = getSortedVersionsF sources resolverStrategy groupName packageName
                 return Seq.append pre results |> Seq.cache
             }
 
