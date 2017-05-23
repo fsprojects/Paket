@@ -51,7 +51,10 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
                     |> List.filter (function Profile.Category.ResolverAlgorithmBlocked _, _ -> true | _ -> false)
                     |> Seq.map snd
                     |> Seq.fold (+) (TimeSpan())
-                let resolver = results |> List.pick (function Profile.Category.ResolverAlgorithm, s -> Some s | _ -> None)
+                let resolver = 
+                    match results |> List.tryPick (function Profile.Category.ResolverAlgorithm, s -> Some s | _ -> None) with
+                    | Some s -> s
+                    | None -> TimeSpan()
                 tracefn "%s - Resolver (plain)." (Utils.TimeSpanToReadableString (resolver - blocked))
                 for (cat, elapsed) in results do tracefn "%s - %A." (Utils.TimeSpanToReadableString elapsed) cat
                 tracefn "%s - ready." (Utils.TimeSpanToReadableString realTime)
