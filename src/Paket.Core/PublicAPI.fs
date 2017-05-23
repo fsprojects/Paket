@@ -609,6 +609,7 @@ type Dependencies(dependenciesFileName: string) =
         
         let versions = 
             NuGetV2.GetVersions true alternativeProjectRoot root (sources, PackageName name)
+            |> Async.RunSynchronously
             |> List.map (fun (v,_) -> v.ToString())
             |> List.toArray
             |> SemVer.SortVersions

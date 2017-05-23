@@ -61,6 +61,7 @@ let PackageDetailsFromGraph (graph : DependencyGraph) sources groupName (package
       LicenseUrl = ""
       Unlisted = false
       DirectDependencies = Set.ofList dependencies }
+    |> async.Return
 
 let VersionsFromGraph (graph : DependencyGraph) sources resolverStrategy groupName packageName = 
     let versions =
@@ -73,6 +74,7 @@ let VersionsFromGraph (graph : DependencyGraph) sources resolverStrategy groupNa
     match resolverStrategy with
     | ResolverStrategy.Max -> List.sortDescending versions
     | ResolverStrategy.Min -> List.sort versions
+    |> async.Return
 
 let GetRuntimeGraphFromGraph (graph : DependencyGraph) groupName (package:ResolvedPackage) =
     graph
@@ -86,7 +88,7 @@ let GetRuntimeGraphFromGraph (graph : DependencyGraph) groupName (package:Resolv
 
 let VersionsFromGraphAsSeq (graph : DependencyGraph) sources resolverStrategy groupName packageName = 
    VersionsFromGraph graph sources resolverStrategy groupName packageName
-   |> Seq.ofList
+   |> fun a -> async.Bind(a, Seq.ofList >> async.Return)
 
 let safeResolve graph (dependencies : (string * VersionRange) list)  = 
     let sources = [ PackageSource.NuGetV2Source "" ]

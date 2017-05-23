@@ -13,7 +13,7 @@ open PackageSources
 open System.Xml
 open Paket.Domain
 
-do Paket.Profile.reset()
+let sw = Stopwatch.StartNew()
 
 type PaketExiter() =
     interface IExiter with
@@ -37,15 +37,24 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
         try
             commandF result
         finally
+            sw.Stop()
             if not silent then
+                let realTime = sw.Elapsed
                 let results =
-                    Profile.watches
-                    |> Seq.map (fun (kv) -> kv.Key, kv.Value.Elapsed)
+                    Profile.events
+                    |> Seq.groupBy (fun (ev) -> ev.Category)
+                    |> Seq.map (fun (cat, group) ->
+                        cat, group |> Seq.map (fun ev -> ev.Duration) |> Seq.fold (+) (TimeSpan()))
                     |> Seq.toList
-                let combined = results |> List.map snd |> List.fold (+) (TimeSpan())
-                let elapsedTime = Utils.TimeSpanToReadableString combined
+                let blocked = 
+                    results
+                    |> List.filter (function Profile.Category.ResolverAlgorithmBlocked _, _ -> true | _ -> false)
+                    |> Seq.map snd
+                    |> Seq.fold (+) (TimeSpan())
+                let resolver = results |> List.pick (function Profile.Category.ResolverAlgorithm, s -> Some s | _ -> None)
+                tracefn "%s - Resolver (plain)." (Utils.TimeSpanToReadableString (resolver - blocked))
                 for (cat, elapsed) in results do tracefn "%s - %A." (Utils.TimeSpanToReadableString elapsed) cat
-                tracefn "%s - ready." elapsedTime
+                tracefn "%s - ready." (Utils.TimeSpanToReadableString realTime)
 
 let processCommand silent commandF result =
     processWithValidation silent (fun _ -> true) commandF result

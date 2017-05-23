@@ -12,21 +12,20 @@ open InstallProcess
 
 let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
     let allVersions = Dictionary<PackageName*PackageSources.PackageSource list,(SemVerInfo * (PackageSources.PackageSource list)) list>()
-    let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName : seq<SemVerInfo * PackageSources.PackageSource list> =
+    let getSortedAndCachedVersionsF sources resolverStrategy groupName packageName : Async<seq<SemVerInfo * PackageSources.PackageSource list>> = async {
         let key = packageName,sources
         match allVersions.TryGetValue key with
         | false,_ ->
-            let versions = 
-                if verbose then
-                    verbosefn "  - fetching versions for %O" packageName
+            if verbose then
+                verbosefn "  - fetching versions for %O" packageName
+            let! versions = 
                 getSortedVersionsF sources resolverStrategy groupName packageName
 
             if Seq.isEmpty versions then
                 failwithf "Couldn't retrieve versions for %O." packageName
             allVersions.Add(key,versions)
-            versions
-        | true,versions -> versions
-        |> List.toSeq
+            return versions |> List.toSeq
+        | true,versions -> return versions |> List.toSeq }
         
     let dependenciesFile =
         let processFile createRequirementF =
@@ -123,48 +122,28 @@ let selectiveUpdate force getSha1 getSortedVersionsF getPackageDetailsF getRunti
                 v,s :: (List.map PackageSources.PackageSource.FromCache caches))
 
         let getVersionsF sources resolverStrategy groupName packageName =
-            Profile.startCategoryRaw Profile.Categories.Other
-            try
-                seq { 
+            async { 
+                let pre =
                     match preferredVersions |> Map.tryFind (groupName, packageName), resolverStrategy with
-                    | Some x, ResolverStrategy.Min -> yield x
+                    | Some x, ResolverStrategy.Min -> [x]
                     | Some x, _ -> 
                         if not (changes |> Set.contains (groupName, packageName)) then
-                            yield x
-                    | _ -> ()
-                    yield! getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
-                } |> Seq.cache
-            finally
-                Profile.startCategoryRaw Profile.Categories.ResolverAlgorithm
+                            [x]
+                        else []
+                    | _ -> []
+                let! results = getSortedAndCachedVersionsF sources resolverStrategy groupName packageName
+                return Seq.append pre results |> Seq.cache
+            }
 
-        let getPackageDetailsF sources groupName packageName version =
-            Profile.startCategoryRaw Profile.Categories.Other
-            try
-                let exploredPackage:PackageDetails = getPackageDetailsF sources groupName packageName version
-                match preferredVersions |> Map.tryFind (groupName,packageName) with
-                | Some (preferedVersion,_) when version = preferedVersion -> { exploredPackage with Unlisted = false }
-                | _ -> exploredPackage
-            finally
-                Profile.startCategoryRaw Profile.Categories.ResolverAlgorithm
+        let getPackageDetailsF sources groupName packageName version = async {
+            let! (exploredPackage:PackageDetails) = getPackageDetailsF sources groupName packageName version
+            match preferredVersions |> Map.tryFind (groupName,packageName) with
+            | Some (preferedVersion,_) when version = preferedVersion -> return { exploredPackage with Unlisted = false }
+            | _ -> return exploredPackage }
 
         getVersionsF,getPackageDetailsF,groups
-
-    let getRuntimeGraphFromPackageF groupName resolvedPackage =
-        Profile.startCategoryRaw Profile.Categories.Other
-        try
-            getRuntimeGraphFromPackage groupName resolvedPackage
-        finally
-            Profile.startCategoryRaw Profile.Categories.ResolverAlgorithm
-     
-    let getSha1F origin s1 s2 restriction s3 =
-        Profile.startCategoryRaw Profile.Categories.Other
-        try
-            getSha1 origin s1 s2 restriction s3
-        finally
-            Profile.startCategoryRaw Profile.Categories.ResolverAlgorithm   
-    use d = Profile.startCategory Profile.Categories.ResolverAlgorithm
-    let resolution = dependenciesFile.Resolve(force, getSha1F, getVersionsF, getPackageDetailsF, getRuntimeGraphFromPackageF, groupsToUpdate, updateMode)
-    d.Dispose()
+        
+    let resolution = dependenciesFile.Resolve(force, getSha1, getVersionsF, getPackageDetailsF, getRuntimeGraphFromPackage, groupsToUpdate, updateMode)
 
     let groups = 
         dependenciesFile.Groups
@@ -221,11 +200,11 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
 
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
-    let inline getVersionsF sources resolverStrategy groupName packageName = 
-        let versions = NuGetV2.GetVersions force alternativeProjectRoot root (sources, packageName)
+    let inline getVersionsF sources resolverStrategy groupName packageName = async {
+        let! versions = NuGetV2.GetVersions force alternativeProjectRoot root (sources, packageName)
         match resolverStrategy with
-        | ResolverStrategy.Max -> List.sortDescending versions
-        | ResolverStrategy.Min -> List.sort versions
+        | ResolverStrategy.Max -> return List.sortDescending versions
+        | ResolverStrategy.Min -> return List.sort versions }
 
     let dependenciesFile = detectProjectFrameworksForDependenciesFile dependenciesFile
 
