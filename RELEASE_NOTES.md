@@ -1,4 +1,4 @@
-#### 5.0.0-beta003 - 13.05.2017
+#### 5.0.0-beta005 - 23.05.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
@@ -10,6 +10,7 @@
 * DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
 * BUGFIX: Improved C++ support
+* BUGFIX: Fix Conditional Group Dependencies not working as expected - https://github.com/fsprojects/Paket/pull/2335
 * BUGFIX: Treat runtime dependencies as transitive deps - https://github.com/fsprojects/Paket/issues/2334
 * BUGFIX: Sort dependencies on obj/references files - https://github.com/fsprojects/Paket/issues/2310
 * BUGFIX: Support .NET moniker ">= monoandroid" - https://github.com/fsprojects/Paket/issues/2246
@@ -23,6 +24,21 @@
 * BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
+
+#### 4.8.6 - 23.05.2017
+* USABILITY: Better error reporting - https://github.com/fsprojects/Paket/pull/2349
+
+#### 4.8.5 - 08.05.2017
+* BUGFIX: Support .NET moniker ">= monoandroid" - https://github.com/fsprojects/Paket/issues/2246
+
+#### 4.8.4 - 26.04.2017
+* BUGFIX: Proper encoding "+" in package download url  - https://github.com/fsprojects/Paket/pull/2288
+
+#### 4.8.3 - 26.04.2017
+* BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
+
+#### 4.8.2 - 26.04.2017
+* BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
 
 #### 4.8.1 - 25.04.2017
 * BREAKING CHANGE: Made pushing changes from Git dependency repositories easier - https://github.com/fsprojects/Paket/pull/2226

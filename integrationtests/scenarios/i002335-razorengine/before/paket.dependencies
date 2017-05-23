@@ -1,0 +1,35 @@
+source https://nuget.org/api/v2
+
+nuget Nuget.CommandLine
+nuget Yaaf.AdvancedBuilding !>= 0
+
+group Net45
+  condition: NET45
+  source https://nuget.org/api/v2
+
+  nuget Microsoft.AspNet.Razor ~> 3.0
+  nuget Microsoft.CodeAnalysis != 1.0.0-rc2
+
+group Net40
+  condition: NET40
+  source https://nuget.org/api/v2
+  framework: net40
+
+  nuget Microsoft.AspNet.Razor ~> 2.0
+
+group Razor4
+  condition: RAZOR4
+  source https://nuget.org/api/v2
+
+  nuget Microsoft.AspNetCore.Razor ~> 1.0
+  nuget Microsoft.CodeAnalysis != 1.0.0-rc2
+
+group Test
+  source https://nuget.org/api/v2
+
+  nuget NUnit ~> 2
+  nuget NUnit.Runners ~> 2
+  nuget Moq
+
+// Locked, because 4.0.2 has breaking changes. If you have some time you can try to fix it.
+  nuget Unity 4.0.1

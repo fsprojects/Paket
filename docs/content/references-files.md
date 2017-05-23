@@ -47,13 +47,16 @@ If you don't want to import `.targets` and `.props` files you can disable it via
 
 ## No content option
 
-This option disables the installation of any content files for the given package:
+This option allows you to disable the installation of any content files for the given package:
 
     [lang=paket]
     jQuery content: none
-    Fody   content: once // install content files but don't overwrite
-    ServiceStack.Swagger content: true // install content and always override
+    Fody   content: once
+    ServiceStack.Swagger content: true
 
+In this example,
+- `once` will install content files but not overwrite
+- `content: true` will install content and always override
 
 ## Framework restrictions
 
