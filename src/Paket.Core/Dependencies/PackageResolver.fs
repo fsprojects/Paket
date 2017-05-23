@@ -110,7 +110,7 @@ type Resolution =
 | Conflict of resolveStep    : ResolverStep
             * requirementSet : PackageRequirement Set
             * requirement    : PackageRequirement
-            * getPackageVersions : (PackageName -> (SemVerInfo * PackageSource list) seq Async)
+            * getPackageVersions : (PackageName -> (SemVerInfo * PackageSource list) seq)
     member private self.DebugDisplay() =
         match self with
         | Ok pkgres ->   
@@ -187,8 +187,7 @@ module Resolution =
         | cfs when cfs.Count = 1 ->
             let c = cfs.MinimumElement
             let errorText = buildConflictReport errorText cfs
-            let versions = getVersionF c.Name |> Async.RunSynchronously
-            match versions |> Seq.toList with
+            match getVersionF c.Name |> Seq.toList with
             | [] -> errorText.AppendLinef  "   - No versions available."
             | avalaibleVersions ->
                 ( errorText.AppendLinef  "   - Available versions:"
@@ -343,7 +342,7 @@ let private updateRestrictions (pkgConfig:PackageConfig) (package:ResolvedPackag
     }
 
 
-let private explorePackageConfig getPackageDetailsReportBlock (pkgConfig:PackageConfig) =
+let private explorePackageConfig getPackageDetailsBlock (pkgConfig:PackageConfig) =
     let dependency, version = pkgConfig.Dependency, pkgConfig.Version
     let packageSources      = pkgConfig.Sources
 
@@ -360,8 +359,7 @@ let private explorePackageConfig getPackageDetailsReportBlock (pkgConfig:Package
         filterRestrictions dependency.Settings.FrameworkRestrictions pkgConfig.GlobalRestrictions
     try
         let packageDetails : PackageDetails =
-            getPackageDetailsReportBlock packageSources pkgConfig.GroupName dependency.Name version
-            |> Async.RunSynchronously
+            getPackageDetailsBlock packageSources pkgConfig.GroupName dependency.Name version
         let filteredDependencies =
             DependencySetFilter.filterByRestrictions newRestrictions packageDetails.DirectDependencies
         let settings =
@@ -394,7 +392,7 @@ type StackPack = {
 }
 
 
-let private getExploredPackage (pkgConfig:PackageConfig) getPackageDetailsReportBlock (stackpack:StackPack) =
+let private getExploredPackage (pkgConfig:PackageConfig) getPackageDetailsBlock (stackpack:StackPack) =
     let key = (pkgConfig.Dependency.Name, pkgConfig.Version)
 
     match stackpack.ExploredPackages.TryGetValue key with
@@ -405,7 +403,7 @@ let private getExploredPackage (pkgConfig:PackageConfig) getPackageDetailsReport
             verbosefn "   Retrieved Explored Package  %O" package
         stackpack, Some(true, package)
     | false,_ ->
-        match explorePackageConfig getPackageDetailsReportBlock pkgConfig with
+        match explorePackageConfig getPackageDetailsBlock pkgConfig with
         | Some explored ->
             if verbose then
                 verbosefn "   Found Explored Package  %O" explored
@@ -420,7 +418,7 @@ let private getCompatibleVersions
                (currentStep:ResolverStep)
                 groupName
                (currentRequirement:PackageRequirement)
-               (getVersionsF: PackageSource list -> ResolverStrategy -> GroupName -> PackageName -> Async<seq<SemVerInfo * PackageSource list>>)
+               (getVersionsF: PackageSource list -> ResolverStrategy -> GroupName -> PackageName -> seq<SemVerInfo * PackageSource list>)
                 globalOverride
                 globalStrategyForDirectDependencies
                 globalStrategyForTransitives        =
@@ -453,10 +451,7 @@ let private getCompatibleVersions
             | Specific v -> getSingleVersion v
             | _ ->
                 let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
-                let result =
-                    getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
-                    |> Async.RunSynchronously
-                result
+                getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
 
         let compatibleVersions = Seq.filter (isInRange id) (availableVersions)
         let compatibleVersions, globalOverride =
@@ -631,17 +626,31 @@ type private Stage =
     | Inner of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
 
 /// Resolves all direct and transitive dependencies
-let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
+let Resolve (getVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
        
     use d = Profile.startCategory Profile.Category.ResolverAlgorithm
 
-    let getPackageDetailsReportBlock sources groupName packageName semVer = async {
+    let startedGetPackageDetailsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
+    let startRequestGetPackageDetails sources groupName packageName semVer =
+        let key = (sources, groupName, packageName, semVer)
+        startedGetPackageDetailsRequests.GetOrAdd (key, fun _ ->
+            (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
+            |> Async.StartAsTask)
+    let getPackageDetailsBlock sources groupName packageName semVer =
         use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked Profile.BlockReason.PackageDetails)
-        return! getPackageDetailsF sources groupName packageName semVer }
-    let getVersionsReportBlock sources resolverStrategy groupName packageName = async {
+        (startRequestGetPackageDetails sources groupName packageName semVer).GetAwaiter().GetResult()
+
+    
+    let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
+    let startRequestGetVersions sources resolverStrategy groupName packageName =
+        let key = (sources, resolverStrategy, groupName, packageName)
+        startedGetVersionsRequests.GetOrAdd (key, fun _ ->
+            getVersionsRaw sources resolverStrategy groupName packageName
+            |> Async.StartAsTask)
+    let getVersionsBlock sources resolverStrategy groupName packageName =
         use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked Profile.BlockReason.GetVersion)
-        return! getVersionsF sources resolverStrategy groupName packageName }
+        (startRequestGetVersions sources resolverStrategy groupName packageName).GetAwaiter().GetResult()
 
     let packageFilter =
         match updateMode with
@@ -745,7 +754,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
 
                 let currentConflict =
                     let getVersionsF =
-                        getVersionsReportBlock currentRequirement.Sources ResolverStrategy.Max groupName
+                        getVersionsBlock currentRequirement.Sources ResolverStrategy.Max groupName
                     if Seq.isEmpty conflicts then
                         { currentConflict with
                             Status = Resolution.Conflict (currentStep,Set.empty,currentRequirement,getVersionsF)}
@@ -757,7 +766,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                     fuseConflicts currentConflict priorConflictSteps conflicts
                 else
                     let compatibleVersions,globalOverride,tryRelaxed =
-                        getCompatibleVersions currentStep groupName currentRequirement getVersionsReportBlock
+                        getCompatibleVersions currentStep groupName currentRequirement getVersionsBlock
                                 currentConflict.GlobalOverride
                                 globalStrategyForDirectDependencies
                                 globalStrategyForTransitives
@@ -834,13 +843,26 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                     UpdateMode         = updateMode
                 }
 
-                match getExploredPackage packageDetails getPackageDetailsReportBlock stackpack with
+                match getExploredPackage packageDetails getPackageDetailsBlock stackpack with
                 | stackpack, None ->
                     step (Inner((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
 
                 | stackpack, Some(alreadyExplored,exploredPackage) ->
                     let hasUnlisted = exploredPackage.Unlisted || flags.HasUnlisted
                     let flags = { flags with HasUnlisted = hasUnlisted }
+
+                    // Start pre-loading infos about dependencies.
+                    for (pack,verReq,restr) in exploredPackage.Dependencies do
+                        async {
+                            let! versions = startRequestGetVersions currentRequirement.Sources ResolverStrategy.Max groupName pack |> Async.AwaitTask
+                            // Preload the first version in range of this requirement
+                            match versions |> Seq.map fst |> Seq.tryFind (verReq.IsInRange) with
+                            | Some verToPreload ->
+                                let! details = startRequestGetPackageDetails currentRequirement.Sources groupName pack verToPreload |> Async.AwaitTask
+                                ()
+                            | None -> ()
+                            return ()
+                        } |> Async.Start
 
                     if exploredPackage.Unlisted && not flags.UseUnlisted then
                         if not alreadyExplored then
@@ -880,10 +902,14 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
         OpenRequirements   = rootDependencies
     }
 
+    for openReq in startingStep.OpenRequirements do
+        startRequestGetVersions openReq.Sources ResolverStrategy.Max groupName openReq.Name
+        |> ignore
+
     let currentRequirement = getCurrentRequirement packageFilter startingStep.OpenRequirements (Dictionary())
 
     let status =
-        let getVersionsF = getVersionsReportBlock currentRequirement.Sources ResolverStrategy.Max groupName
+        let getVersionsF = getVersionsBlock currentRequirement.Sources ResolverStrategy.Max groupName
         Resolution.Conflict(startingStep,Set.empty,currentRequirement,getVersionsF)
 
 
