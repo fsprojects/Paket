@@ -398,7 +398,7 @@ module DependenciesFileParser =
                     | _ -> None
                 else None 
             Parent = parent
-            Graph = []
+            Graph = Set.empty
             Sources = sources
             Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
             VersionRequirement = versionRequirement 

@@ -232,7 +232,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max
                           ResolverStrategyForTransitives = Some ResolverStrategy.Max
                           Parent = PackageRequirementSource.DependenciesFile fileName
-                          Graph = []
+                          Graph = Set.empty
                           Sources = group.Sources
                           Settings = group.Options.Settings })
                 |> Seq.toList
@@ -278,7 +278,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               ResolverStrategyForDirectDependencies = group.Options.ResolverStrategyForDirectDependencies
                               ResolverStrategyForTransitives = group.Options.ResolverStrategyForTransitives
                               Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
-                              Graph = []
+                              Graph = Set.empty
                               Sources = group.Sources
                               Settings = group.Options.Settings })
                         |> Seq.toList
@@ -304,7 +304,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                 | Some d -> d.ResolverStrategyForTransitives
                                 | None -> group.Options.ResolverStrategyForTransitives
                               Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
-                              Graph = []
+                              Graph = Set.empty
                               Sources = group.Sources
                               Settings =
                                 match oldDepsInfo with

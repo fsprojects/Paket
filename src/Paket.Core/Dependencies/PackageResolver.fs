@@ -127,16 +127,16 @@ module Resolution =
 
     let getConflicts (res:Resolution) =
         match res with
-        | Resolution.Ok _ -> []
+        | Resolution.Ok _ -> Set.empty
         | Resolution.Conflict (currentStep,_,lastPackageRequirement,_) ->
             currentStep.ClosedRequirements
             |> Set.union currentStep.OpenRequirements
             |> Set.add lastPackageRequirement
-            |> Seq.filter (fun x -> x.Name = lastPackageRequirement.Name)
-            |> Seq.sortBy (fun x -> x.Parent)
-            |> Seq.toList
+            |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name)
+            //|> Seq.sortBy (fun x -> x.Parent)
+            //|> Seq.toList
 
-    let buildConflictReport (errorReport:StringBuilder)  (conflicts:PackageRequirement list) =
+    let buildConflictReport (errorReport:StringBuilder)  (conflicts:PackageRequirement Set) =
         let formatVR (vr:VersionRequirement) =
             vr.ToString ()
             |> fun s -> if String.IsNullOrWhiteSpace s then ">= 0" else s
@@ -149,9 +149,9 @@ module Resolution =
             | _ -> ""
 
         match conflicts with
-        | [] -> errorReport
+        | s when s.IsEmpty -> errorReport
         | conflicts ->
-            let hasPrereleases = List.exists (fun r -> r.VersionRequirement.PreReleases <> PreReleaseStatus.No) conflicts
+            let hasPrereleases = Seq.exists (fun r -> r.VersionRequirement.PreReleases <> PreReleaseStatus.No) conflicts
 
             errorReport.AddLine (sprintf "  Conflict detected:")
 
@@ -163,13 +163,10 @@ module Resolution =
                     sprintf "   - Dependencies file requested package %O: %s%s" req.Name vr pr
                 | Package (parentName,version,_) ->
                     sprintf "   - %O %O requested package %O: %s%s" parentName version req.Name vr pr
-
-            let rec loop conflicts (errorReport:StringBuilder) =
-                match conflicts with
-                | [] -> errorReport
-                | hd::tl -> loop tl (errorReport.AppendLine (getConflictMessage hd))
-            loop conflicts errorReport
-
+            
+            conflicts
+            |> Seq.fold (fun (errorReport:StringBuilder) conflict ->
+                errorReport.AppendLine (getConflictMessage conflict)) errorReport
 
     let getErrorText showResolvedPackages = function
     | Resolution.Ok _ -> ""
@@ -183,12 +180,13 @@ module Resolution =
             else StringBuilder()
 
         match getConflicts res with
-        | []  ->
+        | c when c.IsEmpty  ->
             errorText.AppendLinef
                 "  Could not resolve package %O. Unknown resolution error."
                     (Seq.head currentStep.OpenRequirements)
-        | [c] ->
-            let errorText = buildConflictReport errorText [c]
+        | cfs when cfs.Count = 1 ->
+            let c = cfs.MinimumElement
+            let errorText = buildConflictReport errorText cfs
             match getVersionF c.Name |> Seq.toList with
             | [] -> errorText.AppendLinef  "   - No versions available."
             | avalaibleVersions ->
@@ -264,7 +262,7 @@ let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestric
             Name = n
             VersionRequirement = v
             Parent = Package(dependency.Name, versionToExplore, exploredPackage.Source)
-            Graph = [dependency] @ dependency.Graph
+            Graph = Set.add dependency dependency.Graph
             Settings = { dependency.Settings with FrameworkRestrictions = newRestrictions } })
     |> Set.filter (fun d ->
         resolverStep.ClosedRequirements
@@ -499,19 +497,19 @@ let private getCompatibleVersions
 let private getConflicts (currentStep:ResolverStep) (currentRequirement:PackageRequirement) (knownConflicts:HashSet<HashSet<PackageRequirement> * ((SemVerInfo * PackageSource list) list * bool) option>) =
     
     let allRequirements =
-        Set.toSeq currentStep.OpenRequirements
-        |> Seq.filter (fun r -> r.Graph |> List.contains currentRequirement |> not)
-        |> Seq.append currentStep.ClosedRequirements
-        |> HashSet
+        currentStep.OpenRequirements
+        |> Set.filter (fun r -> r.Graph |> Set.contains currentRequirement |> not)
+        |> Set.union currentStep.ClosedRequirements
 
     knownConflicts
     |> Seq.map (fun (conflicts,selectedVersion) ->
+        let isSubset = conflicts.IsSubsetOf allRequirements
         match selectedVersion with
-        | None when conflicts.IsSubsetOf allRequirements -> conflicts
+        | None when isSubset -> conflicts
         | Some(selectedVersion,_) ->
             let n = (Seq.head conflicts).Name
             match currentStep.FilteredVersions |> Map.tryFind n with
-            | Some(v,_) when v = selectedVersion && conflicts.IsSubsetOf allRequirements -> conflicts
+            | Some(v,_) when v = selectedVersion && isSubset -> conflicts
             | _ -> HashSet()
         | _ -> HashSet())
     |> Seq.collect id
@@ -578,7 +576,8 @@ let private boostConflicts
     let conflicts = conflictStatus.GetConflicts()
     let lastConflictReported =
         match conflicts with
-        | c::_  ->
+        | _ when not conflicts.IsEmpty  ->
+            let c = conflicts.MinimumElement
             let selectedVersion = Map.tryFind c.Name filteredVersions
             let key = conflicts |> HashSet,selectedVersion
             stackpack.KnownConflicts.Add key |> ignore
@@ -665,14 +664,14 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
             let findMatchingStep priorConflictSteps =
                 let currentNames =
                     conflicts
-                    |> Seq.collect (fun c ->
-                        let graphNameList =
-                            c.Graph |> List.map (fun (pr:PackageRequirement) -> pr.Name) 
-                        c.Name :: graphNameList)
-                    |> Seq.toArray
+                    |> Seq.map (fun c ->
+                        c.Graph
+                        |> Set.map (fun (pr:PackageRequirement) -> pr.Name) 
+                        |> Set.add c.Name)
+                    |> Set.unionMany
                 priorConflictSteps
                 |> List.tryExtractOne (fun (_,_,lastRequirement:PackageRequirement,_,_) ->
-                    currentNames |> Array.contains lastRequirement.Name)
+                    currentNames |> Set.contains lastRequirement.Name)
 
             match findMatchingStep priorConflictSteps with
             | None, []  -> currentConflict
@@ -708,7 +707,7 @@ let Resolve (getVersionsF, getPackageDetailsF, groupName:GroupName, globalStrate
                             && currentStep.CurrentResolution.Count > 1
                             && not (conflicts |> Set.exists (fun r ->
                                 r = lastRequirement
-                                || r.Graph |> List.contains lastRequirement)) ->
+                                || r.Graph |> Set.contains lastRequirement)) ->
                        
                         step (Inner((continueConflict,lastStep,lastRequirement),priorConflictSteps)) stackpack lastCompatibleVersions  { flags with ForceBreak = true } 
                     | _ ->

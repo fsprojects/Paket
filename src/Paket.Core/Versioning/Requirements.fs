@@ -886,7 +886,7 @@ type PackageRequirement =
       ResolverStrategyForDirectDependencies : ResolverStrategy option
       ResolverStrategyForTransitives : ResolverStrategy option
       Parent: PackageRequirementSource
-      Graph: PackageRequirement list
+      Graph: PackageRequirement Set
       Sources: PackageSource list
       Settings: InstallSettings }
 
@@ -912,7 +912,7 @@ type PackageRequirement =
 
     member this.IncludingPrereleases() = this.IncludingPrereleases(PreReleaseStatus.All)    
 
-    member this.Depth = this.Graph.Length
+    member this.Depth = this.Graph.Count
 
     static member Compare(x,y,startWithPackage:PackageFilter option,boostX,boostY) =
         if obj.ReferenceEquals(x, y) then 0 else
