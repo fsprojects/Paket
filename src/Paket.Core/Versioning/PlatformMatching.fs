@@ -68,9 +68,9 @@ let rec getPlatformPenalty =
             | _ ->
                 let penalty =
                     targetPlatform.SupportedPlatforms
-                    |> List.map (fun target -> getPlatformPenalty (target, packagePlatform))
-                    |> List.append [MaxPenalty]
-                    |> List.min
+                    |> Seq.map (fun target -> getPlatformPenalty (target, packagePlatform))
+                    |> Seq.append [MaxPenalty]
+                    |> Seq.min
                     |> fun p -> p + 1
 
                 match targetPlatform, packagePlatform with
@@ -134,27 +134,21 @@ let collectPlatforms =
     let rec loop (acc:TargetProfile list) (framework:TargetProfile) (profls:TargetProfile Set) =
         profls
         |> Seq.fold (fun acc f ->
-            if f.SupportedPlatforms |> List.exists ((=) framework) then
-                f::acc
-            else acc) []
+            if f.SupportedPlatforms |> Set.contains (framework) then
+                Set.add f acc
+            else acc) Set.empty
     memoize (fun (framework,profls) -> loop ([]:TargetProfile list) framework profls)
 
-let getPlatformsSupporting =
-    // http://nugettoolsdev.azurewebsites.net
-    let calculate (x:TargetProfile) =
-        KnownTargetProfiles.AllProfiles
-        |> Set.filter (fun plat -> x.IsSupportedBy plat)
-    memoize calculate
 
 let platformsSupport = 
     let rec platformsSupport platform platforms = 
-        if List.isEmpty platforms then MaxPenalty
-        elif platforms |> List.exists ((=) platform) then 1
+        if Set.isEmpty platforms then MaxPenalty
+        elif platforms |> Set.contains (platform) then 1
         else 
-            platforms |> Array.ofList 
+            platforms |> Set.toArray
             |> Array.Parallel.map (fun (p : TargetProfile) -> 
                 collectPlatforms (p,KnownTargetProfiles.AllProfiles)
-            ) |> List.concat
+            ) |> Set.unionMany
             |> platformsSupport platform |> (+) 1
     memoize (fun (platform,platforms) -> platformsSupport platform platforms)
 

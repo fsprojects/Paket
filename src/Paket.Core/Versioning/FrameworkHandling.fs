@@ -929,8 +929,8 @@ module KnownTargetProfiles =
         | Some s -> s
         | None -> failwithf "tried to find portable profile '%s' but it is unknown to paket" name
 
-module PortableProfileSupportCalculation =
-    let isSupported (portable:PortableProfileType) (other:PortableProfileType) =
+module SupportCalculation =
+    let isSupportedNotEqual (portable:PortableProfileType) (other:PortableProfileType) =
         let name, tfs = portable.ProfileName, portable.Frameworks
         
         let otherName, otherfws = other.ProfileName, other.Frameworks
@@ -949,7 +949,7 @@ module PortableProfileSupportCalculation =
         let name, tfs = portable.ProfileName, portable.Frameworks
         KnownTargetProfiles.AllPortableProfiles
         |> List.filter (fun p -> p.ProfileName <> name)
-        |> List.filter (fun other -> isSupported portable other)
+        |> List.filter (fun other -> isSupportedNotEqual portable other)
         |> List.map PortableProfile
     type SupportMap = System.Collections.Concurrent.ConcurrentDictionary<PortableProfileType,PortableProfileType list>
     let ofSeq s = s|> dict |> System.Collections.Concurrent.ConcurrentDictionary
@@ -1057,61 +1057,7 @@ module PortableProfileSupportCalculation =
                 traceWarnfn "The profile '%O' is not a known profile. Please tell the package author." fallback
                 fallback)
 
-type TargetProfile with
-    member p.Frameworks =
-        match p with
-        | SinglePlatform fw -> [fw]
-        | PortableProfile p -> p.Frameworks
-    static member FindPortable (fws: _ list) = PortableProfileSupportCalculation.findPortable fws
-
-    /// true when x is supported by y, for example netstandard15 is supported by netcore10
-    member x.IsSupportedBy y =
-        match x with
-        | PortableProfile (PortableProfileType.UnsupportedProfile xs' as x') ->
-            // custom profiles are not in our lists -> custom logic
-            match y with
-            | PortableProfile y' ->
-                PortableProfileSupportCalculation.isSupported y' x'
-            | SinglePlatform y' ->
-                y'.RawSupportedPlatformsTransitive |> Seq.exists (fun y'' ->
-                    xs' |> Seq.contains y'')
-        | _ ->
-            x = y ||
-              (y.SupportedPlatforms |> Seq.exists (fun s -> x.IsSupportedBy s))
-
-    /// true when x is at least (>=) y ie when y is supported by x, for example netcore10 >= netstandard15 as netstandard15 is supported by netcore10.
-    /// Note that this relation is not complete, for example for WindowsPhoneSilverlightv7.0 and Windowsv4.5 both <= and >= are false from this definition as
-    /// no platform supports the other.
-    member x.IsAtLeast (y:TargetProfile) =
-        y.IsSupportedBy x
-
-    /// Get all platforms y for which x >= y holds
-    member x.SupportedPlatformsTransitive =
-        let findNewPlats (known:TargetProfile list) (lastStep:TargetProfile list) =
-            lastStep
-            |> List.collect (fun k -> k.SupportedPlatforms)
-            |> List.filter (fun k -> known |> Seq.contains k |> not)
-
-        Seq.initInfinite (fun _ -> 1)
-        |> Seq.scan (fun state _ ->
-            match state with
-            | Some (known, lastStep) ->
-                match findNewPlats known lastStep with
-                | [] -> None
-                | items -> Some (known @ items, items)
-            | None -> None) (Some ([x], [x]))
-        |> Seq.takeWhile (fun i -> i.IsSome)
-        |> Seq.choose id
-        |> Seq.last
-        |> fst
-
-    /// x < y, see y >= x && x <> y
-    member x.IsSmallerThan y =
-        x.IsSupportedBy y && x <> y
-
-    /// Note that this returns true only when a >= x and x < b holds.
-    member x.IsBetween(a,b) = x.IsAtLeast a && x.IsSmallerThan b
-    member x.SupportedPlatforms =
+    let getSupportedPlatforms x =
         match x with
         | SinglePlatform tf ->
             let rawSupported =
@@ -1175,5 +1121,85 @@ type TargetProfile with
                 |> List.map PortableProfile
             rawSupported @ profilesSupported
         | PortableProfile p ->
-            PortableProfileSupportCalculation.getSupportedPreCalculated p
+            getSupportedPreCalculated p
             |> List.map PortableProfile
+        |> Set.ofList
+
+    let getSupportedPlatformsTransitive =
+        let findNewPlats (known:TargetProfile Set) (lastStep:TargetProfile Set) =
+            lastStep
+            |> Seq.map (fun k -> Set.difference (getSupportedPlatforms k) known)
+            |> Set.unionMany
+
+        memoize (fun x ->
+            Seq.initInfinite (fun _ -> 1)
+            |> Seq.scan (fun state _ ->
+                match state with
+                | Some (known, lastStep) ->
+                    match findNewPlats known lastStep with
+                    | s when s.IsEmpty -> None
+                    | items -> Some (Set.union known items, items)
+                | None -> None) (Some (Set.singleton x, Set.singleton x))
+            |> Seq.takeWhile (fun i -> i.IsSome)
+            |> Seq.choose id
+            |> Seq.last
+            |> fst
+        )
+
+    /// true when x is supported by y, for example netstandard15 is supported by netcore10
+    let isSupportedBy x y =
+        match x with
+        | PortableProfile (PortableProfileType.UnsupportedProfile xs' as x') ->
+            // custom profiles are not in our lists -> custom logic
+            match y with
+            | PortableProfile y' ->
+                x' = y' ||
+                isSupportedNotEqual y' x'
+            | SinglePlatform y' ->
+                y'.RawSupportedPlatformsTransitive |> Seq.exists (fun y'' ->
+                    xs' |> Seq.contains y'')
+        | _ ->
+            x = y ||
+              (getSupportedPlatformsTransitive y |> Set.contains x)
+
+    let getPlatformsSupporting =
+        // http://nugettoolsdev.azurewebsites.net
+        let calculate (x:TargetProfile) =
+            KnownTargetProfiles.AllProfiles
+            |> Set.filter (fun plat -> isSupportedBy x plat)
+        memoize calculate
+
+type TargetProfile with
+    member p.Frameworks =
+        match p with
+        | SinglePlatform fw -> [fw]
+        | PortableProfile p -> p.Frameworks
+    static member FindPortable (fws: _ list) = SupportCalculation.findPortable fws
+    
+    member inline x.PlatformsSupporting = SupportCalculation.getPlatformsSupporting x
+
+    /// true when x is supported by y, for example netstandard15 is supported by netcore10
+    member inline x.IsSupportedBy y =
+        SupportCalculation.isSupportedBy x y
+    /// true when x is at least (>=) y ie when y is supported by x, for example netcore10 >= netstandard15 as netstandard15 is supported by netcore10.
+    /// Note that this relation is not complete, for example for WindowsPhoneSilverlightv7.0 and Windowsv4.5 both <= and >= are false from this definition as
+    /// no platform supports the other.
+    member inline x.IsAtLeast (y:TargetProfile) =
+        y.IsSupportedBy x
+
+    /// Get all platforms y for which x >= y holds
+    member inline x.SupportedPlatformsTransitive =
+        SupportCalculation.getSupportedPlatformsTransitive x
+        
+    member inline x.SupportedPlatforms : TargetProfile Set =
+        SupportCalculation.getSupportedPlatforms x
+
+    /// x < y, see y >= x && x <> y
+    member inline x.IsSmallerThan y =
+        x.IsSupportedBy y && x <> y
+        
+    member inline x.IsSmallerThanOrEqual y =
+        x.IsSupportedBy y
+
+    /// Note that this returns true only when a >= x and x < b holds.
+    member x.IsBetween(a,b) = x.IsAtLeast a && x.IsSmallerThan b

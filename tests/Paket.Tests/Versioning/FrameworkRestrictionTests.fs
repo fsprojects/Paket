@@ -5,6 +5,14 @@ open FsUnit
 open NUnit.Framework
 open Paket.Requirements
 
+[<Test>] 
+let ``IsSubset works for unknown Portables`` () =
+    let p = PlatformMatching.forceExtractPlatforms "portable-net45+win8+wp8+wp81+wpa81"
+    let t = p.ToTargetProfile.Value
+    let r = FrameworkRestriction.AtLeastPlatform t
+    r.IsSubsetOf r
+    |> shouldEqual true
+
 [<Test>]
 let ``Simplify || (>= net45) (>= portable-net45+win8+wp8+wp81+wpa81)`` () =
     // because that is a custom portable profile!
@@ -63,29 +71,29 @@ let ``__unknowntfm__ should not match everything`` () =
 
 [<Test>]
 let ``Profile 158 should not support itself``() = 
-    PortableProfileSupportCalculation.isSupported Profile158 Profile158
+    SupportCalculation.isSupportedNotEqual Profile158 Profile158
     |> shouldEqual false
 [<Test>]
 let ``Profile 158 should not support Profile 78, as there is no silverlight on 78``() = 
-    PortableProfileSupportCalculation.isSupported Profile158 Profile78
+    SupportCalculation.isSupportedNotEqual Profile158 Profile78
     |> shouldEqual false
-    PortableProfileSupportCalculation.isSupported Profile78 Profile158
+    SupportCalculation.isSupportedNotEqual Profile78 Profile158
     |> shouldEqual true
 [<Test>]
 let ``Profile 344 should support Profile 336, as it has the same frameworks but is lower``() =
-    PortableProfileSupportCalculation.isSupported Profile336 Profile344
+    SupportCalculation.isSupportedNotEqual Profile336 Profile344
     |> shouldEqual false
-    PortableProfileSupportCalculation.isSupported Profile344 Profile336
+    SupportCalculation.isSupportedNotEqual Profile344 Profile336
     |> shouldEqual true
 
 [<Test>]
 let ``Generate Support Table``() = 
     // TODO: Should we include this?
-    let mutable supportMap = PortableProfileSupportCalculation.createInitialSupportMap()
-    supportMap <- PortableProfileSupportCalculation.optimizeSupportMap supportMap
+    let mutable supportMap = SupportCalculation.createInitialSupportMap()
+    supportMap <- SupportCalculation.optimizeSupportMap supportMap
     
     supportMap
-    |> PortableProfileSupportCalculation.toSeq
+    |> SupportCalculation.toSeq
     |> Seq.iter (fun (p, supported) ->
         System.Diagnostics.Debug.WriteLine(sprintf "| %s ->" p.ProfileName)
         System.Diagnostics.Debug.WriteLine("    [ ")
@@ -129,7 +137,7 @@ let ``Portables are detected correctly``() =
 [<Test>]
 let ``PlatformMatching works with portable ``() = 
     // portable-net40-sl4
-    let l = PlatformMatching.getPlatformsSupporting (KnownTargetProfiles.FindPortableProfile "Profile18")
+    let l = (KnownTargetProfiles.FindPortableProfile "Profile18").PlatformsSupporting
     // portable-net45-sl5
     let needPortable = KnownTargetProfiles.FindPortableProfile "Profile24"
 

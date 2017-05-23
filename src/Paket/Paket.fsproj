@@ -42,7 +42,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Yaaf\paket-tests\brainsharp\</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\PROJ\Yaaf\paket-tests\test2\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

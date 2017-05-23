@@ -60,8 +60,13 @@ module DependencySetFilter =
         // While the dependency specifies the framework restrictions of the dependency ([ >= netstandard13 ])
         // we need to take the dependency, when the combination still contains packages.
         // NOTE: This is not forwards compatible...
-        let combined = FrameworkRestriction.And [ restriction; dependencyRestrictions ]
-        not combined.RepresentedFrameworks.IsEmpty
+        //let combined = FrameworkRestriction.And [ restriction; dependencyRestrictions ]
+        //not combined.RepresentedFrameworks.IsEmpty
+
+        // "And" is not cleap therefore we use this, because we don't want to re-use the "simplified" formula
+        Set.intersect restriction.RepresentedFrameworks dependencyRestrictions.RepresentedFrameworks
+        |> Set.isEmpty
+        |> not
 
     let filterByRestrictions (restrictions:FrameworkRestrictions) (dependencies:DependencySet) : DependencySet =
         match getExplicitRestriction restrictions with
