@@ -986,3 +986,24 @@ let ``should parse new restrictions || (&& (< net45) (>= portable-net45+win8+wp8
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithNewComplexRestrictions)
+
+let lockFileWithMissingVersion = """NUGET
+  remote: https://www.nuget.org/api/v2
+    Microsoft.Bcl (1.1.10) - restriction: || (== net10) (== net11) (== net20) (== net30) (== net35) (== net40)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Build (1.0.21) - import_targets: false, restriction: || (== net10) (== net11) (== net20) (== net30) (== net35) (== net40)
+    Microsoft.Net.Http (2.2.29) - restriction: || (== net10) (== net11) (== net20) (== net30) (== net35) (== net40)
+      Microsoft.Bcl (>= 1.1.10)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Octokit (0.19)
+      Microsoft.Net.Http  - restriction: || (== net10) (== net11) (== net20) (== net30) (== net35) (== net40)"""
+
+[<Test>]
+let ``should parse lockfile with missing version``() =
+    let lockFile = LockFileParser.Parse (toLines lockFileWithMissingVersion)
+    let main = lockFile.Head
+    let packages = lockFile.Tail
+    
+    LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings lockFileWithMissingVersion)

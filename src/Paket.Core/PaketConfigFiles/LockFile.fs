@@ -314,28 +314,29 @@ module LockFileParser =
         | _, String.RemovePrefix "os: " trimmed ->
             InstallOption(OperatingSystemRestriction trimmed)
         | _, trimmed when line.StartsWith "      " ->
+            let pos = trimmed.IndexOf " - "
+            let namePart, settingsPart =
+                if pos >= 0 then
+                    trimmed.Substring(0, pos), trimmed.Substring (pos + 3)
+                else
+                    trimmed, ""
             let frameworkSettings =
-                if trimmed.Contains " - " then
-                    let pos = trimmed.LastIndexOf " - "
+                if not (String.IsNullOrEmpty settingsPart) then
                     try
-                        InstallSettings.Parse(trimmed.Substring(pos + 3))
+                        InstallSettings.Parse(settingsPart)
                     with
-                    | _ -> InstallSettings.Parse("framework: " + trimmed.Substring(pos + 3)) // backwards compatible
+                    | _ -> InstallSettings.Parse("framework: " + settingsPart) // backwards compatible
                 else
                     InstallSettings.Default
-            if trimmed.Contains "(" then
-                let parts = trimmed.Split '(' 
+            if namePart.Contains "(" then
+                let parts = namePart.Split '(' 
                 let first = parts.[0]
                 let rest = String.Join ("(", parts |> Seq.skip 1)
                 let versionEndPos = rest.IndexOf(")")
                 if versionEndPos < 0 then failwithf "Missing matching ') in line '%s'" line
                 NugetDependency (parts.[0].Trim(),rest.Substring(0, versionEndPos).Trim(),frameworkSettings)
             else
-                if trimmed.Contains("  -") then
-                    let pos = trimmed.IndexOf("  -")
-                    NugetDependency (trimmed.Substring(0,pos),">= 0",frameworkSettings)
-                else
-                    NugetDependency (trimmed,">= 0",frameworkSettings)
+                NugetDependency (namePart.Trim(),">= 0",frameworkSettings)
         | Some "NUGET", trimmed -> NugetPackage trimmed
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)
