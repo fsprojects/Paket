@@ -47,10 +47,12 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
                         let l = group |> Seq.toList
                         cat, l.Length, l |> Seq.map (fun ev -> ev.Duration) |> Seq.fold (+) (TimeSpan()))
                     |> Seq.toList
-                let blocked = 
+                let blockedRaw = 
                     groupedResults
                     |> List.filter (function Profile.Category.ResolverAlgorithmBlocked _, _, _ -> true | _ -> false)
-                    |> Seq.map (fun (_,_,t) -> t)
+                let blocked =
+                    blockedRaw
+                    |> List.map (fun (_,_,t) -> t)
                     |> Seq.fold (+) (TimeSpan())
                 let resolver = 
                     match groupedResults |> List.tryPick (function Profile.Category.ResolverAlgorithm, _, s -> Some s | _ -> None) with
@@ -70,21 +72,28 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
                     match cat with
                     | Profile.Category.ResolverAlgorithm ->
                         tracefn " - Resolver: %s (%d runs)" (Utils.TimeSpanToReadableString elapsed) num
-                        tracefn "    - Runtime : %s" (Utils.TimeSpanToReadableString (resolver - blocked))
+                        let realTime = resolver - blocked
+                        tracefn "    - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
+                        let blockNum = blockedRaw |> Seq.sumBy (fun (_, num, _) -> num)
+                        let blockPaket4 = TimeSpan.FromMilliseconds(500.0 * float blockNum)
+                        tracefn "    - Runtime Paket 4 (estimated ~500ms respose*): %s" (Utils.TimeSpanToReadableString (realTime + blockPaket4))
+                        tracefn "      * See http://stats.pingdom.com/aqicaf2upspo/1265300 for average response times."
                     | Profile.Category.ResolverAlgorithmBlocked b ->
                         let reason =
                             match b with
                             | Profile.BlockReason.PackageDetails -> "retrieving package details"
                             | Profile.BlockReason.GetVersion -> "retrieving package versions"
-                        tracefn "    - Blocked (%s): %s" reason (Utils.TimeSpanToReadableString elapsed)
+                        tracefn "    - Blocked (%s): %s (%d times)" reason (Utils.TimeSpanToReadableString elapsed) num
                     | Profile.Category.FileIO ->
                         tracefn " - Disk IO: %s" (Utils.TimeSpanToReadableString elapsed)
                     | Profile.Category.NuGetDownload ->
                         let avg = TimeSpan.FromTicks(elapsed.Ticks / int64 num)
                         tracefn " - Average Download Time: %s" (Utils.TimeSpanToReadableString avg)
+                        tracefn " - Number of downloads: %d" num
                     | Profile.Category.NuGetRequest ->
                         let avg = TimeSpan.FromTicks(elapsed.Ticks / int64 num)
                         tracefn " - Average Request Time: %s" (Utils.TimeSpanToReadableString avg)
+                        tracefn " - Number of Requests: %d" num
                     | Profile.Category.Other ->
                         tracefn "  - Other: %s" (Utils.TimeSpanToReadableString elapsed)
                     )

@@ -959,3 +959,30 @@ let ``should parse new restrictions && (>= net35) (< net40)``() =
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithNewRestrictions)
+
+let lockFileWithNewComplexRestrictions = """NUGET
+  remote: http://www.nuget.org/api/v2
+    AWSSDK.Core (3.1.5.3)
+      Microsoft.Net.Http (>= 2.2.29) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
+      PCLStorage (>= 1.0.2) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
+    Microsoft.Bcl (1.1.10) - restriction: || (&& (< net45) (>= portable-net45+win8+wp8+wpa81)) (&& (< portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81) (>= portable-net45+win8+wp8+wpa81))
+      Microsoft.Bcl.Build (>= 1.0.14)
+    Microsoft.Bcl.Async (1.0.168) - restriction: && (< portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81) (>= portable-net45+win8+wp8+wpa81)
+      Microsoft.Bcl (>= 1.1.8)
+    Microsoft.Bcl.Build (1.0.21) - import_targets: false, restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
+    Microsoft.Net.Http (2.2.29) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
+      Microsoft.Bcl (>= 1.1.10)
+      Microsoft.Bcl.Build (>= 1.0.14)
+    PCLStorage (1.0.2) - restriction: && (< net45) (>= portable-net45+win8+wp8+wpa81)
+      Microsoft.Bcl (>= 1.1.6) - restriction: < portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81
+      Microsoft.Bcl.Async (>= 1.0.165) - restriction: < portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81"""
+
+[<Test>]
+let ``should parse new restrictions || (&& (< net45) (>= portable-net45+win8+wp8+wpa81)) (&& (< portable-net45+monoandroid+monotouch+xamarinios+xamarinmac+win8+wp8+wpa81) (>= portable-net45+win8+wp8+wpa81))``() =
+    let lockFile = LockFileParser.Parse (toLines lockFileWithNewComplexRestrictions)
+    let main = lockFile.Head
+    let packages = lockFile.Tail
+    
+    LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings lockFileWithNewComplexRestrictions)
