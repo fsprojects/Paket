@@ -63,7 +63,8 @@ module DependencySetFilter =
         //let combined = FrameworkRestriction.And [ restriction; dependencyRestrictions ]
         //not combined.RepresentedFrameworks.IsEmpty
 
-        // "And" is not cleap therefore we use this, because we don't want to re-use the "simplified" formula
+        // "And" is not cheap therefore we use this, 
+        // because we don't want to pay the price of calculating a "simplified" formula 
         Set.intersect restriction.RepresentedFrameworks dependencyRestrictions.RepresentedFrameworks
         |> Set.isEmpty
         |> not
@@ -133,8 +134,6 @@ module Resolution =
             |> Set.union currentStep.OpenRequirements
             |> Set.add lastPackageRequirement
             |> Set.filter (fun x -> x.Name = lastPackageRequirement.Name)
-            //|> Seq.sortBy (fun x -> x.Parent)
-            //|> Seq.toList
 
     let buildConflictReport (errorReport:StringBuilder)  (conflicts:PackageRequirement Set) =
         let formatVR (vr:VersionRequirement) =

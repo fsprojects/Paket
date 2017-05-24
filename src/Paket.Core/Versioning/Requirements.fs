@@ -95,7 +95,7 @@ type FrameworkRestrictionP =
     /// For example =net46 is a subset of >=netstandard13
     member x.IsSubsetOf (y:FrameworkRestrictionP) =
     
-        // better ~ 5 Mins
+        // better ~ 5 Mins, but below recursive logic should be even better.
         let inline fallBack doAssert =
 #if DEBUG
             if doAssert then
@@ -113,18 +113,11 @@ type FrameworkRestrictionP =
             | FrameworkRestrictionP.AtLeastP y' ->
                 // =x' is a subset of >=y' when 'y is smaller than 'x
                 y'.IsSmallerThanOrEqual x'
-                //x'.SupportedPlatformsTransitiveSeq
-                //|> Seq.exists (Set.contains y')
             // these are or 'common' forms, others are not allowed
             | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y') ->
                 // =x is only a subset of <y when its not a subset of >= y
                 y'.IsSmallerThanOrEqual x'
                 |> not
-                //// We go down from x' and if we find y' it is a subset -> not
-                //x'.SupportedPlatformsTransitiveSeq
-                //|> Seq.exists (Set.contains y')
-                //|> not
-                //fallBack()
             | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y') ->
                 x' <> y'
             // This one should never actually hit.
@@ -148,13 +141,11 @@ type FrameworkRestrictionP =
                 // >= x' is only a subset of < y' when their intersection is empty
                 Set.intersect (x'.PlatformsSupporting) (y'.PlatformsSupporting)
                 |> Set.isEmpty
-                //fallBack()
             | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y') ->
                 // >= x' is only a subset of <> y' when y' is not part of >=x'
                 x'.PlatformsSupporting
                 |> Set.contains y'
                 |> not
-                //fallBack()
             // This one should never actually hit.
             | FrameworkRestrictionP.NotP(y') -> fallBack true
             | FrameworkRestrictionP.OrP (ys) ->
@@ -169,7 +160,6 @@ type FrameworkRestrictionP =
             match y with
             | FrameworkRestrictionP.ExactlyP y' ->
                 // < x is a subset of ='y when?
-                //x'.SupportedPlatforms.IsEmpty && x' = y'
 #if DEBUG
                 assert (not (fallBack false))// TODO: can this happen?
 #endif
@@ -663,8 +653,6 @@ let isTargetMatchingRestrictions (restriction:FrameworkRestriction, target)=
 /// Get all targets that should be considered with the specified restrictions
 let applyRestrictionsToTargets (restriction:FrameworkRestriction) (targets: TargetProfile Set) =
     Set.intersect targets restriction.RepresentedFrameworks
-    //targets 
-    //|> List.filter (fun t -> isTargetMatchingRestrictions(restriction,t))
 
 type ContentCopySettings =
 | Omit
