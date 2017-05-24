@@ -963,7 +963,22 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         UnlistedSearch = false
     }
 
-    match step (Step((currentConflict,startingStep,currentRequirement),[])) stackpack Seq.empty flags  with
+    let inline calculate () = step (Step((currentConflict,startingStep,currentRequirement),[])) stackpack Seq.empty flags
+#if DEBUG
+    let mutable results = None
+    // Increase stack size, because we have no tail-call-elimination
+    let thread = new System.Threading.Thread((fun () ->
+            results <- Some (calculate())
+        ), 1024 * 1024 * 100)
+    thread.Name <- sprintf "Paket Resolver Thread (Debug) - %O" (System.Guid.NewGuid())
+    thread.Start();
+    thread.Join();
+    let stepResult = results.Value
+#else
+    let stepResult = calculate()
+#endif
+    
+    match stepResult  with
     | { Status = Resolution.Conflict _ } as conflict ->
         if conflict.TryRelaxed then
             stackpack.KnownConflicts.Clear()
