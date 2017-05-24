@@ -11,6 +11,8 @@ open System.IO.Compression
 open Paket.Domain
 open Paket
 
+let getDependencies = Paket.NuGet.NuGetPackageCache.getDependencies
+
 [<Test>]
 let ``#1234 empty assembly name``() = 
     let outPath = Path.Combine(scenarioTempPath "i001234-missing-assemblyname","out")
@@ -96,9 +98,9 @@ let ``#1429 pack deps from template``() =
         NuGetV2.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug2") // it's not packed in same round
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug2") // it's not packed in same round
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug","paket.template"))
 
@@ -112,9 +114,9 @@ let ``#1429 pack deps``() =
         NuGetV2.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "PaketBug2")
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "PaketBug2")
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps","PaketBug","paket.template"))
 
@@ -128,8 +130,8 @@ let ``#1429 pack deps using minimum-from-lock-file``() =
         NuGetV2.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details.Dependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
     versionRequirement |> shouldNotEqual (VersionRequirement.AllReleases)
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug","paket.template"))
@@ -144,8 +146,8 @@ let ``#1429 pack deps without minimum-from-lock-file uses dependencies file rang
         NuGetV2.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details.Dependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
     versionRequirement |> shouldEqual (VersionRequirement.Parse "1.2.3")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-minimum-from-lock","PaketBug","paket.template"))
@@ -160,8 +162,8 @@ let ``#1429 pack deps without minimum-from-lock-file uses specifc dependencies f
         NuGetV2.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details.Dependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
     versionRequirement |> shouldEqual (VersionRequirement.Parse "[2.3.4]")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug","paket.template"))
@@ -176,8 +178,8 @@ let ``#1429 pack deps with minimum-from-lock-file uses specifc dependencies file
         NuGetV2.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
 
-    details.Dependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
-    let packageName, versionRequirement, restrictions = details.Dependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
+    details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
+    let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
     versionRequirement |> shouldEqual (VersionRequirement.Parse "[2.3.4]")
 
     File.Delete(Path.Combine(scenarioTempPath "i001429-pack-deps-specific","PaketBug","paket.template"))

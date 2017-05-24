@@ -257,7 +257,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
         let optimized = 
             dependencies |> List.map (fun (m,v,r) -> m,v, ExplicitRestriction r)
         return 
-            { Dependencies = optimized
+            { SerializedDependencies = []
               PackageName = packageName.ToString()
               SourceUrl = source.Url
               Unlisted = unlisted
@@ -265,6 +265,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
               LicenseUrl = catalogData.LicenseUrl
               Version = version.Normalize()
               CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion }
+            |> NuGet.NuGetPackageCache.withDependencies optimized
     }
 
 let loadFromCacheOrGetDetails (force:bool)

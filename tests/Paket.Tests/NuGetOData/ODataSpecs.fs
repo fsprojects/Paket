@@ -23,7 +23,7 @@ let ``can detect explicit dependencies for Fantomas``() =
     |> shouldEqual 
         { PackageName = "Fantomas"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fantomas/1.6.0"
-          Dependencies = [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), makeOrList []]
+          SerializedDependencies = [PackageName "FSharp.Compiler.Service",DependenciesFileParser.parseVersionRequirement(">= 0.0.73"), "true"]
           Unlisted = false
           LicenseUrl = "http://github.com/dungpa/fantomas/blob/master/LICENSE.md"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
@@ -36,9 +36,9 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
     |> shouldEqual 
         { PackageName = "Rx-PlatformServices"
           DownloadUrl = "https://www.nuget.org/api/v2/package/Rx-PlatformServices/2.3.0"
-          Dependencies = 
-                [PackageName "Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), makeOrList []
-                 PackageName "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), makeOrList []]
+          SerializedDependencies = 
+                [PackageName "Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), "true"
+                 PackageName "Rx-Core",DependenciesFileParser.parseVersionRequirement(">= 2.2"), "true"]
           Unlisted = true
           LicenseUrl = "http://go.microsoft.com/fwlink/?LinkID=261272"
           Version = "2.3.0"
@@ -51,8 +51,8 @@ let ``can detect explicit dependencies for EasyNetQ``() =
     |> shouldEqual 
         { PackageName = "EasyNetQ"
           DownloadUrl = "https://www.nuget.org/api/v2/package/EasyNetQ/0.40.3.352"
-          Dependencies = 
-                [PackageName "RabbitMQ.Client",DependenciesFileParser.parseVersionRequirement(">= 3.4.3"),makeOrList []]
+          SerializedDependencies = 
+                [PackageName "RabbitMQ.Client",DependenciesFileParser.parseVersionRequirement(">= 3.4.3"),"true"]
           Unlisted = false
           LicenseUrl = "https://github.com/mikehadlow/EasyNetQ/blob/master/licence.txt"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
@@ -69,11 +69,11 @@ let ``can detect explicit dependencies for Fleece``() =
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           LicenseUrl = "https://raw.github.com/mausch/Fleece/master/LICENSE"
           Version = "0.4.0"
-          Dependencies = 
-            [PackageName "FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"),makeOrList []
-             PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),makeOrList []
-             PackageName "ReadOnlyCollectionExtensions",DependenciesFileParser.parseVersionRequirement(">= 1.2.0"),makeOrList []
-             PackageName "System.Json",DependenciesFileParser.parseVersionRequirement(">= 4.0.20126.16343"),makeOrList []]
+          SerializedDependencies = 
+            [PackageName "FSharpPlus",DependenciesFileParser.parseVersionRequirement(">= 0.0.4"),"true"
+             PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"),"true"
+             PackageName "ReadOnlyCollectionExtensions",DependenciesFileParser.parseVersionRequirement(">= 1.2.0"),"true"
+             PackageName "System.Json",DependenciesFileParser.parseVersionRequirement(">= 4.0.20126.16343"),"true"]
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -87,12 +87,9 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           LicenseUrl = "https://github.com/mausch/ReadOnlyCollections/blob/master/license.txt"
           Version = "1.2.0"
-          Dependencies = 
-            [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"),
-              makeOrList [FrameworkRestriction.Between (DotNetFramework(FrameworkVersion.V2), DotNetFramework(FrameworkVersion.V3_5))]
-             PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), 
-              makeOrList
-               [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V2))]]
+          SerializedDependencies = 
+            [PackageName "LinqBridge",DependenciesFileParser.parseVersionRequirement(">= 1.3.0"), "&& (>= net20) (< net35)"
+             PackageName "ReadOnlyCollectionInterfaces",DependenciesFileParser.parseVersionRequirement("1.0.0"), ">= net20"]
           SourceUrl = fakeUrl }
 
 [<Test>]
@@ -105,13 +102,13 @@ let ``can detect explicit dependencies for Math.Numerics``() =
           Version = "3.3.0"
           LicenseUrl = "http://numerics.mathdotnet.com/docs/License.html"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
-          Dependencies = 
-            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), makeOrList [FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4))]]
+          SerializedDependencies = 
+            [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), "&& (>= net35) (< net40)" ]
           SourceUrl = fakeUrl }
 
 [<Test>]
 let ``can detect explicit dependencies for Math.Numerics.FSharp``() = 
-    (parse "NuGetOData/Math.Numerics.FSharp.xml").Dependencies |> Seq.head
+    (parse "NuGetOData/Math.Numerics.FSharp.xml")|> NuGet.NuGetPackageCache.getDependencies |> Seq.head
     |> shouldEqual 
         (PackageName "MathNet.Numerics",
          DependenciesFileParser.parseVersionRequirement("3.3.0"),makeOrList [])
@@ -126,7 +123,7 @@ let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() =
     let odata = parse "NuGetOData/Microsoft.AspNet.WebApi.Client.xml"
     odata.PackageName |> shouldEqual "Microsoft.AspNet.WebApi.Client"
     odata.DownloadUrl |> shouldEqual"https://www.nuget.org/api/v2/package/Microsoft.AspNet.WebApi.Client/5.2.3"
-    let dependencies = odata.Dependencies |> Array.ofList
+    let dependencies = odata|> NuGet.NuGetPackageCache.getDependencies |> Array.ofList
     dependencies.[0] |> shouldEqual 
         (PackageName "Newtonsoft.Json", DependenciesFileParser.parseVersionRequirement(">= 6.0.4"), 
             makeOrList [getPortableRestriction("portable-net45+win8+wp8+wp81+wpa81"); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))])
@@ -140,7 +137,7 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
     let odata = parse "NuGetOData/WindowsAzure.Storage.xml"
     odata.PackageName |> shouldEqual "WindowsAzure.Storage"
     odata.DownloadUrl |> shouldEqual"https://www.nuget.org/api/v2/package/WindowsAzure.Storage/4.4.1-preview"
-    let dependencies = odata.Dependencies |> Array.ofList
+    let dependencies = odata|> NuGet.NuGetPackageCache.getDependencies |> Array.ofList
     dependencies.[0] |> shouldEqual 
         (PackageName "Microsoft.Data.OData", DependenciesFileParser.parseVersionRequirement(">= 5.6.3"), 
            makeOrList [FrameworkRestriction.AtLeast(DNXCore(FrameworkVersion.V5_0))])
@@ -164,11 +161,11 @@ let ``can ignore unknown frameworks``() =
     |> shouldEqual 
         { PackageName = "BenchmarkDotNet"
           DownloadUrl = "https://www.nuget.org/api/v2/package/BenchmarkDotNet/0.10.1"
-          Dependencies =
+          SerializedDependencies =
             [
                 PackageName "BenchmarkDotNet.Toolchains.Roslyn",
                 DependenciesFileParser.parseVersionRequirement(">= 0.10.1"),
-                makeOrList [FrameworkRestriction.AtLeast (DotNetFramework FrameworkVersion.V4_5)]
+                ">= net45"
             ]
           Unlisted = false
           LicenseUrl = "https://github.com/dotnet/BenchmarkDotNet/blob/master/LICENSE.md"

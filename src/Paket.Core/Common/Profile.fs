@@ -1,51 +1,35 @@
 ﻿module Paket.Profile
 
 open System.Diagnostics
+open System
 
-type Categories =
+type BlockReason =
+    | PackageDetails
+    | GetVersion
+
+type Category =
     | ResolverAlgorithm
+    | ResolverAlgorithmBlocked of BlockReason
     | NuGetRequest
     | NuGetDownload
-    | FileCopy
+    | FileIO
     | Other
-
-let watches =
-    [ ResolverAlgorithm; NuGetRequest; NuGetDownload; FileCopy; Other ]
-    |> List.map (fun cat -> cat, new Stopwatch())
-    |> Map.ofList
-let other = watches.[Other]
-let mutable current = other
-let reset () =
-    watches
-    |> Seq.iter (fun (kv) -> kv.Value.Reset())
-    other.Start()
-    current <- other
-
+type Event = { Category: Category; Duration : TimeSpan }
+let events =
+    System.Collections.Concurrent.ConcurrentBag<Event>()
+    
 let startCategory cat =
-    watches
-    |> Seq.iter (fun (kv) -> kv.Value.Stop())
-    let prev = current
-    let cw = watches.[cat]
-    current <- cw
-    cw.Start()
+    let cw = Stopwatch.StartNew()
+    let mutable wasDisposed = false
+    { new System.IDisposable with
+        member x.Dispose () = 
+            if not wasDisposed then
+                wasDisposed <- true
+                cw.Stop(); events.Add({ Category = cat; Duration = cw.Elapsed })  }
     
-    { new System.IDisposable with member x.Dispose () = cw.Stop(); prev.Start()  }
-    
-let startCategoryRaw cat =
-    watches
-    |> Seq.iter (fun (kv) -> kv.Value.Stop())
-    let cw = watches.[cat]
-    current <- cw
-    cw.Start()
-
 let startCategoryF cat f =
-    watches
-    |> Seq.iter (fun (kv) -> kv.Value.Stop())
-    let prev = current
-    let cw = watches.[cat]
-    current <- prev
-    cw.Start()
+    let cw = Stopwatch.StartNew()
     let res = f()
     cw.Stop()
-    prev.Start()
+    events.Add({ Category = cat; Duration = cw.Elapsed })
     res

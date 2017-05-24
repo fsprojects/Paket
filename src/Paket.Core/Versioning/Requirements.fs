@@ -95,7 +95,7 @@ type FrameworkRestrictionP =
     /// For example =net46 is a subset of >=netstandard13
     member x.IsSubsetOf (y:FrameworkRestrictionP) =
     
-        // better ~ 5 Mins
+        // better ~ 5 Mins, but below recursive logic should be even better.
         let inline fallBack doAssert =
 #if DEBUG
             if doAssert then
@@ -113,18 +113,11 @@ type FrameworkRestrictionP =
             | FrameworkRestrictionP.AtLeastP y' ->
                 // =x' is a subset of >=y' when 'y is smaller than 'x
                 y'.IsSmallerThanOrEqual x'
-                //x'.SupportedPlatformsTransitiveSeq
-                //|> Seq.exists (Set.contains y')
             // these are or 'common' forms, others are not allowed
             | FrameworkRestrictionP.NotP(FrameworkRestrictionP.AtLeastP y') ->
                 // =x is only a subset of <y when its not a subset of >= y
                 y'.IsSmallerThanOrEqual x'
                 |> not
-                //// We go down from x' and if we find y' it is a subset -> not
-                //x'.SupportedPlatformsTransitiveSeq
-                //|> Seq.exists (Set.contains y')
-                //|> not
-                //fallBack()
             | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y') ->
                 x' <> y'
             // This one should never actually hit.
@@ -148,13 +141,11 @@ type FrameworkRestrictionP =
                 // >= x' is only a subset of < y' when their intersection is empty
                 Set.intersect (x'.PlatformsSupporting) (y'.PlatformsSupporting)
                 |> Set.isEmpty
-                //fallBack()
             | FrameworkRestrictionP.NotP(FrameworkRestrictionP.ExactlyP y') ->
                 // >= x' is only a subset of <> y' when y' is not part of >=x'
                 x'.PlatformsSupporting
                 |> Set.contains y'
                 |> not
-                //fallBack()
             // This one should never actually hit.
             | FrameworkRestrictionP.NotP(y') -> fallBack true
             | FrameworkRestrictionP.OrP (ys) ->
@@ -169,7 +160,6 @@ type FrameworkRestrictionP =
             match y with
             | FrameworkRestrictionP.ExactlyP y' ->
                 // < x is a subset of ='y when?
-                //x'.SupportedPlatforms.IsEmpty && x' = y'
 #if DEBUG
                 assert (not (fallBack false))// TODO: can this happen?
 #endif
@@ -317,7 +307,7 @@ module FrameworkRestriction =
         let rec removeNegatedLiteralsWhichOccurSinglePositive (fr:FrameworkRestriction) =
             let positiveSingles =
                 fr.OrFormulas
-                |> List.choose (fun andFormular -> match andFormular.Literals with [ h ] -> Some h | _ -> None)
+                |> List.choose (fun andFormular -> match andFormular.Literals with [ { IsNegated = false } as h ] -> Some h | _ -> None)
             let workDone, reworked =
                 fr.OrFormulas
                 |> List.fold (fun (workDone, reworkedOrFormulas) andFormula ->
@@ -615,7 +605,7 @@ let parseRestrictions failImmediatly (text:string) =
             let operands, next = parseOperand [] next
             if operands.Length = 0 then failwithf "Operand '%s' without argument is invalid in '%s'" (h.Substring (0, 2)) text
             let f, def = if isAnd then FrameworkRestriction.And, FrameworkRestriction.NoRestriction else FrameworkRestriction.Or, FrameworkRestriction.EmptySet
-            operands |> List.fold (fun a b -> f [a;b]) def, next
+            operands |> f, next
         | h when h.StartsWith "NOT" ->
             let next = h.Substring 2
             
@@ -634,6 +624,12 @@ let parseRestrictions failImmediatly (text:string) =
                 negated, next
             else
                 failwithf "Expected operand after NOT, '%s'" text
+        | h when h.StartsWith "true" ->
+            let rest = (h.Substring 4).TrimStart()
+            FrameworkRestriction.NoRestriction, rest
+        | h when h.StartsWith "false" ->
+            let rest = (h.Substring 5).TrimStart()
+            FrameworkRestriction.EmptySet, rest
         | _ ->
             failwithf "Expected operator, but got '%s'" text
             
@@ -657,8 +653,6 @@ let isTargetMatchingRestrictions (restriction:FrameworkRestriction, target)=
 /// Get all targets that should be considered with the specified restrictions
 let applyRestrictionsToTargets (restriction:FrameworkRestriction) (targets: TargetProfile Set) =
     Set.intersect targets restriction.RepresentedFrameworks
-    //targets 
-    //|> List.filter (fun t -> isTargetMatchingRestrictions(restriction,t))
 
 type ContentCopySettings =
 | Omit
@@ -933,11 +927,11 @@ type PackageRequirement =
         if c <> 0 then c else
         let c = -compare x.VersionRequirement y.VersionRequirement
         if c <> 0 then c else
-        let c = compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions
-        if c <> 0 then c else
         let c = compare x.Parent y.Parent
         if c <> 0 then c else
         let c = compare x.Name y.Name
+        if c <> 0 then c else
+        let c = compare x.Settings.FrameworkRestrictions y.Settings.FrameworkRestrictions
         if c <> 0 then c else 0
 
     interface System.IComparable with
