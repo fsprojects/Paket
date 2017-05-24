@@ -66,6 +66,18 @@ Sometimes you don't want to generate dependencies for older framework versions. 
     Newtonsoft.Json framework: net35, net40
     DotNetZip framework: >= net45           
 
+> Note: This feature is deprecated and can be seen as an expert feature. 
+> Using framework restrictions on single packages might make you projects uncompilable.
+> The recommended way is to globally (on a group) specifiy the frameworks you want to compile for.
+
+This feature basically tells paket to only consider the specified frameworks for this package on this particular project.
+The resolution will not be modified when restrictions are specified in the reference file.
+It means 
+
+> In this project 'Newtonsoft.Json' is only required when compiling against 'net35' or 'net40'.
+> I never need this package to compile for another framework like 'net45', therefore don't add references for other frameworks.
+
+
 ## Redirects settings
 
 You can instruct Paket to create assembly binding redirects for NuGet packages:
