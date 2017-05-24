@@ -31,7 +31,7 @@ let ``#1190 paket add nuget should handle transitive dependencies``() =
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
-    |> shouldEqual (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5)))
+    |> fun res -> res.ToString() |> shouldEqual "|| (>= dnx451) (>= dnxcore50) (>= portable-net45+win8+wp8+wpa81)"
     
 [<Test>]
 let ``#1190 paket add nuget should handle transitive dependencies with restrictions``() = 
