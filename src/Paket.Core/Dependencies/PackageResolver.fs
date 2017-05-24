@@ -331,11 +331,28 @@ let private updateRestrictions (pkgConfig:PackageConfig) (package:ResolvedPackag
         then
             FrameworkRestriction.NoRestriction
         else
+            // Setting in the dependencies file
+            let globalPackageSettings =
+                match pkgConfig.RootSettings.TryGetValue package.Name with
+                | true, s -> 
+                    match s.FrameworkRestrictions with
+                    | ExplicitRestriction r -> r
+                    | _ -> FrameworkRestriction.NoRestriction
+                | _ -> FrameworkRestriction.NoRestriction
+            // Settings required for the current resolution
             let packageSettings = package.Settings.FrameworkRestrictions |> getExplicitRestriction
+            // Settings required for this current dependency
             let dependencySettings = pkgConfig.Dependency.Settings.FrameworkRestrictions |> getExplicitRestriction
+            // Settings defined globally
             let globalSettings = pkgConfig.GlobalRestrictions |> getExplicitRestriction
-            [packageSettings;dependencySettings;globalSettings]
-            |> Seq.fold (FrameworkRestriction.combineRestrictionsWithAnd) FrameworkRestriction.NoRestriction
+            let isRequired =
+                FrameworkRestriction.Or
+                  [ packageSettings
+                    FrameworkRestriction.And [dependencySettings;globalSettings]]
+
+            // We assume the user knows what he is doing
+            FrameworkRestriction.And [ globalPackageSettings;isRequired ]
+
 
     { package with
         Settings = { package.Settings with FrameworkRestrictions = ExplicitRestriction newRestrictions }

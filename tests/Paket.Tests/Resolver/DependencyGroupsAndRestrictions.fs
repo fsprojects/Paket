@@ -6,6 +6,7 @@ open FsUnit
 open TestHelpers
 open Paket.Domain
 open Paket.PackageResolver
+open Paket.Requirements
 
 let resolve graph updateMode (cfg : DependenciesFile) =
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
@@ -301,3 +302,138 @@ nuget Chessie"""
        (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6_3)))
       |> shouldEqual false
     // This also tests that "UnknownPackage" is not pulled unexpectedly (because this dependency is never relevant)
+
+
+    
+let graph7 =
+  GraphOfNuspecs [
+    """<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Nancy.Serialization.JsonNet</id>
+    <version>1.4.1</version>
+    <authors>Andreas Håkansson, Steven Robbins and contributors</authors>
+    <owners>Andreas Håkansson, Steven Robbins and contributors</owners>
+    <licenseUrl>https://github.com/NancyFx/Nancy.Serialization.JsonNet/blob/master/license.txt</licenseUrl>
+    <projectUrl>http://nancyfx.org</projectUrl>
+    <iconUrl>http://nancyfx.org/nancy-nuget.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Provides JSON (de)serialization support using Newtonsoft.JsonNet.</description>
+    <summary>Nancy is a lightweight web framework for the .Net platform, inspired by Sinatra. Nancy aim at delivering a low ceremony approach to building light, fast web applications.</summary>
+    <copyright>Andreas Håkansson, Steven Robbins and contributors</copyright>
+    <language>en-US</language>
+    <tags>Nancy Json JsonNet</tags>
+    <dependencies>
+      <dependency id="Nancy" version="1.4.1" />
+      <dependency id="Newtonsoft.Json" />
+    </dependencies>
+  </metadata>
+</package>
+    """
+    """<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+  <metadata>
+    <id>Newtonsoft.Json</id>
+    <version>10.0.2</version>
+    <title>Json.NET</title>
+    <authors>James Newton-King</authors>
+    <owners>James Newton-King</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>https://raw.github.com/JamesNK/Newtonsoft.Json/master/LICENSE.md</licenseUrl>
+    <projectUrl>http://www.newtonsoft.com/json</projectUrl>
+    <iconUrl>http://www.newtonsoft.com/content/images/nugeticon.png</iconUrl>
+    <description>Json.NET is a popular high-performance JSON framework for .NET</description>
+    <language>en-US</language>
+    <tags>json</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework4.5" />
+      <group targetFramework=".NETFramework4.0" />
+      <group targetFramework=".NETFramework3.5" />
+      <group targetFramework=".NETFramework2.0" />
+      <group targetFramework=".NETPortable4.5-Profile259" />
+      <group targetFramework=".NETPortable4.0-Profile328" />
+      <group targetFramework=".NETStandard1.3">
+        <dependency id="Microsoft.CSharp" version="4.3.0" />
+        <dependency id="NETStandard.Library" version="1.6.1" />
+        <dependency id="System.ComponentModel.TypeConverter" version="4.3.0" />
+        <dependency id="System.Runtime.Serialization.Formatters" version="4.3.0" />
+        <dependency id="System.Runtime.Serialization.Primitives" version="4.3.0" />
+        <dependency id="System.Xml.XmlDocument" version="4.3.0" />
+      </group>
+      <group targetFramework=".NETStandard1.0">
+        <dependency id="Microsoft.CSharp" version="4.3.0" />
+        <dependency id="NETStandard.Library" version="1.6.1" />
+        <dependency id="System.ComponentModel.TypeConverter" version="4.3.0" />
+        <dependency id="System.Runtime.Serialization.Primitives" version="4.3.0" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>
+    """
+    """<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>Nancy</id>
+    <version>1.4.3</version>
+    <authors>Andreas Håkansson, Steven Robbins and contributors</authors>
+    <owners>Andreas Håkansson, Steven Robbins and contributors</owners>
+    <licenseUrl>https://github.com/NancyFx/Nancy/blob/master/license.txt</licenseUrl>
+    <projectUrl>http://nancyfx.org</projectUrl>
+    <iconUrl>http://nancyfx.org/nancy-nuget.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Nancy is a lightweight web framework for the .Net platform, inspired by Sinatra. Nancy aim at delivering a low ceremony approach to building light, fast web applications.</description>
+    <summary>Nancy is a lightweight web framework for the .Net platform, inspired by Sinatra. Nancy aim at delivering a low ceremony approach to building light, fast web applications.</summary>
+    <copyright>Andreas Håkansson, Steven Robbins and contributors</copyright>
+    <language>en-US</language>
+    <tags>Nancy</tags>
+  </metadata>
+</package>
+    """ ]
+    
+[<Test>]
+let ``i001213 should not delegate restriction of transitive when globally no restriction is given``() = 
+    let config = """
+framework: >= net40
+
+source https://nuget.org/api/v2
+
+nuget Newtonsoft.Json redirects: on
+nuget Nancy.Serialization.JsonNet ~> 1.2 framework: >= net451"""
+    let resolved =
+        DependenciesFile.FromSource(config)
+        |> resolve graph7 UpdateMode.UpdateAll
+    let newtonsoft = resolved.[PackageName "Newtonsoft.Json"]
+    let nancy = resolved.[PackageName "Nancy.Serialization.JsonNet"]
+    getVersion newtonsoft |> shouldEqual "10.0.2"
+    getVersion nancy |> shouldEqual "1.4.1"
+
+    (FrameworkRestriction.AtLeast (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4)).IsSubsetOf
+        (Requirements.getExplicitRestriction newtonsoft.Settings.FrameworkRestrictions)
+        |> shouldEqual true
+        
+    // install netstandard to net40
+    Requirements.isTargetMatchingRestrictions 
+      (Requirements.getExplicitRestriction newtonsoft.Settings.FrameworkRestrictions,
+       (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4)))
+      |> shouldEqual true
+[<Test>]
+let ``i001213 should delegate restriction of transitive when package is not given``() = 
+    let config = """
+framework: >= net40
+
+source https://nuget.org/api/v2
+
+nuget Nancy.Serialization.JsonNet ~> 1.2 framework: >= net451"""
+    let resolved =
+        DependenciesFile.FromSource(config)
+        |> resolve graph7 UpdateMode.UpdateAll
+    let newtonsoft = resolved.[PackageName "Newtonsoft.Json"]
+    let nancy = resolved.[PackageName "Nancy.Serialization.JsonNet"]
+    getVersion newtonsoft |> shouldEqual "10.0.2"
+    getVersion nancy |> shouldEqual "1.4.1"
+        
+    // don't install newtonsoft to net40, because restriction should be propagated.
+    Requirements.isTargetMatchingRestrictions 
+      (Requirements.getExplicitRestriction newtonsoft.Settings.FrameworkRestrictions,
+       (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4)))
+      |> shouldEqual false

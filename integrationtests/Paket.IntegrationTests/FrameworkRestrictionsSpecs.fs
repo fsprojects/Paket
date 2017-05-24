@@ -70,9 +70,15 @@ let ``#1215 framework dependencies propagate``() =
 [<Test>]
 let ``#1232 framework dependencies propagate``() = 
     let lockFile = update "i001232-sql-lite"
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "System.Data.SQLite.Core"].Settings.FrameworkRestrictions
-    |> getExplicitRestriction
-    |> shouldEqual (FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4)))
+    let restriction =
+        lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "System.Data.SQLite.Core"].Settings.FrameworkRestrictions
+        |> getExplicitRestriction
+    (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4), DotNetFramework(FrameworkVersion.V4_5))).IsSubsetOf restriction
+    |> shouldEqual true
+    (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4_5), DotNetFramework(FrameworkVersion.V4_5_1))).IsSubsetOf restriction
+    |> shouldEqual true
+    (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_6))).IsSubsetOf restriction
+    |> shouldEqual true
 
 [<Test>]
 let ``#1494 detect platform 5.0``() = 
