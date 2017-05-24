@@ -317,7 +317,7 @@ module FrameworkRestriction =
         let rec removeNegatedLiteralsWhichOccurSinglePositive (fr:FrameworkRestriction) =
             let positiveSingles =
                 fr.OrFormulas
-                |> List.choose (fun andFormular -> match andFormular.Literals with [ h ] -> Some h | _ -> None)
+                |> List.choose (fun andFormular -> match andFormular.Literals with [ { IsNegated = false } as h ] -> Some h | _ -> None)
             let workDone, reworked =
                 fr.OrFormulas
                 |> List.fold (fun (workDone, reworkedOrFormulas) andFormula ->
@@ -615,7 +615,7 @@ let parseRestrictions failImmediatly (text:string) =
             let operands, next = parseOperand [] next
             if operands.Length = 0 then failwithf "Operand '%s' without argument is invalid in '%s'" (h.Substring (0, 2)) text
             let f, def = if isAnd then FrameworkRestriction.And, FrameworkRestriction.NoRestriction else FrameworkRestriction.Or, FrameworkRestriction.EmptySet
-            operands |> List.fold (fun a b -> f [a;b]) def, next
+            operands |> f, next
         | h when h.StartsWith "NOT" ->
             let next = h.Substring 2
             

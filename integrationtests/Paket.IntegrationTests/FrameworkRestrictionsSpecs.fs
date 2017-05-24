@@ -15,7 +15,7 @@ let ``#140 windsor should resolve framework dependent dependencies``() =
     let lockFile = update "i000140-resolve-framework-restrictions"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "TaskParallelLibrary"].Settings.FrameworkRestrictions
     |> getExplicitRestriction
-    |> shouldEqual (FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)))
+    |> shouldEqual (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4)))
 
 [<Test>]
 let ``#1182 framework restrictions overwrite each other``() =

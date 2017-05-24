@@ -437,3 +437,107 @@ nuget Nancy.Serialization.JsonNet ~> 1.2 framework: >= net451"""
       (Requirements.getExplicitRestriction newtonsoft.Settings.FrameworkRestrictions,
        (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4)))
       |> shouldEqual false
+
+
+
+    
+let graph8 =
+  GraphOfNuspecs [
+    """<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>MathNet.Numerics.FSharp</id>
+    <version>3.2.3</version>
+    <title>Math.NET Numerics for F#</title>
+    <authors>Christoph Ruegg, Marcus Cuda, Jurgen Van Gael</authors>
+    <owners>Christoph Ruegg, Marcus Cuda, Jurgen Van Gael</owners>
+    <licenseUrl>http://numerics.mathdotnet.com/docs/License.html</licenseUrl>
+    <projectUrl>http://numerics.mathdotnet.com/</projectUrl>
+    <iconUrl>http://www.mathdotnet.com/images/MathNet128.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Math.NET Numerics is the numerical foundation of the Math.NET project, aiming to provide methods and algorithms for numerical computations in science, engineering and every day use. Supports F# 3.0 on .Net 4.0, .Net 3.5 and Mono on Windows, Linux and Mac; Silverlight 5, WindowsPhone/SL 8, WindowsPhone 8.1 and Windows 8 with PCL Portable Profiles 47 and 328; Android/iOS with Xamarin.</description>
+    <summary>F# Modules for Math.NET Numerics, providing methods and algorithms for numerical computations in science, engineering and every day use.</summary>
+    <releaseNotes>Bug fix: MatrixNormal distribution: density for non-square matrices ~Evelina Gabasova</releaseNotes>
+    <tags>fsharp F# math numeric statistics probability integration interpolation regression solve fit linear algebra matrix fft</tags>
+    <dependencies>
+      <dependency id="MathNet.Numerics" version="[3.2.3]" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Numerics" targetFramework=".NETFramework4.0, .NETFramework4.5, .NETCore4.5, Silverlight5.0, MonoAndroid1.0, MonoTouch1.0" />
+    </frameworkAssemblies>
+  </metadata>
+</package>
+    """
+    """<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>MathNet.Numerics</id>
+    <version>3.2.3</version>
+    <title>Math.NET Numerics</title>
+    <authors>Christoph Ruegg, Marcus Cuda, Jurgen Van Gael</authors>
+    <owners>Christoph Ruegg, Marcus Cuda, Jurgen Van Gael</owners>
+    <licenseUrl>http://numerics.mathdotnet.com/docs/License.html</licenseUrl>
+    <projectUrl>http://numerics.mathdotnet.com/</projectUrl>
+    <iconUrl>http://www.mathdotnet.com/images/MathNet128.png</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Math.NET Numerics is the numerical foundation of the Math.NET project, aiming to provide methods and algorithms for numerical computations in science, engineering and every day use. Supports .Net 4.0, .Net 3.5 and Mono on Windows, Linux and Mac; Silverlight 5, WindowsPhone/SL 8, WindowsPhone 8.1 and Windows 8 with PCL Portable Profiles 47 and 328; Android/iOS with Xamarin.</description>
+    <summary>Math.NET Numerics, providing methods and algorithms for numerical computations in science, engineering and every day use.</summary>
+    <releaseNotes>Bug fix: MatrixNormal distribution: density for non-square matrices ~Evelina Gabasova</releaseNotes>
+    <tags>math numeric statistics probability integration interpolation regression solve fit linear algebra matrix fft</tags>
+    <dependencies>
+      <group targetFramework=".NETFramework3.5">
+        <dependency id="TaskParallelLibrary" version="1.0.2856.0" />
+      </group>
+      <group targetFramework=".NETFramework4.0" />
+    </dependencies>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Numerics" targetFramework=".NETFramework4.0, .NETFramework4.5, .NETCore4.5, Silverlight5.0, MonoAndroid1.0, MonoTouch1.0" />
+    </frameworkAssemblies>
+  </metadata>
+</package>
+    """
+    """<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <version>1.0.2856.0</version>
+    <authors>Microsoft Corporation</authors>
+    <owners>Microsoft Corporation</owners>
+    <licenseUrl>http://go.microsoft.com/fwlink/?LinkID=186234</licenseUrl>
+    <projectUrl>http://msdn.microsoft.com/en-us/library/dd460717.aspx</projectUrl>
+    <iconUrl>http://i.msdn.microsoft.com/ee402630.NET_lg.png</iconUrl>
+    <id>TaskParallelLibrary</id>
+    <title>Task Parallel Library for .NET 3.5</title>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>The package includes:
+* Task&lt;T&gt; for executing asynchronous operations.
+* Concurrent Collections such as ConcurrentStack, ConcurentQueue ad ConcurrentDictionary.
+* PLINQ for writing parallel queries.
+* additional Threading operations such as Barrier,SpinLock and SpinWait.</description>
+    <summary>A complete and official Microsoft backport of the Task Parallel Library (TPL) for .NET 3.5.</summary>
+    <releaseNotes>This backport was shipped with the Reactive Extensions (Rx) library up until v1.0.2856.0. It can be downloaded from http://www.microsoft.com/download/en/details.aspx?id=24940 .</releaseNotes>
+    <language>en-us</language>
+    <tags>tpl plinq pfx task parallel extensions .net35 backport</tags>
+  </metadata>
+</package>
+    """
+  ]
+
+[<Test>]
+let ``i000140 should properly resolve framework dependent dependencies``() = 
+    let config = """
+source https://nuget.org/api/v2
+
+nuget MathNet.Numerics.FSharp ~> 3.2.1"""
+    let resolved =
+        DependenciesFile.FromSource(config)
+        |> resolve graph8 UpdateMode.UpdateAll
+    let tpl = resolved.[PackageName "TaskParallelLibrary"]
+    let numeric = resolved.[PackageName "MathNet.Numerics"]
+    getVersion numeric |> shouldEqual "3.2.3"
+    getVersion tpl |> shouldEqual "1.0.2856.0"
+        
+    // don't install tpl to net40, because restriction should be propagated.
+    Requirements.isTargetMatchingRestrictions 
+      (Requirements.getExplicitRestriction tpl.Settings.FrameworkRestrictions,
+       (TargetProfile.SinglePlatform (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4)))
+      |> shouldEqual false

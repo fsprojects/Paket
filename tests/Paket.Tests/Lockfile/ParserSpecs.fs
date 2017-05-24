@@ -940,3 +940,22 @@ let ``should parse lock file with spaces in file names``() =
             OperatingSystemRestriction = None
             PackagePath = None
             AuthKey = Some "secret" } ]
+
+
+let lockFileWithNewRestrictions = """NUGET
+  remote: http://www.nuget.org/api/v2
+    MathNet.Numerics (3.2.3)
+      TaskParallelLibrary (>= 1.0.2856) - restriction: && (>= net35) (< net40)
+    MathNet.Numerics.FSharp (3.2.3)
+      MathNet.Numerics (3.2.3)
+    TaskParallelLibrary (1.0.2856) - restriction: && (>= net35) (< net40)"""
+
+[<Test>]
+let ``should parse new restrictions && (>= net35) (< net40)``() =
+    let lockFile = LockFileParser.Parse (toLines lockFileWithNewRestrictions)
+    let main = lockFile.Head
+    let packages = lockFile.Tail
+    
+    LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings lockFileWithNewRestrictions)

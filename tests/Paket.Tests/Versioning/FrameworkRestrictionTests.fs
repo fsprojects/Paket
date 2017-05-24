@@ -6,6 +6,15 @@ open NUnit.Framework
 open Paket.Requirements
 
 [<Test>] 
+let ``Simplify && (true) (< net45)`` () =
+    let toSimplify = 
+        (FrameworkRestriction.And[
+            FrameworkRestriction.NoRestriction
+            FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_5)])
+    toSimplify
+    |> shouldEqual (FrameworkRestriction.NotAtLeast (DotNetFramework FrameworkVersion.V4_5))
+
+[<Test>] 
 let ``IsSubset works for unknown Portables`` () =
     let p = PlatformMatching.forceExtractPlatforms "portable-net45+win8+wp8+wp81+wpa81"
     let t = p.ToTargetProfile.Value
