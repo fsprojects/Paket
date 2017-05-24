@@ -208,13 +208,13 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
 
     { PackageName = officialName
       DownloadUrl = downloadLink
-      Dependencies = dependencies
+      SerializedDependencies = []
       SourceUrl = nugetURL
       CacheVersion = NuGetPackageCache.CurrentCacheVersion
       LicenseUrl = licenseUrl
       Version = (SemVer.Parse v).Normalize()
       Unlisted = publishDate = Constants.MagicUnlistingDate }
-
+    |> NuGet.NuGetPackageCache.withDependencies dependencies
 
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     async {
@@ -267,7 +267,7 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
     async {
         try
             let! result = getDetailsFromNuGetViaODataFast auth nugetURL packageName version
-            if urlSimilarToTfsOrVsts nugetURL && result.Dependencies.IsEmpty then
+            if urlSimilarToTfsOrVsts nugetURL && result |> NuGet.NuGetPackageCache.getDependencies |> List.isEmpty then
                 // TODO: There is a bug in VSTS, so we can't trust this protocol. Remvoe when VSTS is fixed
                 // TODO: TFS has the same bug
                 return! queryPackagesProtocol packageName
@@ -368,12 +368,13 @@ let getDetailsFromLocalNuGetPackage isCache alternativeProjectRoot root localNuG
         return
             { PackageName = nuspec.OfficialName
               DownloadUrl = packageName.ToString()
-              Dependencies = nuspec.Dependencies
+              SerializedDependencies = []
               SourceUrl = di.FullName
               CacheVersion = NuGetPackageCache.CurrentCacheVersion
               LicenseUrl = nuspec.LicenseUrl
               Version = version.Normalize()
               Unlisted = isCache }
+            |> NuGet.NuGetPackageCache.withDependencies nuspec.Dependencies
     }
 
 
@@ -762,14 +763,19 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
               DownloadLink = encodeURL nugetObject.DownloadUrl
               Unlisted = nugetObject.Unlisted
               LicenseUrl = nugetObject.LicenseUrl
-              DirectDependencies = nugetObject.Dependencies |> Set.ofList } }
+              DirectDependencies = NuGet.NuGetPackageCache.getDependencies nugetObject |> Set.ofList } }
 
 let rec GetPackageDetails alternativeProjectRoot root force (sources:PackageSource list) groupName packageName (version:SemVerInfo) : Async<PackageResolver.PackageDetails> =
     async {
         try
             return! getPackageDetails alternativeProjectRoot root force sources packageName version
         with
-        | _ -> return! getPackageDetails alternativeProjectRoot root true sources packageName version
+        | exn ->
+            if verbose then
+                traceWarnfn "GetPackageDetails failed: %O" exn
+            else
+                traceWarnfn "Something failed in GetPackageDetails, trying again with force: %s" exn.Message
+            return! getPackageDetails alternativeProjectRoot root true sources packageName version
     }
 let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 

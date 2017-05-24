@@ -966,14 +966,25 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     let inline calculate () = step (Step((currentConflict,startingStep,currentRequirement),[])) stackpack Seq.empty flags
 #if DEBUG
     let mutable results = None
+    let mutable error = None
     // Increase stack size, because we have no tail-call-elimination
     let thread = new System.Threading.Thread((fun () ->
+        try
             results <- Some (calculate())
+        with e ->
+            // Prevent the application from crashing
+            error <- Some (System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e)
         ), 1024 * 1024 * 100)
     thread.Name <- sprintf "Paket Resolver Thread (Debug) - %O" (System.Guid.NewGuid())
-    thread.Start();
-    thread.Join();
-    let stepResult = results.Value
+    thread.Start()
+    thread.Join()
+    match error with
+    | Some e -> e.Throw()
+    | _ -> ()
+    let stepResult =
+        match results with
+        | Some s -> s
+        | None -> failwithf "Expected to get results from the resolver thread :/."
 #else
     let stepResult = calculate()
 #endif

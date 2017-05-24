@@ -634,6 +634,12 @@ let parseRestrictions failImmediatly (text:string) =
                 negated, next
             else
                 failwithf "Expected operand after NOT, '%s'" text
+        | h when h.StartsWith "true" ->
+            let rest = (h.Substring 4).TrimStart()
+            FrameworkRestriction.NoRestriction, rest
+        | h when h.StartsWith "false" ->
+            let rest = (h.Substring 5).TrimStart()
+            FrameworkRestriction.EmptySet, rest
         | _ ->
             failwithf "Expected operator, but got '%s'" text
             
