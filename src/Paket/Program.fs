@@ -40,24 +40,56 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
             sw.Stop()
             if not silent then
                 let realTime = sw.Elapsed
-                let results =
+                let groupedResults =
                     Profile.events
                     |> Seq.groupBy (fun (ev) -> ev.Category)
                     |> Seq.map (fun (cat, group) ->
-                        cat, group |> Seq.map (fun ev -> ev.Duration) |> Seq.fold (+) (TimeSpan()))
+                        let l = group |> Seq.toList
+                        cat, l.Length, l |> Seq.map (fun ev -> ev.Duration) |> Seq.fold (+) (TimeSpan()))
                     |> Seq.toList
                 let blocked = 
-                    results
-                    |> List.filter (function Profile.Category.ResolverAlgorithmBlocked _, _ -> true | _ -> false)
-                    |> Seq.map snd
+                    groupedResults
+                    |> List.filter (function Profile.Category.ResolverAlgorithmBlocked _, _, _ -> true | _ -> false)
+                    |> Seq.map (fun (_,_,t) -> t)
                     |> Seq.fold (+) (TimeSpan())
                 let resolver = 
-                    match results |> List.tryPick (function Profile.Category.ResolverAlgorithm, s -> Some s | _ -> None) with
+                    match groupedResults |> List.tryPick (function Profile.Category.ResolverAlgorithm, _, s -> Some s | _ -> None) with
                     | Some s -> s
                     | None -> TimeSpan()
-                tracefn "%s - Resolver (plain)." (Utils.TimeSpanToReadableString (resolver - blocked))
-                for (cat, elapsed) in results do tracefn "%s - %A." (Utils.TimeSpanToReadableString elapsed) cat
-                tracefn "%s - ready." (Utils.TimeSpanToReadableString realTime)
+                tracefn "Performance:"
+                groupedResults
+                |> List.sortBy (fun (cat,_,_) ->
+                    match cat with
+                    | Profile.Category.ResolverAlgorithm -> 1
+                    | Profile.Category.ResolverAlgorithmBlocked b -> 2
+                    | Profile.Category.FileIO -> 3
+                    | Profile.Category.NuGetDownload -> 4
+                    | Profile.Category.NuGetRequest -> 5
+                    | Profile.Category.Other -> 6)
+                |> List.iter (fun (cat, num, elapsed) ->
+                    match cat with
+                    | Profile.Category.ResolverAlgorithm ->
+                        tracefn " - Resolver: %s (%d runs)" (Utils.TimeSpanToReadableString elapsed) num
+                        tracefn "    - Runtime : %s" (Utils.TimeSpanToReadableString (resolver - blocked))
+                    | Profile.Category.ResolverAlgorithmBlocked b ->
+                        let reason =
+                            match b with
+                            | Profile.BlockReason.PackageDetails -> "retrieving package details"
+                            | Profile.BlockReason.GetVersion -> "retrieving package versions"
+                        tracefn "    - Blocked (%s): %s" reason (Utils.TimeSpanToReadableString elapsed)
+                    | Profile.Category.FileIO ->
+                        tracefn " - Disk IO: %s" (Utils.TimeSpanToReadableString elapsed)
+                    | Profile.Category.NuGetDownload ->
+                        let avg = TimeSpan.FromTicks(elapsed.Ticks / int64 num)
+                        tracefn " - Average Download Time: %s" (Utils.TimeSpanToReadableString avg)
+                    | Profile.Category.NuGetRequest ->
+                        let avg = TimeSpan.FromTicks(elapsed.Ticks / int64 num)
+                        tracefn " - Average Request Time: %s" (Utils.TimeSpanToReadableString avg)
+                    | Profile.Category.Other ->
+                        tracefn "  - Other: %s" (Utils.TimeSpanToReadableString elapsed)
+                    )
+                
+                tracefn " - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
 
 let processCommand silent commandF result =
     processWithValidation silent (fun _ -> true) commandF result

@@ -20,8 +20,12 @@ let events =
     
 let startCategory cat =
     let cw = Stopwatch.StartNew()
-    
-    { new System.IDisposable with member x.Dispose () = cw.Stop(); events.Add({ Category = cat; Duration = cw.Elapsed })  }
+    let mutable wasDisposed = false
+    { new System.IDisposable with
+        member x.Dispose () = 
+            if not wasDisposed then
+                wasDisposed <- true
+                cw.Stop(); events.Add({ Category = cat; Duration = cw.Elapsed })  }
     
 let startCategoryF cat f =
     let cw = Stopwatch.StartNew()

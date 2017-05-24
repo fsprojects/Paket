@@ -70,12 +70,15 @@ let TimeSpanToReadableString(span:TimeSpan) =
     let hours = notZero (span.Duration().Hours) <| String.Format("{0:0} hour{1}, ", span.Hours, pluralize span.Hours) 
     let minutes = notZero (span.Duration().Minutes) <| String.Format("{0:0} minute{1}, ", span.Minutes, pluralize span.Minutes)
     let seconds = notZero (span.Duration().Seconds) <| String.Format("{0:0} second{1}", span.Seconds, pluralize span.Seconds) 
+    let milliseconds = notZero (span.Duration().Milliseconds) <| String.Format("{0:0} millisecond{1}", span.Milliseconds, pluralize span.Milliseconds) 
 
     let formatted = String.Format("{0}{1}{2}{3}", days, hours, minutes, seconds)
 
     let formatted = if formatted.EndsWith ", " then formatted.Substring(0, formatted.Length - 2) else formatted
 
-    if String.IsNullOrEmpty formatted then "0 seconds" else formatted
+    if not (String.IsNullOrEmpty formatted) then formatted
+    elif not (String.IsNullOrEmpty milliseconds) then milliseconds
+    else "0 milliseconds"
 
 let GetHomeDirectory() =
 #if DOTNETCORE

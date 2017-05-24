@@ -656,7 +656,9 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
             |> Async.StartAsTask)
     let getPackageDetailsBlock sources groupName packageName semVer =
         use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked Profile.BlockReason.PackageDetails)
-        (startRequestGetPackageDetails sources groupName packageName semVer).GetAwaiter().GetResult()
+        let result = (startRequestGetPackageDetails sources groupName packageName semVer).GetAwaiter().GetResult()
+        d.Dispose()
+        result
 
     
     let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
