@@ -77,18 +77,18 @@ Alternativly you can just reference any paket.exe that you have on your system.<
 <span class="l">13: </span>
 <span class="l">14: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span class="i">System</span>
-<span class="k">open</span> <span class="i">System</span><span class="o">.</span><span class="i">IO</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">System</span>
+<span class="k">open</span> <span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 3)" onmouseover="showTip(event, 'fs2', 3)" class="i">IO</span>
  
-<span class="i">Environment</span><span class="o">.</span><span class="i">CurrentDirectory</span> <span class="o">&lt;-</span> <span class="k">__SOURCE_DIRECTORY__</span>
+<span onmouseout="hideTip(event, 'fs3', 4)" onmouseover="showTip(event, 'fs3', 4)" class="t">Environment</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 5)" onmouseover="showTip(event, 'fs4', 5)" class="i">CurrentDirectory</span> <span class="o">&lt;-</span> <span class="k">__SOURCE_DIRECTORY__</span>
  
-<span class="k">if</span> <span class="i">not</span> (<span class="i">File</span><span class="o">.</span><span class="i">Exists</span> <span class="s">&quot;paket.exe&quot;</span>) <span class="k">then</span>
-    <span class="k">let</span> <span class="i">url</span> <span class="o">=</span> <span class="s">&quot;http://fsprojects.github.io/Paket/stable&quot;</span>
-    <span class="k">use</span> <span class="i">wc</span> <span class="o">=</span> <span class="k">new</span> <span class="i">Net</span><span class="o">.</span><span class="i">WebClient</span>() 
-    <span class="k">let</span> <span class="i">tmp</span> <span class="o">=</span> <span class="i">Path</span><span class="o">.</span><span class="i">GetTempFileName</span>() 
-    <span class="k">let</span> <span class="i">stable</span> <span class="o">=</span> <span class="i">wc</span><span class="o">.</span><span class="i">DownloadString</span>(<span class="i">url</span>) 
-    <span class="i">wc</span><span class="o">.</span><span class="i">DownloadFile</span>(<span class="i">stable</span>, <span class="i">tmp</span>)
-    <span class="i">File</span><span class="o">.</span><span class="i">Move</span>(<span class="i">tmp</span>,<span class="i">Path</span><span class="o">.</span><span class="i">GetFileName</span> <span class="i">stable</span>)
+<span class="k">if</span> <span onmouseout="hideTip(event, 'fs5', 6)" onmouseover="showTip(event, 'fs5', 6)" class="f">not</span> (<span onmouseout="hideTip(event, 'fs6', 7)" onmouseover="showTip(event, 'fs6', 7)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 8)" onmouseover="showTip(event, 'fs7', 8)" class="f">Exists</span> <span class="s">&quot;paket.exe&quot;</span>) <span class="k">then</span>
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs8', 9)" onmouseover="showTip(event, 'fs8', 9)" class="i">url</span> <span class="o">=</span> <span class="s">&quot;http://fsprojects.github.io/Paket/stable&quot;</span>
+    <span class="k">use</span> <span onmouseout="hideTip(event, 'fs9', 10)" onmouseover="showTip(event, 'fs9', 10)" class="i">wc</span> <span class="o">=</span> <span class="k">new</span> <span onmouseout="hideTip(event, 'fs10', 11)" onmouseover="showTip(event, 'fs10', 11)" class="i">Net</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs11', 12)" onmouseover="showTip(event, 'fs11', 12)" class="t">WebClient</span>() 
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs12', 13)" onmouseover="showTip(event, 'fs12', 13)" class="i">tmp</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs13', 14)" onmouseover="showTip(event, 'fs13', 14)" class="t">Path</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs14', 15)" onmouseover="showTip(event, 'fs14', 15)" class="f">GetTempFileName</span>() 
+    <span class="k">let</span> <span onmouseout="hideTip(event, 'fs15', 16)" onmouseover="showTip(event, 'fs15', 16)" class="i">stable</span> <span class="o">=</span> <span onmouseout="hideTip(event, 'fs9', 17)" onmouseover="showTip(event, 'fs9', 17)" class="i">wc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs16', 18)" onmouseover="showTip(event, 'fs16', 18)" class="f">DownloadString</span>(<span onmouseout="hideTip(event, 'fs8', 19)" onmouseover="showTip(event, 'fs8', 19)" class="i">url</span>) 
+    <span onmouseout="hideTip(event, 'fs9', 20)" onmouseover="showTip(event, 'fs9', 20)" class="i">wc</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs17', 21)" onmouseover="showTip(event, 'fs17', 21)" class="f">DownloadFile</span>(<span onmouseout="hideTip(event, 'fs15', 22)" onmouseover="showTip(event, 'fs15', 22)" class="i">stable</span>, <span onmouseout="hideTip(event, 'fs12', 23)" onmouseover="showTip(event, 'fs12', 23)" class="i">tmp</span>)
+    <span onmouseout="hideTip(event, 'fs6', 24)" onmouseover="showTip(event, 'fs6', 24)" class="t">File</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs18', 25)" onmouseover="showTip(event, 'fs18', 25)" class="f">Move</span>(<span onmouseout="hideTip(event, 'fs12', 26)" onmouseover="showTip(event, 'fs12', 26)" class="i">tmp</span>,<span onmouseout="hideTip(event, 'fs13', 27)" onmouseover="showTip(event, 'fs13', 27)" class="t">Path</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs19', 28)" onmouseover="showTip(event, 'fs19', 28)" class="f">GetFileName</span> <span onmouseout="hideTip(event, 'fs15', 29)" onmouseover="showTip(event, 'fs15', 29)" class="i">stable</span>)
 
 <span class="prep">#r</span> <span class="s">&quot;paket.exe&quot;</span>
 </code></pre></td>
@@ -105,7 +105,7 @@ Alternativly you can just reference any paket.exe that you have on your system.<
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">open</span> <span class="i">Paket</span>
 
 <span class="c">// locate the paket.dependencies file</span>
-<span class="k">let</span> <span class="i">dependencies</span> <span class="o">=</span> <span class="i">Dependencies</span><span class="o">.</span><span class="i">Locate</span>(<span class="k">__SOURCE_DIRECTORY__</span>)
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs20', 30)" onmouseover="showTip(event, 'fs20', 30)" class="i">dependencies</span> <span class="o">=</span> <span class="i">Dependencies</span><span class="o">.</span><span class="i">Locate</span>(<span class="k">__SOURCE_DIRECTORY__</span>)
 <span class="fsi">found: paket.dependencies</span>
 </code></pre></td>
 </tr>
@@ -127,17 +127,17 @@ Alternativly you can just reference any paket.exe that you have on your system.<
 <span class="l">13: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// install a package</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs20', 31)" onmouseover="showTip(event, 'fs20', 31)" class="i">dependencies</span><span class="o">.</span><span class="i">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
 
 <span class="c">// check which version is installed</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs20', 32)" onmouseover="showTip(event, 'fs20', 32)" class="i">dependencies</span><span class="o">.</span><span class="i">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
 <span class="fsi">val it : string option = Some &quot;2.1.0&quot;</span>
 
 <span class="c">// uninstall a package</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">Remove</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs20', 33)" onmouseover="showTip(event, 'fs20', 33)" class="i">dependencies</span><span class="o">.</span><span class="i">Remove</span> <span class="s">&quot;FSharp.Data&quot;</span>
 
 <span class="c">// check again which version is installed</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs20', 34)" onmouseover="showTip(event, 'fs20', 34)" class="i">dependencies</span><span class="o">.</span><span class="i">GetInstalledVersion</span> <span class="s">&quot;FSharp.Data&quot;</span>
 <span class="fsi">val it : string option = None</span>
 </code></pre></td>
 </tr>
@@ -175,12 +175,12 @@ Alternativly you can just reference any paket.exe that you have on your system.<
 <span class="l">29: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="c">// install some packages</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">Add</span> <span class="s">&quot;FSharp.Formatting&quot;</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">Add</span> <span class="s">&quot;FsUnit&quot;</span>
+<span onmouseout="hideTip(event, 'fs20', 35)" onmouseover="showTip(event, 'fs20', 35)" class="i">dependencies</span><span class="o">.</span><span class="i">Add</span> <span class="s">&quot;FSharp.Data&quot;</span>
+<span onmouseout="hideTip(event, 'fs20', 36)" onmouseover="showTip(event, 'fs20', 36)" class="i">dependencies</span><span class="o">.</span><span class="i">Add</span> <span class="s">&quot;FSharp.Formatting&quot;</span>
+<span onmouseout="hideTip(event, 'fs20', 37)" onmouseover="showTip(event, 'fs20', 37)" class="i">dependencies</span><span class="o">.</span><span class="i">Add</span> <span class="s">&quot;FsUnit&quot;</span>
 
 <span class="c">// list all installed packages</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">GetInstalledPackages</span>()
+<span onmouseout="hideTip(event, 'fs20', 38)" onmouseover="showTip(event, 'fs20', 38)" class="i">dependencies</span><span class="o">.</span><span class="i">GetInstalledPackages</span>()
 <span class="fsi">val it : (string * string * string) list =</span>
 <span class="fsi">  [(&quot;Main&quot;, &quot;FSharp.Compiler.Service&quot;, &quot;0.0.67&quot;); (&quot;Main&quot;, &quot;FSharp.Data&quot;, &quot;2.1.0&quot;);</span>
 <span class="fsi">   (&quot;Main&quot;, &quot;FSharp.Formatting&quot;, &quot;2.4.36&quot;); (&quot;Main&quot;, &quot;FsUnit&quot;, &quot;1.3.0.1&quot;);</span>
@@ -188,25 +188,47 @@ Alternativly you can just reference any paket.exe that you have on your system.<
 <span class="fsi">   (&quot;Main&quot;, &quot;RazorEngine&quot;, &quot;3.3.0&quot;); (&quot;Main&quot;, &quot;Zlib.Portable&quot;, &quot;1.10.0&quot;)]</span>
 
 <span class="c">// list only the direct dependencies</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">GetDirectDependencies</span>()
+<span onmouseout="hideTip(event, 'fs20', 39)" onmouseover="showTip(event, 'fs20', 39)" class="i">dependencies</span><span class="o">.</span><span class="i">GetDirectDependencies</span>()
 <span class="fsi">val it : (string * string * string) list =</span>
 <span class="fsi">  [(&quot;Main&quot;, &quot;FSharp.Data&quot;, &quot;2.1.0&quot;); (&quot;Main&quot;, &quot;FSharp.Formatting&quot;, &quot;2.4.36&quot;);</span>
 <span class="fsi">   (&quot;Main&quot;, &quot;FsUnit&quot;, &quot;1.3.0.1&quot;)]</span>
 
 <span class="c">// list direct dependencies for the given package</span>
-<span class="i">dependencies</span><span class="o">.</span><span class="i">GetDirectDependenciesForPackage</span>(<span class="s">&quot;Main&quot;</span>, <span class="s">&quot;FSharp.Compiler.Service&quot;</span>)
+<span onmouseout="hideTip(event, 'fs20', 40)" onmouseover="showTip(event, 'fs20', 40)" class="i">dependencies</span><span class="o">.</span><span class="i">GetDirectDependenciesForPackage</span>(<span class="s">&quot;Main&quot;</span>, <span class="s">&quot;FSharp.Compiler.Service&quot;</span>)
 <span class="fsi">val it : (string * string * string) list =</span>
 <span class="fsi">  ...</span>
 
 <span class="c">// list all usages of a package in Paket</span>
-<span class="k">let</span> <span class="i">paketDependencies</span> <span class="o">=</span> <span class="i">Dependencies</span><span class="o">.</span><span class="i">Locate</span>(<span class="i">System</span><span class="o">.</span><span class="i">IO</span><span class="o">.</span><span class="i">Path</span><span class="o">.</span><span class="i">Combine</span>(<span class="k">__SOURCE_DIRECTORY__</span>,<span class="s">&quot;..&quot;</span>))
+<span class="k">let</span> <span onmouseout="hideTip(event, 'fs21', 41)" onmouseover="showTip(event, 'fs21', 41)" class="i">paketDependencies</span> <span class="o">=</span> <span class="i">Dependencies</span><span class="o">.</span><span class="i">Locate</span>(<span onmouseout="hideTip(event, 'fs1', 42)" onmouseover="showTip(event, 'fs1', 42)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs2', 43)" onmouseover="showTip(event, 'fs2', 43)" class="i">IO</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs13', 44)" onmouseover="showTip(event, 'fs13', 44)" class="i">Path</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs22', 45)" onmouseover="showTip(event, 'fs22', 45)" class="i">Combine</span>(<span class="k">__SOURCE_DIRECTORY__</span>,<span class="s">&quot;..&quot;</span>))
 <span class="fsi">found: D:\code\Paket\paket.dependencies</span>
-<span class="i">paketDependencies</span><span class="o">.</span><span class="i">FindReferencesFor</span> <span class="s">&quot;UnionArgParser&quot;</span>
+<span onmouseout="hideTip(event, 'fs21', 46)" onmouseover="showTip(event, 'fs21', 46)" class="i">paketDependencies</span><span class="o">.</span><span class="i">FindReferencesFor</span> <span class="s">&quot;UnionArgParser&quot;</span>
 <span class="fsi">val it : string list = [&quot;D:\code\Paket\src\Paket\Paket.fsproj&quot;]</span>
 </code></pre></td>
 </tr>
 </table>
 
+<div class="tip" id="fs1">namespace System</div>
+<div class="tip" id="fs2">namespace System.IO</div>
+<div class="tip" id="fs3">type Environment =<br />&#160;&#160;static member CommandLine : string<br />&#160;&#160;static member CurrentDirectory : string with get, set<br />&#160;&#160;static member Exit : exitCode:int -&gt; unit<br />&#160;&#160;static member ExitCode : int with get, set<br />&#160;&#160;static member ExpandEnvironmentVariables : name:string -&gt; string<br />&#160;&#160;static member FailFast : message:string -&gt; unit + 1 overload<br />&#160;&#160;static member GetCommandLineArgs : unit -&gt; string[]<br />&#160;&#160;static member GetEnvironmentVariable : variable:string -&gt; string + 1 overload<br />&#160;&#160;static member GetEnvironmentVariables : unit -&gt; IDictionary + 1 overload<br />&#160;&#160;static member GetFolderPath : folder:SpecialFolder -&gt; string + 1 overload<br />&#160;&#160;...<br />&#160;&#160;nested type SpecialFolder<br />&#160;&#160;nested type SpecialFolderOption<br /><br />Full name: System.Environment</div>
+<div class="tip" id="fs4">property Environment.CurrentDirectory: string</div>
+<div class="tip" id="fs5">val not : value:bool -&gt; bool<br /><br />Full name: Microsoft.FSharp.Core.Operators.not</div>
+<div class="tip" id="fs6">type File =<br />&#160;&#160;static member AppendAllLines : path:string * contents:IEnumerable&lt;string&gt; -&gt; unit + 1 overload<br />&#160;&#160;static member AppendAllText : path:string * contents:string -&gt; unit + 1 overload<br />&#160;&#160;static member AppendText : path:string -&gt; StreamWriter<br />&#160;&#160;static member Copy : sourceFileName:string * destFileName:string -&gt; unit + 1 overload<br />&#160;&#160;static member Create : path:string -&gt; FileStream + 3 overloads<br />&#160;&#160;static member CreateText : path:string -&gt; StreamWriter<br />&#160;&#160;static member Decrypt : path:string -&gt; unit<br />&#160;&#160;static member Delete : path:string -&gt; unit<br />&#160;&#160;static member Encrypt : path:string -&gt; unit<br />&#160;&#160;static member Exists : path:string -&gt; bool<br />&#160;&#160;...<br /><br />Full name: System.IO.File</div>
+<div class="tip" id="fs7">File.Exists(path: string) : bool</div>
+<div class="tip" id="fs8">val url : string</div>
+<div class="tip" id="fs9">val wc : Net.WebClient</div>
+<div class="tip" id="fs10">namespace System.Net</div>
+<div class="tip" id="fs11">Multiple items<br />type WebClient =<br />&#160;&#160;inherit Component<br />&#160;&#160;new : unit -&gt; WebClient<br />&#160;&#160;member BaseAddress : string with get, set<br />&#160;&#160;member CachePolicy : RequestCachePolicy with get, set<br />&#160;&#160;member CancelAsync : unit -&gt; unit<br />&#160;&#160;member Credentials : ICredentials with get, set<br />&#160;&#160;member DownloadData : address:string -&gt; byte[] + 1 overload<br />&#160;&#160;member DownloadDataAsync : address:Uri -&gt; unit + 1 overload<br />&#160;&#160;member DownloadFile : address:string * fileName:string -&gt; unit + 1 overload<br />&#160;&#160;member DownloadFileAsync : address:Uri * fileName:string -&gt; unit + 1 overload<br />&#160;&#160;member DownloadString : address:string -&gt; string + 1 overload<br />&#160;&#160;...<br /><br />Full name: System.Net.WebClient<br /><br />--------------------<br />Net.WebClient() : unit</div>
+<div class="tip" id="fs12">val tmp : string</div>
+<div class="tip" id="fs13">type Path =<br />&#160;&#160;static val DirectorySeparatorChar : char<br />&#160;&#160;static val AltDirectorySeparatorChar : char<br />&#160;&#160;static val VolumeSeparatorChar : char<br />&#160;&#160;static val InvalidPathChars : char[]<br />&#160;&#160;static val PathSeparator : char<br />&#160;&#160;static member ChangeExtension : path:string * extension:string -&gt; string<br />&#160;&#160;static member Combine : [&lt;ParamArray&gt;] paths:string[] -&gt; string + 3 overloads<br />&#160;&#160;static member GetDirectoryName : path:string -&gt; string<br />&#160;&#160;static member GetExtension : path:string -&gt; string<br />&#160;&#160;static member GetFileName : path:string -&gt; string<br />&#160;&#160;...<br /><br />Full name: System.IO.Path</div>
+<div class="tip" id="fs14">Path.GetTempFileName() : string</div>
+<div class="tip" id="fs15">val stable : string</div>
+<div class="tip" id="fs16">Net.WebClient.DownloadString(address: Uri) : string<br />Net.WebClient.DownloadString(address: string) : string</div>
+<div class="tip" id="fs17">Net.WebClient.DownloadFile(address: Uri, fileName: string) : unit<br />Net.WebClient.DownloadFile(address: string, fileName: string) : unit</div>
+<div class="tip" id="fs18">File.Move(sourceFileName: string, destFileName: string) : unit</div>
+<div class="tip" id="fs19">Path.GetFileName(path: string) : string</div>
+<div class="tip" id="fs20">val dependencies : obj<br /><br />Full name: Reference-from-repl.dependencies</div>
+<div class="tip" id="fs21">val paketDependencies : obj<br /><br />Full name: Reference-from-repl.paketDependencies</div>
+<div class="tip" id="fs22">Path.Combine([&lt;ParamArray&gt;] paths: string []) : string<br />Path.Combine(path1: string, path2: string) : string<br />Path.Combine(path1: string, path2: string, path3: string) : string<br />Path.Combine(path1: string, path2: string, path3: string, path4: string) : string</div>
 
         </div>
         <div class="span3">

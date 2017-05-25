@@ -120,6 +120,18 @@ ServiceStack.Swagger <span class="k">content</span>: true
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Newtonsoft.Json <span class="k">framework</span>: net35, net40
 DotNetZip <span class="k">framework</span>: <span class="o">&gt;=</span> net45           
 </code></pre></td></tr></table>
+<blockquote>
+<p>Note: This feature is deprecated and can be seen as an expert feature.
+Using framework restrictions on single packages might make you projects uncompilable.
+The recommended way is to globally (on a group) specifiy the frameworks you want to compile for.</p>
+</blockquote>
+<p>This feature basically tells paket to only consider the specified frameworks for this package on this particular project.
+The resolution will not be modified when restrictions are specified in the reference file.
+It means</p>
+<blockquote>
+<p>In this project 'Newtonsoft.Json' is only required when compiling against 'net35' or 'net40'.
+I never need this package to compile for another framework like 'net45', therefore don't add references for other frameworks.</p>
+</blockquote>
 <h2><a name="Redirects-settings" class="anchor" href="#Redirects-settings">Redirects settings</a></h2>
 <p>You can instruct Paket to create assembly binding redirects for NuGet packages:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -187,7 +199,7 @@ NUnit
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">/</span>
 <span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>
-<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">lock</span>
+<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="i">lock</span>
 <span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
 <span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span>
 <span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">vbproj</span>
@@ -213,7 +225,7 @@ NUnit
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">/</span>
 <span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>
-<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">lock</span>
+<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs1', 2)" onmouseover="showTip(event, 'fs1', 2)" class="i">lock</span>
 <span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
 <span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span>
 <span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">vbproj</span>
@@ -239,7 +251,7 @@ NUnit
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">/</span>
 <span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>
-<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">lock</span>
+<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs1', 3)" onmouseover="showTip(event, 'fs1', 3)" class="i">lock</span>
 <span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
 <span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span><span class="o">.</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span>
 <span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span>
@@ -253,6 +265,7 @@ NUnit
 <li>the dependencies specified in <code>/src/Example.fsproj.paket.references</code> will be added to <code>/src/Example.fsproj</code></li>
 </ul>
 
+<div class="tip" id="fs1">val lock : lockObject:&#39;Lock -&gt; action:(unit -&gt; &#39;T) -&gt; &#39;T (requires reference type)<br /><br />Full name: Microsoft.FSharp.Core.Operators.lock</div>
 
         </div>
         <div class="span3">

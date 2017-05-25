@@ -122,8 +122,8 @@
             check errorMsg f x
           </code>
           <div class="tip" id="86">
-            <strong>Signature:</strong> errorMsg:string -&gt; f:(&#39;?8971 -&gt; bool) -&gt; x:&#39;?8971 -&gt; ParseResult&lt;&#39;?8971&gt;<br />
-                          <strong>Type parameters:</strong> '?8971          </div>
+            <strong>Signature:</strong> errorMsg:string -&gt; f:(&#39;?9039 -&gt; bool) -&gt; x:&#39;?9039 -&gt; ParseResult&lt;&#39;?9039&gt;<br />
+                          <strong>Type parameters:</strong> '?9039          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L148-148" class="github-link">
@@ -137,29 +137,11 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '87', 87)" onmouseover="showTip(event, '87', 87)">
-            getFormatters xs
+            choose errorMsg f x
           </code>
           <div class="tip" id="87">
-            <strong>Signature:</strong> xs:char list -&gt; char list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L187-187" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '88', 88)" onmouseover="showTip(event, '88', 88)">
-            parseDecimal x
-          </code>
-          <div class="tip" id="88">
-            <strong>Signature:</strong> x:string -&gt; bool * decimal<br />
-                      </div>
+            <strong>Signature:</strong> errorMsg:string -&gt; f:(&#39;?9041 -&gt; &#39;?9042 option) -&gt; x:&#39;?9041 -&gt; ParseResult&lt;&#39;?9042&gt;<br />
+                          <strong>Type parameters:</strong> '?9041, '?9042          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L152-152" class="github-link">
@@ -172,15 +154,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '89', 89)" onmouseover="showTip(event, '89', 89)">
-            parsers 
+          <code onmouseout="hideTip(event, '88', 88)" onmouseover="showTip(event, '88', 88)">
+            getFormatters xs
           </code>
-          <div class="tip" id="89">
-            <strong>Signature:</strong> IDictionary&lt;char,(string -&gt; ParseResult&lt;obj&gt;)&gt;<br />
+          <div class="tip" id="88">
+            <strong>Signature:</strong> xs:char list -&gt; char list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L154-154" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L192-192" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '89', 89)" onmouseover="showTip(event, '89', 89)">
+            parseDecimal x
+          </code>
+          <div class="tip" id="89">
+            <strong>Signature:</strong> x:string -&gt; bool * decimal<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L157-157" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -191,14 +191,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '90', 90)" onmouseover="showTip(event, '90', 90)">
-            separators 
+            parsers 
           </code>
           <div class="tip" id="90">
-            <strong>Signature:</strong> string []<br />
+            <strong>Signature:</strong> IDictionary&lt;char,(string -&gt; ParseResult&lt;obj&gt;)&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L180-180" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L159-159" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -209,14 +209,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '91', 91)" onmouseover="showTip(event, '91', 91)">
-            sscanf opts pf s
+            separators 
           </code>
           <div class="tip" id="91">
-            <strong>Signature:</strong> opts:ScanOptions -&gt; pf:PrintfFormat&lt;&#39;?9010,&#39;?9011,&#39;?9012,&#39;?9013,&#39;t&gt; -&gt; s:string -&gt; &#39;t<br />
-                          <strong>Type parameters:</strong> '?9010, '?9011, '?9012, '?9013, 't          </div>
+            <strong>Signature:</strong> string []<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L246-246" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L185-185" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -227,14 +227,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '92', 92)" onmouseover="showTip(event, '92', 92)">
-            sscanfExt advancedScanners opts pf s
+            sscanf opts pf s
           </code>
           <div class="tip" id="92">
-            <strong>Signature:</strong> advancedScanners:seq&lt;AdvancedScanner&gt; -&gt; opts:ScanOptions -&gt; pf:PrintfFormat&lt;&#39;?9029,&#39;?9030,&#39;?9031,&#39;?9032,&#39;t&gt; -&gt; s:string -&gt; &#39;t<br />
-                          <strong>Type parameters:</strong> '?9029, '?9030, '?9031, '?9032, 't          </div>
+            <strong>Signature:</strong> opts:ScanOptions -&gt; pf:PrintfFormat&lt;&#39;?9081,&#39;?9082,&#39;?9083,&#39;?9084,&#39;t&gt; -&gt; s:string -&gt; &#39;t<br />
+                          <strong>Type parameters:</strong> '?9081, '?9082, '?9083, '?9084, 't          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L307-307" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L251-251" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -245,14 +245,14 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '93', 93)" onmouseover="showTip(event, '93', 93)">
-            toGenericTuple matches
+            sscanfExt advancedScanners opts pf s
           </code>
           <div class="tip" id="93">
-            <strong>Signature:</strong> matches:obj [] -&gt; &#39;t<br />
-                          <strong>Type parameters:</strong> 't          </div>
+            <strong>Signature:</strong> advancedScanners:seq&lt;AdvancedScanner&gt; -&gt; opts:ScanOptions -&gt; pf:PrintfFormat&lt;&#39;?9100,&#39;?9101,&#39;?9102,&#39;?9103,&#39;t&gt; -&gt; s:string -&gt; &#39;t<br />
+                          <strong>Type parameters:</strong> '?9100, '?9101, '?9102, '?9103, 't          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L229-229" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L312-312" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -263,29 +263,11 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '94', 94)" onmouseover="showTip(event, '94', 94)">
-            toParseResult error (wasSuccess, result)
+            toGenericTuple matches
           </code>
           <div class="tip" id="94">
-            <strong>Signature:</strong> error:string -&gt; (wasSuccess:bool * result:&#39;?8969) -&gt; ParseResult&lt;&#39;?8969&gt;<br />
-                          <strong>Type parameters:</strong> '?8969          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L144-144" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '95', 95)" onmouseover="showTip(event, '95', 95)">
-            trySscanf opts pf s
-          </code>
-          <div class="tip" id="95">
-            <strong>Signature:</strong> opts:ScanOptions -&gt; pf:PrintfFormat&lt;&#39;?9002,&#39;?9003,&#39;?9004,&#39;?9005,&#39;t&gt; -&gt; s:string -&gt; &#39;t option<br />
-                          <strong>Type parameters:</strong> '?9002, '?9003, '?9004, '?9005, 't          </div>
+            <strong>Signature:</strong> matches:obj [] -&gt; &#39;t<br />
+                          <strong>Type parameters:</strong> 't          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L234-234" class="github-link">
@@ -298,15 +280,51 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
-            trySscanfExt advancedScanners opts pf s
+          <code onmouseout="hideTip(event, '95', 95)" onmouseover="showTip(event, '95', 95)">
+            toParseResult error (wasSuccess, result)
           </code>
-          <div class="tip" id="96">
-            <strong>Signature:</strong> advancedScanners:seq&lt;AdvancedScanner&gt; -&gt; opts:ScanOptions -&gt; pf:PrintfFormat&lt;&#39;?9023,&#39;?9024,&#39;?9025,&#39;?9026,&#39;t&gt; -&gt; s:string -&gt; &#39;t option<br />
-                          <strong>Type parameters:</strong> '?9023, '?9024, '?9025, '?9026, 't          </div>
+          <div class="tip" id="95">
+            <strong>Signature:</strong> error:string -&gt; (wasSuccess:bool * result:&#39;?9037) -&gt; ParseResult&lt;&#39;?9037&gt;<br />
+                          <strong>Type parameters:</strong> '?9037          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L301-301" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L144-144" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
+            trySscanf opts pf s
+          </code>
+          <div class="tip" id="96">
+            <strong>Signature:</strong> opts:ScanOptions -&gt; pf:PrintfFormat&lt;&#39;?9073,&#39;?9074,&#39;?9075,&#39;?9076,&#39;t&gt; -&gt; s:string -&gt; &#39;t option<br />
+                          <strong>Type parameters:</strong> '?9073, '?9074, '?9075, '?9076, 't          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L239-239" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '97', 97)" onmouseover="showTip(event, '97', 97)">
+            trySscanfExt advancedScanners opts pf s
+          </code>
+          <div class="tip" id="97">
+            <strong>Signature:</strong> advancedScanners:seq&lt;AdvancedScanner&gt; -&gt; opts:ScanOptions -&gt; pf:PrintfFormat&lt;&#39;?9094,&#39;?9095,&#39;?9096,&#39;?9097,&#39;t&gt; -&gt; s:string -&gt; &#39;t option<br />
+                          <strong>Type parameters:</strong> '?9094, '?9095, '?9096, '?9097, 't          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L306-306" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

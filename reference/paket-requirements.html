@@ -99,6 +99,30 @@
         </tr>
         <tr>
           <td class="type-name">
+            <a href="paket-requirements-frameworkrestrictionandlist.html">FrameworkRestrictionAndList</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-requirements-frameworkrestrictionliteral.html">FrameworkRestrictionLiteral</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-requirements-frameworkrestrictionliterali.html">FrameworkRestrictionLiteralI</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
+            <a href="paket-requirements-frameworkrestrictionp.html">FrameworkRestrictionP</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
             <a href="paket-requirements-frameworkrestrictions.html">FrameworkRestrictions</a>
           </td>
           <td class="xmldoc"></td>
@@ -131,6 +155,19 @@
         </tr>
     </tbody>
   </table>
+  <table class="table table-bordered module-list">
+    <thead>
+      <tr><td>Module</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+        <tr>
+          <td class="module-name">
+            <a href="paket-requirements-frameworkrestrictionmodule.html">FrameworkRestriction</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+    </tbody>
+  </table>
 
   </div>
 
@@ -143,15 +180,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '403', 403)" onmouseover="showTip(event, '403', 403)">
+          <code onmouseout="hideTip(event, '411', 411)" onmouseover="showTip(event, '411', 411)">
+            addFrameworkRestrictionsToDependencies (...)
+          </code>
+          <div class="tip" id="411">
+            <strong>Signature:</strong> rawDependencies:(PackageName * &#39;b * ParsedPlatformPath) list -&gt; frameworkGroups:ParsedPlatformPath list -&gt; (PackageName * &#39;b * FrameworkRestrictions) list<br />
+                          <strong>Type parameters:</strong> 'b          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L944-944" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '412', 412)" onmouseover="showTip(event, '412', 412)">
             applyRestrictionsToTargets (...)
           </code>
-          <div class="tip" id="403">
-            <strong>Signature:</strong> restrictions:FrameworkRestriction list -&gt; targets:TargetProfile list -&gt; TargetProfile list<br />
+          <div class="tip" id="412">
+            <strong>Signature:</strong> restriction:FrameworkRestriction -&gt; targets:Set&lt;TargetProfile&gt; -&gt; Set&lt;TargetProfile&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L538-538" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L654-654" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -163,33 +218,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '404', 404)" onmouseover="showTip(event, '404', 404)">
-            combineRestrictions loose x y
-          </code>
-          <div class="tip" id="404">
-            <strong>Signature:</strong> loose:bool -&gt; x:FrameworkRestriction -&gt; y:FrameworkRestriction -&gt; FrameworkRestriction list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L450-450" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '405', 405)" onmouseover="showTip(event, '405', 405)">
+          <code onmouseout="hideTip(event, '413', 413)" onmouseover="showTip(event, '413', 413)">
             filterRestrictions list1 list2
           </code>
-          <div class="tip" id="405">
+          <div class="tip" id="413">
             <strong>Signature:</strong> list1:FrameworkRestrictions -&gt; list2:FrameworkRestrictions -&gt; FrameworkRestrictions<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L462-462" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L641-641" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -199,15 +236,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '406', 406)" onmouseover="showTip(event, '406', 406)">
-            findMaxDotNetRestriction restrictions
+          <code onmouseout="hideTip(event, '414', 414)" onmouseover="showTip(event, '414', 414)">
+            getExplicitRestriction (...)
           </code>
-          <div class="tip" id="406">
-            <strong>Signature:</strong> restrictions:FrameworkRestriction list -&gt; FrameworkIdentifier<br />
+          <div class="tip" id="414">
+            <strong>Signature:</strong> frameworkRestrictions:FrameworkRestrictions -&gt; FrameworkRestriction<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L91-91" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L508-508" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -217,69 +254,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '407', 407)" onmouseover="showTip(event, '407', 407)">
-            findMaxStandardRestriction restrictions
+          <code onmouseout="hideTip(event, '415', 415)" onmouseover="showTip(event, '415', 415)">
+            isTargetMatchingRestrictions (...)
           </code>
-          <div class="tip" id="407">
-            <strong>Signature:</strong> restrictions:FrameworkRestriction list -&gt; FrameworkIdentifier<br />
+          <div class="tip" id="415">
+            <strong>Signature:</strong> (restriction:FrameworkRestriction * target:TargetProfile) -&gt; bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L103-103" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '408', 408)" onmouseover="showTip(event, '408', 408)">
-            getRestrictionList frameworkRestrictions
-          </code>
-          <div class="tip" id="408">
-            <strong>Signature:</strong> frameworkRestrictions:FrameworkRestrictions -&gt; FrameworkRestriction list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L40-40" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '409', 409)" onmouseover="showTip(event, '409', 409)">
-            hasDotNetFrameworkOrAnyCase 
-          </code>
-          <div class="tip" id="409">
-            <strong>Signature:</strong> (PackageName * VersionRequirement * FrameworkRestriction list) list -&gt; bool<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L206-206" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '410', 410)" onmouseover="showTip(event, '410', 410)">
-            isTargetMatchingRestrictions 
-          </code>
-          <div class="tip" id="410">
-            <strong>Signature:</strong> FrameworkRestriction list * TargetProfile -&gt; bool<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L502-502" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L650-650" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -291,51 +274,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '411', 411)" onmouseover="showTip(event, '411', 411)">
-            optimizeDependencies (...)
-          </code>
-          <div class="tip" id="411">
-            <strong>Signature:</strong> originalDependencies:(PackageName * VersionRequirement * FrameworkRestriction list) list -&gt; (PackageName * VersionRequirement * FrameworkRestrictions) list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L215-215" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '412', 412)" onmouseover="showTip(event, '412', 412)">
-            optimizeRestrictions restrictions
-          </code>
-          <div class="tip" id="412">
-            <strong>Signature:</strong> restrictions:FrameworkRestriction list -&gt; FrameworkRestriction list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L115-115" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '413', 413)" onmouseover="showTip(event, '413', 413)">
+          <code onmouseout="hideTip(event, '416', 416)" onmouseover="showTip(event, '416', 416)">
             parseRestrictions failImmediatly text
           </code>
-          <div class="tip" id="413">
-            <strong>Signature:</strong> failImmediatly:bool -&gt; text:string -&gt; FrameworkRestriction list<br />
+          <div class="tip" id="416">
+            <strong>Signature:</strong> failImmediatly:bool -&gt; text:string -&gt; FrameworkRestriction<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L45-45" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L560-560" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '417', 417)" onmouseover="showTip(event, '417', 417)">
+            parseRestrictionsLegacy (...)
+          </code>
+          <div class="tip" id="417">
+            <strong>Signature:</strong> failImmediatly:bool -&gt; text:string -&gt; FrameworkRestriction<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L512-512" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

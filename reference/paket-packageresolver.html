@@ -172,15 +172,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '290', 290)" onmouseover="showTip(event, '290', 290)">
+          <code onmouseout="hideTip(event, '296', 296)" onmouseover="showTip(event, '296', 296)">
             calcOpenRequirements (...)
           </code>
-          <div class="tip" id="290">
-            <strong>Signature:</strong> (exploredPackage:ResolvedPackage * globalFrameworkRestrictions:FrameworkRestrictions * (SemVerInfo * &#39;?9426) * dependency:PackageRequirement * resolverStep:ResolverStep) -&gt; Set&lt;PackageRequirement&gt;<br />
-                          <strong>Type parameters:</strong> '?9426          </div>
+          <div class="tip" id="296">
+            <strong>Signature:</strong> (exploredPackage:ResolvedPackage * globalFrameworkRestrictions:FrameworkRestrictions * (SemVerInfo * &#39;?9501) * dependency:PackageRequirement * resolverStep:ResolverStep) -&gt; Set&lt;PackageRequirement&gt;<br />
+                          <strong>Type parameters:</strong> '?9501          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L241-241" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L218-218" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -190,15 +190,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '291', 291)" onmouseover="showTip(event, '291', 291)">
+          <code onmouseout="hideTip(event, '297', 297)" onmouseover="showTip(event, '297', 297)">
             cleanupNames model
           </code>
-          <div class="tip" id="291">
+          <div class="tip" id="297">
             <strong>Signature:</strong> model:PackageResolution -&gt; PackageResolution<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L109-109" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L90-90" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -208,15 +208,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '292', 292)" onmouseover="showTip(event, '292', 292)">
+          <code onmouseout="hideTip(event, '298', 298)" onmouseover="showTip(event, '298', 298)">
             getResolverStrategy (...)
           </code>
-          <div class="tip" id="292">
+          <div class="tip" id="298">
             <strong>Signature:</strong> globalStrategyForDirectDependencies:ResolverStrategy option -&gt; globalStrategyForTransitives:ResolverStrategy option -&gt; allRequirementsOfCurrentPackage:Set&lt;PackageRequirement&gt; -&gt; currentRequirement:PackageRequirement -&gt; ResolverStrategy<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L310-310" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L287-287" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -226,15 +226,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '293', 293)" onmouseover="showTip(event, '293', 293)">
+          <code onmouseout="hideTip(event, '299', 299)" onmouseover="showTip(event, '299', 299)">
             Resolve (...)
           </code>
-          <div class="tip" id="293">
-            <strong>Signature:</strong> (getVersionsF:(PackageSource list -&gt; ResolverStrategy -&gt; GroupName -&gt; PackageName -&gt; seq&lt;SemVerInfo * PackageSource list&gt;) * getPackageDetailsF:(PackageSource list -&gt; GroupName -&gt; PackageName -&gt; SemVerInfo -&gt; PackageDetails) * groupName:GroupName * globalStrategyForDirectDependencies:ResolverStrategy option * globalStrategyForTransitives:ResolverStrategy option * globalFrameworkRestrictions:FrameworkRestrictions * rootDependencies:Set&lt;PackageRequirement&gt; * updateMode:UpdateMode) -&gt; Resolution<br />
-                      </div>
+          <div class="tip" id="299">
+            <strong>Signature:</strong> (getVersionsRaw:(PackageSource list -&gt; GroupName -&gt; PackageName -&gt; Async&lt;&#39;d&gt;) * getPreferredVersionsRaw:(PackageSource list -&gt; ResolverStrategy -&gt; GroupName -&gt; PackageName -&gt; (SemVerInfo * PackageSource list) list) * getPackageDetailsRaw:(PackageSource list -&gt; GroupName -&gt; PackageName -&gt; SemVerInfo -&gt; Async&lt;PackageDetails&gt;) * groupName:GroupName * globalStrategyForDirectDependencies:ResolverStrategy option * globalStrategyForTransitives:ResolverStrategy option * globalFrameworkRestrictions:FrameworkRestrictions * rootDependencies:Set&lt;PackageRequirement&gt; * updateMode:UpdateMode) -&gt; Resolution<br />
+                          <strong>Type parameters:</strong> 'd          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L649-649" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L645-645" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
