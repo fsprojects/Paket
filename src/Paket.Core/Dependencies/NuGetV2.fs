@@ -747,7 +747,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                     for error in restError do
                         if not verbose then
                             // Otherwise the error was already mentioned above
-                            traceWarnfn "Ignoring: %s" error.Message
+                            traceWarnfn "Ignoring: %s" error.SourceException.Message
                     h.Throw()
                     return fallback()
                 | Choice1Of2 packageDetails -> return packageDetails

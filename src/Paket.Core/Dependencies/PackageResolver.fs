@@ -746,7 +746,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 |> Async.StartAsTask))
     let getVersionsBlock sources resolverStrategy groupName packageName =
         let workHandle = startRequestGetVersions sources groupName packageName
-        let versions = getAndReport Profile.BlockReason.GetVersion workHandle
+        let versions = getAndReport Profile.BlockReason.GetVersion workHandle |> Seq.toList
         let sorted =
             match resolverStrategy with
             | ResolverStrategy.Max -> List.sortDescending versions
