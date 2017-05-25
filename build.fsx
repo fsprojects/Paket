@@ -487,9 +487,6 @@ Target "ReleaseGitHub" (fun _ ->
     StageAll ""
     Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
     Branches.pushBranch "" remote (Information.getBranchName "")
-
-    Branches.tag "" release.NugetVersion
-    Branches.pushTag "" remote release.NugetVersion
     
     // release on github
     createClient user pw
@@ -501,6 +498,9 @@ Target "ReleaseGitHub" (fun _ ->
     |> uploadFile ".paket/Paket.Restore.targets"
     |> releaseDraft
     |> Async.RunSynchronously
+
+    Branches.tag "" release.NugetVersion
+    Branches.pushTag "" remote release.NugetVersion
 )
 
 Target "Release" DoNothing
