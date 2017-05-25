@@ -471,11 +471,11 @@ open Octokit
 
 Target "ReleaseGitHub" (fun _ ->
     let user =
-        match getBuildParam "github-user" with
+        match getBuildParam "github_user" with
         | s when not (String.IsNullOrWhiteSpace s) -> s
         | _ -> getUserInput "Username: "
     let pw =
-        match getBuildParam "github-pw" with
+        match getBuildParam "github_pw" with
         | s when not (String.IsNullOrWhiteSpace s) -> s
         | _ -> getUserPassword "Password: "
     let remote =
