@@ -13,8 +13,7 @@ open PackageSources
 open System.Xml
 open Paket.Domain
 
-let private stopWatch = new Stopwatch()
-stopWatch.Start()
+let sw = Stopwatch.StartNew()
 
 type PaketExiter() =
     interface IExiter with
@@ -35,10 +34,71 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
         Environment.ExitCode <- 1
 #endif
     else
-        commandF result
-        let elapsedTime = Utils.TimeSpanToReadableString stopWatch.Elapsed
-        if not silent then
-            tracefn "%s - ready." elapsedTime
+        try
+            commandF result
+        finally
+            sw.Stop()
+            if not silent then
+                let realTime = sw.Elapsed
+                let groupedResults =
+                    Profile.events
+                    |> Seq.groupBy (fun (ev) -> ev.Category)
+                    |> Seq.map (fun (cat, group) ->
+                        let l = group |> Seq.toList
+                        cat, l.Length, l |> Seq.map (fun ev -> ev.Duration) |> Seq.fold (+) (TimeSpan()))
+                    |> Seq.toList
+                let blockedRaw = 
+                    groupedResults
+                    |> List.filter (function Profile.Category.ResolverAlgorithmBlocked _, _, _ -> true | _ -> false)
+                let blocked =
+                    blockedRaw
+                    |> List.map (fun (_,_,t) -> t)
+                    |> Seq.fold (+) (TimeSpan())
+                let resolver = 
+                    match groupedResults |> List.tryPick (function Profile.Category.ResolverAlgorithm, _, s -> Some s | _ -> None) with
+                    | Some s -> s
+                    | None -> TimeSpan()
+                tracefn "Performance:"
+                groupedResults
+                |> List.sortBy (fun (cat,_,_) ->
+                    match cat with
+                    | Profile.Category.ResolverAlgorithm -> 1
+                    | Profile.Category.ResolverAlgorithmBlocked b -> 2
+                    | Profile.Category.FileIO -> 3
+                    | Profile.Category.NuGetDownload -> 4
+                    | Profile.Category.NuGetRequest -> 5
+                    | Profile.Category.Other -> 6)
+                |> List.iter (fun (cat, num, elapsed) ->
+                    match cat with
+                    | Profile.Category.ResolverAlgorithm ->
+                        tracefn " - Resolver: %s (%d runs)" (Utils.TimeSpanToReadableString elapsed) num
+                        let realTime = resolver - blocked
+                        tracefn "    - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
+                        let blockNum = blockedRaw |> Seq.sumBy (fun (_, num, _) -> num)
+                        let blockPaket4 = TimeSpan.FromMilliseconds(500.0 * float blockNum)
+                        tracefn "    - Runtime Paket 4 (estimated ~500ms respose*): %s" (Utils.TimeSpanToReadableString (realTime + blockPaket4))
+                        tracefn "      * See http://stats.pingdom.com/aqicaf2upspo/1265300 for average response times."
+                    | Profile.Category.ResolverAlgorithmBlocked b ->
+                        let reason =
+                            match b with
+                            | Profile.BlockReason.PackageDetails -> "retrieving package details"
+                            | Profile.BlockReason.GetVersion -> "retrieving package versions"
+                        tracefn "    - Blocked (%s): %s (%d times)" reason (Utils.TimeSpanToReadableString elapsed) num
+                    | Profile.Category.FileIO ->
+                        tracefn " - Disk IO: %s" (Utils.TimeSpanToReadableString elapsed)
+                    | Profile.Category.NuGetDownload ->
+                        let avg = TimeSpan.FromTicks(elapsed.Ticks / int64 num)
+                        tracefn " - Average Download Time: %s" (Utils.TimeSpanToReadableString avg)
+                        tracefn " - Number of downloads: %d" num
+                    | Profile.Category.NuGetRequest ->
+                        let avg = TimeSpan.FromTicks(elapsed.Ticks / int64 num)
+                        tracefn " - Average Request Time: %s" (Utils.TimeSpanToReadableString avg)
+                        tracefn " - Number of Requests: %d" num
+                    | Profile.Category.Other ->
+                        tracefn "  - Other: %s" (Utils.TimeSpanToReadableString elapsed)
+                    )
+                
+                tracefn " - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
 
 let processCommand silent commandF result =
     processWithValidation silent (fun _ -> true) commandF result

@@ -70,12 +70,15 @@ let TimeSpanToReadableString(span:TimeSpan) =
     let hours = notZero (span.Duration().Hours) <| String.Format("{0:0} hour{1}, ", span.Hours, pluralize span.Hours) 
     let minutes = notZero (span.Duration().Minutes) <| String.Format("{0:0} minute{1}, ", span.Minutes, pluralize span.Minutes)
     let seconds = notZero (span.Duration().Seconds) <| String.Format("{0:0} second{1}", span.Seconds, pluralize span.Seconds) 
+    let milliseconds = notZero (span.Duration().Milliseconds) <| String.Format("{0:0} millisecond{1}", span.Milliseconds, pluralize span.Milliseconds) 
 
     let formatted = String.Format("{0}{1}{2}{3}", days, hours, minutes, seconds)
 
     let formatted = if formatted.EndsWith ", " then formatted.Substring(0, formatted.Length - 2) else formatted
 
-    if String.IsNullOrEmpty formatted then "0 seconds" else formatted
+    if not (String.IsNullOrEmpty formatted) then formatted
+    elif not (String.IsNullOrEmpty milliseconds) then milliseconds
+    else "0 milliseconds"
 
 let GetHomeDirectory() =
 #if DOTNETCORE
@@ -552,6 +555,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
             use client = createWebClient (url,auth)
+            use _ = Profile.startCategory Profile.Category.NuGetDownload
             let task = client.DownloadFileTaskAsync (Uri url, filePath) |> Async.AwaitTask
             do! task
         with
@@ -566,7 +570,8 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
             use client = createWebClient(url,auth)
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
-
+                
+            use _ = Profile.startCategory Profile.Category.NuGetRequest
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
@@ -584,6 +589,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             addHeader client "DataServiceVersion" "1.0;NetFx"
             addHeader client "MaxDataServiceVersion" "2.0;NetFx"
             
+            use _ = Profile.startCategory Profile.Category.NuGetRequest
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
@@ -604,6 +610,7 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
 #else
             client.Encoding <- Encoding.UTF8
 #endif
+            use _ = Profile.startCategory Profile.Category.NuGetRequest
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
             return Some raw
         with e ->

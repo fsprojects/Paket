@@ -10,6 +10,7 @@ open System
 open System.IO
 
 let scenarios = System.Collections.Generic.List<_>()
+let isLiveUnitTesting = AppDomain.CurrentDomain.GetAssemblies() |> Seq.exists (fun a -> a.GetName().Name = "Microsoft.CodeAnalysis.LiveUnitTesting.Runtime")
 
 let paketToolPath = FullName(__SOURCE_DIRECTORY__ + "../../../bin/paket.exe")
 let integrationTestPath = FullName(__SOURCE_DIRECTORY__ + "../../../integrationtests/scenarios")
@@ -26,6 +27,7 @@ let cleanupAllScenarios() =
     scenarios.Clear()
 
 let prepare scenario =
+    if isLiveUnitTesting then Assert.Inconclusive("Integration tests are disabled when in a Live-Unit-Session")
     if scenarios.Count > 10 then
         cleanupAllScenarios()
 

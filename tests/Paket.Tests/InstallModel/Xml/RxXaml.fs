@@ -9,7 +9,7 @@ open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.0.3')">
     <ItemGroup>
       <Reference Include="WindowsBase">
         <Paket>True</Paket>
@@ -63,7 +63,7 @@ let expected = """
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhone' And $(TargetFrameworkVersion) == 'v7.1'">
+  <When Condition="$(TargetFrameworkIdentifier) == 'WindowsPhone' And ($(TargetFrameworkVersion) == 'v7.1' Or $(TargetFrameworkVersion) == 'v7.5')">
     <ItemGroup>
       <Reference Include="System.Windows">
         <Paket>True</Paket>
@@ -90,7 +90,7 @@ let expected = """
 let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly references``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "Rx-XAML", SemVer.Parse "2.2.4", [],
+        InstallModel.CreateFromLibs(PackageName "Rx-XAML", SemVer.Parse "2.2.4", FrameworkRestriction.NoRestriction,
             [ @"..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll"
               @"..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll"
               @"..\Rx-XAML\lib\portable-win81+wpa81\System.Reactive.Windows.Threading.dll"
@@ -108,10 +108,10 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                  LicenseUrl = ""
                  IsDevelopmentDependency = false
                  FrameworkAssemblyReferences =
-                 [{ AssemblyName = "WindowsBase"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4_5)] }
-                  { AssemblyName = "WindowsBase"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4)] }
-                  { AssemblyName = "System.Windows"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(Silverlight "v5.0")] }
-                  { AssemblyName = "System.Windows"; FrameworkRestrictions = FrameworkRestrictionList [FrameworkRestriction.Exactly(WindowsPhoneSilverlight "v7.1")] }]})
+                 [{ AssemblyName = "WindowsBase"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4_5)] }
+                  { AssemblyName = "WindowsBase"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework FrameworkVersion.V4)] }
+                  { AssemblyName = "System.Windows"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(Silverlight SilverlightVersion.V5)] }
+                  { AssemblyName = "System.Windows"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(WindowsPhone WindowsPhoneVersion.V7_5)] }]})
 
     let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
     let currentXml = ctx.ChooseNodes.Head.OuterXml  |> normalizeXml

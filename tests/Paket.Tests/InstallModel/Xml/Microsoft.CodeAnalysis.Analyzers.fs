@@ -3,6 +3,7 @@
 open FsUnit
 open NUnit.Framework
 open Paket
+open Paket.Requirements
 open Paket.Constants
 open Paket.Domain
 open Paket.TestHelpers
@@ -10,7 +11,7 @@ open System.Text
 open System.IO
 
 let model =
-    InstallModel.CreateFromLibs(PackageName "Microsoft.CodeAnalysis.Analyzers", SemVer.Parse "1.0.0", [],
+    InstallModel.CreateFromLibs(PackageName "Microsoft.CodeAnalysis.Analyzers", SemVer.Parse "1.0.0", FrameworkRestriction.NoRestriction,
             [],
             [],
             [
@@ -64,7 +65,7 @@ let ``should generate Xml for RefactoringEssentials in VisualBasic project``() =
     |> shouldEqual (normalizeXml expectedVb)
 
 let oldModel =
-    InstallModel.CreateFromLibs(PackageName "Microsoft.CodeAnalysis.Analyzers", SemVer.Parse "1.0.0-rc2", [],
+    InstallModel.CreateFromLibs(PackageName "Microsoft.CodeAnalysis.Analyzers", SemVer.Parse "1.0.0-rc2", FrameworkRestriction.NoRestriction,
             [],
             [],
             [], // Analyzers weren't in the correct folder and won't be found for this version

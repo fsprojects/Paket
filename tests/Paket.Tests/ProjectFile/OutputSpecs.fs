@@ -36,7 +36,7 @@ let ``should detect target framework for Project1 proj file``() =
 let ``should detect target framework for Project2 proj file``() =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/Project2.fsprojtest").Value.GetTargetProfile()
-    |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4_Client)))
+    |> shouldEqual (SinglePlatform(DotNetFramework(FrameworkVersion.V4)))
 
 [<Test>]
 let ``should detect output path for proj file``

@@ -92,6 +92,10 @@ Sometimes you don't want to generate dependencies for older framework versions. 
 
     nuget Example >= 2.0 // only .NET 3.5 and .NET 4.0
 
+It means
+
+> Paket, I only compile for 'net35' and 'net40', please leave out all other stuff I don't need to compile for this set of frameworks.
+
 #### Automatic framework detection
 
 Paket can detect the target frameworks from your project and then limit the installation to these target frameworks. You can control this in the [`paket.dependencies` file](dependencies-file.html):

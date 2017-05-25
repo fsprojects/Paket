@@ -3,6 +3,7 @@
 open FsUnit
 open NUnit.Framework
 open Paket
+open Paket.Requirements
 open Paket.Domain
 open Paket.TestHelpers
 
@@ -17,7 +18,7 @@ let expected = """
 let ``should generate Xml for RefactoringEssentials in CSharp project``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "RefactoringEssentials", SemVer.Parse "1.2.0", [],
+        InstallModel.CreateFromLibs(PackageName "RefactoringEssentials", SemVer.Parse "1.2.0", FrameworkRestriction.NoRestriction,
               [],
               [],
               [
@@ -37,7 +38,7 @@ let ``should generate Xml for RefactoringEssentials in CSharp project``() =
 let ``should generate Xml for RefactoringEssentials in VisualBasic project``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "RefactoringEssentials", SemVer.Parse "1.2.0", [],
+        InstallModel.CreateFromLibs(PackageName "RefactoringEssentials", SemVer.Parse "1.2.0", FrameworkRestriction.NoRestriction,
               [],
               [],
               [

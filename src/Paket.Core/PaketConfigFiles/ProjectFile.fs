@@ -670,7 +670,7 @@ module ProjectFile =
             |> Set.ofList
 
         let model = model.FilterReferences references
-        let createItemGroup (targets:TargetProfile list) (frameworkReferences:FrameworkReference list) (libraries:Library list) = 
+        let createItemGroup (targets:TargetProfile Set) (frameworkReferences:FrameworkReference list) (libraries:Library list) = 
             let itemGroup = createNode "ItemGroup" project
 
             for ref in frameworkReferences |> List.sortBy (fun f -> f.Name) do
@@ -736,8 +736,9 @@ module ProjectFile =
         // I don't think there is anyone actually using this part, but it's there for backwards compat.
         let netCoreRestricted =
             model.ApplyFrameworkRestrictions
-                [ FrameworkRestriction.AtLeast (FrameworkIdentifier.DotNetStandard DotNetStandardVersion.V1_0);
-                  FrameworkRestriction.AtLeast (FrameworkIdentifier.DotNetCore DotNetCoreVersion.V1_0) ]
+                ((List.map DotNetCore KnownTargetProfiles.DotNetCoreVersions @ List.map DotNetStandard KnownTargetProfiles.DotNetStandardVersions)
+                 |> List.map FrameworkRestriction.Exactly
+                 |> List.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet)
 
         // handle legacy conditions
         let conditions =
@@ -761,7 +762,7 @@ module ProjectFile =
                         for frameworkAssembly in frameworkReferences do
                             for t in libFolder.Targets do
                                 if not <| usedFrameworkLibs.Add(t,frameworkAssembly.Name) then
-                                    assemblyTargets := List.filter ((<>) t) !assemblyTargets
+                                    assemblyTargets := Set.remove t !assemblyTargets // List.filter ((<>) t) !assemblyTargets
                                     duplicates.Add frameworkAssembly.Name |> ignore
 
                         if !assemblyTargets = libFolder.Targets then
@@ -973,8 +974,6 @@ module ProjectFile =
 
     let getTargetProfile (project:ProjectFile) =
         match getTargetFrameworkProfile project with
-        | Some profile when profile = "Client" ->
-            SinglePlatform (DotNetFramework FrameworkVersion.V4_Client)
         | Some profile when String.IsNullOrWhiteSpace profile |> not ->
             KnownTargetProfiles.FindPortableProfile profile
         | _ ->
@@ -990,12 +989,6 @@ module ProjectFile =
                 match FrameworkDetection.Extract(prefix + s.Replace("v","")) with
                 | None -> defaultResult
                 | Some x -> SinglePlatform x
-
-    let getTargetFramework (project:ProjectFile) = 
-        match getTargetProfile project with
-        | SinglePlatform x -> Some x
-        | PortableProfile (_, x::_) -> Some x
-        | _ -> None
 
     let updateReferences
             rootPath
@@ -1041,7 +1034,7 @@ module ProjectFile =
         |> Seq.map (fun kv -> 
             deleteCustomModelNodes (snd kv.Value) project
             let installSettings = snd usedPackages.[kv.Key]
-            let restrictionList = installSettings.FrameworkRestrictions |> getRestrictionList
+            let restrictionList = installSettings.FrameworkRestrictions |> getExplicitRestriction
 
             let projectModel =
                 (snd kv.Value)
@@ -1050,17 +1043,15 @@ module ProjectFile =
                     .RemoveIfCompletelyEmpty()
 
             if directPackages.ContainsKey kv.Key then
-                match getTargetFramework project with 
-                | Some targetFramework ->
-                    if isTargetMatchingRestrictions(restrictionList,SinglePlatform targetFramework) then
-                        if projectModel.GetLibReferenceFiles targetFramework |> Seq.isEmpty then
-                            let libReferences = 
-                                projectModel.GetAllLegacyReferences() 
+                let targetProfile = getTargetProfile project 
+                if isTargetMatchingRestrictions(restrictionList,targetProfile) then
+                    if projectModel.GetLibReferenceFiles targetProfile |> Seq.isEmpty then
+                        let libReferences = 
+                            projectModel.GetAllLegacyReferences() 
 
-                            if not (Seq.isEmpty libReferences) then
-                                traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
-                                    (snd kv.Key) targetFramework project.FileName
-                | _ -> ()
+                        if not (Seq.isEmpty libReferences) then
+                            traceWarnfn "Package %O contains libraries, but not for the selected TargetFramework %O in project %s."
+                                (snd kv.Key) targetProfile project.FileName
 
             let importTargets = defaultArg installSettings.ImportTargets true
             
@@ -1498,8 +1489,6 @@ type ProjectFile with
     member this.OutputType =  ProjectFile.outputType this
 
     member this.GetTargetFrameworkIdentifier () =  ProjectFile.getTargetFrameworkIdentifier this
-
-    member this.GetTargetFramework () =  ProjectFile.getTargetFramework this
 
     member this.GetTargetFrameworkProfile () = ProjectFile.getTargetFrameworkProfile this
 

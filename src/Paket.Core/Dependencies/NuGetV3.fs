@@ -244,8 +244,8 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                 |> Seq.map(fun (dep, targetFramework) ->
                     let targetFramework =
                         match targetFramework with
-                        | null -> []
-                        | x -> Requirements.parseRestrictions false x
+                        | null -> FrameworkRestriction.NoRestriction
+                        | x -> Requirements.parseRestrictionsLegacy false x
                     (PackageName dep.Id), (VersionRequirement.Parse dep.Range), targetFramework)
                 |> Seq.toList
         let unlisted =
@@ -253,10 +253,11 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
                not catalogData.Listed.Value 
             else
                 false
-
-        let optimized = Requirements.optimizeDependencies dependencies 
+        // TODO: We probably need our new restriction logic here because I guess what nuget gives us is not enough...
+        let optimized = 
+            dependencies |> List.map (fun (m,v,r) -> m,v, ExplicitRestriction r)
         return 
-            { Dependencies = optimized
+            { SerializedDependencies = []
               PackageName = packageName.ToString()
               SourceUrl = source.Url
               Unlisted = unlisted
@@ -264,6 +265,7 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
               LicenseUrl = catalogData.LicenseUrl
               Version = version.Normalize()
               CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion }
+            |> NuGet.NuGetPackageCache.withDependencies optimized
     }
 
 let loadFromCacheOrGetDetails (force:bool)

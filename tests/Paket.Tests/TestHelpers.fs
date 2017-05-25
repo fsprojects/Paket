@@ -9,6 +9,15 @@ open System.Xml
 open System.IO
 open Paket.Domain
 
+let makeOrList (l:_ list) =
+    if l.IsEmpty then FrameworkRestriction.NoRestriction
+    else Seq.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet l
+    |> ExplicitRestriction
+
+let getPortableRestriction s =
+    let pf = PlatformMatching.extractPlatforms s
+    FrameworkRestriction.AtLeastPortable(s, pf.Value.Platforms)
+
 type GraphDependency = string * VersionRequirement * FrameworkRestrictions
 
 type DependencyGraph = list<string * string * (GraphDependency) list * RuntimeGraph>
@@ -16,7 +25,7 @@ type DependencyGraph = list<string * string * (GraphDependency) list * RuntimeGr
 let OfSimpleGraph (g:seq<string * string * (string * VersionRequirement) list>) : DependencyGraph =
   g
   |> Seq.map (fun (x, y, (rqs)) ->
-    x, y, rqs |> List.map (fun (a,b) -> (a, b, FrameworkRestrictionList [])), RuntimeGraph.Empty)
+    x, y, rqs |> List.map (fun (a,b) -> (a, b, ExplicitRestriction FrameworkRestriction.NoRestriction)), RuntimeGraph.Empty)
   |> Seq.toList
 
 let OfGraphWithRestriction (g:seq<string * string * (string * VersionRequirement * FrameworkRestrictions) list>) : DependencyGraph =
@@ -35,7 +44,7 @@ let GraphOfNuspecs (g:seq<string>) : DependencyGraph =
 let OfGraphWithRuntimeDeps (g:seq<string * string * (string * VersionRequirement) list * RuntimeGraph>) : DependencyGraph =
   g
   |> Seq.map (fun (x, y, rqs, run) ->
-    x, y, rqs |> List.map (fun (a,b) -> (a, b, FrameworkRestrictionList [])), run)
+    x, y, rqs |> List.map (fun (a,b) -> (a, b, ExplicitRestriction FrameworkRestriction.NoRestriction)), run)
   |> Seq.toList
 
 
@@ -52,18 +61,17 @@ let PackageDetailsFromGraph (graph : DependencyGraph) sources groupName (package
       LicenseUrl = ""
       Unlisted = false
       DirectDependencies = Set.ofList dependencies }
+    |> async.Return
 
-let VersionsFromGraph (graph : DependencyGraph) sources resolverStrategy groupName packageName = 
+let VersionsFromGraph (graph : DependencyGraph) sources groupName packageName = 
     let versions =
         graph
         |> Seq.filter (fun (p, _, _, _) -> (PackageName p) = packageName)
         |> Seq.map (fun (_, v, _, _) -> SemVer.Parse v)
-        |> Seq.toList
-        |> List.map (fun v -> v,sources)
+        |> Seq.map (fun v -> v,sources)
 
-    match resolverStrategy with
-    | ResolverStrategy.Max -> List.sortDescending versions
-    | ResolverStrategy.Min -> List.sort versions
+    versions
+    |> async.Return
 
 let GetRuntimeGraphFromGraph (graph : DependencyGraph) groupName (package:ResolvedPackage) =
     graph
@@ -75,9 +83,8 @@ let GetRuntimeGraphFromGraph (graph : DependencyGraph) groupName (package:Resolv
     |> Some
 
 
-let VersionsFromGraphAsSeq (graph : DependencyGraph) sources resolverStrategy groupName packageName = 
-   VersionsFromGraph graph sources resolverStrategy groupName packageName
-   |> Seq.ofList
+let VersionsFromGraphAsSeq (graph : DependencyGraph) sources groupName packageName = 
+   VersionsFromGraph graph sources groupName packageName
 
 let safeResolve graph (dependencies : (string * VersionRange) list)  = 
     let sources = [ PackageSource.NuGetV2Source "" ]
@@ -87,20 +94,20 @@ let safeResolve graph (dependencies : (string * VersionRange) list)  =
                { Name = PackageName n
                  VersionRequirement = VersionRequirement(v, PreReleaseStatus.No)
                  Parent = PackageRequirementSource.DependenciesFile ""
-                 Graph = []
+                 Graph = Set.empty
                  Sources = sources
                  Settings = InstallSettings.Default
                  ResolverStrategyForDirectDependencies = Some ResolverStrategy.Max 
                  ResolverStrategyForTransitives = Some ResolverStrategy.Max })
         |> Set.ofList
 
-    PackageResolver.Resolve(VersionsFromGraphAsSeq graph, PackageDetailsFromGraph graph, Constants.MainDependencyGroup, None, None, FrameworkRestrictionList [], packages, UpdateMode.UpdateAll)
+    PackageResolver.Resolve(VersionsFromGraphAsSeq graph, (fun _ _ _ _ -> []), PackageDetailsFromGraph graph, Constants.MainDependencyGroup, None, None, ExplicitRestriction FrameworkRestriction.NoRestriction, packages, UpdateMode.UpdateAll)
 
 let resolve graph dependencies = (safeResolve graph dependencies).GetModelOrFail()
 
 let ResolveWithGraphR(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF, getRuntimeGraph) =
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
-    dependenciesFile.Resolve(true,getSha1,getVersionsF,getPackageDetailsF,getRuntimeGraph,groups,UpdateMode.UpdateAll)
+    dependenciesFile.Resolve(true,getSha1,getVersionsF,(fun _ _ _ _ -> []),getPackageDetailsF,getRuntimeGraph,groups,UpdateMode.UpdateAll)
 
 let ResolveWithGraph(dependenciesFile:DependenciesFile,getSha1,getVersionsF, getPackageDetailsF) =
     ResolveWithGraphR(dependenciesFile,getSha1,getVersionsF, getPackageDetailsF, (fun _ _ -> None))

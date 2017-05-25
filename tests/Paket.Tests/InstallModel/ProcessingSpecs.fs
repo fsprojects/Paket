@@ -22,7 +22,7 @@ let ``should create empty model with net40, net45 ...``() =
 
     let targets =
         model.CompileLibFolders
-        |> List.map (fun folder -> folder.Targets)
+        |> List.map (fun folder -> folder.Targets |> Set.toList)
         |> List.concat
 
     targets |> shouldContain (SinglePlatform (DotNetFramework FrameworkVersion.V4))
@@ -32,7 +32,7 @@ let ``should create empty model with net40, net45 ...``() =
 let ``should understand net40 and net45``() = 
     let model = emptymodel.AddReferences ([ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] |> fromLegacyList @"..\Rx-Main\")
 
-    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain (@"..\Rx-Main\lib\net40\Rx.dll")
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) 
         |> Seq.map (fun f -> f.Path)|> shouldContain @"..\Rx-Main\lib\net45\Rx.dll"
@@ -41,14 +41,14 @@ let ``should understand net40 and net45``() =
 let ``should understand lib in lib.dll``() = 
     let model = emptymodel.AddReferences ([ @"..\FunScript.TypeScript\lib\net40\FunScript.TypeScript.Binding.lib.dll" ] |> fromLegacyList @"..\FunScript.TypeScript\")
 
-    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\FunScript.TypeScript\lib\net40\FunScript.TypeScript.Binding.lib.dll"
 
 [<Test>]
 let ``should understand libuv in runtimes``() = 
     let model = emptymodel.AddReferences ([ @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll" ] |> fromLegacyList @"..\Microsoft.AspNetCore.Server.Kestrel\")
 
-    model.GetRuntimeLibraries RuntimeGraph.Empty (Rid.Of "win7-x64") (SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+    model.GetRuntimeLibraries RuntimeGraph.Empty (Rid.Of "win7-x64") (SinglePlatform (DotNetFramework FrameworkVersion.V4))
        |> Seq.map (fun (r:RuntimeLibrary) -> r.Library.Path) |> shouldContain @"..\Microsoft.AspNetCore.Server.Kestrel\runtimes\win7-x64\native\libuv.dll"
 
 [<Test>]
@@ -198,7 +198,7 @@ let ``should put _._ files into right buckets``() =
 
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V2))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Rx-Main\lib\net20\_._"
-    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Rx-Main\lib\net40\_._"
 
 [<Test>]
@@ -248,7 +248,7 @@ let ``should install single client profile lib for everything``() =
     let model = 
         emptymodel.AddReferences([ @"..\Castle.Core\lib\net40-client\Castle.Core.dll" ] |> fromLegacyList @"..\Castle.Core\")
 
-    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll" 
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Castle.Core\lib\net40-client\Castle.Core.dll"
@@ -265,7 +265,7 @@ let ``should install net40 for client profile``() =
 
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V3_5))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll" 
-    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll" 
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll" 
@@ -281,8 +281,6 @@ let ``should install not use net40-full for client profile``() =
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll"     
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Newtonsoft.Json\lib\net40-full\Newtonsoft.Json.dll" 
-    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
-        |> Seq.map (fun f -> f.Path) |> shouldNotContain @"..\Newtonsoft.Json\lib\net40-full\Newtonsoft.Json.dll" 
 
 [<Test>]
 let ``should handle lib install of Microsoft.Net.Http for .NET 4.5``() = 
@@ -327,7 +325,7 @@ let ``should handle lib install of Jint for NET >= 40 and SL >= 50``() =
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
 
-    model.GetLegacyReferences(SinglePlatform (Silverlight "v5.0"))
+    model.GetLegacyReferences(SinglePlatform (Silverlight SilverlightVersion.V5))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Jint\lib\portable-net40+sl50+win+wp80\Jint.dll"
     
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V3_5))
@@ -387,11 +385,11 @@ let ``should not use portable-net40 if we have net40``() =
               @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll"
               @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" ] |> fromLegacyList @"..\Microsoft.Bcl\")
 
-    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.IO.dll" 
-    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Runtime.dll" 
-    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_Client))
+    model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
     let profile41 = KnownTargetProfiles.FindPortableProfile "Profile41"
@@ -423,7 +421,7 @@ let ``should handle lib install of NUnit 2.6 for windows 8``() =
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
-    model.GetLegacyReferences(SinglePlatform (Windows "v4.5"))
+    model.GetLegacyReferences(SinglePlatform (Windows WindowsVersion.V8))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\NUnit\lib\nunit.framework.dll"
 
 
@@ -502,14 +500,14 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
     model.GetLegacyReferences(profile7)
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll" 
 
-    model.GetLegacyReferences(SinglePlatform (Windows "v4.5"))
+    model.GetLegacyReferences(SinglePlatform (Windows WindowsVersion.V8))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll" 
-    model.GetLegacyReferences(SinglePlatform (Windows "v4.5"))
+    model.GetLegacyReferences(SinglePlatform (Windows WindowsVersion.V8))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll" 
 
-    model.GetLegacyReferences(SinglePlatform (WindowsPhoneApp "v8.1"))
+    model.GetLegacyReferences(SinglePlatform (WindowsPhoneApp WindowsPhoneAppVersion.V8_1))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll" 
-    model.GetLegacyReferences(SinglePlatform (WindowsPhoneApp "v8.1"))
+    model.GetLegacyReferences(SinglePlatform (WindowsPhoneApp WindowsPhoneAppVersion.V8_1))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll" 
 
 
@@ -561,9 +559,9 @@ let ``should handle lib install of MicrosoftBcl``() =
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform MonoAndroid) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform MonoTouch) |> shouldBeEmpty
-    model.GetLegacyReferences(SinglePlatform (Windows "v4.5")) |> shouldBeEmpty
-    model.GetLegacyReferences(SinglePlatform (WindowsPhoneSilverlight "v8.0")) |> shouldBeEmpty
-    model.GetLegacyReferences(SinglePlatform (WindowsPhoneApp "v8.1")) |> shouldBeEmpty
+    model.GetLegacyReferences(SinglePlatform (Windows WindowsVersion.V8)) |> shouldBeEmpty
+    model.GetLegacyReferences(SinglePlatform (WindowsPhone WindowsPhoneVersion.V8)) |> shouldBeEmpty
+    model.GetLegacyReferences(SinglePlatform (WindowsPhoneApp WindowsPhoneAppVersion.V8_1)) |> shouldBeEmpty
     model.GetLegacyReferences(KnownTargetProfiles.FindPortableProfile "Profile44") |> shouldBeEmpty
     model.GetLegacyReferences(KnownTargetProfiles.FindPortableProfile "Profile151") |> shouldBeEmpty
     
@@ -575,25 +573,25 @@ let ``should handle lib install of MicrosoftBcl``() =
     model.GetLegacyReferences(profile41)
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll" 
 
-    model.GetLegacyReferences(SinglePlatform (Silverlight "v4.0"))
+    model.GetLegacyReferences(SinglePlatform (Silverlight SilverlightVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\sl4\System.IO.dll"
-    model.GetLegacyReferences(SinglePlatform (Silverlight "v4.0"))
+    model.GetLegacyReferences(SinglePlatform (Silverlight SilverlightVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\sl4\System.Runtime.dll"
-    model.GetLegacyReferences(SinglePlatform (Silverlight "v4.0"))
+    model.GetLegacyReferences(SinglePlatform (Silverlight SilverlightVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\sl4\System.Threading.Tasks.dll" 
     
-    model.GetLegacyReferences(SinglePlatform (WindowsPhoneSilverlight "v7.1"))
+    model.GetLegacyReferences(SinglePlatform (WindowsPhone WindowsPhoneVersion.V7_5))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\sl4-windowsphone71\System.IO.dll"
-    model.GetLegacyReferences(SinglePlatform (WindowsPhoneSilverlight "v7.1"))
+    model.GetLegacyReferences(SinglePlatform (WindowsPhone WindowsPhoneVersion.V7_5))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\sl4-windowsphone71\System.Runtime.dll"
-    model.GetLegacyReferences(SinglePlatform (WindowsPhoneSilverlight "v7.1"))
+    model.GetLegacyReferences(SinglePlatform (WindowsPhone WindowsPhoneVersion.V7_5))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\sl4-windowsphone71\System.Threading.Tasks.dll" 
 
-    model.GetLegacyReferences(SinglePlatform (Silverlight "v5.0"))
+    model.GetLegacyReferences(SinglePlatform (Silverlight SilverlightVersion.V5))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\sl5\System.IO.dll"
-    model.GetLegacyReferences(SinglePlatform (Silverlight "v5.0"))
+    model.GetLegacyReferences(SinglePlatform (Silverlight SilverlightVersion.V5))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\sl5\System.Runtime.dll"
-    model.GetLegacyReferences(SinglePlatform (Silverlight "v5.0"))
+    model.GetLegacyReferences(SinglePlatform (Silverlight SilverlightVersion.V5))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\sl5\System.Threading.Tasks.dll" 
 
 
@@ -738,7 +736,7 @@ let ``should filter .NET 4.0 dlls for System.Net.Http 2.2.8``() =
     let model =
         InstallModel.CreateFromLibs
             (PackageName "System.Net.Http", SemVer.Parse "2.2.8",
-             [ ],
+             FrameworkRestriction.NoRestriction,
              [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
                @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll"
                @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll"
@@ -773,7 +771,7 @@ let ``should filter .NET 4.5 dlls for System.Net.Http 2.2.8``() =
     let model =
         InstallModel.CreateFromLibs
             (PackageName "System.Net.Http", SemVer.Parse "2.2.8",
-             [ ],
+             FrameworkRestriction.NoRestriction,
              [ @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll"
                @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll"
                @"..\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll"
@@ -807,7 +805,7 @@ let ``should filter properly when portables are available``() =
     let model =
         InstallModel.CreateFromLibs
             (PackageName "Newtonsoft.Json", SemVer.Parse "8.0.3",
-             [ ],
+             FrameworkRestriction.NoRestriction,
              [ @"..\Newtonsoft.Json\lib\net20\Newtonsoft.Json.dll"
                @"..\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll"
                @"..\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll"
@@ -816,7 +814,7 @@ let ``should filter properly when portables are available``() =
                @"..\Newtonsoft.Json\lib\portable-net45+wp80+win8+wpa81+dnxcore50\Newtonsoft.Json.dll" ] |> fromLegacyList @"..\Newtonsoft.Json\", [], [], Nuspec.All)
 
     let filteredModel =
-      model.ApplyFrameworkRestrictions ( [ FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5) ] )
+      model.ApplyFrameworkRestrictions (FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_5))
 
     filteredModel.GetLegacyReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
     |> Seq.map (fun f -> f.Path)
@@ -832,11 +830,11 @@ let ``should keep net20 if nothing better is available``() =
     let model =
         InstallModel.CreateFromLibs
             (PackageName "EPPlus", SemVer.Parse "4.0.5",
-             [ ],
+             FrameworkRestriction.NoRestriction,
              [ @"..\EPPlus\lib\net20\EPPlus.dll" ] |> fromLegacyList @"..\EPPlus\", [], [], Nuspec.All)
 
     let filteredModel =
-      model.ApplyFrameworkRestrictions ( [ FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6_1) ] )
+      model.ApplyFrameworkRestrictions (FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6_1))
 
     filteredModel.GetLegacyReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_1)))
     |> Seq.map (fun f -> f.Path)
@@ -853,12 +851,12 @@ let ``prefer net20 over empty folder``() =
     let model =
         InstallModel.CreateFromLibs
             (PackageName "EPPlus", SemVer.Parse "4.0.5",
-             [ ],
+             FrameworkRestriction.NoRestriction,
              [ @"..\EPPlus\lib\readme.txt"
                @"..\EPPlus\lib\net20\EPPlus.dll" ] |> fromLegacyList @"..\EPPlus\", [], [], Nuspec.All)
 
     let filteredModel =
-      model.ApplyFrameworkRestrictions ( [ FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6_1) ] )
+      model.ApplyFrameworkRestrictions (FrameworkRestriction.Exactly (FrameworkIdentifier.DotNetFramework FrameworkVersion.V4_6_1))
 
     filteredModel.GetLegacyReferences(SinglePlatform(DotNetFramework(FrameworkVersion.V4_6_1)))
     |> Seq.map (fun f -> f.Path)
@@ -871,7 +869,7 @@ let ``prefer net20 over empty folder``() =
 
 [<Test>]
 let ``should understand xamarinios``() =
-    let model = emptymodel.ApplyFrameworkRestrictions ([FrameworkRestriction.Exactly (XamariniOS)])
+    let model = emptymodel.ApplyFrameworkRestrictions (FrameworkRestriction.Exactly (XamariniOS))
     let model = model.AddReferences ([ @"..\FSharp.Core\lib\portable-net45+monoandroid10+monotouch10+xamarinios10\FSharp.Core.dll" ] |> fromLegacyList @"..\FSharp.Core\")
 
     model.GetLegacyReferences(SinglePlatform (XamariniOS))

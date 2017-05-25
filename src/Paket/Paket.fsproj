@@ -30,8 +30,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>restore</StartArguments>
-    <StartWorkingDirectory>C:\temp\PaketRepro</StartWorkingDirectory>
+    <StartArguments>update</StartArguments>
+    <StartWorkingDirectory>C:\PROJ\Yaaf\Paket\integrationtests\scenarios\i002294-pin-netstandard-1-6\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -42,7 +42,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>D:\temp\TestProject</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\PROJ\Yaaf\paket-tests\test2\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

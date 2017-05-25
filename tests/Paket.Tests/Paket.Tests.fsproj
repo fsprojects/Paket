@@ -96,6 +96,7 @@
     <Compile Include="Versioning\RestrictionFilterSpecs.fs" />
     <Compile Include="Versioning\RestrictionApplicationSpecs.fs" />
     <Compile Include="Versioning\DependencySetSpecs.fs" />
+    <Compile Include="Versioning\FrameworkRestrictionTests.fs" />
     <None Include="Nuspec\EmptyLibs.nuspec" />
     <None Include="Nuspec\Fantomas.nuspec" />
     <None Include="Nuspec\FluentAssertions.nuspec" />
@@ -198,6 +199,7 @@
     <Compile Include="Resolver\PropertyTestGenerators.fs" />
     <Compile Include="Resolver\PropertyTests.fs" />
     <Compile Include="Resolver\DependencyGroupsAndRestrictions.fs" />
+    <Compile Include="Resolver\ResolverRestrictionTests.fs" />
     <Compile Include="Lockfile\GeneratorSpecs.fs" />
     <Compile Include="Lockfile\GenerateWithOptionsSpecs.fs" />
     <Compile Include="Lockfile\GenerateAuthModeSpecs.fs" />

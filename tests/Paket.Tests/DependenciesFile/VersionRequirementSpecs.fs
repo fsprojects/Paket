@@ -14,7 +14,7 @@ let require packageName strategyForTransitives text : PackageRequirement =
       ResolverStrategyForDirectDependencies = None
       ResolverStrategyForTransitives = Some strategyForTransitives
       Parent = PackageRequirementSource.DependenciesFile ""
-      Graph = []
+      Graph = Set.empty
       Sources = []
       Settings = InstallSettings.Default }
 
