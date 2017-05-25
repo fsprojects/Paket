@@ -662,8 +662,17 @@ module ResolverRequestQueue =
     let addWork prio (f: unit -> System.Threading.Tasks.Task<'a>) ({ DynamicQueue = queue } as q) =
         let tcs = new TaskCompletionSource<_>()
         let work =
-            { StartWork = (fun () -> 
-                f().ContinueWith(fun (t:System.Threading.Tasks.Task<'a>) -> 
+            { StartWork = (fun () ->
+                let t =
+                    try
+                        f()
+                    with e -> 
+                        //Task.FromException (e)
+                        let tcs = new TaskCompletionSource<_>()
+                        tcs.SetException e
+                        tcs.Task
+                
+                t.ContinueWith(fun (t:System.Threading.Tasks.Task<'a>) -> 
                     if t.IsCanceled then
                         tcs.SetException(new TaskCanceledException(t))
                     elif t.IsFaulted then
@@ -677,12 +686,21 @@ module ResolverRequestQueue =
     let rec private getNext ({ DynamicQueue = queue } as d) =
         if queue.Count = 0 then None
         else
-            let min = queue |> Seq.minBy (fun kv -> kv.Value.Priority)
-            match queue.TryRemove(min.Key) with
-            | true, min ->
-                Some min
-            | _ ->
-                getNext d
+            let min =
+                // cannot minBy as the sequence might be empty by now.
+                queue |> Seq.fold (fun currentMin kv ->
+                    match currentMin with
+                    | None -> Some (kv.Key, kv.Value)
+                    | Some (minKey, min) when kv.Value.Priority < min.Priority -> Some (kv.Key, kv.Value)
+                    | min -> min) None
+            match min with
+            | Some (minKey, min) ->
+                match queue.TryRemove(minKey) with
+                | true, min ->
+                    Some min
+                | _ ->
+                    getNext d
+            | None -> getNext d
     let startProcessing (cts:CancellationToken) ({ DynamicQueue = queue } as q) =
         async {
             while not cts.IsCancellationRequested do
@@ -711,7 +729,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     let workers =
         // start maximal 7 requests at the same time.
         [ 0 .. 7 ]
-        |> Seq.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
+        |> List.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
 
     let getAndReport blockReason (workHandle:WorkHandle<_>) =
         if workHandle.Task.IsCompleted then
@@ -720,6 +738,9 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         else
             workHandle.Reprioritize WorkPriority.BlockingWork
             use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked blockReason)
+            let isFinished = workHandle.Task.Wait(60000)
+            if not isFinished then
+                raise <| new TimeoutException("Waited 60 seconds for a request to finish, maybe a bug in the paket request scheduler.")
             let result = workHandle.Task.Result
             d.Dispose()
             result
