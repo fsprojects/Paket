@@ -9,6 +9,8 @@ open System.Collections.Generic
 open System
 open System.Diagnostics
 open Paket.PackageSources
+open System.Threading.Tasks
+open System.Threading
 
 type DependencySet = Set<PackageName * VersionRequirement * FrameworkRestrictions>
 
@@ -641,35 +643,110 @@ type private Stage =
     | Outer of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
     | Inner of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
 
+type WorkPriority =
+    | BackgroundWork = 10
+    | BlockingWork = 1
+
+type RequestWork =
+    private
+        { StartWork : unit -> System.Threading.Tasks.Task
+          mutable Priority : WorkPriority }
+
+type WorkHandle<'a> = private { Handle : Guid; Work : RequestWork; TaskSource : TaskCompletionSource<'a> }
+and ResolverRequestQueue =
+    private { DynamicQueue : System.Collections.Concurrent.ConcurrentDictionary<Guid, RequestWork> }
+module ResolverRequestQueue =
+    open System.Threading
+
+    let Create() = { DynamicQueue = new System.Collections.Concurrent.ConcurrentDictionary<Guid, RequestWork>(); }
+    let addWork prio (f: unit -> System.Threading.Tasks.Task<'a>) ({ DynamicQueue = queue } as q) =
+        let tcs = new TaskCompletionSource<_>()
+        let work =
+            { StartWork = (fun () -> 
+                f().ContinueWith(fun (t:System.Threading.Tasks.Task<'a>) -> 
+                    if t.IsCanceled then
+                        tcs.SetException(new TaskCanceledException(t))
+                    elif t.IsFaulted then
+                        tcs.SetException(t.Exception)
+                    else tcs.SetResult (t.Result)))
+              Priority = prio }
+        let handle = Guid.NewGuid()
+        let res = queue.TryAdd(handle, work)
+        assert res
+        { Handle = handle; Work = work; TaskSource = tcs }
+    let rec private getNext ({ DynamicQueue = queue } as d) =
+        if queue.Count = 0 then None
+        else
+            let min = queue |> Seq.minBy (fun kv -> kv.Value.Priority)
+            match queue.TryRemove(min.Key) with
+            | true, min ->
+                Some min
+            | _ ->
+                getNext d
+    let startProcessing (cts:CancellationToken) ({ DynamicQueue = queue } as q) =
+        async {
+            while not cts.IsCancellationRequested do
+                match getNext q with
+                | None -> do! Async.Sleep 10
+                | Some work ->
+                    do! work.StartWork().ContinueWith(fun (t:System.Threading.Tasks.Task) ->()) |> Async.AwaitTask
+        }
+        |> Async.StartAsTask
+
+type WorkHandle<'a> with
+    member x.Reprioritize prio =
+        let { Work = work } = x
+        work.Priority <- prio
+    member x.Task =
+        let { TaskSource = task } = x
+        task.Task
+
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
        
     use d = Profile.startCategory Profile.Category.ResolverAlgorithm
+    use cts = new CancellationTokenSource()
+    let workerQueue = ResolverRequestQueue.Create()
+    let workers =
+        // start maximal 7 requests at the same time.
+        [ 0 .. 7 ]
+        |> Seq.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
 
-    let startedGetPackageDetailsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
+    let getAndReport blockReason (workHandle:WorkHandle<_>) =
+        if workHandle.Task.IsCompleted then
+            Profile.trackEvent (Profile.Category.ResolverAlgorithmNotBlocked blockReason)
+            workHandle.Task.Result
+        else
+            workHandle.Reprioritize WorkPriority.BlockingWork
+            use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked blockReason)
+            let result = workHandle.Task.Result
+            d.Dispose()
+            result
+
+    let startedGetPackageDetailsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,WorkHandle<_>>()
     let startRequestGetPackageDetails sources groupName packageName semVer =
         let key = (sources, packageName, semVer)
         startedGetPackageDetailsRequests.GetOrAdd (key, fun _ ->
-        (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
-            |> Async.StartAsTask)
+            workerQueue
+            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun () ->
+                (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
+                    |> Async.StartAsTask))
     let getPackageDetailsBlock sources groupName packageName semVer =
-        use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked Profile.BlockReason.PackageDetails)
-        let result = (startRequestGetPackageDetails sources groupName packageName semVer).GetAwaiter().GetResult()
-        d.Dispose()
-        result
-
+        let workHandle = startRequestGetPackageDetails sources groupName packageName semVer
+        getAndReport Profile.BlockReason.PackageDetails workHandle
     
-    let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
+    let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,WorkHandle<_>>()
     let startRequestGetVersions sources groupName packageName =
         let key = (sources, packageName)
         startedGetVersionsRequests.GetOrAdd (key, fun _ ->
-            getVersionsRaw sources groupName packageName
-            |> Async.StartAsTask)
+            workerQueue
+            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun () ->
+                getVersionsRaw sources groupName packageName
+                |> Async.StartAsTask))
     let getVersionsBlock sources resolverStrategy groupName packageName =
-        use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked Profile.BlockReason.GetVersion)
-        let versions = (startRequestGetVersions sources groupName packageName).GetAwaiter().GetResult() |> Seq.toList
-        d.Dispose()
+        let workHandle = startRequestGetVersions sources groupName packageName
+        let versions = getAndReport Profile.BlockReason.GetVersion workHandle
         let sorted =
             match resolverStrategy with
             | ResolverStrategy.Max -> List.sortDescending versions
@@ -879,11 +956,11 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     // Start pre-loading infos about dependencies.
                     for (pack,verReq,restr) in exploredPackage.Dependencies do
                         async {
-                            let! versions = startRequestGetVersions currentRequirement.Sources groupName pack |> Async.AwaitTask
+                            let! versions = (startRequestGetVersions currentRequirement.Sources groupName pack).Task |> Async.AwaitTask
                             // Preload the first version in range of this requirement
                             match versions |> Seq.map fst |> Seq.tryFind (verReq.IsInRange) with
                             | Some verToPreload ->
-                                let! details = startRequestGetPackageDetails currentRequirement.Sources groupName pack verToPreload |> Async.AwaitTask
+                                let! details = (startRequestGetPackageDetails currentRequirement.Sources groupName pack verToPreload).Task |> Async.AwaitTask
                                 ()
                             | None -> ()
                             return ()
@@ -963,41 +1040,47 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     }
 
     let inline calculate () = step (Step((currentConflict,startingStep,currentRequirement),[])) stackpack Seq.empty flags
+    
+    try
 #if DEBUG
-    let mutable results = None
-    let mutable error = None
-    // Increase stack size, because we have no tail-call-elimination
-    let thread = new System.Threading.Thread((fun () ->
-        try
-            results <- Some (calculate())
-        with e ->
-            // Prevent the application from crashing
-            error <- Some (System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e)
-        ), 1024 * 1024 * 100)
-    thread.Name <- sprintf "Paket Resolver Thread (Debug) - %O" (System.Guid.NewGuid())
-    thread.Start()
-    thread.Join()
-    match error with
-    | Some e -> e.Throw()
-    | _ -> ()
-    let stepResult =
-        match results with
-        | Some s -> s
-        | None -> failwithf "Expected to get results from the resolver thread :/."
+        let mutable results = None
+        let mutable error = None
+        // Increase stack size, because we have no tail-call-elimination
+        let thread = new System.Threading.Thread((fun () ->
+            try
+                results <- Some (calculate())
+            with e ->
+                // Prevent the application from crashing
+                error <- Some (System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e)
+            ), 1024 * 1024 * 100)
+        thread.Name <- sprintf "Paket Resolver Thread (Debug) - %O" (System.Guid.NewGuid())
+        thread.Start()
+        thread.Join()
+        match error with
+        | Some e -> e.Throw()
+        | _ -> ()
+        let stepResult =
+            match results with
+            | Some s -> s
+            | None -> failwithf "Expected to get results from the resolver thread :/."
 #else
-    let stepResult = calculate()
+        let stepResult = calculate()
 #endif
     
-    match stepResult  with
-    | { Status = Resolution.Conflict _ } as conflict ->
-        if conflict.TryRelaxed then
-            stackpack.KnownConflicts.Clear()
-            stackpack.ConflictHistory.Clear()
-            (step (Step((conflict
-                        ,{startingStep with Relax=true}
-                        ,currentRequirement),[])) 
-                  stackpack Seq.empty flags).Status
-        else
-            conflict.Status
-    | x -> x.Status
-
+        match stepResult  with
+        | { Status = Resolution.Conflict _ } as conflict ->
+            if conflict.TryRelaxed then
+                stackpack.KnownConflicts.Clear()
+                stackpack.ConflictHistory.Clear()
+                (step (Step((conflict
+                            ,{startingStep with Relax=true}
+                            ,currentRequirement),[])) 
+                      stackpack Seq.empty flags).Status
+            else
+                conflict.Status
+        | x -> x.Status
+    finally
+        // some cleanup
+        cts.Cancel()
+        for w in workers do
+            w.Wait()
