@@ -135,10 +135,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockFileProxy.Setup(x => x.FileExists(ItHasFilename("paket.exe"))).Returns(true);
 
             //act
-            sut.DownloadVersion("any", "any");
+            sut.DownloadVersion("any", "any", null);
 
             //assert
-            mockEffectiveStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            mockEffectiveStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>(), null), Times.Never);
             mockFileProxy.Verify(x => x.CopyFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()));
         }
 
@@ -149,10 +149,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockFileProxy.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
 
             //act
-            sut.DownloadVersion("any", "any");
+            sut.DownloadVersion("any", "any", null);
 
             //assert
-            mockEffectiveStrategy.Verify(x => x.DownloadVersion("any", "any"));
+            mockEffectiveStrategy.Verify(x => x.DownloadVersion("any", "any", null));
             mockFileProxy.Verify(x => x.CopyFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()));
         }
 
@@ -177,10 +177,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockFileProxy.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
 
             //act
-            sut.DownloadVersion("any", "any");
+            sut.DownloadVersion("any", "any", null);
 
             //assert
-            mockEffectiveStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            mockEffectiveStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()), Times.Once);
             mockFileProxy.Verify(x => x.CopyFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()));
         }
 
@@ -198,10 +198,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockFileProxy.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
 
             //act
-            sut.DownloadVersion("any", "any");
+            sut.DownloadVersion("any", "any", null);
 
             //assert
-            mockEffectiveStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            mockEffectiveStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>(), null), Times.Never);
             mockFileProxy.Verify(x => x.CopyFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()));
         }
 
@@ -215,10 +215,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockFileProxy.Setup(x => x.FileExists(It.IsAny<string>())).Returns(true);
 
             //act
-            Assert.Throws<InvalidDataException>(() => sut.DownloadVersion("any", "any"));
+            Assert.Throws<InvalidDataException>(() => sut.DownloadVersion("any", "any", null));
 
             //assert
-            mockEffectiveStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            mockEffectiveStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>(), null), Times.Never);
             mockFileProxy.Verify(x => x.DeleteFile(ItHasFilename("paket-sha256.txt")));
         }
 

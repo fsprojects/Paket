@@ -97,7 +97,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             CreateSystemUnderTestWithDefaultApi();
 
             //act
-            sut.DownloadVersion(null, "paket");
+            sut.DownloadVersion(null, "paket", null);
 
             //assert
             mockWebRequestProxy.Verify(x => x.DownloadFile("https://www.nuget.org/api/v2/package/Paket", It.IsAny<string>()));
@@ -113,7 +113,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             CreateSystemUnderTestWithDefaultApi();
 
             //act
-            sut.DownloadVersion("2.57.0", "paket");
+            sut.DownloadVersion("2.57.0", "paket", null);
 
             //assert
             mockWebRequestProxy.Verify(x => x.DownloadFile("https://www.nuget.org/api/v2/package/Paket/2.57.0", It.IsAny<string>()));
@@ -241,7 +241,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
                 .Returns(new[] { "paket.111.nupkg" });
 
             //act
-            sut.DownloadVersion(null, "paket");
+            sut.DownloadVersion(null, "paket", null);
 
             //assert
             mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.111.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.latest.nupkg")), false));
@@ -258,7 +258,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             CreateSystemUnderTestWithNugetFolder();
 
             //act
-            sut.DownloadVersion("2.57.0", "paket");
+            sut.DownloadVersion("2.57.0", "paket", null);
 
             //assert
             mockFileProxy.Verify(x => x.CopyFile(It.Is<string>(s => s.StartsWith("anyNugetFolder") && s.EndsWith("paket.2.57.0.nupkg")), It.Is<string>(s => s.StartsWith("folder") && s.EndsWith("paket.2.57.0.nupkg")), false));

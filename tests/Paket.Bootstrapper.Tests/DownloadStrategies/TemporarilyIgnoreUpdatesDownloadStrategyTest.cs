@@ -162,10 +162,10 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             _mockFileProxy.Setup(fp => fp.Touch(Target)).Verifiable();
-            _mockEffectiveStrategy.Setup(x => x.DownloadVersion("any", Target)).Verifiable();
+            _mockEffectiveStrategy.Setup(x => x.DownloadVersion("any", Target, null)).Verifiable();
 
             //act
-            _sut.DownloadVersion("any", Target);
+            _sut.DownloadVersion("any", Target, null);
 
             //assert
             _mockEffectiveStrategy.Verify();

@@ -60,7 +60,7 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockWebProxy.Setup(x => x.DownloadFile(It.IsAny<string>(), It.IsAny<string>())).Verifiable();
 
             //act
-            sut.DownloadVersion("2.57.1", "paketExeLocation");
+            sut.DownloadVersion("2.57.1", "paketExeLocation", null);
 
             //assert
             mockWebProxy.Verify(x => x.DownloadFile(It.IsAny<string>(), tempFileName));
