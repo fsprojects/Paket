@@ -226,9 +226,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
             FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
 
-        protected override void DownloadHashFileCore(string latestVersion)
+        protected override string DownloadHashFileCore(string latestVersion)
         {
             // TODO: implement get hash file
+            return null;
         }
     }
 }

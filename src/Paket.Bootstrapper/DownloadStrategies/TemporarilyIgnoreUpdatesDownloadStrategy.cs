@@ -118,9 +118,9 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        protected override void DownloadHashFileCore(string latestVersion)
+        protected override string DownloadHashFileCore(string latestVersion)
         {
-            _effectiveStrategy.DownloadHashFile(latestVersion);
+            return _effectiveStrategy.DownloadHashFile(latestVersion);
         }
     }
 }

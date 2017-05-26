@@ -114,13 +114,15 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        protected override void DownloadHashFileCore(string latestVersion)
+        protected override string DownloadHashFileCore(string latestVersion)
         {
             var url = String.Format(Constants.PaketCheckSumDownloadUrlTemplate, latestVersion);
             ConsoleImpl.WriteInfo("Starting download from {0}", url);
 
             var tmpFile = BootstrapperHelper.GetTempFile("paket-sha256.txt");
             WebRequestProxy.DownloadFile(url, tmpFile);
+
+            return tmpFile;
         }
     }
 }

@@ -71,16 +71,19 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        protected override void DownloadHashFileCore(string latestVersion)
+        protected override string DownloadHashFileCore(string latestVersion)
         {
-            var cached = Path.Combine(_paketCacheDir, latestVersion, "paket-sha256.txt");
+            var cached = GetHashFilePathInCache(latestVersion);
 
             if (!FileSystemProxy.FileExists(cached))
             {
                 ConsoleImpl.WriteInfo("Hash file of version {0} not found in cache.", latestVersion);
 
-                EffectiveStrategy.DownloadHashFile(latestVersion);
+                var effectivePath = EffectiveStrategy.DownloadHashFile(latestVersion);
+                FileSystemProxy.CopyFile(effectivePath, cached, true);
             }
+
+            return cached;
         }
 
         protected override void SelfUpdateCore(string latestVersion)
@@ -116,7 +119,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
         private bool ValidateHash(string version, string paketFile)
         {
-            var hashFile = Path.Combine(_paketCacheDir, version, "paket-sha256.txt");
+            var hashFile = GetHashFilePathInCache(version);
 
             if (!FileSystemProxy.FileExists(hashFile))
             {
@@ -145,6 +148,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
                 return string.Equals(expectedHash, hash, StringComparison.OrdinalIgnoreCase);
             }
+        }
+
+        private string GetHashFilePathInCache(string version)
+        {
+            return Path.Combine(_paketCacheDir, version, "paket-sha256.txt");
         }
     }
 }

@@ -7,6 +7,6 @@ namespace Paket.Bootstrapper.DownloadStrategies
         string GetLatestVersion(bool ignorePrerelease);
         void DownloadVersion(string latestVersion, string target);
         void SelfUpdate(string latestVersion);
-        void DownloadHashFile(string latestVersion);
+        string DownloadHashFile(string latestVersion);
     }
 }
