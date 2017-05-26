@@ -232,5 +232,53 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             return It.IsRegex($@"\w*[\\/]{filename}");
         }
+
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void CanDownloadHashFile(bool can)
+        {
+            mockEffectiveStrategy.SetupGet(x => x.CanDownloadHashFile).Returns(can);
+            Assert.That(sut.CanDownloadHashFile, Is.EqualTo(can));
+        }
+
+        [Test]
+        public void DownloadHashFile_NotSupported()
+        {
+            mockEffectiveStrategy.SetupGet(x => x.CanDownloadHashFile).Returns(false);
+
+            var hashFilePath = sut.DownloadHashFile("42.0");
+
+            Assert.That(hashFilePath, Is.Null);
+        }
+
+        [Test]
+        public void DownloadHashFile_PresentInCache()
+        {
+            mockEffectiveStrategy.SetupGet(x => x.CanDownloadHashFile).Returns(true);
+            var pathInCache = sut.GetHashFilePathInCache("42.0");
+            mockFileProxy.Setup(x => x.FileExists(pathInCache)).Returns(true);
+
+            var hashFilePath = sut.DownloadHashFile("42.0");
+
+            Assert.That(hashFilePath, Is.EqualTo(pathInCache));
+            mockEffectiveStrategy.Verify(x => x.DownloadHashFile(It.IsAny<string>()), Times.Never);
+        }
+
+        [Test]
+        public void DownloadHashFile_NotInCache()
+        {
+            const string pathFromEffectiveStrategy = @"C:\hash.txt";
+            mockEffectiveStrategy.Setup(x => x.DownloadHashFile(It.IsAny<string>())).Returns(pathFromEffectiveStrategy);
+            mockEffectiveStrategy.SetupGet(x => x.CanDownloadHashFile).Returns(true);
+            var pathInCache = sut.GetHashFilePathInCache("42.0");
+            mockFileProxy.Setup(x => x.FileExists(pathInCache)).Returns(false);
+
+            var hashFilePath = sut.DownloadHashFile("42.0");
+
+            Assert.That(hashFilePath, Is.EqualTo(pathInCache));
+            mockEffectiveStrategy.Verify(x => x.DownloadHashFile("42.0"), Times.Once);
+            mockFileProxy.Verify(x => x.CopyFile(pathFromEffectiveStrategy, pathInCache, true), Times.Once);
+        }
     }
 }

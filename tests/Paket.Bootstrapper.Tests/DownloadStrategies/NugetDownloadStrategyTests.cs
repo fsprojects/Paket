@@ -312,5 +312,22 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
             mockFileProxy.Verify(x => x.CopyFile(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()), Times.Never);
         }
 
+        [Test]
+        public void DownloadHashFile()
+        {
+            CreateSystemUnderTestWithDefaultApi();
+
+            var hashFilePath = sut.DownloadHashFile("42.0");
+
+            Assert.That(hashFilePath, Is.Null);
+        }
+
+        [Test]
+        public void CanDownloadHashFile()
+        {
+            CreateSystemUnderTestWithDefaultApi();
+
+            Assert.That(sut.CanDownloadHashFile, Is.False);
+        }
     }
 }

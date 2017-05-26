@@ -146,7 +146,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
                 .FirstOrDefault() ?? "0";
         }
 
-        private string GetHashFilePathInCache(string version)
+        public string GetHashFilePathInCache(string version)
         {
             return Path.Combine(_paketCacheDir, version, "paket-sha256.txt");
         }
