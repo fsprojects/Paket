@@ -36,7 +36,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             mockFileProxy.Verify();
-            mockDownloadStrategy.Verify(x => x.DownloadVersion("1.1", dlArgs.Target));
+            mockDownloadStrategy.Verify(x => x.DownloadVersion("1.1", dlArgs.Target, null));
         }
 
         [Test]
@@ -51,7 +51,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             mockFileProxy.Verify();
-            mockDownloadStrategy.Verify(x => x.DownloadVersion("1.3", dlArgs.Target));
+            mockDownloadStrategy.Verify(x => x.DownloadVersion("1.3", dlArgs.Target, null));
         }
 
         [Test]
@@ -66,7 +66,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             mockFileProxy.Verify();
-            mockDownloadStrategy.Verify(x => x.DownloadVersion("1.3", dlArgs.Target));
+            mockDownloadStrategy.Verify(x => x.DownloadVersion("1.3", dlArgs.Target, null));
         }
 
         [Test]
@@ -81,7 +81,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             mockFileProxy.Verify();
-            mockDownloadStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>()), Times.Never);
+            mockDownloadStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>(), null), Times.Never);
         }
 
         [Test]
@@ -96,7 +96,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             mockFileProxy.Verify();
-            mockDownloadStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            mockDownloadStrategy.Verify(x => x.DownloadVersion(It.IsAny<string>(), It.IsAny<string>(), null), Times.Once);
         }
 
         [Test]
@@ -112,7 +112,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             mockFileProxy.Verify();
-            mockDownloadStrategy.Verify(x => x.DownloadVersion("1.1-alpha", dlArgs.Target));
+            mockDownloadStrategy.Verify(x => x.DownloadVersion("1.1-alpha", dlArgs.Target, null));
         }
 
         [Test]
@@ -194,7 +194,7 @@ namespace Paket.Bootstrapper.Tests
 
             //assert
             mockFileProxy.Verify();
-            mockFallbackStrategy.Verify(x => x.DownloadVersion("1.2", dlArgs.Target));
+            mockFallbackStrategy.Verify(x => x.DownloadVersion("1.2", dlArgs.Target, null));
         }
         
         [Test]
@@ -222,7 +222,7 @@ namespace Paket.Bootstrapper.Tests
             Action onSuccess = () => successCount++;
             dlArgs.LatestVersion = "1.5";
             mockFileProxy.Setup(x => x.FileExists(It.IsAny<string>())).Returns(false);
-            mockDownloadStrategy.Setup(x => x.DownloadVersion("1.5", "paket.exe")).Throws(new WebException());
+            mockDownloadStrategy.Setup(x => x.DownloadVersion("1.5", "paket.exe", null)).Throws(new WebException());
 
             //act
             Program.StartPaketBootstrapping(mockDownloadStrategy.Object, dlArgs, mockFileProxy.Object, onSuccess);
