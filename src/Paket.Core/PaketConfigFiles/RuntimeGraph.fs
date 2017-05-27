@@ -7,13 +7,16 @@ open Domain
 
 // Example files can be found in the packages "Microsoft.NETCore.Platforms 1.1.0" and "Microsoft.NETCore.Targets 1.1.0"
 
-/// The runtime identifiert for a specific runtime. Should be treated as a black box in combination with the operations defined on the RuntimeGraph
+/// The runtime identifier for a specific runtime. Should be treated as a black box in combination with the operations defined on the RuntimeGraph
 type Rid =
-    private { Rid : string }
-    static member Of s = { Rid = s }
-    static member Parse s = Rid.Of s
-    override x.ToString () = x.Rid
-    static member Any = { Rid = "any" }
+  private { Rid : string }
+  override x.ToString () = x.Rid
+
+[<RequireQualifiedAccess>]
+module Rid =
+  let Of s = { Rid = s }
+  let Parse s = Of s
+  let Any = { Rid = "any" }
 
 type CompatibilityProfileName = string
 
@@ -61,7 +64,7 @@ module RuntimeGraphParser =
                 [ for s in t.Value :?> JObject :> IEnumerable<KeyValuePair<string, JToken>> do
                     match FrameworkDetection.Extract s.Key with
                     | Some fid ->
-                        yield fid, [ for rid in (s.Value :?> JArray) -> { Rid = string rid } ]
+                        yield fid, [ for rid in (s.Value :?> JArray) -> Rid.Of (string rid) ]
                     | None -> failwithf "could not detect framework-identifier '%s'" s.Key ]
                 |> Map.ofSeq } ]
     (*{
@@ -72,12 +75,12 @@ module RuntimeGraphParser =
       },*)
     let readRuntimeDescriptionJ (json:JObject) =
       [ for t in json :> IEnumerable<KeyValuePair<string, JToken>> do
-          let rid = { Rid = t.Key }
+          let rid = Rid.Of t.Key
           match t.Value with
           | :? JObject as spec ->
               let imports =
                 match spec.["#import"] with
-                | :? JArray as j -> [ for t in j -> { Rid = string t } ]
+                | :? JArray as j -> [ for t in j -> Rid.Of (string t.Value) ]
                 | null -> []
                 | o -> failwithf "unknown stuff in '#import' value: %O" o
               let dependencies =
