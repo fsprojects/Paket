@@ -64,7 +64,7 @@ module RuntimeGraphParser =
                 [ for s in t.Value :?> JObject :> IEnumerable<KeyValuePair<string, JToken>> do
                     match FrameworkDetection.Extract s.Key with
                     | Some fid ->
-                        yield fid, [ for rid in (s.Value :?> JArray) -> Rid.Of (string rid) ]
+                        yield fid, [ for rid in (s.Value :?> JArray) -> Rid.Of (rid.Value<string>()) ]
                     | None -> failwithf "could not detect framework-identifier '%s'" s.Key ]
                 |> Map.ofSeq } ]
     (*{
@@ -80,7 +80,7 @@ module RuntimeGraphParser =
           | :? JObject as spec ->
               let imports =
                 match spec.["#import"] with
-                | :? JArray as j -> [ for t in j -> Rid.Of (string t) ]
+                | :? JArray as j -> [ for t in j -> Rid.Of (t.Value<string>()) ]
                 | null -> []
                 | o -> failwithf "unknown stuff in '#import' value: %O" o
               let dependencies =
