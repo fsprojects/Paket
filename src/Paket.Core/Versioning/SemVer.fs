@@ -158,6 +158,11 @@ type SemVerInfo =
 
 ///  Parser which allows to deal with [Semantic Versioning](http://semver.org/) (SemVer).
 module SemVer =
+    let private stripFrom (c: char) (s : string) =
+        match s.IndexOf(c) with
+        | -1 -> s
+        | n -> s.Substring(0, n)
+
     /// Parses the given version string into a SemVerInfo which can be printed using ToString() or compared
     /// according to the rules described in the [SemVer docs](http://semver.org/).
     /// ## Sample
@@ -170,14 +175,14 @@ module SemVer =
     let Parse =
         memoize <| fun (version : string) ->
             try
-
-                /// sanity check to make sure that all of the integers in the string are positive, and that no parts lead zeroes
+                /// sanity check to make sure that all of the integers in the string are positive, and that no non-first parts lead zeroes
                 /// because we use raw substrings with dashes this is very complex :(
-                version.Split([|'.'|]) |> Array.iter (fun s ->
+                let majorminorpatch = version |> stripFrom '-' |> stripFrom '+'
+                majorminorpatch.Split([|'.'|]) |> Array.iter (fun s ->
                     match Int32.TryParse s, s.StartsWith("0"), s = "0" with
                     | (true, s), _, _ when s < 0 -> failwith "no negatives!"
                     | _, _, true -> ignore () // if the value _is_ zero that's fine
-                    | _, true, _ -> failwith "no leading zeroes"
+                    | _, true, false -> failwith "no leading zeroes"
                     | _, _, _ -> ignore ())
 
                 if version.Contains("!") then

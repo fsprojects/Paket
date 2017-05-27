@@ -23,8 +23,8 @@ let ``can detect specific version``() =
 let ``can detect ordinary Between``() = 
     parseRange "~> 2.2" |> shouldEqual (VersionRange.Between("2.2","3.0"))
     parseRange "~> 1.2" |> shouldEqual (VersionRange.Between("1.2","2.0"))
-    (VersionRequirement(parseRange "~> 1.0",PreReleaseStatus.All)).IsInRange(SemVer.Parse("1.0.071.9556")) |> shouldEqual true
-    (VersionRequirement(parseRange "~> 1.0",PreReleaseStatus.All)).IsInRange(SemVer.Parse("1.0.071.9432")) |> shouldEqual true
+    (VersionRequirement(parseRange "~> 1.0",PreReleaseStatus.All)).IsInRange(SemVer.Parse("1.0.71.9556")) |> shouldEqual true
+    (VersionRequirement(parseRange "~> 1.0",PreReleaseStatus.All)).IsInRange(SemVer.Parse("1.0.71.9432")) |> shouldEqual true
 
 [<Test>]
 let ``can detect lower versions for ~>``() = 
