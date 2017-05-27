@@ -80,7 +80,7 @@ module RuntimeGraphParser =
           | :? JObject as spec ->
               let imports =
                 match spec.["#import"] with
-                | :? JArray as j -> [ for t in j -> Rid.Of (string t.Value) ]
+                | :? JArray as j -> [ for t in j -> Rid.Of (string t) ]
                 | null -> []
                 | o -> failwithf "unknown stuff in '#import' value: %O" o
               let dependencies =
