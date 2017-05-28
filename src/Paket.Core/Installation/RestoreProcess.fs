@@ -286,7 +286,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                         let line =
                             packageName.ToString() + "," + 
                             resolved.Force().[key].Version.ToString() + "," + 
-                            (if direct then "Direct" else "Transitive")
+                            (if direct then "Direct" else "Transitive") + "," +
+                            kv.Key.ToString()
 
                         list.Add line
                 
