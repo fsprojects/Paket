@@ -81,7 +81,7 @@ can be called <code>paket.template</code>, otherwise the name of the template fi
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span onmouseout="hideTip(event, 'fs1', 1)" onmouseover="showTip(event, 'fs1', 1)" class="t">project</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span class="i">project</span>
 <span class="i">licenseUrl</span> <span class="i">http</span><span class="o">:</span><span class="c">//opensource.org/licenses/MIT</span>
 </code></pre></td>
 </tr>
@@ -105,7 +105,7 @@ can be called <code>paket.template</code>, otherwise the name of the template fi
 <span class="l">8: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span class="i">file</span>
-<span onmouseout="hideTip(event, 'fs2', 2)" onmouseover="showTip(event, 'fs2', 2)" class="i">id</span> <span class="i">Test</span><span class="o">.</span><span class="i">Paket</span><span class="o">.</span><span class="i">Package</span>
+<span class="i">id</span> <span class="i">Test</span><span class="o">.</span><span class="i">Paket</span><span class="o">.</span><span class="i">Package</span>
 <span class="i">version</span> <span class="n">1.0</span>
 <span class="i">authors</span> <span class="i">Michael</span> <span class="i">Newton</span>
 <span class="i">description</span>
@@ -252,8 +252,8 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <span class="l">3: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">frameworkAssemblies</span>
-    <span onmouseout="hideTip(event, 'fs3', 3)" onmouseover="showTip(event, 'fs3', 3)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 4)" onmouseover="showTip(event, 'fs4', 4)" class="i">Xml</span>
-	<span onmouseout="hideTip(event, 'fs3', 5)" onmouseover="showTip(event, 'fs3', 5)" class="i">System</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs4', 6)" onmouseover="showTip(event, 'fs4', 6)" class="i">Xml</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs5', 7)" onmouseover="showTip(event, 'fs5', 7)" class="i">Linq</span>
+    <span class="i">System</span><span class="o">.</span><span class="i">Xml</span>
+	<span class="i">System</span><span class="o">.</span><span class="i">Xml</span><span class="o">.</span><span class="i">Linq</span>
 </code></pre></td>
 </tr>
 </table>
@@ -266,7 +266,7 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <span class="l">4: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">dependencies</span>
-  <span onmouseout="hideTip(event, 'fs6', 8)" onmouseover="showTip(event, 'fs6', 8)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 9)" onmouseover="showTip(event, 'fs7', 9)" class="i">Core</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
+  <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
   <span class="i">Other</span><span class="o">.</span><span class="i">Dep</span> <span class="o">~&gt;</span> <span class="n">2.5</span>
   <span class="i">Any</span><span class="o">.</span><span class="i">Version</span>
 </code></pre></td>
@@ -279,7 +279,7 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <span class="l">3: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">dependencies</span>
-  <span onmouseout="hideTip(event, 'fs6', 10)" onmouseover="showTip(event, 'fs6', 10)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 11)" onmouseover="showTip(event, 'fs7', 11)" class="i">Core</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
+  <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
   <span class="i">Other</span><span class="o">.</span><span class="i">Dep</span> <span class="o">~&gt;</span> <span class="i">CURRENTVERSION</span>
 </code></pre></td>
 </tr>
@@ -290,7 +290,7 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <span class="l">3: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">dependencies</span>
-  <span onmouseout="hideTip(event, 'fs6', 12)" onmouseover="showTip(event, 'fs6', 12)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 13)" onmouseover="showTip(event, 'fs7', 13)" class="i">Core</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
+  <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
   <span class="i">Other</span><span class="o">.</span><span class="i">Dep</span> <span class="o">~&gt;</span> <span class="i">LOCKEDVERSION</span>
 </code></pre></td>
 </tr>
@@ -307,7 +307,7 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <span class="l">3: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">excludeddependencies</span>
-  <span onmouseout="hideTip(event, 'fs6', 14)" onmouseover="showTip(event, 'fs6', 14)" class="i">FSharp</span><span class="o">.</span><span onmouseout="hideTip(event, 'fs7', 15)" onmouseover="showTip(event, 'fs7', 15)" class="i">Core</span>
+  <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span>
   <span class="i">Other</span><span class="o">.</span><span class="i">Dep</span>
 </code></pre></td>
 </tr>
@@ -335,13 +335,6 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <h3><a name="Comments" class="anchor" href="#Comments">Comments</a></h3>
 <p>A line starting with a # or // is considered a comment and will be ignored by the parser.</p>
 
-<div class="tip" id="fs1">type project<br /><br />Full name: templatefiles.project</div>
-<div class="tip" id="fs2">val id : x:&#39;T -&gt; &#39;T<br /><br />Full name: Microsoft.FSharp.Core.Operators.id</div>
-<div class="tip" id="fs3">namespace System</div>
-<div class="tip" id="fs4">namespace System.Xml</div>
-<div class="tip" id="fs5">namespace Microsoft.FSharp.Linq</div>
-<div class="tip" id="fs6">namespace Microsoft.FSharp</div>
-<div class="tip" id="fs7">namespace Microsoft.FSharp.Core</div>
 
         </div>
         <div class="span3">
