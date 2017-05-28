@@ -109,6 +109,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
 
                 ConsoleImpl.WriteTrace("Copying hash file in cache.");
                 ConsoleImpl.WriteTrace("{0} -> {1}", effectivePath, cached);
+                FileSystemProxy.CreateDirectory(Path.GetDirectoryName(cached));
                 FileSystemProxy.CopyFile(effectivePath, cached, true);
             }
 
