@@ -742,24 +742,30 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         |> List.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
 
     let getAndReport (sources:PackageSource list) blockReason (workHandle:WorkHandle<_>) =
-        if workHandle.Task.IsCompleted then
-            Profile.trackEvent (Profile.Category.ResolverAlgorithmNotBlocked blockReason)
-            workHandle.Task.Result
-        else
-            workHandle.Reprioritize WorkPriority.BlockingWork
-            use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked blockReason)
-            let isFinished = workHandle.Task.Wait(30000)
-            if not isFinished then
-                // TODO: Fix/Refactor to only show unfinished sources, but this needs more information flow...
-                raise <|
-                    new TimeoutException(
-                        "Waited 30 seconds for a request to finish (maybe a bug in the paket request scheduler).\n" +
-                        "      Check the following sources:\n" +
-                        "       - " + System.String.Join("\n       - ", sources |> Seq.map (fun s -> s.Url))
-                    )
-            let result = workHandle.Task.Result
-            d.Dispose()
-            result
+        try
+            if workHandle.Task.IsCompleted then
+                Profile.trackEvent (Profile.Category.ResolverAlgorithmNotBlocked blockReason)
+                workHandle.Task.Result
+            else
+                workHandle.Reprioritize WorkPriority.BlockingWork
+                use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked blockReason)
+                let isFinished = workHandle.Task.Wait(30000)
+                if not isFinished then
+                    // TODO: Fix/Refactor to only show unfinished sources, but this needs more information flow...
+                    raise <|
+                        new TimeoutException(
+                            "Waited 30 seconds for a request to finish (maybe a bug in the paket request scheduler).\n" +
+                            "      Check the following sources:\n" +
+                            "       - " + System.String.Join("\n       - ", sources |> Seq.map (fun s -> s.Url))
+                        )
+                let result = workHandle.Task.Result
+                d.Dispose()
+                result
+        with :? AggregateException as a when a.InnerExceptions.Count = 1 ->
+            let flat = a.Flatten()
+            if flat.InnerExceptions.Count = 1 then
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(flat.InnerExceptions.[0]).Throw()
+            reraise()
 
     let startedGetPackageDetailsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,WorkHandle<_>>()
     let startRequestGetPackageDetails sources groupName packageName semVer =
