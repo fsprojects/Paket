@@ -649,23 +649,52 @@ type WorkPriority =
 
 type RequestWork =
     private
-        { StartWork : unit -> System.Threading.Tasks.Task
+        { StartWork : CancellationToken -> System.Threading.Tasks.Task
           mutable Priority : WorkPriority }
 
-type WorkHandle<'a> = private { Handle : Guid; Work : RequestWork; TaskSource : TaskCompletionSource<'a> }
+type WorkHandle<'a> = private { Work : RequestWork; TaskSource : TaskCompletionSource<'a> }
 and ResolverRequestQueue =
-    private { DynamicQueue : System.Collections.Concurrent.ConcurrentDictionary<Guid, RequestWork> }
+    private { DynamicQueue : ResizeArray<RequestWork>; Lock : obj; WaitingWorker : ResizeArray<TaskCompletionSource<RequestWork option>> }
+    // callback in a lock is bad practice..
+    member private x.With callback =
+        lock x.Lock (fun () ->
+            callback x.DynamicQueue x.WaitingWorker
+        )
+    member x.AddWork w =
+        x.With (fun queue workers ->
+            if workers.Count > 0 then
+                let worker = workers.[0]
+                workers.RemoveAt(0)
+                worker.SetResult (Some w)
+            else
+                queue.Add(w)
+        )
+    member x.GetWork (ct:CancellationToken) =
+        let tcs = new TaskCompletionSource<_>()
+        let registration = ct.Register(fun () -> tcs.TrySetResult None |> ignore)
+        tcs.Task.ContinueWith (fun (t:Task) ->
+            registration.Dispose()) |> ignore
+        x.With (fun queue workers ->
+            if queue.Count = 0 then
+                workers.Add(tcs)
+            else
+                let (index, work) = queue |> Seq.mapi (fun i w -> i,w) |> Seq.minBy (fun (i,w) -> w.Priority)
+                queue.RemoveAt index
+                tcs.TrySetResult (Some work) |> ignore
+            tcs.Task
+        )
+        
 module ResolverRequestQueue =
     open System.Threading
 
-    let Create() = { DynamicQueue = new System.Collections.Concurrent.ConcurrentDictionary<Guid, RequestWork>(); }
-    let addWork prio (f: unit -> System.Threading.Tasks.Task<'a>) ({ DynamicQueue = queue } as q) =
+    let Create() = { DynamicQueue = new ResizeArray<RequestWork>(); Lock = new obj(); WaitingWorker = new ResizeArray<_>() }
+    let addWork prio (f: CancellationToken -> System.Threading.Tasks.Task<'a>) ({ DynamicQueue = queue } as q) =
         let tcs = new TaskCompletionSource<_>()
         let work =
-            { StartWork = (fun () ->
+            { StartWork = (fun tok ->
                 let t =
                     try
-                        f()
+                        f tok
                     with e -> 
                         //Task.FromException (e)
                         let tcs = new TaskCompletionSource<_>()
@@ -679,35 +708,16 @@ module ResolverRequestQueue =
                         tcs.SetException(t.Exception)
                     else tcs.SetResult (t.Result)))
               Priority = prio }
-        let handle = Guid.NewGuid()
-        let res = queue.TryAdd(handle, work)
-        assert res
-        { Handle = handle; Work = work; TaskSource = tcs }
-    let rec private getNext ({ DynamicQueue = queue } as d) =
-        if queue.Count = 0 then None
-        else
-            let min =
-                // cannot minBy as the sequence might be empty by now.
-                queue |> Seq.fold (fun currentMin kv ->
-                    match currentMin with
-                    | None -> Some (kv.Key, kv.Value)
-                    | Some (minKey, min) when kv.Value.Priority < min.Priority -> Some (kv.Key, kv.Value)
-                    | min -> min) None
-            match min with
-            | Some (minKey, min) ->
-                match queue.TryRemove(minKey) with
-                | true, min ->
-                    Some min
-                | _ ->
-                    getNext d
-            | None -> getNext d
-    let startProcessing (cts:CancellationToken) ({ DynamicQueue = queue } as q) =
+        q.AddWork work
+        { Work = work; TaskSource = tcs }
+    let startProcessing (ct:CancellationToken) ({ DynamicQueue = queue } as q) =
         async {
-            while not cts.IsCancellationRequested do
-                match getNext q with
-                | None -> do! Async.Sleep 10
+            while not ct.IsCancellationRequested do
+                let! work = q.GetWork(ct) |> Async.AwaitTask
+                match work with
                 | Some work ->
-                    do! work.StartWork().ContinueWith(fun (t:System.Threading.Tasks.Task) ->()) |> Async.AwaitTask
+                    do! work.StartWork(ct).ContinueWith(fun (t:System.Threading.Tasks.Task) -> ()) |> Async.AwaitTask
+                | None -> ()
         }
         |> Async.StartAsTask
 
@@ -750,7 +760,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         let key = (sources, packageName, semVer)
         startedGetPackageDetailsRequests.GetOrAdd (key, fun _ ->
             workerQueue
-            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun () ->
+            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun ct ->
                 (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
                     |> Async.StartAsTask))
     let getPackageDetailsBlock sources groupName packageName semVer =
@@ -762,7 +772,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         let key = (sources, packageName)
         startedGetVersionsRequests.GetOrAdd (key, fun _ ->
             workerQueue
-            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun () ->
+            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun ct ->
                 getVersionsRaw sources groupName packageName
                 |> Async.StartAsTask))
     let getVersionsBlock sources resolverStrategy groupName packageName =
