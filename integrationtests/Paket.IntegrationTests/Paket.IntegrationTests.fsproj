@@ -47,6 +47,11 @@
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>
   </PropertyGroup>
   <Choose>
+    <When Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v15.0\FSharp\Microsoft.FSharp.Targets')">
+      <PropertyGroup>
+        <FSharpTargetsPath>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v15.0\FSharp\Microsoft.FSharp.Targets</FSharpTargetsPath>
+      </PropertyGroup>
+    </When>
     <When Condition="Exists('$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\4.1\Framework\v4.0\Microsoft.FSharp.Targets')">
       <PropertyGroup>
         <FSharpTargetsPath>$(MSBuildExtensionsPath32)\..\Microsoft SDKs\F#\4.1\Framework\v4.0\Microsoft.FSharp.Targets</FSharpTargetsPath>
@@ -73,7 +78,7 @@
       </PropertyGroup>
     </When>
   </Choose>
-  <Import Project="$(FSharpTargetsPath)" Condition="Exists('$(FSharpTargetsPath)')" />
+  <Import Project="$(FSharpTargetsPath)" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

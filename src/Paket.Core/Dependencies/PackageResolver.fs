@@ -741,16 +741,21 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         [ 0 .. 7 ]
         |> List.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
 
-    let getAndReport blockReason (workHandle:WorkHandle<_>) =
+    let getAndReport (sources:PackageSource list) blockReason (workHandle:WorkHandle<_>) =
         if workHandle.Task.IsCompleted then
             Profile.trackEvent (Profile.Category.ResolverAlgorithmNotBlocked blockReason)
             workHandle.Task.Result
         else
             workHandle.Reprioritize WorkPriority.BlockingWork
             use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked blockReason)
-            let isFinished = workHandle.Task.Wait(60000)
+            let isFinished = workHandle.Task.Wait(30000)
             if not isFinished then
-                raise <| new TimeoutException("Waited 60 seconds for a request to finish, maybe a bug in the paket request scheduler.")
+                raise <|
+                    new TimeoutException(
+                        "Waited 60 seconds for a request to finish, maybe a bug in the paket request scheduler.\n" +
+                        "      Check the following sources:\n" +
+                        "       - " + System.String.Join("\n       - ", sources |> Seq.map (fun s -> s.Url))
+                    )
             let result = workHandle.Task.Result
             d.Dispose()
             result
@@ -765,7 +770,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     |> Async.StartAsTask))
     let getPackageDetailsBlock sources groupName packageName semVer =
         let workHandle = startRequestGetPackageDetails sources groupName packageName semVer
-        getAndReport Profile.BlockReason.PackageDetails workHandle
+        getAndReport sources Profile.BlockReason.PackageDetails workHandle
     
     let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,WorkHandle<_>>()
     let startRequestGetVersions sources groupName packageName =
@@ -777,7 +782,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 |> Async.StartAsTask))
     let getVersionsBlock sources resolverStrategy groupName packageName =
         let workHandle = startRequestGetVersions sources groupName packageName
-        let versions = getAndReport Profile.BlockReason.GetVersion workHandle |> Seq.toList
+        let versions = getAndReport sources Profile.BlockReason.GetVersion workHandle |> Seq.toList
         let sorted =
             match resolverStrategy with
             | ResolverStrategy.Max -> List.sortDescending versions
