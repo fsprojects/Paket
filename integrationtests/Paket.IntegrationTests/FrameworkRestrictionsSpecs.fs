@@ -1,4 +1,5 @@
 module Paket.IntegrationTests.FrameworkRestrictionsSpecs
+
 open Fake
 open Paket
 open System
@@ -13,8 +14,8 @@ open Paket.Requirements
 let ``#140 windsor should resolve framework dependent dependencies``() =
     let lockFile = update "i000140-resolve-framework-restrictions"
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "TaskParallelLibrary"].Settings.FrameworkRestrictions
-    |> getRestrictionList
-    |> shouldEqual [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5))]
+    |> getExplicitRestriction
+    |> shouldEqual (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V3_5), DotNetFramework(FrameworkVersion.V4)))
 
 [<Test>]
 let ``#1182 framework restrictions overwrite each other``() =
@@ -27,11 +28,10 @@ let ``#1182 framework restrictions overwrite each other``() =
 [<Platform("Mono")>] // PATH TOO LONG on Windows...
 let ``#1190 paket add nuget should handle transitive dependencies``() = 
     paket "add nuget xunit version 2.1.0" "i001190-transitive-dependencies-with-restr" |> ignore
-    
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-dependencies-with-restr","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
-    |> getRestrictionList
-    |> shouldContain (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5)))
+    |> getExplicitRestriction
+    |> fun res -> res.ToString() |> shouldEqual "|| (>= dnx451) (>= dnxcore50) (>= portable-net45+win8+wp8+wpa81)"
     
 [<Test>]
 let ``#1190 paket add nuget should handle transitive dependencies with restrictions``() = 
@@ -39,8 +39,8 @@ let ``#1190 paket add nuget should handle transitive dependencies with restricti
     
     let lockFile = LockFile.LoadFrom(Path.Combine(scenarioTempPath "i001190-transitive-deps","paket.lock"))
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "xunit.abstractions"].Settings.FrameworkRestrictions
-    |> getRestrictionList
-    |> shouldEqual []
+    |> getExplicitRestriction
+    |> shouldEqual FrameworkRestriction.NoRestriction
     
     
 [<Test>]
@@ -56,24 +56,29 @@ let ``#1213 framework dependencies propagate``() =
     let lockFile = update "i001213-framework-propagation"
     
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Newtonsoft.Json"].Settings.FrameworkRestrictions
-    |> getRestrictionList
-    |> shouldEqual []
+    |> getExplicitRestriction
+    |> shouldEqual FrameworkRestriction.NoRestriction
 
 [<Test>]
 let ``#1215 framework dependencies propagate``() = 
     let lockFile = update "i001215-framework-propagation-no-restriction"
     
     lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "Microsoft.Bcl.Async"].Settings.FrameworkRestrictions
-    |> getRestrictionList
-    |> shouldEqual []
+    |> getExplicitRestriction
+    |> shouldEqual FrameworkRestriction.NoRestriction
 
 [<Test>]
 let ``#1232 framework dependencies propagate``() = 
     let lockFile = update "i001232-sql-lite"
-    
-    lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "System.Data.SQLite.Core"].Settings.FrameworkRestrictions
-    |> getRestrictionList
-    |> shouldContain (FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_Client)))
+    let restriction =
+        lockFile.Groups.[Constants.MainDependencyGroup].Resolution.[PackageName "System.Data.SQLite.Core"].Settings.FrameworkRestrictions
+        |> getExplicitRestriction
+    (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4), DotNetFramework(FrameworkVersion.V4_5))).IsSubsetOf restriction
+    |> shouldEqual true
+    (FrameworkRestriction.Between(DotNetFramework(FrameworkVersion.V4_5), DotNetFramework(FrameworkVersion.V4_5_1))).IsSubsetOf restriction
+    |> shouldEqual true
+    (FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_6))).IsSubsetOf restriction
+    |> shouldEqual true
 
 [<Test>]
 let ``#1494 detect platform 5.0``() = 

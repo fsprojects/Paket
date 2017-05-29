@@ -62,9 +62,9 @@ module LockFileSerializer =
         | Some condition -> yield "CONDITION: " + condition.ToUpper()
         | None -> ()
 
-        match options.Settings.FrameworkRestrictions |> getRestrictionList with
-        | [] -> ()
-        | list  -> yield "FRAMEWORK: " + (String.Join(", ",list)).ToUpper()]
+        match options.Settings.FrameworkRestrictions |> getExplicitRestriction with
+        | FrameworkRestriction.HasNoRestriction -> ()
+        | list  -> yield "RESTRICTION: " + list.ToString() ]
 
     /// [omit]
     let serializePackages options (resolved : PackageResolution) = 
@@ -104,7 +104,7 @@ module LockFileSerializer =
 
                       let settings =
                         if package.Settings.FrameworkRestrictions = options.Settings.FrameworkRestrictions then
-                            { package.Settings with FrameworkRestrictions = FrameworkRestrictionList [] }
+                            { package.Settings with FrameworkRestrictions = ExplicitRestriction FrameworkRestriction.NoRestriction }
                         else
                             package.Settings
                       let s =
@@ -124,11 +124,11 @@ module LockFileSerializer =
                               let s = v.ToString()
                               if s = "" then s else "(" + s + ")"
 
-                          let restrictions = filterRestrictions options.Settings.FrameworkRestrictions restrictions |> getRestrictionList
-                          if List.isEmpty restrictions || restrictions = getRestrictionList options.Settings.FrameworkRestrictions then
+                          let restrictions = filterRestrictions options.Settings.FrameworkRestrictions restrictions |> getExplicitRestriction
+                          if FrameworkRestriction.NoRestriction = restrictions || restrictions = getExplicitRestriction options.Settings.FrameworkRestrictions then
                             yield sprintf "      %O %s" name versionStr
                           else
-                            yield sprintf "      %O %s - framework: %s" name versionStr (String.Join(", ",restrictions).ToLower())]
+                            yield sprintf "      %O %s - restriction: %O" name versionStr restrictions]
     
         String.Join(Environment.NewLine, all |> List.map (fun s -> s.TrimEnd()))
 
@@ -280,7 +280,8 @@ module LockFileParser =
                 | x -> failwithf "Unknown copy_content_to_output_dir settings: %A" x
                                             
             InstallOption (CopyContentToOutputDir setting)
-        | _, String.RemovePrefix "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(FrameworkRestrictionList (trimmed.Trim() |> Requirements.parseRestrictions true)))
+        | _, String.RemovePrefix "FRAMEWORK:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictionsLegacy true)))
+        | _, String.RemovePrefix "RESTRICTION:" trimmed -> InstallOption(FrameworkRestrictions(ExplicitRestriction (trimmed.Trim() |> Requirements.parseRestrictions true)))
         | _, String.RemovePrefix "CONDITION:" trimmed -> InstallOption(ReferenceCondition(trimmed.Trim().ToUpper()))
         | _, String.RemovePrefix "CONTENT:" trimmed -> 
             let setting =
@@ -313,24 +314,29 @@ module LockFileParser =
         | _, String.RemovePrefix "os: " trimmed ->
             InstallOption(OperatingSystemRestriction trimmed)
         | _, trimmed when line.StartsWith "      " ->
+            let pos = trimmed.IndexOf " - "
+            let namePart, settingsPart =
+                if pos >= 0 then
+                    trimmed.Substring(0, pos), trimmed.Substring (pos + 3)
+                else
+                    trimmed, ""
             let frameworkSettings =
-                if trimmed.Contains " - " then
-                    let pos = trimmed.LastIndexOf " - "
+                if not (String.IsNullOrEmpty settingsPart) then
                     try
-                        InstallSettings.Parse(trimmed.Substring(pos + 3))
+                        InstallSettings.Parse(settingsPart)
                     with
-                    | _ -> InstallSettings.Parse("framework: " + trimmed.Substring(pos + 3)) // backwards compatible
+                    | _ -> InstallSettings.Parse("framework: " + settingsPart) // backwards compatible
                 else
                     InstallSettings.Default
-            if trimmed.Contains "(" then
-                let parts = trimmed.Split '(' 
-                NugetDependency (parts.[0].Trim(),parts.[1].Replace("(", "").Replace(")", "").Trim(),frameworkSettings)
+            if namePart.Contains "(" then
+                let parts = namePart.Split '(' 
+                let first = parts.[0]
+                let rest = String.Join ("(", parts |> Seq.skip 1)
+                let versionEndPos = rest.IndexOf(")")
+                if versionEndPos < 0 then failwithf "Missing matching ') in line '%s'" line
+                NugetDependency (parts.[0].Trim(),rest.Substring(0, versionEndPos).Trim(),frameworkSettings)
             else
-                if trimmed.Contains("  -") then
-                    let pos = trimmed.IndexOf("  -")
-                    NugetDependency (trimmed.Substring(0,pos),">= 0",frameworkSettings)
-                else
-                    NugetDependency (trimmed,">= 0",frameworkSettings)
+                NugetDependency (namePart.Trim(),">= 0",frameworkSettings)
         | Some "NUGET", trimmed -> NugetPackage trimmed
         | Some "GITHUB", trimmed -> SourceFile(GitHubLink, trimmed)
         | Some "GIST", trimmed -> SourceFile(GistLink, trimmed)
@@ -891,7 +897,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
                 let nuspec = Nuspec.Load nuspec.FullName
                 let files = NuGetV2.GetLibFiles(folder.FullName)
-                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, [], files, [], [], nuspec)
+                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, FrameworkRestriction.NoRestriction, files, [], [], nuspec)
     
 
     /// Returns a list of packages inside the lockfile with their group and version number

@@ -68,6 +68,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
             get { return "Nuget"; }
         }
 
+        public override bool CanDownloadHashFile
+        {
+            get { return false; }
+        }
+
         protected override string GetLatestVersionCore(bool ignorePrerelease)
         {
             IEnumerable<string> allVersions = null;
@@ -100,7 +105,7 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return latestVersion != null ? latestVersion.Original : String.Empty;
         }
 
-        protected override void DownloadVersionCore(string latestVersion, string target)
+        protected override void DownloadVersionCore(string latestVersion, string target, string hashfile)
         {
             var apiHelper = new NugetApiHelper(PaketNugetPackageName, NugetSource);
 
@@ -226,9 +231,10 @@ namespace Paket.Bootstrapper.DownloadStrategies
             FileSystemProxy.DeleteDirectory(randomFullPath, true);
         }
 
-        protected override void DownloadHashFileCore(string latestVersion)
+        protected override string DownloadHashFileCore(string latestVersion)
         {
             // TODO: implement get hash file
+            return null;
         }
     }
 }

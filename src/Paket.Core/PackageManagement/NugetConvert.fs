@@ -222,7 +222,7 @@ let createPackageRequirement sources (packageName, versionRange, restrictions) d
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName
        Sources = sources
-       Graph = [] }
+       Graph = Set.empty }
 
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
     
@@ -259,20 +259,23 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             let latestVersion, _ = versions |> List.maxBy fst
             let restrictions =
                 match versions with
-                | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.collect (Requirements.parseRestrictions false)
+                | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.map (Requirements.parseRestrictionsLegacy false)
                 | _ -> []
+            let restrictions =
+                if restrictions = [] then FrameworkRestriction.NoRestriction
+                else restrictions |> Seq.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet
             name, latestVersion, restrictions)
 
     let packages = 
         match nugetEnv.NuGetExe with 
-        | Some _ -> ("NuGet.CommandLine",VersionRange.AtLeast "0",[]) :: latestVersions
+        | Some _ -> ("NuGet.CommandLine",VersionRange.AtLeast "0",FrameworkRestriction.NoRestriction) :: latestVersions
         | _ -> latestVersions
 
     let read() =
         let addPackages dependenciesFile =
             packages
             |> List.map (fun (name, vr, restrictions) -> 
-                Constants.MainDependencyGroup, PackageName name, vr, { InstallSettings.Default with FrameworkRestrictions = FrameworkRestrictionList restrictions})
+                Constants.MainDependencyGroup, PackageName name, vr, { InstallSettings.Default with FrameworkRestrictions = ExplicitRestriction restrictions})
             |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,versionRange,installSettings) -> 
                 dependenciesFile.Add(groupName, packageName,versionRange,installSettings)) dependenciesFile
         try 
@@ -305,7 +308,7 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             let packageLines =
                 packages 
                 |> List.map (fun (name,vr,restr) -> 
-                    let vr = createPackageRequirement sources (name, vr, FrameworkRestrictionList restr) dependenciesFileName
+                    let vr = createPackageRequirement sources (name, vr, ExplicitRestriction restr) dependenciesFileName
                     DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray

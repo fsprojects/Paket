@@ -22,7 +22,7 @@ let expectedReferenceNodes = """
       </Reference>
     </ItemGroup>
   </When>
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.0.3')">
     <ItemGroup>
       <Reference Include="System.Data.SQLite">
         <HintPath>..\..\..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll</HintPath>
@@ -59,7 +59,7 @@ let expectedPropertyDefinitionNodes = """
       <__paket__System_Data_SQLite_Core_targets>net20\System.Data.SQLite.Core</__paket__System_Data_SQLite_Core_targets>
     </PropertyGroup>
   </When>
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.0'">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.0.3')">
     <PropertyGroup>
       <__paket__System_Data_SQLite_Core_targets>net40\System.Data.SQLite.Core</__paket__System_Data_SQLite_Core_targets>
     </PropertyGroup>
@@ -83,11 +83,11 @@ let expectedPropertyNodes = """
 let ``can get supported target profile``()=
     let profiles =
         ["net20"; "net40"; "net45"; "net451"; "netstandard14" ]
-        |> List.map extractPlatforms
+        |> List.map forceExtractPlatforms
         |> PlatformMatching.getSupportedTargetProfiles
     let folder = profiles |> Seq.item 2
-    folder.Key |> shouldEqual (extractPlatforms "net45")
-    folder.Value |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
+    folder.Key |> shouldEqual (forceExtractPlatforms "net45")
+    folder.Value |> Set.toList |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 [<Test>]
 let ``should extract lib folders for SQLite``() =
@@ -118,7 +118,7 @@ let ``should calc lib folders for SQLite``() =
 
     let model = calcLegacyReferenceLibFolders libs
     let folder = model |> List.item 2
-    folder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
+    folder.Targets |> Set.toList |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 
 [<Test>]
@@ -136,13 +136,13 @@ let ``should init model for SQLite``() =
 
     let libFolder = model.CompileLibFolders |> List.item 2
     libFolder.Path.Name |> shouldEqual "net45"
-    libFolder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
+    libFolder.Targets |> Set.toList |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 
 [<Test>]
 let ``should generate model for SQLite``() =
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", [],
+        InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", FrameworkRestriction.NoRestriction,
             [ @"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"
@@ -158,13 +158,13 @@ let ``should generate model for SQLite``() =
 
     let libFolder = model.CompileLibFolders |> List.item 2
     libFolder.Path.Name |> shouldEqual "net45"
-    libFolder.Targets |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
+    libFolder.Targets |> Set.toList |> shouldEqual [SinglePlatform (DotNetFramework FrameworkVersion.V4_5)]
 
 [<Test>]
 let ``should generate Xml for SQLite``() =
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", [],
+        InstallModel.CreateFromLibs(PackageName "System.Data.SQLite.Core", SemVer.Parse "3.8.2", FrameworkRestriction.NoRestriction,
             [ @"..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll"
               @"..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll"

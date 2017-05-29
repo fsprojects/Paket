@@ -183,6 +183,16 @@ Sometimes you don't want to generate dependencies for older framework versions. 
     nuget Example >= 2.0 framework: net35, net40  // .NET 3.5 and .NET 4.0
     nuget Example >= 2.0 framework: >= net45      // .NET 4.5 and above
 
+> Note: This feature is deprecated and can be seen as an expert feature. 
+> Using framework restrictions on single packages might make you projects uncompilable.
+> The recommended way is to globally (on a group) specifiy the frameworks you want to compile for.
+
+This feature basically tells paket to only consider the specified frameworks for this package.
+It means 
+
+> Paket I use 'Example' only to compile against 'net35' and 'net40'.
+> I never need this package to compile for another framework like 'net45'."
+
 ### Putting the version no. into the path
 
 If you need to be NuGet compatible and want to have the version no. in the package path you can do the following:

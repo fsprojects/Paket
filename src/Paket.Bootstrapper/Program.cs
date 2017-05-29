@@ -130,10 +130,21 @@ namespace Paket.Bootstrapper
 
                     if ((comparison > 0 && specificVersionRequested) || comparison < 0)
                     {
+                        string hashFile = null;
+                        if (downloadStrategy.CanDownloadHashFile)
+                        {
+                            ConsoleImpl.WriteTrace("Downloading hash for v{0} ...", latestVersion);
+                            var downloadHashWatch = Stopwatch.StartNew();
+                            hashFile = downloadStrategy.DownloadHashFile(latestVersion);
+                            downloadHashWatch.Stop();
+
+                            ConsoleImpl.WriteTrace("Hash download took {0:0.##} second(s)", downloadHashWatch.Elapsed.TotalSeconds);
+                        }
+
                         ConsoleImpl.WriteTrace("Downloading v{0} ...", latestVersion);
 
                         var downloadWatch = Stopwatch.StartNew();
-                        downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target);
+                        downloadStrategy.DownloadVersion(latestVersion, dlArgs.Target, hashFile);
                         downloadWatch.Stop();
 
                         ConsoleImpl.WriteTrace("Download took {0:0.##} second(s)", downloadWatch.Elapsed.TotalSeconds);

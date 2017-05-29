@@ -168,7 +168,7 @@ type ReferencesFile =
 
                 { this with Groups = newGroups }
 
-    member this.AddNuGetReference(groupName, packageName : PackageName) = this.AddNuGetReference(groupName, packageName, true, true, FrameworkRestrictionList [], false, false, None, null)
+    member this.AddNuGetReference(groupName, packageName : PackageName) = this.AddNuGetReference(groupName, packageName, true, true, ExplicitRestriction FrameworkRestriction.NoRestriction, false, false, None, null)
 
     member this.RemoveNuGetReference(groupName, packageName : PackageName) =
         let group = this.Groups.[groupName]

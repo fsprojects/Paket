@@ -9,7 +9,7 @@ open Paket.Requirements
 
 let expected = """
 <Choose xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
+  <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And ($(TargetFrameworkVersion) == 'v4.0' Or $(TargetFrameworkVersion) == 'v4.0.3' Or $(TargetFrameworkVersion) == 'v4.5' Or $(TargetFrameworkVersion) == 'v4.5.1' Or $(TargetFrameworkVersion) == 'v4.5.2' Or $(TargetFrameworkVersion) == 'v4.5.3' Or $(TargetFrameworkVersion) == 'v4.6' Or $(TargetFrameworkVersion) == 'v4.6.1' Or $(TargetFrameworkVersion) == 'v4.6.2' Or $(TargetFrameworkVersion) == 'v4.6.3' Or $(TargetFrameworkVersion) == 'v4.7')">
     <ItemGroup>
       <Reference Include="System.Spatial">
         <HintPath>..\..\..\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
@@ -33,7 +33,7 @@ let expected = """
 let ``should generate Xml for System.Spatial``() = 
     ensureDir()
     let model =
-        InstallModel.CreateFromLibs(PackageName "System.Spatial", SemVer.Parse "5.6.3", [],
+        InstallModel.CreateFromLibs(PackageName "System.Spatial", SemVer.Parse "5.6.3", FrameworkRestriction.NoRestriction,
             [ @"..\System.Spatial\lib\net40\System.Spatial.dll"
               @"..\System.Spatial\lib\net40\de\System.Spatial.resources.dll"
               @"..\System.Spatial\lib\net40\es\System.Spatial.resources.dll"

@@ -135,7 +135,7 @@ let ``if it resolves then, it should satisfy all deps. if not we have a real con
                     failwithf "brute force found %A" resolution
 
                 let conflicts = conflict.GetConflicts()
-                conflicts |> List.isEmpty |> not
+                conflicts |> Set.isEmpty |> not
         with
         | exn when exn.Message.Contains "brute force" |> not ->
             match bruteForce (g,deps) with

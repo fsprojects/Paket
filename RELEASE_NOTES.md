@@ -1,14 +1,26 @@
-#### 5.0.0-beta005 - 23.05.2017
+### NEXT
+* BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
+
+#### 5.0.0-beta008 - 28.05.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
   * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
 * New command `paket generate-nuspec`
 * New Command: `FixNuspecs` - Can fix a list of nuspec files now
+* New restriction system (https://github.com/fsprojects/Paket/pull/2336):
+  * Paket is now more accurate in calculating restrictions and referencing libraries
+  * Paket will convert (lock-)files to a new syntax (but still understands the old syntax), we might revert this within the beta phase
+  * This should fix a bunch of edge cases and invalid behavior in combination with portable profiles and netstandard
+  * Add support for net403 (required for some portable profiles)
+* PERFORMANCE: Improved performance by pre-loading requests (https://github.com/fsprojects/Paket/pull/2336)
+* PERFORMANCE: Report performance in a more detailed way (https://github.com/fsprojects/Paket/pull/2336)
+* BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (https://github.com/fsprojects/Paket/pull/2336)
 * BREAKING CHANGE: Paket.PowerShell is no longer supported
 * BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
 * DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
+* BUGFIX: Better hash checks in bootstrapper - https://github.com/fsprojects/Paket/pull/2368
 * BUGFIX: Improved C++ support
 * BUGFIX: Fix Conditional Group Dependencies not working as expected - https://github.com/fsprojects/Paket/pull/2335
 * BUGFIX: Treat runtime dependencies as transitive deps - https://github.com/fsprojects/Paket/issues/2334

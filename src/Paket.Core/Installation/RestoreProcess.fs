@@ -166,7 +166,7 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         let! (package, files, targetsFiles, analyzerFiles) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
         let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
         let targetsFiles = targetsFiles |> Array.toList
-        let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions |> Requirements.getRestrictionList, files, targetsFiles, analyzerFiles, nuspec)
+        let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions |> Requirements.getExplicitRestriction, files, targetsFiles, analyzerFiles, nuspec)
         return (groupName,package.Name), (package,model)
     }
 
@@ -276,7 +276,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                             let resolvedPackage = resolved.Force().[key]
 
                             match resolvedPackage.Settings.FrameworkRestrictions with
-                            | Requirements.FrameworkRestrictionList restrictions ->
+                            | Requirements.ExplicitRestriction restrictions ->
                                 Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target)
                             | _ -> true
                             
@@ -286,7 +286,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                         let line =
                             packageName.ToString() + "," + 
                             resolved.Force().[key].Version.ToString() + "," + 
-                            (if direct then "Direct" else "Transitive")
+                            (if direct then "Direct" else "Transitive") + "," +
+                            kv.Key.ToString()
 
                         list.Add line
                 
@@ -324,7 +325,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     let resolvedPackage = resolved.Force().[key]
 
                     match resolvedPackage.Settings.FrameworkRestrictions with
-                    | Requirements.FrameworkRestrictionList restrictions ->
+                    | Requirements.ExplicitRestriction restrictions ->
                         Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target)
                     | _ -> true)
  

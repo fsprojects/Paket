@@ -19,6 +19,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\Common\Logging.fsi" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Logging.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Constants.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Common\Profile.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Utils.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Common\Xml.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Versioning\SemVer.fs" />

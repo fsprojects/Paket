@@ -72,12 +72,12 @@ module ReferenceOrLibraryFolder =
 /// Represents a subfolder of a nuget package that provides files (content, references, etc) for one or more Target Profiles.  This is a logical representation of the 'net45' folder in a NuGet package, for example.
 type FrameworkFolder<'T> = { 
     Path : ParsedPlatformPath
-    Targets : TargetProfile list
+    Targets : TargetProfile Set
     FolderContents : 'T
 } with
     member this.GetSinglePlatforms() =
         this.Targets
-        |> List.choose (function SinglePlatform t -> Some t | _ -> None)
+        |> Seq.choose (function SinglePlatform t -> Some t | _ -> None)
 
 module FrameworkFolder =
     let map f (l:FrameworkFolder<_>) = { 
@@ -144,10 +144,15 @@ module FolderScanner =
     let toParseResult error (wasSuccess, result) =
         if wasSuccess then ParseSucceeded result
         else ParseError error
-
+        
     let check errorMsg f x =
         if f x then ParseSucceeded x
         else ParseError (errorMsg)
+
+    let choose errorMsg f x =
+        match f x with
+        | Some y -> ParseSucceeded y
+        | None -> ParseError (errorMsg)
 
     let parseDecimal x = Decimal.TryParse(x, Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture)
 
@@ -344,7 +349,7 @@ module InstallModel =
         [ { FolderScanner.AdvancedScanner.Name = "noSeperator";
             FolderScanner.AdvancedScanner.Parser = FolderScanner.check "seperator not allowed" (fun s -> not (s.Contains "/" || s.Contains "\\")) >> FolderScanner.ParseResult.box }
           { FolderScanner.AdvancedScanner.Name = "tfm";
-            FolderScanner.AdvancedScanner.Parser = PlatformMatching.extractPlatforms >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }
+            FolderScanner.AdvancedScanner.Parser = FolderScanner.choose "invalid tfm" PlatformMatching.extractPlatforms >> FolderScanner.ParseResult.box }
           { FolderScanner.AdvancedScanner.Name = "rid";
             FolderScanner.AdvancedScanner.Parser = (fun rid -> { Rid = rid }) >> FolderScanner.ParseResult.ParseSucceeded >> FolderScanner.ParseResult.box }]
     let trySscanf pf s =
@@ -460,7 +465,7 @@ module InstallModel =
 
     /// This is for library references, which at the same time can be used for references (old world - pre dotnetcore)
     let getLegacyPlatformReferences frameworkIdentifier installModel =
-        getLegacyReferences (SinglePlatform frameworkIdentifier) installModel
+        getLegacyReferences frameworkIdentifier installModel
 
     let isEmpty (lib: FrameworkFolder<Set<'T>> list) =
         lib
@@ -671,27 +676,9 @@ module InstallModel =
 
     let addFrameworkAssemblyReference (installModel:InstallModel) (reference:FrameworkAssemblyReference) : InstallModel =
         let referenceApplies (folder : FrameworkFolder<_>) =
-            match reference.FrameworkRestrictions |> getRestrictionList with
-            | [] -> true
-            | restrictions ->
-                restrictions
-                |> List.exists (fun restriction ->
-                      match restriction with
-                      | FrameworkRestriction.Portable _ ->
-                            folder.Targets
-                            |> List.exists (fun target ->
-                                match target with
-                                | SinglePlatform _ -> false
-                                | _ -> true)
-                      | FrameworkRestriction.Exactly target ->
-                            folder.GetSinglePlatforms()
-                            |> List.exists ((=) target)
-                        | FrameworkRestriction.AtLeast target ->
-                            folder.GetSinglePlatforms()
-                            |> List.exists (fun t -> t >= target && t.IsSameCategoryAs(target))
-                        | FrameworkRestriction.Between(min,max) ->
-                            folder.GetSinglePlatforms()
-                            |> List.exists (fun t -> t >= min && t < max && t.IsSameCategoryAs(min)))
+            applyRestrictionsToTargets (reference.FrameworkRestrictions |> getExplicitRestriction) (folder.Targets)
+            |> Seq.isEmpty
+            |> not
 
         let model =
             if List.isEmpty installModel.CompileLibFolders then
@@ -733,33 +720,33 @@ module InstallModel =
             let targetsFile = t.Path
             (String.endsWithIgnoreCase ".props" targetsFile|| String.endsWithIgnoreCase ".targets" targetsFile)))
 
-    let applyFrameworkRestrictions (restrictions:FrameworkRestriction list) (installModel:InstallModel) =
-        match restrictions with
-        | [] -> installModel
-        | restrictions ->
+    let applyFrameworkRestrictions (restriction:FrameworkRestriction) (installModel:InstallModel) =
+        match restriction with
+        | FrameworkRestriction.HasNoRestriction -> installModel
+        | restriction ->
             let applyRestriction folder =
-                { folder with Targets = applyRestrictionsToTargets restrictions folder.Targets}
+                { folder with Targets = applyRestrictionsToTargets restriction folder.Targets}
 
             { installModel with
                 CompileLibFolders =
                     installModel.CompileLibFolders
                     |> List.map applyRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])
+                    |> List.filter (fun folder -> not folder.Targets.IsEmpty)
 
                 CompileRefFolders =
                     installModel.CompileRefFolders
                     |> List.map applyRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])
+                    |> List.filter (fun folder -> not folder.Targets.IsEmpty)
 
                 RuntimeAssemblyFolders =
                     installModel.RuntimeAssemblyFolders
                     |> List.map applyRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])
+                    |> List.filter (fun folder -> not folder.Targets.IsEmpty)
 
                 TargetsFileFolders =
                     installModel.TargetsFileFolders
                     |> List.map applyRestriction
-                    |> List.filter (fun folder -> folder.Targets <> [])  
+                    |> List.filter (fun folder -> not folder.Targets.IsEmpty)  
             }
 
     let rec addTargetsFiles (targetsFiles:UnparsedPackageFile list) (this:InstallModel) : InstallModel =
@@ -869,5 +856,5 @@ type InstallModel with
 
     member this.RemoveIfCompletelyEmpty() = InstallModel.removeIfCompletelyEmpty this
 
-    static member CreateFromLibs(packageName, packageVersion, frameworkRestrictions:FrameworkRestriction list, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
-        InstallModel.createFromLibs packageName packageVersion frameworkRestrictions libs targetsFiles analyzerFiles nuspec
+    static member CreateFromLibs(packageName, packageVersion, frameworkRestriction:FrameworkRestriction, libs : UnparsedPackageFile seq, targetsFiles, analyzerFiles, nuspec : Nuspec) =
+        InstallModel.createFromLibs packageName packageVersion frameworkRestriction libs targetsFiles analyzerFiles nuspec

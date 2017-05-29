@@ -113,7 +113,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
                 match tryGet (group,pack.Name) installModelCache with
                 | None -> ()
                 | Some model ->
-                    model.GetLibReferenceFiles framework |> Seq.iter (libs.Add >> ignore)
+                    model.GetLibReferenceFiles (SinglePlatform framework) |> Seq.iter (libs.Add >> ignore)
                     model.GetAllLegacyFrameworkReferences ()|> Seq.iter (sysLibs.Add >> ignore)
             )
 
@@ -202,7 +202,7 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
                     let nuspec = Nuspec.Load nuspec.FullName
                     nuspecCache.TryAdd((package.Name,package.Version),nuspec)|>ignore
                     let files = NuGetV2.GetLibFiles(folder.FullName)                    
-                    let model = InstallModel.CreateFromLibs(packageName, package.Version, [], files, [], [], nuspec)                    
+                    let model = InstallModel.CreateFromLibs(packageName, package.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, files, [], [], nuspec)                    
                     installModelCache.TryAdd((groupName,package.Name) , model) |> ignore                
                 }) |> Array.ofSeq
             Async.Parallel exprs

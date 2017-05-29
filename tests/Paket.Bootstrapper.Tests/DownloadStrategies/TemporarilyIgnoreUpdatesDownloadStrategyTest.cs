@@ -162,14 +162,34 @@ namespace Paket.Bootstrapper.Tests.DownloadStrategies
         {
             //arrange
             _mockFileProxy.Setup(fp => fp.Touch(Target)).Verifiable();
-            _mockEffectiveStrategy.Setup(x => x.DownloadVersion("any", Target)).Verifiable();
+            _mockEffectiveStrategy.Setup(x => x.DownloadVersion("any", Target, null)).Verifiable();
 
             //act
-            _sut.DownloadVersion("any", Target);
+            _sut.DownloadVersion("any", Target, null);
 
             //assert
             _mockEffectiveStrategy.Verify();
             _mockFileProxy.Verify();
+        }
+
+        [Test]
+        [TestCase(true)]
+        [TestCase(false)]
+        public void CanDownloadHashFile(bool can)
+        {
+            _mockEffectiveStrategy.SetupGet(x => x.CanDownloadHashFile).Returns(can);
+            Assert.That(_sut.CanDownloadHashFile, Is.EqualTo(can));
+        }
+
+        [Test]
+        public void DownloadHashFile()
+        {
+            _mockEffectiveStrategy.Setup(x => x.DownloadHashFile("42.0")).Returns(@"C:\42.txt");
+
+            var hashFilePath = _sut.DownloadHashFile("42.0");
+
+            Assert.That(hashFilePath, Is.EqualTo(@"C:\42.txt"));
+            _mockEffectiveStrategy.Verify(x => x.DownloadHashFile("42.0"), Times.Once);
         }
     }
 }

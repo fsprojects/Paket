@@ -6,17 +6,17 @@ namespace Paket.Bootstrapper.DownloadStrategies
     public abstract class DownloadStrategy : IDownloadStrategy
     {
         public abstract string Name { get; }
+        public abstract bool CanDownloadHashFile { get; }
+
         public IDownloadStrategy FallbackStrategy { get; set; }
         public string GetLatestVersion(bool ignorePrerelease)
         {
             return Wrap(() => GetLatestVersionCore(ignorePrerelease), "GetLatestVersion");
         }
 
-        public void DownloadVersion(string latestVersion, string target)
+        public void DownloadVersion(string latestVersion, string target, string hashfile)
         {
-            DownloadHashFile(latestVersion);
-
-            Wrap(() => DownloadVersionCore(latestVersion, target), "DownloadVersion");
+            Wrap(() => DownloadVersionCore(latestVersion, target, hashfile), "DownloadVersion");
         }
 
         public void SelfUpdate(string latestVersion)
@@ -24,15 +24,15 @@ namespace Paket.Bootstrapper.DownloadStrategies
             Wrap(() => SelfUpdateCore(latestVersion), "SelfUpdate");
         }
 
-        public void DownloadHashFile(string latestVersion)
+        public string DownloadHashFile(string latestVersion)
         {
-            Wrap(() => DownloadHashFileCore(latestVersion), "DownloadHashFile");
+            return Wrap(() => DownloadHashFileCore(latestVersion), "DownloadHashFile");
         }
 
         protected abstract string GetLatestVersionCore(bool ignorePrerelease);
-        protected abstract void DownloadVersionCore(string latestVersion, string target);
+        protected abstract void DownloadVersionCore(string latestVersion, string target, string hashfile);
         protected abstract void SelfUpdateCore(string latestVersion);
-        protected abstract void DownloadHashFileCore(string latestVersion);
+        protected abstract string DownloadHashFileCore(string latestVersion);
 
         private void Wrap(Action action, string actionName)
         {
