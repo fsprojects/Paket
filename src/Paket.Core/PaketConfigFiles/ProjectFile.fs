@@ -1332,7 +1332,7 @@ module ProjectFile =
     let removeImportForPaketTargets (project:ProjectFile) =
         project.Document
         |> getDescendants "Import"
-        |> List.tryFind (withAttributeValueEndsWith "Project" Constants.TargetsFileName)
+        |> List.tryFind (fun n -> withAttributeValueEndsWith "Project" Constants.TargetsFileName n || withAttributeValueEndsWith "Project" "Paket.Restore.targets" n)
         |> Option.iter (fun n -> n.ParentNode.RemoveChild n |> ignore)
 
     let determineBuildAction fileName (project:ProjectFile) =

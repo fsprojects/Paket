@@ -162,6 +162,8 @@ Target "Build" (fun _ ->
     else
         !! solutionFile
         |> MSBuildReleaseExt "" [
+                "VisualStudioVersion", "14.0"
+                "ToolsVersion"       , "14.0"
                 "SourceLinkCreate"   , "true"
         ] "Rebuild"
         |> ignore

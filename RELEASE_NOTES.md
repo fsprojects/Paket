@@ -1,4 +1,5 @@
-#### 5.0.0-beta006 - 25.05.2017
+#### 5.0.0-beta009 - 29.05.2017
+* BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
@@ -17,6 +18,7 @@
 * BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
 * DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
+* BUGFIX: Better hash checks in bootstrapper - https://github.com/fsprojects/Paket/pull/2368
 * BUGFIX: Improved C++ support
 * BUGFIX: Fix Conditional Group Dependencies not working as expected - https://github.com/fsprojects/Paket/pull/2335
 * BUGFIX: Treat runtime dependencies as transitive deps - https://github.com/fsprojects/Paket/issues/2334

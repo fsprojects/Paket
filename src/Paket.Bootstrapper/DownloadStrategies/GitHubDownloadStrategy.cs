@@ -20,6 +20,11 @@ namespace Paket.Bootstrapper.DownloadStrategies
         private IFileSystemProxy FileSystemProxy { get; set; }
         public override string Name { get { return "Github"; } }
 
+        public override bool CanDownloadHashFile
+        {
+            get { return true; }
+        }
+
         public GitHubDownloadStrategy(IWebRequestProxy webRequestProxy, IFileSystemProxy fileSystemProxy)
         {
             WebRequestProxy = webRequestProxy;
@@ -70,13 +75,33 @@ namespace Paket.Bootstrapper.DownloadStrategies
             return versions;
         }
 
-        protected override void DownloadVersionCore(string latestVersion, string target)
+        protected override void DownloadVersionCore(string latestVersion, string target, string hashfile)
         {
             var url = String.Format(Constants.PaketExeDownloadUrlTemplate, latestVersion);
             ConsoleImpl.WriteInfo("Starting download from {0}", url);
 
             var tmpFile = BootstrapperHelper.GetTempFile("paket");
             WebRequestProxy.DownloadFile(url, tmpFile);
+
+            if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashfile, latestVersion, tmpFile))
+            {
+                ConsoleImpl.WriteWarning("Hash of downloaded paket.exe is invalid, retrying once");
+
+                WebRequestProxy.DownloadFile(url, tmpFile);
+
+                if (!BootstrapperHelper.ValidateHash(FileSystemProxy, hashfile, latestVersion, tmpFile))
+                {
+                    ConsoleImpl.WriteWarning("Hash of downloaded paket.exe still invalid (Using the file anyway)");
+                }
+                else
+                {
+                    ConsoleImpl.WriteTrace("Hash of downloaded file successfully found in {0}", hashfile);
+                }
+            }
+            else
+            {
+                ConsoleImpl.WriteTrace("Hash of downloaded file successfully found in {0}", hashfile);
+            }
 
             FileSystemProxy.CopyFile(tmpFile, target, true);
             FileSystemProxy.DeleteFile(tmpFile);
@@ -114,13 +139,15 @@ namespace Paket.Bootstrapper.DownloadStrategies
             }
         }
 
-        protected override void DownloadHashFileCore(string latestVersion)
+        protected override string DownloadHashFileCore(string latestVersion)
         {
             var url = String.Format(Constants.PaketCheckSumDownloadUrlTemplate, latestVersion);
             ConsoleImpl.WriteInfo("Starting download from {0}", url);
 
             var tmpFile = BootstrapperHelper.GetTempFile("paket-sha256.txt");
             WebRequestProxy.DownloadFile(url, tmpFile);
+
+            return tmpFile;
         }
     }
 }

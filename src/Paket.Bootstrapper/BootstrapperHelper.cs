@@ -3,6 +3,8 @@ using System.IO;
 using System.Net;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using Paket.Bootstrapper.HelperProxies;
 
 namespace Paket.Bootstrapper
 {
@@ -102,6 +104,43 @@ Options:
             }
 
             File.Move(oldPath, newPath);
+        }
+
+        public static bool ValidateHash(IFileSystemProxy fileSystem, string hashFile, string version, string paketFile)
+        {
+            if (hashFile == null)
+            {
+                ConsoleImpl.WriteTrace("No hash file expected, bypassing check.");
+                return true;
+            }
+        
+            if (!fileSystem.FileExists(hashFile))
+            {
+                ConsoleImpl.WriteInfo("No hash file of version {0} found.", version);
+
+                return true;
+            }
+
+            var dict = fileSystem.ReadAllLines(hashFile)
+                .Select(i => i.Split(' '))
+                .ToDictionary(i => i[1], i => i[0]);
+
+            string expectedHash;
+            if (!dict.TryGetValue("paket.exe", out expectedHash))
+            {
+                fileSystem.DeleteFile(hashFile);
+
+                throw new InvalidDataException("Paket hash file is corrupted");
+            }
+
+            using (var stream = fileSystem.OpenRead(paketFile))
+            using (var sha = SHA256.Create())
+            {
+                byte[] checksum = sha.ComputeHash(stream);
+                var hash = BitConverter.ToString(checksum).Replace("-", String.Empty);
+
+                return string.Equals(expectedHash, hash, StringComparison.OrdinalIgnoreCase);
+            }
         }
     }
 }
