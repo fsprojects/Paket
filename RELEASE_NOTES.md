@@ -1,3 +1,8 @@
+#### Unreleased 5.0.0-beta010
+* PERFORMANCE: Limit the number of concurrent requests to 7 (https://github.com/fsprojects/Paket/pull/2362)
+* PERFORMANCE: Report how often the pre-loading feature worked (https://github.com/fsprojects/Paket/pull/2362)
+* PERFORMANCE: Request queue can no re-prioritize on-demand (https://github.com/fsprojects/Paket/pull/2362)
+
 #### 5.0.0-beta009 - 29.05.2017
 * BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
 * BUGFIX: Fixed dotnetcore integration:
