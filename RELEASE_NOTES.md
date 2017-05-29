@@ -1,7 +1,5 @@
-### NEXT
+#### 5.0.0-beta009 - 29.05.2017
 * BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
-
-#### 5.0.0-beta008 - 28.05.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
