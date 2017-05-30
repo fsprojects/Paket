@@ -17,6 +17,7 @@ nuget System.Xml.XPath.XDocument
 nuget System.Security.Cryptography.ProtectedData 
 nuget System.Security.Cryptography.Algorithms 
 nuget Microsoft.NETCore.App 1.1.0
+nuget FSharp.Compiler.Tools
 
 github fsharp/FAKE src/app/FakeLib/Globbing/Globbing.fs
 github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
