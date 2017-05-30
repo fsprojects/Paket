@@ -119,7 +119,7 @@ let ``should understand reference folder``() =
         model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
         |> Seq.map (fun f -> f.Path)
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
-    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
     let refs =
@@ -134,7 +134,7 @@ let ``should understand reference folder``() =
         |> Seq.map (fun f -> f.Path)
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
-    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
     let refs =
         model.GetRuntimeAssemblies RuntimeGraph.Empty (Rid.Of "win") (SinglePlatform (DotNetStandard DotNetStandardVersion.V1_6))
@@ -154,7 +154,7 @@ let ``should understand reference folder``() =
         model.GetRuntimeAssemblies RuntimeGraph.Empty (Rid.Of "unix") (SinglePlatform (DotNetFramework FrameworkVersion.V4_6_3))
         |> Seq.map (fun f -> f.Library.Path)
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\runtimes\win\lib\net46\System.Security.Cryptography.Algorithms.dll"
-    refs |> shouldContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
+    refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\lib\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
     refs |> shouldNotContain @"..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll"
 
 [<Test>]
