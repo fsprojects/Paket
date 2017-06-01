@@ -159,7 +159,7 @@ namespace Paket.Bootstrapper
             }
         }
 
-        private static void FillNonRunOptionsFromArguments(BootstrapperOptions options, List<string> commandArgs)
+        internal static void FillNonRunOptionsFromArguments(BootstrapperOptions options, List<string> commandArgs)
         {
             if (commandArgs.Contains(CommandArgs.PreferNuget))
             {

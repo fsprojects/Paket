@@ -6,6 +6,7 @@ namespace Paket.Bootstrapper.HelperProxies
 {
     public interface IFileSystemProxy
     {
+        string GetCurrentDirectory();
         bool FileExists(string filename);
         void CopyFile(string fileFrom, string fileTo, bool overwrite = false);
         void DeleteFile(string filename);

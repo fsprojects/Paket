@@ -29,7 +29,7 @@ namespace Paket.Bootstrapper
 
             var argumentsFromDependenciesFile =
                 WindowsProcessArguments.Parse(
-                    PaketDependencies.GetBootstrapperArgsForFolder(Environment.CurrentDirectory));
+                    PaketDependencies.GetBootstrapperArgsForFolder(fileProxy));
             var options = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
                 Environment.GetEnvironmentVariables(), fileProxy, argumentsFromDependenciesFile);
             if (options.ShowHelp)

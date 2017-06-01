@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Paket.Bootstrapper.HelperProxies;
+using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
 namespace Paket.Bootstrapper
 {
-    static class PaketDependencies
+    internal static class PaketDependencies
     {
         private static readonly Regex bootstrapperArgsLine =
             new Regex("^\\s*version\\s+(?<args>.*)$", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-        const string DEPENDENCY_FILE = "paket.dependencies";
+        internal const string DEPENDENCY_FILE = "paket.dependencies";
 
         public static string GetBootstrapperArgs(TextReader reader)
         {
@@ -26,10 +27,10 @@ namespace Paket.Bootstrapper
             return null;
         }
 
-        public static string LocateDependenciesFile(DirectoryInfo folder)
+        public static string LocateDependenciesFile(IFileSystemProxy proxy, DirectoryInfo folder)
         {
             var path = Path.Combine(folder.FullName, DEPENDENCY_FILE);
-            if (File.Exists(path))
+            if (proxy.FileExists(path))
             {
                 return path;
             }
@@ -37,7 +38,7 @@ namespace Paket.Bootstrapper
             {
                 if (folder.Parent != null)
                 {
-                    return LocateDependenciesFile(folder.Parent);
+                    return LocateDependenciesFile(proxy, folder.Parent);
                 }
                 else
                 {
@@ -46,18 +47,19 @@ namespace Paket.Bootstrapper
             }
         }
 
-        public static string GetBootstrapperArgsForFolder(string folder)
+        public static string GetBootstrapperArgsForFolder(IFileSystemProxy proxy)
         {
             try
             {
-                var path = LocateDependenciesFile(new DirectoryInfo(folder));
+                var folder = proxy.GetCurrentDirectory();
+                var path = LocateDependenciesFile(proxy, new DirectoryInfo(folder));
                 if (path == null)
                 {
                     ConsoleImpl.WriteTrace("Dependencies file was not found.");
                     return null;
                 }
 
-                using (var fileStream = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var fileStream = proxy.OpenRead(path))
                 {
                     using (var reader = new StreamReader(fileStream))
                     {
