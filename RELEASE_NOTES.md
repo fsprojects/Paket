@@ -1,4 +1,4 @@
-#### NEXT
+#### 5.0.0-beta010 - UNRELEASED
 * downgrade to tooling 1.0 (https://github.com/fsprojects/Paket/pull/2380)
 * make the bootstrapper search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384) 
 
