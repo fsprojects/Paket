@@ -23,6 +23,10 @@ namespace Paket.Bootstrapper
             Console.CancelKeyPress += CancelKeyPressed;
 
             var fileProxy = new FileSystemProxy();
+            var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
+                Environment.GetEnvironmentVariables(), fileProxy, null);
+            ConsoleImpl.Verbosity = optionsBeforeDependenciesFile.Verbosity;
+
             var argumentsFromDependenciesFile =
                 WindowsProcessArguments.Parse(
                     PaketDependencies.GetBootstrapperArgsForFolder(Environment.CurrentDirectory));

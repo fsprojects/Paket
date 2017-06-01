@@ -26,13 +26,34 @@ namespace Paket.Bootstrapper
             return null;
         }
 
+        public static string LocateDependenciesFile(DirectoryInfo folder)
+        {
+            var path = Path.Combine(folder.FullName, DEPENDENCY_FILE);
+            if (File.Exists(path))
+            {
+                return path;
+            }
+            else
+            {
+                if (folder.Parent != null)
+                {
+                    return LocateDependenciesFile(folder.Parent);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
         public static string GetBootstrapperArgsForFolder(string folder)
         {
             try
             {
-                var path = Path.Combine(folder, DEPENDENCY_FILE);
-                if (!File.Exists(path))
+                var path = LocateDependenciesFile(new DirectoryInfo(folder));
+                if (path == null)
                 {
+                    ConsoleImpl.WriteTrace("Dependencies file was not found.");
                     return null;
                 }
 
@@ -44,9 +65,10 @@ namespace Paket.Bootstrapper
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 // ¯\_(ツ)_/¯
+                ConsoleImpl.WriteTrace("Error while retrieving arguments from paket.dependencies file: {0}", e);
                 return null;
             }
         }

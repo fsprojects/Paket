@@ -70,7 +70,7 @@ namespace Paket.Bootstrapper
             if (transparentMagicMode)
             {
                 // Transparent magic mode mean that we're renamed 'paket.exe' and --run wasn't passed
-                
+
                 // Virtually add a '-s'
                 options.Verbosity -= 1;
                 
@@ -104,6 +104,11 @@ namespace Paket.Bootstrapper
             }
 
             options.UnprocessedCommandArgs = commandArgs;
+
+            if ("true" == Environment.GetEnvironmentVariable("PAKET_BOOTSTRAPPER_TRACE"))
+            {
+                options.Verbosity = Verbosity.Trace;
+            }
 
             return options;
         }
@@ -238,9 +243,13 @@ namespace Paket.Bootstrapper
 
         private static bool GetIsMagicMode(IFileSystemProxy fileSystemProxy)
         {
+#if DEBUG
+            return true;
+#else
             // Magic mode is defined by the bootstrapper being renamed 'paket.exe'
             var fileName = Path.GetFileName(fileSystemProxy.GetExecutingAssemblyPath());
             return string.Equals(fileName, "paket.exe", StringComparison.OrdinalIgnoreCase);
+#endif
         }
 
         private static string GetHash(string input)
