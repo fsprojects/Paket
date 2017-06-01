@@ -1,3 +1,7 @@
+#### NEXT
+* downgrade to tooling 1.0 (https://github.com/fsprojects/Paket/pull/2380)
+* make the bootstrapper search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384) 
+
 #### 5.0.0-beta009 - 29.05.2017
 * BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
 * BUGFIX: Fixed dotnetcore integration:
