@@ -26,6 +26,13 @@ open Paket.Domain
 // then you can easily diff them in git and decide if the changes are OK or represent a bug.
 let updateBaselines = false
 
+
+[<Test>]
+let ``updateBaselines should be false``() =
+    // updateBaselines should never be checked-in as true
+    Assert.False(updateBaselines)
+
+
 [<Test>]
 let ``#1135 should keep lockfile stable when using framework restrictions``() =
     let newLockFile = install "i001135-stable-install-on-framework-restrictions"
@@ -345,6 +352,8 @@ let ``#2335 should install deps from different groups when using conditions``() 
     install scenario |> ignore
     let newFile = Path.Combine(scenarioTempPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath scenario,"MyClassLibrary","MyClassLibrary","MyClassLibrary.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1

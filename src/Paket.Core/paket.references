@@ -2,6 +2,7 @@ Newtonsoft.Json
 FSharp.Core
 Mono.Cecil
 Chessie
+FSharp.Compiler.Tools
 
 
 
