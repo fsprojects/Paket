@@ -24,7 +24,7 @@ namespace Paket.Bootstrapper
 
             var fileProxy = new FileSystemProxy();
             var optionsBeforeDependenciesFile = ArgumentParser.ParseArgumentsAndConfigurations(args, ConfigurationManager.AppSettings,
-                Environment.GetEnvironmentVariables(), fileProxy, null);
+                Environment.GetEnvironmentVariables(), fileProxy, Enumerable.Empty<string>());
             ConsoleImpl.Verbosity = optionsBeforeDependenciesFile.Verbosity;
 
             var argumentsFromDependenciesFile =

@@ -243,13 +243,9 @@ namespace Paket.Bootstrapper
 
         private static bool GetIsMagicMode(IFileSystemProxy fileSystemProxy)
         {
-#if DEBUG
-            return true;
-#else
             // Magic mode is defined by the bootstrapper being renamed 'paket.exe'
             var fileName = Path.GetFileName(fileSystemProxy.GetExecutingAssemblyPath());
             return string.Equals(fileName, "paket.exe", StringComparison.OrdinalIgnoreCase);
-#endif
         }
 
         private static string GetHash(string input)
