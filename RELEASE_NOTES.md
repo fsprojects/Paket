@@ -1,10 +1,4 @@
-#### 5.0.0-beta010 - UNRELEASED
-* downgrade to tooling 1.0 (https://github.com/fsprojects/Paket/pull/2380)
-* make the bootstrapper search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384)
-* paket adds too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
-
-#### 5.0.0-beta009 - 29.05.2017
-* BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
+#### 5.0.0-beta010 - 02.06.2017
 * BUGFIX: Fixed dotnetcore integration:
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
@@ -38,9 +32,13 @@
 * BUGFIX: Proper encoding "+" in package download url - https://github.com/fsprojects/Paket/pull/2288
 * BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
+* BUGFIX: Downgrade to tooling 1.0 (https://github.com/fsprojects/Paket/pull/2380)
+* BUGFIX: Paket added too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
+* BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
+* BOOTSTRAPPER: Search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384)
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
 
-#### 4.8.7 - 02.06.2017 (Unreleased)
+#### 4.8.7 - 02.06.2017
 * paket adds too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
 
 #### 4.8.6 - 23.05.2017
