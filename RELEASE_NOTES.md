@@ -1,6 +1,7 @@
 #### 5.0.0-beta010 - UNRELEASED
 * downgrade to tooling 1.0 (https://github.com/fsprojects/Paket/pull/2380)
-* make the bootstrapper search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384) 
+* make the bootstrapper search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384)
+* paket adds too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
 
 #### 5.0.0-beta009 - 29.05.2017
 * BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
