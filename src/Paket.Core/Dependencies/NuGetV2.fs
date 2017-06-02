@@ -632,9 +632,11 @@ let GetLibFiles(targetFolder) =
 
 /// Finds all targets files in a nuget package.
 let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
-    let packageId = pkg.GetCompareString()
+    let packageId = pkg.CompareString
     getFiles targetFolder "build" ".targets files"
-    |> Array.filter (fun p -> p.Name.Equals(packageId + ".targets", StringComparison.OrdinalIgnoreCase) || p.Name.Equals(packageId + ".props", StringComparison.OrdinalIgnoreCase))
+    |> Array.filter (fun p ->
+        let name = System.IO.Path.GetFileName p.FullPath
+        name.Equals(packageId + ".targets", StringComparison.OrdinalIgnoreCase) || name.Equals(packageId + ".props", StringComparison.OrdinalIgnoreCase))
 
 /// Finds all analyzer files in a nuget package.
 let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
