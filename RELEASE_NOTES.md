@@ -40,6 +40,9 @@
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
 
+#### 4.8.7 - 02.06.2017 (Unreleased)
+* paket adds too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
+
 #### 4.8.6 - 23.05.2017
 * USABILITY: Better error reporting - https://github.com/fsprojects/Paket/pull/2349
 

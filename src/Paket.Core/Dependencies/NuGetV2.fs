@@ -631,9 +631,10 @@ let GetLibFiles(targetFolder) =
     |> Array.append runtimeLibs
 
 /// Finds all targets files in a nuget package.
-let GetTargetsFiles(targetFolder) =
+let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
+    let packageId = pkg.GetCompareString()
     getFiles targetFolder "build" ".targets files"
-    |> Array.filter (fun p -> p.FullPath.ToLower().EndsWith ".targets" || p.FullPath.ToLower().EndsWith ".props")
+    |> Array.filter (fun p -> p.Name.Equals(packageId + ".targets", StringComparison.OrdinalIgnoreCase) || p.Name.Equals(packageId + ".props", StringComparison.OrdinalIgnoreCase))
 
 /// Finds all analyzer files in a nuget package.
 let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
