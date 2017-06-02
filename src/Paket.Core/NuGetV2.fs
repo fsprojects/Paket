@@ -639,7 +639,7 @@ let GetLibFiles(targetFolder) =
 
 /// Finds all targets files in a nuget package.
 let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
-    let (PackageName(packageName, packageId)) = pkg
+    let packageId = pkg.GetCompareString()
     getFiles targetFolder "build" ".targets files"
     |> Array.filter (fun p -> p.Name.Equals(packageId + ".targets", StringComparison.OrdinalIgnoreCase) || p.Name.Equals(packageId + ".props", StringComparison.OrdinalIgnoreCase))
 
