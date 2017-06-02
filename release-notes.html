@@ -55,55 +55,6 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="5-0-0-beta010-02-06-2017" class="anchor" href="#5-0-0-beta010-02-06-2017">5.0.0-beta010 - 02.06.2017</a></h4>
-<ul>
-<li>
-BUGFIX: Fixed dotnetcore integration:
-<ul>
-<li>Paket now properly understands runtime and reference assemblies</li>
-<li>Paket now understands the runtime graph and restores runtime dependencies</li>
-<li>New API <code>InstallModel.GetRuntimeAssemblies</code> and <code>InstallModel.GetRuntimeLibraries</code> can be used to retrieve the correct assets for a particular RID and TFM</li>
-</ul>
-</li>
-<li>New command <code>paket generate-nuspec</code></li>
-<li>New Command: <code>FixNuspecs</code> - Can fix a list of nuspec files now</li>
-<li>
-New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):">https://github.com/fsprojects/Paket/pull/2336):</a>
-<ul>
-<li>Paket is now more accurate in calculating restrictions and referencing libraries</li>
-<li>Paket will convert (lock-)files to a new syntax (but still understands the old syntax), we might revert this within the beta phase</li>
-<li>This should fix a bunch of edge cases and invalid behavior in combination with portable profiles and netstandard</li>
-<li>Add support for net403 (required for some portable profiles)</li>
-</ul>
-</li>
-<li>PERFORMANCE: Improved performance by pre-loading requests (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
-<li>PERFORMANCE: Report performance in a more detailed way (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
-<li>BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
-<li>BREAKING CHANGE: Paket.PowerShell is no longer supported</li>
-<li>BREAKING CHANGE: <code>InstallModel</code> API changed and Paket.Core.dll users might need to adapt</li>
-<li>DEPRECATED: <code>FixNuspec</code> function is now obsolete, use <code>FixNuspecs</code> instead</li>
-<li>PERFORMANCE: Improved performance for some edge case - <a href="https://github.com/fsprojects/Paket/pull/2299">https://github.com/fsprojects/Paket/pull/2299</a></li>
-<li>BUGFIX: Better hash checks in bootstrapper - <a href="https://github.com/fsprojects/Paket/pull/2368">https://github.com/fsprojects/Paket/pull/2368</a></li>
-<li>BUGFIX: Improved C++ support</li>
-<li>BUGFIX: Fix Conditional Group Dependencies not working as expected - <a href="https://github.com/fsprojects/Paket/pull/2335">https://github.com/fsprojects/Paket/pull/2335</a></li>
-<li>BUGFIX: Treat runtime dependencies as transitive deps - <a href="https://github.com/fsprojects/Paket/issues/2334">https://github.com/fsprojects/Paket/issues/2334</a></li>
-<li>BUGFIX: Sort dependencies on obj/references files - <a href="https://github.com/fsprojects/Paket/issues/2310">https://github.com/fsprojects/Paket/issues/2310</a></li>
-<li>BUGFIX: Support .NET moniker "&gt;= monoandroid" - <a href="https://github.com/fsprojects/Paket/issues/2246">https://github.com/fsprojects/Paket/issues/2246</a></li>
-<li>BUGFIX: Better dependencies file parser errors</li>
-<li>BUGFIX: "Dotnet restore" failed on .netstandard projects under 1.6 - <a href="https://github.com/fsprojects/Paket/issues/2243">https://github.com/fsprojects/Paket/issues/2243</a></li>
-<li>BUGFIX: Paket now accepts multiple nuspec files in fix-nuspec - <a href="https://github.com/fsprojects/Paket/pull/2296">https://github.com/fsprojects/Paket/pull/2296</a></li>
-<li>BUGFIX: Fixed pinning of .NETSTANDARD 1.6 packages - <a href="https://github.com/fsprojects/Paket/pull/2307">https://github.com/fsprojects/Paket/pull/2307</a></li>
-<li>BUGFIX: Fixed bug with ignored argument of getPackageDetails - <a href="https://github.com/fsprojects/Paket/pull/2293">https://github.com/fsprojects/Paket/pull/2293</a></li>
-<li>BUGFIX: HTTP dependency - strip query string to detect a file name - <a href="https://github.com/fsprojects/Paket/pull/2295">https://github.com/fsprojects/Paket/pull/2295</a></li>
-<li>BUGFIX: Proper encoding "+" in package download url - <a href="https://github.com/fsprojects/Paket/pull/2288">https://github.com/fsprojects/Paket/pull/2288</a></li>
-<li>BUGFIX: Paket failed when group is removed (or renamed) - <a href="https://github.com/fsprojects/Paket/pull/2281">https://github.com/fsprojects/Paket/pull/2281</a></li>
-<li>BUGFIX: Filter .targets / .props earlier - <a href="https://github.com/fsprojects/Paket/pull/2286">https://github.com/fsprojects/Paket/pull/2286</a></li>
-<li>BUGFIX: Downgrade to tooling 1.0 (<a href="https://github.com/fsprojects/Paket/pull/2380)">https://github.com/fsprojects/Paket/pull/2380)</a></li>
-<li>BUGFIX: Paket added too many targets and props (<a href="https://github.com/fsprojects/Paket/pull/2388)">https://github.com/fsprojects/Paket/pull/2388)</a></li>
-<li>BOOTSTRAPPER: Don't crash in DownloadHashFile (<a href="https://github.com/fsprojects/Paket/pull/2376)">https://github.com/fsprojects/Paket/pull/2376)</a></li>
-<li>BOOTSTRAPPER: Search harder for the paket.dependencies file (<a href="https://github.com/fsprojects/Paket/pull/2384)">https://github.com/fsprojects/Paket/pull/2384)</a></li>
-<li>USABILITY: Don't let build continue when paket failed - <a href="https://github.com/fsprojects/Paket/pull/2302">https://github.com/fsprojects/Paket/pull/2302</a></li>
-</ul>
 <h4><a name="4-8-7-02-06-2017" class="anchor" href="#4-8-7-02-06-2017">4.8.7 - 02.06.2017</a></h4>
 <ul>
 <li>paket adds too many targets and props (<a href="https://github.com/fsprojects/Paket/pull/2388)">https://github.com/fsprojects/Paket/pull/2388)</a></li>

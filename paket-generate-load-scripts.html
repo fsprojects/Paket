@@ -60,25 +60,19 @@
 <p>Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="console">paket generate-load-scripts [--help] [groups [&lt;groups&gt;...]] [framework &lt;target&gt;] [type &lt;id&gt;]
+<td class="snippet"><pre class="fssnip"><code lang="console">paket generate-load-scripts [--help] [framework &lt;target&gt;] [type &lt;id&gt;]
 </code></pre></td></tr></table>
 <p>OPTIONS:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+<span class="l">8: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">groups</span> [&lt;<span class="i">groups</span><span class="o">&gt;</span>]  <span class="i">Groups</span> <span class="k">to</span> <span class="i">generate</span> <span class="i">scripts</span> <span class="k">for</span>, <span class="k">if</span> <span class="i">none</span> <span class="i">are</span> <span class="i">specified</span> <span class="k">then</span> <span class="i">generate</span> <span class="k">for</span>
-                      <span class="i">all</span> <span class="i">groups</span>
-<span class="i">framework</span> <span class="o">&lt;</span><span class="i">target</span><span class="o">&gt;</span>    <span class="i">Framework</span> <span class="i">identifier</span> <span class="k">to</span> <span class="i">generate</span> <span class="i">scripts</span> <span class="k">for</span>, <span class="i">such</span> <span class="k">as</span> <span class="i">net45</span> <span class="k">or</span>
-                      <span class="i">netstandard1</span><span class="o">.</span><span class="n">6</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">framework</span> <span class="o">&lt;</span><span class="i">target</span><span class="o">&gt;</span>    <span class="i">Framework</span> <span class="i">identifier</span> <span class="k">to</span> <span class="i">generate</span> <span class="i">scripts</span> <span class="k">for</span>, <span class="i">such</span> <span class="k">as</span> <span class="i">net4</span> <span class="k">or</span> <span class="i">netcore</span><span class="o">.</span>
 <span class="k">type</span> <span class="o">&lt;</span><span class="i">id</span><span class="o">&gt;</span>             <span class="i">Language</span> <span class="k">to</span> <span class="i">generate</span> <span class="i">scripts</span> <span class="k">for</span>, <span class="i">must</span> <span class="i">be</span> <span class="i">one</span> <span class="k">of</span> <span class="o">&#39;</span><span class="i">fsx&#39;</span> <span class="k">or</span> <span class="o">&#39;</span><span class="i">csx&#39;</span><span class="o">.</span>
 <span class="o">--</span><span class="i">verbose</span>, <span class="o">-</span><span class="i">v</span>         <span class="i">Enable</span> <span class="i">verbose</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
 <span class="o">--</span><span class="i">log</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">a</span> <span class="i">log</span> <span class="i">file</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>

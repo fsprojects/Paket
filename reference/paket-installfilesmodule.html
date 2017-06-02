@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>DependencyCache - Paket</title>
+    <title>InstallFiles - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,76 +58,33 @@
 
 
 
-<h1>DependencyCache</h1>
+<h1>InstallFiles</h1>
 <p>
   <span>Namespace: Paket</span><br />
 </p>
 <div class="xmldoc">
 </div>
-  <h3>Constructors</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Constructor</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1166', 1166)" onmouseover="showTip(event, '1166', 1166)">
-            new(dependencyFilePath)
+          <code onmouseout="hideTip(event, '90', 90)" onmouseover="showTip(event, '90', 90)">
+            addFrameworkAssemblyReference (...)
           </code>
-          <div class="tip" id="1166">
-            <strong>Signature:</strong> dependencyFilePath:string -&gt; DependencyCache<br />
+          <div class="tip" id="90">
+            <strong>Signature:</strong> assemblyName:string -&gt; installFiles:InstallFiles -&gt; InstallFiles<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L229-229" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>.ctor</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1167', 1167)" onmouseover="showTip(event, '1167', 1167)">
-            new(dependencyFile, lockFile)
-          </code>
-          <div class="tip" id="1167">
-            <strong>Signature:</strong> (dependencyFile:DependenciesFile * lockFile:LockFile) -&gt; DependencyCache<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L25-25" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>.ctor</code></p>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <h3>Instance members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Instance member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1168', 1168)" onmouseover="showTip(event, '1168', 1168)">
-            ClearLoaded()
-          </code>
-          <div class="tip" id="1168">
-            <strong>Signature:</strong> unit -&gt; unit<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L223-223" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L61-61" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -137,34 +94,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1169', 1169)" onmouseover="showTip(event, '1169', 1169)">
-            DependenciesFile
+          <code onmouseout="hideTip(event, '91', 91)" onmouseover="showTip(event, '91', 91)">
+            addReference lib installFiles
           </code>
-          <div class="tip" id="1169">
-            <strong>Signature:</strong> DependenciesFile<br />
+          <div class="tip" id="91">
+            <strong>Signature:</strong> lib:string -&gt; installFiles:InstallFiles -&gt; InstallFiles<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L177-177" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>get_DependenciesFile</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1170', 1170)" onmouseover="showTip(event, '1170', 1170)">
-            GetOrderedFrameworkReferences(...)
-          </code>
-          <div class="tip" id="1170">
-            <strong>Signature:</strong> groupName:GroupName -&gt; packageName:PackageName -&gt; framework:FrameworkIdentifier -&gt; FrameworkReference list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L158-158" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L53-53" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -174,15 +112,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1171', 1171)" onmouseover="showTip(event, '1171', 1171)">
-            GetOrderedPackageReferences(...)
+          <code onmouseout="hideTip(event, '92', 92)" onmouseover="showTip(event, '92', 92)">
+            addTargetsFile targetsFile installFiles
           </code>
-          <div class="tip" id="1171">
-            <strong>Signature:</strong> groupName:GroupName -&gt; packageName:PackageName -&gt; framework:FrameworkIdentifier -&gt; FileInfo list<br />
+          <div class="tip" id="92">
+            <strong>Signature:</strong> targetsFile:string -&gt; installFiles:InstallFiles -&gt; InstallFiles<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L151-151" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L58-58" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -192,15 +130,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1172', 1172)" onmouseover="showTip(event, '1172', 1172)">
-            GetOrderedReferences(...)
+          <code onmouseout="hideTip(event, '93', 93)" onmouseover="showTip(event, '93', 93)">
+            empty 
           </code>
-          <div class="tip" id="1172">
-            <strong>Signature:</strong> groupName:GroupName -&gt; framework:FrameworkIdentifier -&gt; ReferenceType list<br />
+          <div class="tip" id="93">
+            <strong>Signature:</strong> InstallFiles<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L140-140" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L49-49" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -210,15 +148,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1173', 1173)" onmouseover="showTip(event, '1173', 1173)">
-            InstallModel(groupName packageName)
+          <code onmouseout="hideTip(event, '94', 94)" onmouseover="showTip(event, '94', 94)">
+            getFrameworkAssemblies installFiles
           </code>
-          <div class="tip" id="1173">
-            <strong>Signature:</strong> groupName:GroupName -&gt; packageName:PackageName -&gt; InstallModel option<br />
+          <div class="tip" id="94">
+            <strong>Signature:</strong> installFiles:InstallFiles -&gt; seq&lt;string&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L235-235" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L64-64" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -228,15 +166,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1174', 1174)" onmouseover="showTip(event, '1174', 1174)">
-            InstallModels()
+          <code onmouseout="hideTip(event, '95', 95)" onmouseover="showTip(event, '95', 95)">
+            mergeWith that installFiles
           </code>
-          <div class="tip" id="1174">
-            <strong>Signature:</strong> unit -&gt; InstallModel list<br />
+          <div class="tip" id="95">
+            <strong>Signature:</strong> that:InstallFiles -&gt; installFiles:InstallFiles -&gt; InstallFiles<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L179-179" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L69-69" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -246,88 +184,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1175', 1175)" onmouseover="showTip(event, '1175', 1175)">
-            LockFile
+          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
+            singleton lib
           </code>
-          <div class="tip" id="1175">
-            <strong>Signature:</strong> LockFile<br />
+          <div class="tip" id="96">
+            <strong>Signature:</strong> lib:string -&gt; InstallFiles<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L176-176" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-              <p>CompiledName: <code>get_LockFile</code></p>
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1176', 1176)" onmouseover="showTip(event, '1176', 1176)">
-            Nuspecs()
-          </code>
-          <div class="tip" id="1176">
-            <strong>Signature:</strong> unit -&gt; Nuspec list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L182-182" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1177', 1177)" onmouseover="showTip(event, '1177', 1177)">
-            OrderedGroups(groupName)
-          </code>
-          <div class="tip" id="1177">
-            <strong>Signature:</strong> groupName:GroupName -&gt; ResolvedPackage list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L219-219" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1178', 1178)" onmouseover="showTip(event, '1178', 1178)">
-            OrderedGroups()
-          </code>
-          <div class="tip" id="1178">
-            <strong>Signature:</strong> unit -&gt; Map&lt;GroupName,ResolvedPackage list&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L213-213" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1179', 1179)" onmouseover="showTip(event, '1179', 1179)">
-            SetupGroup(groupName)
-          </code>
-          <div class="tip" id="1179">
-            <strong>Signature:</strong> groupName:GroupName -&gt; bool<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/DependencyCache.fs#L185-185" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L56-56" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
