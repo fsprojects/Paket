@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>QualifiedPackageName - Paket</title>
+    <title>List - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,57 +58,34 @@
 
 
 
-<h1>QualifiedPackageName</h1>
+<h1>List</h1>
 <p>
   <span>Namespace: Paket</span><br />
-  <span>Parent Module: <a href="paket-queries.html">Queries</a></span>
+  <span>Parent Module: <a href="paket-utils-0.html">Utils</a></span>
 </p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+
+<!-- Render nested types and modules, if there are any -->
+
+  <h3>Functions and values</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Function or value</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '770', 770)" onmouseover="showTip(event, '770', 770)">
-            QualifiedPackageName(...)
+          <code onmouseout="hideTip(event, '546', 546)" onmouseover="showTip(event, '546', 546)">
+            tryExtractOne(fn values)
           </code>
-          <div class="tip" id="770">
-            <strong>Signature:</strong> GroupName * PackageName<br />
-                      </div>
+          <div class="tip" id="546">
+            <strong>Signature:</strong> fn:(&#39;f -&gt; bool) -&gt; values:&#39;f list -&gt; &#39;f option * &#39;f list<br />
+                          <strong>Type parameters:</strong> 'f          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L7-7" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <h3>Static members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Static member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '771', 771)" onmouseover="showTip(event, '771', 771)">
-            FromStrings(groupName, packageName)
-          </code>
-          <div class="tip" id="771">
-            <strong>Signature:</strong> (groupName:string option * packageName:string) -&gt; QualifiedPackageName<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L9-9" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Utils.fs#L1015-1015" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

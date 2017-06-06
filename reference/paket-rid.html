@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PaketFiles - Paket</title>
+    <title>Rid - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,49 +58,32 @@
 
 
 
-<h1>PaketFiles</h1>
+<h1>Rid</h1>
 <p>
   <span>Namespace: Paket</span><br />
-  <span>Parent Module: <a href="paket-queries.html">Queries</a></span>
 </p>
 <div class="xmldoc">
+<p>The runtime identifiert for a specific runtime. Should be treated as a black box in combination with the operations defined on the RuntimeGraph</p>
+
 </div>
-  <h3>Union Cases</h3>
+  <h3>Record Fields</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Record Field</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '767', 767)" onmouseover="showTip(event, '767', 767)">
-            DependenciesAndLock(...)
+          <code onmouseout="hideTip(event, '1559', 1559)" onmouseover="showTip(event, '1559', 1559)">
+            Rid
           </code>
-          <div class="tip" id="767">
-            <strong>Signature:</strong> DependenciesFile * LockFile<br />
+          <div class="tip" id="1559">
+            <strong>Signature:</strong> string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L19-19" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '768', 768)" onmouseover="showTip(event, '768', 768)">
-            JustDependencies(DependenciesFile)
-          </code>
-          <div class="tip" id="768">
-            <strong>Signature:</strong> DependenciesFile<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L18-18" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L12-12" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -118,15 +101,52 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '769', 769)" onmouseover="showTip(event, '769', 769)">
-            LocateFromDirectory(directory)
+          <code onmouseout="hideTip(event, '1560', 1560)" onmouseover="showTip(event, '1560', 1560)">
+            Any
           </code>
-          <div class="tip" id="769">
-            <strong>Signature:</strong> directory:DirectoryInfo -&gt; PaketFiles<br />
+          <div class="tip" id="1560">
+            <strong>Signature:</strong> Rid<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L21-21" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L16-16" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_Any</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1561', 1561)" onmouseover="showTip(event, '1561', 1561)">
+            Of(s)
+          </code>
+          <div class="tip" id="1561">
+            <strong>Signature:</strong> s:string -&gt; Rid<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L13-13" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1562', 1562)" onmouseover="showTip(event, '1562', 1562)">
+            Parse(s)
+          </code>
+          <div class="tip" id="1562">
+            <strong>Signature:</strong> s:string -&gt; Rid<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L14-14" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

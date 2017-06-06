@@ -100,15 +100,18 @@ RestSharp
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Microsoft.Bcl.Build <span class="k">import_targets</span>: false
 </code></pre></td></tr></table>
 <h2><a name="No-content-option" class="anchor" href="#No-content-option">No content option</a></h2>
-<p>This option disables the installation of any content files for the given package:</p>
+<p>This option allows you to disable the installation of any content files for the given package:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket">jQuery <span class="k">content</span>: none
-Fody   <span class="k">content</span>: once <span class="c">// install content files but don't overwrite</span>
-ServiceStack.Swagger <span class="k">content</span>: true <span class="c">// install content and always override</span>
+Fody   <span class="k">content</span>: once
+ServiceStack.Swagger <span class="k">content</span>: true
 </code></pre></td></tr></table>
+<p>In this example,
+- <code>once</code> will install content files but not overwrite
+- <code>content: true</code> will install content and always override</p>
 <h2><a name="Framework-restrictions" class="anchor" href="#Framework-restrictions">Framework restrictions</a></h2>
 <p>Sometimes you don't want to generate dependencies for older framework versions. You can control this in the <a href="nuget-dependencies.html#Framework-restrictions"><code>paket.dependencies</code> file</a> or via the <code>framework</code> switch:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -117,6 +120,18 @@ ServiceStack.Swagger <span class="k">content</span>: true <span class="c">// ins
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Newtonsoft.Json <span class="k">framework</span>: net35, net40
 DotNetZip <span class="k">framework</span>: <span class="o">&gt;=</span> net45           
 </code></pre></td></tr></table>
+<blockquote>
+<p>Note: This feature is deprecated and can be seen as an expert feature.
+Using framework restrictions on single packages might make you projects uncompilable.
+The recommended way is to globally (on a group) specifiy the frameworks you want to compile for.</p>
+</blockquote>
+<p>This feature basically tells paket to only consider the specified frameworks for this package on this particular project.
+The resolution will not be modified when restrictions are specified in the reference file.
+It means</p>
+<blockquote>
+<p>In this project 'Newtonsoft.Json' is only required when compiling against 'net35' or 'net40'.
+I never need this package to compile for another framework like 'net45', therefore don't add references for other frameworks.</p>
+</blockquote>
 <h2><a name="Redirects-settings" class="anchor" href="#Redirects-settings">Redirects settings</a></h2>
 <p>You can instruct Paket to create assembly binding redirects for NuGet packages:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>

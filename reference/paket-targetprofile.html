@@ -73,15 +73,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1318', 1318)" onmouseover="showTip(event, '1318', 1318)">
-            PortableProfile(...)
+          <code onmouseout="hideTip(event, '1594', 1594)" onmouseover="showTip(event, '1594', 1594)">
+            PortableProfile(PortableProfileType)
           </code>
-          <div class="tip" id="1318">
-            <strong>Signature:</strong> string * FrameworkIdentifier list<br />
+          <div class="tip" id="1594">
+            <strong>Signature:</strong> PortableProfileType<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/FrameworkHandling.fs#L450-450" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L727-727" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -91,15 +91,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1319', 1319)" onmouseover="showTip(event, '1319', 1319)">
+          <code onmouseout="hideTip(event, '1595', 1595)" onmouseover="showTip(event, '1595', 1595)">
             SinglePlatform(FrameworkIdentifier)
           </code>
-          <div class="tip" id="1319">
+          <div class="tip" id="1595">
             <strong>Signature:</strong> FrameworkIdentifier<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/FrameworkHandling.fs#L449-449" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L726-726" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -117,20 +117,205 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1320', 1320)" onmouseover="showTip(event, '1320', 1320)">
-            ProfilesCompatibleWithPortableProfile
+          <code onmouseout="hideTip(event, '1596', 1596)" onmouseover="showTip(event, '1596', 1596)">
+            Frameworks
           </code>
-          <div class="tip" id="1320">
+          <div class="tip" id="1596">
             <strong>Signature:</strong> FrameworkIdentifier list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/FrameworkHandling.fs#L452-452" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1173-1173" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>get_ProfilesCompatibleWithPortableProfile</code></p>
+              <p>CompiledName: <code>get_Frameworks</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1597', 1597)" onmouseover="showTip(event, '1597', 1597)">
+            IsAtLeast(y)
+          </code>
+          <div class="tip" id="1597">
+            <strong>Signature:</strong> y:TargetProfile -&gt; bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1187-1187" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>true when x is at least (&gt;=) y ie when y is supported by x, for example netcore10 &gt;= netstandard15 as netstandard15 is supported by netcore10.
+Note that this relation is not complete, for example for WindowsPhoneSilverlightv7.0 and Windowsv4.5 both <= and >= are false from this definition as
+no platform supports the other.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1598', 1598)" onmouseover="showTip(event, '1598', 1598)">
+            IsBetween(a, b)
+          </code>
+          <div class="tip" id="1598">
+            <strong>Signature:</strong> (a:TargetProfile * b:TargetProfile) -&gt; bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1205-1205" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Note that this returns true only when a &gt;= x and x &lt; b holds.</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1599', 1599)" onmouseover="showTip(event, '1599', 1599)">
+            IsSmallerThan(y)
+          </code>
+          <div class="tip" id="1599">
+            <strong>Signature:</strong> y:TargetProfile -&gt; bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1198-1198" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>x < y, see y >= x &amp;&amp; x <> y</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1600', 1600)" onmouseover="showTip(event, '1600', 1600)">
+            IsSmallerThanOrEqual(y)
+          </code>
+          <div class="tip" id="1600">
+            <strong>Signature:</strong> y:TargetProfile -&gt; bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1201-1201" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1601', 1601)" onmouseover="showTip(event, '1601', 1601)">
+            IsSupportedBy(y)
+          </code>
+          <div class="tip" id="1601">
+            <strong>Signature:</strong> y:TargetProfile -&gt; bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1182-1182" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>true when x is supported by y, for example netstandard15 is supported by netcore10</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1602', 1602)" onmouseover="showTip(event, '1602', 1602)">
+            PlatformsSupporting
+          </code>
+          <div class="tip" id="1602">
+            <strong>Signature:</strong> Set&lt;TargetProfile&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1179-1179" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_PlatformsSupporting</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1603', 1603)" onmouseover="showTip(event, '1603', 1603)">
+            SupportedPlatforms
+          </code>
+          <div class="tip" id="1603">
+            <strong>Signature:</strong> Set&lt;TargetProfile&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1194-1194" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>get_SupportedPlatforms</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1604', 1604)" onmouseover="showTip(event, '1604', 1604)">
+            SupportedPlatformsTransitive
+          </code>
+          <div class="tip" id="1604">
+            <strong>Signature:</strong> Set&lt;TargetProfile&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1191-1191" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Get all platforms y for which x &gt;= y holds</p>
+
+
+              <p>CompiledName: <code>get_SupportedPlatformsTransitive</code></p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <h3>Static members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Static member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1605', 1605)" onmouseover="showTip(event, '1605', 1605)">
+            FindPortable(fws)
+          </code>
+          <div class="tip" id="1605">
+            <strong>Signature:</strong> (fws:FrameworkIdentifier list) -&gt; TargetProfile<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/FrameworkHandling.fs#L1177-1177" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
         </td>
       </tr>
     </tbody>

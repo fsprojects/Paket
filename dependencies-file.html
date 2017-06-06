@@ -167,6 +167,10 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 
 <span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="c">// only .NET 3.5 and .NET 4.0</span>
 </code></pre></td></tr></table>
+<p>It means</p>
+<blockquote>
+<p>Paket, I only compile for 'net35' and 'net40', please leave out all other stuff I don't need to compile for this set of frameworks.</p>
+</blockquote>
 <h4><a name="Automatic-framework-detection" class="anchor" href="#Automatic-framework-detection">Automatic framework detection</a></h4>
 <p>Paket can detect the target frameworks from your project and then limit the installation to these target frameworks. You can control this in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
