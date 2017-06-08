@@ -1,4 +1,4 @@
-#### 5.0.0-rc002 - 06.06.2017
+#### 5.0.0-rc002 - 08.06.2017
 * Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
