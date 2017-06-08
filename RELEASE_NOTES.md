@@ -1,5 +1,5 @@
-#### 5.0.0-rc001 - 05.06.2017
-* BUGFIX: Fixed dotnetcore integration:
+#### 5.0.0-rc002 - 06.06.2017
+* Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
   * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
@@ -7,7 +7,7 @@
 * New Command: `FixNuspecs` - Can fix a list of nuspec files now
 * New restriction system (https://github.com/fsprojects/Paket/pull/2336):
   * Paket is now more accurate in calculating restrictions and referencing libraries
-  * Paket will convert (lock-)files to a new syntax (but still understands the old syntax), we might revert this within the beta phase
+  * Paket will convert (lock-)files to a new syntax (but still understands the old syntax)
   * This should fix a bunch of edge cases and invalid behavior in combination with portable profiles and netstandard
   * Add support for net403 (required for some portable profiles)
 * PERFORMANCE: Improved performance by pre-loading requests (https://github.com/fsprojects/Paket/pull/2336)

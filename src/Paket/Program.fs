@@ -420,6 +420,9 @@ let why (results: ParseResults<WhyArgs>) =
 
 
 let main() =
+    let resolution = Environment.GetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION")
+    if System.String.IsNullOrEmpty resolution then
+        Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let paketVersion = AssemblyVersionInformation.AssemblyInformationalVersion
 
