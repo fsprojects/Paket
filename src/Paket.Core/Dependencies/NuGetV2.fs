@@ -80,7 +80,7 @@ let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName
 let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:PackageName) =
     async {
         try
-            let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0id='%O'&$orderby=Published desc" nugetURL package
+            let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'&$orderby=Published desc" nugetURL package
             if verbose then
                 verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
             let! result = followODataLink auth url
