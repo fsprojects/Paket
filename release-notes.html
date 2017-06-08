@@ -55,10 +55,10 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="5-0-0-rc001-05-06-2017" class="anchor" href="#5-0-0-rc001-05-06-2017">5.0.0-rc001 - 05.06.2017</a></h4>
+<h4><a name="5-0-0-rc002-08-06-2017" class="anchor" href="#5-0-0-rc002-08-06-2017">5.0.0-rc002 - 08.06.2017</a></h4>
 <ul>
 <li>
-BUGFIX: Fixed dotnetcore integration:
+Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting <code>PAKET_DISABLE_RUNTIME_RESOLUTION</code> to <code>false</code>):
 <ul>
 <li>Paket now properly understands runtime and reference assemblies</li>
 <li>Paket now understands the runtime graph and restores runtime dependencies</li>
@@ -71,7 +71,7 @@ BUGFIX: Fixed dotnetcore integration:
 New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):">https://github.com/fsprojects/Paket/pull/2336):</a>
 <ul>
 <li>Paket is now more accurate in calculating restrictions and referencing libraries</li>
-<li>Paket will convert (lock-)files to a new syntax (but still understands the old syntax), we might revert this within the beta phase</li>
+<li>Paket will convert (lock-)files to a new syntax (but still understands the old syntax)</li>
 <li>This should fix a bunch of edge cases and invalid behavior in combination with portable profiles and netstandard</li>
 <li>Add support for net403 (required for some portable profiles)</li>
 </ul>
