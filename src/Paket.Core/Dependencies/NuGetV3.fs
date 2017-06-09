@@ -138,7 +138,7 @@ let FindAutoCompleteVersionsForPackage(nugetURL, auth, package, includingPrerele
 
 let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName) =
     async {
-        let url = sprintf "%s%O/index.json" v3Url packageName
+        let url = sprintf "%s%O/index.json?semVerLevel=2.0.0" v3Url packageName
 
         if verbose then
             verbosefn "findVersionsForPackage v3 from url '%s'" url
