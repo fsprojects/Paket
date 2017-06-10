@@ -1689,20 +1689,35 @@ type ProjectFile with
                 | None -> false
         )
 
-    member this.GetAllReferencedProjects (cache:Dictionary<string,ProjectFile>) =
+    member this.GetAllReferencedProjects (cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int List>) =
+        let progFileCache , depRefs = cache
+        let delivered = HashSet<_>()
         let rec getProjects (project:ProjectFile) = 
             seq {
-                let projects = seq { 
-                    for proj in project.GetInterProjectDependencies() do
-                        match cache.TryGetValue proj.Path with
-                        | true, cproj -> yield cproj
-                        | false, _ ->
-                            match ProjectFile.tryLoad(proj.Path) with
-                            | Some cproj -> 
-                                cache.Add(proj.Path,cproj)   
-                                yield cproj
-                            | None -> () 
-                            }
+                let projects = seq {
+                    match depRefs.TryGetValue project.FileName with
+                    | true, rids ->
+                        for rid in rids do
+                            if not (delivered.Contains rid) then
+                                yield progFileCache.[rid]
+                    | false, _ ->
+                        let rids = List<int>()  
+                        for proj in project.GetInterProjectDependencies() do
+                            let rid = proj.Path.GetHashCode()
+                            rids.Add rid
+                            match progFileCache.TryGetValue rid with
+                            | true, cproj -> 
+                                if not (delivered.Contains rid) then 
+                                    yield cproj
+                            | false, _ ->
+                                match ProjectFile.tryLoad(proj.Path) with
+                                | Some cproj -> 
+                                    progFileCache.Add(rid,cproj)   
+                                    if not (delivered.Contains rid) then 
+                                        yield cproj
+                                | None -> ()
+                        depRefs.Add(project.Name,rids)                                    
+                        }
                 yield! projects
                 for proj in projects do
                     yield! (getProjects proj)
@@ -1719,7 +1734,7 @@ type ProjectFile with
                 yield this
         }
 
-    member this.GetCompileItems (includeReferencedProjects : bool) (cache:Dictionary<string,ProjectFile>) = 
+    member this.GetCompileItems (includeReferencedProjects : bool) cache = 
         let getCompileRefs projectFile =
             projectFile.Document
             |> getDescendants "Compile"
