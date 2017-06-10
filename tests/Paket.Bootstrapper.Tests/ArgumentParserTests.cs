@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using Paket.Bootstrapper.HelperProxies;
+using Moq;
+using System.Text;
 
 namespace Paket.Bootstrapper.Tests
 {
@@ -112,6 +114,11 @@ namespace Paket.Bootstrapper.Tests
             public Stream OpenRead(string filename)
             {
                 return Stream.Null;
+            }
+
+            public string GetCurrentDirectory()
+            {
+                return Directory.GetCurrentDirectory();
             }
         }
 
@@ -640,6 +647,33 @@ namespace Paket.Bootstrapper.Tests
             //assert
             Assert.That(result.DownloadArguments.MaxFileAgeInMinutes, Is.EqualTo(4242));
             Assert.That(result.UnprocessedCommandArgs, Is.Empty);
+        }
+
+
+        [Test]
+        public void Dependencies_FindDependenciesFile()
+        {
+            //arrange
+            var fs = new Mock<IFileSystemProxy>();
+            var cwd = Directory.GetCurrentDirectory();
+
+            var subDir = Path.Combine(cwd, "testing", "subdir");
+            var depsFile = Path.Combine(cwd, PaketDependencies.DEPENDENCY_FILE);
+            var depsFileContent = "version 5.0.0-beta008";
+            var depsFileStream = new MemoryStream(Encoding.UTF8.GetBytes(depsFileContent));
+            fs.Setup(f => f.GetCurrentDirectory()).Returns(subDir);
+            fs.Setup(f => f.FileExists(It.IsAny<string>())).Returns(false);
+            fs.Setup(f => f.FileExists(depsFile)).Returns(true);
+            fs.Setup(f => f.OpenRead(depsFile)).Returns(depsFileStream);
+
+            //act
+            var opts = new BootstrapperOptions();
+            var argstring = PaketDependencies.GetBootstrapperArgsForFolder(fs.Object);
+            var args = WindowsProcessArguments.Parse(argstring);
+            ArgumentParser.FillNonRunOptionsFromArguments(opts, args);
+
+            //assert
+            Assert.That(opts.DownloadArguments.LatestVersion, Is.EqualTo("5.0.0-beta008"));
         }
     }
 }

@@ -70,7 +70,7 @@ namespace Paket.Bootstrapper
             if (transparentMagicMode)
             {
                 // Transparent magic mode mean that we're renamed 'paket.exe' and --run wasn't passed
-                
+
                 // Virtually add a '-s'
                 options.Verbosity -= 1;
                 
@@ -104,6 +104,11 @@ namespace Paket.Bootstrapper
             }
 
             options.UnprocessedCommandArgs = commandArgs;
+
+            if ("true" == Environment.GetEnvironmentVariable("PAKET_BOOTSTRAPPER_TRACE"))
+            {
+                options.Verbosity = Verbosity.Trace;
+            }
 
             return options;
         }
@@ -154,7 +159,7 @@ namespace Paket.Bootstrapper
             }
         }
 
-        private static void FillNonRunOptionsFromArguments(BootstrapperOptions options, List<string> commandArgs)
+        internal static void FillNonRunOptionsFromArguments(BootstrapperOptions options, List<string> commandArgs)
         {
             if (commandArgs.Contains(CommandArgs.PreferNuget))
             {

@@ -1,11 +1,10 @@
-#### Unreleased 5.0.0-beta010
+#### Unreleased 5.0.0-rc004
 * PERFORMANCE: Limit the number of concurrent requests to 7 (https://github.com/fsprojects/Paket/pull/2362)
 * PERFORMANCE: Report how often the pre-loading feature worked (https://github.com/fsprojects/Paket/pull/2362)
-* PERFORMANCE: Request queue can no re-prioritize on-demand (https://github.com/fsprojects/Paket/pull/2362)
+* PERFORMANCE: Request queue can now re-prioritize on-demand (https://github.com/fsprojects/Paket/pull/2362)
 
-#### 5.0.0-beta009 - 29.05.2017
-* BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
-* BUGFIX: Fixed dotnetcore integration:
+#### 5.0.0-rc003 - 09.06.2017
+* Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
   * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
@@ -13,7 +12,7 @@
 * New Command: `FixNuspecs` - Can fix a list of nuspec files now
 * New restriction system (https://github.com/fsprojects/Paket/pull/2336):
   * Paket is now more accurate in calculating restrictions and referencing libraries
-  * Paket will convert (lock-)files to a new syntax (but still understands the old syntax), we might revert this within the beta phase
+  * Paket will convert (lock-)files to a new syntax (but still understands the old syntax)
   * This should fix a bunch of edge cases and invalid behavior in combination with portable profiles and netstandard
   * Add support for net403 (required for some portable profiles)
 * PERFORMANCE: Improved performance by pre-loading requests (https://github.com/fsprojects/Paket/pull/2336)
@@ -38,7 +37,14 @@
 * BUGFIX: Proper encoding "+" in package download url - https://github.com/fsprojects/Paket/pull/2288
 * BUGFIX: Paket failed when group is removed (or renamed) - https://github.com/fsprojects/Paket/pull/2281
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
+* BUGFIX: Downgrade to tooling 1.0 (https://github.com/fsprojects/Paket/pull/2380)
+* BUGFIX: Paket added too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
+* BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
+* BOOTSTRAPPER: Search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384)
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
+
+#### 4.8.7 - 02.06.2017
+* paket adds too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
 
 #### 4.8.6 - 23.05.2017
 * USABILITY: Better error reporting - https://github.com/fsprojects/Paket/pull/2349

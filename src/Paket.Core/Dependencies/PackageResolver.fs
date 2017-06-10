@@ -82,8 +82,9 @@ module DependencySetFilter =
         dependencies
         // exists any not matching stuff
         |> Seq.exists (fun (name, requirement, restriction) ->
-            if name = package.Name then
-                requirement.IsInRange package.Version |> not
+            if name = package.Name && not (requirement.IsInRange package.Version) then
+                tracefn "   Incompatible dependency: %O %O conflicts with resolved version %O" name requirement package.Version
+                true
             else false
             )
         |> not // then we are not compatible
@@ -820,9 +821,14 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     else
 
     /// Evaluates whethere the innermost step-looping stage should continue or not
-    let keepLooping (flags:StepFlags) (conflictState:ConflictState) =
+    let keepLooping (flags:StepFlags) (conflictState:ConflictState) (currentRequirement:PackageRequirement) =
         if flags.ForceBreak then false else
-        if conflictState.Status.IsDone || Seq.isEmpty conflictState.VersionsToExplore then false else
+        if conflictState.Status.IsDone then false else
+        if Seq.isEmpty conflictState.VersionsToExplore then
+            match conflictState.Status with
+            | Resolution.Ok _ -> ()
+            | _ -> (tracefn "   Failed to satisfy %O" currentRequirement)
+            false else
         flags.FirstTrial || Set.isEmpty conflictState.Conflicts
         
 
@@ -948,7 +954,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags 
 
         | Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)->
-            if not (keepLooping flags currentConflict) then
+            if not (keepLooping flags currentConflict currentRequirement) then
                 let flags =
                     if  not flags.UseUnlisted 
                      && flags.HasUnlisted 
@@ -1037,6 +1043,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                                                 Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
                             step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
                         else
+                            tracefn "   Can't take package %O: incompatible dependencies" exploredPackage
                             step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
 
     let startingStep = {

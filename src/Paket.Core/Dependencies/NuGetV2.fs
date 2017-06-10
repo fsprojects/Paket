@@ -632,9 +632,12 @@ let GetLibFiles(targetFolder) =
     |> Array.append runtimeLibs
 
 /// Finds all targets files in a nuget package.
-let GetTargetsFiles(targetFolder) =
+let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
+    let packageId = pkg.CompareString
     getFiles targetFolder "build" ".targets files"
-    |> Array.filter (fun p -> p.FullPath.ToLower().EndsWith ".targets" || p.FullPath.ToLower().EndsWith ".props")
+    |> Array.filter (fun p ->
+        let name = System.IO.Path.GetFileName p.FullPath
+        name.Equals(packageId + ".targets", StringComparison.OrdinalIgnoreCase) || name.Equals(packageId + ".props", StringComparison.OrdinalIgnoreCase))
 
 /// Finds all analyzer files in a nuget package.
 let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
@@ -904,8 +907,11 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                             File.WriteAllText(errorFile.FullName,DateTime.Now.ToString())
                     with _ -> ()
                     None)
-            |> Array.map (fun (s,versions) -> versions |> Array.map (fun v -> v,s))
-            |> Array.concat }
+            |> Array.collect (fun (s,versions) -> 
+                if packageName = PackageName "FSharp.Core" then
+                    versions |> Array.filter (fun v -> v <> "4.2.0") |> Array.map (fun v -> v,s) // HACK: since version was leftpadded
+                else
+                    versions |> Array.map (fun v -> v,s)) }
     let! versions = async {
         let! trial1 = trial force
         match trial1 with

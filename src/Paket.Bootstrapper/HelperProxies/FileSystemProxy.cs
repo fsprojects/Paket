@@ -8,6 +8,7 @@ namespace Paket.Bootstrapper.HelperProxies
 {
     class FileSystemProxy : IFileSystemProxy
     {
+        public string GetCurrentDirectory() { return Directory.GetCurrentDirectory(); }
         public bool FileExists(string filename) { return File.Exists(filename); }
         public void CopyFile(string fileFrom, string fileTo, bool overwrite) { File.Copy(fileFrom, fileTo, overwrite); }
         public void DeleteFile(string filename) { File.Delete(filename); }
