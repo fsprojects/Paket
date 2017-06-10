@@ -60,8 +60,17 @@ let directPaketInPath command scenarioPath =
           (printfn "%s")
     string result
     #else
+    printfn "%s> paket %s" scenarioPath command
+    let perfMessages = ResizeArray()
     let msgs = ResizeArray()
+    let mutable perfMessagesStarted = false
     let addAndPrint isError msg =
+        if not isError then
+            if msg = "Performance:" then
+                perfMessagesStarted <- true
+            elif perfMessagesStarted then
+                perfMessages.Add(msg)
+                
         msgs.Add((isError, msg))
         if isError then
             printfn "ERR: %s" msg
@@ -73,9 +82,14 @@ let directPaketInPath command scenarioPath =
           info.WorkingDirectory <- scenarioPath
           info.Arguments <- command) 
           (System.TimeSpan.FromMinutes 7.)
-          false
+          true
           (addAndPrint true)
           (addAndPrint false)
+    if perfMessages.Count = 0 then
+        failwith "No Performance messages recieved in test!"
+    printfn "Performance:"
+    for msg in perfMessages do
+        printfn "%s" msg
     //let result =
     //    ExecProcessAndReturnMessages (fun info ->
     //      info.FileName <- paketToolPath
