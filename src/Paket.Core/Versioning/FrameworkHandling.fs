@@ -513,7 +513,6 @@ module FrameworkDetection =
                 | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
                 | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
                 | "netcore20" -> Some (DotNetCore DotNetCoreVersion.V2_0)
-                //| v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
                 | _ -> None
             result)
 
