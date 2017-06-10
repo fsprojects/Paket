@@ -1694,7 +1694,7 @@ type ProjectFile with
             seq {
                 let projects = seq { 
                     for proj in project.GetInterProjectDependencies() do
-                        if not dependencyHash.Contains proj.Path then
+                        if not (dependencyHash.Contains proj.Path) then
                             let projFile = (ProjectFile.tryLoad(proj.Path).Value)
                             dependencyHash.Add proj.Path
                             yield projFile }
