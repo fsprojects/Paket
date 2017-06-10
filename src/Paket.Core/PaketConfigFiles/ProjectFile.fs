@@ -1700,10 +1700,11 @@ type ProjectFile with
                         for rid in rids do
                             if not (delivered.Contains rid) then
                                 match progFileCache.TryGetValue rid with
-                                | true, v -> yield v
+                                | true, v -> 
+                                    delivered.Add rid
+                                    yield v
                                 | false,_ -> ()
                     | false, _ ->
-                        //let rids = List<int>()
                         let rec depToProj dls accProj accIds =
                             match dls with
                             | [] -> accProj, accIds
@@ -1711,15 +1712,17 @@ type ProjectFile with
                                 let rid = proj.Path.GetHashCode()
                                 match progFileCache.TryGetValue rid with
                                 | true, cproj -> 
-                                    if not (delivered.Contains rid) 
-                                    then depToProj t (cproj::accProj) (rid::accIds)
+                                    if not (delivered.Contains rid) then
+                                        delivered.Add rid
+                                        depToProj t (cproj::accProj) (rid::accIds)
                                     else depToProj t (accProj)        (rid::accIds)
                                 | false, _ ->
                                     match ProjectFile.tryLoad(proj.Path) with
                                     | Some cproj -> 
                                         progFileCache.Add(rid,cproj)   
-                                        if not (delivered.Contains rid) 
-                                        then depToProj t (cproj::accProj) (rid::accIds)
+                                        if not (delivered.Contains rid) then
+                                            delivered.Add rid 
+                                            depToProj t (cproj::accProj) (rid::accIds)
                                         else depToProj t (accProj)        (rid::accIds)
                                     | None -> depToProj t (accProj)       (accIds)
                         let cprojs, rids = depToProj (project.GetInterProjectDependencies()) [] []                                   
