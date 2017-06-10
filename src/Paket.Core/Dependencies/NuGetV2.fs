@@ -269,7 +269,7 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
         try
             let! result = getDetailsFromNuGetViaODataFast auth nugetURL packageName version
             if urlSimilarToTfsOrVsts nugetURL && result |> NuGet.NuGetPackageCache.getDependencies |> List.isEmpty then
-                // TODO: There is a bug in VSTS, so we can't trust this protocol. Remvoe when VSTS is fixed
+                // TODO: There is a bug in VSTS, so we can't trust this protocol. Remove when VSTS is fixed
                 // TODO: TFS has the same bug
                 return! queryPackagesProtocol packageName
             else
