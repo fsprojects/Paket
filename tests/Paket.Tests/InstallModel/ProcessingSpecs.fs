@@ -17,6 +17,16 @@ let fromLegacyList (prefix:string) l =
         else failwithf "Expected '%s' to start with '%s'" i prefix)
 
 [<Test>]
+let ``Library.ofFile should not crash on files without extension``() =
+    let frameworkDepFile = {
+        Path = { Name = ""; Platforms= [] }
+        File =  { FullPath = Path.Combine(Path.GetTempPath(), "filewithoutext"); PathWithinPackage = "lib/net40" }
+        Runtime = None
+    }
+    let lib = Library.ofFile frameworkDepFile
+    lib.Name |> shouldEqual "filewithoutext"
+
+[<Test>]
 let ``should create empty model with net40, net45 ...``() = 
     let model = emptymodel.AddReferences ([ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] |> fromLegacyList @"..\Rx-Main\")
 
