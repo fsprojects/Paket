@@ -18,7 +18,8 @@ type FrameworkDependentFile = {
     Runtime : Rid option 
 }
 
-type Library = { 
+type Library = {
+    /// Usually the file name without extension, use for sorting and stuff.
     Name : string
     Path : string
     PathWithinPackage : string 
@@ -27,7 +28,11 @@ type Library = {
 module Library =
     let ofFile (f:FrameworkDependentFile) =
         let fi = FileInfo(normalizePath f.File.FullPath)
-        let name = fi.Name.Replace(fi.Extension, "")
+        // Extension can totally be an empty string, see https://github.com/fsprojects/Paket/issues/2405
+        let name =
+            let ext = fi.Extension
+            if String.IsNullOrEmpty ext then fi.Name
+            else fi.Name.Replace(ext, "")
         { Name = name; Path = f.File.FullPath; PathWithinPackage = f.File.PathWithinPackage }
 
 type RuntimeLibrary = { 
