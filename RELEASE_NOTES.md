@@ -2,6 +2,9 @@
 * PERFORMANCE: Limit the number of concurrent requests to 7 (https://github.com/fsprojects/Paket/pull/2362)
 * PERFORMANCE: Report how often the pre-loading feature worked (https://github.com/fsprojects/Paket/pull/2362)
 * PERFORMANCE: Request queue can now re-prioritize on-demand (https://github.com/fsprojects/Paket/pull/2362)
+* make xamarin stuff work with netstandard (https://github.com/fsprojects/Paket/pull/2396).
+* BUGFIX: Paket failed with: String cannot be of zero length (https://github.com/fsprojects/Paket/pull/2407)
+* Cleanup https://github.com/fsprojects/Paket/pull/2412 https://github.com/fsprojects/Paket/pull/2410
 
 #### 5.0.0-rc003 - 09.06.2017
 * Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
