@@ -38,7 +38,7 @@
     <Compile Include="$(PaketCoreSourcesDir)\Dependencies\DependenciesTypes.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Dependencies\PackageResolver.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Dependencies\Nuspec.fs" />
-    <Compile Include="$(PaketCoreSourcesDir)\Dependencies\NugetCache.fs" />
+    <Compile Include="$(PaketCoreSourcesDir)\Dependencies\NuGetCache.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Dependencies\NuGetV3.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Dependencies\NuGetV2.fs" />
     <Compile Include="$(PaketCoreSourcesDir)\Dependencies\NuGetLocal.fs" />
