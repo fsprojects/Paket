@@ -153,7 +153,8 @@ type ProjectFile =
       OriginalText : string
       Document : XmlDocument
       ProjectNode : XmlNode
-      Language : ProjectLanguage }
+      Language : ProjectLanguage
+      mutable DependencyCache : ProjectFile list option }
 
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -178,7 +179,8 @@ module ProjectFile =
             Document = doc
             ProjectNode = projectNode
             OriginalText = Utils.normalizeXml doc
-            Language = LanguageEvaluation.getProjectLanguage doc (Path.GetFileName fullName) 
+            Language = LanguageEvaluation.getProjectLanguage doc (Path.GetFileName fullName)
+            DependencyCache = None
         }
 
     let loadFromFile(fileName:string) =
@@ -1689,23 +1691,29 @@ type ProjectFile with
         )
 
     member this.GetAllReferencedProjects() =
-        let dependencyHash = HashSet<string>()
-        let rec getProjects (project:ProjectFile) = 
-            seq {
-                let projects = seq { 
-                    for proj in project.GetInterProjectDependencies() do
-                        if not dependencyHash.Contains proj.Path then
-                            let projFile = (ProjectFile.tryLoad(proj.Path).Value)
-                            dependencyHash.Add proj.Path
-                            yield projFile }
-                yield! projects
-                for proj in projects do
-                    yield! (getProjects proj)
-            }
-        seq { 
-            yield this
-            yield! getProjects this
-        }
+        match this.DependencyCache with
+        | Some ls -> ls
+        | None ->
+            let dependencyHash = HashSet<string>()
+            let rec getProjects (project:ProjectFile) = 
+                seq {
+                    let projects = seq { 
+                        for proj in project.GetInterProjectDependencies() do
+                            if not (dependencyHash.Contains proj.Path) then
+                                let projFile = (ProjectFile.tryLoad(proj.Path).Value)
+                                dependencyHash.Add proj.Path |> ignore
+                                yield projFile }
+                    yield! projects
+                    for proj in projects do
+                        yield! (getProjects proj)
+                }
+            let cache = [ 
+                yield this
+                yield! getProjects this
+            ]
+            this.DependencyCache <- Some cache
+            cache
+        |> Seq.ofList
 
     member this.GetProjects includeReferencedProjects =
         seq {
