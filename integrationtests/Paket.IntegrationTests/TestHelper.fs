@@ -72,8 +72,8 @@ let directPaketInPath command scenarioPath =
                 perfMessages.Add(msg)
                 
         msgs.Add((isError, msg))
-        //if isError then
-        printfn "ERR: %s" msg
+        if isError then
+            printfn "ERR: %s" msg
         //else printfn "%s" msg
         
     let result =
