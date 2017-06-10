@@ -896,7 +896,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
                 let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
                 let nuspec = Nuspec.Load nuspec.FullName
-                let files = NuGetV2.GetLibFiles(folder.FullName)
+                let files = NuGet.GetLibFiles(folder.FullName)
                 InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, FrameworkRestriction.NoRestriction, files, [], [], nuspec)
     
 

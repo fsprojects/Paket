@@ -459,7 +459,7 @@ type Dependencies(dependenciesFileName: string) =
                 let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
                 let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
                 let nuspec = Nuspec.Load nuspec.FullName
-                let files = NuGetV2.GetLibFiles(folder.FullName)
+                let files = NuGet.GetLibFiles(folder.FullName)
                 InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, files, [], [], nuspec)
 
     /// Returns all libraries for the given package and framework.
@@ -568,7 +568,7 @@ type Dependencies(dependenciesFileName: string) =
                             let parts = FileInfo(s).Name.Split('.')
                             let nameParts = parts |> Seq.takeWhile (fun x -> x <> "nupkg" && System.Int32.TryParse x |> fst |> not)
                             String.Join(".",nameParts).ToLower())
-                        |> List.map NuGetV2.getPackageNameFromLocalFile
+                        |> List.map NuGetLocal.getPackageNameFromLocalFile
                         |> List.toArray
                 }))
    
@@ -608,7 +608,7 @@ type Dependencies(dependenciesFileName: string) =
             |> List.distinct
         
         let versions = 
-            NuGetV2.GetVersions true alternativeProjectRoot root (sources, PackageName name)
+            NuGet.GetVersions true alternativeProjectRoot root (sources, PackageName name)
             |> Async.RunSynchronously
             |> List.map (fun (v,_) -> v.ToString())
             |> List.toArray
