@@ -54,22 +54,38 @@ let directPaketInPath command scenarioPath =
           info.FileName <- paketToolPath
           info.WorkingDirectory <- scenarioPath
           info.Arguments <- command) 
-          (System.TimeSpan.FromMinutes 5.)
+          (System.TimeSpan.FromMinutes 7.)
           false
           (printfn "%s")
           (printfn "%s")
     string result
     #else
+    let msgs = ResizeArray()
+    let addAndPrint isError msg =
+        msgs.Add((isError, msg))
+        if isError then
+            printfn "ERR: %s" msg
+        else printfn "%s" msg
+        
     let result =
-        ExecProcessAndReturnMessages (fun info ->
+        ExecProcessWithLambdas (fun info ->
           info.FileName <- paketToolPath
           info.WorkingDirectory <- scenarioPath
-          info.Arguments <- command) (System.TimeSpan.FromMinutes 5.)
-    if result.ExitCode <> 0 then 
-        let errors = String.Join(Environment.NewLine,result.Errors)
-        printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
+          info.Arguments <- command) 
+          (System.TimeSpan.FromMinutes 7.)
+          false
+          (addAndPrint true)
+          (addAndPrint false)
+    //let result =
+    //    ExecProcessAndReturnMessages (fun info ->
+    //      info.FileName <- paketToolPath
+    //      info.WorkingDirectory <- scenarioPath
+    //      info.Arguments <- command) (System.TimeSpan.FromMinutes 5.)
+    if result <> 0 then 
+        let errors = String.Join(Environment.NewLine,msgs |> Seq.filter fst |> Seq.map snd)
+        //printfn "%s" <| String.Join(Environment.NewLine,msgs)
         failwith errors      
-    String.Join(Environment.NewLine,result.Messages)
+    String.Join(Environment.NewLine,msgs |> Seq.filter (fst >> not) |> Seq.map snd)
     #endif
 
 let directPaket command scenario =
