@@ -1689,7 +1689,7 @@ type ProjectFile with
                 | None -> false
         )
 
-    member this.GetAllReferencedProjects (cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int List>) =
+    member this.GetAllReferencedProjects (cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int list>) =
         let progFileCache , depRefs = cache
         let delivered = HashSet<_>()
         let rec getProjects (project:ProjectFile) = 
@@ -1699,24 +1699,32 @@ type ProjectFile with
                     | true, rids ->
                         for rid in rids do
                             if not (delivered.Contains rid) then
-                                yield progFileCache.[rid]
+                                match progFileCache.TryGetValue rid with
+                                | true, v -> yield v
+                                | false,_ -> ()
                     | false, _ ->
-                        let rids = List<int>()  
-                        for proj in project.GetInterProjectDependencies() do
-                            let rid = proj.Path.GetHashCode()
-                            rids.Add rid
-                            match progFileCache.TryGetValue rid with
-                            | true, cproj -> 
-                                if not (delivered.Contains rid) then 
-                                    yield cproj
-                            | false, _ ->
-                                match ProjectFile.tryLoad(proj.Path) with
-                                | Some cproj -> 
-                                    progFileCache.Add(rid,cproj)   
-                                    if not (delivered.Contains rid) then 
-                                        yield cproj
-                                | None -> ()
-                        depRefs.Add(project.Name,rids)                                    
+                        //let rids = List<int>()
+                        let rec depToProj dls accProj accIds =
+                            match dls with
+                            | [] -> accProj, accIds
+                            | proj :: t ->
+                                let rid = proj.Path.GetHashCode()
+                                match progFileCache.TryGetValue rid with
+                                | true, cproj -> 
+                                    if not (delivered.Contains rid) 
+                                    then depToProj t (cproj::accProj) (rid::accIds)
+                                    else depToProj t (accProj)        (rid::accIds)
+                                | false, _ ->
+                                    match ProjectFile.tryLoad(proj.Path) with
+                                    | Some cproj -> 
+                                        progFileCache.Add(rid,cproj)   
+                                        if not (delivered.Contains rid) 
+                                        then depToProj t (cproj::accProj) (rid::accIds)
+                                        else depToProj t (accProj)        (rid::accIds)
+                                    | None -> depToProj t (accProj)       (accIds)
+                        let cprojs, rids = depToProj (project.GetInterProjectDependencies()) [] []                                   
+                        depRefs.Add(project.Name,rids)
+                        yield! Seq.ofList cprojs                                  
                         }
                 yield! projects
                 for proj in projects do

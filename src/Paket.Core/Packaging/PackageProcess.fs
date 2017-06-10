@@ -145,7 +145,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
     
         hashSet
 
-    let projDeps = (Dictionary<int,ProjectFile>(),Dictionary<string,List<int>>())
+    let projDeps = (Dictionary<int,ProjectFile>(),Dictionary<string,int list>())
 
     // load up project files and grab meta data
     let projectTemplates = 
