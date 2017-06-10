@@ -200,10 +200,10 @@ module RuntimeGraph =
     let getRuntimeGraphFromNugetCache root groupName (package:ResolvedPackage) =
         // 1. downloading packages into cache
         let targetFileName, _ =
-            NuGetV2.DownloadPackage (None, root, package.Source, [], groupName, package.Name, package.Version, false, false, false)
+            NuGet.DownloadPackage (None, root, package.Source, [], groupName, package.Name, package.Version, false, false, false)
             |> Async.RunSynchronously
 
-        let extractedDir = NuGetV2.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, null) |> Async.RunSynchronously
+        let extractedDir = NuGetCache.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, null) |> Async.RunSynchronously
         // 2. Get runtime graph
         let runtime = Path.Combine(extractedDir, "runtime.json")
         if File.Exists runtime then Some (runtime) else None

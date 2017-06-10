@@ -88,9 +88,11 @@
     <Compile Include="Dependencies\DependenciesTypes.fs" />
     <Compile Include="Dependencies\PackageResolver.fs" />
     <Compile Include="Dependencies\Nuspec.fs" />
-    <Compile Include="Dependencies\Nuget.fs" />
+    <Compile Include="Dependencies\NugetCache.fs" />
     <Compile Include="Dependencies\NuGetV3.fs" />
     <Compile Include="Dependencies\NuGetV2.fs" />
+    <Compile Include="Dependencies\NuGetLocal.fs" />
+    <Compile Include="Dependencies\NuGet.fs" />
     <Compile Include="Dependencies\DependenciesFileParser.fs" />
     <Compile Include="PaketConfigFiles\RuntimeGraph.fs" />
     <Compile Include="PaketConfigFiles\InstallModel.fs" />
