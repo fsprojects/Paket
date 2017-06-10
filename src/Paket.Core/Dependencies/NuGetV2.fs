@@ -18,6 +18,7 @@ open Paket.Xml
 open Paket.PackageSources
 open Paket.Requirements
 open FSharp.Polyfill
+open System.Runtime.ExceptionServices
 
 let rec private followODataLink auth url =
     async {
@@ -268,7 +269,7 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
         try
             let! result = getDetailsFromNuGetViaODataFast auth nugetURL packageName version
             if urlSimilarToTfsOrVsts nugetURL && result |> NuGet.NuGetPackageCache.getDependencies |> List.isEmpty then
-                // TODO: There is a bug in VSTS, so we can't trust this protocol. Remvoe when VSTS is fixed
+                // TODO: There is a bug in VSTS, so we can't trust this protocol. Remove when VSTS is fixed
                 // TODO: TFS has the same bug
                 return! queryPackagesProtocol packageName
             else
@@ -651,7 +652,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                     nugetSource.Url
                     packageName
                     version
-            return Some(source,result)  }
+            return Choice1Of2(source,result)  }
 
         let tryV3 source nugetSource force = async {
             if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") || nugetSource.Url.Contains("visualstudio.com") || nugetSource.Url.Contains("/nuget/v3/") then
@@ -664,25 +665,25 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                             url
                             packageName
                             version
-                    return Some(source,result)
+                    return Choice1Of2(source,result)
                 | _ ->
                     let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
-                    return Some(source,result)
+                    return Choice1Of2(source,result)
             else
                 let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
-                return Some(source,result) }
+                return Choice1Of2(source,result) }
 
         let getPackageDetails force =
             // helper to work through the list sequentially
-            let rec trySelectFirst workLeft =
+            let rec trySelectFirst errors workLeft =
                 async {
                     match workLeft with
                     | work :: rest ->
                         let! r = work
                         match r with
-                        | Some result -> return Some result
-                        | None -> return! trySelectFirst rest
-                    | [] -> return None
+                        | Choice1Of2 result -> return Choice1Of2 result
+                        | Choice2Of2 error -> return! trySelectFirst (error::errors) rest
+                    | [] -> return Choice2Of2 errors
                 }
             sources
             |> List.sortBy (fun source ->
@@ -720,33 +721,39 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
 
                     | LocalNuGet(path,Some _) ->
                         let! result = getDetailsFromLocalNuGetPackage true alternativeProjectRoot root path packageName version
-                        return Some(source,result)
+                        return Choice1Of2(source,result)
                     | LocalNuGet(path,None) ->
                         let! result = getDetailsFromLocalNuGetPackage false alternativeProjectRoot root path packageName version
-                        return Some(source,result)
+                        return Choice1Of2(source,result)
                 with e ->
                     if verbose then
                         verbosefn "Source '%O' exception: %O" source e
-                    return None })
-            |> trySelectFirst
+                    let capture = ExceptionDispatchInfo.Capture e
+                    return Choice2Of2 capture })
+            |> trySelectFirst []
 
         let! maybePackageDetails = getPackageDetails force
         let! source,nugetObject =
             async {
+                let fallback () =
+                    match sources |> List.map (fun (s:PackageSource) -> s.ToString()) with
+                    | [source] ->
+                        failwithf "Couldn't get package details for package %O %O on %O." packageName version source
+                    | [] ->
+                        failwithf "Couldn't get package details for package %O %O, because no sources were specified." packageName version
+                    | sources ->
+                        failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
+                    
                 match maybePackageDetails with
-                | None ->
-                    let! m = getPackageDetails true
-                    match m with
-                    | None ->
-                        match sources |> List.map (fun (s:PackageSource) -> s.ToString()) with
-                        | [source] ->
-                            return failwithf "Couldn't get package details for package %O %O on %O." packageName version source
-                        | [] ->
-                            return failwithf "Couldn't get package details for package %O %O, because no sources were specified." packageName version
-                        | sources ->
-                            return failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
-                    | Some packageDetails -> return packageDetails
-                | Some packageDetails -> return packageDetails
+                | Choice2Of2 ([]) -> return fallback()
+                | Choice2Of2 (h::restError) ->
+                    for error in restError do
+                        if not verbose then
+                            // Otherwise the error was already mentioned above
+                            traceWarnfn "Ignoring: %s" error.SourceException.Message
+                    h.Throw()
+                    return fallback()
+                | Choice1Of2 packageDetails -> return packageDetails
             }
 
         let encodeURL (url:string) =

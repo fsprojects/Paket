@@ -106,25 +106,29 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
     async {
         if not force && cacheFile.Exists then
             let json = File.ReadAllText(cacheFile.FullName)
-            try
-                let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
+            let cacheResult =
+                try
+                    let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
                     
-                if (PackageName cachedObject.PackageName <> packageName) ||
-                  (cachedObject.Version <> version.Normalize())
-                then
-                    traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
+                    if (PackageName cachedObject.PackageName <> packageName) ||
+                      (cachedObject.Version <> version.Normalize())
+                    then
+                        traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
+                        cacheFile.Delete()
+                        None
+                    else
+                        Some cachedObject
+                with
+                | exn ->
                     cacheFile.Delete()
-                    return! get()
-                else
-                    return cachedObject
-            with
-            | exn ->
-                cacheFile.Delete()
-                if verbose then
-                    traceWarnfn "Error while loading cache: %O" exn
-                else
-                    traceWarnfn "Error while loading cache: %s" exn.Message
-                return! get()
+                    if verbose then
+                        traceWarnfn "Error while loading cache: %O" exn
+                    else
+                        traceWarnfn "Error while loading cache: %s" exn.Message
+                    None
+            match cacheResult with
+            | Some res -> return res
+            | None -> return! get()
         else
             return! get()
     }

@@ -64,26 +64,27 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
                     match cat with
                     | Profile.Category.ResolverAlgorithm -> 1
                     | Profile.Category.ResolverAlgorithmBlocked b -> 2
-                    | Profile.Category.FileIO -> 3
-                    | Profile.Category.NuGetDownload -> 4
-                    | Profile.Category.NuGetRequest -> 5
-                    | Profile.Category.Other -> 6)
+                    | Profile.Category.ResolverAlgorithmNotBlocked b -> 3
+                    | Profile.Category.FileIO -> 4
+                    | Profile.Category.NuGetDownload -> 5
+                    | Profile.Category.NuGetRequest -> 6
+                    | Profile.Category.Other -> 7)
                 |> List.iter (fun (cat, num, elapsed) ->
+                    let reason b =
+                        match b with
+                        | Profile.BlockReason.PackageDetails -> "retrieving package details"
+                        | Profile.BlockReason.GetVersion -> "retrieving package versions"
                     match cat with
                     | Profile.Category.ResolverAlgorithm ->
                         tracefn " - Resolver: %s (%d runs)" (Utils.TimeSpanToReadableString elapsed) num
                         let realTime = resolver - blocked
                         tracefn "    - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
-                        let blockNum = blockedRaw |> Seq.sumBy (fun (_, num, _) -> num)
-                        let blockPaket4 = TimeSpan.FromMilliseconds(500.0 * float blockNum)
-                        tracefn "    - Runtime Paket 4 (estimated ~500ms respose*): %s" (Utils.TimeSpanToReadableString (realTime + blockPaket4))
-                        tracefn "      * See http://stats.pingdom.com/aqicaf2upspo/1265300 for average response times."
                     | Profile.Category.ResolverAlgorithmBlocked b ->
-                        let reason =
-                            match b with
-                            | Profile.BlockReason.PackageDetails -> "retrieving package details"
-                            | Profile.BlockReason.GetVersion -> "retrieving package versions"
+                        let reason = reason b
                         tracefn "    - Blocked (%s): %s (%d times)" reason (Utils.TimeSpanToReadableString elapsed) num
+                    | Profile.Category.ResolverAlgorithmNotBlocked b ->
+                        let reason = reason b
+                        tracefn "    - Not Blocked (%s): %d times" reason num
                     | Profile.Category.FileIO ->
                         tracefn " - Disk IO: %s" (Utils.TimeSpanToReadableString elapsed)
                     | Profile.Category.NuGetDownload ->

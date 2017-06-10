@@ -1,3 +1,8 @@
+#### Unreleased 5.0.0-rc004
+* PERFORMANCE: Limit the number of concurrent requests to 7 (https://github.com/fsprojects/Paket/pull/2362)
+* PERFORMANCE: Report how often the pre-loading feature worked (https://github.com/fsprojects/Paket/pull/2362)
+* PERFORMANCE: Request queue can now re-prioritize on-demand (https://github.com/fsprojects/Paket/pull/2362)
+
 #### 5.0.0-rc003 - 09.06.2017
 * Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
   * Paket now properly understands runtime and reference assemblies
