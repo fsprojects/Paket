@@ -10,8 +10,7 @@ let createProject name =
       OriginalText = ""
       Document = XmlDocument()
       ProjectNode = null
-      Language = ProjectLanguage.Unknown
-      DependencyCache = None }
+      Language = ProjectLanguage.Unknown }
 
 [<Test>]
 let ``should recognize compilable files``() =

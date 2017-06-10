@@ -153,8 +153,7 @@ type ProjectFile =
       OriginalText : string
       Document : XmlDocument
       ProjectNode : XmlNode
-      Language : ProjectLanguage
-      mutable DependencyCache : ProjectFile list option }
+      Language : ProjectLanguage }
 
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
@@ -1691,29 +1690,23 @@ type ProjectFile with
         )
 
     member this.GetAllReferencedProjects() =
-        match this.DependencyCache with
-        | Some ls -> ls
-        | None ->
-            let dependencyHash = HashSet<string>()
-            let rec getProjects (project:ProjectFile) = 
-                seq {
-                    let projects = seq { 
-                        for proj in project.GetInterProjectDependencies() do
-                            if not (dependencyHash.Contains proj.Path) then
-                                let projFile = (ProjectFile.tryLoad(proj.Path).Value)
-                                dependencyHash.Add proj.Path |> ignore
-                                yield projFile }
-                    yield! projects
-                    for proj in projects do
-                        yield! (getProjects proj)
-                }
-            let cache = [ 
-                yield this
-                yield! getProjects this
-            ]
-            this.DependencyCache <- Some cache
-            cache
-        |> Seq.ofList
+        let dependencyHash = HashSet<string>()
+        let rec getProjects (project:ProjectFile) = 
+            seq {
+                let projects = seq { 
+                    for proj in project.GetInterProjectDependencies() do
+                        if not (dependencyHash.Contains proj.Path) then
+                            let projFile = (ProjectFile.tryLoad(proj.Path).Value)
+                            dependencyHash.Add proj.Path |> ignore
+                            yield projFile }
+                yield! projects
+                for proj in projects do
+                    yield! (getProjects proj)
+            }
+        seq { 
+            yield this
+            yield! getProjects this
+        }
     member this.GetProjects includeReferencedProjects =
         seq {
             if includeReferencedProjects then

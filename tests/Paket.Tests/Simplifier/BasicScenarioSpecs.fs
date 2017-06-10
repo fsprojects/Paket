@@ -15,8 +15,7 @@ let dummyProjectFile =
       OriginalText = ""
       Document = null
       ProjectNode = null
-      Language = ProjectLanguage.Unknown 
-      DependencyCache = None}
+      Language = ProjectLanguage.Unknown }
 
 let lockFile1 = """
 NUGET
