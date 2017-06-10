@@ -362,12 +362,12 @@ type FrameworkIdentifier =
     // returns a list of compatible platforms that this platform also supports
     member internal x.RawSupportedPlatforms =
         match x with
-        | MonoAndroid -> [ ]
-        | MonoTouch -> [ ]
-        | MonoMac -> [ ]
+        | MonoAndroid -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
-        | XamariniOS -> [ ]
-        | XamarinMac -> [ ]
+        | XamariniOS -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XamarinMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
@@ -502,7 +502,7 @@ module FrameworkDetection =
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
                 | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
-                | "netstandard10" -> Some(DotNetStandard DotNetStandardVersion.V1_0)
+                | "netstandard" | "netstandard10" -> Some(DotNetStandard DotNetStandardVersion.V1_0)
                 | "netstandard11" -> Some(DotNetStandard DotNetStandardVersion.V1_1)
                 | "netstandard12" -> Some(DotNetStandard DotNetStandardVersion.V1_2)
                 | "netstandard13" -> Some(DotNetStandard DotNetStandardVersion.V1_3)
@@ -513,7 +513,7 @@ module FrameworkDetection =
                 | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
                 | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
                 | "netcore20" -> Some (DotNetCore DotNetCoreVersion.V2_0)
-                | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
+                //| v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
                 | _ -> None
             result)
 
