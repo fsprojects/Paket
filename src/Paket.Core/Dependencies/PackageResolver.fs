@@ -825,9 +825,10 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         if flags.ForceBreak then false else
         if conflictState.Status.IsDone then false else
         if Seq.isEmpty conflictState.VersionsToExplore then
-            match conflictState.Status with
-            | Resolution.Ok _ -> ()
-            | _ -> (tracefn "   Failed to satisfy %O" currentRequirement)
+            // TODO: maybe this is the wrong place to report this...
+            //match conflictState.Status with
+            //| Resolution.Ok _ -> ()
+            //| _ -> (tracefn "   Failed to satisfy %O" currentRequirement)
             false else
         flags.FirstTrial || Set.isEmpty conflictState.Conflicts
         
