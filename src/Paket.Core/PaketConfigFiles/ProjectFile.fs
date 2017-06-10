@@ -179,7 +179,7 @@ module ProjectFile =
             ProjectNode = projectNode
             OriginalText = Utils.normalizeXml doc
             Language = LanguageEvaluation.getProjectLanguage doc (Path.GetFileName fullName)
-            DependencyCache = None
+
         }
 
     let loadFromFile(fileName:string) =
@@ -1663,9 +1663,9 @@ type ProjectFile with
             with
             | _ -> None
 
-    member this.GetAllInterProjectDependenciesWithoutProjectTemplates() = this.ProjectsWithoutTemplates(this.GetAllReferencedProjects())
+    member this.GetAllInterProjectDependenciesWithoutProjectTemplates cache = this.ProjectsWithoutTemplates(this.GetAllReferencedProjects cache)
 
-    member this.GetAllInterProjectDependenciesWithProjectTemplates() = this.ProjectsWithTemplates(this.GetAllReferencedProjects())
+    member this.GetAllInterProjectDependenciesWithProjectTemplates cache = this.ProjectsWithTemplates(this.GetAllReferencedProjects cache)
 
     member this.ProjectsWithoutTemplates projects =
         projects
@@ -1689,16 +1689,20 @@ type ProjectFile with
                 | None -> false
         )
 
-    member this.GetAllReferencedProjects() =
-        let dependencyHash = HashSet<string>()
+    member this.GetAllReferencedProjects (cache:Dictionary<string,ProjectFile>) =
         let rec getProjects (project:ProjectFile) = 
             seq {
                 let projects = seq { 
                     for proj in project.GetInterProjectDependencies() do
-                        if not (dependencyHash.Contains proj.Path) then
-                            let projFile = (ProjectFile.tryLoad(proj.Path).Value)
-                            dependencyHash.Add proj.Path |> ignore
-                            yield projFile }
+                        match cache.TryGetValue proj.Path with
+                        | true, cproj -> yield cproj
+                        | false, _ ->
+                            match ProjectFile.tryLoad(proj.Path) with
+                            | Some cproj -> 
+                                cache.Add(proj.Path,cproj)   
+                                yield cproj
+                            | None -> () 
+                            }
                 yield! projects
                 for proj in projects do
                     yield! (getProjects proj)
@@ -1707,15 +1711,15 @@ type ProjectFile with
             yield this
             yield! getProjects this
         }
-    member this.GetProjects includeReferencedProjects =
+    member this.GetProjects includeReferencedProjects cache =
         seq {
             if includeReferencedProjects then
-                yield! this.GetAllReferencedProjects()
+                yield! this.GetAllReferencedProjects cache
             else
                 yield this
         }
 
-    member this.GetCompileItems (includeReferencedProjects : bool) = 
+    member this.GetCompileItems (includeReferencedProjects : bool) (cache:Dictionary<string,ProjectFile>) = 
         let getCompileRefs projectFile =
             projectFile.Document
             |> getDescendants "Compile"
@@ -1754,8 +1758,8 @@ type ProjectFile with
                 DestinationPath = compileItem.DestinationPath.Replace("%(FileName)", Path.GetFileName(realFile))
                 BaseDir = compileItem.BaseDir
             })
-
-        this.GetProjects includeReferencedProjects
+        
+        this.GetProjects includeReferencedProjects cache 
         |> this.ProjectsWithoutTemplates
         |> Seq.collect getCompileRefs
         |> Seq.map getCompileItem
