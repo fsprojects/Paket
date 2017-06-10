@@ -1044,7 +1044,6 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                                                 Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
                             step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
                         else
-                            tracefn "   Can't take package %O: incompatible dependencies" exploredPackage
                             step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
 
     let startingStep = {
