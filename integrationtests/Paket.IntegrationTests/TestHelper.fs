@@ -85,20 +85,22 @@ let directPaketInPath command scenarioPath =
           true
           (addAndPrint true)
           (addAndPrint false)
-    if perfMessages.Count = 0 then
-        failwith "No Performance messages recieved in test!"
-    printfn "Performance:"
-    for msg in perfMessages do
-        printfn "%s" msg
-    //let result =
-    //    ExecProcessAndReturnMessages (fun info ->
-    //      info.FileName <- paketToolPath
-    //      info.WorkingDirectory <- scenarioPath
-    //      info.Arguments <- command) (System.TimeSpan.FromMinutes 5.)
+
+    // Only throw after the result <> 0 check because the current test might check the argument parsing
+    // this is the only case where no performance is printed
+    let isUsageError = result <> 0 && msgs |> Seq.filter fst |> Seq.map snd |> Seq.exists (fun msg -> msg.Contains "USAGE:")
+    if not isUsageError then
+        if perfMessages.Count = 0 then
+            failwith "No Performance messages recieved in test!"
+        printfn "Performance:"
+        for msg in perfMessages do
+            printfn "%s" msg
+
     if result <> 0 then 
         let errors = String.Join(Environment.NewLine,msgs |> Seq.filter fst |> Seq.map snd)
-        //printfn "%s" <| String.Join(Environment.NewLine,msgs)
         failwith errors      
+
+
     String.Join(Environment.NewLine,msgs |> Seq.filter (fst >> not) |> Seq.map snd)
     #endif
 
