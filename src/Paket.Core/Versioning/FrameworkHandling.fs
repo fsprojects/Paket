@@ -1065,6 +1065,9 @@ module SupportCalculation =
                 |> List.map SinglePlatform
             let profilesSupported =
                 // See https://docs.microsoft.com/en-us/dotnet/articles/standard/library
+                // NOTE: This is explicit in NuGet world (ie users explicitely need to add "imports")
+                // we prefer users to build for netstandard and don't allow netstandard to be used in
+                // portable projects...
                 match tf with
                 | DotNetStandard DotNetStandardVersion.V1_0 ->
                     [ Profile31 
