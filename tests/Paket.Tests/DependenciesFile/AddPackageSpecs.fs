@@ -359,10 +359,10 @@ let ``should pin down version requirement during add``() =
     let config = """source https://www.nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi ~> 1.0"""
 
-    let cfg = DependenciesFile.FromSource(config).AddFixedPackage(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","1.0.071.9432")
-    
+    let cfg = DependenciesFile.FromSource(config).AddFixedPackage(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","1.0.71.9432")
+
     let expected = """source https://www.nuget.org/api/v2
-nuget Microsoft.AspNet.WebApi 1.0.071.9432"""
+nuget Microsoft.AspNet.WebApi 1.0.71.9432"""
 
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings expected)
@@ -400,14 +400,14 @@ nuget Moq"""
     |> shouldEqual (normalizeLineEndings expected)
 
 [<Test>]
-let ``should add Microsoft.AspNet.WebApi package in first group``() = 
+let ``should add Microsoft.AspNet.WebApi package in first group``() =
     let config = """source https://www.nuget.org/api/v2
 
 group Build
 nuget Moq"""
 
     let cfg = DependenciesFile.FromSource(config).Add(Constants.MainDependencyGroup, PackageName "Microsoft.AspNet.WebApi","")
-    
+
     let expected = """source https://www.nuget.org/api/v2
 nuget Microsoft.AspNet.WebApi
 
