@@ -1714,7 +1714,6 @@ type ProjectFile with
             this.DependencyCache <- Some cache
             cache
         |> Seq.ofList
-
     member this.GetProjects includeReferencedProjects =
         seq {
             if includeReferencedProjects then
