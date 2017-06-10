@@ -1689,12 +1689,15 @@ type ProjectFile with
         )
 
     member this.GetAllReferencedProjects() =
+        let dependencyHash = HashSet<string>()
         let rec getProjects (project:ProjectFile) = 
             seq {
-                let projects = 
-                    project.GetInterProjectDependencies() 
-                    |> Seq.map (fun proj -> ProjectFile.tryLoad(proj.Path).Value)
-
+                let projects = seq { 
+                    for proj in project.GetInterProjectDependencies() do
+                        if not dependencyHash.Contains proj.Path then
+                            let projFile = (ProjectFile.tryLoad(proj.Path).Value)
+                            dependencyHash.Add proj.Path
+                            yield projFile }
                 yield! projects
                 for proj in projects do
                     yield! (getProjects proj)
