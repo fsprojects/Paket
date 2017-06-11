@@ -57,6 +57,7 @@
         <Reference Include="ExpressiveAnnotations">
           <HintPath>..\..\packages\ExpressiveAnnotations.dll\lib\net45\ExpressiveAnnotations.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

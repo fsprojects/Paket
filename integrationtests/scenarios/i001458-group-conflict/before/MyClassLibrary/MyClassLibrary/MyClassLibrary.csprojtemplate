@@ -83,6 +83,7 @@
         <Reference Include="Nancy">
           <HintPath>..\..\packages\hosting\Nancy\lib\net40\Nancy.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -94,6 +95,7 @@
         <Reference Include="Nancy.Owin">
           <HintPath>..\..\packages\hosting\Nancy.Owin\lib\net40\Nancy.Owin.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -105,6 +107,7 @@
         <Reference Include="Owin">
           <HintPath>..\..\packages\hosting\Owin\lib\net40\Owin.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -116,6 +119,7 @@
         <Reference Include="Castle.Core">
           <HintPath>..\..\packages\Castle.Core\lib\net35\Castle.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -125,6 +129,7 @@
         <Reference Include="Castle.Core">
           <HintPath>..\..\packages\Castle.Core\lib\net40-client\Castle.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -134,6 +139,7 @@
         <Reference Include="Castle.Core">
           <HintPath>..\..\packages\Castle.Core\lib\net45\Castle.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -143,6 +149,7 @@
         <Reference Include="Castle.Core">
           <HintPath>..\..\packages\Castle.Core\lib\sl4\Castle.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -152,6 +159,7 @@
         <Reference Include="Castle.Core">
           <HintPath>..\..\packages\Castle.Core\lib\sl5\Castle.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -163,6 +171,7 @@
         <Reference Include="Castle.Windsor">
           <HintPath>..\..\packages\Castle.Windsor\lib\net35\Castle.Windsor.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Xml">
@@ -175,6 +184,7 @@
         <Reference Include="Castle.Windsor">
           <HintPath>..\..\packages\Castle.Windsor\lib\net40\Castle.Windsor.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Xml">
@@ -187,6 +197,7 @@
         <Reference Include="Castle.Windsor">
           <HintPath>..\..\packages\Castle.Windsor\lib\net45\Castle.Windsor.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Xml">
@@ -199,6 +210,7 @@
         <Reference Include="Castle.Windsor">
           <HintPath>..\..\packages\Castle.Windsor\lib\sl4\Castle.Windsor.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Windows">
@@ -211,6 +223,7 @@
         <Reference Include="Castle.Windsor">
           <HintPath>..\..\packages\Castle.Windsor\lib\sl5\Castle.Windsor.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Windows">
@@ -225,6 +238,7 @@
         <Reference Include="Nancy.Bootstrappers.Windsor">
           <HintPath>..\..\packages\Nancy.Bootstrappers.Windsor\lib\net40\Nancy.Bootstrappers.Windsor.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -236,6 +250,7 @@
         <Reference Include="CsQuery">
           <HintPath>..\..\packages\test\CsQuery\lib\net40\CsQuery.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -247,6 +262,7 @@
         <Reference Include="Nancy.Testing">
           <HintPath>..\..\packages\test\Nancy.Testing\lib\net40\Nancy.Testing.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

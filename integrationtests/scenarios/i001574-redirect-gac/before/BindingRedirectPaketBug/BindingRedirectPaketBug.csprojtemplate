@@ -61,6 +61,7 @@
         <Reference Include="Autofac">
           <HintPath>..\packages\Autofac\lib\net40\Autofac.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -70,6 +71,7 @@
         <Reference Include="Autofac">
           <HintPath>..\packages\Autofac\lib\portable-net4+sl5+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\Autofac.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -79,6 +81,7 @@
     <Reference Include="Boo.Lang">
       <HintPath>..\packages\Boo\lib\Boo.Lang.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
@@ -86,11 +89,13 @@
     <Reference Include="Boo.Lang.Compiler">
       <HintPath>..\packages\Boo-Compiler\lib\Boo.Lang.Compiler.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
     <Reference Include="Boo.Lang.Parser">
       <HintPath>..\packages\Boo-Compiler\lib\Boo.Lang.Parser.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
@@ -100,6 +105,7 @@
         <Reference Include="BouncyCastle.Crypto">
           <HintPath>..\packages\BouncyCastle\lib\Net20\BouncyCastle.Crypto.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -109,6 +115,7 @@
         <Reference Include="BouncyCastle.Crypto">
           <HintPath>..\packages\BouncyCastle\lib\Net40-Client\BouncyCastle.Crypto.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -120,6 +127,7 @@
         <Reference Include="Chessie">
           <HintPath>..\packages\Chessie\lib\net40\Chessie.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -131,6 +139,7 @@
         <Reference Include="Common.Logging">
           <HintPath>..\packages\Common.Logging\lib\net35\Common.Logging.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -140,6 +149,7 @@
         <Reference Include="Common.Logging">
           <HintPath>..\packages\Common.Logging\lib\net40\Common.Logging.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -149,6 +159,7 @@
         <Reference Include="Common.Logging">
           <HintPath>..\packages\Common.Logging\lib\sl40\Common.Logging.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -160,6 +171,7 @@
         <Reference Include="Common.Logging.Core">
           <HintPath>..\packages\Common.Logging.Core\lib\net35\Common.Logging.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -169,6 +181,7 @@
         <Reference Include="Common.Logging.Core">
           <HintPath>..\packages\Common.Logging.Core\lib\net40\Common.Logging.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -178,6 +191,7 @@
         <Reference Include="Common.Logging.Core">
           <HintPath>..\packages\Common.Logging.Core\lib\portable-win+net40+sl40+wp7\Common.Logging.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -189,6 +203,7 @@
         <Reference Include="Common.Logging.NLog20">
           <HintPath>..\packages\Common.Logging.NLog20\lib\net35\Common.Logging.NLog20.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -198,6 +213,7 @@
         <Reference Include="Common.Logging.NLog20">
           <HintPath>..\packages\Common.Logging.NLog20\lib\net40\Common.Logging.NLog20.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -209,6 +225,7 @@
         <Reference Include="Dapper">
           <HintPath>..\packages\Dapper\lib\net35\Dapper.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -218,6 +235,7 @@
         <Reference Include="Dapper">
           <HintPath>..\packages\Dapper\lib\net40\Dapper.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -227,6 +245,7 @@
         <Reference Include="Dapper">
           <HintPath>..\packages\Dapper\lib\net45\Dapper.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -238,6 +257,7 @@
         <Reference Include="EventStore.ClientAPI">
           <HintPath>..\packages\EventStore.Client\lib\net40\EventStore.ClientAPI.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -247,21 +267,25 @@
     <Reference Include="FileHelpers.ExcelStorage">
       <HintPath>..\packages\FileHelpers\lib\FileHelpers.ExcelStorage.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
     <Reference Include="FileHelpers">
       <HintPath>..\packages\FileHelpers\lib\FileHelpers.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
     <Reference Include="Interop.Excel">
       <HintPath>..\packages\FileHelpers\lib\Interop.Excel.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
     <Reference Include="Interop.Office">
       <HintPath>..\packages\FileHelpers\lib\Interop.Office.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
@@ -271,6 +295,7 @@
         <Reference Include="FluentScheduler">
           <HintPath>..\packages\FluentScheduler\lib\net40\FluentScheduler.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -282,6 +307,7 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\net40\FSharp.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -291,6 +317,7 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\MonoAndroid\FSharp.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -300,6 +327,7 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\MonoTouch\FSharp.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -309,6 +337,7 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\portable-net45+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -318,6 +347,7 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\portable-net45+sl5+netcore45+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -327,6 +357,7 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\portable-net45+netcore45+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -336,6 +367,7 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\FSharp.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -347,16 +379,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\net40\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\net40\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -366,16 +401,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\sl4\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\sl4\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\sl4\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -385,16 +423,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\sl5\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\sl5\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\sl5\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -404,16 +445,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\sl4-windowsphone71\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\sl4-windowsphone71\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\sl4-windowsphone71\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -423,16 +467,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl5+win8+wp8+wpa81\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl5+win8+wp8+wpa81\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl5+win8+wp8+wpa81\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -442,16 +489,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl4+win8\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -461,16 +511,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+win8+wp8+wpa81\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+win8+wp8+wpa81\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+win8+wp8+wpa81\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -480,16 +533,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl4+win8+wp8+wpa81\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl4+win8+wp8+wpa81\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl4+win8+wp8+wpa81\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -499,16 +555,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+win8\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+win8\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+win8\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -518,16 +577,19 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl4+win8+wp71+wpa81\System.IO.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl4+win8+wp71+wpa81\System.Runtime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\portable-net40+sl4+win8+wp71+wpa81\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -539,11 +601,13 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\win8\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\win8\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -553,21 +617,25 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.WebRequest">
           <HintPath>..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http">
           <HintPath>..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>          
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -577,11 +645,13 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http">
@@ -597,11 +667,13 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http">
@@ -614,11 +686,13 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\monotouch\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http">
@@ -631,16 +705,19 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\sl4-windowsphone71\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\sl4-windowsphone71\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http">
           <HintPath>..\packages\Microsoft.Net.Http\lib\sl4-windowsphone71\System.Net.Http.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -650,11 +727,13 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\wpa81\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -664,11 +743,13 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\Xamarin.iOS10\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\Xamarin.iOS10\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -678,16 +759,19 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http">
           <HintPath>..\packages\Microsoft.Net.Http\lib\portable-net40+sl4+win8+wp71+wpa81\System.Net.Http.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -697,11 +781,13 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\portable-net45+win8\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -711,11 +797,13 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\portable-net45+win8+wpa81\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\portable-net45+win8+wpa81\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -727,6 +815,7 @@
         <Reference Include="MongoDB.Bson">
           <HintPath>..\packages\MongoDB.Bson\lib\net45\MongoDB.Bson.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -738,6 +827,7 @@
         <Reference Include="MongoDB.Driver">
           <HintPath>..\packages\MongoDB.Driver\lib\net45\MongoDB.Driver.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -749,6 +839,7 @@
         <Reference Include="MongoDB.Driver.Core">
           <HintPath>..\packages\MongoDB.Driver.Core\lib\net45\MongoDB.Driver.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -760,6 +851,7 @@
         <Reference Include="Neo4jClient">
           <HintPath>..\packages\Neo4jClient\lib\net45\Neo4jClient.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -771,6 +863,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\net35\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -780,6 +873,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\net20\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -789,6 +883,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -798,6 +893,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -807,6 +903,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\portable-net45+wp80+win8+wpa81+dnxcore50\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -816,6 +913,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\portable-net40+sl5+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -827,6 +925,7 @@
         <Reference Include="NLog">
           <HintPath>..\packages\NLog\lib\net35\NLog.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -836,6 +935,7 @@
         <Reference Include="NLog">
           <HintPath>..\packages\NLog\lib\net40\NLog.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -845,6 +945,7 @@
         <Reference Include="NLog">
           <HintPath>..\packages\NLog\lib\net45\NLog.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -854,6 +955,7 @@
         <Reference Include="NLog">
           <HintPath>..\packages\NLog\lib\sl4\NLog.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -863,6 +965,7 @@
         <Reference Include="NLog">
           <HintPath>..\packages\NLog\lib\sl5\NLog.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -872,6 +975,7 @@
     <Reference Include="Novell.Directory.Ldap">
       <HintPath>..\packages\Novell.Directory.Ldap\lib\Novell.Directory.Ldap.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
@@ -879,6 +983,7 @@
     <Reference Include="Rhino.DSL">
       <HintPath>..\packages\RhinoDSL\lib\Rhino.DSL.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
@@ -888,11 +993,13 @@
         <Reference Include="Rhino.Etl.Core">
           <HintPath>..\packages\Rhino-Etl\lib\net35\Rhino.Etl.Core.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="Rhino.Etl.Dsl">
           <HintPath>..\packages\Rhino-Etl\lib\net35\Rhino.Etl.Dsl.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -904,11 +1011,13 @@
         <Reference Include="ServiceStack.ServiceInterface">
           <HintPath>..\packages\ServiceStack\lib\net35\ServiceStack.ServiceInterface.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="ServiceStack">
           <HintPath>..\packages\ServiceStack\lib\net35\ServiceStack.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -920,6 +1029,7 @@
         <Reference Include="ServiceStack.Api.Swagger">
           <HintPath>..\packages\ServiceStack.Api.Swagger\lib\net35\ServiceStack.Api.Swagger.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -931,11 +1041,13 @@
         <Reference Include="ServiceStack.Common">
           <HintPath>..\packages\ServiceStack.Common\lib\net35\ServiceStack.Common.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="ServiceStack.Interfaces">
           <HintPath>..\packages\ServiceStack.Common\lib\net35\ServiceStack.Interfaces.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -945,11 +1057,13 @@
         <Reference Include="ServiceStack.Common">
           <HintPath>..\packages\ServiceStack.Common\lib\sl5\ServiceStack.Common.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="ServiceStack.Interfaces">
           <HintPath>..\packages\ServiceStack.Common\lib\sl5\ServiceStack.Interfaces.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -961,6 +1075,7 @@
         <Reference Include="ServiceStack.Logging.NLog">
           <HintPath>..\packages\ServiceStack.Logging.NLog\lib\net35\ServiceStack.Logging.NLog.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -972,11 +1087,13 @@
         <Reference Include="ServiceStack.OrmLite.SqlServer">
           <HintPath>..\packages\ServiceStack.OrmLite.SqlServer\lib\net35\ServiceStack.OrmLite.SqlServer.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="ServiceStack.OrmLite">
           <HintPath>..\packages\ServiceStack.OrmLite.SqlServer\lib\net35\ServiceStack.OrmLite.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -988,6 +1105,7 @@
         <Reference Include="ServiceStack.Redis">
           <HintPath>..\packages\ServiceStack.Redis\lib\net35\ServiceStack.Redis.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -999,6 +1117,7 @@
         <Reference Include="ServiceStack.Text">
           <HintPath>..\packages\ServiceStack.Text\lib\net35\ServiceStack.Text.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -1008,6 +1127,7 @@
         <Reference Include="ServiceStack.Text">
           <HintPath>..\packages\ServiceStack.Text\lib\sl4\ServiceStack.Text.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -1017,6 +1137,7 @@
         <Reference Include="ServiceStack.Text">
           <HintPath>..\packages\ServiceStack.Text\lib\sl5\ServiceStack.Text.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -1026,6 +1147,7 @@
         <Reference Include="ServiceStack.Text.WP">
           <HintPath>..\packages\ServiceStack.Text\lib\sl4-windowsphone71\ServiceStack.Text.WP.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -1037,6 +1159,7 @@
         <Reference Include="YamlDotNet">
           <HintPath>..\packages\YamlDotNet\lib\net35\YamlDotNet.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -1046,6 +1169,7 @@
         <Reference Include="YamlDotNet">
           <HintPath>..\packages\YamlDotNet\lib\portable-net45+netcore45+wpa81+wp8+MonoAndroid1+MonoTouch1\YamlDotNet.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

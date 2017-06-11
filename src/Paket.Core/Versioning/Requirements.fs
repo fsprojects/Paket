@@ -677,6 +677,7 @@ type InstallSettings =
       ReferenceCondition : string option
       CreateBindingRedirects : BindingRedirectsSettings option
       CopyLocal : bool option
+      SpecificVersion : bool option
       Excludes : string list
       Aliases : Map<string,string>
       CopyContentToOutputDirectory : CopyToOutputDirectorySettings option 
@@ -684,6 +685,7 @@ type InstallSettings =
 
     static member Default =
         { CopyLocal = None
+          SpecificVersion = None
           ImportTargets = None
           FrameworkRestrictions = ExplicitRestriction FrameworkRestriction.NoRestriction
           IncludeVersionInPath = None
@@ -699,6 +701,9 @@ type InstallSettings =
         let options =
             [ match this.CopyLocal with
               | Some x -> yield "copy_local: " + x.ToString().ToLower()
+              | None -> ()
+              match this.SpecificVersion with
+              | Some x -> yield "specific_version: " + x.ToString().ToLower()
               | None -> ()
               match this.CopyContentToOutputDirectory with
               | Some CopyToOutputDirectorySettings.Never -> yield "copy_content_to_output_dir: never"
@@ -745,6 +750,7 @@ type InstallSettings =
                 FrameworkRestrictions = filterRestrictions self.FrameworkRestrictions other.FrameworkRestrictions
                 OmitContent = self.OmitContent ++ other.OmitContent
                 CopyLocal = self.CopyLocal ++ other.CopyLocal
+                SpecificVersion = self.SpecificVersion ++ other.SpecificVersion
                 CopyContentToOutputDirectory = self.CopyContentToOutputDirectory ++ other.CopyContentToOutputDirectory
                 ReferenceCondition = self.ReferenceCondition ++ other.ReferenceCondition
                 Excludes = self.Excludes @ other.Excludes
@@ -805,6 +811,11 @@ type InstallSettings =
               Aliases = Map.empty
               CopyLocal =
                 match getPair "copy_local" with
+                | Some "false" -> Some false 
+                | Some "true" -> Some true
+                | _ -> None
+              SpecificVersion =
+                match getPair "specific_version" with
                 | Some "false" -> Some false 
                 | Some "true" -> Some true
                 | _ -> None

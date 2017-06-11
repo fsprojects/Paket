@@ -194,6 +194,7 @@ module DependenciesFileParser =
     | AutodetectFrameworkRestrictions
     | ImportTargets of bool
     | CopyLocal of bool
+    | SpecificVersion of bool
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | GenerateLoadScripts of bool option
     | ReferenceCondition of string
@@ -317,6 +318,7 @@ module DependenciesFileParser =
             Some (ParserOptions (ParserOption.OmitContent setting))
         | String.RemovePrefix "import_targets" trimmed -> Some (ParserOptions (ParserOption.ImportTargets(trimmed.Replace(":","").Trim() = "true")))
         | String.RemovePrefix "copy_local" trimmed -> Some (ParserOptions (ParserOption.CopyLocal(trimmed.Replace(":","").Trim() = "true")))
+        | String.RemovePrefix "specific_version" trimmed -> Some (ParserOptions (ParserOption.SpecificVersion(trimmed.Replace(":","").Trim() = "true")))
         | String.RemovePrefix "copy_content_to_output_dir" trimmed -> 
             let setting =
                 match trimmed.Replace(":","").Trim() with
@@ -416,6 +418,7 @@ module DependenciesFileParser =
         | ResolverStrategyForTransitives strategy        -> { current.Options with ResolverStrategyForTransitives = strategy }
         | ResolverStrategyForDirectDependencies strategy -> { current.Options with ResolverStrategyForDirectDependencies = strategy }
         | CopyLocal mode                                 -> { current.Options with Settings = { current.Options.Settings with CopyLocal = Some mode } }
+        | SpecificVersion mode                           -> { current.Options with Settings = { current.Options.Settings with SpecificVersion = Some mode } }
         | CopyContentToOutputDir mode                    -> { current.Options with Settings = { current.Options.Settings with CopyContentToOutputDirectory = Some mode } }
         | ImportTargets mode                             -> { current.Options with Settings = { current.Options.Settings with ImportTargets = Some mode } }
         | FrameworkRestrictions r                        -> { current.Options with Settings = { current.Options.Settings with FrameworkRestrictions = r } }

@@ -536,6 +536,7 @@ module ProjectFile =
                         node
                         |> addChild (createNodeSet "HintPath" fileItem.Include project)
                         |> addChild (createNodeSet "Private" "True" project)
+                        |> addChild (createNodeSet "SpecificVersion" "True" project)
                     | BuildAction.Page ->
                         node
                         |> addChild (createNodeSet "Generator" "MSBuild:Compile" project)
@@ -663,7 +664,7 @@ module ProjectFile =
         AnalyzersNode : XmlElement
     }
 
-    let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool option) (importTargets:bool) (referenceCondition:string option) (allTargetProfiles:Set<TargetProfile>) (project:ProjectFile) : XmlContext =
+    let generateXml (model:InstallModel) (usedFrameworkLibs:HashSet<TargetProfile*string>) (aliases:Map<string,string>) (copyLocal:bool option) (specificVersion:bool option) (importTargets:bool) (referenceCondition:string option) (allTargetProfiles:Set<TargetProfile>) (project:ProjectFile) : XmlContext =
         let references = 
             getCustomReferenceAndFrameworkNodes project
             |> List.map (fun node -> node.Attributes.["Include"].InnerText.Split(',').[0])
@@ -692,10 +693,17 @@ module ProjectFile =
                     | Some false -> "False"
                     | None -> if relativePath.Contains @"\ref\" then "False" else "True"
 
+                let specificVersionSettings = 
+                    match specificVersion with
+                    | Some true -> "True" 
+                    | Some false -> "False"
+                    | None -> "True"
+
                 if relativePath.Contains @"\native\" then createNode "NativeReference" project else createNode "Reference" project
                 |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
                 |> addChild (createNodeSet "HintPath" relativePath project)
                 |> addChild (createNodeSet "Private" privateSettings project)
+                |> addChild (createNodeSet "SpecificVersion" specificVersionSettings project)
                 |> addChild (createNodeSet "Paket" "True" project)
                 |> fun n ->
                     match aliases with
@@ -1056,7 +1064,7 @@ module ProjectFile =
             let importTargets = defaultArg installSettings.ImportTargets true
             
             let allFrameworks = applyRestrictionsToTargets restrictionList KnownTargetProfiles.AllProfiles
-            generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal importTargets installSettings.ReferenceCondition (set allFrameworks) project)
+            generateXml projectModel usedFrameworkLibs installSettings.Aliases installSettings.CopyLocal installSettings.SpecificVersion importTargets installSettings.ReferenceCondition (set allFrameworks) project)
         |> Seq.iter (fun ctx ->
             for chooseNode in ctx.ChooseNodes do
                 let i = ref (project.ProjectNode.ChildNodes.Count-1)
@@ -1460,7 +1468,7 @@ type ProjectFile with
 
     member this.DeleteCustomModelNodes(model:InstallModel) = ProjectFile.deleteCustomModelNodes model this
 
-    member this.GenerateXml(model, usedFrameworkLibs:HashSet<TargetProfile*string>, aliases, copyLocal, importTargets, allTargetProfiles:#seq<TargetProfile>, referenceCondition) = ProjectFile.generateXml model usedFrameworkLibs aliases copyLocal importTargets referenceCondition (set allTargetProfiles) this
+    member this.GenerateXml(model, usedFrameworkLibs:HashSet<TargetProfile*string>, aliases, copyLocal, specificVersion, importTargets, allTargetProfiles:#seq<TargetProfile>, referenceCondition) = ProjectFile.generateXml model usedFrameworkLibs aliases copyLocal specificVersion importTargets referenceCondition (set allTargetProfiles) this
 
     member this.RemovePaketNodes () = ProjectFile.removePaketNodes this 
 

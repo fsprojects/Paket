@@ -83,6 +83,7 @@
         <Reference Include="EasyNetQ">
           <HintPath>..\..\packages\EasyNetQ\lib\net45\EasyNetQ.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -94,6 +95,7 @@
         <Reference Include="RabbitMQ.Client">
           <HintPath>..\..\packages\RabbitMQ.Client\lib\net451\RabbitMQ.Client.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

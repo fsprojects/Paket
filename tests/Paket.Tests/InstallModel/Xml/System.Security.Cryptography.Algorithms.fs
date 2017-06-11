@@ -14,6 +14,7 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\lib\net46\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>True</Private>
+        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -23,6 +24,7 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>True</Private>
+        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -32,6 +34,7 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>True</Private>
+        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -41,6 +44,7 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\ref\netstandard1.3\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>False</Private>
+        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -50,6 +54,7 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\ref\netstandard1.4\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>False</Private>
+        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -59,6 +64,7 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>False</Private>
+        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -93,7 +99,7 @@ let ``should generate Xml for System.Security.Cryptography.Algorithms in CSharp 
 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,None,true,KnownTargetProfiles.AllProfiles,None)
     let result =
       ctx.ChooseNodes
       |> (fun n -> n.Head.OuterXml)

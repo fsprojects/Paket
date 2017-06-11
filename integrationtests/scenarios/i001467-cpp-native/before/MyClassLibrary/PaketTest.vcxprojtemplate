@@ -120,6 +120,7 @@
         <NativeReference Include="cpprest120d_app_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\lib\native\v120\winapp\msvcstl\dyn\rt-dyn\arm\Debug\cpprest120d_app_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -129,6 +130,7 @@
         <NativeReference Include="cpprest120d_app_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\lib\native\v120\winapp\msvcstl\dyn\rt-dyn\x64\Debug\cpprest120d_app_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -138,6 +140,7 @@
         <NativeReference Include="cpprest120d_app_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\lib\native\v120\winapp\msvcstl\dyn\rt-dyn\x86\Debug\cpprest120d_app_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -147,6 +150,7 @@
         <NativeReference Include="cpprest120_app_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\lib\native\v120\winapp\msvcstl\dyn\rt-dyn\arm\Release\cpprest120_app_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -156,6 +160,7 @@
         <NativeReference Include="cpprest120_app_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\lib\native\v120\winapp\msvcstl\dyn\rt-dyn\x64\Release\cpprest120_app_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -165,6 +170,7 @@
         <NativeReference Include="cpprest120_app_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winapp.msvcstl.dyn.rt-dyn\lib\native\v120\winapp\msvcstl\dyn\rt-dyn\x86\Release\cpprest120_app_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -176,6 +182,7 @@
         <NativeReference Include="cpprest120d_2_7">
           <HintPath>..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn\lib\native\v120\windesktop\msvcstl\dyn\rt-dyn\x64\Debug\cpprest120d_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -185,6 +192,7 @@
         <NativeReference Include="cpprest120d_2_7">
           <HintPath>..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn\lib\native\v120\windesktop\msvcstl\dyn\rt-dyn\x86\Debug\cpprest120d_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -194,6 +202,7 @@
         <NativeReference Include="cpprest120_2_7">
           <HintPath>..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn\lib\native\v120\windesktop\msvcstl\dyn\rt-dyn\x64\Release\cpprest120_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -203,6 +212,7 @@
         <NativeReference Include="cpprest120_2_7">
           <HintPath>..\packages\cpprestsdk.v120.windesktop.msvcstl.dyn.rt-dyn\lib\native\v120\windesktop\msvcstl\dyn\rt-dyn\x86\Release\cpprest120_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -214,6 +224,7 @@
         <NativeReference Include="cpprest120d_wp81_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn\lib\native\v120\winphone\msvcstl\dyn\rt-dyn\arm\Debug\cpprest120d_wp81_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -223,6 +234,7 @@
         <NativeReference Include="cpprest120d_wp81_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn\lib\native\v120\winphone\msvcstl\dyn\rt-dyn\x86\Debug\cpprest120d_wp81_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -232,6 +244,7 @@
         <NativeReference Include="cpprest120_wp81_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn\lib\native\v120\winphone\msvcstl\dyn\rt-dyn\arm\Release\cpprest120_wp81_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -241,6 +254,7 @@
         <NativeReference Include="cpprest120_wp81_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winphone.msvcstl.dyn.rt-dyn\lib\native\v120\winphone\msvcstl\dyn\rt-dyn\x86\Release\cpprest120_wp81_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -252,6 +266,7 @@
         <NativeReference Include="cpprest120d_wps81_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn\lib\native\v120\winphonesl\msvcstl\dyn\rt-dyn\arm\Debug\cpprest120d_wps81_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -261,6 +276,7 @@
         <NativeReference Include="cpprest120d_wps81_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn\lib\native\v120\winphonesl\msvcstl\dyn\rt-dyn\x86\Debug\cpprest120d_wps81_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -270,6 +286,7 @@
         <NativeReference Include="cpprest120_wps81_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn\lib\native\v120\winphonesl\msvcstl\dyn\rt-dyn\arm\Release\cpprest120_wps81_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -279,6 +296,7 @@
         <NativeReference Include="cpprest120_wps81_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winphonesl.msvcstl.dyn.rt-dyn\lib\native\v120\winphonesl\msvcstl\dyn\rt-dyn\x86\Release\cpprest120_wps81_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -290,6 +308,7 @@
         <NativeReference Include="cpprest120d_xp_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn\lib\native\v120\winxp\msvcstl\dyn\rt-dyn\x64\Debug\cpprest120d_xp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -299,6 +318,7 @@
         <NativeReference Include="cpprest120d_xp_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn\lib\native\v120\winxp\msvcstl\dyn\rt-dyn\x86\Debug\cpprest120d_xp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -308,6 +328,7 @@
         <NativeReference Include="cpprest120_xp_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn\lib\native\v120\winxp\msvcstl\dyn\rt-dyn\x64\Release\cpprest120_xp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -317,6 +338,7 @@
         <NativeReference Include="cpprest120_xp_2_7">
           <HintPath>..\packages\cpprestsdk.v120.winxp.msvcstl.dyn.rt-dyn\lib\native\v120\winxp\msvcstl\dyn\rt-dyn\x86\Release\cpprest120_xp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -328,6 +350,7 @@
         <NativeReference Include="cpprest140d_uwp_2_7">
           <HintPath>..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\lib\native\v140\winapp\msvcstl\dyn\rt-dyn\arm\Debug\cpprest140d_uwp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -337,6 +360,7 @@
         <NativeReference Include="cpprest140d_uwp_2_7">
           <HintPath>..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\lib\native\v140\winapp\msvcstl\dyn\rt-dyn\x64\Debug\cpprest140d_uwp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -346,6 +370,7 @@
         <NativeReference Include="cpprest140d_uwp_2_7">
           <HintPath>..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\lib\native\v140\winapp\msvcstl\dyn\rt-dyn\x86\Debug\cpprest140d_uwp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -355,6 +380,7 @@
         <NativeReference Include="cpprest140_uwp_2_7">
           <HintPath>..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\lib\native\v140\winapp\msvcstl\dyn\rt-dyn\arm\Release\cpprest140_uwp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -364,6 +390,7 @@
         <NativeReference Include="cpprest140_uwp_2_7">
           <HintPath>..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\lib\native\v140\winapp\msvcstl\dyn\rt-dyn\x64\Release\cpprest140_uwp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -373,6 +400,7 @@
         <NativeReference Include="cpprest140_uwp_2_7">
           <HintPath>..\packages\cpprestsdk.v140.winapp.msvcstl.dyn.rt-dyn\lib\native\v140\winapp\msvcstl\dyn\rt-dyn\x86\Release\cpprest140_uwp_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -384,6 +412,7 @@
         <NativeReference Include="cpprest140d_2_7">
           <HintPath>..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn\lib\native\v140\windesktop\msvcstl\dyn\rt-dyn\x64\Debug\cpprest140d_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -393,6 +422,7 @@
         <NativeReference Include="cpprest140d_2_7">
           <HintPath>..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn\lib\native\v140\windesktop\msvcstl\dyn\rt-dyn\x86\Debug\cpprest140d_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -402,6 +432,7 @@
         <NativeReference Include="cpprest140_2_7">
           <HintPath>..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn\lib\native\v140\windesktop\msvcstl\dyn\rt-dyn\x64\Release\cpprest140_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>
@@ -411,6 +442,7 @@
         <NativeReference Include="cpprest140_2_7">
           <HintPath>..\packages\cpprestsdk.v140.windesktop.msvcstl.dyn.rt-dyn\lib\native\v140\windesktop\msvcstl\dyn\rt-dyn\x86\Release\cpprest140_2_7.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </NativeReference>
       </ItemGroup>

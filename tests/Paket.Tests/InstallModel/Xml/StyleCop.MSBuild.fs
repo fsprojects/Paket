@@ -25,7 +25,7 @@ let ``should generate Xml for StyleCop.MSBuild``() =
     model.GetTargetsFiles(SinglePlatform (DotNetFramework FrameworkVersion.V2))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\StyleCop.MSBuild\build\StyleCop.MSBuild.Targets" 
     
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
     
     ctx.FrameworkSpecificPropertyChooseNode.OuterXml
     |> normalizeXml

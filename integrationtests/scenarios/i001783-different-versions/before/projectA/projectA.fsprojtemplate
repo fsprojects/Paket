@@ -79,6 +79,7 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -90,6 +91,7 @@
         <Reference Include="Newtonsoft.Json.FSharp">
           <HintPath>..\packages\Newtonsoft.Json.FSharp\lib\net40\Newtonsoft.Json.FSharp.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -101,6 +103,7 @@
         <Reference Include="NodaTime">
           <HintPath>..\packages\NodaTime\lib\net35-Client\NodaTime.dll</HintPath>
           <Private>True</Private>
+          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Xml">

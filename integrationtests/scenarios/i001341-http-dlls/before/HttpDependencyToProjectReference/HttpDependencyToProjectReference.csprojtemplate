@@ -43,6 +43,7 @@
     <Reference Include="library">
       <HintPath>..\paket-files\files\localhost\library\library.dll</HintPath>
       <Private>True</Private>
+      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
     <Compile Include="Properties\AssemblyInfo.cs" />
