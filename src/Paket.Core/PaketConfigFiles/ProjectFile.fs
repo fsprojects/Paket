@@ -1713,24 +1713,23 @@ type ProjectFile with
                             if not (depRefs.ContainsKey project.Name) then 
                                 depRefs.Add(project.Name,rids)
                              
-                                projs |> List.fold (fun acc proj ->
-                                let rid = proj.Path.GetHashCode()
-                                if not (delivered.Contains rid) then
-                                    match progFileCache.TryGetValue rid with
-                                    | true, cproj -> 
+                            projs |> List.fold (fun acc proj ->
+                            let rid = proj.Path.GetHashCode()
+                            if not (delivered.Contains rid) then
+                                match progFileCache.TryGetValue rid with
+                                | true, cproj -> 
+                                    delivered.Add rid
+                                    cproj :: acc                    
+                                | false, _ ->
+                                    match ProjectFile.tryLoad(proj.Path) with
+                                    | Some cproj -> 
+                                        if not (progFileCache.ContainsKey rid) then 
+                                            progFileCache.Add(rid,cproj)   
                                         delivered.Add rid
-                                        cproj :: acc                    
-                                    | false, _ ->
-                                        match ProjectFile.tryLoad(proj.Path) with
-                                        | Some cproj -> 
-                                            if not (progFileCache.ContainsKey rid) then 
-                                                progFileCache.Add(rid,cproj)   
-                                            delivered.Add rid
-                                            cproj :: acc
-                                        | None -> acc
-                                else acc                                
-                                ) []
-                            else []
+                                        cproj :: acc
+                                    | None -> acc
+                            else acc                                
+                            ) []
                     yield! pFiles |> Seq.ofList                                                              
                         }
                 yield! projects
