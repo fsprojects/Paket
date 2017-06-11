@@ -1,4 +1,4 @@
-#### Unreleased 5.0.0-rc005 - 11.06.2017
+#### 5.0.0-rc005 - 11.06.2017
 * Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
@@ -45,7 +45,7 @@
 * BUGFIX: Paket failed with: String cannot be of zero length (https://github.com/fsprojects/Paket/pull/2407)
 * Cleanup https://github.com/fsprojects/Paket/pull/2412 https://github.com/fsprojects/Paket/pull/2410
 
-#### 4.8.7 - 02.06.2017
+#### 4.8.8 - 11.06.2017
 * paket adds too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
 
 #### 4.8.6 - 23.05.2017
