@@ -1719,14 +1719,16 @@ type ProjectFile with
                                 | false, _ ->
                                     match ProjectFile.tryLoad(proj.Path) with
                                     | Some cproj -> 
-                                        progFileCache.Add(rid,cproj)   
+                                        if not (progFileCache.Contains rid) then 
+                                            progFileCache.Add(rid,cproj)   
                                         if not (delivered.Contains rid) then
                                             delivered.Add rid 
                                             depToProj t (cproj::accProj) (rid::accIds)
                                         else depToProj t (accProj)        (rid::accIds)
                                     | None -> depToProj t (accProj)       (accIds)
                         let cprojs, rids = depToProj (project.GetInterProjectDependencies()) [] []                                   
-                        depRefs.Add(project.Name,rids)
+                        if not (depRefs.ContainsKey project.Name) then 
+                            depRefs.Add(project.Name,rids)
                         yield! Seq.ofList cprojs                                  
                         }
                 yield! projects
