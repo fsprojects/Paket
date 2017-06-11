@@ -121,7 +121,7 @@ let ``#1579 update allows unpinned``() =
 
     prepare scenario
     directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario |> ignore
-    directPaket "update -v" scenario|> ignore
+    directPaket "update" scenario|> ignore
 
 [<Test>]
 let ``#1501 download succeeds``() =
@@ -151,5 +151,5 @@ let scenario = "i001579-unlisted"
 
 prepare scenario
 directPaket "pack templatefile paket.A.template version 1.0.0-prerelease output bin" scenario
-directPaket "update -v" scenario
+directPaket "update" scenario
 #endif

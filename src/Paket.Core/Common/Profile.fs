@@ -10,6 +10,7 @@ type BlockReason =
 type Category =
     | ResolverAlgorithm
     | ResolverAlgorithmBlocked of BlockReason
+    | ResolverAlgorithmNotBlocked of BlockReason
     | NuGetRequest
     | NuGetDownload
     | FileIO
@@ -18,6 +19,9 @@ type Event = { Category: Category; Duration : TimeSpan }
 let events =
     System.Collections.Concurrent.ConcurrentBag<Event>()
     
+let trackEvent cat =
+    events.Add({ Category = cat; Duration = TimeSpan() })
+
 let startCategory cat =
     let cw = Stopwatch.StartNew()
     let mutable wasDisposed = false

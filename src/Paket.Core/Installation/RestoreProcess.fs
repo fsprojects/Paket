@@ -19,7 +19,7 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
 
     lockFile.GetGroupedResolution()
     |> Map.toList
-    |> List.filter (fun ((group,package),resolved) -> NuGetV2.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
+    |> List.filter (fun ((group,package),resolved) -> NuGetCache.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
     |> List.map fst
 
 
@@ -27,7 +27,7 @@ let CopyToCaches force caches fileName =
     caches
     |> Seq.iter (fun cache -> 
         try
-            NuGetV2.CopyToCache(cache,fileName,force)
+            NuGetCache.CopyToCache(cache,fileName,force)
         with
         | exn ->
             if verbose then
@@ -36,9 +36,9 @@ let CopyToCaches force caches fileName =
 /// returns - package, libs files, props files, targets files, analyzers files
 let private extractPackage caches package alternativeProjectRoot root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
-        let! fileName,folder = NuGetV2.DownloadPackage(alternativeProjectRoot, root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let! fileName,folder = NuGet.DownloadPackage(alternativeProjectRoot, root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
         CopyToCaches force caches fileName
-        return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles (folder,package.Name) , NuGetV2.GetAnalyzerFiles folder
+        return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
     }
 
     async { 
@@ -87,12 +87,12 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
             | LocalNuGet(path,_) ->
                 let path = Utils.normalizeLocalPath path
                 let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root
-                let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
+                let nupkg = NuGetLocal.findLocalPackage di.FullName package.Name v
 
                 CopyToCaches force caches nupkg.FullName
 
-                let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
-                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles (folder,package.Name) , NuGetV2.GetAnalyzerFiles folder
+                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
+                return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
         }
 
         // manipulate overridenFile after package extraction

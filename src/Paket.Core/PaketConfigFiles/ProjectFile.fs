@@ -178,7 +178,8 @@ module ProjectFile =
             Document = doc
             ProjectNode = projectNode
             OriginalText = Utils.normalizeXml doc
-            Language = LanguageEvaluation.getProjectLanguage doc (Path.GetFileName fullName) 
+            Language = LanguageEvaluation.getProjectLanguage doc (Path.GetFileName fullName)
+
         }
 
     let loadFromFile(fileName:string) =
@@ -1670,9 +1671,9 @@ type ProjectFile with
             with
             | _ -> None
 
-    member this.GetAllInterProjectDependenciesWithoutProjectTemplates() = this.ProjectsWithoutTemplates(this.GetAllReferencedProjects())
+    member this.GetAllInterProjectDependenciesWithoutProjectTemplates cache = this.ProjectsWithoutTemplates(this.GetAllReferencedProjects cache)
 
-    member this.GetAllInterProjectDependenciesWithProjectTemplates() = this.ProjectsWithTemplates(this.GetAllReferencedProjects())
+    member this.GetAllInterProjectDependenciesWithProjectTemplates cache = this.ProjectsWithTemplates(this.GetAllReferencedProjects cache)
 
     member this.ProjectsWithoutTemplates projects =
         projects
@@ -1696,13 +1697,49 @@ type ProjectFile with
                 | None -> false
         )
 
-    member this.GetAllReferencedProjects() =
+    member this.GetAllReferencedProjects (cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int list>) =
+        let progFileCache , depRefs = cache
+        let delivered = HashSet<_>()
+        
         let rec getProjects (project:ProjectFile) = 
             seq {
-                let projects = 
-                    project.GetInterProjectDependencies() 
-                    |> Seq.map (fun proj -> ProjectFile.tryLoad(proj.Path).Value)
-
+                let projects = seq {
+                    let pFiles =
+                        match depRefs.TryGetValue project.FileName with
+                        | true, rids ->
+                            rids |> List.fold (fun acc rid ->
+                                if not (delivered.Contains rid) then
+                                    match progFileCache.TryGetValue rid with
+                                    | true, v -> 
+                                        delivered.Add rid
+                                        v :: acc
+                                    | false,_ -> acc
+                                else acc ) []
+                        | false, _ ->
+                            let projs = project.GetInterProjectDependencies()
+                            let rids = projs |> List.map (fun proj -> proj.Path.GetHashCode())
+                            if not (depRefs.ContainsKey project.Name) then 
+                                depRefs.Add(project.Name,rids)
+                             
+                            projs |> List.fold (fun acc proj ->
+                            let rid = proj.Path.GetHashCode()
+                            if not (delivered.Contains rid) then
+                                match progFileCache.TryGetValue rid with
+                                | true, cproj -> 
+                                    delivered.Add rid
+                                    cproj :: acc                    
+                                | false, _ ->
+                                    match ProjectFile.tryLoad(proj.Path) with
+                                    | Some cproj -> 
+                                        if not (progFileCache.ContainsKey rid) then 
+                                            progFileCache.Add(rid,cproj)   
+                                        delivered.Add rid
+                                        cproj :: acc
+                                    | None -> acc
+                            else acc                                
+                            ) []
+                    yield! pFiles |> Seq.ofList                                                              
+                        }
                 yield! projects
                 for proj in projects do
                     yield! (getProjects proj)
@@ -1711,16 +1748,15 @@ type ProjectFile with
             yield this
             yield! getProjects this
         }
-
-    member this.GetProjects includeReferencedProjects =
+    member this.GetProjects includeReferencedProjects cache =
         seq {
             if includeReferencedProjects then
-                yield! this.GetAllReferencedProjects()
+                yield! this.GetAllReferencedProjects cache
             else
                 yield this
         }
 
-    member this.GetCompileItems (includeReferencedProjects : bool) = 
+    member this.GetCompileItems (includeReferencedProjects : bool) cache = 
         let getCompileRefs projectFile =
             projectFile.Document
             |> getDescendants "Compile"
@@ -1759,8 +1795,8 @@ type ProjectFile with
                 DestinationPath = compileItem.DestinationPath.Replace("%(FileName)", Path.GetFileName(realFile))
                 BaseDir = compileItem.BaseDir
             })
-
-        this.GetProjects includeReferencedProjects
+        
+        this.GetProjects includeReferencedProjects cache 
         |> this.ProjectsWithoutTemplates
         |> Seq.collect getCompileRefs
         |> Seq.map getCompileItem

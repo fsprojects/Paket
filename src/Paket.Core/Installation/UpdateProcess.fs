@@ -189,7 +189,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let inline getVersionsF sources groupName packageName = async {
-        let! result = NuGetV2.GetVersions force alternativeProjectRoot root (sources, packageName) 
+        let! result = NuGet.GetVersions force alternativeProjectRoot root (sources, packageName) 
         return result |> List.toSeq }
 
     let dependenciesFile = detectProjectFrameworksForDependenciesFile dependenciesFile
@@ -199,7 +199,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
             force 
             getSha1
             getVersionsF
-            (NuGetV2.GetPackageDetails alternativeProjectRoot root force)
+            (NuGet.GetPackageDetails alternativeProjectRoot root force)
             (RuntimeGraph.getRuntimeGraphFromNugetCache root)
             oldLockFile 
             dependenciesFile 
