@@ -55,7 +55,7 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="5-0-0-rc003-09-06-2017" class="anchor" href="#5-0-0-rc003-09-06-2017">5.0.0-rc003 - 09.06.2017</a></h4>
+<h4><a name="Unreleased-5-0-0-rc005-11-06-2017" class="anchor" href="#Unreleased-5-0-0-rc005-11-06-2017">Unreleased 5.0.0-rc005 - 11.06.2017</a></h4>
 <ul>
 <li>
 Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting <code>PAKET_DISABLE_RUNTIME_RESOLUTION</code> to <code>false</code>):
@@ -83,6 +83,10 @@ New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):
 <li>BREAKING CHANGE: <code>InstallModel</code> API changed and Paket.Core.dll users might need to adapt</li>
 <li>DEPRECATED: <code>FixNuspec</code> function is now obsolete, use <code>FixNuspecs</code> instead</li>
 <li>PERFORMANCE: Improved performance for some edge case - <a href="https://github.com/fsprojects/Paket/pull/2299">https://github.com/fsprojects/Paket/pull/2299</a></li>
+<li>PERFORMANCE: Limit the number of concurrent requests to 7 (<a href="https://github.com/fsprojects/Paket/pull/2362)">https://github.com/fsprojects/Paket/pull/2362)</a></li>
+<li>PERFORMANCE: Report how often the pre-loading feature worked (<a href="https://github.com/fsprojects/Paket/pull/2362)">https://github.com/fsprojects/Paket/pull/2362)</a></li>
+<li>PERFORMANCE: Request queue can now re-prioritize on-demand (<a href="https://github.com/fsprojects/Paket/pull/2362)">https://github.com/fsprojects/Paket/pull/2362)</a></li>
+<li>PERFOMANCE: Much faster paket pack <a href="https://github.com/fsprojects/Paket/pull/2409">https://github.com/fsprojects/Paket/pull/2409</a></li>
 <li>BUGFIX: Better hash checks in bootstrapper - <a href="https://github.com/fsprojects/Paket/pull/2368">https://github.com/fsprojects/Paket/pull/2368</a></li>
 <li>BUGFIX: Improved C++ support</li>
 <li>BUGFIX: Fix Conditional Group Dependencies not working as expected - <a href="https://github.com/fsprojects/Paket/pull/2335">https://github.com/fsprojects/Paket/pull/2335</a></li>
@@ -103,6 +107,9 @@ New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):
 <li>BOOTSTRAPPER: Don't crash in DownloadHashFile (<a href="https://github.com/fsprojects/Paket/pull/2376)">https://github.com/fsprojects/Paket/pull/2376)</a></li>
 <li>BOOTSTRAPPER: Search harder for the paket.dependencies file (<a href="https://github.com/fsprojects/Paket/pull/2384)">https://github.com/fsprojects/Paket/pull/2384)</a></li>
 <li>USABILITY: Don't let build continue when paket failed - <a href="https://github.com/fsprojects/Paket/pull/2302">https://github.com/fsprojects/Paket/pull/2302</a></li>
+<li>make xamarin stuff work with netstandard (<a href="https://github.com/fsprojects/Paket/pull/2396).">https://github.com/fsprojects/Paket/pull/2396).</a></li>
+<li>BUGFIX: Paket failed with: String cannot be of zero length (<a href="https://github.com/fsprojects/Paket/pull/2407)">https://github.com/fsprojects/Paket/pull/2407)</a></li>
+<li>Cleanup <a href="https://github.com/fsprojects/Paket/pull/2412">https://github.com/fsprojects/Paket/pull/2412</a> <a href="https://github.com/fsprojects/Paket/pull/2410">https://github.com/fsprojects/Paket/pull/2410</a></li>
 </ul>
 <h4><a name="4-8-7-02-06-2017" class="anchor" href="#4-8-7-02-06-2017">4.8.7 - 02.06.2017</a></h4>
 <ul>
