@@ -66,7 +66,6 @@
         <Reference Include="Dapper">
           <HintPath>..\..\packages\Dapper\lib\net35\Dapper.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -76,7 +75,6 @@
         <Reference Include="Dapper">
           <HintPath>..\..\packages\Dapper\lib\net40\Dapper.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="Microsoft.CSharp">
@@ -89,7 +87,6 @@
         <Reference Include="Dapper">
           <HintPath>..\..\packages\Dapper\lib\net45\Dapper.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -99,7 +96,6 @@
     <Reference Include="nunit.framework">
       <HintPath>..\..\packages\NUnit\lib\nunit.framework.dll</HintPath>
       <Private>True</Private>
-      <SpecificVersion>True</SpecificVersion>
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>

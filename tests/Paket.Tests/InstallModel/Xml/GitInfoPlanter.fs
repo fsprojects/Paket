@@ -27,7 +27,7 @@ let ``should generate Xml for GitInfoPlanter2.0.0``() =
             [],
               Nuspec.All)
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml emptyReferences)

@@ -65,7 +65,6 @@
         <Reference Include="EPPlus">
           <HintPath>..\packages\EPPlus\lib\net20\EPPlus.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

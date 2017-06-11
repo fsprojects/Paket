@@ -14,25 +14,21 @@ let expected = """
       <Reference Include="System.Net.Http">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.WebRequest">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -48,13 +44,11 @@ let expected = """
       <Reference Include="System.Net.Http.Extensions">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Extensions.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
       <Reference Include="System.Net.Http.Primitives">
         <HintPath>..\..\..\Microsoft.Net.Http\lib\net45\System.Net.Http.Primitives.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -85,7 +79,7 @@ let ``should generate Xml for System.Net.Http 2.2.8``() =
                  [{ AssemblyName = "System.Net.Http"; FrameworkRestrictions = makeOrList [FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4_5))] }
                   { AssemblyName = "System.Net.Http.WebRequest"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]})
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
     currentXML
     |> shouldEqual (normalizeXml expected)

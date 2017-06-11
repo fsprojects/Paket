@@ -21,7 +21,6 @@ let expected = """
       <Reference Include="FSharp.Data.SqlClient">
         <HintPath>..\..\..\FSharp.Data.SqlClient\lib\net40\FSharp.Data.SqlClient.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -44,7 +43,7 @@ let ``should generate Xml for FSharp.Data.SqlClient 1.4.4``() =
                   [],
                   Nuspec.Load(__SOURCE_DIRECTORY__ + @"\..\..\Nuspec\FSharp.Data.SqlClient.nuspec"))
 
-        let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
+        let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
         let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
         currentXML
         |> shouldEqual (normalizeXml expected)

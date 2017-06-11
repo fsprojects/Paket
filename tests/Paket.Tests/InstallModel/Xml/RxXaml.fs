@@ -17,7 +17,6 @@ let expected = """
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\net40\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -30,7 +29,6 @@ let expected = """
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\net45\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -40,7 +38,6 @@ let expected = """
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\portable-win81+wpa81\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -53,7 +50,6 @@ let expected = """
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\sl5\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -63,7 +59,6 @@ let expected = """
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\windows8\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -76,7 +71,6 @@ let expected = """
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\windowsphone71\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -86,7 +80,6 @@ let expected = """
       <Reference Include="System.Reactive.Windows.Threading">
         <HintPath>..\..\..\Rx-XAML\lib\windowsphone8\System.Reactive.Windows.Threading.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -120,7 +113,7 @@ let ``should generate Xml for Rx-XAML 2.2.4 with correct framework assembly refe
                   { AssemblyName = "System.Windows"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(Silverlight SilverlightVersion.V5)] }
                   { AssemblyName = "System.Windows"; FrameworkRestrictions = makeOrList [FrameworkRestriction.Exactly(WindowsPhone WindowsPhoneVersion.V7_5)] }]})
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     let currentXml = ctx.ChooseNodes.Head.OuterXml  |> normalizeXml
     currentXml
     |> shouldEqual (normalizeXml expected)

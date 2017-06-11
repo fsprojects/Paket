@@ -18,7 +18,6 @@ let expectedReferenceNodes = """
       <Reference Include="System.Data.SQLite">
         <HintPath>..\..\..\System.Data.SQLite.Core\lib\net20\System.Data.SQLite.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -28,7 +27,6 @@ let expectedReferenceNodes = """
       <Reference Include="System.Data.SQLite">
         <HintPath>..\..\..\System.Data.SQLite.Core\lib\net40\System.Data.SQLite.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -38,7 +36,6 @@ let expectedReferenceNodes = """
       <Reference Include="System.Data.SQLite">
         <HintPath>..\..\..\System.Data.SQLite.Core\lib\net45\System.Data.SQLite.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -48,7 +45,6 @@ let expectedReferenceNodes = """
       <Reference Include="System.Data.SQLite">
         <HintPath>..\..\..\System.Data.SQLite.Core\lib\net451\System.Data.SQLite.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -183,7 +179,7 @@ let ``should generate Xml for SQLite``() =
                 Nuspec.All)
 
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
     currentXML |> shouldEqual (normalizeXml expectedReferenceNodes)
 

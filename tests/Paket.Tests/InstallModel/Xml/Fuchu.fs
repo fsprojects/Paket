@@ -12,7 +12,6 @@ let expected = """
   <Reference Include="Fuchu">
     <HintPath>..\..\..\Fuchu\lib\Fuchu.dll</HintPath>
     <Private>True</Private>
-    <SpecificVersion>True</SpecificVersion>
     <Paket>True</Paket>
   </Reference>
 </ItemGroup>"""
@@ -29,7 +28,7 @@ let ``should generate Xml for Fuchu 0.4``() =
               [],
               Nuspec.All)
     
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)

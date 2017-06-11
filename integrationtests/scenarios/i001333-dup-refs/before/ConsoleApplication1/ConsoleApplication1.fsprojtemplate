@@ -76,7 +76,6 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\net20\FSharp.Core.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -86,7 +85,6 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\net40\FSharp.Core.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -96,7 +94,6 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\portable-net45+netcore45\FSharp.Core.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -106,7 +103,6 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\portable-net45+netcore45+wp8\FSharp.Core.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -116,7 +112,6 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\portable-net45+netcore45+wpa81+wp8\FSharp.Core.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -126,7 +121,6 @@
         <Reference Include="FSharp.Core">
           <HintPath>..\packages\FSharp.Core\lib\portable-net45+sl5+netcore45\FSharp.Core.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -141,7 +135,6 @@
         <Reference Include="FSharp.Data">
           <HintPath>..\packages\FSharp.Data\lib\net40\FSharp.Data.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -151,7 +144,6 @@
         <Reference Include="FSharp.Data">
           <HintPath>..\packages\FSharp.Data\lib\portable-net45+netcore45\FSharp.Data.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -161,7 +153,6 @@
         <Reference Include="FSharp.Data">
           <HintPath>..\packages\FSharp.Data\lib\portable-net45+netcore45+wpa81+wp8\FSharp.Data.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -171,7 +162,6 @@
         <Reference Include="FSharp.Data">
           <HintPath>..\packages\FSharp.Data\lib\portable-net45+sl50+netcore45\FSharp.Data.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -183,7 +173,6 @@
         <Reference Include="Microsoft.Azure.KeyVault.Core">
           <HintPath>..\packages\Microsoft.Azure.KeyVault.Core\lib\net40\Microsoft.Azure.KeyVault.Core.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -193,7 +182,6 @@
         <Reference Include="Microsoft.Azure.KeyVault.Core">
           <HintPath>..\packages\Microsoft.Azure.KeyVault.Core\lib\portable-net45+wp8+wpa81+win\Microsoft.Azure.KeyVault.Core.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -205,7 +193,6 @@
         <Reference Include="Microsoft.Data.Edm">
           <HintPath>..\packages\Microsoft.Data.Edm\lib\net40\Microsoft.Data.Edm.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -215,7 +202,6 @@
         <Reference Include="Microsoft.Data.Edm">
           <HintPath>..\packages\Microsoft.Data.Edm\lib\portable-net45+wp8+win8+wpa\Microsoft.Data.Edm.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -227,7 +213,6 @@
         <Reference Include="Microsoft.Data.OData">
           <HintPath>..\packages\Microsoft.Data.OData\lib\net40\Microsoft.Data.OData.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -237,7 +222,6 @@
         <Reference Include="Microsoft.Data.OData">
           <HintPath>..\packages\Microsoft.Data.OData\lib\portable-net45+wp8+win8+wpa\Microsoft.Data.OData.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -249,7 +233,6 @@
         <Reference Include="Microsoft.Data.Services.Client">
           <HintPath>..\packages\Microsoft.Data.Services.Client\lib\net40\Microsoft.Data.Services.Client.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -261,7 +244,6 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\net40\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -271,7 +253,6 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\net45\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -281,7 +262,6 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\netstandard1.0\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -291,7 +271,6 @@
         <Reference Include="Newtonsoft.Json">
           <HintPath>..\packages\Newtonsoft.Json\lib\portable-net45+wp80+win8+wpa81\Newtonsoft.Json.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -303,7 +282,6 @@
         <Reference Include="System.Spatial">
           <HintPath>..\packages\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -313,7 +291,6 @@
         <Reference Include="System.Spatial">
           <HintPath>..\packages\System.Spatial\lib\portable-net45+wp8+win8+wpa\System.Spatial.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -331,7 +308,6 @@
         <Reference Include="Microsoft.WindowsAzure.Storage">
           <HintPath>..\packages\WindowsAzure.Storage\lib\net40\Microsoft.WindowsAzure.Storage.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -347,7 +323,6 @@
         <Reference Include="Microsoft.WindowsAzure.Storage">
           <HintPath>..\packages\WindowsAzure.Storage\lib\win8\Microsoft.WindowsAzure.Storage.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -363,7 +338,6 @@
         <Reference Include="Microsoft.WindowsAzure.Storage">
           <HintPath>..\packages\WindowsAzure.Storage\lib\wp8\Microsoft.WindowsAzure.Storage.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -379,7 +353,6 @@
         <Reference Include="Microsoft.WindowsAzure.Storage">
           <HintPath>..\packages\WindowsAzure.Storage\lib\wpa\Microsoft.WindowsAzure.Storage.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -391,7 +364,6 @@
         <Reference Include="Zlib.Portable">
           <HintPath>..\packages\Zlib.Portable\lib\portable-net4+sl5+wp8+win8+wpa81+MonoTouch+MonoAndroid\Zlib.Portable.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

@@ -12,7 +12,6 @@ let expected = """
   <Reference Include="FantomasLib">
     <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
     <Private>True</Private>
-    <SpecificVersion>True</SpecificVersion>
     <Paket>True</Paket>
   </Reference>
 </ItemGroup>"""
@@ -31,7 +30,7 @@ let ``should generate Xml for Fantomas 1.5``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
@@ -51,8 +50,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
   <ItemGroup>
     <Reference Include="FantomasLib">
       <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
-      <Private>True</Private>
-      <SpecificVersion>True</SpecificVersion>
+      <Private>True</Private>      
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
@@ -110,7 +108,6 @@ let fullDocWithRefernceCondition = """<?xml version="1.0" encoding="utf-8"?>
         <Reference Include="FantomasLib">
           <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -151,7 +148,6 @@ let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0"
         <Reference Include="FantomasLib">
           <HintPath>..\..\..\Fantomas\lib\portable-net45+win8\FantomasLib.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

@@ -67,19 +67,16 @@
         <Reference Include="System.IO">
           <HintPath>..\packages\Microsoft.Bcl\lib\net40\System.IO.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Runtime">
           <HintPath>..\packages\Microsoft.Bcl\lib\net40\System.Runtime.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Threading.Tasks">
           <HintPath>..\packages\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -91,19 +88,16 @@
         <Reference Include="System.Net.Http.Extensions">
           <HintPath>..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Extensions.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.Primitives">
           <HintPath>..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.Primitives.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Net.Http.WebRequest">
           <HintPath>..\packages\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -115,7 +109,6 @@
         <Reference Include="Octokit">
           <HintPath>..\packages\Octokit\lib\net45\Octokit.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -125,7 +118,6 @@
         <Reference Include="Octokit">
           <HintPath>..\packages\Octokit\lib\netcore451\Octokit.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>
@@ -135,7 +127,6 @@
         <Reference Include="Octokit">
           <HintPath>..\packages\Octokit\lib\portable-net45+wp80+win+wpa81\Octokit.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

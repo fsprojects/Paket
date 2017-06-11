@@ -14,7 +14,6 @@ let expected = """
       <Reference Include="System.Spatial">
         <HintPath>..\..\..\System.Spatial\lib\net40\System.Spatial.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -24,7 +23,6 @@ let expected = """
       <Reference Include="System.Spatial">
         <HintPath>..\..\..\System.Spatial\lib\sl4\System.Spatial.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -47,7 +45,7 @@ let ``should generate Xml for System.Spatial``() =
               @"..\System.Spatial\lib\sl4\zh-Hans\System.Spatial.resources.dll" 
             ] |> Paket.InstallModel.ProcessingSpecs.fromLegacyList @"..\System.Spatial\",[],[],Nuspec.All)
     
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     let currentXML = ctx.ChooseNodes.Head.OuterXml |> normalizeXml
     currentXML
     |> shouldEqual (normalizeXml expected)

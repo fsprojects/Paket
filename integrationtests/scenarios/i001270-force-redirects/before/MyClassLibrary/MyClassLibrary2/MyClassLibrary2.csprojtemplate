@@ -57,7 +57,6 @@
         <Reference Include="AlphaFS">
           <HintPath>..\..\packages\AlphaFS\lib\net35\AlphaFS.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Transactions">
@@ -70,7 +69,6 @@
         <Reference Include="AlphaFS">
           <HintPath>..\..\packages\AlphaFS\lib\net45\AlphaFS.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Transactions">
@@ -83,7 +81,6 @@
         <Reference Include="AlphaFS">
           <HintPath>..\..\packages\AlphaFS\lib\net40\AlphaFS.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Transactions">
@@ -96,7 +93,6 @@
         <Reference Include="AlphaFS">
           <HintPath>..\..\packages\AlphaFS\lib\net451\AlphaFS.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="System.Transactions">

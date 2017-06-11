@@ -14,7 +14,6 @@ let expectedReferenceNodes = """<?xml version="1.0" encoding="utf-16"?>
       <Reference Include="LibGit2Sharp">
         <HintPath>..\..\..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -48,7 +47,7 @@ let ``should generate Xml for LibGit2Sharp 2.0.0``() =
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\LibGit2Sharp\lib\net40\LibGit2Sharp.dll"
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expectedReferenceNodes)

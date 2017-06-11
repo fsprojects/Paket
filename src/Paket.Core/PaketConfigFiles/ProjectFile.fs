@@ -537,7 +537,6 @@ module ProjectFile =
                         node
                         |> addChild (createNodeSet "HintPath" fileItem.Include project)
                         |> addChild (createNodeSet "Private" "True" project)
-                        |> addChild (createNodeSet "SpecificVersion" "True" project)
                     | BuildAction.Page ->
                         node
                         |> addChild (createNodeSet "Generator" "MSBuild:Compile" project)
@@ -704,7 +703,10 @@ module ProjectFile =
                 |> addAttribute "Include" (fi.Name.Replace(fi.Extension,""))
                 |> addChild (createNodeSet "HintPath" relativePath project)
                 |> addChild (createNodeSet "Private" privateSettings project)
-                |> addChild (createNodeSet "SpecificVersion" specificVersionSettings project)
+                |> fun n ->
+                    match specificVersion with
+                    | None -> n
+                    | Some(bool) -> addChild (createNodeSet "SpecificVersion" specificVersionSettings project) n
                 |> addChild (createNodeSet "Paket" "True" project)
                 |> fun n ->
                     match aliases with

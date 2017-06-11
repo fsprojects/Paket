@@ -69,61 +69,51 @@
         <Reference Include="WebSharper.Collections">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.Collections.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="WebSharper.Control">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.Control.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="WebSharper.Core">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.Core.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="WebSharper.Core.JavaScript">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.Core.JavaScript.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="WebSharper.InterfaceGenerator">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.InterfaceGenerator.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="WebSharper.JQuery">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.JQuery.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="WebSharper.JavaScript">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.JavaScript.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="WebSharper.Main">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.Main.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="WebSharper.Sitelets">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.Sitelets.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
         <Reference Include="WebSharper.Web">
           <HintPath>..\packages\WebSharper\lib\net40\WebSharper.Web.dll</HintPath>
           <Private>True</Private>
-          <SpecificVersion>True</SpecificVersion>
           <Paket>True</Paket>
         </Reference>
       </ItemGroup>

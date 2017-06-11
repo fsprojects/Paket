@@ -14,7 +14,6 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\lib\net46\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -24,7 +23,6 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\lib\net461\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -34,7 +32,6 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\lib\net463\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>True</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -44,7 +41,6 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\ref\netstandard1.3\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>False</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -54,7 +50,6 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\ref\netstandard1.4\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>False</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
@@ -64,7 +59,6 @@ let expected = """
       <Reference Include="System.Security.Cryptography.Algorithms">
         <HintPath>..\..\..\System.Security.Cryptography.Algorithms\ref\netstandard1.6\System.Security.Cryptography.Algorithms.dll</HintPath>
         <Private>False</Private>
-        <SpecificVersion>True</SpecificVersion>
         <Paket>True</Paket>
       </Reference>
     </ItemGroup>
