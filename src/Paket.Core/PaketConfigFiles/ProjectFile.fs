@@ -1692,6 +1692,7 @@ type ProjectFile with
     member this.GetAllReferencedProjects (cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int list>) =
         let progFileCache , depRefs = cache
         let delivered = HashSet<_>()
+        
         let rec getProjects (project:ProjectFile) = 
             seq {
                 let projects = seq {
@@ -1705,31 +1706,29 @@ type ProjectFile with
                                     yield v
                                 | false,_ -> ()
                     | false, _ ->
-                        let rec depToProj dls accProj accIds =
-                            match dls with
-                            | [] -> accProj, accIds
-                            | proj :: t ->
-                                let rid = proj.Path.GetHashCode()
+                        let projs = project.GetInterProjectDependencies()
+                        let rids = projs |> List.map (fun proj -> proj.Path.GetHashCode())
+                        if not (depRefs.ContainsKey project.Name) then 
+                            depRefs.Add(project.Name,rids)
+                        let pFiles = 
+                            projs |> List.fold (fun acc proj ->
+                            let rid = proj.Path.GetHashCode()
+                            if not (delivered.Contains rid) then
                                 match progFileCache.TryGetValue rid with
                                 | true, cproj -> 
-                                    if not (delivered.Contains rid) then
-                                        delivered.Add rid
-                                        depToProj t (cproj::accProj) (rid::accIds)
-                                    else depToProj t (accProj)        (rid::accIds)
+                                    delivered.Add rid
+                                    cproj :: acc                    
                                 | false, _ ->
                                     match ProjectFile.tryLoad(proj.Path) with
                                     | Some cproj -> 
-                                        if not (progFileCache.Contains rid) then 
+                                        if not (progFileCache.ContainsKey rid) then 
                                             progFileCache.Add(rid,cproj)   
-                                        if not (delivered.Contains rid) then
-                                            delivered.Add rid 
-                                            depToProj t (cproj::accProj) (rid::accIds)
-                                        else depToProj t (accProj)        (rid::accIds)
-                                    | None -> depToProj t (accProj)       (accIds)
-                        let cprojs, rids = depToProj (project.GetInterProjectDependencies()) [] []                                   
-                        if not (depRefs.ContainsKey project.Name) then 
-                            depRefs.Add(project.Name,rids)
-                        yield! Seq.ofList cprojs                                  
+                                        delivered.Add rid
+                                        cproj :: acc
+                                    | None -> acc
+                            else acc                                
+                            ) []
+                        yield! pFiles |> Seq.ofList                                                              
                         }
                 yield! projects
                 for proj in projects do
