@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>MsBuildFile - Paket</title>
+    <title>PackageAndAssemblyResolution - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,9 +58,9 @@
 
 
 
-<h1>MsBuildFile</h1>
+<h1>PackageAndAssemblyResolution</h1>
 <p>
-  <span>Namespace: Paket</span><br />
+  <span>Namespace: Paket.LoadingScripts</span><br />
 </p>
 <div class="xmldoc">
 </div>
@@ -76,15 +76,141 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '228', 228)" onmouseover="showTip(event, '228', 228)">
-            ofFile f
+          <code onmouseout="hideTip(event, '521', 521)" onmouseover="showTip(event, '521', 521)">
+            getDllOrder dllFiles
           </code>
-          <div class="tip" id="228">
-            <strong>Signature:</strong> f:FrameworkDependentFile -&gt; MsBuildFile<br />
+          <div class="tip" id="521">
+            <strong>Signature:</strong> dllFiles:AssemblyDefinition list -&gt; AssemblyDefinition list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/InstallModel.fs#L53-53" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L45-45" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '522', 522)" onmouseover="showTip(event, '522', 522)">
+            getDllsWithinPackage (...)
+          </code>
+          <div class="tip" id="522">
+            <strong>Signature:</strong> framework:FrameworkIdentifier -&gt; installModel:InstallModel -&gt; FileInfo list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L57-57" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '523', 523)" onmouseover="showTip(event, '523', 523)">
+            getFrameworkReferencesWithinPackage (...)
+          </code>
+          <div class="tip" id="523">
+            <strong>Signature:</strong> framework:FrameworkIdentifier -&gt; installModel:InstallModel -&gt; string list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L75-75" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '524', 524)" onmouseover="showTip(event, '524', 524)">
+            getLeafPackagesGeneric (...)
+          </code>
+          <div class="tip" id="524">
+            <strong>Signature:</strong> getPackageName:(&#39;?8425 -&gt; &#39;?8426) -&gt; getDependencies:(&#39;?8425 -&gt; &#39;?8427) -&gt; knownPackages:Set&lt;&#39;?8426&gt; -&gt; openList:&#39;?8425 list -&gt; &#39;?8425 list * Set&lt;&#39;?8426&gt; * &#39;?8425 list<br />
+                          <strong>Type parameters:</strong> '?8425, '?8426, '?8427          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L11-11" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '525', 525)" onmouseover="showTip(event, '525', 525)">
+            getPackageOrderFromDependenciesFile (...)
+          </code>
+          <div class="tip" id="525">
+            <strong>Signature:</strong> lockFile:FileInfo -&gt; Map&lt;GroupName,ResolvedPackage list&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L39-39" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '526', 526)" onmouseover="showTip(event, '526', 526)">
+            getPackageOrderGeneric (...)
+          </code>
+          <div class="tip" id="526">
+            <strong>Signature:</strong> getPackageName:(&#39;?8429 -&gt; &#39;?8430) -&gt; getDependencies:(&#39;?8429 -&gt; &#39;?8431) -&gt; packages:&#39;?8429 list -&gt; &#39;?8429 list<br />
+                          <strong>Type parameters:</strong> '?8429, '?8430, '?8431          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L25-25" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '527', 527)" onmouseover="showTip(event, '527', 527)">
+            getPackageOrderResolvedPackage 
+          </code>
+          <div class="tip" id="527">
+            <strong>Signature:</strong> ResolvedPackage list -&gt; ResolvedPackage list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L34-34" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '528', 528)" onmouseover="showTip(event, '528', 528)">
+            shouldExcludeFrameworkAssemblies _arg1
+          </code>
+          <div class="tip" id="528">
+            <strong>Signature:</strong> _arg1:FrameworkIdentifier -&gt; bool<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/ScriptGeneration.fs#L67-67" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

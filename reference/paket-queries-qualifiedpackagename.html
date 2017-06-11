@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>NuspecExtensions - Paket</title>
+    <title>QualifiedPackageName - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,57 +58,61 @@
 
 
 
-<h1>NuspecExtensions</h1>
+<h1>QualifiedPackageName</h1>
 <p>
   <span>Namespace: Paket</span><br />
+  <span>Parent Module: <a href="paket-queries.html">Queries</a></span>
 </p>
 <div class="xmldoc">
 </div>
-
-<!-- Render nested types and modules, if there are any -->
-
-  <h3>Type extensions</h3>
+  <h3>Union Cases</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Type extension</td><td>Description</td></tr>
+      <tr><td>Union Case</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '291', 291)" onmouseover="showTip(event, '291', 291)">
-            Create(...)
+          <code onmouseout="hideTip(event, '770', 770)" onmouseover="showTip(event, '770', 770)">
+            QualifiedPackageName(...)
           </code>
-          <div class="tip" id="291">
-            <strong>Signature:</strong> (Id:string * templatePath:string * lockFile:LockFile * currentVersion:SemVerInfo option * packages:Map&lt;string,SemVerInfo&gt;) -&gt; string * XDocument<br />
+          <div class="tip" id="770">
+            <strong>Signature:</strong> GroupName * PackageName<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Packaging/NupkgWriter.fs#L348-348" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L7-7" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>Nuspec.Create.Static</code></p>
         </td>
       </tr>
+    </tbody>
+  </table>
+  <h3>Static members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Static member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '292', 292)" onmouseover="showTip(event, '292', 292)">
-            FromProject(...)
+          <code onmouseout="hideTip(event, '771', 771)" onmouseover="showTip(event, '771', 771)">
+            FromStrings(groupName, packageName)
           </code>
-          <div class="tip" id="292">
-            <strong>Signature:</strong> (projectPath:string * dependenciesPath:string) -&gt; string * XDocument<br />
+          <div class="tip" id="771">
+            <strong>Signature:</strong> (groupName:string option * packageName:string) -&gt; QualifiedPackageName<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Packaging/NupkgWriter.fs#L356-356" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Queries.fs#L9-9" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>Nuspec.FromProject.Static</code></p>
         </td>
       </tr>
     </tbody>

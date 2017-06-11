@@ -136,7 +136,7 @@ There is no reasonable way to make this work – and even NuGet.exe can't do it 
 <li><code>paket-files</code> directory, as paket install will restore this. Same goes for the <code>packages</code> directory</li>
 </ul>
 <h2><a name="Why-should-I-commit-the-lock-file" class="anchor" href="#Why-should-I-commit-the-lock-file">Why should I commit the lock file?</a></h2>
-<p>Committing the <a href="lock-file.html"><code>paket.lock</code> file</a> to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when <a href="paket-restore.html"><code>paket restore</code></a> is run.</p>
+<p>Committing the <a href="lock-file.html"><code>paket.lock</code> file</a> to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when <a href="paket-install.html"><code>paket install</code></a> is run.</p>
 <p>If your <em>project is an application</em> you should always commit the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
 <p>If your <em>project is a library</em> then you probably want to commit it as well. There are rare cases where you always want to test your lib against the latest version of your dependencies,
 but we recommend to set up a second CI build instead. This new build should be run regularly (maybe once a day) and execute <a href="paket-update.html"><code>paket update</code></a> at the beginning.
