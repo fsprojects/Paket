@@ -1696,39 +1696,42 @@ type ProjectFile with
         let rec getProjects (project:ProjectFile) = 
             seq {
                 let projects = seq {
-                    match depRefs.TryGetValue project.FileName with
-                    | true, rids ->
-                        for rid in rids do
-                            if not (delivered.Contains rid) then
-                                match progFileCache.TryGetValue rid with
-                                | true, v -> 
-                                    delivered.Add rid
-                                    yield v
-                                | false,_ -> ()
-                    | false, _ ->
-                        let projs = project.GetInterProjectDependencies()
-                        let rids = projs |> List.map (fun proj -> proj.Path.GetHashCode())
-                        if not (depRefs.ContainsKey project.Name) then 
-                            depRefs.Add(project.Name,rids)
-                        let pFiles = 
-                            projs |> List.fold (fun acc proj ->
-                            let rid = proj.Path.GetHashCode()
-                            if not (delivered.Contains rid) then
-                                match progFileCache.TryGetValue rid with
-                                | true, cproj -> 
-                                    delivered.Add rid
-                                    cproj :: acc                    
-                                | false, _ ->
-                                    match ProjectFile.tryLoad(proj.Path) with
-                                    | Some cproj -> 
-                                        if not (progFileCache.ContainsKey rid) then 
-                                            progFileCache.Add(rid,cproj)   
+                    let pFiles =
+                        match depRefs.TryGetValue project.FileName with
+                        | true, rids ->
+                            rids |> List.fold (fun acc rid ->
+                                if not (delivered.Contains rid) then
+                                    match progFileCache.TryGetValue rid with
+                                    | true, v -> 
                                         delivered.Add rid
-                                        cproj :: acc
-                                    | None -> acc
-                            else acc                                
-                            ) []
-                        yield! pFiles |> Seq.ofList                                                              
+                                        v :: acc
+                                    | false,_ -> acc
+                                else acc ) []
+                        | false, _ ->
+                            let projs = project.GetInterProjectDependencies()
+                            let rids = projs |> List.map (fun proj -> proj.Path.GetHashCode())
+                            if not (depRefs.ContainsKey project.Name) then 
+                                depRefs.Add(project.Name,rids)
+                             
+                                projs |> List.fold (fun acc proj ->
+                                let rid = proj.Path.GetHashCode()
+                                if not (delivered.Contains rid) then
+                                    match progFileCache.TryGetValue rid with
+                                    | true, cproj -> 
+                                        delivered.Add rid
+                                        cproj :: acc                    
+                                    | false, _ ->
+                                        match ProjectFile.tryLoad(proj.Path) with
+                                        | Some cproj -> 
+                                            if not (progFileCache.ContainsKey rid) then 
+                                                progFileCache.Add(rid,cproj)   
+                                            delivered.Add rid
+                                            cproj :: acc
+                                        | None -> acc
+                                else acc                                
+                                ) []
+                            else []
+                    yield! pFiles |> Seq.ofList                                                              
                         }
                 yield! projects
                 for proj in projects do
