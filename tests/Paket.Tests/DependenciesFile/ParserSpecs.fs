@@ -216,6 +216,7 @@ let ``should read content none config``() =
     let cfg = DependenciesFile.FromSource(noneContentConfig)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.SpecificVersion |> shouldEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual None
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
@@ -232,6 +233,7 @@ let ``should read config with specific framework``() =
     let cfg = DependenciesFile.FromSource(specificFrameworkConfig)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual None
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.SpecificVersion |> shouldEqual None
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual None
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
@@ -239,6 +241,7 @@ let ``should read config with specific framework``() =
 let noTargetsImportConfig = """
 import_targets false
 copy_local false
+specific_version false
 source "http://www.nuget.org/api/v2" // first source
 
 nuget "Microsoft.SqlServer.Types"
@@ -249,6 +252,7 @@ let ``should read no targets import config``() =
     let cfg = DependenciesFile.FromSource(noTargetsImportConfig)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.ImportTargets |> shouldEqual (Some false)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.CopyLocal |> shouldEqual (Some false)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.SpecificVersion |> shouldEqual (Some false)
     cfg.Groups.[Constants.MainDependencyGroup].Options.Settings.OmitContent |> shouldEqual None
 
     cfg.Groups.[Constants.MainDependencyGroup].Sources |> shouldEqual [PackageSource.NuGetV2Source "http://www.nuget.org/api/v2"]
@@ -786,11 +790,12 @@ let ``should read config with framework restriction``() =
     p.Settings.FrameworkRestrictions |> getExplicitRestriction |> shouldEqual (makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V3_5)); FrameworkRestriction.AtLeast(DotNetFramework(FrameworkVersion.V4))] |> getExplicitRestriction)
     p.Settings.ImportTargets |> shouldEqual None
     p.Settings.CopyLocal |> shouldEqual None
+    p.Settings.SpecificVersion |> shouldEqual None
 
 [<Test>]
 let ``should read config with no targets import``() = 
     let config = """
-    nuget Foobar 1.2.3 alpha beta import_targets: false, copy_local: false
+    nuget Foobar 1.2.3 alpha beta import_targets: false, copy_local: false, specific_version: false
     """
     let cfg = DependenciesFile.FromSource(config)
 
@@ -799,12 +804,13 @@ let ``should read config with no targets import``() =
     p.Settings.FrameworkRestrictions |> getExplicitRestriction |> shouldEqual FrameworkRestriction.NoRestriction
     p.Settings.ImportTargets |> shouldEqual (Some false)
     p.Settings.CopyLocal |> shouldEqual (Some false)
+    p.Settings.SpecificVersion |> shouldEqual (Some false)
     p.Settings.OmitContent |> shouldEqual None
 
 [<Test>]
 let ``should read config with content none``() = 
     let config = """
-    nuget Foobar 1.2.3 alpha beta content: none, copy_local: false
+    nuget Foobar 1.2.3 alpha beta content: none, copy_local: false, specific_version: true
     """
     let cfg = DependenciesFile.FromSource(config)
 
@@ -813,6 +819,7 @@ let ``should read config with content none``() =
     p.Settings.FrameworkRestrictions  |> getExplicitRestriction |> shouldEqual FrameworkRestriction.NoRestriction
     p.Settings.ImportTargets |> shouldEqual None
     p.Settings.CopyLocal |> shouldEqual (Some false)
+    p.Settings.SpecificVersion |> shouldEqual (Some true)
     p.Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
 
 [<Test>]

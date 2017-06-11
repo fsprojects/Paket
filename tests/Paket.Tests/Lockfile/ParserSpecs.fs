@@ -353,7 +353,7 @@ let frameworkRestricted' = """NUGET
     ReadOnlyCollectionExtensions (1.2.0)
       LinqBridge (>= 1.3.0) - framework: >= net20 < net35
       ReadOnlyCollectionInterfaces (1.0.0) - framework: net20, net35, >= net40
-    ReadOnlyCollectionInterfaces (1.0.0) - copy_local: false, import_targets: false, framework: net20, net35, >= net40
+    ReadOnlyCollectionInterfaces (1.0.0) - copy_local: false, specific_version: true, import_targets: false, framework: net20, net35, >= net40
     System.Json (4.0.20126.16343)
 """
 
@@ -376,6 +376,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     |> getExplicitRestriction 
     |> shouldEqual (FrameworkRestriction.Between(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V2),FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5)))
     packages.[3].Settings.CopyLocal |> shouldEqual None
+    packages.[3].Settings.SpecificVersion |> shouldEqual None
     packages.[3].Settings.ImportTargets |> shouldEqual (Some false)
     packages.[3].Settings.IncludeVersionInPath |> shouldEqual (Some true)
     packages.[3].Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
@@ -397,6 +398,7 @@ let ``should parse framework restricted lock file in new syntax``() =
     packages.[5].Version |> shouldEqual (SemVer.Parse "1.0.0")
     packages.[5].Settings.ImportTargets |> shouldEqual (Some false)
     packages.[5].Settings.CopyLocal |> shouldEqual (Some false)
+    packages.[5].Settings.SpecificVersion |> shouldEqual (Some true)
     packages.[5].Settings.OmitContent |> shouldEqual None
     packages.[5].Settings.IncludeVersionInPath |> shouldEqual None
     packages.[5].Settings.FrameworkRestrictions 

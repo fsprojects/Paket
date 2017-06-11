@@ -76,6 +76,19 @@ let ``should serialize no local copy config``() =
     cfg.ToString()
     |> shouldEqual (normalizeLineEndings noLocalCopyConfig)
 
+let noSpecificVersionConfig = """specific_version: false
+source http://www.nuget.org/api/v2
+
+nuget FAKE ~> 3.0"""
+
+
+[<Test>]
+let ``should serialize no specific version config``() = 
+    let cfg = DependenciesFile.FromSource(noLocalCopyConfig)
+    
+    cfg.ToString()
+    |> shouldEqual (normalizeLineEndings noLocalCopyConfig)
+
 let simplestConfig = """nuget FAKE ~> 3.0"""
 
 [<Test>]
@@ -236,8 +249,8 @@ let ``should serialize config with framework restrictions``() =
 let withNoImportsRestrictions = """source https://www.nuget.org/api/v2
 
 nuget FakeItEasy 1.24.0
-nuget json-ld.net 1.0.3 copy_local: false, import_targets: false, framework: net35, net40
-nuget Example3 !== 2.2.3 alpha beta import_targets: false
+nuget json-ld.net 1.0.3 copy_local: false, import_targets: false, framework: net35, net40, specific_version: true
+nuget Example3 !== 2.2.3 alpha beta import_targets: false, specific_version: false
 nuget Example4 import_targets: false, content: none
 nuget Example5 prerelease import_targets: false
 
