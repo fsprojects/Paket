@@ -1,12 +1,4 @@
-#### Unreleased 5.0.0-rc004
-* PERFORMANCE: Limit the number of concurrent requests to 7 (https://github.com/fsprojects/Paket/pull/2362)
-* PERFORMANCE: Report how often the pre-loading feature worked (https://github.com/fsprojects/Paket/pull/2362)
-* PERFORMANCE: Request queue can now re-prioritize on-demand (https://github.com/fsprojects/Paket/pull/2362)
-* make xamarin stuff work with netstandard (https://github.com/fsprojects/Paket/pull/2396).
-* BUGFIX: Paket failed with: String cannot be of zero length (https://github.com/fsprojects/Paket/pull/2407)
-* Cleanup https://github.com/fsprojects/Paket/pull/2412 https://github.com/fsprojects/Paket/pull/2410
-
-#### 5.0.0-rc003 - 09.06.2017
+#### Unreleased 5.0.0-rc005 - 11.06.2017
 * Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
   * Paket now properly understands runtime and reference assemblies
   * Paket now understands the runtime graph and restores runtime dependencies
@@ -25,6 +17,10 @@
 * BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
 * DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
+* PERFORMANCE: Limit the number of concurrent requests to 7 (https://github.com/fsprojects/Paket/pull/2362)
+* PERFORMANCE: Report how often the pre-loading feature worked (https://github.com/fsprojects/Paket/pull/2362)
+* PERFORMANCE: Request queue can now re-prioritize on-demand (https://github.com/fsprojects/Paket/pull/2362)
+* PERFOMANCE: Much faster paket pack https://github.com/fsprojects/Paket/pull/2409
 * BUGFIX: Better hash checks in bootstrapper - https://github.com/fsprojects/Paket/pull/2368
 * BUGFIX: Improved C++ support
 * BUGFIX: Fix Conditional Group Dependencies not working as expected - https://github.com/fsprojects/Paket/pull/2335
@@ -45,6 +41,9 @@
 * BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
 * BOOTSTRAPPER: Search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384)
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
+* make xamarin stuff work with netstandard (https://github.com/fsprojects/Paket/pull/2396).
+* BUGFIX: Paket failed with: String cannot be of zero length (https://github.com/fsprojects/Paket/pull/2407)
+* Cleanup https://github.com/fsprojects/Paket/pull/2412 https://github.com/fsprojects/Paket/pull/2410
 
 #### 4.8.7 - 02.06.2017
 * paket adds too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
