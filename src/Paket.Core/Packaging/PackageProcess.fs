@@ -150,11 +150,14 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
     // load up project files and grab meta data
     let projectTemplates = 
         let getAllProjectsFiles workingDir =
-            ProjectFile.FindAllProjects workingDir
-            |> Array.choose (fun (projectFile:ProjectFile) ->
-                match projectFile.FindTemplatesFile() with
+            ProjectFile.FindAllProjectFiles workingDir
+            |> Array.choose (fun (projectFile:FileInfo) ->
+                match ProjectFile.FindCorrespondingFile(projectFile, Constants.TemplateFile) with
                 | None -> None
-                | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions)))
+                | Some fileName ->
+                    match ProjectFile.tryLoad projectFile.FullName with
+                    | Some projectFile -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions))
+                    | None -> None)
             |> Array.filter (fun (_,templateFile) -> 
                 match templateFile with
                 | CompleteTemplate _ -> false 

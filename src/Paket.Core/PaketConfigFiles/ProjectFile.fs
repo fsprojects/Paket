@@ -198,7 +198,7 @@ module ProjectFile =
             Some(loadFromFile fileName)
         with
         | exn -> 
-            traceWarnfn "Unable to parse %s:%s      %s" fileName Environment.NewLine exn.Message
+            traceWarnfn "Unable to parse project %s:%s      %s" fileName Environment.NewLine exn.Message
             None
 
     let createNode name (project:ProjectFile) =
@@ -1621,7 +1621,7 @@ type ProjectFile with
     member this.FindOrCreateReferencesFile() = ProjectFile.FindOrCreateReferencesFile (FileInfo this.FileName)
 
     /// Finds all project files
-    static member FindAllProjects folder : ProjectFile [] =
+    static member FindAllProjectFiles folder : FileInfo [] =
         let paketPath = Path.Combine(folder,Constants.PaketFilesFolderName) |> normalizePath
 
         let findAllFiles (folder, pattern) = 
@@ -1649,10 +1649,12 @@ type ProjectFile with
             |> search
 
         findAllFiles(folder, "*proj*")
-        |> Array.choose (fun f -> 
-            if f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj" || f.Extension = ".vcxproj" then
-                ProjectFile.tryLoad f.FullName
-            else None)
+        |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj" || f.Extension = ".vcxproj")
+
+                /// Finds all project files
+    static member FindAllProjects folder : ProjectFile [] =
+        ProjectFile.FindAllProjectFiles folder
+        |> Array.choose (fun f -> ProjectFile.tryLoad f.FullName)
 
     static member TryFindProject(projects,projectName) =
         let isMatching (p:ProjectFile) = p.NameWithoutExtension = projectName || p.Name = projectName
