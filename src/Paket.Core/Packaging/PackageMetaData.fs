@@ -279,7 +279,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | None -> []
           
         [if includeReferencedProjects then
-            for proj in project.GetAllReferencedProjects projDeps |> Seq.filter ((<>) project) do
+            for proj in project.GetAllReferencedProjects(false,projDeps) |> Seq.filter ((<>) project) do
                 match proj.FindTemplatesFile() with
                 | Some templateFileName when TemplateFile.IsProjectType templateFileName ->
                     match TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq).Contents with

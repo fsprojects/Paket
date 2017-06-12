@@ -44,6 +44,7 @@ type ProjectReference =
     { Path : string
       RelativePath : string
       Name : string option
+      ReferenceOutputAssembly : bool
       GUID : Guid option }
 
 /// Compile items inside of project files.
@@ -1183,6 +1184,11 @@ module ProjectFile =
                 let incPath = getAttribute "Include" node
                 Option.map getNormalizedPath incPath
 
+            let referenceOutputAssembly =
+                match node |> getNode "ReferenceOutputAssembly" with 
+                | Some n -> n.InnerText.ToLower() = "true"
+                | None -> true
+
             let makePathNode path =
                 { Path =
                     if Path.IsPathRooted path then Path.GetFullPath path else 
@@ -1191,6 +1197,7 @@ module ProjectFile =
 
                   RelativePath = path.Replace("/","\\")
                   Name = forceGetName node "Name"
+                  ReferenceOutputAssembly = referenceOutputAssembly
                   GUID = (forceGetInnerText node "Project") |> Option.map Guid.Parse }
 
             match optPath with
@@ -1675,9 +1682,9 @@ type ProjectFile with
             with
             | _ -> None
 
-    member this.GetAllInterProjectDependenciesWithoutProjectTemplates cache = this.ProjectsWithoutTemplates(this.GetAllReferencedProjects cache)
+    member this.GetAllInterProjectDependenciesWithoutProjectTemplates cache = this.ProjectsWithoutTemplates(this.GetAllReferencedProjects(false, cache))
 
-    member this.GetAllInterProjectDependenciesWithProjectTemplates cache = this.ProjectsWithTemplates(this.GetAllReferencedProjects cache)
+    member this.GetAllInterProjectDependenciesWithProjectTemplates cache = this.ProjectsWithTemplates(this.GetAllReferencedProjects(false, cache))
 
     member this.ProjectsWithoutTemplates projects =
         projects
@@ -1701,7 +1708,7 @@ type ProjectFile with
                 | None -> false
         )
 
-    member this.GetAllReferencedProjects (cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int list>) =
+    member this.GetAllReferencedProjects (onlyWithOutput,cache:Dictionary<int,(ProjectFile)>*Dictionary<string,int list>) =
         let progFileCache , depRefs = cache
         let delivered = HashSet<_>()
         
@@ -1715,12 +1722,13 @@ type ProjectFile with
                                 if not (delivered.Contains rid) then
                                     match progFileCache.TryGetValue rid with
                                     | true, v -> 
-                                        delivered.Add rid
+                                        delivered.Add rid |> ignore
                                         v :: acc
                                     | false,_ -> acc
                                 else acc ) []
                         | false, _ ->
                             let projs = project.GetInterProjectDependencies()
+                            let projs = if onlyWithOutput then projs |> List.filter (fun x -> x.ReferenceOutputAssembly) else projs
                             let rids = projs |> List.map (fun proj -> proj.Path.GetHashCode())
                             if not (depRefs.ContainsKey project.Name) then 
                                 depRefs.Add(project.Name,rids)
@@ -1730,7 +1738,7 @@ type ProjectFile with
                             if not (delivered.Contains rid) then
                                 match progFileCache.TryGetValue rid with
                                 | true, cproj -> 
-                                    delivered.Add rid
+                                    delivered.Add rid |> ignore
                                     cproj :: acc                    
                                 | false, _ ->
                                     match ProjectFile.tryLoad(proj.Path) with
@@ -1752,10 +1760,11 @@ type ProjectFile with
             yield this
             yield! getProjects this
         }
+
     member this.GetProjects includeReferencedProjects cache =
         seq {
             if includeReferencedProjects then
-                yield! this.GetAllReferencedProjects cache
+                yield! this.GetAllReferencedProjects(true,cache)
             else
                 yield this
         }
