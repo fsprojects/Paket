@@ -160,6 +160,9 @@ type ProjectFile =
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ProjectFile =
 
+    let isSupportedFile (fi:FileInfo) =
+        fi.Extension = ".csproj" || fi.Extension = ".fsproj" || fi.Extension = ".vbproj" || fi.Extension = ".wixproj" || fi.Extension = ".nproj" || fi.Extension = ".vcxproj"
+
     let name (projectFile:ProjectFile) = FileInfo(projectFile.FileName).Name
 
     let nameWithoutExtension (projectFile:ProjectFile) = Path.GetFileNameWithoutExtension (name projectFile)
@@ -196,7 +199,12 @@ module ProjectFile =
 
     let tryLoad(fileName:string) =
         try
-            Some(loadFromFile fileName)
+            if String.IsNullOrWhiteSpace fileName then None else
+            let fi = FileInfo fileName
+            if isSupportedFile fi then
+                Some(loadFromFile fileName)
+            else 
+                None
         with
         | exn -> 
             traceWarnfn "Unable to parse project %s:%s      %s" fileName Environment.NewLine exn.Message
@@ -1656,8 +1664,8 @@ type ProjectFile with
             |> search
 
         findAllFiles(folder, "*proj*")
-        |> Array.filter (fun f -> f.Extension = ".csproj" || f.Extension = ".fsproj" || f.Extension = ".vbproj" || f.Extension = ".wixproj" || f.Extension = ".nproj" || f.Extension = ".vcxproj")
-
+        |> Array.filter ProjectFile.isSupportedFile
+    
                 /// Finds all project files
     static member FindAllProjects folder : ProjectFile [] =
         ProjectFile.FindAllProjectFiles folder
@@ -1745,7 +1753,7 @@ type ProjectFile with
                                     | Some cproj -> 
                                         if not (progFileCache.ContainsKey rid) then 
                                             progFileCache.Add(rid,cproj)   
-                                        delivered.Add rid
+                                        delivered.Add rid |> ignore
                                         cproj :: acc
                                     | None -> acc
                             else acc                                

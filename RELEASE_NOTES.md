@@ -1,4 +1,4 @@
-#### 5.0.0-rc007 - 12.06.2017
+#### 5.0.0-rc008 - 12.06.2017
 * New command `paket generate-nuspec`
 * New Command: `FixNuspecs` - Can fix a list of nuspec files now
 * BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (https://github.com/fsprojects/Paket/pull/2336)

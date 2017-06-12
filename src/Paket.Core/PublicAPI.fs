@@ -664,9 +664,9 @@ type Dependencies(dependenciesFileName: string) =
         |> Array.choose (fun proj -> proj.FindTemplatesFile())
         |> Array.choose (fun path ->
                          try
-                           Some(TemplateFile.Load(path, lockFile, None, Map.empty))
+                             Some(TemplateFile.Load(path, lockFile, None, Map.empty))
                          with
-                           | _ -> None)
+                         | _ -> None)
         |> Array.toList
 
 
