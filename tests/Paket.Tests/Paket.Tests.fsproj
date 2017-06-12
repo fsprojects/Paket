@@ -262,6 +262,7 @@
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
+    <Compile Include="InstallModel\Xml\ControlzEx.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
     <Compile Include="InstallModel\Xml\xunit.runner.fs" />
     <Compile Include="InstallModel\Xml\StyleCop.MSBuild.fs" />

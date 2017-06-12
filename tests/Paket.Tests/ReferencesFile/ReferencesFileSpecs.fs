@@ -176,13 +176,39 @@ let ``should parse lines with CopyLocal settings correctly``() =
     refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 2
     refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.SpecificVersion |> shouldEqual None
     refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.SpecificVersion |> shouldEqual None
+
+let refFileContentWithSpecificVersionFalse = """Castle.Windsor specific_version : false
+Newtonsoft.Json"""
+
+[<Test>]
+let ``should parse lines with SpecificVersion settings correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileContentWithSpecificVersionFalse)
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 2
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.CopyLocal |> shouldEqual None
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.SpecificVersion |> shouldEqual (Some false)
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
+    refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.SpecificVersion |> shouldEqual None
 
 [<Test>]
 let ``should serialize CopyLocal correctly``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileContentWithCopyLocalFalse)
     let expected = """Castle.Windsor copy_local: false
+Newtonsoft.Json"""
+
+    refFile.ToString()
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings expected)
+
+[<Test>]
+let ``should serialize SpecificVersion correctly``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileContentWithSpecificVersionFalse)
+    let expected = """Castle.Windsor specific_version: false
 Newtonsoft.Json"""
 
     refFile.ToString()
@@ -213,9 +239,11 @@ let ``should parse lines with CopyLocal and import_targets settings correctly``(
     refFile.NugetPackages.Length |> shouldEqual 3
     refFile.NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
     refFile.NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
+    refFile.NugetPackages.Head.Settings.SpecificVersion |> shouldEqual None
     refFile.NugetPackages.Head.Settings.ImportTargets |> shouldEqual (Some false)
     refFile.NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
     refFile.NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
+    refFile.NugetPackages.Tail.Head.Settings.SpecificVersion |> shouldEqual None
     refFile.NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual None
 
 [<Test>]
@@ -231,11 +259,11 @@ xUnit import_targets: false"""
 
 
 let legacyRefFileContentWithMultipleSettings = """Castle.Windsor copy_local: false, import_targets: false, framework: net35, >= net40
-Newtonsoft.Json content: none, framework: net40
+Newtonsoft.Json content: none, specific_version: false, framework: net40
 xUnit import_targets: false"""
 
 let refFileContentWithMultipleSettings = """Castle.Windsor copy_local: false, import_targets: false, restriction: || (== net35) (>= net40)
-Newtonsoft.Json content: none, restriction: == net40
+Newtonsoft.Json specific_version: false, content: none, restriction: == net40
 xUnit import_targets: false"""
 
 [<Test>]
@@ -245,15 +273,18 @@ let ``should parse and serialize lines with multiple settings settings correctly
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Length |> shouldEqual 3
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Name |> shouldEqual (PackageName "Castle.Windsor")
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.CopyLocal |> shouldEqual (Some false)
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.SpecificVersion |> shouldEqual None
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Head.Settings.ImportTargets |> shouldEqual (Some false)
 
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Name |> shouldEqual (PackageName "Newtonsoft.Json")
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.CopyLocal |> shouldEqual None
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.SpecificVersion |> shouldEqual (Some false)
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.ImportTargets |> shouldEqual None
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Head.Settings.OmitContent |> shouldEqual (Some ContentCopySettings.Omit)
 
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Name |> shouldEqual (PackageName "xUnit")
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.CopyLocal |> shouldEqual None
+        refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.SpecificVersion |> shouldEqual None
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.ImportTargets |> shouldEqual (Some false)
         refFile.Groups.[Constants.MainDependencyGroup].NugetPackages.Tail.Tail.Head.Settings.OmitContent |> shouldEqual None
 
