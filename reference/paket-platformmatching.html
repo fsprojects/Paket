@@ -75,6 +75,12 @@
     <tbody>
         <tr>
           <td class="type-name">
+            <a href="paket-platformmatching-parsedplatformpath.html">ParsedPlatformPath</a>
+          </td>
+          <td class="xmldoc"></td>
+        </tr>
+        <tr>
+          <td class="type-name">
             <a href="paket-platformmatching-pathpenalty.html">PathPenalty</a>
           </td>
           <td class="xmldoc"></td>
@@ -93,15 +99,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '277', 277)" onmouseover="showTip(event, '277', 277)">
+          <code onmouseout="hideTip(event, '326', 326)" onmouseover="showTip(event, '326', 326)">
+            collectPlatforms 
+          </code>
+          <div class="tip" id="326">
+            <strong>Signature:</strong> TargetProfile * Set&lt;TargetProfile&gt; -&gt; Set&lt;TargetProfile&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L133-133" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '327', 327)" onmouseover="showTip(event, '327', 327)">
             comparePaths (arg1, arg2) (arg3, arg4)
           </code>
-          <div class="tip" id="277">
-            <strong>Signature:</strong> (string * int) -&gt; (string * int) -&gt; int<br />
+          <div class="tip" id="327">
+            <strong>Signature:</strong> (ParsedPlatformPath * int) -&gt; (ParsedPlatformPath * int) -&gt; int<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L69-69" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L110-110" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -111,33 +135,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '278', 278)" onmouseover="showTip(event, '278', 278)">
-            extractAndTryGetProfile 
-          </code>
-          <div class="tip" id="278">
-            <strong>Signature:</strong> string -&gt; TargetProfile option<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L19-19" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '279', 279)" onmouseover="showTip(event, '279', 279)">
+          <code onmouseout="hideTip(event, '328', 328)" onmouseover="showTip(event, '328', 328)">
             extractPlatforms 
           </code>
-          <div class="tip" id="279">
-            <strong>Signature:</strong> string -&gt; FrameworkIdentifier list<br />
+          <div class="tip" id="328">
+            <strong>Signature:</strong> string -&gt; ParsedPlatformPath option<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L12-12" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L29-29" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -147,15 +153,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '280', 280)" onmouseover="showTip(event, '280', 280)">
+          <code onmouseout="hideTip(event, '329', 329)" onmouseover="showTip(event, '329', 329)">
             findBestMatch 
           </code>
-          <div class="tip" id="280">
-            <strong>Signature:</strong> string list * TargetProfile -&gt; string option<br />
+          <div class="tip" id="329">
+            <strong>Signature:</strong> ParsedPlatformPath list * TargetProfile -&gt; ParsedPlatformPath option<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L109-109" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L156-156" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -165,15 +171,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '281', 281)" onmouseover="showTip(event, '281', 281)">
+          <code onmouseout="hideTip(event, '330', 330)" onmouseover="showTip(event, '330', 330)">
+            forceExtractPlatforms path
+          </code>
+          <div class="tip" id="330">
+            <strong>Signature:</strong> path:string -&gt; ParsedPlatformPath<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L46-46" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '331', 331)" onmouseover="showTip(event, '331', 331)">
             getCondition (...)
           </code>
-          <div class="tip" id="281">
-            <strong>Signature:</strong> referenceCondition:string option -&gt; allTargets:TargetProfile list list -&gt; targets:TargetProfile list -&gt; string<br />
+          <div class="tip" id="331">
+            <strong>Signature:</strong> referenceCondition:string option -&gt; allTargets:Set&lt;TargetProfile&gt; list -&gt; targets:Set&lt;TargetProfile&gt; -&gt; string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L200-200" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L214-214" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -183,15 +207,51 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '282', 282)" onmouseover="showTip(event, '282', 282)">
+          <code onmouseout="hideTip(event, '332', 332)" onmouseover="showTip(event, '332', 332)">
+            getFrameworkPathPenalty fr path
+          </code>
+          <div class="tip" id="332">
+            <strong>Signature:</strong> fr:FrameworkIdentifier list -&gt; path:ParsedPlatformPath -&gt; int<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L102-102" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '333', 333)" onmouseover="showTip(event, '333', 333)">
+            getFrameworkPenalty (fr1, fr2)
+          </code>
+          <div class="tip" id="333">
+            <strong>Signature:</strong> (fr1:FrameworkIdentifier * fr2:FrameworkIdentifier) -&gt; int<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L83-83" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '334', 334)" onmouseover="showTip(event, '334', 334)">
             getPathPenalty 
           </code>
-          <div class="tip" id="282">
-            <strong>Signature:</strong> string * FrameworkIdentifier -&gt; int<br />
+          <div class="tip" id="334">
+            <strong>Signature:</strong> ParsedPlatformPath * TargetProfile -&gt; int<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L49-49" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L87-87" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -201,33 +261,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '283', 283)" onmouseover="showTip(event, '283', 283)">
-            getPenalty requiredPlatforms path
-          </code>
-          <div class="tip" id="283">
-            <strong>Signature:</strong> requiredPlatforms:FrameworkIdentifier list -&gt; path:string -&gt; int<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L63-63" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '284', 284)" onmouseover="showTip(event, '284', 284)">
+          <code onmouseout="hideTip(event, '335', 335)" onmouseover="showTip(event, '335', 335)">
             getPlatformPenalty 
           </code>
-          <div class="tip" id="284">
-            <strong>Signature:</strong> FrameworkIdentifier * FrameworkIdentifier -&gt; int<br />
+          <div class="tip" id="335">
+            <strong>Signature:</strong> TargetProfile * TargetProfile -&gt; int<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L29-29" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L52-52" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -237,15 +279,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '285', 285)" onmouseover="showTip(event, '285', 285)">
+          <code onmouseout="hideTip(event, '336', 336)" onmouseover="showTip(event, '336', 336)">
             getSupportedTargetProfiles 
           </code>
-          <div class="tip" id="285">
-            <strong>Signature:</strong> string list -&gt; Map&lt;string,TargetProfile list&gt;<br />
+          <div class="tip" id="336">
+            <strong>Signature:</strong> ParsedPlatformPath list -&gt; Map&lt;ParsedPlatformPath,Set&lt;TargetProfile&gt;&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L152-152" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L169-169" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -255,15 +297,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '286', 286)" onmouseover="showTip(event, '286', 286)">
+          <code onmouseout="hideTip(event, '337', 337)" onmouseover="showTip(event, '337', 337)">
             getTargetCondition target
           </code>
-          <div class="tip" id="286">
+          <div class="tip" id="337">
             <strong>Signature:</strong> target:TargetProfile -&gt; string * string<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L165-165" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L182-182" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -273,33 +315,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '287', 287)" onmouseover="showTip(event, '287', 287)">
-            knownInPortable 
-          </code>
-          <div class="tip" id="287">
-            <strong>Signature:</strong> FrameworkIdentifier list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L14-14" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '288', 288)" onmouseover="showTip(event, '288', 288)">
+          <code onmouseout="hideTip(event, '338', 338)" onmouseover="showTip(event, '338', 338)">
             MaxPenalty 
           </code>
-          <div class="tip" id="288">
+          <div class="tip" id="338">
             <strong>Signature:</strong> int<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L6-6" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L8-8" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -309,15 +333,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '289', 289)" onmouseover="showTip(event, '289', 289)">
+          <code onmouseout="hideTip(event, '339', 339)" onmouseover="showTip(event, '339', 339)">
             platformsSupport 
           </code>
-          <div class="tip" id="289">
-            <strong>Signature:</strong> FrameworkIdentifier * FrameworkIdentifier list -&gt; int<br />
+          <div class="tip" id="339">
+            <strong>Signature:</strong> TargetProfile * Set&lt;TargetProfile&gt; -&gt; int<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L91-91" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L143-143" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -327,15 +351,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '290', 290)" onmouseover="showTip(event, '290', 290)">
+          <code onmouseout="hideTip(event, '340', 340)" onmouseover="showTip(event, '340', 340)">
             split path
           </code>
-          <div class="tip" id="290">
+          <div class="tip" id="340">
             <strong>Signature:</strong> path:string -&gt; string []<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PlatformMatching.fs#L8-8" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/PlatformMatching.fs#L24-24" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

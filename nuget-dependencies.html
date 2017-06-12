@@ -222,6 +222,17 @@ By specifying C == 1.1 we overwrite all other requirements and Paket will not co
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="k">framework</span>: net35, net40  <span class="c">// .NET 3.5 and .NET 4.0</span>
 <span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="k">framework</span>: <span class="o">&gt;=</span> net45      <span class="c">// .NET 4.5 and above</span>
 </code></pre></td></tr></table>
+<blockquote>
+<p>Note: This feature is deprecated and can be seen as an expert feature.
+Using framework restrictions on single packages might make you projects uncompilable.
+The recommended way is to globally (on a group) specifiy the frameworks you want to compile for.</p>
+</blockquote>
+<p>This feature basically tells paket to only consider the specified frameworks for this package.
+It means</p>
+<blockquote>
+<p>Paket I use 'Example' only to compile against 'net35' and 'net40'.
+I never need this package to compile for another framework like 'net45'."</p>
+</blockquote>
 <h3><a name="Putting-the-version-no-into-the-path" class="anchor" href="#Putting-the-version-no-into-the-path">Putting the version no. into the path</a></h3>
 <p>If you need to be NuGet compatible and want to have the version no. in the package path you can do the following:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>

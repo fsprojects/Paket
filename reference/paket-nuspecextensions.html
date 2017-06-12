@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>NuGetConfig - Paket</title>
+    <title>NuspecExtensions - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,38 +58,57 @@
 
 
 
-<h1>NuGetConfig</h1>
+<h1>NuspecExtensions</h1>
 <p>
   <span>Namespace: Paket</span><br />
-  <span>Parent Module: <a href="paket-nuget.html">NuGet</a></span>
 </p>
 <div class="xmldoc">
 </div>
 
 <!-- Render nested types and modules, if there are any -->
 
-  <h3>Functions and values</h3>
+  <h3>Type extensions</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Function or value</td><td>Description</td></tr>
+      <tr><td>Type extension</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '189', 189)" onmouseover="showTip(event, '189', 189)">
-            writeNuGetConfig directory sources
+          <code onmouseout="hideTip(event, '291', 291)" onmouseover="showTip(event, '291', 291)">
+            Create(...)
           </code>
-          <div class="tip" id="189">
-            <strong>Signature:</strong> directory:string -&gt; sources:seq&lt;&#39;?8674&gt; -&gt; unit<br />
-                          <strong>Type parameters:</strong> '?8674          </div>
+          <div class="tip" id="291">
+            <strong>Signature:</strong> (Id:string * templatePath:string * lockFile:LockFile * currentVersion:SemVerInfo option * packages:Map&lt;string,SemVerInfo&gt;) -&gt; string * XDocument<br />
+                      </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Nuget.fs#L18-18" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Packaging/NupkgWriter.fs#L348-348" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
+              <p>CompiledName: <code>Nuspec.Create.Static</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '292', 292)" onmouseover="showTip(event, '292', 292)">
+            FromProject(...)
+          </code>
+          <div class="tip" id="292">
+            <strong>Signature:</strong> (projectPath:string * dependenciesPath:string) -&gt; string * XDocument<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Packaging/NupkgWriter.fs#L356-356" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>Nuspec.FromProject.Static</code></p>
         </td>
       </tr>
     </tbody>

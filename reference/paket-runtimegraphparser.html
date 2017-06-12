@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>InstallFiles - Paket</title>
+    <title>RuntimeGraphParser - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,11 +58,13 @@
 
 
 
-<h1>InstallFiles</h1>
+<h1>RuntimeGraphParser</h1>
 <p>
   <span>Namespace: Paket</span><br />
 </p>
 <div class="xmldoc">
+<p>A module for parsing runtime.json files contained in various packages.</p>
+
 </div>
 
 <!-- Render nested types and modules, if there are any -->
@@ -76,15 +78,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '90', 90)" onmouseover="showTip(event, '90', 90)">
-            addFrameworkAssemblyReference (...)
+          <code onmouseout="hideTip(event, '455', 455)" onmouseover="showTip(event, '455', 455)">
+            readCompatiblityProfilesJ json
           </code>
-          <div class="tip" id="90">
-            <strong>Signature:</strong> assemblyName:string -&gt; installFiles:InstallFiles -&gt; InstallFiles<br />
+          <div class="tip" id="455">
+            <strong>Signature:</strong> json:JObject -&gt; CompatibilityProfile list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L61-61" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L56-56" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -94,15 +96,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '91', 91)" onmouseover="showTip(event, '91', 91)">
-            addReference lib installFiles
+          <code onmouseout="hideTip(event, '456', 456)" onmouseover="showTip(event, '456', 456)">
+            readRuntimeDescriptionJ json
           </code>
-          <div class="tip" id="91">
-            <strong>Signature:</strong> lib:string -&gt; installFiles:InstallFiles -&gt; InstallFiles<br />
+          <div class="tip" id="456">
+            <strong>Signature:</strong> json:JObject -&gt; RuntimeDescription list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L53-53" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L73-73" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -112,15 +114,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '92', 92)" onmouseover="showTip(event, '92', 92)">
-            addTargetsFile targetsFile installFiles
+          <code onmouseout="hideTip(event, '457', 457)" onmouseover="showTip(event, '457', 457)">
+            readRuntimeGraph s
           </code>
-          <div class="tip" id="92">
-            <strong>Signature:</strong> targetsFile:string -&gt; installFiles:InstallFiles -&gt; InstallFiles<br />
+          <div class="tip" id="457">
+            <strong>Signature:</strong> s:string -&gt; RuntimeGraph<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L58-58" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L121-121" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -130,69 +132,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '93', 93)" onmouseover="showTip(event, '93', 93)">
-            empty 
+          <code onmouseout="hideTip(event, '458', 458)" onmouseover="showTip(event, '458', 458)">
+            readRuntimeGraphJ json
           </code>
-          <div class="tip" id="93">
-            <strong>Signature:</strong> InstallFiles<br />
+          <div class="tip" id="458">
+            <strong>Signature:</strong> json:JObject -&gt; RuntimeGraph<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L49-49" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '94', 94)" onmouseover="showTip(event, '94', 94)">
-            getFrameworkAssemblies installFiles
-          </code>
-          <div class="tip" id="94">
-            <strong>Signature:</strong> installFiles:InstallFiles -&gt; seq&lt;string&gt;<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L64-64" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '95', 95)" onmouseover="showTip(event, '95', 95)">
-            mergeWith that installFiles
-          </code>
-          <div class="tip" id="95">
-            <strong>Signature:</strong> that:InstallFiles -&gt; installFiles:InstallFiles -&gt; InstallFiles<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L69-69" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '96', 96)" onmouseover="showTip(event, '96', 96)">
-            singleton lib
-          </code>
-          <div class="tip" id="96">
-            <strong>Signature:</strong> lib:string -&gt; InstallFiles<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/InstallModel.fs#L56-56" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/PaketConfigFiles/RuntimeGraph.fs#L103-103" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
