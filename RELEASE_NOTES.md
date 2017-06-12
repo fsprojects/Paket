@@ -1,10 +1,9 @@
-#### 5.0.0-rc005 - 11.06.2017
-* Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
-  * Paket now properly understands runtime and reference assemblies
-  * Paket now understands the runtime graph and restores runtime dependencies
-  * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
+#### 5.0.0-rc006 - 12.06.2017
 * New command `paket generate-nuspec`
 * New Command: `FixNuspecs` - Can fix a list of nuspec files now
+* BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (https://github.com/fsprojects/Paket/pull/2336)
+* BREAKING CHANGE: Paket.PowerShell is no longer supported
+* BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
 * New restriction system (https://github.com/fsprojects/Paket/pull/2336):
   * Paket is now more accurate in calculating restrictions and referencing libraries
   * Paket will convert (lock-)files to a new syntax (but still understands the old syntax)
@@ -12,9 +11,6 @@
   * Add support for net403 (required for some portable profiles)
 * PERFORMANCE: Improved performance by pre-loading requests (https://github.com/fsprojects/Paket/pull/2336)
 * PERFORMANCE: Report performance in a more detailed way (https://github.com/fsprojects/Paket/pull/2336)
-* BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (https://github.com/fsprojects/Paket/pull/2336)
-* BREAKING CHANGE: Paket.PowerShell is no longer supported
-* BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
 * DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
 * PERFORMANCE: Limit the number of concurrent requests to 7 (https://github.com/fsprojects/Paket/pull/2362)
@@ -38,12 +34,17 @@
 * BUGFIX: Filter .targets / .props earlier - https://github.com/fsprojects/Paket/pull/2286
 * BUGFIX: Downgrade to tooling 1.0 (https://github.com/fsprojects/Paket/pull/2380)
 * BUGFIX: Paket added too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
+* BUGFIX: Paket failed with: String cannot be of zero length (https://github.com/fsprojects/Paket/pull/2407)
 * BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
 * BOOTSTRAPPER: Search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384)
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
 * make xamarin stuff work with netstandard (https://github.com/fsprojects/Paket/pull/2396).
-* BUGFIX: Paket failed with: String cannot be of zero length (https://github.com/fsprojects/Paket/pull/2407)
+* Support for SpecificVersion attribute on assembly references - https://github.com/fsprojects/Paket/pull/2413
 * Cleanup https://github.com/fsprojects/Paket/pull/2412 https://github.com/fsprojects/Paket/pull/2410
+* Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
+  * Paket now properly understands runtime and reference assemblies
+  * Paket now understands the runtime graph and restores runtime dependencies
+  * New API `InstallModel.GetRuntimeAssemblies` and `InstallModel.GetRuntimeLibraries` can be used to retrieve the correct assets for a particular RID and TFM
 
 #### 4.8.8 - 11.06.2017
 * paket adds too many targets and props (https://github.com/fsprojects/Paket/pull/2388)
