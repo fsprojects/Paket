@@ -379,7 +379,7 @@ type Command =
     | [<AltCommandLine("-v"); Inherit>]                 Verbose
     | [<Inherit>]                                       Log_File of path:string
     | [<AltCommandLine("-s"); Inherit>]                 Silent
-    | [<Inherit>]                                       Version
+    |                                                   Version
     | [<Inherit;Hidden>]                                From_Bootstrapper
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
