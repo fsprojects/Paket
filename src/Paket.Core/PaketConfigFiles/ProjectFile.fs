@@ -159,9 +159,11 @@ type ProjectFile =
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module ProjectFile =
+    let supportedEndings = [ ".csproj"; ".fsproj"; ".vbproj"; ".wixproj"; ".nproj"; ".vcxproj"]
 
     let isSupportedFile (fi:FileInfo) =
-        fi.Extension = ".csproj" || fi.Extension = ".fsproj" || fi.Extension = ".vbproj" || fi.Extension = ".wixproj" || fi.Extension = ".nproj" || fi.Extension = ".vcxproj"
+        supportedEndings
+        |> List.exists (fun e -> fi.Extension.Contains e)
 
     let name (projectFile:ProjectFile) = FileInfo(projectFile.FileName).Name
 
