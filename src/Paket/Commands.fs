@@ -33,10 +33,10 @@ with
             | CreateNewBindingFiles -> "Creates binding redirect files if needed."
             | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
-            | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
-            | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
-            | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
-            | Touch_Affected_Refs -> "Touches project files referencing packages which are affected, to help incremental build tools detecting the change."
+            | Keep_Major -> "Only allow updates that are preserving the major version of the NuGet packages"
+            | Keep_Minor -> "Only allow updates that are preserving the minor version of the NuGet packages"
+            | Keep_Patch -> "Only allow updates that are preserving the patch version of the NuGet packages"
+            | Touch_Affected_Refs -> "Touch project files referencing packages which are affected to help incremental build tools detecting the change"
 
 type ConfigArgs =
     | [<CustomCommandLine("add-credentials")>] AddCredentials of string
@@ -167,7 +167,7 @@ type RestoreArgs =
     | [<CustomCommandLine("--touch-affected-refs")>] Touch_Affected_Refs
     | [<CustomCommandLine("--ignore-checks")>] Ignore_Checks
     | [<CustomCommandLine("--fail-on-checks")>] Fail_On_Checks
-    | [<CustomCommandLine("group")>] Group of name:string    
+    | [<CustomCommandLine("group")>] Group of name:string
     | [<Unique>] Project of file_name:string
     | [<Unique>] References_Files of file_name:string list
     | [<Unique>] Target_Framework of target_framework:string
@@ -247,7 +247,7 @@ with
             match this with
             | File _ -> "FileName of the nuspec file."
             | ReferencesFile _ -> "FileName of the nuspec file."
-            
+
 type FixNuspecsArgs =
     | [<Mandatory>][<CustomCommandLine("files")>] Files of nuspecPaths:string list
     | [<Mandatory>][<CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
@@ -350,25 +350,25 @@ with
             | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
-type GenerateLoadScriptsArgs = 
+type GenerateLoadScriptsArgs =
     | [<CustomCommandLine("groups")>] Groups of groups:string list
     | [<CustomCommandLine("framework")>] Framework of target:string
     | [<CustomCommandLine("type")>] ScriptType of id:string
 with
   interface IArgParserTemplate with
-      member this.Usage = 
+      member this.Usage =
         match this with
         | Groups _ -> "Groups to generate scripts for, if none are specified then generate for all groups"
         | Framework _ -> "Framework identifier to generate scripts for, such as net45 or netstandard1.6"
         | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
-  
+
 type WhyArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] NuGet of package_id:string
     | [<CustomCommandLine("group")>] Group of name:string
     | Details
 with
   interface IArgParserTemplate with
-      member this.Usage = 
+      member this.Usage =
         match this with
         | NuGet _ -> "Name of the NuGet package."
         | Group _ -> "Allows to specify the dependency group."
@@ -411,36 +411,36 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Add _ -> "Adds a new package to your paket.dependencies file."
-            | ClearCache _ -> "Clears the NuGet and git cache folders."
-            | Config _ -> "Allows to store global configuration values like NuGet credentials."
-            | ConvertFromNuget _ -> "Converts from using NuGet to Paket."
-            | FindRefs _ -> "Finds all project files that have the given NuGet packages installed."
-            | Init _ -> "Creates an empty paket.dependencies file in the working directory."
-            | AutoRestore _ -> "Enables or disables automatic Package Restore in Visual Studio during the build process."
-            | Install _ -> "Download the dependencies specified by the paket.dependencies or paket.lock file into the `packages/` directory and update projects."
-            | Outdated _ -> "Lists all dependencies that have newer versions available."
-            | Remove _ -> "Removes a package from your paket.dependencies file and all paket.references files."
-            | Restore _ -> "Download the dependencies specified by the paket.lock file into the `packages/` directory."
-            | Simplify _ -> "Simplifies your paket.dependencies file by removing transitive dependencies."
-            | Update _ -> "Update one or all dependencies to their latest version and update projects."
-            | FindPackages _ -> "Allows to search for packages."
-            | FindPackageVersions _ -> "Allows to search for package versions."
-            | FixNuspec _ -> "[ Obsolete ] see fix-nuspecs."
-            | FixNuspecs _ -> "Patch a list of .nuspec files to correct transitive dependencies."
-            | GenerateNuspec _ -> "Generates a default nuspec for a project including its direct dependencies."
-            | ShowInstalledPackages _ -> "Shows all installed top-level packages."
-            | ShowGroups _ -> "Shows all groups."
-            | Pack _ -> "Packs all paket.template files within this repository."
-            | Push _ -> "Pushes the given `.nupkg` file."
-            | GenerateIncludeScripts _ -> "Obsolete, see generate-load-scripts."
-            | GenerateLoadScripts _ -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
-            | Why _ -> "Prints user-friendly reason for referencing a specified package"
-            | Log_File _ -> "Specify a log file for the paket process."
-            | Silent -> "Suppress console output for the paket process."
-            | Verbose -> "Enable verbose console output for the paket process." 
-            | Version -> "Display the version." 
-            | From_Bootstrapper -> "Call coming from the '--run' feature of the bootstrapper." 
+            | Add _ -> "add a new dependency"
+            | ClearCache _ -> "clear the NuGet and git cache directories"
+            | Config _ -> "store global configuration values like NuGet credentials"
+            | ConvertFromNuget _ -> "convert projects from NuGet to Paket"
+            | FindRefs _ -> "find all project files that have a dependency installed"
+            | Init _ -> "create an empty paket.dependencies file in the current working directory"
+            | AutoRestore _ -> "manage automatic package restore during the build process inside Visual Studio"
+            | Install _ -> "download dependencies and update projects"
+            | Outdated _ -> "find dependencies that have newer versions available"
+            | Remove _ -> "remove a dependency"
+            | Restore _ -> "download the computed dependency graph"
+            | Simplify _ -> "simplify declared dependencies by removing transitive dependencies"
+            | Update _ -> "update dependencies to their latest version"
+            | FindPackages _ -> "search for dependencies"
+            | FindPackageVersions _ -> "search for dependency versions"
+            | FixNuspec _ -> "obsolete, see fix-nuspecs"
+            | FixNuspecs _ -> "patch a list of .nuspec files to correct transitive dependencies"
+            | GenerateNuspec _ -> "generate a default nuspec for a project including its direct dependencies"
+            | ShowInstalledPackages _ -> "show installed top-level packages"
+            | ShowGroups _ -> "show groups"
+            | Pack _ -> "create NuGet packages from paket.template files"
+            | Push _ -> "push a NuGet package"
+            | GenerateIncludeScripts _ -> "obsolete, see generate-load-scripts"
+            | GenerateLoadScripts _ -> "generate C# and F# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
+            | Why _ -> "determine why a dependency is required"
+            | Log_File _ -> "print output to a file"
+            | Silent -> "suppress console output"
+            | Verbose -> "print detailed information to the console"
+            | Version -> "show Paket version"
+            | From_Bootstrapper -> "call coming from the '--run' feature of the bootstrapper"
 
 let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
 
@@ -452,7 +452,7 @@ let markdown (subParser : ArgumentParser) (width : int) (additionalText : string
                                           .Trim('\r', '\n') |> ensureLineBreak
         let afterCommandIndex = additionalText.IndexOf("# [after-command]")
         let afterOptionsIndex = additionalText.IndexOf("# [after-options]")
-        
+
         if afterCommandIndex = -1 then "", additionalText |> cleanUp
         else if afterOptionsIndex = -1 then additionalText |> cleanUp, ""
         else (additionalText.Substring(0, afterCommandIndex) |> cleanUp, additionalText.Substring(afterOptionsIndex) |> cleanUp)
@@ -468,7 +468,7 @@ let markdown (subParser : ArgumentParser) (width : int) (additionalText : string
     let replace (pattern : string) (replacement : string) input =
         System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
 
-    let syntax = 
+    let syntax =
         subParser.PrintCommandLineSyntax(usageStringCharacterWidth = width)
         |> indentBy 4
 
