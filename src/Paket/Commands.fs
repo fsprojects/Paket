@@ -5,14 +5,14 @@ open System
 open Argu
 
 type AddArgs =
-    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of package_id:string
-    | [<CustomCommandLine("version")>] Version of version:string
-    | [<CustomCommandLine("project")>] Project of name:string
-    | [<CustomCommandLine("group")>] Group of name:string
+    | [<MainCommandAttribute()>][<Mandatory>] NuGet of package_id:string
+    | [<AltCommandLine("-V")>] Version of version:string
+    | [<AltCommandLine("-p")>] Project of name:string
+    | [<AltCommandLine("-g")>] Group of name:string
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Redirects
-    | CreateNewBindingFiles
+    | [<AltCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files
     | Clean_Redirects
     | No_Install
     | Keep_Major
@@ -23,20 +23,20 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Nuget(_) -> "NuGet package id."
-            | Group(_) -> "Add the package to the given group. If omitted the Main group is used."
-            | Version(_) -> "Allows to specify version of the package."
-            | Project(_) -> "Allows to add the package to a single project only."
-            | Force -> "Forces the download and reinstallation of all packages."
-            | Interactive -> "Asks the user for every project if he or she wants to add the package to the projects's paket.references file."
-            | Redirects -> "Creates binding redirects for the NuGet packages."
-            | CreateNewBindingFiles -> "Creates binding redirect files if needed."
-            | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
-            | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
-            | Keep_Major -> "Only allow updates that are preserving the major version of the NuGet packages"
-            | Keep_Minor -> "Only allow updates that are preserving the minor version of the NuGet packages"
-            | Keep_Patch -> "Only allow updates that are preserving the patch version of the NuGet packages"
-            | Touch_Affected_Refs -> "Touch project files referencing packages which are affected to help incremental build tools detecting the change"
+            | NuGet(_) -> "NuGet package ID"
+            | Group(_) -> "add the package to a group (default: Main group)"
+            | Version(_) -> "package version constraint"
+            | Project(_) -> "add the package to a single project only"
+            | Force -> "force download and reinstallation of all dependencies"
+            | Interactive -> "ask for every project whether to add the dependency"
+            | Redirects -> "create binding redirects"
+            | Create_New_Binding_Files -> "create binding redirect files if needed"
+            | Clean_Redirects -> "remove binding redirects that were not created by Paket"
+            | No_Install -> "skip install process after resolving dependencies"
+            | Keep_Major -> "only allow updates that preserve the major version"
+            | Keep_Minor -> "only allow updates that preserve the minor version"
+            | Keep_Patch -> "only allow updates that preserve the patch version"
+            | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
 
 type ConfigArgs =
     | [<CustomCommandLine("add-credentials")>] AddCredentials of string
@@ -95,7 +95,7 @@ with
 type InstallArgs =
     | [<AltCommandLine("-f")>] Force
     | Redirects
-    | CreateNewBindingFiles
+    | [<AltCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files
     | Clean_Redirects
     | Keep_Major
     | Keep_Minor
@@ -112,7 +112,7 @@ with
             match this with
             | Force -> "Forces the download and reinstallation of all packages."
             | Redirects -> "Creates binding redirects for the NuGet packages."
-            | CreateNewBindingFiles -> "Creates binding redirect files if needed."
+            | Create_New_Binding_Files -> "Creates binding redirect files if needed."
             | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
             | Generate_Load_Scripts -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
@@ -199,7 +199,7 @@ type UpdateArgs =
     | [<CustomCommandLine("group")>] Group of name:string
     | [<AltCommandLine("-f")>] Force
     | Redirects
-    | CreateNewBindingFiles
+    | [<AltCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files
     | Clean_Redirects
     | No_Install
     | Keep_Major
@@ -216,7 +216,7 @@ with
             | Version(_) -> "Allows to specify version of the package."
             | Force -> "Forces the download and reinstallation of all packages."
             | Redirects -> "Creates binding redirects for the NuGet packages."
-            | CreateNewBindingFiles -> "Creates binding redirect files if needed."
+            | Create_New_Binding_Files -> "Creates binding redirect files if needed."
             | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
             | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."

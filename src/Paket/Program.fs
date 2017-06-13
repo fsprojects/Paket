@@ -98,18 +98,18 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
                     | Profile.Category.Other ->
                         tracefn "  - Other: %s" (Utils.TimeSpanToReadableString elapsed)
                     )
-                
+
                 tracefn " - Runtime: %s" (Utils.TimeSpanToReadableString realTime)
 
 let processCommand silent commandF result =
     processWithValidation silent (fun _ -> true) commandF result
 
 let add (results : ParseResults<_>) =
-    let packageName = results.GetResult <@ AddArgs.Nuget @>
+    let packageName = results.GetResult <@ AddArgs.NuGet @>
     let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
     let force = results.Contains <@ AddArgs.Force @>
     let redirects = results.Contains <@ AddArgs.Redirects @>
-    let createNewBindingFiles = results.Contains <@ AddArgs.CreateNewBindingFiles @>
+    let createNewBindingFiles = results.Contains <@ AddArgs.Create_New_Binding_Files @>
     let cleanBindingRedirects = results.Contains <@ AddArgs.Clean_Redirects @>
     let group = results.TryGetResult <@ AddArgs.Group @>
     let noInstall = results.Contains <@ AddArgs.No_Install @>
@@ -181,7 +181,7 @@ let clearCache (results : ParseResults<ClearCacheArgs>) =
 let install (results : ParseResults<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
     let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
-    let createNewBindingFiles = results.Contains <@ InstallArgs.CreateNewBindingFiles @>
+    let createNewBindingFiles = results.Contains <@ InstallArgs.Create_New_Binding_Files @>
     let cleanBindingRedirects = results.Contains <@ InstallArgs.Clean_Redirects @>
     let installOnlyReferenced = results.Contains <@ InstallArgs.Install_Only_Referenced @>
     let generateLoadScripts = results.Contains <@ InstallArgs.Generate_Load_Scripts @>
@@ -257,7 +257,7 @@ let update (results : ParseResults<_>) =
     let group = results.TryGetResult <@ UpdateArgs.Group @>
     let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
     let cleanBindingRedirects = results.Contains <@ UpdateArgs.Clean_Redirects @>
-    let createNewBindingFiles = results.Contains <@ UpdateArgs.CreateNewBindingFiles @>
+    let createNewBindingFiles = results.Contains <@ UpdateArgs.Create_New_Binding_Files @>
     let semVerUpdateMode =
         if results.Contains <@ UpdateArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
         if results.Contains <@ UpdateArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
