@@ -315,16 +315,12 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                        match nugetSource with
                        | NuGetV2 source ->
                             let auth = source.Authentication |> Option.map toBasicAuth
-                            if not force && (String.containsIgnoreCase "nuget.org" source.Url || String.containsIgnoreCase "myget.org" source.Url || String.containsIgnoreCase "visualstudio.com" source.Url) then
-                                [getVersionsCached "Json" NuGetV2.tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
-                            elif String.containsIgnoreCase "artifactory" source.Url then
+                            if String.containsIgnoreCase "artifactory" source.Url then
                                 [getVersionsCached "ODataNewestFirst" NuGetV2.tryGetAllVersionsFromNugetODataFindByIdNewestFirst (nugetSource, auth, source.Url, packageName) ]
                             else
                                 let v2Feeds =
                                     [ yield getVersionsCached "OData" NuGetV2.tryGetAllVersionsFromNugetODataFindById (nugetSource, auth, source.Url, packageName)
-                                      yield getVersionsCached "ODataWithFilter" NuGetV2.tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName)
-                                      if not (String.containsIgnoreCase "teamcity" source.Url || String.containsIgnoreCase"feedservice.svc" source.Url  ) then
-                                        yield getVersionsCached "Json" NuGetV2.tryGetPackageVersionsViaJson (nugetSource, auth, source.Url, packageName) ]
+                                      yield getVersionsCached "ODataWithFilter" NuGetV2.tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName) ]
 
                                 let apiV3 = NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) |> Async.AwaitTask
                                 match apiV3 |> Async.RunSynchronously with

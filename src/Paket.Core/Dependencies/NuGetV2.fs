@@ -88,20 +88,6 @@ let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:
         with _ -> return None
     }
 
-let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) =
-    async {
-        let url = sprintf "%s/package-versions/%O?includePrerelease=true" nugetURL package
-        let! raw = safeGetFromUrl (auth, url, acceptJson)
-
-        match raw with
-        | None -> return None
-        | Some data ->
-            try
-                let versions = Some(JsonConvert.DeserializeObject<string []> data)
-                return versions
-            with _ -> return None
-    }
-
 let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
     let doc = XmlDocument()
     try
