@@ -13,6 +13,7 @@ open Paket.PackageSources
 open System.Net
 open System.Runtime.ExceptionServices
 open System.Text
+open FSharp.Polyfill
 
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
@@ -114,11 +115,7 @@ let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "anal
 
 
 let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
-    async {
-        try
-            return! NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
-        with exn -> return None
-    }
+    NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
 
 
 let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : Async<PackageResolver.PackageDetails> =
@@ -269,23 +266,57 @@ let rec GetPackageDetails alternativeProjectRoot root force (sources:PackageSour
     
 let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
+
+type GetVersionError =
+    { Url : string; Error : ExceptionDispatchInfo }
+    static member ofTuple (url,err) =
+        { Url = url; Error = err }
+type GetVersionRequest =
+    | SuccessVersionResponse of string []
+    | ProtocolNotCached
+    | FailedVersionRequest of GetVersionError
+    member x.Versions =
+        match x with
+        | SuccessVersionResponse l -> l
+        | ProtocolNotCached -> [||]
+        | FailedVersionRequest _ -> [||]
+    member x.IsSuccess =
+        match x with
+        | SuccessVersionResponse _ -> true
+        | ProtocolNotCached -> false
+        | FailedVersionRequest _ -> false
+    static member ofResult r =
+        match r with
+        | FSharp.Core.Result.Ok x -> SuccessVersionResponse x
+        | FSharp.Core.Result.Error t -> FailedVersionRequest (GetVersionError.ofTuple t)
+    static member ofResultAsync r =
+        async { return GetVersionRequest.ofResult r }
+
+type SourceResponse =
+    | SourceKnownToNotContainPackage
+    | SourceSuccess of version : string [] * Requests : GetVersionRequest list
+
+type GetVersionRequestResult =
+    { Requests : GetVersionRequest [] }
+    member x.Versions =
+        x.Requests |> Array.collect (fun r -> r.Versions)
+
 let getVersionsCached key f (source, auth, nugetURL, package) =
     async {
         match protocolCache.TryGetValue(source) with
-        | true, v when v <> key -> return None
+        | true, v when v <> key -> return ProtocolNotCached
         | true, v when v = key ->
             let! result = f (auth, nugetURL, package)
-            match result with
-            | Some x -> return Some x
-            | _ -> return None
+            return GetVersionRequest.ofResult result
         | _ ->
             let! result = f (auth, nugetURL, package)
             match result with
-            | Some x ->
+            | FSharp.Core.Result.Ok x ->
                 protocolCache.TryAdd(source, key) |> ignore
-                return Some x
-            | _ -> return None
+                return SuccessVersionResponse x
+            | FSharp.Core.Result.Error err -> return FailedVersionRequest (GetVersionError.ofTuple err)
     }
+
 
 /// Allows to retrieve all version no. for a package from the given sources.
 let GetVersions force alternativeProjectRoot root (sources, packageName:PackageName) = async {
@@ -334,18 +365,23 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                             let resp =
                                 async {
                                     let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
-                                    return!
+                                    let! res =
                                         tryNuGetV3
                                             (source.Authentication |> Option.map toBasicAuth,
                                              versionsAPI,
                                              packageName)
+                                    return GetVersionRequest.ofResult res
                                 }
 
                             [ resp ]
-                       | LocalNuGet(path,Some _) -> [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
-                       | LocalNuGet(path,None) -> [ NuGetLocal.getAllVersionsFromLocalPath (false, path, packageName, alternativeProjectRoot, root) ])
+                       | LocalNuGet(path,Some _) ->
+                            [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root)
+                                |> fun a -> async.Bind(a, GetVersionRequest.ofResultAsync) ]
+                       | LocalNuGet(path,None) ->
+                            [ NuGetLocal.getAllVersionsFromLocalPath (false, path, packageName, alternativeProjectRoot, root)
+                                |> fun a -> async.Bind(a, GetVersionRequest.ofResultAsync) ])
             |> Seq.toArray
-            |> Array.map Async.Choice
+            |> Array.map (Async.tryFind (fun req -> req.IsSuccess))
             |> Async.Parallel
 
         let! result = versionResponse
@@ -354,12 +390,14 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
             |> Array.zip sources
             |> Array.choose (fun ((_,s),v) ->
                 match v with
-                | Some v when Array.isEmpty v |> not ->
-                    try
-                        let errorFile = getVersionsFailedCacheFileName s
-                        if errorFile.Exists then
-                            File.Delete(errorFile.FullName)
-                    with _ -> ()
+                | tasks, Some index (* when Array.isEmpty tasks.[index].Result.Versions |> not *) ->
+                    if Array.isEmpty tasks.[index].Result.Versions |> not then
+                        try
+                            let errorFile = getVersionsFailedCacheFileName s
+                            if errorFile.Exists then
+                                File.Delete(errorFile.FullName)
+                        with e ->
+                            traceWarnfn "Error while deleting error file: %O" e
                     Some (s,v)
                 | _ ->
                     try

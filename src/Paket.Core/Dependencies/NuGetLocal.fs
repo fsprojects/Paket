@@ -27,7 +27,7 @@ let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, a
                             let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                             if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
             |> Seq.toArray
-        return Some(versions)
+        return Result.Ok(versions)
     }
 
 

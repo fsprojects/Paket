@@ -751,7 +751,8 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 workHandle.Reprioritize WorkPriority.BlockingWork
                 use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked blockReason)
                 let isFinished = workHandle.Task.Wait(30000)
-                if not isFinished then
+                // When debugger is attached This exception can easily happen when using breakpoints...
+                if not isFinished && not Debugger.IsAttached then
                     // TODO: Fix/Refactor to only show unfinished sources, but this needs more information flow...
                     raise <|
                         new TimeoutException(

@@ -575,8 +575,8 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
-            failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
-            return ""
+            return failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
+
     }
 
 let getXmlFromUrl (auth:Auth option, url : string) =
@@ -593,8 +593,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
-            failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
-            return ""
+            return failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
     }
     
 /// [omit]
@@ -612,11 +611,12 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
 #endif
             use _ = Profile.startCategory Profile.Category.NuGetRequest
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
-            return Some raw
+            return FSharp.Core.Result.Ok raw
         with e ->
             if verbose then
                 Logging.verbosefn "Error while retrieving '%s': %O" url e
-            return None
+            let cap = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e
+            return FSharp.Core.Result.Error (url, cap)
     }
 
 let mutable autoAnswer = None

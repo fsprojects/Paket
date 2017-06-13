@@ -57,35 +57,41 @@ let rec private followODataLink auth url =
 
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
     async {
+        let url = sprintf "%s/Packages?$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
         try
-            let url = sprintf "%s/Packages?$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
             if verbose then
                 verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
             let! result = followODataLink auth url
-            return Some result
-        with _ -> return None
+            return Result.Ok result
+        with exn ->
+            let cap = ExceptionDispatchInfo.Capture exn
+            return Result.Error (url, cap)
     }
 
 let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName) =
     async {
+        let url = sprintf "%s/FindPackagesById()?id='%O'" nugetURL package
         try
-            let url = sprintf "%s/FindPackagesById()?id='%O'" nugetURL package
             if verbose then
                 verbosefn "getAllVersionsFromNugetODataFindById from url '%s'" url
             let! result = followODataLink auth url
-            return Some result
-        with _ -> return None
+            return Result.Ok  result
+        with exn ->
+            let cap = ExceptionDispatchInfo.Capture exn
+            return Result.Error (url, cap)
     }
 
 let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:PackageName) =
     async {
+        let url = sprintf "%s/FindPackagesById()?id='%O'&$orderby=Published desc" nugetURL package
         try
-            let url = sprintf "%s/FindPackagesById()?id='%O'&$orderby=Published desc" nugetURL package
             if verbose then
                 verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
             let! result = followODataLink auth url
-            return Some result
-        with _ -> return None
+            return Result.Ok result
+        with exn ->
+            let cap = ExceptionDispatchInfo.Capture exn
+            return Result.Error (url, cap)
     }
 
 let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) =
@@ -93,13 +99,14 @@ let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) =
         let url = sprintf "%s/package-versions/%O?includePrerelease=true" nugetURL package
         let! raw = safeGetFromUrl (auth, url, acceptJson)
 
-        match raw with
-        | None -> return None
-        | Some data ->
-            try
-                let versions = Some(JsonConvert.DeserializeObject<string []> data)
-                return versions
-            with _ -> return None
+        return
+            raw |> FSharp.Core.Result.bind (fun data ->
+                try
+                    let versions = JsonConvert.DeserializeObject<string []> data
+                    FSharp.Core.Result.Ok versions
+                with e ->
+                    let cap = ExceptionDispatchInfo.Capture e
+                    FSharp.Core.Result.Error (url, cap))
     }
 
 let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
@@ -218,15 +225,21 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
 
             let! raw =
                 match response with
-                | Some(r) -> async { return r }
-                | _  when
+                | FSharp.Core.Result.Ok r -> async { return r }
+                | FSharp.Core.Result.Error (_, err) when
                         String.containsIgnoreCase "myget.org" nugetURL ||
                         String.containsIgnoreCase "nuget.org" nugetURL ||
                         String.containsIgnoreCase "visualstudio.com" nugetURL ->
-                    failwithf "Could not get package details for %O from %s" packageName nugetURL
-                | _ ->
-                    let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
-                    getXmlFromUrl(auth,url)
+                    raise <|
+                        System.Exception(
+                            sprintf "Could not get package details for %O from %s" packageName nugetURL,
+                            err.SourceException)
+                | FSharp.Core.Result.Error (_, err) ->
+                    try
+                        let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
+                        getXmlFromUrl(auth,url)
+                    with e ->
+                        raise <| System.AggregateException(err.SourceException, e)
 
             if verbose then
                 tracefn "Response from %s:" url
@@ -243,10 +256,14 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                 return! queryPackagesProtocol packageName
             else
                 return result
-        with _ ->
+        with e ->
+            traceWarnfn "Failed to get package details '%s'. This feeds implementation might be broken." e.Message
+            if verbose then tracefn "Details: %O" e
             try
                 return! queryPackagesProtocol packageName
-            with _ ->
+            with e ->
+                traceWarnfn "Failed to get package details (again) '%s'. This feeds implementation might be broken." e.Message
+                if verbose then tracefn "Details: %O" e
                 // try uppercase version as workaround for https://github.com/fsprojects/Paket/issues/2145 - Bad!
                 let name = PackageName.ToString()
                 let uppercase = PackageName.ToString().[0].ToString().ToUpper() + name.Substring(1)
