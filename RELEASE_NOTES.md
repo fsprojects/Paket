@@ -1,4 +1,4 @@
-#### 5.0.0-rc009 - 13.06.2017
+#### 5.0.0-rc009 - 14.06.2017
 * New command `paket generate-nuspec`
 * New Command: `FixNuspecs` - Can fix a list of nuspec files now
 * BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (https://github.com/fsprojects/Paket/pull/2336)
@@ -24,6 +24,7 @@
 * BUGFIX: Treat runtime dependencies as transitive deps - https://github.com/fsprojects/Paket/issues/2334
 * BUGFIX: Sort dependencies on obj/references files - https://github.com/fsprojects/Paket/issues/2310
 * BUGFIX: Support .NET moniker ">= monoandroid" - https://github.com/fsprojects/Paket/issues/2246
+* BUGFIX: Paket pack was placing two copies of the project binary to the package - https://github.com/fsprojects/Paket/issues/2421
 * BUGFIX: Better dependencies file parser errors
 * BUGFIX: "Dotnet restore" failed on .netstandard projects under 1.6 - https://github.com/fsprojects/Paket/issues/2243
 * BUGFIX: Paket now accepts multiple nuspec files in fix-nuspec - https://github.com/fsprojects/Paket/pull/2296
