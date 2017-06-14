@@ -1,4 +1,4 @@
-#### 5.0.0-rc008 - 12.06.2017
+#### 5.0.0-rc009 - 13.06.2017
 * New command `paket generate-nuspec`
 * New Command: `FixNuspecs` - Can fix a list of nuspec files now
 * BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (https://github.com/fsprojects/Paket/pull/2336)
@@ -11,12 +11,13 @@
   * Add support for net403 (required for some portable profiles)
 * PERFORMANCE: Improved performance by pre-loading requests (https://github.com/fsprojects/Paket/pull/2336)
 * PERFORMANCE: Report performance in a more detailed way (https://github.com/fsprojects/Paket/pull/2336)
-* DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
 * PERFORMANCE: Limit the number of concurrent requests to 7 (https://github.com/fsprojects/Paket/pull/2362)
 * PERFORMANCE: Report how often the pre-loading feature worked (https://github.com/fsprojects/Paket/pull/2362)
 * PERFORMANCE: Request queue can now re-prioritize on-demand (https://github.com/fsprojects/Paket/pull/2362)
 * PERFOMANCE: Much faster paket pack https://github.com/fsprojects/Paket/pull/2409
+* DEPRECATED: `FixNuspec` function is now obsolete, use `FixNuspecs` instead
+* DEPRECATED: /package-versions API was deprecated for lookup from NuGet team - https://github.com/fsprojects/Paket/pull/2420
 * BUGFIX: Better hash checks in bootstrapper - https://github.com/fsprojects/Paket/pull/2368
 * BUGFIX: Improved C++ support
 * BUGFIX: Fix Conditional Group Dependencies not working as expected - https://github.com/fsprojects/Paket/pull/2335
