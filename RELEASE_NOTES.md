@@ -39,6 +39,7 @@
 * BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
 * BOOTSTRAPPER: Search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384)
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
+* Using NuGet's new SemVer 2 support - https://github.com/fsprojects/Paket/pull/2402
 * make xamarin stuff work with netstandard (https://github.com/fsprojects/Paket/pull/2396).
 * Support for SpecificVersion attribute on assembly references - https://github.com/fsprojects/Paket/pull/2413
 * Cleanup https://github.com/fsprojects/Paket/pull/2412 https://github.com/fsprojects/Paket/pull/2410
