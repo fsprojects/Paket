@@ -19,5 +19,5 @@ The [`paket.template` files](template-files.html) are used to specify rules to c
 ### .paket folder
 
 This folder is used the same way a `.nuget` folder is used for the NuGet package restore, that is to cache package archives for reference by the development project. Place this folder into the root of your solution. 
-It should include the paket.targets and [paket.bootstrapper.exe](https://github.com/fsprojects/Paket/releases/latest) files which can be downloaded from GitHub. 
-The bootstrapper.exe will always download the latest version of the paket.exe file into this folder.
+It should include the paket.targets and [`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest) files which can be downloaded from GitHub. 
+The bootstrapper executable will always download the latest version of the `paket.exe` file into this folder.

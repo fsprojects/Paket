@@ -97,7 +97,7 @@ The Format of the source is the same as in [path sources](nuget-dependencies.htm
 
 If you happen to have a nupkg in local path, but with a different version than in `paket.lock`, you can optionally specify version which should be used for this override.
 One use case might be when the package version is determined by your build server, and nupkgs created locally have zero version.
-This is currently supported only for [Source override](#Source-override). 
+This is currently supported only for [source override](#Source-override). 
 
 ### Groups
 

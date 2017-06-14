@@ -3,8 +3,8 @@
 This guide will show you
 
   * How to set up Paket for a specific repository.
-  * How to install Paket for Windows, Linux, or OS-X.
-  * How to ensure `paket` is available via command line and other methods of use.
+  * How to install Paket for Windows, Linux, or macOS.
+  * How to ensure `paket.exe` is available via command line and other methods of use.
 
 ## Installation per repository
 
@@ -43,9 +43,9 @@ After that completes execute the install, to install Paket as a command line uti
     
 The install.sh script will add Paket as a command line option into bash and most other shells available. If you are using a unique shell and run into problems, please post an issue so we can take a look.
 
-### Installation on OS-X
+### Installation on macOS
 
-For OS-X the build and installation process is as follows.
+For macOS the build and installation process is as follows.
 
     ./build.sh
 

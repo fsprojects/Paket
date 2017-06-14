@@ -27,7 +27,7 @@ By default the `master` branch is used to determine the commit to reference, you
     github fsharp/fsfoundation:gh-pages img/logo/fsharp.svg
     github forki/FsUnit:7623fc13439f0e60bd05c1ed3b5f6dcb937fe468 FsUnit.fs
 
-If you want to reference the file in one of your project files then add an entry to the project's [`paket.references` file.](references-files.html):
+If you want to reference the file in one of your project files then add an entry to the project's [`paket.references` file](references-files.html):
 
     [lang=paket]
     File: FsUnit.fs
@@ -83,20 +83,20 @@ And we reference this in our own [`paket.dependencies` file.](dependencies-file.
 This generates the following [`paket.lock` file](lock-file.html):
 
     [lang=paket]
-	NUGET
-	  remote: https://nuget.org/api/v2
-		Microsoft.Bcl (1.1.9)
-		  Microsoft.Bcl.Build (>= 1.0.14)
-		Microsoft.Bcl.Build (1.0.21)
-		Microsoft.Net.Http (2.2.28)
-		  Microsoft.Bcl (>= 1.1.9)
-		  Microsoft.Bcl.Build (>= 1.0.14)
-		Octokit (0.4.1)
-		  Microsoft.Net.Http (>= 0)
-	GITHUB
-	  remote: fsharp/FAKE
-		modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
-		  Octokit (>= 0)
+    NUGET
+      remote: https://nuget.org/api/v2
+        Microsoft.Bcl (1.1.9)
+          Microsoft.Bcl.Build (>= 1.0.14)
+        Microsoft.Bcl.Build (1.0.21)
+        Microsoft.Net.Http (2.2.28)
+          Microsoft.Bcl (>= 1.1.9)
+          Microsoft.Bcl.Build (>= 1.0.14)
+        Octokit (0.4.1)
+          Microsoft.Net.Http (>= 0)
+    GITHUB
+      remote: fsharp/FAKE
+        modules/Octokit/Octokit.fsx (a25c2f256a99242c1106b5a3478aae6bb68c7a93)
+          Octokit (>= 0)
 
 As you can see Paket also resolved the Octokit dependency.
 

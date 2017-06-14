@@ -17,7 +17,7 @@ This project helps you get started with a new .NET/Mono project solution with ev
 ### Downloading Paket and its Bootstrapper
 
   * Create a `.paket` folder in the root of your solution.
-  * Download the latest [paket.bootstrapper.exe](https://github.com/fsprojects/Paket/releases/latest) into that folder.
+  * Download the latest [`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest) into that folder.
   * Run `.paket/paket.bootstrapper.exe`. This will download the latest `paket.exe`.
   * Commit `.paket/paket.bootstrapper.exe` into your repo and add `.paket/paket.exe` to your `.gitignore` file.
 
@@ -33,7 +33,7 @@ The file might look like this:
     nuget Castle.Windsor-log4net >= 3.2
     nuget NUnit
 
-	github forki/FsUnit FsUnit.fs
+    github forki/FsUnit FsUnit.fs
 
 <blockquote>If you use a <a href="editor-support.html">Paket plugin for your editor</a>, you may get autocompletion for paket.dependencies files.</blockquote>
 
@@ -48,26 +48,26 @@ Install all of the required packages from the specified sources:
 
 The [`paket install` command](paket-install.html) will analyze your dependencies and automatically generate a [`paket.lock` file](lock-file.html) like:
 
-	[lang=paket]
-	NUGET
-	  remote: https://nuget.org/api/v2
-		Castle.Core (3.3.3)
-		Castle.Core-log4net (3.3.3)
-		  Castle.Core (>= 3.3.3)
-		  log4net (1.2.10)
-		Castle.LoggingFacility (3.3.0)
-		  Castle.Core (>= 3.3.0)
-		  Castle.Windsor (>= 3.3.0)
-		Castle.Windsor (3.3.0)
-		  Castle.Core (>= 3.3.0)
-		Castle.Windsor-log4net (3.3.0)
-		  Castle.Core-log4net (>= 3.3.0)
-		  Castle.LoggingFacility (>= 3.3.0)
-		log4net (1.2.10)
-		NUnit (2.6.4)
-	GITHUB
-	  remote: forki/FsUnit
-		FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
+    [lang=paket]
+    NUGET
+      remote: https://nuget.org/api/v2
+        Castle.Core (3.3.3)
+        Castle.Core-log4net (3.3.3)
+          Castle.Core (>= 3.3.3)
+          log4net (1.2.10)
+        Castle.LoggingFacility (3.3.0)
+          Castle.Core (>= 3.3.0)
+          Castle.Windsor (>= 3.3.0)
+        Castle.Windsor (3.3.0)
+          Castle.Core (>= 3.3.0)
+        Castle.Windsor-log4net (3.3.0)
+          Castle.Core-log4net (>= 3.3.0)
+          Castle.LoggingFacility (>= 3.3.0)
+        log4net (1.2.10)
+        NUnit (2.6.4)
+    GITHUB
+      remote: forki/FsUnit
+        FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
 
 This file shows all direct and [transitive dependencies](faq.html#transitive) and pins every dependency to a concrete version. In most cases you want to commit this file to your version control system ([read why](faq.html#Why-should-I-commit-the-lock-file)).
 
@@ -95,12 +95,12 @@ Like all of the files above, you should [commit](faq.html#Why-should-I-commit-th
 
 ### Updating packages
 
-If you want to check if your dependencies have updates you can run the [`outdated` command](paket-outdated.html):
+If you want to check if your dependencies have updates you can run the [`paket outdated` command](paket-outdated.html):
 
     [lang=batchfile]
     $ .paket/paket.exe outdated
 
-If you want to update all packages you can use the [`update` command](paket-update.html):
+If you want to update all packages you can use the [`paket update` command](paket-update.html):
 
     [lang=batchfile]
     $ .paket/paket.exe update

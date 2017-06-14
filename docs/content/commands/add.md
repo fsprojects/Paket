@@ -3,24 +3,24 @@
 By default a package is only added to the solution, but not on any of its projects. It's possible to add the package to a specified project at the same:
 
     [lang=batchfile]
-    $ paket add nuget PACKAGENAME [version VERSION] [project PROJECT] [--force]
+    $ paket add PACKAGEID [--version VERSION] [--project PROJECT] [--force]
 
-See also [paket remove](paket-remove.html).
+See also [`paket remove`](paket-remove.html).
 
-## Sample
+## Example
 
-Consider the following paket.dependencies file:
+Consider the following [`paket.dependencies` file](dependencies-file.html):
 
     [lang=paket]
     source https://nuget.org/api/v2
 
     nuget FAKE
 
-Now we run `paket add nuget xunit --interactive` to install the package:
+Now we run `paket add xunit --interactive` to install the package:
 
-![alt text](img/interactive-add.png "Interactive paket add")
+![paket add --interactive](img/interactive-add.png "paket add --interactive")
 
-This will add the package to the selected paket.references files and also to the paket.dependencies file:
+This will add the package to the selected [`paket.references` files](references-files.html) and also to the [`paket.dependencies` file](dependencies-file.html):
 
     [lang=paket]
     source https://nuget.org/api/v2

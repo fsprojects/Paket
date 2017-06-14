@@ -72,7 +72,7 @@ Example file:
 
 ### In paket.dependencies
 
-If a [`paket.dependencies`](dependencies-file.html) file can be found in the current directory it can contain a
+If a [`paket.dependencies` file](dependencies-file.html) can be found in the current directory it can contain a
 special line containing options for the bootstrapper.
 
 The line must start with `version` followed by a requested `paket.exe` version and optionally bootstrapper command line arguments:

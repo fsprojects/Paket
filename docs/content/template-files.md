@@ -9,12 +9,12 @@ values:
 * project - Paket will look for a matching project file, and infer dependencies and metadata from the project
 
 Matching project and template files must be in the same directory. If only one project is in the directory the template file
-can be called `paket.template`, otherwise the name of the template file must be the name of the project file with ".paket.template" added to the end.
+can be called `paket.template`, otherwise the name of the template file must be the name of the project file with `.paket.template` added to the end.
 
 For example:
 
-	Paket.Project.fsproj
-	Paket.Project.fsproj.paket.template
+    Paket.Project.fsproj
+    Paket.Project.fsproj.paket.template
 
 are matching files.
 ### Sample 1
@@ -41,7 +41,7 @@ A `paket.template` file using `type file` may look like this:
     version 1.0
     authors Michael Newton
     description
-	    description of this test package
+        description of this test package
     files
         src/Test.Paket.Package/bin/Debug ==> lib
 
@@ -56,14 +56,14 @@ name (case insensitive), or in an indented block following a line containing not
 
 For example:
 
-	description This is a valid description
+    description This is a valid description
 
-	DESCRIPTION
-	  So is this
-	  description here
+    DESCRIPTION
+      So is this
+      description here
 
-	description This would
-	  cause an error
+    description This would
+      cause an error
 
 There are 4 compulsory fields required to create a nupkg. These can always be specified in the
 template file, or in a project based template can be omitted and an attempt will be made to infer
@@ -106,9 +106,9 @@ to decide on the files and dependencies added.
 A files block looks like this:
 
     files
-	    relative/to/template/file ==> folder/in/nupkg
-	    second/thing/to/pack ==> folder/in/nupkg
-		second/thing/**/file.* ==> folder/in/nupkg
+        relative/to/template/file ==> folder/in/nupkg
+        second/thing/to/pack ==> folder/in/nupkg
+        second/thing/**/file.* ==> folder/in/nupkg
 
 If the source part refers to a file then it is copied into the target directory. If it
 refers to a directory, the contents of the directory will be copied into the target folder.
@@ -141,8 +141,8 @@ With the include-referenced-projects switch you can tell Paket to pack reference
 A references block looks like this:
 
     references
-	    filename1.dll
-	    filename2.dll
+        filename1.dll
+        filename2.dll
 
 If you omit the references block then all libraries in the packages will get referenced.
 
@@ -151,8 +151,8 @@ If you omit the references block then all libraries in the packages will get ref
 A block with framework assembly references looks like this:
 
     frameworkAssemblies
-	    System.Xml
-		System.Xml.Linq
+        System.Xml
+        System.Xml.Linq
 
 If you omit the references block then all libraries in the packages will get referenced.
 
@@ -160,24 +160,24 @@ If you omit the references block then all libraries in the packages will get ref
 
 A dependency block looks like this:
 
-	dependencies
-	  FSharp.Core >= 4.3.1
-	  Other.Dep ~> 2.5
-	  Any.Version
+    dependencies
+      FSharp.Core >= 4.3.1
+      Other.Dep ~> 2.5
+      Any.Version
 
 The syntax for specifying allowed dependency ranges are identical to in the ranges in [`paket.dependencies` files](dependencies-file.html).
 
 It's possible to use `CURRENTVERSION` as a placeholder for the current version of the package:
 
-	dependencies
-	  FSharp.Core >= 4.3.1
-	  Other.Dep ~> CURRENTVERSION
+    dependencies
+      FSharp.Core >= 4.3.1
+      Other.Dep ~> CURRENTVERSION
 
 The `LOCKEDVERSION` placeholder allows to reference the currently used dependency version from the paket.lock file:
 
-	dependencies
-	  FSharp.Core >= 4.3.1
-	  Other.Dep ~> LOCKEDVERSION
+    dependencies
+      FSharp.Core >= 4.3.1
+      Other.Dep ~> LOCKEDVERSION
 
 It's possible to add a line to constrain the targetFramework:
 
@@ -198,15 +198,15 @@ In a project file, the following dependencies will be added:
 
 If you need to exclude dependencies from the automatic discovery then you can use the `excludeddependencies` block:
 
-	excludeddependencies
-	  FSharp.Core
-	  Other.Dep
+    excludeddependencies
+      FSharp.Core
+      Other.Dep
 
 Another way to exclude dependencies is to exclude a whole dependency group with the `excludedgroups` block:
 
-	excludedgroups
-	  build
-	  test
+    excludedgroups
+      build
+      test
 
 #### PDB files
 

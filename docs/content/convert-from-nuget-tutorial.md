@@ -65,7 +65,7 @@ The `paket convert-from-nuget` command:
 1. Finds all `packages.config` files, generates a paket.dependencies file in the solution root and replaces each `packages.config` with an equivalent paket.references file. 
 2. If there is a solution-level `packages.config`, then it will be removed and its dependencies will be included into the paket.dependencies file.
 3. If you use NuGet Package Restore ([MSBuild-Integrated or Automatic Visual Studio Package Restore](http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore)), then the [`paket auto-restore`](paket-auto-restore.html) command will be invoked.
-4. Next (unless `--no-install` is specified), the [paket install](paket-install.html) process will be executed. This will:
+4. Next (unless `--no-install` is specified), the [`paket install`](paket-install.html) process will be executed. This will:
 
   - analyze the dependencies.
   - generate a paket.lock file.
@@ -81,7 +81,7 @@ The `paket convert-from-nuget` command:
 If you are using authorized NuGet feeds, convert-from-nuget command will automatically migrate the credentials for you.
 Following are valid modes for the `--creds-migration` option:
 
-1. `encrypt` -  Encrypt your credentials and save them in the [paket configuration file](paket-config-file.html).
+1. `encrypt` -  Encrypt your credentials and save them in the [Paket configuration file](paket-config-file.html).
 2. `plaintext` - Include your credentials in plaintext in the paket.dependencies file. See [example](nuget-dependencies.html#plaintext-credentials).
 3. `selective` - Use this switch if you're using more than one authorized NuGet feed, and you want to apply different modes for each of them.
 

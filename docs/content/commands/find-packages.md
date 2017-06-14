@@ -11,7 +11,7 @@ and then enter search text and press enter:
 
 ## Silent mode
 
-The silent mode can be used for additional tooling support in various editors. It allows to create suggestions for `paket add`:
+The silent mode can be used for additional tooling support in various editors. It allows to create suggestions for [`paket add`](paket-add.html):
 
     [lang=batchfile]
     paket find-packages -s

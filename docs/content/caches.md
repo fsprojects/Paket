@@ -37,7 +37,7 @@ The configuration can be done in the  [`paket.dependencies` file](dependencies-f
 
     [lang=paket]
     source https://nuget.org/api/v2
-	cache ./nupkgs versions: current
+    cache ./nupkgs versions: current
 
     nuget Newtonsoft.Json
     nuget UnionArgParser

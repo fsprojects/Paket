@@ -103,14 +103,14 @@ This will ensure that you get notified whenever a dependency update breaks your 
 
 ## I'm already using NuGet. How can I convert to Paket?
 
-The process can be automated with [paket convert-from-nuget](paket-convert-from-nuget.html) command.
+The process can be automated with [`paket convert-from-nuget`](paket-convert-from-nuget.html) command.
 
 In case of the command's failure, you can fallback to manual approach:
 
 1. Analyse your `packages.config` files and extract the referenced packages into a paket.dependencies file.
 2. Convert each `packages.config` file to a paket.references file. This is very easy - you just have to remove all the XML and keep the package names.
-3. Run [paket install](paket-install.html). This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
-4. (Optional) Raise corresponding issue [here](https://github.com/fsprojects/Paket/issues) so that we can make the command even better.
+3. Run [`paket install`](paket-install.html). This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent `Reference`s in a syntax that can be managed automatically by Paket.
+4. (Optional) Raise [a corresponding issue](https://github.com/fsprojects/Paket/issues) so that we can make the command even better.
 
 ## How do I convert a new project to Paket when my solution is already using Paket
 

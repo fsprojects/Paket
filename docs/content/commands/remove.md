@@ -5,4 +5,4 @@ It's also possible to remove a package from a specified project only:
     [lang=batchfile]
     $ paket remove nuget PACKAGENAME [project PROJECT] [--force]
 
-See also [paket add](paket-add.html).
+See also [`paket add`](paket-add.html).

@@ -71,7 +71,7 @@ Sometimes you don't want to generate dependencies for older framework versions. 
 
     [lang=paket]
     Newtonsoft.Json framework: net35, net40
-    DotNetZip framework: >= net45           
+    DotNetZip framework: >= net45
 
 > Note: This feature is deprecated and can be seen as an expert feature. 
 > Using framework restrictions on single packages might make you projects uncompilable.
@@ -81,8 +81,8 @@ This feature basically tells paket to only consider the specified frameworks for
 The resolution will not be modified when restrictions are specified in the reference file.
 It means 
 
-> In this project 'Newtonsoft.Json' is only required when compiling against 'net35' or 'net40'.
-> I never need this package to compile for another framework like 'net45', therefore don't add references for other frameworks.
+> In this project `Newtonsoft.Json` is only required when compiling against `net35` or `net40`.
+> I never need this package to compile for another framework like `net45`, therefore don't add references for other frameworks.
 
 
 ## Redirects settings
@@ -109,23 +109,23 @@ Redirects settings in [references files](references-files.html#Redirects-setting
 This option allows you to exclude libraries from being referenced in project files:
 
     [lang=paket]
-	PackageA
-	  exclude A1.dll
-	  exclude A2.dll
-	Dapper
-	NUnit
-	  exclude nunit.framework.dll
+    PackageA
+      exclude A1.dll
+      exclude A2.dll
+    Dapper
+    NUnit
+      exclude nunit.framework.dll
 
 ## Library aliases
 
 This option allows you to specify library aliases:
 
     [lang=paket]
-	PackageA
-	  alias A1.dll Name2,Name3
-	  alias A2.dll MyAlias1
-	Dapper
-	NUnit
+    PackageA
+      alias A1.dll Name2,Name3
+      alias A2.dll MyAlias1
+    Dapper
+    NUnit
 
 ## File name conventions
 

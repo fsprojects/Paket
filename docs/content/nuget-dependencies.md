@@ -243,8 +243,8 @@ It's possible to influence the `CopyToOutputDirectory` property for content refe
     source https://nuget.org/api/v2
 
     nuget jQuery copy_content_to_output_dir: always
-	nuget Fody copy_content_to_output_dir: never
-	nuget ServiceStack.Swagger copy_content_to_output_dir: preserve-newest
+    nuget Fody copy_content_to_output_dir: never
+    nuget ServiceStack.Swagger copy_content_to_output_dir: preserve-newest
 
 ### redirects settings
 
@@ -333,7 +333,7 @@ The strategy setting and the corresponding `!` and `@` modifiers are applicable 
     nuget Example-A @> 0 // use "max" version resolution strategy
     nuget Example-B != 1.2  // use "min" version resolution strategy
     nuget Example-C !>= 1.2 // use "min" version resolution strategy
-	nuget Example-C >= 1.2 strategy min
+    nuget Example-C >= 1.2 strategy min
 
 ### Lowest_matching option
 

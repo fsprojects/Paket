@@ -9,7 +9,7 @@ Now, to install all the packages from the `paket.dependencies` files, just run t
 
 	.paket/paket.exe install
 	
-The location of .paket folder and Paket related files is not bound to location of Visual Studio solution file. Paket does not read or look for any solution files.
+The location of `.paket` folder and Paket related files is not bound to location of Visual Studio solution file. Paket does not read or look for any solution files.
 In case you have multiple solutions in subfolders of some root folder, then that root folder would be a good place to put .paket folder and the [`paket.dependencies` file](dependencies-file.html) there. 
 `.paket/paket.exe install` command processes all folders under the root recursively and touch only those projects which have `paket.references` file in their folder.
 When Paket encounters [`paket.dependencies` files](dependencies-file.html) in subfolder it ignores that subfolder (and everything under it) completely, 

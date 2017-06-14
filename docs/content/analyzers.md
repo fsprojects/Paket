@@ -17,8 +17,8 @@ automated migration from now-Obsolete constructs or warnings on incorrect usage.
 ## Referencing analyzers
 
 
-When a NuGet package containing analyzers is added to a [`paket.references`](references-files.html)
-file, the analyzers will be installed in the corresponding projects automatically by Paket.
+When a NuGet package containing analyzers is added to a [`paket.references` file](references-files.html), 
+the analyzers will be installed in the corresponding projects automatically by Paket.
 
 ![Analyzer node in Visual Studio project](img/analyzers-in-vs.png)
 
@@ -43,7 +43,7 @@ The structure look like :
 |  |  |- My.SharedAnalyzer.dll
 ```
 
-The general structure is :
+The general structure is:
 
 /analyzers/dotnet/*language*/*my_analyzer*.dll
 
