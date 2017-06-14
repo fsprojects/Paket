@@ -55,7 +55,7 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="5-0-0-rc008-12-06-2017" class="anchor" href="#5-0-0-rc008-12-06-2017">5.0.0-rc008 - 12.06.2017</a></h4>
+<h4><a name="5-0-0-rc009-14-06-2017" class="anchor" href="#5-0-0-rc009-14-06-2017">5.0.0-rc009 - 14.06.2017</a></h4>
 <ul>
 <li>New command <code>paket generate-nuspec</code></li>
 <li>New Command: <code>FixNuspecs</code> - Can fix a list of nuspec files now</li>
@@ -73,18 +73,20 @@ New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):
 </li>
 <li>PERFORMANCE: Improved performance by pre-loading requests (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
 <li>PERFORMANCE: Report performance in a more detailed way (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
-<li>DEPRECATED: <code>FixNuspec</code> function is now obsolete, use <code>FixNuspecs</code> instead</li>
 <li>PERFORMANCE: Improved performance for some edge case - <a href="https://github.com/fsprojects/Paket/pull/2299">https://github.com/fsprojects/Paket/pull/2299</a></li>
 <li>PERFORMANCE: Limit the number of concurrent requests to 7 (<a href="https://github.com/fsprojects/Paket/pull/2362)">https://github.com/fsprojects/Paket/pull/2362)</a></li>
 <li>PERFORMANCE: Report how often the pre-loading feature worked (<a href="https://github.com/fsprojects/Paket/pull/2362)">https://github.com/fsprojects/Paket/pull/2362)</a></li>
 <li>PERFORMANCE: Request queue can now re-prioritize on-demand (<a href="https://github.com/fsprojects/Paket/pull/2362)">https://github.com/fsprojects/Paket/pull/2362)</a></li>
 <li>PERFOMANCE: Much faster paket pack <a href="https://github.com/fsprojects/Paket/pull/2409">https://github.com/fsprojects/Paket/pull/2409</a></li>
+<li>DEPRECATED: <code>FixNuspec</code> function is now obsolete, use <code>FixNuspecs</code> instead</li>
+<li>DEPRECATED: /package-versions API was deprecated for lookup from NuGet team - <a href="https://github.com/fsprojects/Paket/pull/2420">https://github.com/fsprojects/Paket/pull/2420</a></li>
 <li>BUGFIX: Better hash checks in bootstrapper - <a href="https://github.com/fsprojects/Paket/pull/2368">https://github.com/fsprojects/Paket/pull/2368</a></li>
 <li>BUGFIX: Improved C++ support</li>
 <li>BUGFIX: Fix Conditional Group Dependencies not working as expected - <a href="https://github.com/fsprojects/Paket/pull/2335">https://github.com/fsprojects/Paket/pull/2335</a></li>
 <li>BUGFIX: Treat runtime dependencies as transitive deps - <a href="https://github.com/fsprojects/Paket/issues/2334">https://github.com/fsprojects/Paket/issues/2334</a></li>
 <li>BUGFIX: Sort dependencies on obj/references files - <a href="https://github.com/fsprojects/Paket/issues/2310">https://github.com/fsprojects/Paket/issues/2310</a></li>
 <li>BUGFIX: Support .NET moniker "&gt;= monoandroid" - <a href="https://github.com/fsprojects/Paket/issues/2246">https://github.com/fsprojects/Paket/issues/2246</a></li>
+<li>BUGFIX: Paket pack was placing two copies of the project binary to the package - <a href="https://github.com/fsprojects/Paket/issues/2421">https://github.com/fsprojects/Paket/issues/2421</a></li>
 <li>BUGFIX: Better dependencies file parser errors</li>
 <li>BUGFIX: "Dotnet restore" failed on .netstandard projects under 1.6 - <a href="https://github.com/fsprojects/Paket/issues/2243">https://github.com/fsprojects/Paket/issues/2243</a></li>
 <li>BUGFIX: Paket now accepts multiple nuspec files in fix-nuspec - <a href="https://github.com/fsprojects/Paket/pull/2296">https://github.com/fsprojects/Paket/pull/2296</a></li>
@@ -100,6 +102,7 @@ New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):
 <li>BOOTSTRAPPER: Don't crash in DownloadHashFile (<a href="https://github.com/fsprojects/Paket/pull/2376)">https://github.com/fsprojects/Paket/pull/2376)</a></li>
 <li>BOOTSTRAPPER: Search harder for the paket.dependencies file (<a href="https://github.com/fsprojects/Paket/pull/2384)">https://github.com/fsprojects/Paket/pull/2384)</a></li>
 <li>USABILITY: Don't let build continue when paket failed - <a href="https://github.com/fsprojects/Paket/pull/2302">https://github.com/fsprojects/Paket/pull/2302</a></li>
+<li>Using NuGet's new SemVer 2 support - <a href="https://github.com/fsprojects/Paket/pull/2402">https://github.com/fsprojects/Paket/pull/2402</a></li>
 <li>make xamarin stuff work with netstandard (<a href="https://github.com/fsprojects/Paket/pull/2396).">https://github.com/fsprojects/Paket/pull/2396).</a></li>
 <li>Support for SpecificVersion attribute on assembly references - <a href="https://github.com/fsprojects/Paket/pull/2413">https://github.com/fsprojects/Paket/pull/2413</a></li>
 <li>Cleanup <a href="https://github.com/fsprojects/Paket/pull/2412">https://github.com/fsprojects/Paket/pull/2412</a> <a href="https://github.com/fsprojects/Paket/pull/2410">https://github.com/fsprojects/Paket/pull/2410</a></li>
