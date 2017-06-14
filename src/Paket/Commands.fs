@@ -363,16 +363,16 @@ with
         | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
 
 type WhyArgs =
-    | [<CustomCommandLine("nuget")>][<Mandatory>] NuGet of package_id:string
-    | [<CustomCommandLine("group")>] Group of name:string
+    | [<MainCommandAttribute()>][<Mandatory>] NuGet of package_id:string
+    | [<AltCommandLine("-g")>] Group of name:string
     | Details
 with
   interface IArgParserTemplate with
       member this.Usage =
         match this with
-        | NuGet _ -> "Name of the NuGet package."
-        | Group _ -> "Allows to specify the dependency group."
-        | Details -> "Display detailed info with all possible paths, versions and framework constraints."
+        | NuGet(_) -> "NuGet package ID"
+        | Group(_) -> "specifiy dependency group (default: Main group)"
+        | Details -> "display detailed information with all paths, versions and framework restrictions"
 
 type Command =
     // global options
