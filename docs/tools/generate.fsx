@@ -13,9 +13,9 @@ Paket.Commands.getAllCommands()
     let additionalText = 
         let verboseOption = """
 
-If you add the `-v` flag, then Paket will run in verbose mode and show detailed information.
+If you add the `--verbose` flag Paket will run in verbose mode and show detailed information.
 
-With `--log-file [FileName]` you can trace the logged information into a file.
+With `--log-file [path]` you can trace the logged information into a file.
 
 """
         let optFile = sprintf "../content/commands/%s.md" metadata.Name
