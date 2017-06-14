@@ -79,7 +79,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "commands", "commands", "{44
 	ProjectSection(SolutionItems) = preProject
 		docs\content\commands\add.md = docs\content\commands\add.md
 		docs\content\commands\auto-restore.md = docs\content\commands\auto-restore.md
-		docs\content\commands\clear-cache.md = docs\content\commands\clear-cache.md
 		docs\content\commands\config.md = docs\content\commands\config.md
 		docs\content\commands\convert-from-nuget.md = docs\content\commands\convert-from-nuget.md
 		docs\content\commands\find-package-versions.md = docs\content\commands\find-package-versions.md

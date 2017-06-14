@@ -1,9 +1,11 @@
 ## Adding to a project
 
-By default a package is only added to the solution, but not on any of its projects. It's possible to add the package to a specified project at the same:
+By default packages are only added to the solution directory, but not on any of
+its projects. It's possible to add the package to a specific project:
 
-    [lang=batchfile]
-    $ paket add PACKAGEID [--version VERSION] [--project PROJECT] [--force]
+```sh
+paket add PACKAGE-ID --project PROJECT
+```
 
 See also [`paket remove`](paket-remove.html).
 
@@ -11,19 +13,53 @@ See also [`paket remove`](paket-remove.html).
 
 Consider the following [`paket.dependencies` file](dependencies-file.html):
 
-    [lang=paket]
-    source https://nuget.org/api/v2
+```paket
+source https:/nuget.org/api/v2
 
-    nuget FAKE
+nuget FAKE
+```
 
-Now we run `paket add xunit --interactive` to install the package:
+Now we run `paket add NUnit --version '~> 2.6' --interactive` to install the
+package:
 
-![paket add --interactive](img/interactive-add.png "paket add --interactive")
+```sh
+$ paket add NUnit --version '~> 2.6' --interactive
+Paket version 5.0.0
+Adding NUnit 2.6.4 to ~/Example/paket.dependencies into group Main
+Resolving packages for group Main:
+ - NUnit 2.6.4
+ - FAKE 4.61.3
+Locked version resolution written to ~/Example/paket.lock
+Dependencies files saved to ~/Example/paket.dependencies
+  Install to ~/Example/src/Foo/Foo.fsproj into group Main?
+    [Y]es/[N]o => y
 
-This will add the package to the selected [`paket.references` files](references-files.html) and also to the [`paket.dependencies` file](dependencies-file.html):
+Adding package NUnit to ~/Example/src/Foo/paket.references into group Main
+References file saved to ~/Example/src/Foo/paket.references
+  Install to ~/Example/src/Bar/Bar.fsproj into group Main?
+    [Y]es/[N]o => n
 
-    [lang=paket]
-    source https://nuget.org/api/v2
+Performance:
+ - Resolver: 12 seconds (1 runs)
+    - Runtime: 214 milliseconds
+    - Blocked (retrieving package details): 86 milliseconds (4 times)
+    - Blocked (retrieving package versions): 3 seconds (4 times)
+    - Not Blocked (retrieving package versions): 6 times
+    - Not Blocked (retrieving package details): 2 times
+ - Disk IO: 786 milliseconds
+ - Average Request Time: 1 second
+ - Number of Requests: 12
+ - Runtime: 14 seconds
+```
 
-    nuget FAKE
-    nuget xunit
+This will add the package to the selected
+[`paket.references` files](references-files.html) and also to the
+[`paket.dependencies` file](dependencies-file.html). Note that the version
+constraint specified the in the above command was preserved.
+
+```paket
+source https:/nuget.org/api/v2
+
+nuget FAKE
+nuget NUnit ~> 2.6
+```

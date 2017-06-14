@@ -1,19 +1,41 @@
-## Sample
-
-Running the command:
-
-    [lang=batchfile]
-    paket find-packages
-
-and then enter search text and press enter:
-
-![alt text](img/paket-find-packages.png "paket find-packages command")
-
 ## Silent mode
 
-The silent mode can be used for additional tooling support in various editors. It allows to create suggestions for [`paket add`](paket-add.html):
+The silent mode can be used for tooling support in various editors.
+It allows to create suggestions for [`paket add`](paket-add.html):
 
-    [lang=batchfile]
-    paket find-packages -s
+```sh
+paket find-packages --silent
+```
 
-The command allows runs to suggest package names. It will keep running in a loop until it receives the text ":q".
+The command prints package names matching entered text enabling package name
+suggestions. It will keep running in a loop until it receives the text `:q`.
+
+## Example
+
+Run the command `paket find-packages --silent` and enter a search term (`fake`
+was used here).
+
+```sh
+$ paket find-packages --silent
+fake
+FAKE
+FakeSign
+Faker
+FakeO
+FakeHost
+FakeData
+FAKEX
+FAKE.SQL
+FAKE.IIS
+FAKE.Lib
+Fake.AWS
+FakeN.Web
+FSharp.FakeTargets
+FakeHttp
+FakeDb
+FakeDbSet
+FAKE.Core
+FAKE.Gallio
+Faker.Net
+Sitecore.FakeDb
+```
