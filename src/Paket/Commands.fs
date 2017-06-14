@@ -376,10 +376,10 @@ with
 
 type Command =
     // global options
+    |                                                   Version
+    | [<AltCommandLine("-s"); Inherit>]                 Silent
     | [<AltCommandLine("-v"); Inherit>]                 Verbose
     | [<Inherit>]                                       Log_File of path:string
-    | [<AltCommandLine("-s"); Inherit>]                 Silent
-    |                                                   Version
     | [<Inherit;Hidden>]                                From_Bootstrapper
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
