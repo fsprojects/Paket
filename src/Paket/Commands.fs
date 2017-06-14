@@ -5,14 +5,24 @@ open System
 open Argu
 
 type AddArgs =
-    | [<MainCommandAttribute()>][<Mandatory>] NuGet of package_id:string
+    | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
+    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
+
     | [<AltCommandLine("-V")>] Version of version:string
+    | [<Hidden;CustomCommandLine("version")>] Version_Legacy of version:string
+
     | [<AltCommandLine("-p")>] Project of name:string
+    | [<Hidden;CustomCommandLine("project")>] Project_Legacy of name:string
+
     | [<AltCommandLine("-g")>] Group of name:string
+    | [<Hidden; CustomCommandLine("group")>] Group_Legacy of name:string
+
+    | Create_New_Binding_Files
+    | [<Hidden;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
+
     | [<AltCommandLine("-f")>] Force
     | [<AltCommandLine("-i")>] Interactive
     | Redirects
-    | [<AltCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files
     | Clean_Redirects
     | No_Install
     | Keep_Major
@@ -24,13 +34,23 @@ with
         member this.Usage =
             match this with
             | NuGet(_) -> "NuGet package ID"
+            | NuGet_Legacy(_) -> "[obsolete]"
+
             | Group(_) -> "add the package to a group (default: Main group)"
+            | Group_Legacy(_) -> "[obsolete]"
+
             | Version(_) -> "package version constraint"
+            | Version_Legacy(_) -> "[obsolete]"
+
             | Project(_) -> "add the package to a single project only"
+            | Project_Legacy(_) -> "[obsolete]"
+
+            | Create_New_Binding_Files -> "create binding redirect files if needed"
+            | Create_New_Binding_Files_Legacy -> "[obsolete]"
+
             | Force -> "force download and reinstallation of all dependencies"
             | Interactive -> "ask for every project whether to add the dependency"
             | Redirects -> "create binding redirects"
-            | Create_New_Binding_Files -> "create binding redirect files if needed"
             | Clean_Redirects -> "remove binding redirects that were not created by Paket"
             | No_Install -> "skip install process after resolving dependencies"
             | Keep_Major -> "only allow updates that preserve the major version"
@@ -154,7 +174,6 @@ with
             | Interactive -> "Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
 
-
 type ClearCacheArgs =
     | [<Hidden>] NoArg
 with
@@ -237,7 +256,6 @@ with
             | Source _ -> "Allows to specify the package source feed."
             | MaxResults _ -> "Maximum number of results."
 
-
 type FixNuspecArgs =
     | [<Mandatory>][<CustomCommandLine("file")>] File of text:string
     | [<Mandatory>][<CustomCommandLine("references-file")>] ReferencesFile of text:string
@@ -257,7 +275,6 @@ with
             match this with
             | Files _ -> "List of .nuspec files to fix transitive dependencies within."
             | ReferencesFile _ -> "FileName of the nuspec file."
-
 
 type GenerateNuspecArgs =
     | [<CustomCommandLine "project">][<Mandatory>] Project of project:string
@@ -363,15 +380,23 @@ with
         | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
 
 type WhyArgs =
-    | [<MainCommandAttribute()>][<Mandatory>] NuGet of package_id:string
+    | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
+    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
+
     | [<AltCommandLine("-g")>] Group of name:string
+    | [<Hidden; CustomCommandLine("group")>] Group_Legacy of name:string
+
     | Details
 with
   interface IArgParserTemplate with
       member this.Usage =
         match this with
         | NuGet(_) -> "NuGet package ID"
+        | NuGet_Legacy(_) -> "[obsolete]"
+
         | Group(_) -> "specifiy dependency group (default: Main group)"
+        | Group_Legacy(_) -> "[obsolete]"
+
         | Details -> "display detailed information with all paths, versions and framework restrictions"
 
 type Command =

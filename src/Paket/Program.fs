@@ -47,14 +47,14 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
                         let l = group |> Seq.toList
                         cat, l.Length, l |> Seq.map (fun ev -> ev.Duration) |> Seq.fold (+) (TimeSpan()))
                     |> Seq.toList
-                let blockedRaw = 
+                let blockedRaw =
                     groupedResults
                     |> List.filter (function Profile.Category.ResolverAlgorithmBlocked _, _, _ -> true | _ -> false)
                 let blocked =
                     blockedRaw
                     |> List.map (fun (_,_,t) -> t)
                     |> Seq.fold (+) (TimeSpan())
-                let resolver = 
+                let resolver =
                     match groupedResults |> List.tryPick (function Profile.Category.ResolverAlgorithm, _, s -> Some s | _ -> None) with
                     | Some s -> s
                     | None -> TimeSpan()
@@ -104,14 +104,48 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
 let processCommand silent commandF result =
     processWithValidation silent (fun _ -> true) commandF result
 
+let warnObsolete o n =
+    traceWarn (sprintf "Please use the new syntax: %s -> %s" o n)
+
+let failObsolete o n =
+    failwithf "You cannot use the old and new syntax at the same time: %s <-> %s" o n
+
+let legacyBool (results : ParseResults<_>) newSyntax oldSyntax (list : bool*bool) =
+    match list with
+    | (true, false) ->
+        true
+    | (false, true) ->
+        warnObsolete oldSyntax newSyntax
+        true
+    | (true, true) ->
+        failObsolete oldSyntax newSyntax
+    | (false, false) ->
+        false
+
+let legacyOption (results : ParseResults<_>) newSyntax oldSyntax list =
+    match list with
+    | (Some id, None) ->
+        Some id
+    | (None, Some id) ->
+        warnObsolete oldSyntax newSyntax
+        Some id
+    | (Some _, Some _) ->
+        failObsolete oldSyntax newSyntax
+    | (_, _) -> None
+
 let add (results : ParseResults<_>) =
-    let packageName = results.GetResult <@ AddArgs.NuGet @>
-    let version = defaultArg (results.TryGetResult <@ AddArgs.Version @>) ""
+    let packageNameOld = results.GetResults <@ AddArgs.NuGet_Legacy @> |> List.tryLast
+    let packageNameNew = results.GetResults <@ AddArgs.NuGet @> |> List.tryLast
+    let packageName = match (packageNameNew, packageNameOld) |> legacyOption results "(omit, option is the new default argument)" "nuget" with
+                      | Some(id) ->
+                        id
+                      | _ -> results.GetResult <@ AddArgs.NuGet @>
+    let version = defaultArg ((results.TryGetResult <@ AddArgs.Version @>, results.TryGetResult <@ AddArgs.Version_Legacy @>) |> legacyOption results "--version" "version") ""
     let force = results.Contains <@ AddArgs.Force @>
     let redirects = results.Contains <@ AddArgs.Redirects @>
-    let createNewBindingFiles = results.Contains <@ AddArgs.Create_New_Binding_Files @>
+    let createNewBindingFiles = (results.Contains <@ AddArgs.Create_New_Binding_Files @>, results.Contains <@ AddArgs.Create_New_Binding_Files_Legacy @>) |> legacyBool results "--create-new-binding-files" "--createnewbindingfiles"
     let cleanBindingRedirects = results.Contains <@ AddArgs.Clean_Redirects @>
-    let group = results.TryGetResult <@ AddArgs.Group @>
+    let group = (results.TryGetResult <@ AddArgs.Group @>, results.TryGetResult <@ AddArgs.Group_Legacy @>) |> legacyOption results "--group" "group"
     let noInstall = results.Contains <@ AddArgs.No_Install @>
     let semVerUpdateMode =
         if results.Contains <@ AddArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
@@ -119,8 +153,9 @@ let add (results : ParseResults<_>) =
         if results.Contains <@ AddArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
     let touchAffectedRefs = results.Contains <@ AddArgs.Touch_Affected_Refs @>
+    let project = (results.TryGetResult <@ AddArgs.Project @>, results.TryGetResult <@ AddArgs.Project_Legacy @>) |> legacyOption results "--project" "project"
 
-    match results.TryGetResult <@ AddArgs.Project @> with
+    match project with
     | Some projectName ->
         Dependencies.Locate().AddToProject(group, packageName, version, force, redirects, cleanBindingRedirects, createNewBindingFiles, projectName, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
     | None ->
@@ -196,15 +231,15 @@ let install (results : ParseResults<_>) =
     let touchAffectedRefs = results.Contains <@ InstallArgs.Touch_Affected_Refs @>
 
     Dependencies.Locate().Install(
-        force, 
-        withBindingRedirects, 
-        cleanBindingRedirects, 
-        createNewBindingFiles, 
-        installOnlyReferenced, 
-        semVerUpdateMode, 
-        touchAffectedRefs, 
-        generateLoadScripts, 
-        providedFrameworks, 
+        force,
+        withBindingRedirects,
+        cleanBindingRedirects,
+        createNewBindingFiles,
+        installOnlyReferenced,
+        semVerUpdateMode,
+        touchAffectedRefs,
+        generateLoadScripts,
+        providedFrameworks,
         providedScriptTypes,
         alternativeProjectRoot)
 
@@ -237,14 +272,14 @@ let restore (results : ParseResults<_>) =
     let ignoreChecks = results.Contains <@ RestoreArgs.Ignore_Checks @>
     let failOnChecks = results.Contains <@ RestoreArgs.Fail_On_Checks @>
     let targetFramework = results.TryGetResult <@ RestoreArgs.Target_Framework @>
-    
+
     match project with
     | Some project ->
         Dependencies.Locate().Restore(force, group, project, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
     | None ->
-        if List.isEmpty files then 
+        if List.isEmpty files then
             Dependencies.Locate().Restore(force, group, installOnlyReferenced, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
-        else 
+        else
             Dependencies.Locate().Restore(force, group, files, touchAffectedRefs, ignoreChecks, failOnChecks, targetFramework)
 
 let simplify (results : ParseResults<_>) =
@@ -317,7 +352,11 @@ let findPackages silent (results : ParseResults<_>) =
         for p in Dependencies.FindPackagesByName(sources,searchText,maxResults) do
             tracefn "%s" p
 
-    match results.TryGetResult <@ FindPackagesArgs.SearchText @> with
+    let searchOld = results.GetResults <@ FindPackagesArgs.Search_Legacy @> |> List.tryLast
+    let searchNew = results.GetResults <@ FindPackagesArgs.Search @> |> List.tryLast
+    let search = (searchNew, searchOld) |> legacyOption results "(option was removed)" "searchtext"
+
+    match search with
     | None ->
         let rec repl () =
             if not silent then
@@ -333,20 +372,17 @@ let findPackages silent (results : ParseResults<_>) =
 
     | Some searchText -> searchAndPrint searchText
 
-
 let fixNuspecs silent (results : ParseResults<_>) =
     let referenceFile = results.GetResult <@ FixNuspecsArgs.ReferencesFile @>
-    let nuspecFiles = results.GetResult <@ FixNuspecsArgs.Files @> 
+    let nuspecFiles = results.GetResult <@ FixNuspecsArgs.Files @>
     Dependencies.FixNuspecs (referenceFile, nuspecFiles)
-
 
 // For Backwards compatibility
 let fixNuspec silent (results : ParseResults<_>) =
-    let fileString = results.GetResult <@ FixNuspecArgs.File @> 
-    let refFile = results.GetResult <@ FixNuspecArgs.ReferencesFile @> 
+    let fileString = results.GetResult <@ FixNuspecArgs.File @>
+    let refFile = results.GetResult <@ FixNuspecArgs.ReferencesFile @>
     let nuspecList = fileString.Split([|';'|])|>List.ofArray
     Dependencies.FixNuspecs (refFile, nuspecList)
-    
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
 let getInstalledPackages (results : ParseResults<_>) =
@@ -407,41 +443,44 @@ let push (results : ParseResults<_>) =
                       ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
-
 let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks = results.GetResults <@ GenerateLoadScriptsArgs.Framework @>
     let providedScriptTypes = results.GetResults <@ GenerateLoadScriptsArgs.ScriptType @>
-    let providedGroups = defaultArg (results.TryGetResult<@ GenerateLoadScriptsArgs.Groups @>) [] 
+    let providedGroups = defaultArg (results.TryGetResult<@ GenerateLoadScriptsArgs.Groups @>) []
     Dependencies.Locate().GenerateLoadScripts providedGroups providedFrameworks providedScriptTypes
-
 
 let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     let projectFile = results.GetResult <@ GenerateNuspecArgs.Project @>
     let dependencies = results.GetResult <@ GenerateNuspecArgs.DependenciesFile @>
     let output = defaultArg  (results.TryGetResult <@ GenerateNuspecArgs.Output @>) (Directory.GetCurrentDirectory())
-    let filename, nuspec = Nuspec.FromProject(projectFile,dependencies) 
+    let filename, nuspec = Nuspec.FromProject(projectFile,dependencies)
     let nuspecString = nuspec.ToString()
     File.WriteAllText (Path.Combine (output,filename), nuspecString)
 
 let why (results: ParseResults<WhyArgs>) =
-    let packageName = results.GetResult <@ WhyArgs.NuGet @> |> Domain.PackageName
-    let groupName = 
-        defaultArg 
-            (results.TryGetResult <@ WhyArgs.Group @> |> Option.map Domain.GroupName) 
+    let packageNameOld = results.GetResults <@ WhyArgs.NuGet_Legacy @> |> List.tryLast
+    let packageNameNew = results.GetResults <@ WhyArgs.NuGet @> |> List.tryLast
+    let packageName = match (packageNameNew, packageNameOld) |> legacyOption results "(omit, option is the new default argument)" "nuget" with
+                      | Some(id) ->
+                        id
+                      | _ -> results.GetResult <@ WhyArgs.NuGet @>
+                      |> Domain.PackageName
+    let groupName =
+        defaultArg
+            ((results.TryGetResult <@ WhyArgs.Group @>, results.TryGetResult <@ WhyArgs.Group_Legacy @>) |> legacyOption results "--group" "group" |> Option.map Domain.GroupName)
             Constants.MainDependencyGroup
     let dependencies = Dependencies.Locate()
     let lockFile = dependencies.GetLockFile()
-    let directDeps = 
+    let directDeps =
         dependencies
             .GetDependenciesFile()
             .GetDependenciesInGroup(groupName)
             |> Seq.map (fun pair -> pair.Key)
             |> Set.ofSeq
-    let options = 
+    let options =
         { Why.WhyOptions.Details = results.Contains <@ WhyArgs.Details @> }
 
     Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
-
 
 let main() =
     let resolution = Environment.GetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION")
@@ -465,7 +504,7 @@ let main() =
 
         let fromBootstrapper = results.Contains <@ From_Bootstrapper @>
 
-        let version = results.Contains <@ Version @> 
+        let version = results.Contains <@ Version @>
         if not version then
 
             use fileTrace =
@@ -509,7 +548,7 @@ let main() =
 
     with
     | exn when not (exn :? System.NullReferenceException) ->
-#if NETCOREAPP1_0    
+#if NETCOREAPP1_0
         // Environment.ExitCode not supported
 #else
         Environment.ExitCode <- 1
