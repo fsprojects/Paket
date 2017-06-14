@@ -470,47 +470,35 @@ with
 let commandParser = ArgumentParser.Create<Command>(programName = "paket", errorHandler = new ProcessExiter())
 
 let markdown (subParser : ArgumentParser) (width : int) (additionalText : string) =
-    let (afterCommandText, afterOptionsText) =
-        let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text) then text else text + Environment.NewLine + Environment.NewLine
-        let cleanUp (text : string) = text.Replace("# [after-command]", "")
-                                          .Replace("# [after-options]", "")
-                                          .Trim('\r', '\n') |> ensureLineBreak
-        let afterCommandIndex = additionalText.IndexOf("# [after-command]")
-        let afterOptionsIndex = additionalText.IndexOf("# [after-options]")
-
-        if afterCommandIndex = -1 then "", additionalText |> cleanUp
-        else if afterOptionsIndex = -1 then additionalText |> cleanUp, ""
-        else (additionalText.Substring(0, afterCommandIndex) |> cleanUp, additionalText.Substring(afterOptionsIndex) |> cleanUp)
+    let ensureLineBreak (text : string) = if String.IsNullOrEmpty(text) then text else text + Environment.NewLine + Environment.NewLine
+    let cleanUp (text : string) = text.Trim('\r', '\n') |> ensureLineBreak
 
     let parentMetadata = subParser.ParentInfo |> Option.get
 
-    let indentBy spaces (text:string) =
-        let whitespace = String(' ', spaces)
-        text.Split([|Environment.NewLine|], StringSplitOptions.None)
-        |> Seq.map (fun line -> whitespace + line)
-        |> String.concat Environment.NewLine
-
-    let replace (pattern : string) (replacement : string) input =
-        System.Text.RegularExpressions.Regex.Replace(input, pattern, replacement)
-
     let syntax =
         subParser.PrintCommandLineSyntax(usageStringCharacterWidth = width)
-        |> indentBy 4
 
     let options = subParser.PrintUsage(hideSyntax=true, usageStringCharacterWidth = width)
+
+    let makeSentence t =
+        let upcase (s:string) =
+            s.Substring(0,1).ToUpper() + s.Substring(1)
+
+        sprintf "%s." (upcase t)
 
     System.Text.StringBuilder()
         .Append("# paket ")
         .AppendLine(parentMetadata.Name)
         .AppendLine()
-        .AppendLine(parentMetadata.Description)
+        .AppendLine(parentMetadata.Description |> makeSentence)
         .AppendLine()
-        .AppendLine("    [lang=console]")
+        .AppendLine("```sh")
         .AppendLine(syntax)
         .AppendLine()
-        .Append(afterCommandText)
         .Append(options)
-        .Append(afterOptionsText)
+        .AppendLine("```")
+        .AppendLine()
+        .Append(additionalText |> cleanUp)
         .ToString()
 
 let getAllCommands () = commandParser.GetSubCommandParsers()
