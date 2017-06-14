@@ -6,9 +6,6 @@
 # to its authors!
 
 _paket() {
-  # TODO
-  echo $service > /tmp/_paket
-
   local curcontext=$curcontext state line ret=1
   local -A opt_args
 
@@ -72,9 +69,6 @@ _paket() {
     '(-)*:: :->option-or-argument' \
   && return
 
-  # TODO
-  typeset -p state >> /tmp/_paket
-
   case "$state" in
     (command)
       _paket_commands && ret=0
@@ -98,7 +92,14 @@ _paket() {
   return ret
 }
 
-#(( $+functions[_paket-add] )) ||
+(( $+functions[_paket_group_option] )) ||
+_paket_group_option() {
+  # TODO improve this with {}
+  # printf '(--group -g)'{--group,-g}'[%s]:group:_paket_groups\n' "$1" "$1"
+  printf '(--group -g)--group[%s]:group:_paket_groups\n(--group -g)--group[%s]:group:_paket_groups' "$1" "$1"
+}
+
+(( $+functions[_paket-add] )) ||
 _paket-add() {
   local curcontext=$curcontext state line ret=1
   declare -A opt_args
@@ -113,7 +114,7 @@ _paket-add() {
     '(--no-install)'--no-install'[skip install process after resolving dependencies]'
     '(--project -p)'{--project,-p}'[add the package to a single project only]:project:_path_files -g "**/*.??proj"'
     '(--version -V)'{--version,-V}'[package version constraint]:version constraint'
-    '(--group -g)'{--group,-g}'[add the package to a group (default: Main group)]:group:_paket_groups'
+    "${(f)$(_paket_group_option 'add the package to a group (default: Main group)')}"
   )
 
   _arguments -C \
@@ -124,7 +125,27 @@ _paket-add() {
   return ret
 }
 
-#(( $+functions[_paket-install] )) ||
+(( $+functions[_paket-why] )) ||
+_paket-why() {
+  local curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    '(--details)'--details'[display detailed information with all paths, versions and framework restrictions]'
+    "${(f)$(_paket_group_option 'specifiy dependency group (default: Main group)')}"
+  )
+
+  _arguments -C \
+    $args \
+    ':NuGet package ID:_paket_installed_packages' \
+  && ret=0
+
+  return ret
+}
+
+(( $+functions[_paket-install] )) ||
 _paket-install() {
   _arguments \
     $global_options \
@@ -133,7 +154,7 @@ _paket-install() {
     $download_options
 }
 
-#(( $+functions[_paket-restore] )) ||
+(( $+functions[_paket-restore] )) ||
 _paket-restore() {
   local curcontext=$curcontext state line ret=1
   declare -A opt_args
@@ -269,25 +290,53 @@ _paket_commands() {
   _alternative $alternatives
 }
 
-#(( $+functions[_paket_groups] )) ||
+(( $+functions[_paket_groups] )) ||
 _paket_groups() {
-  local -a groups
-  local output exit_status
-
   # Replace CR, in case we're running on Windows.
+  local output
   output="${$(_call_program groups "$(_paket_executable)" show-groups 2> /dev/null)//$'\r'/}"
   _paket_command_successful $? || return 1
 
   # Split output on \n, creating array of lines.
+  local -a groups
   groups=(${${(f)output}})
 
-  # Remove first and last two lines (paket version and performance), sort elements.
+  # Remove first (paket version) and last two lines (performance).
   groups=(${(i)groups[2,-3]})
 
   _wanted paket-groups expl 'paket group' compadd $groups
 }
 
-#(( $+functions[_paket_command_successful] )) ||
+(( $+functions[_paket_installed_packages] )) ||
+_paket_installed_packages() {
+
+  # Replace CR, in case we're running on Windows.
+  local output
+  output="${$(_call_program installed_packages "$(_paket_executable)" show-installed-packages --all 2> /dev/null)//$'\r'/}"
+  _paket_command_successful $? || return 1
+
+  # Split output on \n, creating array of lines.
+  local -a packages
+  packages=(${${(f)output}})
+
+  # Remove first (paket version) and last two lines (performance).
+  packages=(${packages[2,-3]})
+
+  # Take the second word after splitting by space (the package ID), sort elements.
+  # Format: <group> <package ID> - <version>
+  # TODO: zsh parameter expansion?
+  # packages=(${(i)${${(s. .)packages}[2]}})
+  local package
+  local -a filtered
+  for package in $packages; do
+    filtered+="${${(s. .)package}[2]}"
+  done
+  filtered=(${(i)filtered})
+
+  _wanted paket-installed-packages expl 'paket installed package' compadd $filtered
+}
+
+(( $+functions[_paket_command_successful] )) ||
 _paket_command_successful () {
   if (( ${#*:#0} > 0 )); then
     _message "paket invocation failed with exit status $1"
@@ -296,7 +345,7 @@ _paket_command_successful () {
   return 0
 }
 
-#(( $+functions[_paket_executable] )) ||
+(( $+functions[_paket_executable] )) ||
 _paket_executable() {
   local -a locations
   locations=(
@@ -310,7 +359,7 @@ _paket_executable() {
 
   local location
   for location in $locations; do
-    [[ -f "$location" ]] && echo $mono $location && return
+    [[ -f "$location" ]] && printf '%s %s' "$mono" "$location" && return
   done
 
   return 1
