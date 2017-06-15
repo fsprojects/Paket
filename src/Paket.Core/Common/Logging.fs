@@ -101,25 +101,51 @@ let setLogFile fileName =
     event.Publish |> Observable.subscribe traceToFile
 
 /// [omit]
-let printError (exn:exn) =
-    let rec printErrorHelper useArrow indent (exn:exn)=
-        let s = if useArrow then "->" else " -"
-        let indentString = new String('\t', indent)
-        let splitMsg = exn.Message.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
-        traceErrorfn "%s%s %s" indentString s (String.Join(sprintf "%s%s   " Environment.NewLine indentString , splitMsg))
-        if verbose && not (String.IsNullOrWhiteSpace exn.StackTrace) then
-            traceErrorfn "%s   StackTrace:" indentString
-            let split = exn.StackTrace.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
-            traceErrorfn "%s     %s" indentString (String.Join(sprintf "%s%s     " Environment.NewLine indentString, split))
+[<RequireQualifiedAccess>]
+type private ExnType =
+    | First
+    | Aggregated
+    | Inner
+
+/// [omit]
+let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:exn) =
+    let defaultMessage = AggregateException().Message
+    let rec printErrorHelper exnType useArrow indent (exn:exn) =
+        let handleError () =
+            let s = if useArrow then "->" else " -"
+            let indentString = new String('\t', indent)
+            let splitMsg = exn.Message.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
+            traceErrorfn "%s%s %s: %s" indentString s (exn.GetType().Name) (String.Join(sprintf "%s%s   " Environment.NewLine indentString , splitMsg))
+            let printStack =
+                match String.IsNullOrWhiteSpace exn.StackTrace, exnType with
+                | false, ExnType.First when printFirstStack -> true
+                | false, ExnType.Aggregated when printAggregatedStacks -> true
+                | false, ExnType.Inner when printInnerStacks -> true
+                | _ -> false
+            if printStack then
+                traceErrorfn "%s   StackTrace:" indentString
+                let split = exn.StackTrace.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
+                traceErrorfn "%s     %s" indentString (String.Join(sprintf "%s%s     " Environment.NewLine indentString, split))
         match exn with
         | :? AggregateException as aggr ->
             if aggr.InnerExceptions.Count = 1 then
-                printErrorHelper true indent aggr.InnerExceptions.[0]
-            for inner in aggr.InnerExceptions do
-                printErrorHelper false (indent + 1) inner
+                if aggr.Message = defaultMessage || aggr.Message = aggr.InnerExceptions.[0].Message then
+                    // skip as no new information is available.
+                    printErrorHelper exnType useArrow indent exn
+                else
+                    handleError()
+                    printErrorHelper ExnType.Aggregated true indent aggr.InnerExceptions.[0]
+            else
+                handleError()
+                for inner in aggr.InnerExceptions do
+                    printErrorHelper ExnType.Aggregated false (indent + 1) inner
         | _ ->
+            handleError()
             if not (isNull exn.InnerException) then
-                printErrorHelper true indent exn.InnerException
+                printErrorHelper ExnType.Inner true indent exn.InnerException
 
-    traceErrorfn "Paket failed with:"
-    printErrorHelper true 0 exn
+    printErrorHelper ExnType.First true 0 exn
+
+/// [omit]
+let printError (exn:exn) =
+    printErrorExt verbose verbose false exn

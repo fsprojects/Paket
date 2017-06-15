@@ -491,6 +491,7 @@ let main() =
 #else
         Environment.ExitCode <- 1
 #endif
+        traceErrorfn "Paket failed with:"
         printError exn
 
 main()

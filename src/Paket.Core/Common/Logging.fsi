@@ -39,3 +39,5 @@ val traceToConsole : Trace -> unit
 val setLogFile : string -> IDisposable
 
 val printError : exn -> unit
+
+val printErrorExt : printFirstStack:bool -> printAggregatedStacks:bool -> printInnerStacks:bool -> exn -> unit
