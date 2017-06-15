@@ -115,7 +115,11 @@ let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:ex
             let s = if useArrow then "->" else " -"
             let indentString = new String('\t', indent)
             let splitMsg = exn.Message.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
-            traceErrorfn "%s%s %s: %s" indentString s (exn.GetType().Name) (String.Join(sprintf "%s%s   " Environment.NewLine indentString , splitMsg))
+            let typeString =
+                if exn.GetType() = typeof<Exception> then
+                    ""
+                else sprintf "%s: " (exn.GetType().Name)
+            traceErrorfn "%s%s %s%s" indentString s typeString (String.Join(sprintf "%s%s   " Environment.NewLine indentString , splitMsg))
             let printStack =
                 match String.IsNullOrWhiteSpace exn.StackTrace, exnType with
                 | false, ExnType.First when printFirstStack -> true
