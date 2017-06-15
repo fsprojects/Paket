@@ -117,7 +117,7 @@ type ConflictInfo =
 type ResolutionRaw =
 | OkRaw of PackageResolution
 | ConflictRaw of ConflictInfo
-    member private self.DebugDisplay() =
+    member internal self.DebugDisplay() =
         match self with
         | OkRaw pkgres ->   
             pkgres |> Seq.map (fun kvp -> kvp.Key, kvp.Value)
@@ -217,6 +217,7 @@ type Resolution =
     private { Raw : ResolutionRaw; Errors : Exception list }
     static member ofRaw errors resolution =
         { Raw = resolution; Errors = errors }
+    member private self.DebugDisplay() = self.Raw.DebugDisplay()
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Resolution =
@@ -224,6 +225,10 @@ module Resolution =
     let getConflicts (res:Resolution) = ResolutionRaw.getConflicts res.Raw
     let getErrorText showResolvedPackages (res:Resolution) = ResolutionRaw.getErrorText showResolvedPackages res.Raw
     let isDone (res:Resolution) = ResolutionRaw.isDone res.Raw
+    let addError error (res:Resolution) =
+        { res with Errors = error :: res.Errors }
+    let addErrors errors (res:Resolution) =
+        { res with Errors = errors @ res.Errors }
 
     let getModelOrFail (res:Resolution) = 
         match res.Raw with
