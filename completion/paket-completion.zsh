@@ -134,7 +134,7 @@ _paket-config() {
   _arguments -C \
     $args \
     ': :->command' \
-    '*:: :->option-or-argument' && ret=0 \
+    '*:: :->option-or-argument' \
   && ret=0
 
   case $state in
@@ -142,11 +142,12 @@ _paket-config() {
       declare -a commands
 
       commands=(
-        'add-credentials:add credentials for a NuGet feed'
-        'add-token:add token for a source'
+        'add-credentials:add credentials for URL or credential key'
+        'add-token:add token for URL or credential key'
       )
 
-      _describe -t commands command commands && ret=0
+      _describe -t commands command commands \
+      && ret=0
       ;;
 
     (option-or-argument)
@@ -156,17 +157,18 @@ _paket-config() {
         (add-credentials)
           _arguments -C \
             $args \
-            '(--username)'--username'[provide username]' \
-            '(--password)'--password'[provide password]' \
-            ':feed URL or credential key:->feed-or-credential-key' \
+            '(--username)'--username'[provide username]:user name: ' \
+            '(--password)'--password'[provide password]:password: ' \
+            '1: :->source-url-or-credential-key' \
           && ret=0
 
           case $state in
-            (feed-or-credential-key)
+            (source-url-or-credential-key)
               _alternative \
-                'sources::_paket_sources' \
-                'credential keys::_paket_credential_keys' \
-                'urls::_urls' && ret=0
+                'source::_paket_sources' \
+                'credential key::_paket_credential_keys' \
+                'urls::_urls' \
+              && ret=0
             ;;
           esac
           ;;
@@ -174,10 +176,20 @@ _paket-config() {
         (add-token)
           _arguments -C \
             $args \
-            ':credential key:_paket_credential_keys' \
-            ':token' \
+            '1: :->source-url-or-credential-key' \
+            '2:token' \
           && ret=0
 
+          case $state in
+            (source-url-or-credential-key)
+              _alternative \
+                'source::_paket_sources' \
+                'credential key::_paket_credential_keys' \
+                ' :URL to set NuGet.org API key:(https://www.nuget.org)' \
+                'urls::_urls' \
+              && ret=0
+            ;;
+          esac
           ;;
       esac
   esac
@@ -420,14 +432,37 @@ _paket_installed_packages() {
   _wanted paket-installed-packages expl 'NuGet package ID' compadd -a - filtered
 }
 
+(( $+functions[_paket_sources] )) ||
+_paket_sources() {
+  local -a output
+  output=(
+    ${(f)"$(_call_program credential-keys \
+            "grep '^[[:space:]]*source[[:space:]]' paket.dependencies 2> /dev/null")"}
+    )
+  (( $? == 0 )) || return 1
+
+  # Take the second word after splitting by space (the source URL).
+  # Format: source URL ...
+  local source
+  local -a sources
+  for source in $output; do
+    # Only take lines that have a second word.
+    local maybe="${${(s. .)source}[2]}"
+    [[ -n "$maybe" ]] && sources+="$maybe"
+  done
+
+  _wanted paket-sources expl 'source URL' compadd -a - sources
+}
+
 (( $+functions[_paket_credential_keys] )) ||
 _paket_credential_keys() {
   local -a output
   output=(
     ${(f)"$(_call_program credential-keys \
-            "grep '^[[:space:]]*github' paket.dependencies 2> /dev/null")"}
+            "grep '^[[:space:]]*github[[:space:]]' paket.dependencies 2> /dev/null")"}
     )
   (( $? == 0 )) || return 1
+
 
   # Take the fourth word after splitting by space (the credential key).
   # Format: github repo file credential-key
@@ -435,8 +470,8 @@ _paket_credential_keys() {
   local -a githubs
   for github in $output; do
     # Only take lines that have a fourth word.
-    local maybeKey="${${(s. .)github}[4]}"
-    [[ -n "$maybeKey" ]] && githubs+="$maybeKey"
+    local maybe="${${(s. .)github}[4]}"
+    [[ -n "$maybe" ]] && githubs+="$maybe"
   done
 
   _wanted paket-credential-keys expl 'credential key' compadd -a - githubs
