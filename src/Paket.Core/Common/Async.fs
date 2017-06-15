@@ -26,7 +26,7 @@ module AsyncExtensions =
          | [|t|] ->
             let! res = t
             let task = Task.FromResult res
-            return if f res then [|task|], None else [|task|], Some 0
+            return if f res then [|task|], Some 0 else [|task|], None
          | tasks ->
     
          let! t = Async.CancellationToken
