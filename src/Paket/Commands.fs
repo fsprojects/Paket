@@ -245,16 +245,26 @@ with
             | Touch_Affected_Refs -> "Touches project files referencing packages which are affected, to help incremental build tools detecting the change."
 
 type FindPackagesArgs =
-    | [<CustomCommandLine("searchtext")>] SearchText of text:string
-    | [<CustomCommandLine("source")>] Source of source_feed:string
-    | [<CustomCommandLine("max")>] MaxResults of int
+    | [<MainCommandAttribute()>] Search of package_id:string
+    | [<Hidden; CustomCommandLine("searchtext")>] Search_Legacy of package_id:string
+
+    | Source of source_feed:string
+    | [<Hidden; CustomCommandLine("source")>] Source_Legacy of text:string
+
+    | Max of int
+    | [<Hidden; CustomCommandLine("max")>] Max_Legacy of int
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | SearchText _ -> "Search text of a Package."
-            | Source _ -> "Allows to specify the package source feed."
-            | MaxResults _ -> "Maximum number of results."
+            | Search(_) -> "search for NuGet package ID"
+            | Search_Legacy(_) -> "[obsolete]"
+
+            | Source(_) -> "specifiy source feed"
+            | Source_Legacy(_) -> "[obsolete]"
+
+            | Max(_) -> "limit maximum number of results"
+            | Max_Legacy(_) -> "[obsolete]"
 
 type FixNuspecArgs =
     | [<Mandatory>][<CustomCommandLine("file")>] File of text:string
@@ -449,7 +459,7 @@ with
             | Restore _ -> "download the computed dependency graph"
             | Simplify _ -> "simplify declared dependencies by removing transitive dependencies"
             | Update _ -> "update dependencies to their latest version"
-            | FindPackages _ -> "search for dependencies"
+            | FindPackages _ -> "search for NuGet packages"
             | FindPackageVersions _ -> "search for dependency versions"
             | FixNuspec _ -> "obsolete, see fix-nuspecs"
             | FixNuspecs _ -> "patch a list of .nuspec files to correct transitive dependencies"
