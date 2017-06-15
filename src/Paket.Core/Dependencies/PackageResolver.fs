@@ -110,41 +110,31 @@ type ConflictInfo =
   { ResolveStep    : ResolverStep
     RequirementSet : PackageRequirement Set
     Requirement    : PackageRequirement
-    Errors         : Exception list
     GetPackageVersions : (PackageName -> (SemVerInfo * PackageSource list) seq) }
-  member x.AddError exn =
-    { x with Errors = exn :: x.Errors }
 
 [<RequireQualifiedAccess>]
 [<DebuggerDisplay "{DebugDisplay()}">]
-type Resolution =
-| Ok of PackageResolution
-| Conflict of ConflictInfo
-    member x.AddError exn =
-        match x with
-        | Ok _ -> raise <| Exception("Unexpected AddError call to 'Ok' resolution", exn)
-        | Conflict c -> Conflict (c.AddError exn)
+type ResolutionRaw =
+| OkRaw of PackageResolution
+| ConflictRaw of ConflictInfo
     member private self.DebugDisplay() =
         match self with
-        | Ok pkgres ->   
+        | OkRaw pkgres ->   
             pkgres |> Seq.map (fun kvp -> kvp.Key, kvp.Value)
             |> Array.ofSeq |> sprintf "Ok - %A"
-        | Conflict { ResolveStep = resolveStep; RequirementSet = reqSet; Requirement = req } ->
+        | ConflictRaw { ResolveStep = resolveStep; RequirementSet = reqSet; Requirement = req } ->
             sprintf "%A\n%A\n%A\n" resolveStep reqSet req
-    member x.Errors =
-        match x with
-        | Ok _ -> []
-        | Conflict c -> c.Errors
+
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module Resolution =
+module ResolutionRaw =
 
     open System.Text
 
-    let getConflicts (res:Resolution) =
+    let getConflicts (res:ResolutionRaw) =
         match res with
-        | Resolution.Ok _ -> Set.empty
-        | Resolution.Conflict { ResolveStep = currentStep; Requirement = lastPackageRequirement } ->
+        | ResolutionRaw.OkRaw _ -> Set.empty
+        | ResolutionRaw.ConflictRaw { ResolveStep = currentStep; Requirement = lastPackageRequirement } ->
             currentStep.ClosedRequirements
             |> Set.union currentStep.OpenRequirements
             |> Set.add lastPackageRequirement
@@ -182,53 +172,82 @@ module Resolution =
             |> Seq.fold (fun (errorReport:StringBuilder) conflict ->
                 errorReport.AppendLine (getConflictMessage conflict)) errorReport
 
-    let getErrorText showResolvedPackages = function
-    | Resolution.Ok _ -> ""
-    | Resolution.Conflict { ResolveStep = currentStep; GetPackageVersions = getVersionF } as res ->
-        let errorText =
-            if showResolvedPackages && not currentStep.CurrentResolution.IsEmpty then
-                ( StringBuilder().AppendLine  "  Resolved packages:"
-                , currentStep.CurrentResolution)
-                ||> Map.fold (fun sb _ resolvedPackage ->
-                    sb.AppendLinef "   - %O %O" resolvedPackage.Name resolvedPackage.Version)
-            else StringBuilder()
+    let getErrorText showResolvedPackages (res:ResolutionRaw) =
+        match res with
+        | ResolutionRaw.OkRaw _ -> ""
+        | ResolutionRaw.ConflictRaw { ResolveStep = currentStep; GetPackageVersions = getVersionF } ->
+            let errorText =
+                if showResolvedPackages && not currentStep.CurrentResolution.IsEmpty then
+                    ( StringBuilder().AppendLine  "  Resolved packages:"
+                    , currentStep.CurrentResolution)
+                    ||> Map.fold (fun sb _ resolvedPackage ->
+                        sb.AppendLinef "   - %O %O" resolvedPackage.Name resolvedPackage.Version)
+                else StringBuilder()
 
-        match getConflicts res with
-        | c when c.IsEmpty  ->
-            errorText.AppendLinef
-                "  Could not resolve package %O. Unknown resolution error."
-                    (Seq.head currentStep.OpenRequirements)
-        | cfs when cfs.Count = 1 ->
-            let c = cfs.MinimumElement
-            let errorText = buildConflictReport errorText cfs
-            match getVersionF c.Name |> Seq.toList with
-            | [] -> errorText.AppendLinef  "   - No versions available."
-            | avalaibleVersions ->
-                ( errorText.AppendLinef  "   - Available versions:"
-                , avalaibleVersions )
-                ||> List.fold (fun sb elem -> sb.AppendLinef "     - %O" elem)
-        | conflicts -> buildConflictReport errorText conflicts
-        |> string
+            match getConflicts res with
+            | c when c.IsEmpty  ->
+                errorText.AppendLinef
+                    "  Could not resolve package %O. Unknown resolution error."
+                        (Seq.head currentStep.OpenRequirements)
+            | cfs when cfs.Count = 1 ->
+                let c = cfs.MinimumElement
+                let errorText = buildConflictReport errorText cfs
+                match getVersionF c.Name |> Seq.toList with
+                | [] -> errorText.AppendLinef  "   - No versions available."
+                | avalaibleVersions ->
+                    ( errorText.AppendLinef  "   - Available versions:"
+                    , avalaibleVersions )
+                    ||> List.fold (fun sb elem -> sb.AppendLinef "     - %O" elem)
+            | conflicts -> buildConflictReport errorText conflicts
+            |> string
 
+    let isDone (res:ResolutionRaw) =
+        match res with
+        | ResolutionRaw.OkRaw _ -> true
+        | _ -> false
 
-    let getModelOrFail = function
-    | Resolution.Ok model -> model
-    | Resolution.Conflict _ as res ->
-        let msg =
-            sprintf "There was a version conflict during package resolution.\n\
-                     %s\n  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)." (getErrorText true res)
-        raise <| AggregateException(msg, res.Errors)
+type ResolutionRaw with
+    member self.GetConflicts () = ResolutionRaw.getConflicts self
+    member self.GetErrorText showResolvedPackages = ResolutionRaw.getErrorText showResolvedPackages self
+    member self.IsDone = ResolutionRaw.isDone self
 
-    let isDone = function
-    | Resolution.Ok _ -> true
-    | _ -> false
+[<RequireQualifiedAccess>]
+[<DebuggerDisplay "{DebugDisplay()}">]
+type Resolution =
+    private { Raw : ResolutionRaw; Errors : Exception list }
+    static member ofRaw errors resolution =
+        { Raw = resolution; Errors = errors }
 
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module Resolution =
+    
+    let getConflicts (res:Resolution) = ResolutionRaw.getConflicts res.Raw
+    let getErrorText showResolvedPackages (res:Resolution) = ResolutionRaw.getErrorText showResolvedPackages res.Raw
+    let isDone (res:Resolution) = ResolutionRaw.isDone res.Raw
+
+    let getModelOrFail (res:Resolution) = 
+        match res.Raw with
+        | ResolutionRaw.OkRaw model -> model
+        | ResolutionRaw.ConflictRaw _ ->
+            let msg =
+                sprintf "There was a version conflict during package resolution.\n\
+                         %s\n  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)." (getErrorText true res)
+            raise <| AggregateException(msg, res.Errors)
+    let (|Ok|Conflict|) (res:Resolution) =
+        match res.Raw with
+        | ResolutionRaw.OkRaw res -> Ok res
+        | ResolutionRaw.ConflictRaw conf -> Conflict conf
+    let Ok resolution =
+        Resolution.ofRaw [] (ResolutionRaw.OkRaw resolution)
 type Resolution with
 
     member self.GetConflicts () = Resolution.getConflicts self
+    member self.GetErrors () = self.Errors
     member self.GetErrorText showResolvedPackages = Resolution.getErrorText showResolvedPackages self
     member self.GetModelOrFail () = Resolution.getModelOrFail self
     member self.IsDone = Resolution.isDone self
+    member self.IsOk = self.IsDone
+    member self.IsConflict = not self.IsDone
 
 
 let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,(versionToExplore,_),dependency,resolverStep:ResolverStep) =
@@ -568,7 +587,8 @@ let private getCurrentRequirement packageFilter (openRequirements:Set<PackageReq
 
 [<StructuredFormatDisplay "{Display}">]
 type ConflictState = {
-    Status               : Resolution
+    Errors               : Exception list
+    Status               : ResolutionRaw
     LastConflictReported : DateTime
     TryRelaxed           : bool
     Conflicts            : Set<PackageRequirement>
@@ -576,7 +596,7 @@ type ConflictState = {
     GlobalOverride       : bool
 } with
     member x.AddError exn =
-        { x with Status = x.Status.AddError exn }
+        { x with Errors = exn :: x.Errors }
 
     member private self.Display 
         with get () = 
@@ -834,7 +854,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         |> Set.ofSeq
 
 
-    if Set.isEmpty rootDependencies then Resolution.Ok Map.empty 
+    if Set.isEmpty rootDependencies then Resolution.ofRaw [] (ResolutionRaw.OkRaw Map.empty)
     else
 
     /// Evaluates whethere the innermost step-looping stage should continue or not
@@ -884,7 +904,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
             if Set.isEmpty currentStep.OpenRequirements then
                 let currentConflict =
                     { currentConflict with
-                        Status = Resolution.Ok (cleanupNames currentStep.CurrentResolution) }
+                        Status = ResolutionRaw.OkRaw (cleanupNames currentStep.CurrentResolution) }
               
                 match currentConflict, priorConflictSteps with
                 | currentConflict, (lastConflict,lastStep,lastRequirement,lastCompatibleVersions,lastFlags)::priorConflictSteps -> 
@@ -893,7 +913,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                             VersionsToExplore = lastConflict.VersionsToExplore
                     }        
                     match continueConflict.Status with
-                    | Resolution.Conflict { RequirementSet = conflicts }
+                    | ResolutionRaw.ConflictRaw { RequirementSet = conflicts }
                         when
                             (Set.isEmpty conflicts |> not)
                             && currentStep.CurrentResolution.Count > 1
@@ -926,21 +946,19 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                         getVersionsBlock currentRequirement.Sources ResolverStrategy.Max groupName
                     if Seq.isEmpty conflicts then
                         { currentConflict with
-                            Status = Resolution.Conflict {
+                            Status = ResolutionRaw.ConflictRaw {
                                 ResolveStep = currentStep
                                 RequirementSet = Set.empty
                                 Requirement = currentRequirement
                                 GetPackageVersions = getVersionsF
-                                Errors = currentConflict.Status.Errors
                             }}
                     else
                         { currentConflict with
-                            Status = Resolution.Conflict {
+                            Status = ResolutionRaw.ConflictRaw {
                                 ResolveStep = currentStep
                                 RequirementSet = set conflicts
                                 Requirement = Seq.head conflicts
-                                GetPackageVersions = getVersionsF
-                                Errors = currentConflict.Status.Errors }}
+                                GetPackageVersions = getVersionsF }}
 
                 if not (Seq.isEmpty conflicts) then                
                     fuseConflicts currentConflict priorConflictSteps conflicts
@@ -1090,11 +1108,12 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
 
     let status =
         let getVersionsF = getVersionsBlock currentRequirement.Sources ResolverStrategy.Max groupName
-        Resolution.Conflict { ResolveStep = startingStep; RequirementSet = Set.empty; Requirement = currentRequirement; GetPackageVersions = getVersionsF; Errors = [] }
+        ResolutionRaw.ConflictRaw { ResolveStep = startingStep; RequirementSet = Set.empty; Requirement = currentRequirement; GetPackageVersions = getVersionsF }
 
 
     let currentConflict : ConflictState = {
-        Status               = (status : Resolution)
+        Status               = (status : ResolutionRaw)
+        Errors               = []
         LastConflictReported = DateTime.Now
         TryRelaxed           = false
         GlobalOverride       = false
@@ -1144,19 +1163,26 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
 #else
         let stepResult = calculate()
 #endif
-    
-        match stepResult with
-        | { Status = Resolution.Conflict _ } as conflict ->
-            if conflict.TryRelaxed then
-                stackpack.KnownConflicts.Clear()
-                stackpack.ConflictHistory.Clear()
-                (step (Step((conflict
-                            ,{startingStep with Relax=true}
-                            ,currentRequirement),[])) 
-                      stackpack Seq.empty flags).Status
-            else
-                conflict.Status
-        | x -> x.Status
+        let state =
+            match stepResult with
+            | { Status = ResolutionRaw.ConflictRaw _ } as conflict ->
+                if conflict.TryRelaxed then
+                    stackpack.KnownConflicts.Clear()
+                    stackpack.ConflictHistory.Clear()
+                    (step (Step((conflict
+                                ,{startingStep with Relax=true}
+                                ,currentRequirement),[])) 
+                          stackpack Seq.empty flags)
+                else
+                    conflict
+            | x -> x
+        let resolution = Resolution.ofRaw state.Errors state.Status
+        if resolution.IsOk && resolution.Errors.Length > 0 then
+            // At least warn that the resolution might not contain the latest stuff, because something failed
+            traceWarnfn "Resolution finished, but some errors were encountered:"
+            AggregateException(resolution.Errors)
+                |> printError
+        resolution
     finally
         // some cleanup
         cts.Cancel()

@@ -353,7 +353,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             | None -> // pulled because of runtime resolution
                                 { v with IsRuntimeDependency = true })
                         |> Resolution.Ok
-                    | _ -> resolution
+                    | _ -> runtimeResolution
                 | Resolution.Ok _ -> resolution
                 | Resolution.Conflict _ -> resolution
 
