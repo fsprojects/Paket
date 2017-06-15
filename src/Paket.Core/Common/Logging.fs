@@ -129,12 +129,13 @@ let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:ex
         match exn with
         | :? AggregateException as aggr ->
             if aggr.InnerExceptions.Count = 1 then
-                if aggr.Message = defaultMessage || aggr.Message = aggr.InnerExceptions.[0].Message then
+                let inner = aggr.InnerExceptions.[0]
+                if aggr.Message = defaultMessage || aggr.Message = inner.Message then
                     // skip as no new information is available.
-                    printErrorHelper exnType useArrow indent exn
+                    printErrorHelper exnType useArrow indent inner
                 else
                     handleError()
-                    printErrorHelper ExnType.Aggregated true indent aggr.InnerExceptions.[0]
+                    printErrorHelper ExnType.Aggregated true indent inner
             else
                 handleError()
                 for inner in aggr.InnerExceptions do
