@@ -106,11 +106,11 @@ let printError (exn:exn) =
         let s = if useArrow then "->" else " -"
         let indentString = new String('\t', indent)
         let splitMsg = exn.Message.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
-        traceErrorfn "%s%s %s" indentString s (String.Join(sprintf "%s   %s" indentString Environment.NewLine, splitMsg))
+        traceErrorfn "%s%s %s" indentString s (String.Join(sprintf "%s%s   " Environment.NewLine indentString , splitMsg))
         if verbose && not (String.IsNullOrWhiteSpace exn.StackTrace) then
             traceErrorfn "%s   StackTrace:" indentString
             let split = exn.StackTrace.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
-            traceErrorfn "%s     %s" indentString (String.Join(sprintf "%s     %s" indentString Environment.NewLine, split))
+            traceErrorfn "%s     %s" indentString (String.Join(sprintf "%s%s     " Environment.NewLine indentString, split))
         match exn with
         | :? AggregateException as aggr ->
             if aggr.InnerExceptions.Count = 1 then
