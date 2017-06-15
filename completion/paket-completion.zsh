@@ -92,9 +92,7 @@ _paket() {
 
 (( $+functions[_paket_group_option] )) ||
 _paket_group_option() {
-  # TODO improve this with {}
-  # printf '(--group -g)'{--group,-g}'[%s]:group:_paket_groups\n' "$1" "$1"
-  printf '(--group -g)--group[%s]:group:_paket_groups\n(--group -g)--group[%s]:group:_paket_groups' "$1" "$1"
+  print -l '(--group -g)'{--group,-g}"[$1]:group:_paket_groups"
 }
 
 (( $+functions[_paket-add] )) ||
