@@ -37,3 +37,5 @@ val event : Event<Trace>
 val traceToConsole : Trace -> unit
 
 val setLogFile : string -> IDisposable
+
+val printError : exn -> unit

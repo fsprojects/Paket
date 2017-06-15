@@ -430,15 +430,53 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                                 add(sprintf " - Request '%s' was cancelled (another one was faster)" req.Request.Url)
                             elif req.TaskResult.IsFaulted then
                                 if verbose then
-                                    add(sprintf " - Request '%s' errored: %s" req.Request.Url req.TaskResult.Exception.Message)
-                                else
                                     add(sprintf " - Request '%s' errored: %O" req.Request.Url req.TaskResult.Exception)
+                                else
+                                    add(sprintf " - Request '%s' errored: %s" req.Request.Url req.TaskResult.Exception.Message)
                             else
-                                add(sprintf " - Request '%s' finished with: %A" req.Request.Url req.TaskResult.Result)
+                                match req.TaskResult.Result with
+                                | NuGetCache.NuGetResponseGetVersions.FailedVersionRequest err ->
+                                    if verbose then
+                                        add(sprintf " - Request '%s' finished with: %O" req.Request.Url err.Error.SourceException)
+                                    else
+                                        add(sprintf " - Request '%s' finished with: %s" req.Request.Url err.Error.SourceException.Message)
+                                | NuGetCache.NuGetResponseGetVersions.ProtocolNotCached ->
+                                    add(sprintf " - Request '%s' was skipped because 'ProtocolNotCached'" req.Request.Url)
+                                | NuGetCache.NuGetResponseGetVersions.SuccessVersionResponse versions ->
+                                    add(sprintf " - Request '%s' finished with: [%s]" req.Request.Url (System.String.Join(" ; ", versions)))
                         else
                             add(sprintf " - Request '%s' is not finished jet" req.Request.Url)
             )
             sb.ToString()
+        let getException (trial:GetVersionRequestResult) message =
+            trial.Requests
+            |> Seq.map (fun sourceResult ->
+                let innerExns =
+                    sourceResult.Requests
+                    |> Seq.map (fun req ->
+                        if req.TaskResult.IsCompleted then
+                            if req.TaskResult.IsCanceled then
+                                Exception(sprintf " - Request '%s' was cancelled (another one was faster)" req.Request.Url)
+                            elif req.TaskResult.IsFaulted then
+                                Exception(sprintf " - Request '%s' errored" req.Request.Url, req.TaskResult.Exception)
+                            else
+                                match req.TaskResult.Result with
+                                | NuGetCache.NuGetResponseGetVersions.FailedVersionRequest err ->
+                                    Exception(sprintf " - Request '%s' finished with error" req.Request.Url, err.Error.SourceException)
+                                | NuGetCache.NuGetResponseGetVersions.ProtocolNotCached ->
+                                    Exception(sprintf " - Request '%s' was skipped because 'ProtocolNotCached'" req.Request.Url)
+                                | NuGetCache.NuGetResponseGetVersions.SuccessVersionResponse versions ->
+                                    Exception(sprintf " - Request '%s' finished with: [%s]" req.Request.Url (System.String.Join(" ; ", versions)))
+                        else
+                            Exception(sprintf " - Request '%s' is not finished jet" req.Request.Url))
+
+                match sourceResult.Result with
+                | SourceNoResult ->
+                    AggregateException(sprintf "Source '%s' yielded no results" sourceResult.Source.Url, innerExns) :> exn
+                | SourceSuccess (s, i) ->
+                    AggregateException(sprintf "Source '%s' yielded (%d): [%s]" sourceResult.Source.Url i (System.String.Join(" ; ", s)), innerExns) :> exn
+            )
+            |> fun exns -> AggregateException(message, exns) :> exn
 
         if verbose then
             reportRequests verbose trial1
@@ -456,13 +494,12 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                     |> printfn "%s"
                 return trial2.Requests
             | _ ->
-                match sources |> Seq.map (fun s -> s.ToString()) |> List.ofSeq with
-                | [source] ->
-                    return failwithf "Could not find versions for package %O on %O.\n%s" packageName source (reportRequests true trial2)
-                | [] ->
-                    return failwithf "Could not find versions for package %O, because no sources were specified." packageName
-                | sources ->
-                    return failwithf "Could not find versions for package %O on any of %A.\n%s" packageName sources (reportRequests true trial2) }
+                let errorMsg =
+                    match sources |> Seq.map (fun s -> s.ToString()) |> List.ofSeq with
+                    | [source] -> sprintf "Could not find versions for package %O on %O." packageName source
+                    | [] -> sprintf "Could not find versions for package %O, because no sources were specified." packageName
+                    | sources -> sprintf "Could not find versions for package %O on any of %A." packageName sources
+                return raise <| getException trial2 errorMsg }
     return
         versions
         |> Seq.toList

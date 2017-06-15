@@ -491,9 +491,6 @@ let main() =
 #else
         Environment.ExitCode <- 1
 #endif
-        traceErrorfn "Paket failed with:%s\t%s" Environment.NewLine exn.Message
-
-        if verbose then
-            traceErrorfn "StackTrace:%s  %s" Environment.NewLine exn.StackTrace
+        printError exn
 
 main()

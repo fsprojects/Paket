@@ -99,3 +99,23 @@ let setLogFile fileName =
         if fi.Directory.Exists |> not then
             fi.Directory.Create()
     event.Publish |> Observable.subscribe traceToFile
+
+/// [omit]
+let printError (exn:exn) =
+    let rec printErrorHelper indent (exn:exn)=
+        let indentString = new String('\t', indent)
+        traceErrorfn "%s- %s" indentString exn.Message
+        if verbose && not (String.IsNullOrWhiteSpace exn.StackTrace) then
+            traceErrorfn "%s  StackTrace:" indentString
+            let split = exn.StackTrace.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
+            traceErrorfn "%s    %s" indentString (String.Join(sprintf "%s    " indentString, split))
+        match exn with
+        | :? AggregateException as aggr ->
+            for inner in aggr.InnerExceptions do
+                printErrorHelper (indent + 1) inner
+        | _ ->
+            if not (isNull exn.InnerException) then
+                printErrorHelper (indent + 1) exn.InnerException
+
+    traceErrorfn "Paket failed with:"
+    printErrorHelper 1 exn
