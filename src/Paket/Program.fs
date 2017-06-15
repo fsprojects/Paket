@@ -419,8 +419,8 @@ let why (results: ParseResults<WhyArgs>) =
 
     Why.ohWhy(packageName, directDeps, lockFile, groupName, results.Parser.PrintUsage(), options)
 
-
-let main() =
+[<EntryPoint>]
+let main args =
     let resolution = Environment.GetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION")
     if System.String.IsNullOrEmpty resolution then
         Environment.SetEnvironmentVariable ("PAKET_DISABLE_RUNTIME_RESOLUTION", "true")
@@ -483,7 +483,7 @@ let main() =
             | From_Bootstrapper
             | Version
             | Log_File _ -> failwithf "internal error: this code should never be reached."
-
+        0
     with
     | exn when not (exn :? System.NullReferenceException) ->
 #if NETCOREAPP1_0    
@@ -496,4 +496,4 @@ let main() =
         if verbose then
             traceErrorfn "StackTrace:%s  %s" Environment.NewLine exn.StackTrace
 
-main()
+        1
