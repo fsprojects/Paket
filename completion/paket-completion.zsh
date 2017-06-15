@@ -76,8 +76,6 @@ _paket() {
 
     (option-or-argument)
       curcontext=${curcontext%:*:*}:paket-$words[1]:
-      typeset -p curcontext >> /tmp/_paket
-      typeset -p words >> /tmp/_paket
 
       if ! _call_function ret _paket-$words[1]; then
         _message "paket command '$words[1]' is not implemented, please contact @agross"
@@ -119,7 +117,7 @@ _paket-add() {
 
   _arguments -C \
     $args \
-    ':NuGet package ID' \
+    ':NuGet package ID:_paket_nuget_packages "${words[-1]}"' \
   && ret=0
 
   return ret
@@ -140,6 +138,26 @@ _paket-why() {
   _arguments -C \
     $args \
     ':NuGet package ID:_paket_installed_packages' \
+  && ret=0
+
+  return ret
+}
+
+(( $+functions[_paket-find-packages] )) ||
+_paket-find-packages() {
+  local curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    '(--source)'--source'[specifiy source feed]'
+    '(--max)'--max'[limit maximum number of results]:maxiumum results:(1 5 10 50 100 1000)'
+  )
+
+  _arguments -C \
+    $args \
+    ':NuGet package ID:_paket_nuget_packages "${words[-1]}"' \
   && ret=0
 
   return ret
@@ -214,21 +232,21 @@ _paket_commands() {
   done
 
   dependency=(
-    add:'add a new dependency to paket.dependencies'
-    install:'download the dependencies specified by paket.dependencies or paket.lock into the packages/ directory and update projects'
+    add:'add a new dependency'
+    install:'download dependencies and update projects'
     outdated:'find dependencies that have newer versions available'
-    remove:'remove a dependency from paket.dependencies and all paket.references files'
-    restore:'download the dependencies specified by the paket.lock file into the packages/ directory'
-    simplify:'simplify paket.dependencies and paket.references by removing transitive dependencies'
+    remove:'remove a dependency'
+    restore:'download the computed dependency graph'
+    simplify:'simplify declared dependencies by removing transitive dependencies'
     update:'update dependencies to their latest version'
   )
 
   inspection=(
-    find-packages:'search for packages'
-    find-package-versions:'search for package versions'
+    find-packages:'search for NuGet packages'
+    find-package-versions:'search for dependency versions'
     find-refs:'find all project files that have a dependency installed'
     show-groups:'show groups'
-    show-installed-packages:'show installed top-level packages'
+    show-installed-packages:'show installed dependencies'
     why:'determine why a dependency is required'
   )
 
@@ -236,8 +254,8 @@ _paket_commands() {
     convert-from-nuget:'convert projects from NuGet to Paket'
     fix-nuspecs:'patch a list of .nuspec files to correct transitive dependencies'
     generate-nuspec:'generate a default nuspec for a project including its direct dependencies'
-    pack:'pack paket.template files within this repository'
-    push:'push a .nupkg file'
+    pack:'create NuGet packages from paket.template files'
+    push:'push a NuGet package'
   )
 
   misc=(
@@ -292,35 +310,53 @@ _paket_commands() {
 
 (( $+functions[_paket_groups] )) ||
 _paket_groups() {
+  local -a cmd
+  cmd=(_call_program groups $(_paket_executable) show-groups --silent 2\> /dev/null)
+
   # Replace CR, in case we're running on Windows.
   local output
-  output="${$(_call_program groups "$(_paket_executable)" show-groups 2> /dev/null)//$'\r'/}"
+  output="${$("${cmd[@]}")//$'\r'/}"
   _paket_command_successful $? || return 1
 
   # Split output on \n, creating array of lines.
   local -a groups
   groups=(${${(f)output}})
 
-  # Remove first (paket version) and last two lines (performance).
-  groups=(${(i)groups[2,-3]})
-
-  _wanted paket-groups expl 'paket group' compadd $groups
+  _wanted paket-groups expl 'group' compadd -a - groups
 }
 
-(( $+functions[_paket_installed_packages] )) ||
-_paket_installed_packages() {
+(( $+functions[_paket_nuget_packages] )) ||
+_paket_nuget_packages() {
+  local term="$5"
+
+  local -a cmd
+  cmd=(_call_program nuget-packages $(_paket_executable) find-packages --silent --max 100 \'$term\' 2\> /dev/null)
 
   # Replace CR, in case we're running on Windows.
   local output
-  output="${$(_call_program installed_packages "$(_paket_executable)" show-installed-packages --all 2> /dev/null)//$'\r'/}"
+  output="${$("${cmd[@]}")//$'\r'/}"
   _paket_command_successful $? || return 1
 
   # Split output on \n, creating array of lines.
   local -a packages
   packages=(${${(f)output}})
 
-  # Remove first (paket version) and last two lines (performance).
-  packages=(${packages[2,-3]})
+  _wanted paket-nuget-packages expl 'NuGet package ID' compadd -U -a - packages
+}
+
+(( $+functions[_paket_installed_packages] )) ||
+_paket_installed_packages() {
+  local -a cmd
+  cmd=(_call_program installed-packages $(_paket_executable) show-installed-packages --silent --all 2\> /dev/null)
+
+  # Replace CR, in case we're running on Windows.
+  local output
+  output="${$("${cmd[@]}")//$'\r'/}"
+  _paket_command_successful $? || return 1
+
+  # Split output on \n, creating array of lines.
+  local -a packages
+  packages=(${${(f)output}})
 
   # Take the second word after splitting by space (the package ID), sort elements.
   # Format: <group> <package ID> - <version>
@@ -331,9 +367,8 @@ _paket_installed_packages() {
   for package in $packages; do
     filtered+="${${(s. .)package}[2]}"
   done
-  filtered=(${(i)filtered})
 
-  _wanted paket-installed-packages expl 'paket installed package' compadd $filtered
+  _wanted paket-installed-packages expl 'NuGet package ID' compadd -a - filtered
 }
 
 (( $+functions[_paket_command_successful] )) ||
