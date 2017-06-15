@@ -500,7 +500,7 @@ module FrameworkDetection =
                 | "wpa00" | "wpa" | "wpa81" | "wpav81" | "wpapp81" | "wpapp" -> Some (WindowsPhoneApp WindowsPhoneAppVersion.V8_1)
                 | "wp81"  | "wpv81" -> Some (WindowsPhone WindowsPhoneVersion.V8_1)
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
-                | "Todnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
+                | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | "netstandard" | "netstandard10" -> Some(DotNetStandard DotNetStandardVersion.V1_0)
                 | "netstandard11" -> Some(DotNetStandard DotNetStandardVersion.V1_1)
