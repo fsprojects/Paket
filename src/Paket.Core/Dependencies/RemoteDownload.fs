@@ -34,7 +34,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
             | FSharp.Core.Result.Ok (document) ->
                 let json = JObject.Parse(document)
                 return json.["sha"].ToString()
-            | FSharp.Core.Result.Error err ->
+            | FSharp.Core.Result.Error (err) ->
                 return
                     raise <| new Exception(sprintf "Could not find hash for %s" url, err.SourceException)
         | ModuleResolver.Origin.GistLink ->

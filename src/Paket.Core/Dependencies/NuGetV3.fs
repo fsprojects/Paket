@@ -134,25 +134,23 @@ let FindAutoCompleteVersionsForPackage(nugetURL, auth, package, includingPrerele
 
 
 let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName) =
-    async {
-        let url = sprintf "%s%O/index.json?semVerLevel=2.0.0" v3Url packageName
+    let url = sprintf "%s%O/index.json?semVerLevel=2.0.0" v3Url packageName
+    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
+        async {
+            if verbose then
+                verbosefn "findVersionsForPackage v3 from url '%s'" url
+            let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
+            return
+                response
+                |> Result.map (fun text ->
+                    let versions = extractVersions text
 
-        if verbose then
-            verbosefn "findVersionsForPackage v3 from url '%s'" url
-        let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
-        return
-            response |> Result.map (fun text ->
-                let versions = extractVersions text
-
-                SemVer.SortVersions versions)
-    }
+                    SemVer.SortVersions versions)
+        })
 
 /// Uses the NuGet v3 service to retrieve all package versions for the given package.
 let FindVersionsForPackage(nugetURL, auth, package) =
-    async {
-        let! raw = findVersionsForPackage(nugetURL, auth, package)
-        return raw
-    }
+    findVersionsForPackage(nugetURL, auth, package)
 
 /// [omit]
 let extractPackages(response:string) =
@@ -214,7 +212,7 @@ let getRegistration (source : NugetV3Source) (packageName:PackageName) (version:
         let! rawData = safeGetFromUrl (source.Authentication |> Option.map toBasicAuth, url, acceptJson)
         return
             match rawData with
-            | FSharp.Core.Result.Error (_, err) -> 
+            | FSharp.Core.Result.Error err -> 
                 raise <| System.Exception(sprintf "could not get registration data from %s" url, err.SourceException)
             | FSharp.Core.Result.Ok x -> JsonConvert.DeserializeObject<Registration>(x)
     }
@@ -224,7 +222,7 @@ let getCatalog url auth =
         let! rawData = safeGetFromUrl (auth, url, acceptJson)
         return
             match rawData with
-            | FSharp.Core.Result.Error (_, err) -> 
+            | FSharp.Core.Result.Error err -> 
                 raise <| System.Exception(sprintf "could not get catalog data from %s" url, err.SourceException)
             | FSharp.Core.Result.Ok x -> JsonConvert.DeserializeObject<Catalog>(x)
     }

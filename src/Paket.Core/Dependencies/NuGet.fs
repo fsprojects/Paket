@@ -267,55 +267,51 @@ let rec GetPackageDetails alternativeProjectRoot root force (sources:PackageSour
 let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 
-type GetVersionError =
-    { Url : string; Error : ExceptionDispatchInfo }
-    static member ofTuple (url,err) =
-        { Url = url; Error = err }
-type GetVersionRequest =
-    | SuccessVersionResponse of string []
-    | ProtocolNotCached
-    | FailedVersionRequest of GetVersionError
-    member x.Versions =
-        match x with
-        | SuccessVersionResponse l -> l
-        | ProtocolNotCached -> [||]
-        | FailedVersionRequest _ -> [||]
-    member x.IsSuccess =
-        match x with
-        | SuccessVersionResponse _ -> true
-        | ProtocolNotCached -> false
-        | FailedVersionRequest _ -> false
-    static member ofResult r =
-        match r with
-        | FSharp.Core.Result.Ok x -> SuccessVersionResponse x
-        | FSharp.Core.Result.Error t -> FailedVersionRequest (GetVersionError.ofTuple t)
-    static member ofResultAsync r =
-        async { return GetVersionRequest.ofResult r }
+type GetVersionError = NuGetCache.NuGetResponseGetVersionsFailure
+    //{ Url : string; Error : ExceptionDispatchInfo }
+    //static member ofTuple (url,err) =
+    //    { Url = url; Error = err }
+    //static member ofFailure (f:NuGetCache.NuGetResponseGetVersionsFailure) =
+    //    { Url = f.; Error = err }
+type GetVersionRequest = NuGetCache.NuGetResponseGetVersions
+    //| SuccessVersionResponse of string []
+    //| ProtocolNotCached
+    //| FailedVersionRequest of GetVersionError
 
+type SourceResponseType =
+    | SourceNoResult
+    | SourceSuccess of version : string [] * fastest : int
+type SourceRequest =
+    { TaskResult : System.Threading.Tasks.Task<GetVersionRequest>
+      Request : NuGetCache.NuGetRequestGetVersions }
 type SourceResponse =
-    | SourceKnownToNotContainPackage
-    | SourceSuccess of version : string [] * Requests : GetVersionRequest list
-
+    { Source : PackageSource; Result : SourceResponseType; Requests : SourceRequest [] }
+    member x.Versions =
+        match x.Result with
+        | SourceNoResult -> [||]
+        | SourceSuccess (v, _) -> v
 type GetVersionRequestResult =
-    { Requests : GetVersionRequest [] }
+    { Requests : SourceResponse [] }
     member x.Versions =
         x.Requests |> Array.collect (fun r -> r.Versions)
 
 let getVersionsCached key f (source, auth, nugetURL, package) =
-    async {
-        match protocolCache.TryGetValue(source) with
-        | true, v when v <> key -> return ProtocolNotCached
-        | true, v when v = key ->
-            let! result = f (auth, nugetURL, package)
-            return GetVersionRequest.ofResult result
-        | _ ->
-            let! result = f (auth, nugetURL, package)
-            match result with
-            | FSharp.Core.Result.Ok x ->
-                protocolCache.TryAdd(source, key) |> ignore
-                return SuccessVersionResponse x
-            | FSharp.Core.Result.Error err -> return FailedVersionRequest (GetVersionError.ofTuple err)
-    }
+    let request:NuGetCache.NuGetRequestGetVersions = f (auth, nugetURL, package)
+    NuGetCache.NuGetRequestGetVersions.ofFunc request.Url (fun _ ->
+        async {
+            match protocolCache.TryGetValue(source) with
+            | true, v when v <> key -> return GetVersionRequest.ProtocolNotCached
+            | true, v when v = key ->
+                let! result = request.DoRequest()
+                return result
+            | _ ->
+                let! result = request.DoRequest()
+                match result with
+                | GetVersionRequest.SuccessVersionResponse x ->
+                    protocolCache.TryAdd(source, key) |> ignore
+                    return GetVersionRequest.SuccessVersionResponse x
+                | err -> return err
+        })
 
 
 /// Allows to retrieve all version no. for a package from the given sources.
@@ -342,87 +338,138 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
         let versionResponse =
             sources
             |> Seq.map (fun (errorFileExists,nugetSource) ->
-                       if (not force) && errorFileExists then [] else
+                async {
+                       if (not force) && errorFileExists then return [] else
                        match nugetSource with
                        | NuGetV2 source ->
                             let auth = source.Authentication |> Option.map toBasicAuth
                             if String.containsIgnoreCase "artifactory" source.Url then
-                                [getVersionsCached "ODataNewestFirst" NuGetV2.tryGetAllVersionsFromNugetODataFindByIdNewestFirst (nugetSource, auth, source.Url, packageName) ]
+                                return [getVersionsCached "ODataNewestFirst" NuGetV2.tryGetAllVersionsFromNugetODataFindByIdNewestFirst (nugetSource, auth, source.Url, packageName) ]
                             else
                                 let v2Feeds =
                                     [ yield getVersionsCached "OData" NuGetV2.tryGetAllVersionsFromNugetODataFindById (nugetSource, auth, source.Url, packageName)
                                       yield getVersionsCached "ODataWithFilter" NuGetV2.tryGetAllVersionsFromNugetODataWithFilter (nugetSource, auth, source.Url, packageName) ]
 
-                                let apiV3 = NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) |> Async.AwaitTask
-                                match apiV3 |> Async.RunSynchronously with
-                                | None -> v2Feeds
-                                | Some v3Url -> (getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, v3Url, packageName)) :: v2Feeds
+                                let! apiV3 = NuGetV3.getAllVersionsAPI(source.Authentication,source.Url) |> Async.AwaitTask
+                                match apiV3 with
+                                | None -> return v2Feeds
+                                | Some v3Url -> return (getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, v3Url, packageName)) :: v2Feeds
                        | NuGetV3 source ->
-                            let resp =
-                                async {
-                                    let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
-                                    let! res =
-                                        tryNuGetV3
+                            let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
+                            let req = tryNuGetV3
                                             (source.Authentication |> Option.map toBasicAuth,
                                              versionsAPI,
                                              packageName)
-                                    return GetVersionRequest.ofResult res
-                                }
+                                
 
-                            [ resp ]
+                            return [ req ]
                        | LocalNuGet(path,Some _) ->
-                            [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root)
-                                |> fun a -> async.Bind(a, GetVersionRequest.ofResultAsync) ]
+                            return [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
                        | LocalNuGet(path,None) ->
-                            [ NuGetLocal.getAllVersionsFromLocalPath (false, path, packageName, alternativeProjectRoot, root)
-                                |> fun a -> async.Bind(a, GetVersionRequest.ofResultAsync) ])
+                            return [ NuGetLocal.getAllVersionsFromLocalPath (false, path, packageName, alternativeProjectRoot, root) ]
+                })
             |> Seq.toArray
-            |> Array.map (Async.tryFind (fun req -> req.IsSuccess))
+            |> Array.map (fun a ->
+                async {
+                    let! requests = a
+                    let! runningTasks, result =
+                        requests
+                        |> List.map NuGetCache.NuGetRequestGetVersions.run
+                        |> Async.tryFind (fun req -> req.IsSuccess)
+                    let zippedTasks =
+                        Array.zip (requests |> List.toArray) runningTasks
+                        |> Array.map (fun (req, task) ->
+                            { TaskResult = task; Request = req })
+                    return zippedTasks,result
+                })
             |> Async.Parallel
 
         let! result = versionResponse
-        return
+        let allResults =
             result
             |> Array.zip sources
-            |> Array.choose (fun ((_,s),v) ->
-                match v with
-                | tasks, Some index (* when Array.isEmpty tasks.[index].Result.Versions |> not *) ->
-                    if Array.isEmpty tasks.[index].Result.Versions |> not then
+            |> Array.map (fun ((_,s),(tasks, index)) ->
+                let result =
+                    match index with
+                    | Some index (* when Array.isEmpty tasks.[index].Result.Versions |> not *) ->
+                        if Array.isEmpty tasks.[index].TaskResult.Result.Versions |> not then
+                            try
+                                let errorFile = getVersionsFailedCacheFileName s
+                                if errorFile.Exists then
+                                    File.Delete(errorFile.FullName)
+                            with e ->
+                                traceWarnfn "Error while deleting error file: %O" e
+                        let takeResult = tasks.[index].TaskResult.Result
+                        SourceSuccess (takeResult.Versions, index)
+                    | _ ->
                         try
                             let errorFile = getVersionsFailedCacheFileName s
-                            if errorFile.Exists then
-                                File.Delete(errorFile.FullName)
-                        with e ->
-                            traceWarnfn "Error while deleting error file: %O" e
-                    Some (s,v)
-                | _ ->
-                    try
-                        let errorFile = getVersionsFailedCacheFileName s
-                        if errorFile.Exists |> not then
-                            File.WriteAllText(errorFile.FullName,DateTime.Now.ToString())
-                    with _ -> ()
-                    None)
-            |> Array.collect (fun (s,versions) -> versions |> Array.map (fun v -> v,s)) }
+                            if errorFile.Exists |> not then
+                                File.WriteAllText(errorFile.FullName,DateTime.Now.ToString())
+                        with _ -> ()
+                        SourceNoResult
+                { Source = s; Result = result; Requests = tasks })
+        return { Requests = allResults } }
 
     let! versions = async {
         let! trial1 = trial force
+        let reportRequests withDetails (trial:GetVersionRequestResult) =
+            let sb = new StringBuilder()
+            let add s = sb.AddLine(s) |> ignore
+            trial.Requests
+            |> Seq.iter (fun sourceResult ->
+                match sourceResult.Result with
+                | SourceNoResult ->
+                    add(sprintf "Source '%s' yielded no results" sourceResult.Source.Url)
+                | SourceSuccess (s, i) ->
+                    add(sprintf "Source '%s' yielded (%d): [%s]" sourceResult.Source.Url i (System.String.Join(" ; ", s)))
+                if withDetails then
+                    for req in sourceResult.Requests do
+                        if req.TaskResult.IsCompleted then
+                            if req.TaskResult.IsCanceled then
+                                add(sprintf " - Request '%s' was cancelled (another one was faster)" req.Request.Url)
+                            elif req.TaskResult.IsFaulted then
+                                if verbose then
+                                    add(sprintf " - Request '%s' errored: %s" req.Request.Url req.TaskResult.Exception.Message)
+                                else
+                                    add(sprintf " - Request '%s' errored: %O" req.Request.Url req.TaskResult.Exception)
+                            else
+                                add(sprintf " - Request '%s' finished with: %A" req.Request.Url req.TaskResult.Result)
+                        else
+                            add(sprintf " - Request '%s' is not finished jet" req.Request.Url)
+            )
+            sb.ToString()
+
+        if verbose then
+            reportRequests verbose trial1
+            |> printfn "%s"
         match trial1 with
-        | versions when Array.isEmpty versions |> not -> return versions
+        | _ when Array.isEmpty trial1.Versions |> not ->
+            return trial1.Requests
         | _ ->
+            traceWarn "Trial1 (NuGet.GetVersions) did not yield any results, trying again."
             let! trial2 = trial true
             match trial2 with
-            | versions when Array.isEmpty versions |> not -> return versions
+            | _ when Array.isEmpty trial2.Versions |> not ->
+                if verbose then
+                    reportRequests verbose trial1
+                    |> printfn "%s"
+                return trial2.Requests
             | _ ->
                 match sources |> Seq.map (fun s -> s.ToString()) |> List.ofSeq with
                 | [source] ->
-                    return failwithf "Could not find versions for package %O on %O." packageName source
+                    return failwithf "Could not find versions for package %O on %O.\n%s" packageName source (reportRequests true trial2)
                 | [] ->
                     return failwithf "Could not find versions for package %O, because no sources were specified." packageName
                 | sources ->
-                    return failwithf "Could not find versions for package %O on any of %A." packageName sources }
+                    return failwithf "Could not find versions for package %O on any of %A.\n%s" packageName sources (reportRequests true trial2) }
     return
         versions
         |> Seq.toList
+        |> List.collect (fun sr ->
+            sr.Versions
+            |> Array.toList
+            |> List.map (fun v -> v, sr.Source))
         |> List.map (fun (v,s) -> SemVer.Parse v,v,s)
         |> List.groupBy (fun (v,_,_) -> v.Normalize())
         |> List.map (fun (_,s) ->

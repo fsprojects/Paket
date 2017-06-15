@@ -54,45 +54,47 @@ let rec private followODataLink auth url =
             |> Seq.toArray
     }
 
-
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
-    async {
-        let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
-        try
-            if verbose then
-                verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
-            let! result = followODataLink auth url
-            return Result.Ok result
-        with exn ->
-            let cap = ExceptionDispatchInfo.Capture exn
-            return Result.Error (url, cap)
-    }
+    let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
+    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
+        async {
+            try
+                if verbose then
+                    verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
+                let! result = followODataLink auth url
+                return Result.Ok result
+            with exn ->
+                let cap = ExceptionDispatchInfo.Capture exn
+                return Result.Error cap
+        })
 
 let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName) =
-    async {
-        let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'" nugetURL package
-        try
-            if verbose then
-                verbosefn "getAllVersionsFromNugetODataFindById from url '%s'" url
-            let! result = followODataLink auth url
-            return Result.Ok  result
-        with exn ->
-            let cap = ExceptionDispatchInfo.Capture exn
-            return Result.Error (url, cap)
-    }
+    let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'" nugetURL package
+    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
+        async {
+            try
+                if verbose then
+                    verbosefn "getAllVersionsFromNugetODataFindById from url '%s'" url
+                let! result = followODataLink auth url
+                return Result.Ok  result
+            with exn ->
+                let cap = ExceptionDispatchInfo.Capture exn
+                return Result.Error cap
+        })
 
 let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:PackageName) =
-    async {
-        let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'&$orderby=Published desc" nugetURL package
-        try
-            if verbose then
-                verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
-            let! result = followODataLink auth url
-            return Result.Ok result
-        with exn ->
-            let cap = ExceptionDispatchInfo.Capture exn
-            return Result.Error (url, cap)
-    }
+    let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'&$orderby=Published desc" nugetURL package
+    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
+        async {
+            try
+                if verbose then
+                    verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
+                let! result = followODataLink auth url
+                return Result.Ok result
+            with exn ->
+                let cap = ExceptionDispatchInfo.Capture exn
+                return Result.Error cap
+        })
 
 let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
     let doc = XmlDocument()
@@ -211,7 +213,7 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
             let! raw =
                 match response with
                 | FSharp.Core.Result.Ok r -> async { return r }
-                | FSharp.Core.Result.Error (_, err) when
+                | FSharp.Core.Result.Error err when
                         String.containsIgnoreCase "myget.org" nugetURL ||
                         String.containsIgnoreCase "nuget.org" nugetURL ||
                         String.containsIgnoreCase "visualstudio.com" nugetURL ->
@@ -219,7 +221,7 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                         System.Exception(
                             sprintf "Could not get package details for %O from %s" packageName nugetURL,
                             err.SourceException)
-                | FSharp.Core.Result.Error (_, err) ->
+                | FSharp.Core.Result.Error err ->
                     try
                         let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
                         getXmlFromUrl(auth,url)
@@ -268,9 +270,9 @@ let getDetailsFromNuGet force auth nugetURL packageName version =
 
 /// Uses the NuGet v2 API to retrieve all packages with the given prefix.
 let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
+    let url = sprintf "%s/Packages()?$filter=IsLatestVersion and IsAbsoluteLatestVersion and substringof('%s',tolower(Id))" nugetURL ((packageNamePrefix:string).ToLowerInvariant())
     async {
         try
-            let url = sprintf "%s/Packages()?$filter=IsLatestVersion and IsAbsoluteLatestVersion and substringof('%s',tolower(Id))" nugetURL ((packageNamePrefix:string).ToLowerInvariant())
             let! raw = getFromUrl(auth |> Option.map toBasicAuth,url,acceptXml)
             let doc = XmlDocument()
             doc.LoadXml raw
@@ -281,8 +283,10 @@ let FindPackages(auth, nugetURL, packageNamePrefix, maxResults) =
                         match (entry |> getNode "properties" |> optGetNode "Id") ++ (entry |> getNode "title") with
                         | Some node -> yield node.InnerText
                         | _ -> () |]
-                | _ ->  [||]
-        with _ -> return [||]
+                    |> FSharp.Core.Result.Ok
+                | _ ->  [||] |> FSharp.Core.Result.Ok
+        with e ->
+            return FSharp.Core.Result.Error (ExceptionDispatchInfo.Capture e)
     }
 
 

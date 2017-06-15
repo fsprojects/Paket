@@ -9,26 +9,26 @@ open Paket.NuGetCache
 
 /// Gets versions of the given package from local NuGet feed.
 let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, alternativeProjectRoot, root) =
-    async {
-        let localNugetPath = Utils.normalizeLocalPath localNugetPath
-        let di = getDirectoryInfoForLocalNuGetFeed localNugetPath alternativeProjectRoot root
+    let localNugetPath = Utils.normalizeLocalPath localNugetPath
+    let di = getDirectoryInfoForLocalNuGetFeed localNugetPath alternativeProjectRoot root
+    NuGetCache.NuGetRequestGetVersions.ofSimpleFunc di.FullName (fun _ ->
+        async {
+            if not di.Exists then
+                if isCache then
+                    di.Create()
+                else
+                    failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." di.FullName Environment.NewLine
 
-        if not di.Exists then
-            if isCache then
-                di.Create()
-            else
-                failwithf "The directory %s doesn't exist.%sPlease check the NuGet source feed definition in your paket.dependencies file." di.FullName Environment.NewLine
-
-        let versions =
-            Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
-            |> Seq.filter (fun fi -> fi.EndsWith ".symbols.nupkg" |> not)
-            |> Seq.choose (fun fileName ->
-                            let fi = FileInfo(fileName)
-                            let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
-                            if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
-            |> Seq.toArray
-        return Result.Ok(versions)
-    }
+            let versions =
+                Directory.EnumerateFiles(di.FullName,"*.nupkg",SearchOption.AllDirectories)
+                |> Seq.filter (fun fi -> fi.EndsWith ".symbols.nupkg" |> not)
+                |> Seq.choose (fun fileName ->
+                                let fi = FileInfo(fileName)
+                                let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
+                                if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
+                |> Seq.toArray
+            return Result.Ok(versions)
+        })
 
 
 

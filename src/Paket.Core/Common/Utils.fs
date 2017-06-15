@@ -616,7 +616,7 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             if verbose then
                 Logging.verbosefn "Error while retrieving '%s': %O" url e
             let cap = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e
-            return FSharp.Core.Result.Error (url, cap)
+            return FSharp.Core.Result.Error cap
     }
 
 let mutable autoAnswer = None
