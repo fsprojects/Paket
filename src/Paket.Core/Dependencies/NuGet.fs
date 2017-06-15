@@ -456,19 +456,19 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                     |> Seq.map (fun req ->
                         if req.TaskResult.IsCompleted then
                             if req.TaskResult.IsCanceled then
-                                Exception(sprintf " - Request '%s' was cancelled (another one was faster)" req.Request.Url)
+                                Exception(sprintf "Request '%s' was cancelled (another one was faster)" req.Request.Url)
                             elif req.TaskResult.IsFaulted then
-                                Exception(sprintf " - Request '%s' errored" req.Request.Url, req.TaskResult.Exception)
+                                Exception(sprintf "Request '%s' errored" req.Request.Url, req.TaskResult.Exception)
                             else
                                 match req.TaskResult.Result with
                                 | NuGetCache.NuGetResponseGetVersions.FailedVersionRequest err ->
-                                    Exception(sprintf " - Request '%s' finished with error" req.Request.Url, err.Error.SourceException)
+                                    Exception(sprintf "Request '%s' finished with error" req.Request.Url, err.Error.SourceException)
                                 | NuGetCache.NuGetResponseGetVersions.ProtocolNotCached ->
-                                    Exception(sprintf " - Request '%s' was skipped because 'ProtocolNotCached'" req.Request.Url)
+                                    Exception(sprintf "Request '%s' was skipped because 'ProtocolNotCached'" req.Request.Url)
                                 | NuGetCache.NuGetResponseGetVersions.SuccessVersionResponse versions ->
-                                    Exception(sprintf " - Request '%s' finished with: [%s]" req.Request.Url (System.String.Join(" ; ", versions)))
+                                    Exception(sprintf "Request '%s' finished with: [%s]" req.Request.Url (System.String.Join(" ; ", versions)))
                         else
-                            Exception(sprintf " - Request '%s' is not finished jet" req.Request.Url))
+                            Exception(sprintf "Request '%s' is not finished jet" req.Request.Url))
 
                 match sourceResult.Result with
                 | SourceNoResult ->
