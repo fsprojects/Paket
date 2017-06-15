@@ -106,23 +106,35 @@ type ResolverStep = {
     ClosedRequirements : Set<PackageRequirement>
     OpenRequirements : Set<PackageRequirement> }
 
+type ConflictInfo =
+  { ResolveStep    : ResolverStep
+    RequirementSet : PackageRequirement Set
+    Requirement    : PackageRequirement
+    Errors         : Exception list
+    GetPackageVersions : (PackageName -> (SemVerInfo * PackageSource list) seq) }
+  member x.AddError exn =
+    { x with Errors = exn :: x.Errors }
 
 [<RequireQualifiedAccess>]
 [<DebuggerDisplay "{DebugDisplay()}">]
 type Resolution =
 | Ok of PackageResolution
-| Conflict of resolveStep    : ResolverStep
-            * requirementSet : PackageRequirement Set
-            * requirement    : PackageRequirement
-            * getPackageVersions : (PackageName -> (SemVerInfo * PackageSource list) seq)
+| Conflict of ConflictInfo
+    member x.AddError exn =
+        match x with
+        | Ok _ -> raise <| Exception("Unexpected AddError call to 'Ok' resolution", exn)
+        | Conflict c -> Conflict (c.AddError exn)
     member private self.DebugDisplay() =
         match self with
         | Ok pkgres ->   
             pkgres |> Seq.map (fun kvp -> kvp.Key, kvp.Value)
             |> Array.ofSeq |> sprintf "Ok - %A"
-        | Conflict (resolveStep,reqSet,req,_) ->
+        | Conflict { ResolveStep = resolveStep; RequirementSet = reqSet; Requirement = req } ->
             sprintf "%A\n%A\n%A\n" resolveStep reqSet req
-
+    member x.Errors =
+        match x with
+        | Ok _ -> []
+        | Conflict c -> c.Errors
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module Resolution =
@@ -132,7 +144,7 @@ module Resolution =
     let getConflicts (res:Resolution) =
         match res with
         | Resolution.Ok _ -> Set.empty
-        | Resolution.Conflict (currentStep,_,lastPackageRequirement,_) ->
+        | Resolution.Conflict { ResolveStep = currentStep; Requirement = lastPackageRequirement } ->
             currentStep.ClosedRequirements
             |> Set.union currentStep.OpenRequirements
             |> Set.add lastPackageRequirement
@@ -172,7 +184,7 @@ module Resolution =
 
     let getErrorText showResolvedPackages = function
     | Resolution.Ok _ -> ""
-    | Resolution.Conflict (currentStep,_,_,getVersionF) as res ->
+    | Resolution.Conflict { ResolveStep = currentStep; GetPackageVersions = getVersionF } as res ->
         let errorText =
             if showResolvedPackages && not currentStep.CurrentResolution.IsEmpty then
                 ( StringBuilder().AppendLine  "  Resolved packages:"
@@ -202,9 +214,10 @@ module Resolution =
     let getModelOrFail = function
     | Resolution.Ok model -> model
     | Resolution.Conflict _ as res ->
-        failwithf  "There was a version conflict during package resolution.\n\
-                    %s\n  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)." (getErrorText true res)
-
+        let msg =
+            sprintf "There was a version conflict during package resolution.\n\
+                     %s\n  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)." (getErrorText true res)
+        raise <| AggregateException(msg, res.Errors)
 
     let isDone = function
     | Resolution.Ok _ -> true
@@ -389,7 +402,7 @@ let private explorePackageConfig getPackageDetailsBlock (pkgConfig:PackageConfig
                 | true, s -> s + dependency.Settings
                 | _ -> dependency.Settings
             |> fun x -> x.AdjustWithSpecialCases packageDetails.Name
-        Some
+        Result.Ok
             {   Name                = packageDetails.Name
                 Version             = version
                 Dependencies        = filteredDependencies
@@ -401,7 +414,7 @@ let private explorePackageConfig getPackageDetailsBlock (pkgConfig:PackageConfig
     with
     | exn ->
         traceWarnfn "    Package not available.%s      Message: %s" Environment.NewLine exn.Message
-        None
+        Result.Error (System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture exn)
 
 
 type StackPack = {
@@ -420,16 +433,16 @@ let private getExploredPackage (pkgConfig:PackageConfig) getPackageDetailsBlock 
         stackpack.ExploredPackages.[key] <- package
         if verbose then
             verbosefn "   Retrieved Explored Package  %O" package
-        stackpack, Some(true, package)
+        stackpack, Result.Ok(true, package)
     | false,_ ->
         match explorePackageConfig getPackageDetailsBlock pkgConfig with
-        | Some explored ->
+        | Result.Ok explored ->
             if verbose then
                 verbosefn "   Found Explored Package  %O" explored
             stackpack.ExploredPackages.Add(key,explored)
-            stackpack, Some(false, explored)
-        | None ->
-            stackpack, None
+            stackpack, Result.Ok(false, explored)
+        | Result.Error err ->
+            stackpack, Result.Error err
 
 
 
@@ -562,6 +575,9 @@ type ConflictState = {
     VersionsToExplore    : seq<SemVerInfo * PackageSource list>
     GlobalOverride       : bool
 } with
+    member x.AddError exn =
+        { x with Status = x.Status.AddError exn }
+
     member private self.Display 
         with get () = 
             let conflicts = self.Conflicts |> Seq.map (printfn "%A\n") |> String.Concat
@@ -877,7 +893,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                             VersionsToExplore = lastConflict.VersionsToExplore
                     }        
                     match continueConflict.Status with
-                    | Resolution.Conflict (_,conflicts,_,_)
+                    | Resolution.Conflict { RequirementSet = conflicts }
                         when
                             (Set.isEmpty conflicts |> not)
                             && currentStep.CurrentResolution.Count > 1
@@ -910,10 +926,21 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                         getVersionsBlock currentRequirement.Sources ResolverStrategy.Max groupName
                     if Seq.isEmpty conflicts then
                         { currentConflict with
-                            Status = Resolution.Conflict (currentStep,Set.empty,currentRequirement,getVersionsF)}
+                            Status = Resolution.Conflict {
+                                ResolveStep = currentStep
+                                RequirementSet = Set.empty
+                                Requirement = currentRequirement
+                                GetPackageVersions = getVersionsF
+                                Errors = currentConflict.Status.Errors
+                            }}
                     else
                         { currentConflict with
-                            Status = Resolution.Conflict (currentStep,set conflicts,Seq.head conflicts,getVersionsF)}
+                            Status = Resolution.Conflict {
+                                ResolveStep = currentStep
+                                RequirementSet = set conflicts
+                                Requirement = Seq.head conflicts
+                                GetPackageVersions = getVersionsF
+                                Errors = currentConflict.Status.Errors }}
 
                 if not (Seq.isEmpty conflicts) then                
                     fuseConflicts currentConflict priorConflictSteps conflicts
@@ -997,10 +1024,10 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 }
 
                 match getExploredPackage packageDetails getPackageDetailsBlock stackpack with
-                | stackpack, None ->
-                    step (Inner((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
+                | stackpack, Result.Error err ->
+                    step (Inner((currentConflict.AddError err.SourceException,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
 
-                | stackpack, Some(alreadyExplored,exploredPackage) ->
+                | stackpack, Result.Ok(alreadyExplored,exploredPackage) ->
                     let hasUnlisted = exploredPackage.Unlisted || flags.HasUnlisted
                     let flags = { flags with HasUnlisted = hasUnlisted }
 
@@ -1063,7 +1090,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
 
     let status =
         let getVersionsF = getVersionsBlock currentRequirement.Sources ResolverStrategy.Max groupName
-        Resolution.Conflict(startingStep,Set.empty,currentRequirement,getVersionsF)
+        Resolution.Conflict { ResolveStep = startingStep; RequirementSet = Set.empty; Requirement = currentRequirement; GetPackageVersions = getVersionsF; Errors = [] }
 
 
     let currentConflict : ConflictState = {
@@ -1118,7 +1145,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         let stepResult = calculate()
 #endif
     
-        match stepResult  with
+        match stepResult with
         | { Status = Resolution.Conflict _ } as conflict ->
             if conflict.TryRelaxed then
                 stackpack.KnownConflicts.Clear()
