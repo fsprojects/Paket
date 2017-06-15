@@ -1601,6 +1601,15 @@ type ProjectFile with
     member this.FindTemplatesFile() = this.FindCorrespondingFile Constants.TemplateFile
 
     member this.GetToolsVersion () : float =
+        let adjustIfWeHaveSDK v =
+            try
+                let sdkAttr = this.ProjectNode.Attributes.["Sdk"]
+                if isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
+                then v   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
+                else 15.0
+            with
+            | _ -> v
+
         try
             let v = this.ProjectNode.Attributes.["ToolsVersion"].Value
             match Double.TryParse(v, NumberStyles.Any, CultureInfo.InvariantCulture) with
@@ -1609,17 +1618,10 @@ type ProjectFile with
                     if  isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
                     then 14.0   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
                     else 15.0
-            | true,  version -> version
-            | _         ->  4.0
+            | true,  version -> adjustIfWeHaveSDK version
+            | _         -> adjustIfWeHaveSDK 4.0
         with
-        | _ -> 
-            try
-                let sdkAttr = this.ProjectNode.Attributes.["Sdk"]
-                if isNull sdkAttr || String.IsNullOrWhiteSpace sdkAttr.Value
-                then 4.0   // adjustment so paket still installs to old style msbuild projects that are using MSBuild15 but not the new format
-                else 15.0
-            with
-            | _ -> 4.0
+        | _ -> adjustIfWeHaveSDK 4.0
 
 
     static member FindOrCreateReferencesFile projectFile =

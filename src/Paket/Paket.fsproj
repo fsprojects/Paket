@@ -33,6 +33,8 @@
     <StartAction>Project</StartAction>
     <StartArguments>update -v</StartArguments>
     <StartWorkingDirectory>C:\PROJ\Yaaf\Paket\integrationtests\scenarios\i001254-unlisted\temp</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>C:\temp\bug-paket-core</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

@@ -57,7 +57,7 @@ let rec private followODataLink auth url =
 
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
     async {
-        let url = sprintf "%s/Packages?$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
+        let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
         try
             if verbose then
                 verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
@@ -70,7 +70,7 @@ let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageNa
 
 let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName) =
     async {
-        let url = sprintf "%s/FindPackagesById()?id='%O'" nugetURL package
+        let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'" nugetURL package
         try
             if verbose then
                 verbosefn "getAllVersionsFromNugetODataFindById from url '%s'" url
@@ -83,7 +83,7 @@ let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName
 
 let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:PackageName) =
     async {
-        let url = sprintf "%s/FindPackagesById()?id='%O'&$orderby=Published desc" nugetURL package
+        let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'&$orderby=Published desc" nugetURL package
         try
             if verbose then
                 verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
@@ -92,21 +92,6 @@ let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:
         with exn ->
             let cap = ExceptionDispatchInfo.Capture exn
             return Result.Error (url, cap)
-    }
-
-let tryGetPackageVersionsViaJson (auth, nugetURL, package:PackageName) =
-    async {
-        let url = sprintf "%s/package-versions/%O?includePrerelease=true" nugetURL package
-        let! raw = safeGetFromUrl (auth, url, acceptJson)
-
-        return
-            raw |> FSharp.Core.Result.bind (fun data ->
-                try
-                    let versions = JsonConvert.DeserializeObject<string []> data
-                    FSharp.Core.Result.Ok versions
-                with e ->
-                    let cap = ExceptionDispatchInfo.Capture e
-                    FSharp.Core.Result.Error (url, cap))
     }
 
 let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) =

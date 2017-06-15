@@ -107,7 +107,11 @@ let extractVersions(response:string) =
 
 let internal findAutoCompleteVersionsForPackage(v3Url, auth, packageName:Domain.PackageName, includingPrereleases, maxResults) =
     async {
-        let url = sprintf "%s?id=%O&take=%d%s" v3Url packageName (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else "")
+        let url = sprintf "%s?semVerLevel=2.0.0&id=%O&take=%d%s" v3Url packageName (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else "")
+
+        if verbose then
+            verbosefn "findAutoCompleteVersionsForPackage from url '%s'" url
+
         let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
         return
             response
@@ -131,7 +135,10 @@ let FindAutoCompleteVersionsForPackage(nugetURL, auth, package, includingPrerele
 
 let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName) =
     async {
-        let url = sprintf "%s%O/index.json" v3Url packageName
+        let url = sprintf "%s%O/index.json?semVerLevel=2.0.0" v3Url packageName
+
+        if verbose then
+            verbosefn "findVersionsForPackage v3 from url '%s'" url
         let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
         return
             response |> Result.map (fun text ->

@@ -205,6 +205,7 @@ module internal NupkgWriter =
         use zipFile = new ZipArchive(zipToCreate,ZipArchiveMode.Create)
 
         let entries = System.Collections.Generic.List<_>()
+        let fileNameEntries = System.Collections.Generic.List<_>()
 
         let fixRelativePath (p:string) =
             let isWinDrive = Regex(@"^\w:\\.*", RegexOptions.Compiled).IsMatch
@@ -274,17 +275,19 @@ module internal NupkgWriter =
             |> toUri
 
         let addEntry path writerF =
-            if entries.Contains(path) then () else
+            if entries.Contains path then () else
             entries.Add path |> ignore
             let entry = zipFile.CreateEntry(path)
             use stream = entry.Open()
             writerF stream
 
         let addEntryFromFile path source =
-            if entries.Contains(path) then () else
+            let fullName = Path.GetFullPath source
+            if entries.Contains path || fileNameEntries.Contains fullName then () else
             entries.Add path |> ignore
+            fileNameEntries.Add fullName |> ignore
 
-            zipFile.CreateEntryFromFile(source,path) |> ignore
+            zipFile.CreateEntryFromFile(fullName,path) |> ignore
 
         let ensureValidTargetName (target:string) =
             let target = ensureValidName target
