@@ -237,7 +237,9 @@ module Resolution =
             let msg =
                 sprintf "There was a version conflict during package resolution.\n\
                          %s\n  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)." (getErrorText true res)
-            raise <| AggregateException(msg, res.Errors)
+            // Note the output-writer will remove 'Exception:' and the 'AggregateException' line
+            // So the wrapping in Exception removes the 'AggregateException: '-prefix from the output
+            raise <| Exception(msg, AggregateException(res.Errors))
     let (|Ok|Conflict|) (res:Resolution) =
         match res.Raw with
         | ResolutionRaw.OkRaw res -> Ok res
