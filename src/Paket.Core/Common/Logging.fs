@@ -102,20 +102,24 @@ let setLogFile fileName =
 
 /// [omit]
 let printError (exn:exn) =
-    let rec printErrorHelper indent (exn:exn)=
+    let rec printErrorHelper useArrow indent (exn:exn)=
+        let s = if useArrow then "->" else " -"
         let indentString = new String('\t', indent)
-        traceErrorfn "%s- %s" indentString exn.Message
+        let splitMsg = exn.Message.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
+        traceErrorfn "%s%s %s" indentString s (String.Join(sprintf "%s   " indentString, splitMsg))
         if verbose && not (String.IsNullOrWhiteSpace exn.StackTrace) then
-            traceErrorfn "%s  StackTrace:" indentString
+            traceErrorfn "%s   StackTrace:" indentString
             let split = exn.StackTrace.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
-            traceErrorfn "%s    %s" indentString (String.Join(sprintf "%s    " indentString, split))
+            traceErrorfn "%s     %s" indentString (String.Join(sprintf "%s     " indentString, split))
         match exn with
         | :? AggregateException as aggr ->
+            if aggr.InnerExceptions.Count = 1 then
+                printErrorHelper true indent aggr.InnerExceptions.[0]
             for inner in aggr.InnerExceptions do
-                printErrorHelper (indent + 1) inner
+                printErrorHelper false (indent + 1) inner
         | _ ->
             if not (isNull exn.InnerException) then
-                printErrorHelper (indent + 1) exn.InnerException
+                printErrorHelper true indent exn.InnerException
 
     traceErrorfn "Paket failed with:"
-    printErrorHelper 1 exn
+    printErrorHelper true 0 exn
