@@ -123,6 +123,70 @@ _paket-add() {
   return ret
 }
 
+(( $+functions[_paket-config] )) ||
+_paket-config() {
+  local curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+  )
+
+  _arguments -C \
+    $args \
+    ': :->command' \
+    '*:: :->option-or-argument' && ret=0 \
+  && ret=0
+
+  case $state in
+    (command)
+      declare -a commands
+
+      commands=(
+        'add-credentials:add credentials for a NuGet feed'
+        'add-token:add token for a source'
+      )
+
+      _describe -t commands command commands && ret=0
+      ;;
+
+    (option-or-argument)
+      curcontext=${curcontext%:*}-$line[1]:
+
+      case $line[1] in
+        (add-credentials)
+          _arguments -C \
+            $args \
+            '(--username)'--username'[provide username]' \
+            '(--password)'--password'[provide password]' \
+            ':feed URL or credential key:->feed-or-credential-key' \
+          && ret=0
+
+          case $state in
+            (feed-or-credential-key)
+              _alternative \
+                'sources::_paket_sources' \
+                'credential keys::_paket_credential_keys' \
+                'urls::_urls' && ret=0
+            ;;
+          esac
+          ;;
+
+        (add-token)
+          _arguments -C \
+            $args \
+            ':credential key:_paket_credential_keys' \
+            ':token' \
+          && ret=0
+
+          ;;
+      esac
+  esac
+
+  return ret
+}
+
 (( $+functions[_paket-why] )) ||
 _paket-why() {
   local curcontext=$curcontext state line ret=1
@@ -310,6 +374,17 @@ _paket_commands() {
 
 (( $+functions[_paket_groups] )) ||
 _paket_groups() {
+  local -a output
+  output=(
+    ${(f)"$(_call_program groups \
+            "$(_paket_executable) show-groups --silent 2> /dev/null")"}
+    )
+  _paket_command_successful $? || return 1
+
+  _wanted paket-groups expl 'group' compadd -a - output
+}
+
+_paket_groups___() {
   local -a cmd
   cmd=(_call_program groups $(_paket_executable) show-groups --silent 2\> /dev/null)
 
@@ -358,7 +433,7 @@ _paket_installed_packages() {
   local -a packages
   packages=(${${(f)output}})
 
-  # Take the second word after splitting by space (the package ID), sort elements.
+  # Take the second word after splitting by space (the package ID).
   # Format: <group> <package ID> - <version>
   # TODO: zsh parameter expansion?
   # packages=(${(i)${${(s. .)packages}[2]}})
@@ -371,10 +446,32 @@ _paket_installed_packages() {
   _wanted paket-installed-packages expl 'NuGet package ID' compadd -a - filtered
 }
 
+(( $+functions[_paket_credential_keys] )) ||
+_paket_credential_keys() {
+  local -a output
+  output=(
+    ${(f)"$(_call_program credential-keys \
+            "grep '^[[:space:]]*github' paket.dependencies")"}
+    )
+  (( $? == 0 )) || return 1
+
+  # Take the fourth word after splitting by space (the credential key).
+  # Format: github repo file credential-key
+  local github
+  local -a githubs
+  for github in $output; do
+    # Only take lines that have a fourth word.
+    local maybeKey="${${(s. .)github}[4]}"
+    [[ -n "$maybeKey" ]] && githubs+="$maybeKey"
+  done
+
+  _wanted paket-credential-keys expl 'credential key' compadd -a - githubs
+}
+
 (( $+functions[_paket_command_successful] )) ||
 _paket_command_successful () {
-  if (( ${#*:#0} > 0 )); then
-    _message "paket invocation failed with exit status $1"
+  if (( $1 > 0 )); then
+    _message "${2:-paket} invocation failed with exit status $1"
     return 1
   fi
   return 0
