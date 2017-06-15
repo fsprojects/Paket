@@ -545,11 +545,6 @@ open System.Diagnostics
 open System.Threading
 open System.Collections.Generic
 
-let innerText (exn:Exception) =
-    match exn.InnerException with
-    | null -> ""
-    | exn -> Environment.NewLine + " Details: " + exn.Message
-
 /// [omit]
 let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
@@ -560,7 +555,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
             do! task
         with
         | exn ->
-            failwithf "Could not download from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
+            raise <| Exception(sprintf "Could not download from '%s'" url, exn)
     }
 
 /// [omit]
@@ -575,7 +570,7 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
-            return failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
+            return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
 
     }
 
@@ -593,7 +588,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
         with
         | exn -> 
-            return failwithf "Could not retrieve data from %s%s Message: %s%s" url Environment.NewLine exn.Message (innerText exn)
+            return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
     }
     
 /// [omit]
@@ -689,15 +684,15 @@ let RunInLockedAccessMode(rootFolder,action) =
             waitForUnlocked 0
             File.WriteAllText(fileName, string p.Id)
         with
-        | exn when exn.Message = "timeout" -> 
-            failwithf "Could not acquire lock to %s.%sThe process timed out." fileName Environment.NewLine
-        | exn -> 
+        | exn when exn.Message = "timeout" ->
+            failwithf "Could not acquire lock to '%s'.%sThe process timed out." fileName Environment.NewLine
+        | exn ->
             if trials > 0 then 
                 let trials = trials - 1
                 tracefn "Could not acquire lock to %s.%s%s%sTrials left: %d." fileName Environment.NewLine exn.Message Environment.NewLine trials
                 acquireLock startTime timeOut trials
             else
-                failwithf "Could not acquire lock to %s.%s%s" fileName Environment.NewLine exn.Message
+                raise <| Exception(sprintf "Could not acquire lock to '%s'." fileName, exn)
     
     let rec releaseLock() =
         try
@@ -840,7 +835,7 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
         d
     with
     | exn -> 
-        failwithf "Could not parse %s as key/value pairs.%s%s" s Environment.NewLine exn.Message
+        raise <| Exception(sprintf "Could not parse '%s' as key/value pairs." s, exn)
 
 let downloadStringSync (url : string) (client : WebClient) = 
     try 
