@@ -703,7 +703,7 @@ type Dependencies(dependenciesFileName: string) =
             let doc =
                 try let doc = Xml.XmlDocument() in doc.LoadXml nuspecText
                     doc
-                with exn -> failwithf "Could not parse nuspec file '%s'.%sMessage: %s" nuspecFile Environment.NewLine exn.Message
+                with exn -> raise <| Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn)
 
             if not (File.Exists referencesFile) then
                 failwithf "Specified references-file '%s' does not exist." referencesFile
