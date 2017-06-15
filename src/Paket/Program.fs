@@ -492,6 +492,8 @@ let main() =
         Environment.ExitCode <- 1
 #endif
         traceErrorfn "Paket failed with:"
-        printError exn
+        if Environment.GetEnvironmentVariable "PAKET_DETAILED_ERRORS" = "true" then
+            printErrorExt true true false exn
+        else printError exn
 
 main()
