@@ -372,64 +372,40 @@ _paket_commands() {
 
 (( $+functions[_paket_groups] )) ||
 _paket_groups() {
+  # We need to replace CR, in case we're running on Windows (//$'\r'/).
   local -a output
   output=(
     ${(f)"$(_call_program groups \
-            "$(_paket_executable) show-groups --silent 2> /dev/null")"}
+            "$(_paket_executable) show-groups --silent 2> /dev/null")"//$'\r'/}
     )
   _paket_command_successful $? || return 1
 
   _wanted paket-groups expl 'group' compadd -a - output
 }
 
-_paket_groups___() {
-  local -a cmd
-  cmd=(_call_program groups $(_paket_executable) show-groups --silent 2\> /dev/null)
-
-  # Replace CR, in case we're running on Windows.
-  local output
-  output="${$("${cmd[@]}")//$'\r'/}"
-  _paket_command_successful $? || return 1
-
-  # Split output on \n, creating array of lines.
-  local -a groups
-  groups=(${${(f)output}})
-
-  _wanted paket-groups expl 'group' compadd -a - groups
-}
-
 (( $+functions[_paket_nuget_packages] )) ||
 _paket_nuget_packages() {
   local term="$5"
 
-  local -a cmd
-  cmd=(_call_program nuget-packages $(_paket_executable) find-packages --silent --max 100 \'$term\' 2\> /dev/null)
-
-  # Replace CR, in case we're running on Windows.
-  local output
-  output="${$("${cmd[@]}")//$'\r'/}"
+  # We need to replace CR, in case we're running on Windows (//$'\r'/).
+  local -a output
+  output=(
+    ${(f)"$(_call_program nuget-packages \
+            "$(_paket_executable) find-packages --silent --max 100 '$term' 2> /dev/null")"//$'\r'/}
+    )
   _paket_command_successful $? || return 1
 
-  # Split output on \n, creating array of lines.
-  local -a packages
-  packages=(${${(f)output}})
-
-  _wanted paket-nuget-packages expl 'NuGet package ID' compadd -U -a - packages
+  _wanted paket-nuget-packages expl 'NuGet package ID' compadd -U -a - output
 }
 
 (( $+functions[_paket_installed_packages] )) ||
 _paket_installed_packages() {
-  local -a cmd
-  cmd=(_call_program installed-packages $(_paket_executable) show-installed-packages --silent --all 2\> /dev/null)
-
-  # Replace CR, in case we're running on Windows.
-  local output
-  output="${$("${cmd[@]}")//$'\r'/}"
+  local -a output
+  output=(
+    ${(f)"$(_call_program installed-packages \
+            "$(_paket_executable) show-installed-packages --silent --all 2> /dev/null")"}
+    )
   _paket_command_successful $? || return 1
-
-  # Split output on \n, creating array of lines.
-  local -a packages
-  packages=(${${(f)output}})
 
   # Take the second word after splitting by space (the package ID).
   # Format: <group> <package ID> - <version>
@@ -437,7 +413,7 @@ _paket_installed_packages() {
   # packages=(${(i)${${(s. .)packages}[2]}})
   local package
   local -a filtered
-  for package in $packages; do
+  for package in $output; do
     filtered+="${${(s. .)package}[2]}"
   done
 
@@ -449,7 +425,7 @@ _paket_credential_keys() {
   local -a output
   output=(
     ${(f)"$(_call_program credential-keys \
-            "grep '^[[:space:]]*github' paket.dependencies")"}
+            "grep '^[[:space:]]*github' paket.dependencies 2> /dev/null")"}
     )
   (( $? == 0 )) || return 1
 
