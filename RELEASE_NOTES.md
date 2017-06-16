@@ -1,4 +1,5 @@
-#### 5.0.0-rc012 - 16.06.2017
+#### 5.0.0 - 16.06.2017
+* Live release from NDC room 4
 * Support for Fable 1.1
 * Using NuGet's new SemVer 2 support - https://github.com/fsprojects/Paket/pull/2402
 * Xamarin targets integrate with netstandard (https://github.com/fsprojects/Paket/pull/2396).
