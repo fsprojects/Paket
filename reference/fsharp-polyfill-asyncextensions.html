@@ -79,11 +79,11 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '1', 1)" onmouseover="showTip(event, '1', 1)">
-            Choice(tasks)
+            map(f a)
           </code>
           <div class="tip" id="1">
-            <strong>Signature:</strong> (tasks:seq&lt;Async&lt;&#39;T option&gt;&gt;) -&gt; Async&lt;&#39;T option&gt;<br />
-                          <strong>Type parameters:</strong> 'T          </div>
+            <strong>Signature:</strong> (f:(&#39;?10622 -&gt; &#39;?10623)) -&gt; a:&#39;?10622 -&gt; Async&lt;&#39;?10623&gt;<br />
+                          <strong>Type parameters:</strong> '?10622, '?10623          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L21-21" class="github-link">
@@ -91,7 +91,7 @@
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>Async.Choice.Static</code></p>
+              <p>CompiledName: <code>Async.map.Static</code></p>
         </td>
       </tr>
       <tr>
@@ -105,7 +105,7 @@
                           <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L12-12" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L13-13" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -113,6 +113,25 @@
 
 
               <p>CompiledName: <code>Async.Parallel.Static</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
+            tryFind(f tasks)
+          </code>
+          <div class="tip" id="3">
+            <strong>Signature:</strong> (f:(&#39;T -&gt; bool)) -&gt; tasks:seq&lt;Async&lt;&#39;T&gt;&gt; -&gt; Async&lt;Task&lt;&#39;T&gt; [] * int option&gt;<br />
+                          <strong>Type parameters:</strong> 'T          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L23-23" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>Async.tryFind.Static</code></p>
         </td>
       </tr>
     </tbody>

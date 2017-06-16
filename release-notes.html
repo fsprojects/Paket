@@ -55,13 +55,14 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="5-0-0-rc010-14-06-2017" class="anchor" href="#5-0-0-rc010-14-06-2017">5.0.0-rc010 - 14.06.2017</a></h4>
+<h4><a name="5-0-0-rc011-16-06-2017" class="anchor" href="#5-0-0-rc011-16-06-2017">5.0.0-rc011 - 16.06.2017</a></h4>
 <ul>
+<li>Support for Fable 1.1</li>
+<li>Using NuGet's new SemVer 2 support - <a href="https://github.com/fsprojects/Paket/pull/2402">https://github.com/fsprojects/Paket/pull/2402</a></li>
+<li>Xamarin targets integrate with netstandard (<a href="https://github.com/fsprojects/Paket/pull/2396).">https://github.com/fsprojects/Paket/pull/2396).</a></li>
+<li>Support for SpecificVersion attribute on assembly references - <a href="https://github.com/fsprojects/Paket/pull/2413">https://github.com/fsprojects/Paket/pull/2413</a></li>
 <li>New command <code>paket generate-nuspec</code></li>
-<li>New Command: <code>FixNuspecs</code> - Can fix a list of nuspec files now</li>
-<li>BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
-<li>BREAKING CHANGE: Paket.PowerShell is no longer supported</li>
-<li>BREAKING CHANGE: <code>InstallModel</code> API changed and Paket.Core.dll users might need to adapt</li>
+<li>New command: <code>FixNuspecs</code> - Can fix a list of nuspec files now</li>
 <li>
 New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):">https://github.com/fsprojects/Paket/pull/2336):</a>
 <ul>
@@ -71,6 +72,9 @@ New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):
 <li>Add support for net403 (required for some portable profiles)</li>
 </ul>
 </li>
+<li>BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
+<li>BREAKING CHANGE: Paket.PowerShell is no longer supported</li>
+<li>BREAKING CHANGE: <code>InstallModel</code> API changed and Paket.Core.dll users might need to adapt</li>
 <li>PERFORMANCE: Improved performance by pre-loading requests (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
 <li>PERFORMANCE: Report performance in a more detailed way (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
 <li>PERFORMANCE: Improved performance for some edge case - <a href="https://github.com/fsprojects/Paket/pull/2299">https://github.com/fsprojects/Paket/pull/2299</a></li>
@@ -102,9 +106,6 @@ New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):
 <li>BOOTSTRAPPER: Don't crash in DownloadHashFile (<a href="https://github.com/fsprojects/Paket/pull/2376)">https://github.com/fsprojects/Paket/pull/2376)</a></li>
 <li>BOOTSTRAPPER: Search harder for the paket.dependencies file (<a href="https://github.com/fsprojects/Paket/pull/2384)">https://github.com/fsprojects/Paket/pull/2384)</a></li>
 <li>USABILITY: Don't let build continue when paket failed - <a href="https://github.com/fsprojects/Paket/pull/2302">https://github.com/fsprojects/Paket/pull/2302</a></li>
-<li>Using NuGet's new SemVer 2 support - <a href="https://github.com/fsprojects/Paket/pull/2402">https://github.com/fsprojects/Paket/pull/2402</a></li>
-<li>make xamarin stuff work with netstandard (<a href="https://github.com/fsprojects/Paket/pull/2396).">https://github.com/fsprojects/Paket/pull/2396).</a></li>
-<li>Support for SpecificVersion attribute on assembly references - <a href="https://github.com/fsprojects/Paket/pull/2413">https://github.com/fsprojects/Paket/pull/2413</a></li>
 <li>Cleanup <a href="https://github.com/fsprojects/Paket/pull/2412">https://github.com/fsprojects/Paket/pull/2412</a> <a href="https://github.com/fsprojects/Paket/pull/2410">https://github.com/fsprojects/Paket/pull/2410</a></li>
 <li>
 Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting <code>PAKET_DISABLE_RUNTIME_RESOLUTION</code> to <code>false</code>):
