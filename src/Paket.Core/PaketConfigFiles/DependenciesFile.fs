@@ -295,7 +295,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         |> Seq.map (fun p ->
                             let oldDepsInfo = step1Deps |> Seq.tryFind (fun d -> d.Name = p.Name)
                             { Name = p.Name
-                              VersionRequirement = VersionRequirement (VersionRange.Exactly p.Version.AsString, PreReleaseStatus.All)
+                              VersionRequirement = VersionRequirement (VersionRange.OverrideAll (SemVer.Parse p.Version.AsString), PreReleaseStatus.All)
                               ResolverStrategyForDirectDependencies =
                                 match oldDepsInfo with
                                 | Some d -> d.ResolverStrategyForDirectDependencies
@@ -353,7 +353,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             | None -> // pulled because of runtime resolution
                                 { v with IsRuntimeDependency = true })
                         |> Resolution.Ok
-                    | _ -> resolution
+                        |> Resolution.addErrors (runtimeResolution.GetErrors())
+                    | _ ->
+                        runtimeResolution
+                        |> Resolution.addError (exn "Runtime resolution failed while regular resolution was OK, try to use 'PAKET_DEBUG_RUNTIME_DEPS=true'")
+                    |> Resolution.addErrors (resolution.GetErrors())
                 | Resolution.Ok _ -> resolution
                 | Resolution.Conflict _ -> resolution
 

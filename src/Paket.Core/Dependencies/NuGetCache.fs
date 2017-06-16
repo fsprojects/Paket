@@ -30,6 +30,49 @@ open Chessie.ErrorHandling
 open Newtonsoft.Json
 open System
 
+type NuGetResponseGetVersionsSuccess = string []
+type NuGetResponseGetVersionsFailure =
+    { Url : string; Error : ExceptionDispatchInfo }
+    static member ofTuple (url,err) =
+        { Url = url; Error = err }
+type NuGetResponseGetVersions =
+    | SuccessVersionResponse of NuGetResponseGetVersionsSuccess
+    | ProtocolNotCached
+    | FailedVersionRequest of NuGetResponseGetVersionsFailure
+    member x.Versions =
+        match x with
+        | SuccessVersionResponse l -> l
+        | ProtocolNotCached -> [||]
+        | FailedVersionRequest _ -> [||]
+    member x.IsSuccess =
+        match x with
+        | SuccessVersionResponse _ -> true
+        | ProtocolNotCached -> false
+        | FailedVersionRequest _ -> false
+type NuGetResponseGetVersionsSimple = FSharp.Core.Result<NuGetResponseGetVersionsSuccess, ExceptionDispatchInfo>
+type NuGetRequestGetVersions =
+    { DoRequest : unit -> Async<NuGetResponseGetVersions>
+      Url : string }
+    static member ofFunc url f =
+        { Url = url; DoRequest = f }
+    static member ofSimpleFunc url (f: _ -> Async<NuGetResponseGetVersionsSimple>) =
+        NuGetRequestGetVersions.ofFunc url (fun _ ->
+            async {
+                let! res = f()
+                return
+                    match res with
+                    | FSharp.Core.Result.Ok r -> SuccessVersionResponse r
+                    | FSharp.Core.Result.Error err -> FailedVersionRequest { Url = url; Error = err }
+            })
+    static member run (r:NuGetRequestGetVersions) : Async<NuGetResponseGetVersions> =
+        async {
+            try
+                return! r.DoRequest()
+            with e -> 
+                return FailedVersionRequest { Url = r.Url; Error = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e }
+        }
+        
+
 // An unparsed file in the nuget package -> still need to inspect the path for further information. After parsing an entry will be part of a "LibFolder" for example.
 type UnparsedPackageFile =
     { FullPath : string
