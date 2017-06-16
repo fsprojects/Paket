@@ -38,6 +38,13 @@ It's possible to influence the `Private` property for references in project file
     [lang=paket]
     Newtonsoft.Json copy_local: false
 
+## specific_version settings
+
+It's possible to influence the `SpecificVersion` property for references in project files:
+
+    [lang=paket]
+    Newtonsoft.Json specific_version: false
+
 ## import_targets settings
 
 If you don't want to import `.targets` and `.props` files you can disable it via the `import_targets` switch:

@@ -226,6 +226,15 @@ It's possible to influence the `Private` property for references in project file
 
     nuget Newtonsoft.Json copy_local: false
 
+### specific_version settings
+
+It's possible to influence the `SpecificVersion` property for references in project files:
+
+    [lang=paket]
+    source https://nuget.org/api/v2
+
+    nuget Newtonsoft.Json specific_version: false
+
 ### CopyToOutputDirectory settings
 
 It's possible to influence the `CopyToOutputDirectory` property for content references in project files:
