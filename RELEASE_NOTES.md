@@ -1,14 +1,18 @@
-#### 5.0.0-rc010 - 14.06.2017
+#### 5.0.0-rc011 - 16.06.2017
+* Support for Fable 1.1
+* Using NuGet's new SemVer 2 support - https://github.com/fsprojects/Paket/pull/2402
+* Xamarin targets integrate with netstandard (https://github.com/fsprojects/Paket/pull/2396).
+* Support for SpecificVersion attribute on assembly references - https://github.com/fsprojects/Paket/pull/2413
 * New command `paket generate-nuspec`
-* New Command: `FixNuspecs` - Can fix a list of nuspec files now
-* BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (https://github.com/fsprojects/Paket/pull/2336)
-* BREAKING CHANGE: Paket.PowerShell is no longer supported
-* BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
+* New command: `FixNuspecs` - Can fix a list of nuspec files now
 * New restriction system (https://github.com/fsprojects/Paket/pull/2336):
   * Paket is now more accurate in calculating restrictions and referencing libraries
   * Paket will convert (lock-)files to a new syntax (but still understands the old syntax)
   * This should fix a bunch of edge cases and invalid behavior in combination with portable profiles and netstandard
   * Add support for net403 (required for some portable profiles)
+* BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (https://github.com/fsprojects/Paket/pull/2336)
+* BREAKING CHANGE: Paket.PowerShell is no longer supported
+* BREAKING CHANGE: `InstallModel` API changed and Paket.Core.dll users might need to adapt
 * PERFORMANCE: Improved performance by pre-loading requests (https://github.com/fsprojects/Paket/pull/2336)
 * PERFORMANCE: Report performance in a more detailed way (https://github.com/fsprojects/Paket/pull/2336)
 * PERFORMANCE: Improved performance for some edge case - https://github.com/fsprojects/Paket/pull/2299
@@ -40,9 +44,6 @@
 * BOOTSTRAPPER: Don't crash in DownloadHashFile (https://github.com/fsprojects/Paket/pull/2376)
 * BOOTSTRAPPER: Search harder for the paket.dependencies file (https://github.com/fsprojects/Paket/pull/2384)
 * USABILITY: Don't let build continue when paket failed - https://github.com/fsprojects/Paket/pull/2302
-* Using NuGet's new SemVer 2 support - https://github.com/fsprojects/Paket/pull/2402
-* make xamarin stuff work with netstandard (https://github.com/fsprojects/Paket/pull/2396).
-* Support for SpecificVersion attribute on assembly references - https://github.com/fsprojects/Paket/pull/2413
 * Cleanup https://github.com/fsprojects/Paket/pull/2412 https://github.com/fsprojects/Paket/pull/2410
 * Internals: Started proper dotnetcore integration (disabled by default, can be enabled via setting `PAKET_DISABLE_RUNTIME_RESOLUTION` to `false`):
   * Paket now properly understands runtime and reference assemblies
