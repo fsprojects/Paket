@@ -72,20 +72,26 @@ let directPaketInPath command scenarioPath =
                 perfMessages.Add(msg)
                 
         msgs.Add((isError, msg))
-        if isError then
-            printfn "ERR: %s" msg
-        //else printfn "%s" msg
         
     let result =
-        ExecProcessWithLambdas (fun info ->
-          info.FileName <- paketToolPath
-          info.WorkingDirectory <- scenarioPath
-          info.Arguments <- command) 
-          (System.TimeSpan.FromMinutes 7.)
-          true
-          (addAndPrint true)
-          (addAndPrint false)
+        try
+            ExecProcessWithLambdas (fun info ->
+              info.FileName <- paketToolPath
+              info.WorkingDirectory <- scenarioPath
+              info.Arguments <- command)
+              (System.TimeSpan.FromMinutes 7.)
+              true
+              (addAndPrint true)
+              (addAndPrint false)
+        with exn ->
+            if exn.Message.Contains "timed out" then
+                printfn "PROCESS TIMED OUT, OUTPUT WAS: "
+            else
+                printfn "ExecProcessWithLambdas failed. Output was: "
 
+            for isError, msg in msgs do
+                printfn "%s%s" (if isError then "ERR: " else "") msg
+            reraise()
     // Only throw after the result <> 0 check because the current test might check the argument parsing
     // this is the only case where no performance is printed
     let isUsageError = result <> 0 && msgs |> Seq.filter fst |> Seq.map snd |> Seq.exists (fun msg -> msg.Contains "USAGE:")
@@ -95,6 +101,11 @@ let directPaketInPath command scenarioPath =
         printfn "Performance:"
         for msg in perfMessages do
             printfn "%s" msg
+
+    // always print stderr
+    for isError, msg in msgs do
+        if isError then
+            printfn "ERR: %s" msg
 
     if result <> 0 then 
         let errors = String.Join(Environment.NewLine,msgs |> Seq.filter fst |> Seq.map snd)

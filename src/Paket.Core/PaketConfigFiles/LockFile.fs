@@ -756,7 +756,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             LockFile(lockFileName, groups)
         with
         | exn ->
-            failwithf "Error during parsing of %s.%sMessage: %s" lockFileName Environment.NewLine exn.Message
+            raise <| Exception (sprintf "Error during parsing of '%s'." lockFileName, exn)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
@@ -787,7 +787,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                         let k = g.Key,d
                         if usedPackages.ContainsKey k |> not then
                             usedPackages.Add(k,package)
-                with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
+                with exn -> raise <| Exception(sprintf "Error while getting all dependencies in '%s'" referencesFile.FileName, exn))
 
         usedPackages
 
@@ -863,7 +863,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                         let k = groupName,d
                         if usedPackages.ContainsKey k |> not then
                             usedPackages.Add(k,package)
-                with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
+                with exn -> raise <| Exception(sprintf "Error while getting all dependencies in '%s'" referencesFile.FileName, exn))
         | None -> ()
 
         usedPackages

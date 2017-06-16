@@ -167,17 +167,19 @@ let ExecProcessWithLambdas configProcessStartInfoF (timeOut : TimeSpan) silent e
             if d.Data <> null then messageF d.Data)
     try 
         start proc
-    with exn -> failwithf "Start of process %s failed. %s" proc.StartInfo.FileName exn.Message
+    with exn -> raise <| Exception(sprintf "Start of process %s failed." proc.StartInfo.FileName, exn)
     if silent then 
         proc.BeginErrorReadLine()
         proc.BeginOutputReadLine()
     if timeOut = TimeSpan.MaxValue then proc.WaitForExit()
     else 
         if not <| proc.WaitForExit(int timeOut.TotalMilliseconds) then 
-            try 
-                proc.Kill()
-            with exn ->  ()
-            failwithf "Process %s %s timed out." proc.StartInfo.FileName proc.StartInfo.Arguments
+            let inner =
+                try 
+                    proc.Kill()
+                    null
+                with exn -> exn
+            raise <| Exception(sprintf "Process %s %s timed out." proc.StartInfo.FileName proc.StartInfo.Arguments, inner)
     proc.ExitCode
 
 
@@ -234,7 +236,7 @@ let fireAndForget configProcessStartInfoF =
     configProcessStartInfoF proc.StartInfo
     try 
         start proc
-    with exn -> failwithf "Start of process %s failed. %s" proc.StartInfo.FileName exn.Message
+    with exn -> raise <| Exception(sprintf "Start of process %s failed." proc.StartInfo.FileName, exn)
 
 /// Fires the given git command ind the given repository directory and returns immediatly.
 let fireAndForgetGitCommand repositoryDir command = 
@@ -250,7 +252,7 @@ let directExec configProcessStartInfoF =
     configProcessStartInfoF proc.StartInfo
     try 
         start proc
-    with exn -> failwithf "Start of process %s failed. %s" proc.StartInfo.FileName exn.Message
+    with exn -> raise <| Exception(sprintf "Start of process %s failed." proc.StartInfo.FileName, exn)
     proc.WaitForExit()
     proc.ExitCode = 0
 
@@ -286,7 +288,7 @@ let runFullGitCommand repositoryDir command =
             msg |> Seq.iter (tracefn "%s")
         msg |> Seq.toArray
     with 
-    | exn -> failwithf "Could not run \"git %s\".\r\nError: %s" command exn.Message
+    | exn -> raise <| Exception(sprintf "Could not run \"git %s\"." command, exn)
 
 /// Runs the git command and returns the first line of the result.
 let runSimpleGitCommand repositoryDir command =
@@ -302,4 +304,4 @@ let runSimpleGitCommand repositoryDir command =
             msg |> Seq.iter (tracefn "%s")
         msg.[0]
     with 
-    | exn -> failwithf "Could not run \"git %s\".\r\nError: %s" command exn.Message
+    | exn -> raise <| Exception(sprintf "Could not run \"git %s\"." command, exn)

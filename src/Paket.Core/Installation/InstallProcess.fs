@@ -437,7 +437,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected
         if not (Seq.isEmpty errorMessages) then
-            failwithf  "\nInstallation Errors :\n%s" (String.concat "\n" errorMessages)
+            failwithf "Installation Errors :\n%s" (String.concat "\n" errorMessages)
 
         else // start the installation process
             if toolsVersion >= 15.0 then
