@@ -552,16 +552,22 @@ type Dependencies(dependenciesFileName: string) =
         | [] -> [PackageSources.DefaultNuGetSource]
         | _ -> sources
         |> Seq.distinct
-        |> Seq.choose (fun source -> 
+        |> Seq.map (fun source -> 
             match source with 
             | NuGetV2 s ->
                 let res = NuGetV3.getSearchAPI(s.Authentication,s.Url) |> Async.AwaitTask |> Async.RunSynchronously
                 match res with
-                | Some _ -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
-                | None ->  Some(NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
-            | NuGetV3 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+                | Some _ ->
+                    NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults)
+                    |> Async.map (FSharp.Core.Result.mapError (fun err -> s.Url, err))
+                | None -> 
+                    NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults)
+                    |> Async.map (FSharp.Core.Result.mapError (fun err -> s.Url, err))
+            | NuGetV3 s -> 
+                NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults)
+                |> Async.map (FSharp.Core.Result.mapError (fun err -> s.Url, err))
             | LocalNuGet(s,_) -> 
-                Some(async {
+                async {
                     return
                         Fake.Globbing.search s (sprintf "**/*%s*" searchTerm)
                         |> List.distinctBy (fun s -> 
@@ -570,7 +576,21 @@ type Dependencies(dependenciesFileName: string) =
                             String.Join(".",nameParts).ToLower())
                         |> List.map NuGetLocal.getPackageNameFromLocalFile
                         |> List.toArray
-                }))
+                        |> FSharp.Core.Result.Ok
+                })
+        // TODO: This is to keep current API surface, in future version we want to properly delegate error cases to higher levels?
+        |> Seq.map (fun r ->
+            async {
+                let! result = r
+                match result with
+                | FSharp.Core.Result.Ok r -> return r
+                | FSharp.Core.Result.Error (url, err) ->
+                    if verbose then
+                        tracefn "Ignoring error when requesting '%s': %O" url err.SourceException
+                    else
+                        tracefn "Ignoring error when requesting '%s': %s" url err.SourceException.Message
+                    return [||]
+            })
    
     static member FindPackagesByName(sources:PackageSource seq,searchTerm,?maxResults) =
         let maxResults = defaultArg maxResults 1000
@@ -683,7 +703,7 @@ type Dependencies(dependenciesFileName: string) =
             let doc =
                 try let doc = Xml.XmlDocument() in doc.LoadXml nuspecText
                     doc
-                with exn -> failwithf "Could not parse nuspec file '%s'.%sMessage: %s" nuspecFile Environment.NewLine exn.Message
+                with exn -> raise <| Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn)
 
             if not (File.Exists referencesFile) then
                 failwithf "Specified references-file '%s' does not exist." referencesFile

@@ -31,24 +31,24 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
             let! document = lookupDocument(auth authKey url,url)
             match document with
-            | Some document ->
+            | FSharp.Core.Result.Ok (document) ->
                 let json = JObject.Parse(document)
                 return json.["sha"].ToString()
-            | None -> 
-                failwithf "Could not find hash for %s" url
-                return ""
+            | FSharp.Core.Result.Error (err) ->
+                return
+                    raise <| new Exception(sprintf "Could not find hash for %s" url, err.SourceException)
         | ModuleResolver.Origin.GistLink ->
             let branch = ModuleResolver.getVersionRequirement versionRestriction
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
             let! document = lookupDocument(auth authKey url,url)
             match document with
-            | Some document ->
+            | FSharp.Core.Result.Ok document ->
                 let json = JObject.Parse(document)
                 let latest = json.["history"].First.["version"]
                 return latest.ToString()
-            | None -> 
-                failwithf "Could not find hash for %s" url
-                return ""
+            | FSharp.Core.Result.Error err -> 
+                return
+                    raise <| new Exception(sprintf "Could not find hash for %s" url, err.SourceException)
         | ModuleResolver.Origin.GitLink (LocalGitOrigin path) ->
             let path = path.Replace(@"file:///", "")
             let branch = 
@@ -136,12 +136,13 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
 
             let text,depsFile =
                 match result with
-                | Some text -> 
+                | FSharp.Core.Result.Ok text -> 
                         try
                             text,parserF text
                         with 
                         | _ -> "",parserF ""
-                | _ -> "",parserF ""
+                | FSharp.Core.Result.Error err ->
+                    "",parserF ""
 
             Directory.CreateDirectory(destination.FullName |> Path.GetDirectoryName) |> ignore
             File.WriteAllText(destination.FullName, text)
