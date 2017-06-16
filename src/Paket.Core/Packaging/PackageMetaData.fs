@@ -107,11 +107,12 @@ let (|Valid|Invalid|) md =
                 Symbols = s }
     | _ -> Invalid
 
-let firstOf3 (a, _, _) = a
+
 
 let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement * FrameworkIdentifier option) = 
     match templateFile with
     | CompleteTemplate(core, opt) -> 
+        let firstOf3 (a, _, _) = a
         let newDeps = 
             match opt.Dependencies |> List.tryFind (fun (n,_,_) -> n = firstOf3 dependency) with
             | None -> dependency :: opt.Dependencies

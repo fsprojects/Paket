@@ -94,11 +94,6 @@ module internal NupkgWriter =
                 dep.SetAttributeValue(XName.Get "version", version)
             dep
 
-        let last3(_,_,c) = c;
-        let last2(_,b) = b;
-        let fst3 (a, _, _) = a
-        let second (a, b, _)  = (a,b)
-
         let buildGroupNode (framework:FrameworkIdentifier, add) = 
             let g = XElement(ns + "group")
             g.SetAttributeValue(XName.Get "targetFramework", framework.ToString())
@@ -107,9 +102,11 @@ module internal NupkgWriter =
 
 
         let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
+            let takeFirstOfThree (a,_,_) = a
+            let takeFirstTwoOfThree (a,b,_) = a,b
             dependencyList
-            |> List.filter (fun d -> Set.contains (fst3 d) excludedDependencies |> not)
-            |> List.map second
+            |> List.filter (fun d -> Set.contains (takeFirstOfThree d) excludedDependencies |> not)
+            |> List.map takeFirstTwoOfThree
             |> List.iter (buildDependencyNode >> add)
 
         let buildDependencyNodesByGroup excludedDependencies add dependencyList framework  =
@@ -119,13 +116,12 @@ module internal NupkgWriter =
         let buildDependenciesNode excludedDependencies dependencyList =
             if List.isEmpty dependencyList then () else
             let d = XElement(ns + "dependencies")
-
-            let groups = List.groupBy last3 dependencyList
+            let groups = List.groupBy thirdOf3 dependencyList
             if groups.Length = 1 &&  fst groups.Head = None then
                 buildDependencyNodes(excludedDependencies, d.Add, dependencyList)
             else
                 groups 
-                |> List.iter (fun  a -> buildDependencyNodesByGroup excludedDependencies d.Add (last2 a) (fst a).Value)
+                |> List.iter (fun  a -> buildDependencyNodesByGroup excludedDependencies d.Add (snd a) (fst a).Value)
             metadataNode.Add d           
 
         let buildReferenceNode (fileName) =
