@@ -8,6 +8,7 @@ open Paket.Xml
 open System.Text
 open System.Text.RegularExpressions
 open System.Xml
+open Paket.Requirements
 
 module internal NupkgWriter =
 
@@ -83,9 +84,9 @@ module internal NupkgWriter =
             frameworkAssembliesList |> List.iter (buildFrameworkReferencesNode >> d.Add)
             metadataNode.Add d
 
-        let buildDependencyNode (Id, requirement:VersionRequirement) =
+        let buildDependencyNode (id, requirement:VersionRequirement) =
             let dep = XElement(ns + "dependency")
-            dep.SetAttributeValue(XName.Get "id", Id)
+            dep.SetAttributeValue(XName.Get "id", id)
             let version = requirement.FormatInNuGetSyntax()
             if String.IsNullOrEmpty version then
                 dep.SetAttributeValue(XName.Get "version", "0.0")
@@ -93,13 +94,39 @@ module internal NupkgWriter =
                 dep.SetAttributeValue(XName.Get "version", version)
             dep
 
+        let last3(_,_,c) = c;
+        let last2(_,b) = b;
+        let fst3 (a, _, _) = a
+        let second (a, b, _)  = (a,b)
+
+        let buildGroupNode (framework:FrameworkIdentifier, add) = 
+            let g = XElement(ns + "group")
+            g.SetAttributeValue(XName.Get "targetFramework", framework.ToString())
+            add g
+            g
+
+
+        let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
+            dependencyList
+            |> List.filter (fun d -> Set.contains (fst3 d) excludedDependencies |> not)
+            |> List.map second
+            |> List.iter (buildDependencyNode >> add)
+
+        let buildDependencyNodesByGroup excludedDependencies add dependencyList framework  =
+            let node = buildGroupNode(framework, add)
+            buildDependencyNodes(excludedDependencies, node.Add, dependencyList)
+
         let buildDependenciesNode excludedDependencies dependencyList =
             if List.isEmpty dependencyList then () else
             let d = XElement(ns + "dependencies")
-            dependencyList
-            |> List.filter (fun d -> Set.contains (fst d) excludedDependencies |> not)
-            |> List.iter (buildDependencyNode >> d.Add)
-            metadataNode.Add d
+
+            let groups = List.groupBy last3 dependencyList
+            if groups.Length = 1 &&  fst groups.Head = None then
+                buildDependencyNodes(excludedDependencies, d.Add, dependencyList)
+            else
+                groups 
+                |> List.iter (fun  a -> buildDependencyNodesByGroup excludedDependencies d.Add (last2 a) (fst a).Value)
+            metadataNode.Add d           
 
         let buildReferenceNode (fileName) =
             let dep = XElement(ns + "reference")
@@ -369,7 +396,7 @@ module NuspecExtensions =
                         references.Groups |> Seq.collect (fun kvp -> 
                         kvp.Value.NugetPackages |> List.choose (fun pkg -> 
                             dependencies.TryGetPackage(kvp.Key,pkg.Name)
-                            |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement)))
+                            |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement, None)))
                         |> List.ofSeq
                     ) |> Option.defaultValue []
                 let projectInfo, optionalInfo = project.GetTemplateMetadata ()

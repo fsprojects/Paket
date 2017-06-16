@@ -107,11 +107,13 @@ let (|Valid|Invalid|) md =
                 Symbols = s }
     | _ -> Invalid
 
-let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement) = 
+let firstOf3 (a, _, _) = a
+
+let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement * FrameworkIdentifier option) = 
     match templateFile with
     | CompleteTemplate(core, opt) -> 
         let newDeps = 
-            match opt.Dependencies |> List.tryFind (fun (n,_) -> n = fst dependency) with
+            match opt.Dependencies |> List.tryFind (fun (n,_,_) -> n = firstOf3 dependency) with
             | None -> dependency :: opt.Dependencies
             | _ -> opt.Dependencies
         { FileName = templateFile.FileName
@@ -253,7 +255,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                    match core.Version with
                    | Some v -> 
                        let versionConstraint = if lockDependencies || pinProjectReferences then Specific v else Minimum v
-                       PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
+                       PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v), None
                    | None -> failwithf "There was no version given for %s." templateFile.FileName
                | IncompleteTemplate -> 
                    failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
@@ -357,7 +359,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 | None ->
                     match version with
                     | Some v -> 
-                        np.Name,VersionRequirement.Parse (v.ToString())
+                        np.Name,VersionRequirement.Parse (v.ToString()) , None
                     | None -> 
                         if minimumFromLockFile then
                             let groupName =
@@ -368,7 +370,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                 |> Option.map fst
 
                             match groupName with
-                            | None -> np.Name,specificVersionRequirement
+                            | None -> np.Name,specificVersionRequirement, None
                             | Some groupName -> 
                                 let group = lockFile.GetGroup groupName
 
@@ -377,9 +379,9 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                     | Some resolvedPackage -> VersionRequirement(GreaterThan resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version)
                                     | None -> specificVersionRequirement
 
-                                np.Name,lockedVersion
+                                np.Name,lockedVersion, None
                         else
-                            np.Name,specificVersionRequirement
+                            np.Name,specificVersionRequirement, None
                 | Some groupName ->
                     let dependencyVersionRequirement =
                         if not lockDependencies then
@@ -437,7 +439,8 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         match dependencyVersionRequirement with
                         | Some installed -> installed
                         | None -> failwithf "No package with id '%O' installed in group %O." np.Name groupName
-                    np.Name, dep)
+                     
+                    np.Name, dep, None)
 
         deps
         |> List.fold addDependency withDepsAndIncluded
