@@ -30,7 +30,18 @@ let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, a
         return Some(versions)
     }
 
-
+/// Reads packageName and version from .nupkg file name
+let parsePackageInfoFromFileName fileName : (PackageName * SemVerInfo) option =
+    let regex = Regex ("^(?<name>.*?)\.(?<version>\d.*)\.nupkg$", RegexOptions.IgnoreCase)
+    match regex.Match fileName with
+    | matchResult when matchResult.Success && matchResult.Groups.Count = 3 -> 
+        try
+            let semVer = SemVer.Parse matchResult.Groups.["version"].Value
+            let packageName = PackageName matchResult.Groups.["name"].Value 
+            Some (packageName, semVer)
+        with
+        | _ -> None        
+    | _ -> None
 
 let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     if not <| Directory.Exists directory then
@@ -41,16 +52,18 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     let v2 = FileInfo(Path.Combine(directory, sprintf "%O.%s.nupkg" packageName normalizedVersion))
     if v2.Exists then v2 else
 
+    let condition x = 
+        match parsePackageInfoFromFileName x with
+        | Some (name, ver) -> packageName = name && version = ver
+        | None -> false 
+        
     let v3 =
         Directory.EnumerateFiles(directory,"*.nupkg",SearchOption.AllDirectories)
-        |> Seq.map (fun x -> FileInfo(x))
-        |> Seq.filter (fun fi -> String.containsIgnoreCase (packageName.CompareString)  fi.Name)
-        |> Seq.filter (fun fi -> fi.Name.Contains(normalizedVersion) || fi.Name.Contains(version.ToString()))
-        |> Seq.tryHead
+        |> Seq.tryFind (Path.GetFileName >> condition)
 
     match v3 with
     | None -> failwithf "The package %O %O can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." packageName version directory Environment.NewLine
-    | Some x -> x
+    | Some x -> FileInfo x
 
 /// Reads package name from a nupkg file
 let getPackageNameFromLocalFile fileName =
