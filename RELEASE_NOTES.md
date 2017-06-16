@@ -1,4 +1,4 @@
-#### 5.0.0-rc011 - 16.06.2017
+#### 5.0.0-rc012 - 16.06.2017
 * Support for Fable 1.1
 * Using NuGet's new SemVer 2 support - https://github.com/fsprojects/Paket/pull/2402
 * Xamarin targets integrate with netstandard (https://github.com/fsprojects/Paket/pull/2396).
