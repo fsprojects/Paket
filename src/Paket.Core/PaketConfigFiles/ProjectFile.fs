@@ -995,10 +995,7 @@ module ProjectFile =
     let getTargetFrameworkProfile (project:ProjectFile) = getProperty "TargetFrameworkProfile" project
 
     let getTargetProfile (project:ProjectFile) =
-        match getTargetFrameworkProfile project with
-        | Some profile when String.IsNullOrWhiteSpace profile |> not ->
-            KnownTargetProfiles.FindPortableProfile profile
-        | _ ->
+        let fallback () =
             let prefix =
                 match getTargetFrameworkIdentifier project with
                 | None -> "net"
@@ -1011,6 +1008,23 @@ module ProjectFile =
                 match FrameworkDetection.Extract(prefix + s.Replace("v","")) with
                 | None -> defaultResult
                 | Some x -> SinglePlatform x
+
+        match getTargetFrameworkProfile project with
+        | Some profile when profile = "Unity Web v3.5" ->
+            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Web)
+        | Some profile when profile = "Unity Micro v3.5" ->
+            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Micro)
+        | Some profile when profile = "Unity Subset v3.5" ->
+            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Subset)
+        | Some profile when profile = "Unity Full v3.5" ->
+            SinglePlatform (DotNetUnity DotNetUnityVersion.V3_5_Full)
+        | Some profile when String.IsNullOrWhiteSpace profile |> not ->
+            try
+                KnownTargetProfiles.FindPortableProfile profile
+            with e ->
+                traceWarnfn "Could not detect TargetFrameworkProfile '%s' in '%s' via 'FindPortableProfile', using fallback" profile project.FileName
+                fallback()
+        | _ -> fallback()
 
     let updateReferences
             rootPath
