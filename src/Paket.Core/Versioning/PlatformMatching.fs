@@ -200,7 +200,7 @@ let getTargetCondition (target:TargetProfile) =
         | Silverlight(version) -> "$(TargetFrameworkIdentifier) == 'Silverlight'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | WindowsPhoneApp(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhoneApp'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | WindowsPhone(version) -> "$(TargetFrameworkIdentifier) == 'WindowsPhone'", sprintf "$(TargetFrameworkVersion) == '%O'" version
-        | MonoAndroid -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'", ""
+        | MonoAndroid(version) -> "$(TargetFrameworkIdentifier) == 'MonoAndroid'", sprintf "$(TargetFrameworkVersion) == '%O'" version
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""

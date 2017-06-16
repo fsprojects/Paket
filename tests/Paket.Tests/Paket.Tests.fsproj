@@ -113,6 +113,7 @@
     <None Include="NuGetLocal\case3\netstedFolder\package.in.nested.folder.1.0.0.nupkg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="Nuspec\Xamarin.Forms.nuspec" />
     <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
