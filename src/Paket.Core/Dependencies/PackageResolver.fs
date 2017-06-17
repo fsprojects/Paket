@@ -725,30 +725,39 @@ and ResolverRequestQueue =
                 tcs.TrySetResult (Some work) |> ignore
             tcs.Task
         )
-        
+
 module ResolverRequestQueue =
     open System.Threading
 
     let Create() = { DynamicQueue = new ResizeArray<RequestWork>(); Lock = new obj(); WaitingWorker = new ResizeArray<_>() }
-    let addWork prio (f: CancellationToken -> System.Threading.Tasks.Task<'a>) ({ DynamicQueue = queue } as q) =
+    let addWork prio (f: CancellationToken -> Task<'a>) (q:ResolverRequestQueue) =
         let tcs = new TaskCompletionSource<_>()
+
         let work =
             { StartWork = (fun tok ->
+                // When someone is actually starting the work we need to ensure we finish it...
+                let registration = tok.Register(fun () -> tcs.TrySetCanceled () |> ignore)
                 let t =
                     try
                         f tok
-                    with e -> 
+                    with e ->
                         //Task.FromException (e)
                         let tcs = new TaskCompletionSource<_>()
                         tcs.SetException e
                         tcs.Task
-                
-                t.ContinueWith(fun (t:System.Threading.Tasks.Task<'a>) -> 
+
+                t.ContinueWith(fun (t:Task<'a>) ->
+                    registration.Dispose()
                     if t.IsCanceled then
-                        tcs.SetException(new TaskCanceledException(t))
+                        tcs.TrySetException(new TaskCanceledException(t))
                     elif t.IsFaulted then
-                        tcs.SetException(t.Exception)
-                    else tcs.SetResult (t.Result)))
+                        tcs.TrySetException(t.Exception)
+                    else tcs.TrySetResult (t.Result))
+                    |> ignore
+                // Important to not wait on the ContinueWith result,
+                // because that one will never finish in the cancellation case
+                // tcs.Task should always finish
+                tcs.Task :> Task)
               Priority = prio }
         q.AddWork work
         { Work = work; TaskSource = tcs }
@@ -758,10 +767,10 @@ module ResolverRequestQueue =
                 let! work = q.GetWork(ct) |> Async.AwaitTask
                 match work with
                 | Some work ->
-                    do! work.StartWork(ct).ContinueWith(fun (t:System.Threading.Tasks.Task) -> ()) |> Async.AwaitTask
+                    do! work.StartWork(ct).ContinueWith(fun (t:Task) -> ()) |> Async.AwaitTask
                 | None -> ()
         }
-        |> Async.StartAsTask
+        |> fun a -> Async.StartAsTask(a, TaskCreationOptions.None)
 
 type WorkHandle<'a> with
     member x.Reprioritize prio =
@@ -774,7 +783,7 @@ type WorkHandle<'a> with
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
-       
+
     use d = Profile.startCategory Profile.Category.ResolverAlgorithm
     use cts = new CancellationTokenSource()
     let workerQueue = ResolverRequestQueue.Create()
@@ -821,7 +830,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     let getPackageDetailsBlock sources groupName packageName semVer =
         let workHandle = startRequestGetPackageDetails sources groupName packageName semVer
         getAndReport sources Profile.BlockReason.PackageDetails workHandle
-    
+
     let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,WorkHandle<_>>()
     let startRequestGetVersions sources groupName packageName =
         let key = (sources, packageName)
@@ -873,7 +882,6 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
             //| _ -> (tracefn "   Failed to satisfy %O" currentRequirement)
             false else
         flags.FirstTrial || Set.isEmpty conflictState.Conflicts
-        
 
     let rec step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
 
