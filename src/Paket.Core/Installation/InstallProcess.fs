@@ -477,7 +477,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                                     if targetFile.Directory.Exists |> not then
                                         targetFile.Directory.Create()
 
-                                    File.Copy(remoteFilePath,targetFile.FullName)
+                                    File.Copy(remoteFilePath,targetFile.FullName,true)
                                     createRelativePath project.FileName targetFile.FullName
                             Link = None
                         }
