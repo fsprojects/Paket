@@ -24,7 +24,7 @@ let private followODataLink auth url =
     let rec followODataLinkSafe (knownVersions:Set<_>) url =
         async {
             let! raw = getFromUrl(auth, url, acceptXml)
-            if String.IsNullOrWhiteSpace raw then return [||] else
+            if String.IsNullOrWhiteSpace raw then return true, [||] else
             let doc = XmlDocument()
             doc.LoadXml raw
             let feed =
@@ -41,30 +41,45 @@ let private followODataLink auth url =
             let newSet = entriesVersions |> Set.ofList
             let noNewFound = newSet.IsSubsetOf knownVersions
             if noNewFound then
-                traceWarnfn "Feed returned a next link but no new versions were found. Either the feed is broken or paket sends the wrong requests (noticed on '%O')" url
+                return false, [||]
+            else
+
+            let linksToFollow =
+                feed
+                |> getNodes "link"
+                |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
+                |> List.choose (getAttribute "href")
+                |> List.filter (fun x -> x <> url)
 
             let! linksVersions =
-                async {
-                    if noNewFound then
-                        return [||]
-                    else
-                        return!
-                            feed
-                            |> getNodes "link"
-                            |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
-                            |> List.choose (getAttribute "href")
-                            |> List.filter (fun x -> x <> url)
-                            |> List.map (followODataLinkSafe (Set.union newSet knownVersions))
-                            |> Async.Parallel
-                }
+                linksToFollow
+                |> List.map (followODataLinkSafe (Set.union newSet knownVersions))
+                |> Async.Parallel
 
-            return
+            let atLeastOneFailed =
                 linksVersions
+                |> Seq.map fst
+                |> Seq.tryFindIndex not
+
+            let collected =
+                linksVersions
+                |> Seq.map snd
                 |> Seq.collect id
-                |> Seq.append entriesVersions
                 |> Seq.toArray
+
+            match atLeastOneFailed with
+            | Some i ->
+                traceWarnfn "At least one 'next' link (index %d) returned a empty result (noticed on '%O'): ['%s']" i url (System.String.Join("' ; '", linksToFollow))
+            | None -> ()
+            return
+                true,
+                collected
+                |> Array.append (entriesVersions |> List.toArray)
         }
-    followODataLinkSafe Set.empty url
+    async {
+        let! _, res = followODataLinkSafe Set.empty url
+        return res
+    }
 
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
     let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
