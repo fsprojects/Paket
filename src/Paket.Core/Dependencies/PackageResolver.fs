@@ -806,8 +806,8 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     // TODO: Fix/Refactor to only show unfinished sources, but this needs more information flow...
                     raise <|
                         new TimeoutException(
-                            "Waited 30 seconds for a request to finish (maybe a bug in the paket request scheduler).\n" +
-                            "      Check the following sources:\n" +
+                            "Waited 30 seconds for a request to finish.\n" +
+                            "      Check the following sources, they might be rate limiting and stopped responding:\n" +
                             "       - " + System.String.Join("\n       - ", sources |> Seq.map (fun s -> s.Url))
                         )
                 let result = workHandle.Task.Result
