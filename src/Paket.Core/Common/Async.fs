@@ -18,6 +18,42 @@ module AsyncExtensions =
             let! b'' = b'
             return (a'',b'')
         }
+    static member awaitTaskWithToken (fallBack:unit -> 'T) (item: Task<'T>) : Async<'T> =
+        async {
+            let! ct = Async.CancellationToken
+            return! Async.FromContinuations(fun (success, error, cancel) ->
+                async {
+                    let l = obj()
+                    let mutable finished = false
+                    let whenFinished f =
+                        let isJustFinished =
+                            if finished then false
+                            else
+                                lock l (fun () ->
+                                    if finished then
+                                        false
+                                    else
+                                        finished <- true
+                                        true
+                                )
+                        if isJustFinished then
+                            f()
+                    use! reg = Async.OnCancel(fun () ->
+                        whenFinished (fun () ->
+                            try let result = fallBack()
+                                success result
+                            with e -> error e))
+                    item.ContinueWith (fun (t:Task<'T>) ->
+                        whenFinished (fun () ->
+                            if t.IsCanceled then
+                                cancel (OperationCanceledException("The underlying task has been cancelled"))
+                            elif t.IsFaulted then
+                                error t.Exception
+                            else success t.Result))
+                        |> ignore
+                } |> fun a -> Async.Start(a, ct)
+            )
+        }
     static member map f a =
         async { return f a }
     static member tryFind (f : 'T -> bool) (tasks : Async<'T> seq) = async {

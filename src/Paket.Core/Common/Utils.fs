@@ -12,6 +12,7 @@ open Paket.Logging
 open Paket.Constants
 open Chessie.ErrorHandling
 open Paket.Domain
+open FSharp.Polyfill
 
 #if NETSTANDARD1_6
 open System.Net.Http
@@ -567,7 +568,7 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
                 addAcceptHeader client contentType
                 
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
+            return! client.DownloadStringTaskAsync (Uri url) |> Async.awaitTaskWithToken (fun () -> failwithf "Uri '%O' failed to respond and cancellation was requested." url)
         with
         | exn -> 
             return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
@@ -585,7 +586,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             addHeader client "MaxDataServiceVersion" "2.0;NetFx"
             
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            return! client.DownloadStringTaskAsync (Uri url) |> Async.AwaitTask
+            return! client.DownloadStringTaskAsync (Uri url) |> Async.awaitTaskWithToken (fun () -> failwithf "Uri '%O' failed to respond and cancellation was requested." url)
         with
         | exn -> 
             return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
@@ -605,7 +606,7 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             client.Encoding <- Encoding.UTF8
 #endif
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            let! raw = client.DownloadStringTaskAsync(uri) |> Async.AwaitTask
+            let! raw = client.DownloadStringTaskAsync(uri) |> Async.awaitTaskWithToken (fun () -> failwithf "Uri '%O' failed to respond and cancellation was requested." uri)
             return FSharp.Core.Result.Ok raw
         with e ->
             if verbose then
