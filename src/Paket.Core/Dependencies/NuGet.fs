@@ -653,8 +653,9 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                       | Some(Credentials(_)) -> true
                       | _ -> false)
                         -> do! download false (attempt + 1)
-                | exn when String.IsNullOrWhiteSpace !downloadUrl -> failwithf "Could not download %O %O.%s    %s" packageName version Environment.NewLine exn.Message
-                | exn -> failwithf "Could not download %O %O from %s.%s    %s" packageName version !downloadUrl Environment.NewLine exn.Message }
+                | exn when String.IsNullOrWhiteSpace !downloadUrl ->
+                    raise <| Exception(sprintf "Could not download %O %O." packageName version, exn)
+                | exn -> raise <| Exception(sprintf "Could not download %O %O from %s." packageName version !downloadUrl, exn) }
 
     async {
         do! download true 0

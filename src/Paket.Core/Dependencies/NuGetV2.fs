@@ -252,8 +252,8 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                 traceWarnfn "Failed to get package details (again) '%s'. This feeds implementation might be broken." e.Message
                 if verbose then tracefn "Details: %O" e
                 // try uppercase version as workaround for https://github.com/fsprojects/Paket/issues/2145 - Bad!
-                let name = PackageName.ToString()
-                let uppercase = PackageName.ToString().[0].ToString().ToUpper() + name.Substring(1)
+                let name = packageName.ToString()
+                let uppercase = packageName.ToString().[0].ToString().ToUpper() + name.Substring(1)
                 return! queryPackagesProtocol (PackageName uppercase)
     }
 
