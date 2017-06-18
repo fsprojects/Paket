@@ -11,6 +11,7 @@ open System.Diagnostics
 open Paket.PackageSources
 open System.Threading.Tasks
 open System.Threading
+open FSharp.Polyfill
 
 type DependencySet = Set<PackageName * VersionRequirement * FrameworkRestrictions>
 
@@ -697,7 +698,7 @@ type RequestWork =
 type WorkHandle<'a> = private { Work : RequestWork; TaskSource : TaskCompletionSource<'a>; Cts : CancellationTokenSource }
 and ResolverRequestQueue =
     private { DynamicQueue : ResizeArray<RequestWork>; Lock : obj; WaitingWorker : ResizeArray<TaskCompletionSource<RequestWork option>> }
-    // callback in a lock is bad practice..
+    // callback in a lock is bad practice -> private
     member private x.With callback =
         lock x.Lock (fun () ->
             callback x.DynamicQueue x.WaitingWorker
@@ -730,22 +731,27 @@ module ResolverRequestQueue =
     open System.Threading
 
     let Create() = { DynamicQueue = new ResizeArray<RequestWork>(); Lock = new obj(); WaitingWorker = new ResizeArray<_>() }
-    let addWork prio (f: CancellationToken -> Task<'a>) (q:ResolverRequestQueue) =
+    let addWork cancellationTimeout prio (f: CancellationToken -> Task<'a>) (q:ResolverRequestQueue) =
         let tcs = new TaskCompletionSource<_>()
         let cts = new CancellationTokenSource()
-        let registration = cts.Token.Register(fun () ->
-            // We delay by a second to give the "regular" shutdown some time to finish "cleanly"
-            async {
-                do! Async.Sleep 1000
-                tcs.TrySetCanceled () |> ignore
-            } |> Async.Start)
+        let registration =
+            match cancellationTimeout with
+            | Some timeout ->
+                cts.Token.Register(fun () ->
+                    // We delay by a second to give the "regular" shutdown some time to finish "cleanly"
+                    async {
+                        do! Async.Sleep timeout
+                        tcs.TrySetException (new TaskCanceledException("Worktask was canceled as the underlying task did not properly cancel itself after 1 second.")) |> ignore
+                    } |> Async.Start)
+                |> Some
+            | None -> None
         let work =
             { StartWork = (fun tok ->
                 // When someone is actually starting the work we need to ensure we finish it...
                 let registration2 = tok.Register(fun () -> cts.Cancel())
                 let t =
                     try
-                        f tok
+                        f cts.Token
                     with e ->
                         //Task.FromException (e)
                         let tcs = new TaskCompletionSource<_>()
@@ -753,7 +759,9 @@ module ResolverRequestQueue =
                         tcs.Task
 
                 t.ContinueWith(fun (t:Task<'a>) ->
-                    registration.Dispose()
+                    match registration with
+                    | Some reg -> reg.Dispose()
+                    | None -> ()
                     registration2.Dispose()
                     if t.IsCanceled then
                         tcs.TrySetException(new TaskCanceledException(t))
@@ -769,15 +777,18 @@ module ResolverRequestQueue =
         q.AddWork work
         { Work = work; TaskSource = tcs; Cts = cts }
     let startProcessing (ct:CancellationToken) ({ DynamicQueue = queue } as q) =
+        let linked = new CancellationTokenSource()
         async {
+            use _reg = ct.Register(fun () ->
+                linked.CancelAfter(1000))
             while not ct.IsCancellationRequested do
                 let! work = q.GetWork(ct) |> Async.AwaitTask
                 match work with
                 | Some work ->
-                    do! work.StartWork(ct).ContinueWith(fun (t:Task) -> ()) |> Async.AwaitTask
+                    do! work.StartWork(ct).ContinueWith(fun (_:Task) -> ()) |> Async.AwaitTask
                 | None -> ()
         }
-        |> fun a -> Async.StartAsTask(a, TaskCreationOptions.None)
+        |> fun a -> Async.StartAsTaskProperCancel(a, TaskCreationOptions.None, linked.Token)
 
 type WorkHandle<'a> with
     member x.Reprioritize prio =
@@ -796,9 +807,19 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     use cts = new CancellationTokenSource()
     let workerQueue = ResolverRequestQueue.Create()
     let workers =
-        // start maximal 7 requests at the same time.
+        // start maximal 8 requests at the same time.
         [ 0 .. 7 ]
         |> List.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
+
+    // mainly for failing unit-tests to be faster
+    let taskTimeout =
+        match Environment.GetEnvironmentVariable("PAKET_RESOLVER_TASK_TIMEOUT") with
+        | a when System.String.IsNullOrWhiteSpace a -> 30000
+        | a ->
+            match System.Int32.TryParse a with
+            | true, v -> v
+            | _ -> traceWarnfn "PAKET_RESOLVER_TASK_TIMEOUT is not set to an interval in milliseconds, ignoring the value and defaulting to 30000"
+                   30000
 
     let getAndReport (sources:PackageSource list) blockReason (workHandle:WorkHandle<_>) =
         try
@@ -808,11 +829,11 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
             else
                 workHandle.Reprioritize WorkPriority.BlockingWork
                 use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked blockReason)
-                let isFinished = workHandle.Task.Wait(30000)
+                let isFinished = workHandle.Task.Wait(taskTimeout)
                 // When debugger is attached we just wait forever when calling .Result later ...
                 // Try to cancel the work after 29sec, this will hopefully give a nice error message which operation failed
                 if not isFinished && not Debugger.IsAttached then
-                    traceWarnfn "A task did not finish within 30 seconds. Canceling the operation."
+                    traceWarnfn "A task did not finish within 30 seconds. Cancelling the operation."
                     workHandle.Cancel()
 
                 let isFinished = workHandle.Task.Wait(3000)
@@ -835,28 +856,34 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
             reraise()
 
     let startedGetPackageDetailsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,WorkHandle<_>>()
-    let startRequestGetPackageDetails sources groupName packageName semVer =
+    let startRequestGetPackageDetails sources groupName packageName (semVer:SemVerInfo) =
         let key = (sources, packageName, semVer)
         startedGetPackageDetailsRequests.GetOrAdd (key, fun _ ->
             workerQueue
-            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun ct ->
+            |> ResolverRequestQueue.addWork (Some 1000) WorkPriority.BackgroundWork (fun ct ->
                 (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
-                    |> fun a -> Async.StartAsTask(a, cancellationToken = ct)))
+                    |> fun a -> Async.StartAsTaskProperCancel(a, cancellationToken = ct)))
     let getPackageDetailsBlock sources groupName packageName semVer =
         let workHandle = startRequestGetPackageDetails sources groupName packageName semVer
-        getAndReport sources Profile.BlockReason.PackageDetails workHandle
+        try
+            getAndReport sources Profile.BlockReason.PackageDetails workHandle
+        with e ->
+            raise <| Exception (sprintf "Unable to retrieve package details for '%O'-%s" packageName semVer.AsString, e)
 
     let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,WorkHandle<_>>()
     let startRequestGetVersions sources groupName packageName =
         let key = (sources, packageName)
         startedGetVersionsRequests.GetOrAdd (key, fun _ ->
             workerQueue
-            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun ct ->
+            |> ResolverRequestQueue.addWork (Some 1000) WorkPriority.BackgroundWork (fun ct ->
                 getVersionsRaw sources groupName packageName
-                |> fun a -> Async.StartAsTask(a, cancellationToken = ct)))
+                |> fun a -> Async.StartAsTaskProperCancel(a, cancellationToken = ct)))
     let getVersionsBlock sources resolverStrategy groupName packageName =
         let workHandle = startRequestGetVersions sources groupName packageName
-        let versions = getAndReport sources Profile.BlockReason.GetVersion workHandle |> Seq.toList
+        let versions =
+            try getAndReport sources Profile.BlockReason.GetVersion workHandle |> Seq.toList
+            with e ->
+                raise <| Exception (sprintf "Unable to retrieve package versions for '%O'" packageName, e)
         let sorted =
             match resolverStrategy with
             | ResolverStrategy.Max -> List.sortDescending versions
@@ -1165,7 +1192,9 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     }
 
     let inline calculate () = step (Step((currentConflict,startingStep,currentRequirement),[])) stackpack Seq.empty flags
-    
+
+    // Flag to ensure that we don't hide underlying exceptions in the finally block.
+    let mutable exceptionThrown = false
     try
 #if DEBUG
         let mutable results = None
@@ -1199,7 +1228,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     stackpack.ConflictHistory.Clear()
                     (step (Step((conflict
                                 ,{startingStep with Relax=true}
-                                ,currentRequirement),[])) 
+                                ,currentRequirement),[]))
                           stackpack Seq.empty flags)
                 else
                     conflict
@@ -1210,9 +1239,30 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
             traceWarnfn "Resolution finished, but some errors were encountered:"
             AggregateException(resolution.Errors)
                 |> printError
+
+        exceptionThrown <- false
         resolution
     finally
         // some cleanup
         cts.Cancel()
         for w in workers do
-            w.Wait()
+            try
+                w.Wait()
+            with
+            | :? ObjectDisposedException ->
+                if verbose then
+                    traceVerbose "Worker-Task was disposed"
+                ()
+            | :? AggregateException as a ->
+                match a.InnerExceptions |> Seq.toArray with
+                | [| :? OperationCanceledException as c |] ->
+                    // Task was cancelled...
+                    if verbose then
+                        traceVerbose "Worker-Task was canceled"
+                    ()
+                | _ ->
+                    if exceptionThrown then
+                        traceErrorfn "Error while waiting for worker to finish: %O" a
+                    else reraise()
+            | e when exceptionThrown ->
+                traceErrorfn "Error while waiting for worker to finish: %O" e

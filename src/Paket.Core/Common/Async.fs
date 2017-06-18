@@ -2,11 +2,18 @@ namespace FSharp.Polyfill
 
 open System.Threading
 
+type VolatileBarrier() =
+    [<VolatileField>]
+    let mutable isStopped = false
+    member __.Proceed = not isStopped
+    member __.Stop() = isStopped <- true
+
 /// Extensions for async workflows.
 [<AutoOpen>]
 module AsyncExtensions = 
   open System
   open System.Threading.Tasks
+  open System.Threading
 
   type Microsoft.FSharp.Control.Async with 
      /// Runs both computations in parallel and returns the result as a tuple.
@@ -54,6 +61,36 @@ module AsyncExtensions =
                 } |> fun a -> Async.Start(a, ct)
             )
         }
+
+    static member StartCatchCancellation(work, ?cancellationToken) =
+        Async.FromContinuations(fun (cont, econt, _) ->
+          // When the child is cancelled, report OperationCancelled
+          // as an ordinary exception to "error continuation" rather
+          // than using "cancellation continuation"
+          let ccont e = econt e
+          // Start the workflow using a provided cancellation token
+          Async.StartWithContinuations( work, cont, econt, ccont,
+                                        ?cancellationToken=cancellationToken) )
+
+    /// Like StartAsTask but gives the computation time to so some regular cancellation work
+    static member StartAsTaskProperCancel (computation : Async<_>, ?taskCreationOptions, ?cancellationToken:CancellationToken) : Task<_> =
+        let token = defaultArg cancellationToken Async.DefaultCancellationToken
+        let taskCreationOptions = defaultArg taskCreationOptions TaskCreationOptions.None
+        let tcs = new TaskCompletionSource<_>(taskCreationOptions)
+
+        let a =
+            async {
+                try
+                    // To ensure we don't cancel this very async (which is required to properly forward the error condition)
+                    let! result = Async.StartCatchCancellation(computation, token)
+                    do
+                        tcs.SetResult(result)
+                with exn ->
+                    tcs.SetException(exn)
+            }
+        Async.Start(a)
+        tcs.Task
+
     static member map f a =
         async { return f a }
     static member tryFind (f : 'T -> bool) (tasks : Async<'T> seq) = async {
@@ -64,7 +101,6 @@ module AsyncExtensions =
             let task = Task.FromResult res
             return if f res then [|task|], Some 0 else [|task|], None
          | tasks ->
-    
          let! t = Async.CancellationToken
          return! Async.FromContinuations <|
              fun (sc,ec,cc) ->
