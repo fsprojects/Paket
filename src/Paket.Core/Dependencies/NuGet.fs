@@ -263,7 +263,7 @@ let rec GetPackageDetails alternativeProjectRoot root force (sources:PackageSour
                 traceWarnfn "Something failed in GetPackageDetails, trying again with force: %s" exn.Message
             return! getPackageDetails alternativeProjectRoot root true sources packageName version
     }
-    
+
 let protocolCache = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
 
 
@@ -360,8 +360,6 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                                             (source.Authentication |> Option.map toBasicAuth,
                                              versionsAPI,
                                              packageName)
-                                
-
                             return [ req ]
                        | LocalNuGet(path,Some _) ->
                             return [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
@@ -515,9 +513,6 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
             let _,v,_ = List.head sorted
             SemVer.Parse v,sorted |> List.map (fun (_,_,x) -> x)) }
 
-
-
-
 /// Downloads the given package to the NuGet Cache folder
 let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
@@ -561,7 +556,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                     let path = Utils.normalizeLocalPath path
                     let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root
                     let nupkg = NuGetLocal.findLocalPackage di.FullName packageName version
-                    
+
                     use _ = Profile.startCategory Profile.Category.FileIO
                     File.Copy(nupkg.FullName,targetFileName)
                 | _ ->

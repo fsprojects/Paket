@@ -20,38 +20,65 @@ open Paket.Requirements
 open FSharp.Polyfill
 open System.Runtime.ExceptionServices
 
-let rec private followODataLink auth url =
+let private followODataLink auth url =
+    let rec followODataLinkSafe (knownVersions:Set<_>) url =
+        async {
+            let! raw = getFromUrl(auth, url, acceptXml)
+            if String.IsNullOrWhiteSpace raw then return true, [||] else
+            let doc = XmlDocument()
+            doc.LoadXml raw
+            let feed =
+                match doc |> getNode "feed" with
+                | Some node -> node
+                | None -> failwithf "unable to parse data from %s" url
+
+            let readEntryVersion = Some
+                                   >> optGetNode "properties"
+                                   >> optGetNode "Version"
+                                   >> Option.map (fun node -> node.InnerText)
+
+            let entriesVersions = feed |> getNodes "entry" |> List.choose readEntryVersion
+            let newSet = entriesVersions |> Set.ofList
+            let noNewFound = newSet.IsSubsetOf knownVersions
+            if noNewFound then
+                return false, [||]
+            else
+
+            let linksToFollow =
+                feed
+                |> getNodes "link"
+                |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
+                |> List.choose (getAttribute "href")
+                |> List.filter (fun x -> x <> url)
+
+            let! linksVersions =
+                linksToFollow
+                |> List.map (followODataLinkSafe (Set.union newSet knownVersions))
+                |> Async.Parallel
+
+            let atLeastOneFailed =
+                linksVersions
+                |> Seq.map fst
+                |> Seq.tryFindIndex not
+
+            let collected =
+                linksVersions
+                |> Seq.map snd
+                |> Seq.collect id
+                |> Seq.toArray
+
+            match atLeastOneFailed with
+            | Some i ->
+                traceWarnfn "At least one 'next' link (index %d) returned a empty result (noticed on '%O'): ['%s']" i url (System.String.Join("' ; '", linksToFollow))
+            | None -> ()
+            return
+                true,
+                collected
+                |> Array.append (entriesVersions |> List.toArray)
+        }
     async {
-        let! raw = getFromUrl(auth, url, acceptXml)
-        if String.IsNullOrWhiteSpace raw then return [||] else
-        let doc = XmlDocument()
-        doc.LoadXml raw
-        let feed =
-            match doc |> getNode "feed" with
-            | Some node -> node
-            | None -> failwithf "unable to parse data from %s" url
-
-        let readEntryVersion = Some
-                               >> optGetNode "properties"
-                               >> optGetNode "Version"
-                               >> Option.map (fun node -> node.InnerText)
-
-        let entriesVersions = feed |> getNodes "entry" |> List.choose readEntryVersion
-
-        let! linksVersions =
-            feed
-            |> getNodes "link"
-            |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
-            |> List.choose (getAttribute "href")
-            |> List.filter (fun x -> x <> url)
-            |> List.map (followODataLink auth)
-            |> Async.Parallel
-
-        return
-            linksVersions
-            |> Seq.collect id
-            |> Seq.append entriesVersions
-            |> Seq.toArray
+        let! _, res = followODataLinkSafe Set.empty url
+        return res
     }
 
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
@@ -59,8 +86,6 @@ let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageNa
     NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
         async {
             try
-                if verbose then
-                    verbosefn "getAllVersionsFromNugetODataWithFilter from url '%s'" url
                 let! result = followODataLink auth url
                 return Result.Ok result
             with exn ->
@@ -73,8 +98,6 @@ let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName
     NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
         async {
             try
-                if verbose then
-                    verbosefn "getAllVersionsFromNugetODataFindById from url '%s'" url
                 let! result = followODataLink auth url
                 return Result.Ok  result
             with exn ->
@@ -87,8 +110,6 @@ let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:
     NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
         async {
             try
-                if verbose then
-                    verbosefn "getAllVersionsFromNugetODataFindByIdNewestFirst from url '%s'" url
                 let! result = followODataLink auth url
                 return Result.Ok result
             with exn ->

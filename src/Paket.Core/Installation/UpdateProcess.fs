@@ -11,15 +11,6 @@ open Paket.Logging
 open InstallProcess
 
 let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
-    let getSortedVersionsF sources groupName packageName : Async<seq<SemVerInfo * PackageSources.PackageSource list>> = async {
-        if verbose then
-            verbosefn "  - fetching versions for %O" packageName
-        let! versions = 
-            getVersionsF sources groupName packageName
-        if Seq.isEmpty versions then
-            failwithf "Couldn't retrieve versions for %O." packageName
-        return versions }
-        
     let dependenciesFile =
         let processFile createRequirementF =
             lockFile.GetGroupedResolution()
