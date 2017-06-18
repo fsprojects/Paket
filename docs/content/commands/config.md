@@ -3,7 +3,7 @@
 ### URL credentials
 
 ```sh
-paket config --add-credentials SOURCE-URL
+paket config add-credentials SOURCE-URL
 ```
 
 Paket will then ask you for the username and password that will be used for the
@@ -16,7 +16,7 @@ unless they carry a username and password.
 ### GitHub credentials
 
 ```sh
-paket config --add-credentials CREDENTIAL-KEY
+paket config add-credentials CREDENTIAL-KEY
 ```
 
 Paket will then ask you for the username and password that will be used for the
@@ -27,7 +27,7 @@ the [`paket.dependencies` file](github-dependencies.html) that carry the
 specified `CREDENTIAL-KEY`.
 
 ```sh
-paket config --add-token CREDENTIAL-KEY TOKEN
+paket config add-token CREDENTIAL-KEY TOKEN
 ```
 
 The `TOKEN` you enter here will then be used to access any GitHub files from the
@@ -47,5 +47,5 @@ let PaketConfigFile = Path.Combine(PaketConfigFolder, "paket.config")
 ### Adding a NuGet API key
 
 ```sh
-paket config --add-token 'https://www.nuget.org' '4003d786-cc37-4004-bfdf-c4f3deadbeef'
+paket config add-token 'https://www.nuget.org' '4003d786-cc37-4004-bfdf-c4f3deadbeef'
 ```

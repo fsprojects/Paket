@@ -67,10 +67,10 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | AddCredentials(_) -> "Add credentials for the specified NuGet feed."
-            | AddToken(_) -> "Add token for the specified source."
-            | Username(_) -> "Provide a username (for scripting)"
-            | Password(_) -> "provide a password on the commandline (for scripting)"
+            | AddCredentials(_) -> "add credentials for URL or credential key"
+            | AddToken(_) -> "add token for URL or credential key"
+            | Username(_) -> "provide username"
+            | Password(_) -> "provide password"
 
 type ConvertFromNugetArgs =
     | [<AltCommandLine("-f")>] Force
