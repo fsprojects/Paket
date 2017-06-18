@@ -60,6 +60,7 @@ let directPaketInPath command scenarioPath =
           (printfn "%s")
     string result
     #else
+    Environment.SetEnvironmentVariable("PAKET_DETAILED_ERRORS", "true")
     printfn "%s> paket %s" scenarioPath command
     let perfMessages = ResizeArray()
     let msgs = ResizeArray()

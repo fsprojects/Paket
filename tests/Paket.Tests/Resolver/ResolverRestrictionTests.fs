@@ -107,7 +107,24 @@ nuget Chessie"""
 //        async {
 //            cts.CancelAfter 500
 //            do! tcs.Task |> Async.AwaitTask
+//            printfn "test"
+//            return! async {
+//                do! Async.Sleep 100
+//                return 4 }
 //        } |> fun a -> Async.RunSynchronously(a, cancellationToken = cts.Token)
+//    ()
+//
+//[<Test>]
+//let ``check task cancellation (task)``() =
+//    let tcs = new TaskCompletionSource<_>()
+//    let cts = new CancellationTokenSource()
+//    use reg = cts.Token.Register(fun () -> tcs.SetException(Exception "Something bad happened"))
+//    let a =
+//        async {
+//            cts.CancelAfter 500
+//            do! tcs.Task |> Async.AwaitTask
+//        } |> fun a -> Async.StartAsTask(a, cancellationToken = cts.Token)
+//    a.Result
 //    ()
 //[<Test>]
 //let ``check task cancellation 2``() =

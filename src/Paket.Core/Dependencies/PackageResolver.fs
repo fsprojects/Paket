@@ -788,7 +788,7 @@ module ResolverRequestQueue =
                     do! work.StartWork(ct).ContinueWith(fun (_:Task) -> ()) |> Async.AwaitTask
                 | None -> ()
         }
-        |> fun a -> Async.StartAsTaskTimeout(a, TaskCreationOptions.None, linked.Token, cancelTimeout = 10000)
+        |> fun a -> Async.StartAsTaskProperCancel(a, TaskCreationOptions.None, linked.Token)
 
 type WorkHandle<'a> with
     member x.Reprioritize prio =
@@ -860,9 +860,9 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         let key = (sources, packageName, semVer)
         startedGetPackageDetailsRequests.GetOrAdd (key, fun _ ->
             workerQueue
-            |> ResolverRequestQueue.addWork None WorkPriority.BackgroundWork (fun ct ->
+            |> ResolverRequestQueue.addWork (Some 1000) WorkPriority.BackgroundWork (fun ct ->
                 (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
-                    |> fun a -> Async.StartAsTaskTimeout(a, cancellationToken = ct, cancelTimeout = 1000)))
+                    |> fun a -> Async.StartAsTaskProperCancel(a, cancellationToken = ct)))
     let getPackageDetailsBlock sources groupName packageName semVer =
         let workHandle = startRequestGetPackageDetails sources groupName packageName semVer
         try
@@ -875,9 +875,9 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         let key = (sources, packageName)
         startedGetVersionsRequests.GetOrAdd (key, fun _ ->
             workerQueue
-            |> ResolverRequestQueue.addWork None WorkPriority.BackgroundWork (fun ct ->
+            |> ResolverRequestQueue.addWork (Some 1000) WorkPriority.BackgroundWork (fun ct ->
                 getVersionsRaw sources groupName packageName
-                |> fun a -> Async.StartAsTaskTimeout(a, cancellationToken = ct, cancelTimeout = 1000)))
+                |> fun a -> Async.StartAsTaskProperCancel(a, cancellationToken = ct)))
     let getVersionsBlock sources resolverStrategy groupName packageName =
         let workHandle = startRequestGetVersions sources groupName packageName
         let versions =
@@ -1255,7 +1255,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 ()
             | :? AggregateException as a ->
                 match a.InnerExceptions |> Seq.toArray with
-                | [| :? TaskCanceledException as c |] ->
+                | [| :? OperationCanceledException as c |] ->
                     // Task was cancelled...
                     if verbose then
                         traceVerbose "Worker-Task was canceled"

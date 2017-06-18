@@ -73,29 +73,10 @@ module AsyncExtensions =
                                         ?cancellationToken=cancellationToken) )
 
     /// Like StartAsTask but gives the computation time to so some regular cancellation work
-    static member StartAsTaskTimeout (computation : Async<_>, ?taskCreationOptions, ?cancellationToken:CancellationToken, ?cancelTimeout:int) : Task<_> =
+    static member StartAsTaskProperCancel (computation : Async<_>, ?taskCreationOptions, ?cancellationToken:CancellationToken) : Task<_> =
         let token = defaultArg cancellationToken Async.DefaultCancellationToken
         let taskCreationOptions = defaultArg taskCreationOptions TaskCreationOptions.None
         let tcs = new TaskCompletionSource<_>(taskCreationOptions)
-
-        let barrier = VolatileBarrier()
-        let cts = new CancellationTokenSource()
-
-        // When cancellation is requested we set the task to cancelled
-        let reg = cts.Token.Register (fun _ ->
-            if barrier.Proceed then tcs.TrySetCanceled() |> ignore)
-        // when the "outer" cancellation is requested we request our own cancellation after the specified timeout.
-        let reg2 = token.Register(fun _ ->
-                match cancelTimeout with
-                | None
-                | Some 0 -> cts.Cancel()
-                | Some Timeout.Infinite -> () // caller knows that this might wait forever.
-                | Some timeout -> cts.CancelAfter(timeout))
-        let task = tcs.Task
-        let disposeReg() =
-            barrier.Stop()
-            reg2.Dispose()
-            if not (task.IsCanceled) then reg.Dispose()
 
         let a =
             async {
@@ -103,14 +84,12 @@ module AsyncExtensions =
                     // To ensure we don't cancel this very async (which is required to properly forward the error condition)
                     let! result = Async.StartCatchCancellation(computation, token)
                     do
-                        disposeReg()
-                        tcs.TrySetResult(result) |> ignore
+                        tcs.SetResult(result)
                 with exn ->
-                    disposeReg()
-                    tcs.TrySetException(exn) |> ignore
+                    tcs.SetException(exn)
             }
         Async.Start(a)
-        task
+        tcs.Task
 
     static member map f a =
         async { return f a }
