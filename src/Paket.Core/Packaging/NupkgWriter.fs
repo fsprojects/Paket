@@ -8,6 +8,7 @@ open Paket.Xml
 open System.Text
 open System.Text.RegularExpressions
 open System.Xml
+open Paket.Requirements
 
 module internal NupkgWriter =
 
@@ -93,13 +94,34 @@ module internal NupkgWriter =
                 dep.SetAttributeValue(XName.Get "version", version)
             dep
 
+        let buildGroupNode (framework:FrameworkIdentifier, add) = 
+            let g = XElement(ns + "group")
+            g.SetAttributeValue(XName.Get "targetFramework", framework.ToString())
+            add g
+            g
+
+
+        let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
+            dependencyList
+            |> List.filter (fun (a, _, _) -> Set.contains a excludedDependencies |> not)
+            |> List.map  (fun (a,b,_) -> a,b)
+            |> List.iter (buildDependencyNode >> add)
+
+        let buildDependencyNodesByGroup excludedDependencies add dependencyList framework  =
+            let node = buildGroupNode(framework, add)
+            buildDependencyNodes(excludedDependencies, node.Add, dependencyList)
+
         let buildDependenciesNode excludedDependencies dependencyList =
             if List.isEmpty dependencyList then () else
             let d = XElement(ns + "dependencies")
-            dependencyList
-            |> List.filter (fun d -> Set.contains (fst d) excludedDependencies |> not)
-            |> List.iter (buildDependencyNode >> d.Add)
-            metadataNode.Add d
+            let groups = List.groupBy thirdOf3 dependencyList
+            match groups.Length, fst groups.Head with
+            | (1, None) ->
+                buildDependencyNodes(excludedDependencies, d.Add, dependencyList)
+            | _ -> 
+                groups 
+                |> List.iter (fun  a -> buildDependencyNodesByGroup excludedDependencies d.Add (snd a) (fst a).Value)
+            metadataNode.Add d           
 
         let buildReferenceNode (fileName) =
             let dep = XElement(ns + "reference")
@@ -369,7 +391,7 @@ module NuspecExtensions =
                         references.Groups |> Seq.collect (fun kvp -> 
                         kvp.Value.NugetPackages |> List.choose (fun pkg -> 
                             dependencies.TryGetPackage(kvp.Key,pkg.Name)
-                            |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement)))
+                            |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement, None)))
                         |> List.ofSeq
                     ) |> Option.defaultValue []
                 let projectInfo, optionalInfo = project.GetTemplateMetadata ()

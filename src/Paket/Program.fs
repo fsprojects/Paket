@@ -313,12 +313,17 @@ let findPackages silent (results : ParseResults<_>) =
 
     match results.TryGetResult <@ FindPackagesArgs.SearchText @> with
     | None ->
-        let searchText = ref ""
-        while !searchText <> ":q" do
+        let rec repl () =
             if not silent then
                 tracefn " - Please enter search text (:q for exit):"
-            searchText := Console.ReadLine()
-            searchAndPrint !searchText
+
+            match Console.ReadLine() with
+            | ":q" -> ()
+            | searchText ->
+                searchAndPrint searchText
+                repl ()
+
+        repl ()
 
     | Some searchText -> searchAndPrint searchText
 
