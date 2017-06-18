@@ -121,6 +121,38 @@ _paket-add() {
   return ret
 }
 
+(( $+functions[_paket-auto-restore] )) ||
+_paket-auto-restore() {
+  local curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+  )
+
+  _arguments -C \
+    $args \
+    '1: :->mode' \
+  && ret=0
+
+  case $state in
+    (mode)
+      declare -a modes
+
+      modes=(
+        'on:enable automatic restore'
+        'off:disable automatic restore'
+      )
+
+      _describe -t modes mode modes \
+      && ret=0
+      ;;
+  esac
+
+  return ret
+}
+
 (( $+functions[_paket-config] )) ||
 _paket-config() {
   local curcontext=$curcontext state line ret=1
