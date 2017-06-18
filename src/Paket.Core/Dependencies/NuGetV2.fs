@@ -211,7 +211,8 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                 tracefn ""
                 tracefn "%s" raw
             return parseODataDetails(url,nugetURL,packageName,version,raw)
-        with _ ->
+        with ex ->
+            traceWarnfn "Failed to getDetailsFromNuGetViaODataFast '%s'. Trying with Version instead of NormalizedVersion: %O" ex
             let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
             let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
