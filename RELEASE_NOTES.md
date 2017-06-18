@@ -1,6 +1,7 @@
 #### 5.1.0 - 18.06.2017
 * Paket.pack: support for NuGet dependencies conditional on target framework - https://github.com/fsprojects/Paket/pull/2428
-* Better task cancellation - https://github.com/fsprojects/Paket/pull/2439
+* BUGFIX: Overwrite target file when link option is false - https://github.com/fsprojects/Paket/pull/2433
+* USABILITY: Better task cancellation - https://github.com/fsprojects/Paket/pull/2439
 
 #### 5.0.0 - 16.06.2017
 * Live release from NDC room 4
