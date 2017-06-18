@@ -3,6 +3,7 @@
 * BUGFIX: Overwrite target file when link option is false - https://github.com/fsprojects/Paket/pull/2433
 * BUGFIX: Fixed interactive package search - https://github.com/fsprojects/Paket/pull/2424
 * USABILITY: Better task cancellation - https://github.com/fsprojects/Paket/pull/2439
+* DOGFOODING: Use latest bootstrapper in magic mode
 
 #### 5.0.0 - 16.06.2017
 * Live release from NDC room 4
