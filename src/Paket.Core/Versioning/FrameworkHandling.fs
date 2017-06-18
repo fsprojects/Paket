@@ -439,6 +439,7 @@ module FrameworkDetection =
 
     open Logging
     /// parse a string to construct a Netframework, NetCore, NetStandard, or other dotnet identifier
+    [<Obsolete "Use PlatformMatching.extractPlatforms instead">]
     let Extract =
         memoize 
           (fun (path:string) ->

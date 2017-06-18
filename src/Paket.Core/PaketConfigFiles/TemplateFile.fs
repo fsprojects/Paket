@@ -280,7 +280,7 @@ module internal TemplateFile =
         static member ForNone = { Framework = None ; Dependencies = [] }
         static member ForFramework framework = { Framework = framework ; Dependencies = [] }
    
-    let private getDependencieByLine (fileName, lockFile:LockFile,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>, line:string, framework:FrameworkIdentifier option)=      
+    let private getDependencyByLine (fileName, lockFile:LockFile,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>, line:string, framework:FrameworkIdentifier option)=      
         let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match line
         let name = PackageName reg.Groups.["id"].Value
         let versionRequirement =
@@ -323,7 +323,7 @@ module internal TemplateFile =
                 lineNo, group
             | Empty  _ -> lineNo, current::other  
             | _ -> 
-                let dependency = getDependencieByLine(fileName, lockFile, currentVersion, specificVersions, line, current.Framework)
+                let dependency = getDependencyByLine(fileName, lockFile, currentVersion, specificVersions, line, current.Framework)
                 lineNo ,{ current with Dependencies = current.Dependencies  @ [dependency] }::other
         | [] -> failwithf "Error in paket.dependencies line %d" lineNo     
    

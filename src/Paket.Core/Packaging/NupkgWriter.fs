@@ -84,9 +84,9 @@ module internal NupkgWriter =
             frameworkAssembliesList |> List.iter (buildFrameworkReferencesNode >> d.Add)
             metadataNode.Add d
 
-        let buildDependencyNode (id, requirement:VersionRequirement) =
+        let buildDependencyNode (Id, requirement:VersionRequirement) =
             let dep = XElement(ns + "dependency")
-            dep.SetAttributeValue(XName.Get "id", id)
+            dep.SetAttributeValue(XName.Get "id", Id)
             let version = requirement.FormatInNuGetSyntax()
             if String.IsNullOrEmpty version then
                 dep.SetAttributeValue(XName.Get "version", "0.0")
@@ -102,11 +102,9 @@ module internal NupkgWriter =
 
 
         let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
-            let takeFirstOfThree (a,_,_) = a
-            let takeFirstTwoOfThree (a,b,_) = a,b
             dependencyList
-            |> List.filter (fun d -> Set.contains (takeFirstOfThree d) excludedDependencies |> not)
-            |> List.map takeFirstTwoOfThree
+            |> List.filter (fun (a, _, _) -> Set.contains a excludedDependencies |> not)
+            |> List.map  (fun (a,b,_) -> a,b)
             |> List.iter (buildDependencyNode >> add)
 
         let buildDependencyNodesByGroup excludedDependencies add dependencyList framework  =
@@ -117,9 +115,10 @@ module internal NupkgWriter =
             if List.isEmpty dependencyList then () else
             let d = XElement(ns + "dependencies")
             let groups = List.groupBy thirdOf3 dependencyList
-            if groups.Length = 1 &&  fst groups.Head = None then
+            match groups.Length, fst groups.Head with
+            | (1, None) ->
                 buildDependencyNodes(excludedDependencies, d.Add, dependencyList)
-            else
+            | _ -> 
                 groups 
                 |> List.iter (fun  a -> buildDependencyNodesByGroup excludedDependencies d.Add (snd a) (fst a).Value)
             metadataNode.Add d           

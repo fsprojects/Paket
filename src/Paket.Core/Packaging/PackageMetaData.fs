@@ -112,9 +112,9 @@ let (|Valid|Invalid|) md =
 let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement * FrameworkIdentifier option) = 
     match templateFile with
     | CompleteTemplate(core, opt) -> 
-        let firstOf3 (a, _, _) = a
+        let packageName = dependency |> (fun (n,_,_) -> n)
         let newDeps = 
-            match opt.Dependencies |> List.tryFind (fun (n,_,_) -> n = firstOf3 dependency) with
+            match opt.Dependencies |> List.tryFind (fun (n,_,_) -> n = packageName) with
             | None -> dependency :: opt.Dependencies
             | _ -> opt.Dependencies
         { FileName = templateFile.FileName
