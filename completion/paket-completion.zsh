@@ -4,10 +4,28 @@
 #
 # This script is based on the excellent git complection in zsh. Many thanks
 # to its authors!
+#
+# You can configure some aspects of Paket completion:
+#
+# Disable fallback (i.e. default zsh) completion for Paket commands that do not
+# have a completion function:
+#   zstyle ':completion:complete:paket:*' use-fallback no
+#
+# Disable verbose completion of main commands:
+#   zstyle ':completion:complete:paket:*' verbose no
+#
+# Custom feed URLs for --source argument:
+#   zstyle ':completion:complete:paket:*' sources 'http://one.example.com/feed/v2'
+#   zstyle ':completion:complete:paket:*' sources 'http://one.example.com/feed/v2' 'http://second.example.com/feed/v2'
+#   Override list for a specific command; mind the trailing colon:
+#   zstyle ':completion:complete:paket:find-package-versions:' sources 'http://another.example.com/feed/v2'
 
 _paket() {
   local curcontext=$curcontext state line ret=1
   local -A opt_args
+
+  # Strip .exe extension.
+  curcontext="${curcontext%.*}:"
 
   # Do not offer anything after these options.
   local -a terminating_options
@@ -75,12 +93,13 @@ _paket() {
       ;;
 
     (option-or-argument)
-      curcontext=${curcontext%:*:*}:paket-$words[1]:
+      # Construct :complete:paket:<command>:.
+      curcontext="${curcontext%:*}:${words[1]}:"
 
-      if ! _call_function ret _paket-$words[1]; then
-        _message "paket command '$words[1]' is not implemented, please contact @agross"
+      if ! _call_function ret "_paket-${words[1]}"; then
+        _message "Completion for Paket command '${words[1]}' is not implemented, please contact @agross"
 
-        if zstyle -T :completion:$curcontext: use-fallback; then
+        if zstyle -T ":completion$curcontext:" use-fallback; then
           _default && ret=0
         fi
       fi
@@ -97,14 +116,24 @@ _paket_group_option() {
 
 (( $+functions[_paket_source_url] )) ||
 _paket_source_url() {
-  local state="$1" ret=1
+  local state="$1" curcontext="${2%:*}" ret=1
+
+  local -a user_sources
+  zstyle -a ":completion$curcontext:" sources user_sources
 
   case $state in
     (source-url)
+      local -a args
+
+      args=(
+        'source::_paket_sources'
+        'NuGet.org feed:NuGet.org feed:(https://www.nuget.org/api/v2 https://api.nuget.org/v3/index.json)'
+        "user-defined feed:user-defined feed:($user_sources)"
+        'urls::_urls'
+      )
+
       _alternative \
-        'source::_paket_sources' \
-        ' :NuGet.org feeds:(https://www.nuget.org/api/v2 https://api.nuget.org/v3/index.json)' \
-        'urls::_urls' \
+        $args \
       && ret=0
     ;;
   esac
@@ -304,7 +333,7 @@ _paket-find-package-versions() {
     ':NuGet package ID:_paket_nuget_packages "${words[-1]}"' \
   && ret=0
 
-  _paket_source_url "$state" && ret=0
+  _paket_source_url "$state" "$curcontext" && ret=0
 
   return ret
 }
@@ -326,7 +355,7 @@ _paket-find-packages() {
     ':NuGet package ID:_paket_nuget_packages "${words[-1]}"' \
   && ret=0
 
-  _paket_source_url "$state" && ret=0
+  _paket_source_url "$state" "$curcontext" && ret=0
 
   return ret
 }
@@ -475,7 +504,7 @@ _paket_commands() {
 
   # Verbose/long display requested?
   local -a disp
-  if zstyle -T ":completion:${curcontext}:" verbose; then
+  if zstyle -T ":completion$curcontext:" verbose; then
     disp=(-ld '${type}_desc')
   fi
 
