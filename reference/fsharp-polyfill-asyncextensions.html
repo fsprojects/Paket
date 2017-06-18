@@ -79,14 +79,33 @@
         <td class="member-name">
 
           <code onmouseout="hideTip(event, '1', 1)" onmouseover="showTip(event, '1', 1)">
-            map(f a)
+            awaitTaskWithToken(fallBack item)
           </code>
           <div class="tip" id="1">
-            <strong>Signature:</strong> (f:(&#39;?10622 -&gt; &#39;?10623)) -&gt; a:&#39;?10622 -&gt; Async&lt;&#39;?10623&gt;<br />
-                          <strong>Type parameters:</strong> '?10622, '?10623          </div>
+            <strong>Signature:</strong> (fallBack:(unit -&gt; &#39;T)) -&gt; item:Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />
+                          <strong>Type parameters:</strong> 'T          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L21-21" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L28-28" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>Async.awaitTaskWithToken.Static</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '2', 2)" onmouseover="showTip(event, '2', 2)">
+            map(f a)
+          </code>
+          <div class="tip" id="2">
+            <strong>Signature:</strong> (f:(&#39;?10653 -&gt; &#39;?10654)) -&gt; a:&#39;?10653 -&gt; Async&lt;&#39;?10654&gt;<br />
+                          <strong>Type parameters:</strong> '?10653, '?10654          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L94-94" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -97,15 +116,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '2', 2)" onmouseover="showTip(event, '2', 2)">
+          <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
             Parallel(a, b)
           </code>
-          <div class="tip" id="2">
+          <div class="tip" id="3">
             <strong>Signature:</strong> (a:Async&lt;&#39;a&gt; * b:Async&lt;&#39;b&gt;) -&gt; Async&lt;&#39;a * &#39;b&gt;<br />
                           <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L13-13" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L20-20" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -118,15 +137,55 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
+          <code onmouseout="hideTip(event, '4', 4)" onmouseover="showTip(event, '4', 4)">
+            StartAsTaskProperCancel(...)
+          </code>
+          <div class="tip" id="4">
+            <strong>Signature:</strong> (computation:Async&lt;&#39;a&gt; * taskCreationOptions:TaskCreationOptions option * cancellationToken:CancellationToken option) -&gt; Task&lt;&#39;a&gt;<br />
+                          <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L76-76" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Like StartAsTask but gives the computation time to so some regular cancellation work</p>
+
+
+              <p>CompiledName: <code>Async.StartAsTaskProperCancel.Static</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '5', 5)" onmouseover="showTip(event, '5', 5)">
+            StartCatchCancellation(...)
+          </code>
+          <div class="tip" id="5">
+            <strong>Signature:</strong> (work:Async&lt;&#39;?10649&gt; * cancellationToken:CancellationToken option) -&gt; Async&lt;&#39;?10649&gt;<br />
+                          <strong>Type parameters:</strong> '?10649          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L65-65" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>Async.StartCatchCancellation.Static</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '6', 6)" onmouseover="showTip(event, '6', 6)">
             tryFind(f tasks)
           </code>
-          <div class="tip" id="3">
+          <div class="tip" id="6">
             <strong>Signature:</strong> (f:(&#39;T -&gt; bool)) -&gt; tasks:seq&lt;Async&lt;&#39;T&gt;&gt; -&gt; Async&lt;Task&lt;&#39;T&gt; [] * int option&gt;<br />
                           <strong>Type parameters:</strong> 'T          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L23-23" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L96-96" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>PackageRequirement - Paket</title>
+    <title>VolatileBarrier - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,163 +58,35 @@
 
 
 
-<h1>PackageRequirement</h1>
+<h1>VolatileBarrier</h1>
 <p>
-  <span>Namespace: Paket</span><br />
-  <span>Parent Module: <a href="paket-requirements.html">Requirements</a></span>
+  <span>Namespace: FSharp.Polyfill</span><br />
 </p>
 <div class="xmldoc">
-<p>Represents an unresolved package.</p>
-
 </div>
-  <h3>Record Fields</h3>
+  <h3>Constructors</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Record Field</td><td>Description</td></tr>
+      <tr><td>Constructor</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1036', 1036)" onmouseover="showTip(event, '1036', 1036)">
-            Graph
+          <code onmouseout="hideTip(event, '638', 638)" onmouseover="showTip(event, '638', 638)">
+            new()
           </code>
-          <div class="tip" id="1036">
-            <strong>Signature:</strong> Set&lt;PackageRequirement&gt;<br />
+          <div class="tip" id="638">
+            <strong>Signature:</strong> unit -&gt; VolatileBarrier<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L894-894" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L5-5" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1037', 1037)" onmouseover="showTip(event, '1037', 1037)">
-            Name
-          </code>
-          <div class="tip" id="1037">
-            <strong>Signature:</strong> PackageName<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L889-889" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1038', 1038)" onmouseover="showTip(event, '1038', 1038)">
-            Parent
-          </code>
-          <div class="tip" id="1038">
-            <strong>Signature:</strong> PackageRequirementSource<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L893-893" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1039', 1039)" onmouseover="showTip(event, '1039', 1039)">
-            ResolverStrategyForDirectDependencies
-          </code>
-          <div class="tip" id="1039">
-            <strong>Signature:</strong> ResolverStrategy option<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L891-891" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1040', 1040)" onmouseover="showTip(event, '1040', 1040)">
-            ResolverStrategyForTransitives
-          </code>
-          <div class="tip" id="1040">
-            <strong>Signature:</strong> ResolverStrategy option<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L892-892" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1041', 1041)" onmouseover="showTip(event, '1041', 1041)">
-            Settings
-          </code>
-          <div class="tip" id="1041">
-            <strong>Signature:</strong> InstallSettings<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L896-896" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1042', 1042)" onmouseover="showTip(event, '1042', 1042)">
-            Sources
-          </code>
-          <div class="tip" id="1042">
-            <strong>Signature:</strong> PackageSource list<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L895-895" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1043', 1043)" onmouseover="showTip(event, '1043', 1043)">
-            VersionRequirement
-          </code>
-          <div class="tip" id="1043">
-            <strong>Signature:</strong> VersionRequirement<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L890-890" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
+              <p>CompiledName: <code>.ctor</code></p>
         </td>
       </tr>
     </tbody>
@@ -228,78 +100,34 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1044', 1044)" onmouseover="showTip(event, '1044', 1044)">
-            Depth
+          <code onmouseout="hideTip(event, '639', 639)" onmouseover="showTip(event, '639', 639)">
+            Proceed
           </code>
-          <div class="tip" id="1044">
-            <strong>Signature:</strong> int<br />
+          <div class="tip" id="639">
+            <strong>Signature:</strong> bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L920-920" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L8-8" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>get_Depth</code></p>
+              <p>CompiledName: <code>get_Proceed</code></p>
         </td>
       </tr>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1045', 1045)" onmouseover="showTip(event, '1045', 1045)">
-            IncludingPrereleases()
+          <code onmouseout="hideTip(event, '640', 640)" onmouseover="showTip(event, '640', 640)">
+            Stop()
           </code>
-          <div class="tip" id="1045">
-            <strong>Signature:</strong> unit -&gt; PackageRequirement<br />
+          <div class="tip" id="640">
+            <strong>Signature:</strong> unit -&gt; unit<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L918-918" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1046', 1046)" onmouseover="showTip(event, '1046', 1046)">
-            IncludingPrereleases(releaseStatus)
-          </code>
-          <div class="tip" id="1046">
-            <strong>Signature:</strong> releaseStatus:PreReleaseStatus -&gt; PackageRequirement<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L915-915" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-    </tbody>
-  </table>
-  <h3>Static members</h3>
-  <table class="table table-bordered member-list">
-    <thead>
-      <tr><td>Static member</td><td>Description</td></tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '1047', 1047)" onmouseover="showTip(event, '1047', 1047)">
-            Compare(...)
-          </code>
-          <div class="tip" id="1047">
-            <strong>Signature:</strong> (x:PackageRequirement * y:PackageRequirement * startWithPackage:PackageFilter option * boostX:&#39;a * boostY:&#39;a) -&gt; int<br />
-                          <strong>Type parameters:</strong> 'a          </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L922-922" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L9-9" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

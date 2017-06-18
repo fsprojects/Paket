@@ -295,6 +295,24 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 </code></pre></td>
 </tr>
 </table>
+<p>It's possible to add a line to constrain the targetFramework:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">dependencies</span>
+  <span class="i">framework</span><span class="o">:</span> <span class="i">net45</span>
+    <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
+	<span class="i">My</span><span class="o">.</span><span class="i">OtherThing</span>
+  <span class="i">framework</span><span class="o">:</span> <span class="i">netstandard11</span>
+	<span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>  
+</code></pre></td>
+</tr>
+</table>
+<p>Like that the package is only going to be used by a project &gt;= net45 and for &gt;= netstandard11 it will not use My.OtherThing package.</p>
 <p>In a project file, the following dependencies will be added:</p>
 <ul>
 <li>any Paket dependency with the range specified in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</li>

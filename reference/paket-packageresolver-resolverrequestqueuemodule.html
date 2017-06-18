@@ -77,12 +77,30 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '313', 313)" onmouseover="showTip(event, '313', 313)">
-            addWork prio f arg3
+          <code onmouseout="hideTip(event, '316', 316)" onmouseover="showTip(event, '316', 316)">
+            addWork cancellationTimeout prio f q
           </code>
-          <div class="tip" id="313">
-            <strong>Signature:</strong> prio:WorkPriority -&gt; f:(CancellationToken -&gt; Task&lt;&#39;a&gt;) -&gt; ResolverRequestQueue -&gt; WorkHandle&lt;&#39;a&gt;<br />
+          <div class="tip" id="316">
+            <strong>Signature:</strong> cancellationTimeout:int option -&gt; prio:WorkPriority -&gt; f:(CancellationToken -&gt; Task&lt;&#39;a&gt;) -&gt; q:ResolverRequestQueue -&gt; WorkHandle&lt;&#39;a&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L734-734" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '317', 317)" onmouseover="showTip(event, '317', 317)">
+            Create ()
+          </code>
+          <div class="tip" id="317">
+            <strong>Signature:</strong> unit -&gt; ResolverRequestQueue<br />
+                      </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L733-733" class="github-link">
@@ -95,33 +113,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '314', 314)" onmouseover="showTip(event, '314', 314)">
-            Create ()
-          </code>
-          <div class="tip" id="314">
-            <strong>Signature:</strong> unit -&gt; ResolverRequestQueue<br />
-                      </div>
-        </td>
-        <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L732-732" class="github-link">
-              <img src="../content/img/github.png" class="normal" />
-              <img src="../content/img/github-blue.png" class="hover" />
-            </a>
-          
-        </td>
-      </tr>
-      <tr>
-        <td class="member-name">
-
-          <code onmouseout="hideTip(event, '315', 315)" onmouseover="showTip(event, '315', 315)">
+          <code onmouseout="hideTip(event, '318', 318)" onmouseover="showTip(event, '318', 318)">
             startProcessing ct arg2
           </code>
-          <div class="tip" id="315">
+          <div class="tip" id="318">
             <strong>Signature:</strong> ct:CancellationToken -&gt; ResolverRequestQueue -&gt; Task&lt;unit&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L755-755" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L779-779" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>

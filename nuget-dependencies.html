@@ -272,6 +272,16 @@ I never need this package to compile for another framework like 'net45'."</p>
 
 <span class="k">nuget</span> Newtonsoft.Json <span class="k">copy_local</span>: false
 </code></pre></td></tr></table>
+<h3><a name="specific_version-settings" class="anchor" href="#specific_version-settings">specific_version settings</a></h3>
+<p>It's possible to influence the <code>SpecificVersion</code> property for references in project files:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Newtonsoft.Json specific_version: false
+</code></pre></td></tr></table>
 <h3><a name="CopyToOutputDirectory-settings" class="anchor" href="#CopyToOutputDirectory-settings">CopyToOutputDirectory settings</a></h3>
 <p>It's possible to influence the <code>CopyToOutputDirectory</code> property for content references in project files:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
