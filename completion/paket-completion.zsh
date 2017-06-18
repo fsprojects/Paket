@@ -107,10 +107,10 @@ _paket-add() {
     $binding_redirects_options
     $download_options
     '(--interactive -i)'{--interactive,-i}"[ask for every project whether to add the dependency]"
-    '(--no-install)'--no-install'[skip install process after resolving dependencies]'
-    '(--project -p)'{--project,-p}'[add the package to a single project only]:project:_path_files -g "**/*.??proj"'
-    '(--version -V)'{--version,-V}'[package version constraint]:version constraint'
-    "${(f)$(_paket_group_option 'add the package to a group (default: Main group)')}"
+    '(--no-install)'--no-install'[do not add dependencies to projects]'
+    '(--project -p)'{--project,-p}'[add the dependency to a single project only]:project:_path_files -g "**/*.??proj"'
+    '(--version -V)'{--version,-V}'[dependency version constraint]:version constraint'
+    "${(f)$(_paket_group_option 'add the dependency to a group (default: Main group)')}"
   )
 
   _arguments -C \
@@ -193,6 +193,30 @@ _paket-config() {
           ;;
       esac
   esac
+
+  return ret
+}
+
+(( $+functions[_paket-convert-from-nuget] )) ||
+_paket-convert-from-nuget() {
+  local curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    '(-f --force)'{-f,--force}'[force the conversion even if paket.dependencies or paket.references files are present]'
+    '(--no-install)'--no-install'[do not add dependencies to projects]'
+    '(--no-auto-restore)'--no-auto-restore"[do not enable Paket's auto-restore]"
+    '(--migrate-credentials)'--migrate-credentials"[specify mode for NuGet source credential migration (default: encrypt)]:credential migration mode:((\
+      encrypt\:'store encrypted in paket.config (default)' \
+      plaintext\:'store as plain text in paket.dependencies' \
+      selective\:'be asked for every feed'))"
+  )
+
+  _arguments -C \
+    $args \
+  && ret=0
 
   return ret
 }
