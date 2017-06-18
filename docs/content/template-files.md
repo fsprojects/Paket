@@ -179,6 +179,17 @@ The `LOCKEDVERSION` placeholder allows to reference the currently used dependenc
 	  FSharp.Core >= 4.3.1
 	  Other.Dep ~> LOCKEDVERSION
 
+It's possible to add a line to constrain the targetFramework:
+
+	dependencies
+	  framework: net45
+	    FSharp.Core 4.3.1
+		My.OtherThing
+	  framework: netstandard11
+		FSharp.Core 4.3.1  
+
+Like that the package is only going to be used by a project >= net45 and for >= netstandard11 it will not use My.OtherThing package. 		
+
 In a project file, the following dependencies will be added:
 
 * any Paket dependency with the range specified in the [`paket.dependencies` file](dependencies-file.html).
