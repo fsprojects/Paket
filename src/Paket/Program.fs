@@ -134,18 +134,29 @@ let legacyOption (results : ParseResults<_>) newSyntax oldSyntax list =
     | (_, _) -> None
 
 let add (results : ParseResults<_>) =
-    let packageNameOld = results.GetResults <@ AddArgs.NuGet_Legacy @> |> List.tryLast
-    let packageNameNew = results.GetResults <@ AddArgs.NuGet @> |> List.tryLast
-    let packageName = match (packageNameNew, packageNameOld) |> legacyOption results "(omit, option is the new default argument)" "nuget" with
-                      | Some(id) ->
-                        id
-                      | _ -> results.GetResult <@ AddArgs.NuGet @>
-    let version = defaultArg ((results.TryGetResult <@ AddArgs.Version @>, results.TryGetResult <@ AddArgs.Version_Legacy @>) |> legacyOption results "--version" "version") ""
+    let packageName =
+        let arg = (results.TryGetResult <@ AddArgs.NuGet @>,
+                   results.TryGetResult <@ AddArgs.NuGet_Legacy @>)
+                  |> legacyOption results "(omit, option is the new default argument)" "nuget"
+        match arg with
+        | Some(id) -> id
+        | _ -> results.GetResult <@ AddArgs.NuGet @>
+    let version =
+        let arg = (results.TryGetResult <@ AddArgs.Version @>,
+                   results.TryGetResult <@ AddArgs.Version_Legacy @>)
+                  |> legacyOption results "--version" "version"
+        defaultArg arg ""
     let force = results.Contains <@ AddArgs.Force @>
     let redirects = results.Contains <@ AddArgs.Redirects @>
-    let createNewBindingFiles = (results.Contains <@ AddArgs.Create_New_Binding_Files @>, results.Contains <@ AddArgs.Create_New_Binding_Files_Legacy @>) |> legacyBool results "--create-new-binding-files" "--createnewbindingfiles"
+    let createNewBindingFiles =
+        (results.Contains <@ AddArgs.Create_New_Binding_Files @>,
+         results.Contains <@ AddArgs.Create_New_Binding_Files_Legacy @>)
+        |> legacyBool results "--create-new-binding-files" "--createnewbindingfiles"
     let cleanBindingRedirects = results.Contains <@ AddArgs.Clean_Redirects @>
-    let group = (results.TryGetResult <@ AddArgs.Group @>, results.TryGetResult <@ AddArgs.Group_Legacy @>) |> legacyOption results "--group" "group"
+    let group =
+        (results.TryGetResult <@ AddArgs.Group @>,
+         results.TryGetResult <@ AddArgs.Group_Legacy @>)
+        |> legacyOption results "--group" "group"
     let noInstall = results.Contains <@ AddArgs.No_Install @>
     let semVerUpdateMode =
         if results.Contains <@ AddArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
@@ -153,7 +164,10 @@ let add (results : ParseResults<_>) =
         if results.Contains <@ AddArgs.Keep_Major @> then SemVerUpdateMode.KeepMajor else
         SemVerUpdateMode.NoRestriction
     let touchAffectedRefs = results.Contains <@ AddArgs.Touch_Affected_Refs @>
-    let project = (results.TryGetResult <@ AddArgs.Project @>, results.TryGetResult <@ AddArgs.Project_Legacy @>) |> legacyOption results "--project" "project"
+    let project =
+        (results.TryGetResult <@ AddArgs.Project @>,
+         results.TryGetResult <@ AddArgs.Project_Legacy @>)
+        |> legacyOption results "--project" "project"
 
     match project with
     | Some projectName ->
@@ -198,7 +212,11 @@ let convert (fromBootstrapper:bool) (results : ParseResults<_>) =
     let force = results.Contains <@ ConvertFromNugetArgs.Force @>
     let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
     let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
-    let credsMigrationMode = (results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>, results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>) |> legacyOption results "--migrate-credentials" "--creds-migration"
+    let credsMigrationMode =
+        (results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>,
+         results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>)
+        |> legacyOption results "--migrate-credentials" "--creds-migration"
+
     Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode, fromBootstrapper=fromBootstrapper)
 
 let findRefs (results : ParseResults<_>) =
@@ -335,11 +353,18 @@ let pack (results : ParseResults<_>) =
                       ?projectUrl = results.TryGetResult <@ PackArgs.ProjectUrl @>)
 
 let findPackages silent (results : ParseResults<_>) =
-    let maxResults = defaultArg ((results.TryGetResult <@ FindPackagesArgs.Max @>, results.TryGetResult <@ FindPackagesArgs.Max_Legacy @>) |> legacyOption results "--max" "max") 10000
+    let maxResults =
+        let arg = (results.TryGetResult <@ FindPackagesArgs.Max_Results @>,
+                   results.TryGetResult <@ FindPackagesArgs.Max_Results_Legacy @>)
+                  |> legacyOption results "--max" "max"
+        defaultArg arg 10000
     let sources  =
         let dependencies = Dependencies.TryLocate()
+        let arg = (results.TryGetResult <@ FindPackagesArgs.Source @>,
+                   results.TryGetResult <@ FindPackagesArgs.Source_Legacy @>)
+                  |> legacyOption results "--source" "source"
 
-        match (results.TryGetResult <@ FindPackagesArgs.Source @>, results.TryGetResult <@ FindPackagesArgs.Source_Legacy @>) |> legacyOption results "--source" "source" , dependencies with
+        match arg, dependencies with
         | Some source, _ ->
             [PackageSource.NuGetV2Source source]
         | _, Some dependencies ->
@@ -352,9 +377,10 @@ let findPackages silent (results : ParseResults<_>) =
         for p in Dependencies.FindPackagesByName(sources,searchText,maxResults) do
             tracefn "%s" p
 
-    let searchOld = results.GetResults <@ FindPackagesArgs.Search_Legacy @> |> List.tryLast
-    let searchNew = results.GetResults <@ FindPackagesArgs.Search @> |> List.tryLast
-    let search = (searchNew, searchOld) |> legacyOption results "(option was removed)" "searchtext"
+    let search =
+        (results.TryGetResult <@ FindPackagesArgs.Search @>,
+         results.TryGetResult <@ FindPackagesArgs.Search_Legacy @>)
+        |> legacyOption results "(omit, option is the new default argument)" "searchtext"
 
     match search with
     | None ->
@@ -468,17 +494,20 @@ let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
     File.WriteAllText (Path.Combine (output,filename), nuspecString)
 
 let why (results: ParseResults<WhyArgs>) =
-    let packageNameOld = results.GetResults <@ WhyArgs.NuGet_Legacy @> |> List.tryLast
-    let packageNameNew = results.GetResults <@ WhyArgs.NuGet @> |> List.tryLast
-    let packageName = match (packageNameNew, packageNameOld) |> legacyOption results "(omit, option is the new default argument)" "nuget" with
-                      | Some(id) ->
-                        id
-                      | _ -> results.GetResult <@ WhyArgs.NuGet @>
-                      |> Domain.PackageName
+    let packageName =
+        let arg = (results.TryGetResult <@ WhyArgs.NuGet @>,
+                   results.TryGetResult <@ WhyArgs.NuGet_Legacy @>)
+                  |> legacyOption results "(omit, option is the new default argument)" "nuget"
+        match arg with
+        | Some(id) -> id
+        | _ -> results.GetResult <@ WhyArgs.NuGet @>
+        |> Domain.PackageName
     let groupName =
-        defaultArg
-            ((results.TryGetResult <@ WhyArgs.Group @>, results.TryGetResult <@ WhyArgs.Group_Legacy @>) |> legacyOption results "--group" "group" |> Option.map Domain.GroupName)
-            Constants.MainDependencyGroup
+        let arg = (results.TryGetResult <@ WhyArgs.Group @>,
+                   results.TryGetResult <@ WhyArgs.Group_Legacy @>)
+                  |> legacyOption results "--group" "group"
+                  |> Option.map Domain.GroupName
+        defaultArg arg Constants.MainDependencyGroup
     let dependencies = Dependencies.Locate()
     let lockFile = dependencies.GetLockFile()
     let directDeps =

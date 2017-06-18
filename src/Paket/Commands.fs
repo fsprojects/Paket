@@ -255,8 +255,8 @@ type FindPackagesArgs =
     | Source of source_feed:string
     | [<Hidden; CustomCommandLine("source")>] Source_Legacy of source_feed:string
 
-    | Max of int
-    | [<Hidden; CustomCommandLine("max")>] Max_Legacy of int
+    | [<CustomCommandLine("--max")>] Max_Results of int
+    | [<Hidden; CustomCommandLine("max")>] Max_Results_Legacy of int
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -267,8 +267,8 @@ with
             | Source(_) -> "specify source feed"
             | Source_Legacy(_) -> "[obsolete]"
 
-            | Max(_) -> "limit maximum number of results"
-            | Max_Legacy(_) -> "[obsolete]"
+            | Max_Results(_) -> "limit maximum number of results"
+            | Max_Results_Legacy(_) -> "[obsolete]"
 
 type FixNuspecArgs =
     | [<Mandatory>][<CustomCommandLine("file")>] File of text:string
