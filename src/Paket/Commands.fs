@@ -253,7 +253,7 @@ type FindPackagesArgs =
     | [<Hidden; CustomCommandLine("searchtext")>] Search_Legacy of package_id:string
 
     | Source of source_feed:string
-    | [<Hidden; CustomCommandLine("source")>] Source_Legacy of text:string
+    | [<Hidden; CustomCommandLine("source")>] Source_Legacy of source_feed:string
 
     | Max of int
     | [<Hidden; CustomCommandLine("max")>] Max_Legacy of int
@@ -264,7 +264,7 @@ with
             | Search(_) -> "search for NuGet package ID"
             | Search_Legacy(_) -> "[obsolete]"
 
-            | Source(_) -> "specifiy source feed"
+            | Source(_) -> "specify source feed"
             | Source_Legacy(_) -> "[obsolete]"
 
             | Max(_) -> "limit maximum number of results"
@@ -320,18 +320,26 @@ with
             | PlaceHolder -> "Doesn't trace other output than installed packages."
 
 type FindPackageVersionsArgs =
-    | [<CustomCommandLine("name"); Hidden>] Name of package_id:string
-    | [<CustomCommandLine("nuget")>] NuGet of package_id:string
-    | [<CustomCommandLine("source")>] Source of source_feed:string
-    | [<CustomCommandLine("max")>] MaxResults of int
+    | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
+    | [<Hidden; CustomCommandLine("nuget", "name")>] NuGet_Legacy of package_id:string
+
+    | Source of source_feed:string
+    | [<Hidden; CustomCommandLine("source")>] Source_Legacy of source_feed:string
+
+    | [<CustomCommandLine("--max")>] Max_Results of int
+    | [<Hidden; CustomCommandLine("max")>] Max_Results_Legacy of int
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Name(_) -> "Name of the package. [DEPRECATED]"
-            | NuGet(_) -> "Name of the NuGet package."
-            | Source(_) -> "Allows to specify the package source feed."
-            | MaxResults(_) -> "Maximum number of results."
+            | NuGet(_) -> "NuGet package ID"
+            | NuGet_Legacy(_) -> "[obsolete]"
+
+            | Source(_) -> "specify source feed"
+            | Source_Legacy(_) -> "[obsolete]"
+
+            | Max_Results(_) -> "limit maximum number of results"
+            | Max_Results_Legacy(_) -> "[obsolete]"
 
 type PackArgs =
     | [<CustomCommandLine("output")>][<Mandatory>] Output of path:string
@@ -408,7 +416,7 @@ with
         | NuGet(_) -> "NuGet package ID"
         | NuGet_Legacy(_) -> "[obsolete]"
 
-        | Group(_) -> "specifiy dependency group (default: Main group)"
+        | Group(_) -> "specify dependency group (default: Main group)"
         | Group_Legacy(_) -> "[obsolete]"
 
         | Details -> "display detailed information with all paths, versions and framework restrictions"

@@ -411,20 +411,30 @@ let showGroups (results : ParseResults<ShowGroupsArgs>) =
         tracefn "%s" groupName
 
 let findPackageVersions (results : ParseResults<_>) =
-    let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
+    let maxResults =
+        let arg = (results.TryGetResult <@ FindPackageVersionsArgs.Max_Results @>,
+                   results.TryGetResult <@ FindPackageVersionsArgs.Max_Results_Legacy @>)
+                  |> legacyOption results "--max" "max"
+        defaultArg arg 10000
     let dependencies = Dependencies.TryLocate()
     let name =
-        match results.TryGetResult <@ FindPackageVersionsArgs.NuGet @> with
-        | Some name -> name
-        | None -> results.GetResult <@ FindPackageVersionsArgs.Name @>
+        let arg = (results.TryGetResult <@ FindPackageVersionsArgs.NuGet @>,
+                   results.TryGetResult <@ FindPackageVersionsArgs.NuGet_Legacy @>)
+                  |> legacyOption results "(omit, option is the new default argument)" "nuget"
+        match arg with
+        | Some(id) -> id
+        | _ -> results.GetResult <@ FindPackageVersionsArgs.NuGet @>
     let sources =
-        match results.TryGetResult <@ FindPackageVersionsArgs.Source @>, dependencies with
+        let arg = (results.TryGetResult <@ FindPackageVersionsArgs.Source @>,
+                   results.TryGetResult <@ FindPackageVersionsArgs.Source_Legacy @>)
+                  |> legacyOption results "--source" "source"
+        match arg, dependencies with
         | Some source, _ ->
             [PackageSource.NuGetV2Source source]
         | _, Some dependencies ->
             dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat
         | _ ->
-            failwithf "Could not find '%s' at or above current directory, and no explicit source was given as parameter (e.g. 'paket.exe find-package-versions source https://www.nuget.org/api/v2')."
+            failwithf "Could not find '%s' at or above current directory, and no explicit source was given as parameter (e.g. 'paket.exe find-package-versions --source https://www.nuget.org/api/v2')."
                 Constants.DependenciesFileName
     let root =
         match dependencies with
