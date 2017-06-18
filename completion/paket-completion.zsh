@@ -95,6 +95,23 @@ _paket_group_option() {
   print -l '(--group -g)'{--group,-g}"[$1]:group:_paket_groups"
 }
 
+(( $+functions[_paket_source_url] )) ||
+_paket_source_url() {
+  local state="$1" ret=1
+
+  case $state in
+    (source-url)
+      _alternative \
+        'source::_paket_sources' \
+        ' :NuGet.org feeds:(https://www.nuget.org/api/v2 https://api.nuget.org/v3/index.json)' \
+        'urls::_urls' \
+      && ret=0
+    ;;
+  esac
+
+  return ret
+}
+
 (( $+functions[_paket-add] )) ||
 _paket-add() {
   local curcontext=$curcontext state line ret=1
@@ -270,22 +287,24 @@ _paket-convert-from-nuget() {
   return ret
 }
 
-(( $+functions[_paket-why] )) ||
-_paket-why() {
+(( $+functions[_paket-find-package-versions] )) ||
+_paket-find-package-versions() {
   local curcontext=$curcontext state line ret=1
   declare -A opt_args
 
   local -a args
   args=(
     $global_options
-    '(--details)'--details'[display detailed information with all paths, versions and framework restrictions]'
-    "${(f)$(_paket_group_option 'specifiy dependency group (default: Main group)')}"
+    '(--source)'--source'[specify source feed]: :->source-url'
+    '(--max)'--max'[limit maximum number of results]:maxiumum results:(1 5 10 50 100 1000)'
   )
 
   _arguments -C \
     $args \
-    ':NuGet package ID:_paket_installed_packages' \
+    ':NuGet package ID:_paket_nuget_packages "${words[-1]}"' \
   && ret=0
+
+  _paket_source_url "$state" && ret=0
 
   return ret
 }
@@ -298,13 +317,35 @@ _paket-find-packages() {
   local -a args
   args=(
     $global_options
-    '(--source)'--source'[specifiy source feed]'
+    '(--source)'--source'[specify source feed]: :->source-url'
     '(--max)'--max'[limit maximum number of results]:maxiumum results:(1 5 10 50 100 1000)'
   )
 
   _arguments -C \
     $args \
     ':NuGet package ID:_paket_nuget_packages "${words[-1]}"' \
+  && ret=0
+
+  _paket_source_url "$state" && ret=0
+
+  return ret
+}
+
+(( $+functions[_paket-why] )) ||
+_paket-why() {
+  local curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    '(--details)'--details'[display detailed information with all paths, versions and framework restrictions]'
+    "${(f)$(_paket_group_option 'specify dependency group (default: Main group)')}"
+  )
+
+  _arguments -C \
+    $args \
+    ':NuGet package ID:_paket_installed_packages' \
   && ret=0
 
   return ret
