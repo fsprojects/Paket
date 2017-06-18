@@ -36,13 +36,13 @@ with
             | NuGet(_) -> "NuGet package ID"
             | NuGet_Legacy(_) -> "[obsolete]"
 
-            | Group(_) -> "add the package to a group (default: Main group)"
+            | Group(_) -> "add the dependency to a group (default: Main group)"
             | Group_Legacy(_) -> "[obsolete]"
 
-            | Version(_) -> "package version constraint"
+            | Version(_) -> "dependency version constraint"
             | Version_Legacy(_) -> "[obsolete]"
 
-            | Project(_) -> "add the package to a single project only"
+            | Project(_) -> "add the dependency to a single project only"
             | Project_Legacy(_) -> "[obsolete]"
 
             | Create_New_Binding_Files -> "create binding redirect files if needed"
@@ -52,7 +52,7 @@ with
             | Interactive -> "ask for every project whether to add the dependency"
             | Redirects -> "create binding redirects"
             | Clean_Redirects -> "remove binding redirects that were not created by Paket"
-            | No_Install -> "skip install process after resolving dependencies"
+            | No_Install -> "do not add dependencies to projects"
             | Keep_Major -> "only allow updates that preserve the major version"
             | Keep_Minor -> "only allow updates that preserve the minor version"
             | Keep_Patch -> "only allow updates that preserve the patch version"
@@ -76,15 +76,19 @@ type ConvertFromNugetArgs =
     | [<AltCommandLine("-f")>] Force
     | No_Install
     | No_Auto_Restore
-    | Creds_Migration of mode:string
+
+    | Migrate_Credentials of mode:string
+    | [<Hidden;CustomCommandLine("--creds-migrations")>] Migrate_Credentials_Legacy of mode:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Force -> "Forces the conversion, even if paket.dependencies or paket.references files are present."
-            | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
-            | No_Auto_Restore -> "Skips paket auto-restore process afterward generation of dependencies / references files."
-            | Creds_Migration(_) -> "Specify a mode for migrating NuGet source credentials. Possible values are [`encrypt`|`plaintext`|`selective`]. The default mode is `encrypt`."
+            | Force -> "force the conversion even if paket.dependencies or paket.references files are present"
+            | No_Install -> "do not add dependencies to projects"
+            | No_Auto_Restore -> "do not enable Paket's auto-restore"
+
+            | Migrate_Credentials(_) -> "specify mode for NuGet source credential migration: encrypt|plaintext|selective (default: encrypt)"
+            | Migrate_Credentials_Legacy(_) -> "[obsolete]"
 
 type FindRefsArgs =
     | [<CustomCommandLine("group")>] Group of name:string

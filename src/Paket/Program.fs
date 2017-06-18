@@ -198,7 +198,7 @@ let convert (fromBootstrapper:bool) (results : ParseResults<_>) =
     let force = results.Contains <@ ConvertFromNugetArgs.Force @>
     let noInstall = results.Contains <@ ConvertFromNugetArgs.No_Install @>
     let noAutoRestore = results.Contains <@ ConvertFromNugetArgs.No_Auto_Restore @>
-    let credsMigrationMode = results.TryGetResult <@ ConvertFromNugetArgs.Creds_Migration @>
+    let credsMigrationMode = (results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>, results.TryGetResult <@ ConvertFromNugetArgs.Migrate_Credentials @>) |> legacyOption results "--migrate-credentials" "--creds-migration"
     Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode, fromBootstrapper=fromBootstrapper)
 
 let findRefs (results : ParseResults<_>) =
