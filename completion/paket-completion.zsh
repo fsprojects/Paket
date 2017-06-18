@@ -153,6 +153,23 @@ _paket-auto-restore() {
   return ret
 }
 
+(( $+functions[_paket-clear-cache] )) ||
+_paket-clear-cache() {
+  local curcontext=$curcontext state line ret=1
+  declare -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+  )
+
+  _arguments -C \
+    $args \
+  && ret=0
+
+  return ret
+}
+
 (( $+functions[_paket-config] )) ||
 _paket-config() {
   local curcontext=$curcontext state line ret=1
