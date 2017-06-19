@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>ContentCopySettings - Paket</title>
+    <title>ResolverTaskMemory<'a> - Paket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content=""/>
     <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
@@ -58,31 +58,32 @@
 
 
 
-<h1>ContentCopySettings</h1>
+<h1>ResolverTaskMemory<'a></h1>
 <p>
   <span>Namespace: Paket</span><br />
-  <span>Parent Module: <a href="paket-requirements.html">Requirements</a></span>
+  <span>Parent Module: <a href="paket-packageresolver.html">PackageResolver</a></span>
 </p>
 <div class="xmldoc">
 </div>
-  <h3>Union Cases</h3>
+  <h3>Record Fields</h3>
   <table class="table table-bordered member-list">
     <thead>
-      <tr><td>Union Case</td><td>Description</td></tr>
+      <tr><td>Record Field</td><td>Description</td></tr>
     </thead>
     <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '994', 994)" onmouseover="showTip(event, '994', 994)">
-            Omit
+          <code onmouseout="hideTip(event, '918', 918)" onmouseover="showTip(event, '918', 918)">
+            WaitedAlready
           </code>
-          <div class="tip" id="994">
-            <strong>Signature:</strong> <br />
+          <div class="tip" id="918">
+            <strong>Signature:</strong> bool<br />
+              <strong>Modifiers:</strong> mutable<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L658-658" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L793-793" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -92,33 +93,41 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '995', 995)" onmouseover="showTip(event, '995', 995)">
-            OmitIfExisting
+          <code onmouseout="hideTip(event, '919', 919)" onmouseover="showTip(event, '919', 919)">
+            Work
           </code>
-          <div class="tip" id="995">
-            <strong>Signature:</strong> <br />
+          <div class="tip" id="919">
+            <strong>Signature:</strong> WorkHandle&lt;&#39;a&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L660-660" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L793-793" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
         </td>
       </tr>
+    </tbody>
+  </table>
+  <h3>Instance members</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Instance member</td><td>Description</td></tr>
+    </thead>
+    <tbody>
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '996', 996)" onmouseover="showTip(event, '996', 996)">
-            Overwrite
+          <code onmouseout="hideTip(event, '920', 920)" onmouseover="showTip(event, '920', 920)">
+            Wait(timeout)
           </code>
-          <div class="tip" id="996">
-            <strong>Signature:</strong> <br />
+          <div class="tip" id="920">
+            <strong>Signature:</strong> timeout:int -&gt; bool * bool<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Versioning/Requirements.fs#L659-659" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L794-794" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
