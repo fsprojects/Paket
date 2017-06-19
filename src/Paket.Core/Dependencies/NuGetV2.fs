@@ -203,15 +203,16 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
 
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     async {
+        let firstUrl = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) (version.Normalize())
         try
-            let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) (version.Normalize())
-            let! raw = getFromUrl(auth,url,acceptXml)
+            let! raw = getFromUrl(auth,firstUrl,acceptXml)
             if verbose then
-                tracefn "Response from %s:" url
+                tracefn "Response from %s:" firstUrl
                 tracefn ""
                 tracefn "%s" raw
-            return parseODataDetails(url,nugetURL,packageName,version,raw)
-        with _ ->
+            return parseODataDetails(firstUrl,nugetURL,packageName,version,raw)
+        with ex ->
+            traceWarnfn "Failed to getDetailsFromNuGetViaODataFast '%s'. Trying with Version instead of NormalizedVersion: %O" firstUrl ex
             let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
             let! raw = getFromUrl(auth,url,acceptXml)
             if verbose then
