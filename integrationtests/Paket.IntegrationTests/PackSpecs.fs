@@ -166,6 +166,7 @@ let ``#1429 pack deps without minimum-from-lock-file uses specifc dependencies f
     let details = 
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
     details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
     let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
