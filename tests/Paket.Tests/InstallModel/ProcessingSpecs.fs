@@ -380,7 +380,7 @@ let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``()
               @"..\Microsoft.Bcl\lib\net45\_._" ] |> fromLegacyList @"..\Microsoft.Bcl\")
             .FilterBlackList()
 
-    model.GetLegacyReferences(SinglePlatform MonoAndroid) |> shouldBeEmpty
+    model.GetLegacyReferences(SinglePlatform (MonoAndroid MonoAndroidVersion.V1)) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform MonoTouch) |> shouldBeEmpty
 
 [<Test>]
@@ -476,9 +476,9 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
 
-    model.GetLegacyReferences(SinglePlatform MonoAndroid)
+    model.GetLegacyReferences(SinglePlatform (MonoAndroid MonoAndroidVersion.V1))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
-    model.GetLegacyReferences(SinglePlatform MonoAndroid)
+    model.GetLegacyReferences(SinglePlatform (MonoAndroid MonoAndroidVersion.V1))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll" 
 
     model.GetLegacyReferences(SinglePlatform MonoTouch)
@@ -567,7 +567,7 @@ let ``should handle lib install of MicrosoftBcl``() =
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldBeEmpty
-    model.GetLegacyReferences(SinglePlatform MonoAndroid) |> shouldBeEmpty
+    model.GetLegacyReferences(SinglePlatform (MonoAndroid MonoAndroidVersion.V1)) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform MonoTouch) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform (Windows WindowsVersion.V8)) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform (WindowsPhone WindowsPhoneVersion.V8)) |> shouldBeEmpty

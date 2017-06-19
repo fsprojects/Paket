@@ -1,3 +1,7 @@
+#### 5.1.3 - 19.06.2017
+* BUGFIX: Add proper versioning of MonoAndroid framework - https://github.com/fsprojects/Paket/pull/2427
+* BUGFIX: Paket.pack: Fixed another issue with duplicate files - https://github.com/fsprojects/Paket/issues/2445
+
 #### 5.1.0 - 18.06.2017
 * Paket.pack: support for NuGet dependencies conditional on target framework - https://github.com/fsprojects/Paket/pull/2428
 * BUGFIX: Overwrite target file when link option is false - https://github.com/fsprojects/Paket/pull/2433

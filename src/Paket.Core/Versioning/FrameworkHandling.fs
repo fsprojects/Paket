@@ -276,6 +276,55 @@ type SilverlightVersion =
         | SilverlightVersion.V5 -> "v5.0"
 
 [<RequireQualifiedAccess>]
+type MonoAndroidVersion =
+    | V1
+    | V22
+    | V23
+    | V403
+    | V41
+    | V42
+    | V43
+    | V44
+    | V44W
+    | V5
+    | V51
+    | V6
+    | V7
+    | V71
+    member this.ShortString() =
+        match this with
+        | MonoAndroidVersion.V1    -> ""
+        | MonoAndroidVersion.V22   -> "2.2"
+        | MonoAndroidVersion.V23   -> "2.3"
+        | MonoAndroidVersion.V403  -> "4.0.3"
+        | MonoAndroidVersion.V41   -> "4.1"
+        | MonoAndroidVersion.V42   -> "4.2"
+        | MonoAndroidVersion.V43   -> "4.3"
+        | MonoAndroidVersion.V44   -> "4.4"
+        | MonoAndroidVersion.V44W  -> "4.4W"
+        | MonoAndroidVersion.V5    -> "5.0"
+        | MonoAndroidVersion.V51   -> "5.1"
+        | MonoAndroidVersion.V6    -> "6.0"
+        | MonoAndroidVersion.V7    -> "7.0"
+        | MonoAndroidVersion.V71   -> "7.1"
+    override this.ToString() =
+        match this with
+        | MonoAndroidVersion.V1    -> "v1.0"
+        | MonoAndroidVersion.V22   -> "v2.2"
+        | MonoAndroidVersion.V23   -> "v2.3"
+        | MonoAndroidVersion.V403  -> "v4.0.3"
+        | MonoAndroidVersion.V41   -> "v4.1"
+        | MonoAndroidVersion.V42   -> "v4.2"
+        | MonoAndroidVersion.V43   -> "v4.3"
+        | MonoAndroidVersion.V44   -> "v4.4"
+        | MonoAndroidVersion.V44W  -> "v4.4W"
+        | MonoAndroidVersion.V5    -> "v5.0"
+        | MonoAndroidVersion.V51    -> "v5.1"
+        | MonoAndroidVersion.V6    -> "v6.0"
+        | MonoAndroidVersion.V7    -> "v7.0"
+        | MonoAndroidVersion.V71   -> "v7.1"
+
+[<RequireQualifiedAccess>]
 type WindowsVersion =
     | V8
     | V8_1
@@ -308,7 +357,7 @@ type FrameworkIdentifier =
     | DotNetStandard of DotNetStandardVersion
     | DotNetCore of DotNetCoreVersion
     | DotNetUnity of DotNetUnityVersion
-    | MonoAndroid
+    | MonoAndroid of MonoAndroidVersion
     | MonoTouch
     | MonoMac
     | Native of BuildMode * Platform
@@ -327,7 +376,7 @@ type FrameworkIdentifier =
         | DotNetStandard v -> "netstandard" + v.ShortString()
         | DotNetCore v -> "netcore" + v.ShortString()
         | DotNetUnity v -> "net" + v.ShortString()
-        | MonoAndroid -> "monoandroid"
+        | MonoAndroid v -> "monoandroid" + v.ShortString()
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
         | Native(_) -> "native"
@@ -362,7 +411,21 @@ type FrameworkIdentifier =
     // returns a list of compatible platforms that this platform also supports
     member internal x.RawSupportedPlatforms =
         match x with
-        | MonoAndroid -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | MonoAndroid MonoAndroidVersion.V1 -> []
+        | MonoAndroid MonoAndroidVersion.V22 -> [ MonoAndroid MonoAndroidVersion.V1 ]
+        | MonoAndroid MonoAndroidVersion.V23 -> [ MonoAndroid MonoAndroidVersion.V22 ]
+        | MonoAndroid MonoAndroidVersion.V403 -> [ MonoAndroid MonoAndroidVersion.V23 ]
+        | MonoAndroid MonoAndroidVersion.V41 -> [ MonoAndroid MonoAndroidVersion.V403 ]
+        | MonoAndroid MonoAndroidVersion.V42 -> [ MonoAndroid MonoAndroidVersion.V41 ]
+        | MonoAndroid MonoAndroidVersion.V43 -> [ MonoAndroid MonoAndroidVersion.V42 ]
+        | MonoAndroid MonoAndroidVersion.V44 -> [ MonoAndroid MonoAndroidVersion.V43 ]
+        //https://stackoverflow.com/questions/28170345/what-exactly-is-android-4-4w-vs-4-4-and-what-about-5-0-1
+        | MonoAndroid MonoAndroidVersion.V44W -> [ MonoAndroid MonoAndroidVersion.V44 ]
+        | MonoAndroid MonoAndroidVersion.V5 -> [ MonoAndroid MonoAndroidVersion.V44W]
+        | MonoAndroid MonoAndroidVersion.V51 -> [ MonoAndroid MonoAndroidVersion.V5 ]
+        | MonoAndroid MonoAndroidVersion.V6 -> [ MonoAndroid MonoAndroidVersion.V51 ]
+        | MonoAndroid MonoAndroidVersion.V7 -> [ MonoAndroid MonoAndroidVersion.V6; DotNetStandard DotNetStandardVersion.V1_6 ]
+        | MonoAndroid MonoAndroidVersion.V71 -> [ MonoAndroid MonoAndroidVersion.V7 ]
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
@@ -475,7 +538,20 @@ module FrameworkDetection =
                 | "net47" -> Some (DotNetFramework FrameworkVersion.V4_7)
                 | "uap100" -> Some (UAP UAPVersion.V10)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
-                | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid44" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50" | "monoandroid60" | "monoandroid70" -> Some MonoAndroid
+                | "monoandroid" | "monoandroid10" | "monoandroid1.0" | "monoandroid1" -> Some (MonoAndroid MonoAndroidVersion.V1)
+                | "monoandroid22" -> Some (MonoAndroid MonoAndroidVersion.V22)
+                | "monoandroid23" -> Some (MonoAndroid MonoAndroidVersion.V23)
+                | "monoandroid403" -> Some (MonoAndroid MonoAndroidVersion.V403)
+                | "monoandroid41" -> Some (MonoAndroid MonoAndroidVersion.V41)
+                | "monoandroid42" -> Some (MonoAndroid MonoAndroidVersion.V42)
+                | "monoandroid43" -> Some (MonoAndroid MonoAndroidVersion.V43)
+                | "monoandroid44" -> Some (MonoAndroid MonoAndroidVersion.V44)
+                | "monoandroid44w" -> Some (MonoAndroid MonoAndroidVersion.V44W)
+                | "monoandroid50" -> Some (MonoAndroid MonoAndroidVersion.V5)
+                | "monoandroid51" -> Some (MonoAndroid MonoAndroidVersion.V51)
+                | "monoandroid60" -> Some (MonoAndroid MonoAndroidVersion.V6)
+                | "monoandroid70" | "monoandroid7.0"-> Some (MonoAndroid MonoAndroidVersion.V7)
+                | "monoandroid71" | "monoandroid7.1"-> Some (MonoAndroid MonoAndroidVersion.V71)
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
@@ -814,6 +890,27 @@ module KnownTargetProfiles =
        SilverlightVersions
        |> List.map (Silverlight >> SinglePlatform)
 
+    let MonoAndroidVersions = [
+        MonoAndroidVersion.V1
+        MonoAndroidVersion.V22
+        MonoAndroidVersion.V23
+        MonoAndroidVersion.V403
+        MonoAndroidVersion.V41
+        MonoAndroidVersion.V42
+        MonoAndroidVersion.V43
+        MonoAndroidVersion.V44
+        MonoAndroidVersion.V44W
+        MonoAndroidVersion.V5
+        MonoAndroidVersion.V51
+        MonoAndroidVersion.V6
+        MonoAndroidVersion.V7
+        MonoAndroidVersion.V71
+    ]
+
+    let MonoAndroidProfiles =
+       MonoAndroidVersions
+       |> List.map (MonoAndroid >> SinglePlatform)
+
     let UAPProfiles =
        [SinglePlatform(UAP UAPVersion.V10)]
 
@@ -883,8 +980,8 @@ module KnownTargetProfiles =
        UAPProfiles @
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
-       [SinglePlatform(MonoAndroid)
-        SinglePlatform(MonoTouch)
+       MonoAndroidProfiles @
+       [SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
         SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)] @
@@ -1028,7 +1125,7 @@ module SupportCalculation =
                     | MonoTouch
                     | DNXCore _
                     | UAP _
-                    | MonoAndroid -> false
+                    | MonoAndroid _ -> false
                     | DotNetCore _
                     | DotNetStandard _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
                     | _ -> true)
@@ -1083,7 +1180,7 @@ module SupportCalculation =
                       Profile44 
                       Profile151 ]
                 | MonoTouch
-                | MonoAndroid
+                | MonoAndroid _
                 | XamariniOS
                 | XamarinMac ->
                     // http://danrigby.com/2014/05/14/supported-pcl-profiles-xamarin-for-visual-studio-2/

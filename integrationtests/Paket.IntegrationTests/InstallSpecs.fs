@@ -306,6 +306,8 @@ let ``#1467 install package into vcxproj``() =
     let newLockFile = install "i001467-cpp"
     let newFile = Path.Combine(scenarioTempPath "i001467-cpp","MyClassLibrary","ConsoleApplication1","ConsoleApplication1.vcxproj")
     let oldFile = Path.Combine(originalScenarioPath "i001467-cpp","MyClassLibrary","ConsoleApplication1","ConsoleApplication1.vcxprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -334,6 +336,8 @@ let ``#1578 should reference transitive dep from ref``() =
     install scenario |> ignore
     let newFile = Path.Combine(scenarioTempPath scenario,"TestPaketDotNet","TestPaketDotNet.csproj")
     let oldFile = Path.Combine(originalScenarioPath scenario,"TestPaketDotNet","TestPaketDotNet.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -455,6 +459,8 @@ let ``#1333 should install framework refs only once``() =
     install "i001333-dup-refs" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001333-dup-refs","ConsoleApplication1","ConsoleApplication1.fsproj")
     let oldFile = Path.Combine(originalScenarioPath "i001333-dup-refs","ConsoleApplication1","ConsoleApplication1.fsprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
