@@ -282,9 +282,12 @@ type MonoAndroidVersion =
     | V23
     | V403
     | V41
+    | V42
     | V43
     | V44
+    | V44W
     | V5
+    | V51
     | V6
     | V7
     | V71
@@ -293,27 +296,33 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V1    -> ""
         | MonoAndroidVersion.V22   -> "2.2"
         | MonoAndroidVersion.V23   -> "2.3"
-        | MonoAndroidVersion.V403  -> "4.03"
+        | MonoAndroidVersion.V403  -> "4.0.3"
         | MonoAndroidVersion.V41   -> "4.1"
+        | MonoAndroidVersion.V42   -> "4.2"
         | MonoAndroidVersion.V43   -> "4.3"
         | MonoAndroidVersion.V44   -> "4.4"
+        | MonoAndroidVersion.V44W  -> "4.4W"
         | MonoAndroidVersion.V5    -> "5.0"
+        | MonoAndroidVersion.V51   -> "5.1"
         | MonoAndroidVersion.V6    -> "6.0"
         | MonoAndroidVersion.V7    -> "7.0"
-        | MonoAndroidVersion.V71    -> "7.1"
+        | MonoAndroidVersion.V71   -> "7.1"
     override this.ToString() =
         match this with
         | MonoAndroidVersion.V1    -> "v1.0"
         | MonoAndroidVersion.V22   -> "v2.2"
         | MonoAndroidVersion.V23   -> "v2.3"
-        | MonoAndroidVersion.V403  -> "v4.03"
+        | MonoAndroidVersion.V403  -> "v4.0.3"
         | MonoAndroidVersion.V41   -> "v4.1"
+        | MonoAndroidVersion.V42   -> "v4.2"
         | MonoAndroidVersion.V43   -> "v4.3"
         | MonoAndroidVersion.V44   -> "v4.4"
+        | MonoAndroidVersion.V44W  -> "v4.4W"
         | MonoAndroidVersion.V5    -> "v5.0"
+        | MonoAndroidVersion.V51    -> "v5.1"
         | MonoAndroidVersion.V6    -> "v6.0"
         | MonoAndroidVersion.V7    -> "v7.0"
-        | MonoAndroidVersion.V71    -> "v7.1"
+        | MonoAndroidVersion.V71   -> "v7.1"
 
 [<RequireQualifiedAccess>]
 type WindowsVersion =
@@ -407,12 +416,16 @@ type FrameworkIdentifier =
         | MonoAndroid MonoAndroidVersion.V23 -> [ MonoAndroid MonoAndroidVersion.V22 ]
         | MonoAndroid MonoAndroidVersion.V403 -> [ MonoAndroid MonoAndroidVersion.V23 ]
         | MonoAndroid MonoAndroidVersion.V41 -> [ MonoAndroid MonoAndroidVersion.V403 ]
-        | MonoAndroid MonoAndroidVersion.V43 -> [ MonoAndroid MonoAndroidVersion.V41 ]
+        | MonoAndroid MonoAndroidVersion.V42 -> [ MonoAndroid MonoAndroidVersion.V41 ]
+        | MonoAndroid MonoAndroidVersion.V43 -> [ MonoAndroid MonoAndroidVersion.V42 ]
         | MonoAndroid MonoAndroidVersion.V44 -> [ MonoAndroid MonoAndroidVersion.V43 ]
-        | MonoAndroid MonoAndroidVersion.V5 -> [ MonoAndroid MonoAndroidVersion.V44 ]
-        | MonoAndroid MonoAndroidVersion.V6 -> [ MonoAndroid MonoAndroidVersion.V5 ]
-        | MonoAndroid MonoAndroidVersion.V7-> [ MonoAndroid MonoAndroidVersion.V6; DotNetStandard DotNetStandardVersion.V1_6 ]
-        | MonoAndroid MonoAndroidVersion.V71-> [ MonoAndroid MonoAndroidVersion.V7 ]
+        //https://stackoverflow.com/questions/28170345/what-exactly-is-android-4-4w-vs-4-4-and-what-about-5-0-1
+        | MonoAndroid MonoAndroidVersion.V44W -> [ MonoAndroid MonoAndroidVersion.V44 ]
+        | MonoAndroid MonoAndroidVersion.V5 -> [ MonoAndroid MonoAndroidVersion.V44W]
+        | MonoAndroid MonoAndroidVersion.V51 -> [ MonoAndroid MonoAndroidVersion.V5 ]
+        | MonoAndroid MonoAndroidVersion.V6 -> [ MonoAndroid MonoAndroidVersion.V51 ]
+        | MonoAndroid MonoAndroidVersion.V7 -> [ MonoAndroid MonoAndroidVersion.V6; DotNetStandard DotNetStandardVersion.V1_6 ]
+        | MonoAndroid MonoAndroidVersion.V71 -> [ MonoAndroid MonoAndroidVersion.V7 ]
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
@@ -530,9 +543,12 @@ module FrameworkDetection =
                 | "monoandroid23" -> Some (MonoAndroid MonoAndroidVersion.V23)
                 | "monoandroid403" -> Some (MonoAndroid MonoAndroidVersion.V403)
                 | "monoandroid41" -> Some (MonoAndroid MonoAndroidVersion.V41)
+                | "monoandroid42" -> Some (MonoAndroid MonoAndroidVersion.V42)
                 | "monoandroid43" -> Some (MonoAndroid MonoAndroidVersion.V43)
                 | "monoandroid44" -> Some (MonoAndroid MonoAndroidVersion.V44)
+                | "monoandroid44w" -> Some (MonoAndroid MonoAndroidVersion.V44W)
                 | "monoandroid50" -> Some (MonoAndroid MonoAndroidVersion.V5)
+                | "monoandroid51" -> Some (MonoAndroid MonoAndroidVersion.V51)
                 | "monoandroid60" -> Some (MonoAndroid MonoAndroidVersion.V6)
                 | "monoandroid70" | "monoandroid7.0"-> Some (MonoAndroid MonoAndroidVersion.V7)
                 | "monoandroid71" | "monoandroid7.1"-> Some (MonoAndroid MonoAndroidVersion.V71)
@@ -880,9 +896,12 @@ module KnownTargetProfiles =
         MonoAndroidVersion.V23
         MonoAndroidVersion.V403
         MonoAndroidVersion.V41
+        MonoAndroidVersion.V42
         MonoAndroidVersion.V43
         MonoAndroidVersion.V44
+        MonoAndroidVersion.V44W
         MonoAndroidVersion.V5
+        MonoAndroidVersion.V51
         MonoAndroidVersion.V6
         MonoAndroidVersion.V7
         MonoAndroidVersion.V71
