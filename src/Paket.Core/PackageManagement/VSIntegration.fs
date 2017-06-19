@@ -19,8 +19,10 @@ let TurnOffAutoRestore environment =
         environment.Projects
         |> List.map fst
         |> List.iter (fun project ->
-            project.RemoveImportForPaketTargets()
-            project.Save(false)
+            let toolsVersion = project.GetToolsVersion()
+            if toolsVersion < 15.0 then 
+                project.RemoveImportForPaketTargets()
+                project.Save(false)
         )
     }
 
