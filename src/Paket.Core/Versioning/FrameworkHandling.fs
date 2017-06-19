@@ -287,6 +287,7 @@ type MonoAndroidVersion =
     | V5
     | V6
     | V7
+    | V71
     member this.ShortString() =
         match this with
         | MonoAndroidVersion.V1    -> ""
@@ -299,6 +300,7 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V5    -> "5.0"
         | MonoAndroidVersion.V6    -> "6.0"
         | MonoAndroidVersion.V7    -> "7.0"
+        | MonoAndroidVersion.V71    -> "7.1"
     override this.ToString() =
         match this with
         | MonoAndroidVersion.V1    -> "v1.0"
@@ -311,6 +313,7 @@ type MonoAndroidVersion =
         | MonoAndroidVersion.V5    -> "v5.0"
         | MonoAndroidVersion.V6    -> "v6.0"
         | MonoAndroidVersion.V7    -> "v7.0"
+        | MonoAndroidVersion.V71    -> "v7.1"
 
 [<RequireQualifiedAccess>]
 type WindowsVersion =
@@ -409,6 +412,7 @@ type FrameworkIdentifier =
         | MonoAndroid MonoAndroidVersion.V5 -> [ MonoAndroid MonoAndroidVersion.V44 ]
         | MonoAndroid MonoAndroidVersion.V6 -> [ MonoAndroid MonoAndroidVersion.V5 ]
         | MonoAndroid MonoAndroidVersion.V7-> [ MonoAndroid MonoAndroidVersion.V6; DotNetStandard DotNetStandardVersion.V1_6 ]
+        | MonoAndroid MonoAndroidVersion.V71-> [ MonoAndroid MonoAndroidVersion.V7 ]
         | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
@@ -531,6 +535,7 @@ module FrameworkDetection =
                 | "monoandroid50" -> Some (MonoAndroid MonoAndroidVersion.V5)
                 | "monoandroid60" -> Some (MonoAndroid MonoAndroidVersion.V6)
                 | "monoandroid70" | "monoandroid7.0"-> Some (MonoAndroid MonoAndroidVersion.V7)
+                | "monoandroid71" | "monoandroid7.1"-> Some (MonoAndroid MonoAndroidVersion.V71)
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
@@ -880,6 +885,7 @@ module KnownTargetProfiles =
         MonoAndroidVersion.V5
         MonoAndroidVersion.V6
         MonoAndroidVersion.V7
+        MonoAndroidVersion.V71
     ]
 
     let MonoAndroidProfiles =
