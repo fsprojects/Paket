@@ -5,6 +5,56 @@
 # This script is based on the excellent git complection in zsh. Many thanks
 # to its authors!
 #
+#
+# INSTALLATION
+#
+# Download this file somewhere to your home directory and add its directory to
+# your zsh fpath before running compinit.
+#
+#   fpath=($HOME/directory/where/_paket/resides $fpath)
+#
+#
+# PAKET ALIAS
+#
+# For easier consumption of Paket (without paket.sh or paket.cmd) it is advised
+# to create an alias and always run Paket from the repository root.
+#
+# Somewhere in your ~/.zshrc:
+#
+#   if [[ "$OS" != "Windows_NT" ]]; then
+#     alias paket='mono ./.paket/paket.exe'
+#   else
+#     alias paket='./.paket/paket.exe'
+#   fi
+#
+#  Also ensure that zsh completes aliases based on the expanded alias contents.
+#  http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETEALIASES
+#
+#    unsetopt completealiases
+#
+#  If you don't like alias completion, define that the paket alias should be
+#  completed using the _paket function defined in this file.
+#
+#    setopt completealiases
+#    compdef _paket paket
+#
+#
+# MONO
+#
+# If you use mono (e.g. Linux or macOS) and do not have mono completion
+# installed, you need to define that mono invokes other programs:
+#
+#   compdef _precommand mono
+#
+# This is similar to `nohup` invoking the "real" program that needs to be
+# completed. More details: https://unix.stackexchange.com/a/178054/72946
+#
+# For an exemplar mono completion, have a look here:
+# https://github.com/agross/dotfiles/tree/master/mono/_functions/_mono
+#
+#
+# CONFIGURATION
+#
 # You can configure some aspects of Paket completion:
 #
 # Disable fallback (i.e. default zsh) completion for Paket commands that do not
@@ -85,7 +135,7 @@ _paket() {
     $global_options \
     '(-): :->command' \
     '(-)*:: :->option-or-argument' \
-  && return
+  && ret=0
 
   case "$state" in
     (command)
