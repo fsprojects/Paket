@@ -93,6 +93,7 @@
     <None Include="Nuspec\ReadOnlyCollectionExtensions.nuspec" />
     <None Include="Nuspec\WindowsAzure.Storage.nuspec" />
     <None Include="Nuspec\EasyNetQ.nuspec" />
+    <None Include="Nuspec\Xamarin.Forms.nuspec" />
     <Compile Include="Nuspec\NuspecSpecs.fs" />
     <Compile Include="NuGetLocal\NuGetLocalSpecs.fs" />
     <None Include="NuGetLocal\case1\package.name.0.1.0-alpha2.nupkg">
@@ -113,7 +114,6 @@
     <None Include="NuGetLocal\case3\netstedFolder\package.in.nested.folder.1.0.0.nupkg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="Nuspec\Xamarin.Forms.nuspec" />
     <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
