@@ -1,4 +1,4 @@
-#### 5.1.2 - 19.06.2017
+#### 5.1.3 - 19.06.2017
 * BUGFIX: Add proper versioning of MonoAndroid framework - https://github.com/fsprojects/Paket/pull/2427
 * BUGFIX: Paket.pack: Fixed another issue with duplicate files - https://github.com/fsprojects/Paket/issues/2445
 

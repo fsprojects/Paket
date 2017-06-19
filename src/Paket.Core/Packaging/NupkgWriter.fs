@@ -308,7 +308,7 @@ module internal NupkgWriter =
             let target = Path.GetFullPath path
             if entries.Contains path || fileNameEntries.Contains target then () else
             entries.Add path |> ignore
-            fileNameEntries.Add fullName |> ignore
+            fileNameEntries.Add target |> ignore
 
             zipFile.CreateEntryFromFile(fullName,path) |> ignore
 
