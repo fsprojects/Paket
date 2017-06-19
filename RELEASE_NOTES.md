@@ -1,3 +1,6 @@
+#### 5.1.5 - 19.06.2017
+* BUGFIX: Paket.pack: Fixed another issue with duplicate files - https://github.com/fsprojects/Paket/issues/2445
+
 #### 5.1.4 - 19.06.2017
 * BUGFIX: Disable AutoRestore features for MSBuild 15 - https://github.com/fsprojects/Paket/issues/2446
 
