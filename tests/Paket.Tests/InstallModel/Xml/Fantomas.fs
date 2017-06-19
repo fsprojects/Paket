@@ -143,7 +143,7 @@ let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0"
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Choose>
-    <When Condition="'$(LEGACY)' == 'True' And (($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS'))">
+    <When Condition="'$(LEGACY)' == 'True' And (($(TargetFrameworkIdentifier) == 'MonoAndroid' And $(TargetFrameworkVersion) == 'v1.0') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS'))">
       <ItemGroup>
         <Reference Include="FantomasLib">
           <HintPath>..\..\..\Fantomas\lib\portable-net45+win8\FantomasLib.dll</HintPath>
@@ -163,7 +163,7 @@ let ``should generate full Xml with reference condition and framework restrictio
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
             [ FrameworkRestriction.Exactly (FrameworkIdentifier.XamariniOS)
-              FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid)] |> makeOrList |> getExplicitRestriction,
+              FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid MonoAndroidVersion.V1)] |> makeOrList |> getExplicitRestriction,
             [ @"..\Fantomas\lib\portable-net45+win8\FantomasLib.dll" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],
