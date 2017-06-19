@@ -87,10 +87,10 @@ let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageNa
         async {
             try
                 let! result = followODataLink auth url
-                return Result.Ok result
+                return SuccessResponse result
             with exn ->
                 let cap = ExceptionDispatchInfo.Capture exn
-                return Result.Error cap
+                return UnknownError cap
         })
 
 let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName) =
@@ -99,10 +99,10 @@ let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName
         async {
             try
                 let! result = followODataLink auth url
-                return Result.Ok  result
+                return SuccessResponse  result
             with exn ->
                 let cap = ExceptionDispatchInfo.Capture exn
-                return Result.Error cap
+                return UnknownError cap
         })
 
 let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:PackageName) =
@@ -111,24 +111,21 @@ let tryGetAllVersionsFromNugetODataFindByIdNewestFirst (auth, nugetURL, package:
         async {
             try
                 let! result = followODataLink auth url
-                return Result.Ok result
+                return SuccessResponse result
             with exn ->
                 let cap = ExceptionDispatchInfo.Capture exn
-                return Result.Error cap
+                return UnknownError cap
         })
 
-let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
+let private getXmlDoc url raw =
     let doc = XmlDocument()
     try
         doc.LoadXml raw
     with
-    | _ -> failwithf "Could not parse response from %s as OData.%sData:%s%s" url Environment.NewLine Environment.NewLine raw
+    | e -> raise <| Exception(sprintf "Could not parse response from %s as OData.%sData:%s%s" url Environment.NewLine Environment.NewLine raw, e)
+    doc
 
-    let entry =
-        match (doc |> getNode "feed" |> optGetNode "entry" ) ++ (doc |> getNode "entry") with
-        | Some node -> node
-        | _ -> failwithf "unable to find entry node for package %O %O in %s" packageName version raw
-
+let private handleODataEntry nugetURL packageName version entry =
     let officialName =
         match (entry |> getNode "properties" |> optGetNode "Id") ++ (entry |> getNode "title") with
         | Some node -> node.InnerText
@@ -201,8 +198,45 @@ let parseODataDetails(url,nugetURL,packageName:PackageName,version:SemVerInfo,ra
       Unlisted = publishDate = Constants.MagicUnlistingDate }
     |> NuGetPackageCache.withDependencies dependencies
 
+
+
+// parse search results.
+let parseODataListDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) : ODataSearchResult =
+    let doc = getXmlDoc url raw
+
+    let feedNode =
+        match doc |> getNode "feed" with
+        | Some node -> node
+        | None -> failwithf "Could not find 'entry' node for package %O %O" packageName version
+    match feedNode |> getNodes "entry" with
+    | [] ->
+        // When no entry node is found our search did not yield anything.
+        EmptyResult
+    | entry :: t ->
+        if t.Length > 0 then
+            traceWarnfn "Got multiple results in OData query ('%s') for package %O %O, the feed might be broken" url packageName version
+        handleODataEntry nugetURL packageName version entry
+        |> ODataSearchResult.Match
+
+let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
+    let doc = getXmlDoc url raw
+    match doc |> getNode "entry" with
+    | Some entry ->
+        handleODataEntry nugetURL packageName version entry
+    | None -> failwithf "Could not find 'entry' node for package %O %O" packageName version
+
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     async {
+        let fallback () =
+            async {
+                let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
+                let! raw = getFromUrl(auth,url,acceptXml)
+                if verbose then
+                    tracefn "Response from %s:" url
+                    tracefn ""
+                    tracefn "%s" raw
+                return parseODataListDetails(url,nugetURL,packageName,version,raw)
+            }
         let firstUrl = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) (version.Normalize())
         try
             let! raw = getFromUrl(auth,firstUrl,acceptXml)
@@ -210,16 +244,15 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                 tracefn "Response from %s:" firstUrl
                 tracefn ""
                 tracefn "%s" raw
-            return parseODataDetails(firstUrl,nugetURL,packageName,version,raw)
+            match parseODataListDetails(firstUrl,nugetURL,packageName,version,raw) with
+            | EmptyResult ->
+                if verbose then tracefn "No results, trying again with Version instead of NormalizedVersion."
+                return! fallback()
+            | res -> return res
         with ex ->
-            traceWarnfn "Failed to getDetailsFromNuGetViaODataFast '%s'. Trying with Version instead of NormalizedVersion: %O" firstUrl ex
-            let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
-            let! raw = getFromUrl(auth,url,acceptXml)
-            if verbose then
-                tracefn "Response from %s:" url
-                tracefn ""
-                tracefn "%s" raw
-            return parseODataDetails(url,nugetURL,packageName,version,raw)
+            // TODO: Remove this 'with' eventually when this warning is no longer reported
+            traceWarnfn "Failed to getDetailsFromNuGetViaODataFast '%s'. Trying with Version instead of NormalizedVersion (Please report this warning!): %O" firstUrl ex
+            return! fallback()
     }
 
 let urlSimilarToTfsOrVsts url =
@@ -234,8 +267,9 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
 
             let! raw =
                 match response with
-                | FSharp.Core.Result.Ok r -> async { return r }
-                | FSharp.Core.Result.Error err when
+                | SafeWebResult.SuccessResponse r -> async { return Some r }
+                | SafeWebResult.NotFound -> async { return None }
+                | SafeWebResult.UnknownError err when
                         String.containsIgnoreCase "myget.org" nugetURL ||
                         String.containsIgnoreCase "nuget.org" nugetURL ||
                         String.containsIgnoreCase "visualstudio.com" nugetURL ->
@@ -243,40 +277,41 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                         System.Exception(
                             sprintf "Could not get package details for %O from %s" packageName nugetURL,
                             err.SourceException)
-                | FSharp.Core.Result.Error err ->
-                    try
-                        let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
-                        getXmlFromUrl(auth,url)
-                    with e ->
-                        raise <| System.AggregateException(err.SourceException, e)
+                | SafeWebResult.UnknownError err ->
+                    traceWarnfn "Failed to find defails '%s' from '%s'. trying again with /odata/Packages. Please report this." err.SourceException.Message url
+                    if verbose then
+                        tracefn "Details of last error (%s): %O" url err.SourceException
+                    async {
+                        try
+                            let url = sprintf "%s/odata/Packages(Id='%O',Version='%O')" nugetURL packageName version
+                            let! raw = getXmlFromUrl(auth,url)
+                            return Some raw
+                        with e ->
+                            return raise <| System.AggregateException(err.SourceException, e)
+                    }
 
             if verbose then
                 tracefn "Response from %s:" url
                 tracefn ""
-                tracefn "%s" raw
-            return parseODataDetails(url,nugetURL,packageName,version,raw) }
+                tracefn "%s" (match raw with Some s -> s | _ -> "NOTFOUND 404")
+            match raw with
+            | Some raw ->
+                return parseODataEntryDetails(url,nugetURL,packageName,version,raw) |> ODataSearchResult.Match
+            | None -> return ODataSearchResult.EmptyResult }
 
     async {
         try
-            let! result = getDetailsFromNuGetViaODataFast auth nugetURL packageName version
-            if urlSimilarToTfsOrVsts nugetURL && result |> NuGetPackageCache.getDependencies |> List.isEmpty then
+            let! result =
+                // See https://github.com/fsprojects/Paket/issues/2213
                 // TODO: There is a bug in VSTS, so we can't trust this protocol. Remove when VSTS is fixed
                 // TODO: TFS has the same bug
-                return! queryPackagesProtocol packageName
-            else
-                return result
-        with e ->
+                if urlSimilarToTfsOrVsts nugetURL then queryPackagesProtocol packageName
+                else getDetailsFromNuGetViaODataFast auth nugetURL packageName version
+            return result
+        with e when not (urlSimilarToTfsOrVsts nugetURL) ->
             traceWarnfn "Failed to get package details '%s'. This feeds implementation might be broken." e.Message
             if verbose then tracefn "Details: %O" e
-            try
-                return! queryPackagesProtocol packageName
-            with e ->
-                traceWarnfn "Failed to get package details (again) '%s'. This feeds implementation might be broken." e.Message
-                if verbose then tracefn "Details: %O" e
-                // try uppercase version as workaround for https://github.com/fsprojects/Paket/issues/2145 - Bad!
-                let name = packageName.ToString()
-                let uppercase = packageName.ToString().[0].ToString().ToUpper() + name.Substring(1)
-                return! queryPackagesProtocol (PackageName uppercase)
+            return! queryPackagesProtocol packageName
     }
 
 let getDetailsFromNuGet force auth nugetURL packageName version =

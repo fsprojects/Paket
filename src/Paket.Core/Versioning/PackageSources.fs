@@ -97,9 +97,11 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
             let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
             let rawData =
                 match rawData with
-                | FSharp.Core.Result.Error e ->
+                | NotFound ->
+                    raise <| new Exception(sprintf "Could not load resources (404) from '%s'" source.Url)
+                | UnknownError e ->
                     raise <| new Exception(sprintf "Could not load resources from '%s'" source.Url, e.SourceException)
-                | FSharp.Core.Result.Ok x -> x
+                | SuccessResponse x -> x
 
             let json = JsonConvert.DeserializeObject<NugetV3SourceRootJSON>(rawData)
             let resources = 

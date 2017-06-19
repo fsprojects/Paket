@@ -14,6 +14,7 @@ open System.Net
 open System.Runtime.ExceptionServices
 open System.Text
 open FSharp.Polyfill
+open Paket.NuGetCache
 
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
@@ -120,69 +121,63 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
 
 let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : Async<PackageResolver.PackageDetails> =
     async {
-        let tryV2 source (nugetSource:NugetSource) force = async {
-            let! result =
-                NuGetV2.getDetailsFromNuGet
-                    force
-                    (nugetSource.Authentication |> Option.map toBasicAuth)
-                    nugetSource.Url
-                    packageName
-                    version
-            return Choice1Of2(source,result)  }
+        let tryV2 (nugetSource:NugetSource) force =
+            NuGetV2.getDetailsFromNuGet
+                force
+                (nugetSource.Authentication |> Option.map toBasicAuth)
+                nugetSource.Url
+                packageName
+                version
 
-        let tryV3 source nugetSource force = async {
+        let tryV3 (nugetSource:NugetV3Source) force =
             if nugetSource.Url.Contains("myget.org") || nugetSource.Url.Contains("nuget.org") || nugetSource.Url.Contains("visualstudio.com") || nugetSource.Url.Contains("/nuget/v3/") then
                 match NuGetV3.calculateNuGet2Path nugetSource.Url with
                 | Some url ->
-                    let! result =
-                        NuGetV2.getDetailsFromNuGet
-                            force
-                            (nugetSource.Authentication |> Option.map toBasicAuth)
-                            url
-                            packageName
-                            version
-                    return Choice1Of2(source,result)
+                    NuGetV2.getDetailsFromNuGet
+                        force
+                        (nugetSource.Authentication |> Option.map toBasicAuth)
+                        url
+                        packageName
+                        version
                 | _ ->
-                    let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
-                    return Choice1Of2(source,result)
+                    NuGetV3.GetPackageDetails force nugetSource packageName version
             else
-                let! result = NuGetV3.GetPackageDetails force nugetSource packageName version
-                return Choice1Of2(source,result) }
+                NuGetV3.GetPackageDetails force nugetSource packageName version
 
         let getPackageDetails force =
             // helper to work through the list sequentially
-            let rec trySelectFirst errors workLeft =
+            let rec trySelectFirst workLeft =
                 async {
                     match workLeft with
-                    | work :: rest ->
+                    | (source, work) :: rest ->
                         let! r = work
                         match r with
-                        | Choice1Of2 result -> return Choice1Of2 result
-                        | Choice2Of2 error -> return! trySelectFirst (error::errors) rest
-                    | [] -> return Choice2Of2 errors
+                        | ODataSearchResult.Match result -> return Some (source, result)
+                        | ODataSearchResult.EmptyResult -> return! trySelectFirst rest
+                    | [] -> return None
                 }
             sources
             |> List.sortBy (fun source ->
                 match source with  // put local caches to the end
                 | LocalNuGet(_,Some _) -> true
                 | _ -> false)
-            |> List.map (fun source -> async {
+            |> List.map (fun source -> source, async {
                 try
                     match source with
                     | NuGetV2 nugetSource ->
-                        return! tryV2 source nugetSource force
+                        return! tryV2 nugetSource force
                     | NuGetV3 nugetSource when NuGetV2.urlSimilarToTfsOrVsts nugetSource.Url  ->
                         match NuGetV3.calculateNuGet2Path nugetSource.Url with
                         | Some url ->
                             let nugetSource : NugetSource =
                                 { Url = url
                                   Authentication = nugetSource.Authentication }
-                            return! tryV2 source nugetSource force
+                            return! tryV2 nugetSource force
                         | _ ->
-                            return! tryV3 source nugetSource force
+                            return! tryV3 nugetSource force
                     | NuGetV3 nugetSource ->
                         try
-                            return! tryV3 source nugetSource force
+                            return! tryV3 nugetSource force
                         with
                         | exn ->
                             match NuGetV3.calculateNuGet2Path nugetSource.Url with
@@ -190,23 +185,18 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                                 let nugetSource : NugetSource =
                                     { Url = url
                                       Authentication = nugetSource.Authentication }
-                                return! tryV2 source nugetSource force
+                                return! tryV2 nugetSource force
                             | _ ->
                                 raise exn
-                                return! tryV3 source nugetSource force
+                                return! tryV3 nugetSource force
 
-                    | LocalNuGet(path,Some _) ->
-                        let! result = NuGetLocal.getDetailsFromLocalNuGetPackage true alternativeProjectRoot root path packageName version
-                        return Choice1Of2(source,result)
-                    | LocalNuGet(path,None) ->
-                        let! result = NuGetLocal.getDetailsFromLocalNuGetPackage false alternativeProjectRoot root path packageName version
-                        return Choice1Of2(source,result)
+                    | LocalNuGet(path,hasCache) ->
+                        return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
                 with e ->
-                    if verbose then
-                        verbosefn "Source '%O' exception: %O" source e
-                    let capture = ExceptionDispatchInfo.Capture e
-                    return Choice2Of2 capture })
-            |> trySelectFirst []
+                    traceWarnfn "Source '%O' exception: %O" source e
+                    //let capture = ExceptionDispatchInfo.Capture e
+                    return EmptyResult })
+            |> trySelectFirst
 
         let! maybePackageDetails = getPackageDetails force
         let! source,nugetObject =
@@ -219,17 +209,10 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                         failwithf "Couldn't get package details for package %O %O, because no sources were specified." packageName version
                     | sources ->
                         failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
-                    
+
                 match maybePackageDetails with
-                | Choice2Of2 ([]) -> return fallback()
-                | Choice2Of2 (h::restError) ->
-                    for error in restError do
-                        if not verbose then
-                            // Otherwise the error was already mentioned above
-                            traceWarnfn "Ignoring: %s" error.SourceException.Message
-                    h.Throw()
-                    return fallback()
-                | Choice1Of2 packageDetails -> return packageDetails
+                | None -> return fallback()
+                | Some packageDetails -> return packageDetails
             }
 
         let encodeURL (url:string) =

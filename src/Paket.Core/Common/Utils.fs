@@ -545,6 +545,7 @@ let createWebClient (url,auth:Auth option) =
 open System.Diagnostics
 open System.Threading
 open System.Collections.Generic
+open System.Runtime.ExceptionServices
 
 /// [omit]
 let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
@@ -580,7 +581,7 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
     }
 
 let getXmlFromUrl (auth:Auth option, url : string) =
-    async { 
+    async {
         try
             use client = createWebClient (url,auth)
             // mimic the headers sent from nuget client to odata/ endpoints
@@ -593,17 +594,36 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             use _ = Profile.startCategory Profile.Category.NuGetRequest
             return! client.DownloadStringTaskAsync (Uri url) |> Async.awaitTaskWithToken (fun () -> failwithf "Uri '%O' failed to respond and cancellation was requested." url)
         with
-        | exn -> 
+        | exn ->
             return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
     }
-    
+
+type SafeWebResult<'a> =
+    | NotFound
+    | SuccessResponse of 'a
+    | UnknownError of ExceptionDispatchInfo
+module SafeWebResult =
+    let map f s =
+        match s with
+        | SuccessResponse r -> SuccessResponse (f r)
+        | UnknownError err -> UnknownError err
+        | NotFound -> NotFound
+    let asResult s =
+        match s with
+        | NotFound ->
+            let notFound = Exception("Request returned 404")
+            ExceptionDispatchInfo.Capture notFound
+            |> FSharp.Core.Result.Error
+        | UnknownError err -> FSharp.Core.Result.Error err
+        | SuccessResponse s -> FSharp.Core.Result.Ok s
+
 /// [omit]
 let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
-    async { 
-        try 
+    async {
+        try
             let uri = Uri url
             use client = createWebClient (url,auth)
-            
+
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
 #if NETSTANDARD1_6
@@ -614,12 +634,15 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
                 verbosefn "Starting request to '%O'" uri
             use _ = Profile.startCategory Profile.Category.NuGetRequest
             let! raw = client.DownloadStringTaskAsync(uri) |> Async.awaitTaskWithToken (fun () -> failwithf "Uri '%O' failed to respond and cancellation was requested." uri)
-            return FSharp.Core.Result.Ok raw
-        with e ->
-            if verbose then
-                Logging.verbosefn "Error while retrieving '%s': %O" url e
-            let cap = System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e
-            return FSharp.Core.Result.Error cap
+            return SuccessResponse raw
+        with
+        | :? WebException as w ->
+            match w.Response with
+            | :? HttpWebResponse as wr when wr.StatusCode = HttpStatusCode.NotFound -> return NotFound
+            | _ ->
+                if verbose then
+                    Logging.verbosefn "Error while retrieving '%s': %O" url w
+                return UnknownError (ExceptionDispatchInfo.Capture w)
     }
 
 let mutable autoAnswer = None

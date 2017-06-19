@@ -27,7 +27,7 @@ let getAllVersionsFromLocalPath (isCache, localNugetPath, package:PackageName, a
                                 let _match = Regex(sprintf @"^%O\.(\d.*)\.nupkg" package, RegexOptions.IgnoreCase).Match(fi.Name)
                                 if _match.Groups.Count > 1 then Some _match.Groups.[1].Value else None)
                 |> Seq.toArray
-            return Result.Ok(versions)
+            return SuccessResponse(versions)
         })
 
 /// Reads packageName and version from .nupkg file name
@@ -109,4 +109,5 @@ let getDetailsFromLocalNuGetPackage isCache alternativeProjectRoot root localNuG
               Version = version.Normalize()
               Unlisted = isCache }
             |> NuGetPackageCache.withDependencies nuspec.Dependencies
+            |> ODataSearchResult.Match
     }

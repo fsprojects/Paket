@@ -10,6 +10,7 @@ open System.Diagnostics
 open System.IO.Compression
 open Paket.Domain
 open Paket
+open Paket.NuGetCache
 
 let getDependencies = Paket.NuGet.NuGetPackageCache.getDependencies
 
@@ -97,6 +98,7 @@ let ``#1429 pack deps from template``() =
     let details = 
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
     details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
     details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldNotContain (PackageName "PaketBug2") // it's not packed in same round
@@ -113,6 +115,7 @@ let ``#1429 pack deps``() =
     let details = 
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
     details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
     details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "PaketBug2")
@@ -129,6 +132,7 @@ let ``#1429 pack deps using minimum-from-lock-file``() =
     let details = 
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
     details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
     let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
@@ -145,6 +149,7 @@ let ``#1429 pack deps without minimum-from-lock-file uses dependencies file rang
     let details = 
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
     details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
     let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 
@@ -177,6 +182,7 @@ let ``#1429 pack deps with minimum-from-lock-file uses specifc dependencies file
     let details = 
         NuGetLocal.getDetailsFromLocalNuGetPackage false None outPath "" (PackageName "PaketBug") (SemVer.Parse "1.0.0.0")
         |> Async.RunSynchronously
+        |> ODataSearchResult.get
 
     details |> getDependencies |> List.map (fun (x,_,_) -> x) |> shouldContain (PackageName "MySql.Data")
     let packageName, versionRequirement, restrictions = details |> getDependencies |> List.filter (fun (x,_,_) -> x = PackageName "MySql.Data") |> List.head 

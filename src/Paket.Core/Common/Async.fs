@@ -55,7 +55,10 @@ module AsyncExtensions =
                             if t.IsCanceled then
                                 cancel (OperationCanceledException("The underlying task has been cancelled"))
                             elif t.IsFaulted then
-                                error t.Exception
+                                if t.Exception.InnerExceptions.Count = 1 then
+                                    error t.Exception.InnerExceptions.[0]
+                                else
+                                    error t.Exception
                             else success t.Result))
                         |> ignore
                 } |> fun a -> Async.Start(a, ct)

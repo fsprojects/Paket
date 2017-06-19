@@ -135,6 +135,9 @@
     <Content Include="NuGetOData\Fleece.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="NuGetOData\EmptyFeedList.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="NuGetOData\ReadOnlyCollectionExtensions.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

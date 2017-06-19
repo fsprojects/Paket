@@ -49,7 +49,7 @@ type NuGetResponseGetVersions =
         | SuccessVersionResponse _ -> true
         | ProtocolNotCached -> false
         | FailedVersionRequest _ -> false
-type NuGetResponseGetVersionsSimple = FSharp.Core.Result<NuGetResponseGetVersionsSuccess, ExceptionDispatchInfo>
+type NuGetResponseGetVersionsSimple = SafeWebResult<NuGetResponseGetVersionsSuccess>
 type NuGetRequestGetVersions =
     { DoRequest : unit -> Async<NuGetResponseGetVersions>
       Url : string }
@@ -61,8 +61,9 @@ type NuGetRequestGetVersions =
                 let! res = f()
                 return
                     match res with
-                    | FSharp.Core.Result.Ok r -> SuccessVersionResponse r
-                    | FSharp.Core.Result.Error err -> FailedVersionRequest { Url = url; Error = err }
+                    | SuccessResponse r -> SuccessVersionResponse r
+                    | NotFound -> SuccessVersionResponse [||]
+                    | UnknownError err -> FailedVersionRequest { Url = url; Error = err }
             })
     static member run (r:NuGetRequestGetVersions) : Async<NuGetResponseGetVersions> =
         async {
@@ -117,7 +118,7 @@ type NuGetPackageCache =
       Version: string
       CacheVersion: string }
 
-    static member CurrentCacheVersion = "5.0"
+    static member CurrentCacheVersion = "5.1"
 
 // TODO: is there a better way? for now we use static member because that works with type abbreviations...
 //module NuGetPackageCache =
@@ -156,13 +157,27 @@ let getCacheFiles cacheVersion nugetURL (packageName:PackageName) (version:SemVe
         |> Seq.filter (fun p -> Path.GetFileName p <> packageUrl)
         |> Seq.toList
     FileInfo(newFile), oldFiles
-let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> NuGetPackageCache Async) : NuGetPackageCache Async = 
+
+type ODataSearchResult =
+    | EmptyResult
+    | Match of NuGetPackageCache
+module ODataSearchResult =
+    let get x =
+        match x with
+        | EmptyResult -> failwithf "Cannot call get on 'EmptyResult'"
+        | Match r -> r
+let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =
     let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
     oldFiles |> Seq.iter (fun f -> File.Delete f)
-    let get() = 
+    let get() =
         async {
             let! result = get()
-            File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(result))
+            match result with
+            | ODataSearchResult.Match result ->
+                File.WriteAllText(cacheFile.FullName,JsonConvert.SerializeObject(result))
+            | _ ->
+                // TODO: Should we cache 404? Probably not.
+                ()
             return result
         }
     async {
@@ -171,7 +186,6 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
             let cacheResult =
                 try
                     let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
-                    
                     if (PackageName cachedObject.PackageName <> packageName) ||
                       (cachedObject.Version <> version.Normalize())
                     then
@@ -189,7 +203,7 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
                         traceWarnfn "Error while loading cache: %s" exn.Message
                     None
             match cacheResult with
-            | Some res -> return res
+            | Some res -> return ODataSearchResult.Match res
             | None -> return! get()
         else
             return! get()
