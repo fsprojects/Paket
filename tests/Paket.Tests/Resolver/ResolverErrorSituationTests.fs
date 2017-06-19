@@ -199,6 +199,7 @@ nuget Chessie"""
 //    b.Result
 
 [<Test>]
+[<Ignore "Currently we no longer do cancellation on tasks, because they currently still finish eventually in the real world (#2440). But once we have this stuff worked out we should revisit this, because it improves error messages.">]
 let ``should forward underlying cause when task properly cancels``() =
     let config = """
 source http://www.nuget.org/api/v2
@@ -237,3 +238,21 @@ nuget Chessie"""
     finally
         System.Environment.SetEnvironmentVariable("PAKET_RESOLVER_TASK_TIMEOUT", null)
 
+[<Test>]
+let ``task priorization works``() =
+    use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
+    use cts = new CancellationTokenSource()
+
+    let work = Array.init 1000 (fun _ -> Async.Sleep 100)
+    let q = ResolverRequestQueue.Create()
+    let worker1 = ResolverRequestQueue.startProcessing cts.Token q
+    let worker2 = ResolverRequestQueue.startProcessing cts.Token q
+    let handles =
+        work
+        |> Array.map (fun w -> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun ct -> Async.StartAsTaskProperCancel(w, cancellationToken = ct)) q)
+    let lastHandle = ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun ct -> Async.StartAsTaskProperCancel(async { return 5 }, cancellationToken = ct)) q
+    lastHandle.Reprioritize WorkPriority.BlockingWork
+    lastHandle.Task.Wait(200)
+    |> shouldEqual true
+
+    cts.Cancel()
