@@ -1,3 +1,6 @@
+#### 5.1.7 - 20.06.2017
+* BUGFIX: Fixed the warning reported in #2440 - https://github.com/fsprojects/Paket/pull/2449
+
 #### 5.1.6 - 19.06.2017
 * BUGFIX: Paket.pack: Fixed another issue with duplicate files - https://github.com/fsprojects/Paket/issues/2445
 
