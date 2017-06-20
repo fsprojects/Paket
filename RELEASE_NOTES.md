@@ -1,3 +1,9 @@
+#### 5.1.6 - 19.06.2017
+* BUGFIX: Paket.pack: Fixed another issue with duplicate files - https://github.com/fsprojects/Paket/issues/2445
+
+#### 5.1.4 - 19.06.2017
+* BUGFIX: Disable AutoRestore features for MSBuild 15 - https://github.com/fsprojects/Paket/issues/2446
+
 #### 5.1.3 - 19.06.2017
 * BUGFIX: Add proper versioning of MonoAndroid framework - https://github.com/fsprojects/Paket/pull/2427
 * BUGFIX: Paket.pack: Fixed another issue with duplicate files - https://github.com/fsprojects/Paket/issues/2445
