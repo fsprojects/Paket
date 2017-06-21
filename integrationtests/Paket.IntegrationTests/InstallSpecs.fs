@@ -450,6 +450,8 @@ let ``#1746 hard should be softer``() =
     install "i001746-hard-legacy" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001746-hard-legacy","SilverlightClassLibrary1","SilverlightClassLibrary1.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001746-hard-legacy","SilverlightClassLibrary1","SilverlightClassLibrary1.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
@@ -470,6 +472,8 @@ let ``#1779 net20 only in net461``() =
     install "i001779-net20-only-in-net461" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001779-net20-only-in-net461","paket-net20-library-problem","paket-net20-library-problem.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001779-net20-only-in-net461","paket-net20-library-problem","paket-net20-library-problem.csprojtemplate")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
