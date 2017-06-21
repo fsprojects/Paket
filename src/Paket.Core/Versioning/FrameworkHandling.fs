@@ -30,14 +30,14 @@ type DotNetStandardVersion =
         | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
-        | DotNetStandardVersion.V1_0 -> "10"
-        | DotNetStandardVersion.V1_1 -> "11"
-        | DotNetStandardVersion.V1_2 -> "12"
-        | DotNetStandardVersion.V1_3 -> "13"
-        | DotNetStandardVersion.V1_4 -> "14"
-        | DotNetStandardVersion.V1_5 -> "15"
-        | DotNetStandardVersion.V1_6 -> "16"
-        | DotNetStandardVersion.V2_0 -> "20"
+        | DotNetStandardVersion.V1_0 -> "1.0"
+        | DotNetStandardVersion.V1_1 -> "1.1"
+        | DotNetStandardVersion.V1_2 -> "1.2"
+        | DotNetStandardVersion.V1_3 -> "1.3"
+        | DotNetStandardVersion.V1_4 -> "1.4"
+        | DotNetStandardVersion.V1_5 -> "1.5"
+        | DotNetStandardVersion.V1_6 -> "1.6"
+        | DotNetStandardVersion.V2_0 -> "2.0"
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
@@ -150,9 +150,9 @@ type DotNetCoreVersion =
         | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
-        | DotNetCoreVersion.V1_0 -> "10"
-        | DotNetCoreVersion.V1_1 -> "11"
-        | DotNetCoreVersion.V2_0 -> "20"
+        | DotNetCoreVersion.V1_0 -> "1.0"
+        | DotNetCoreVersion.V1_1 -> "1.1"
+        | DotNetCoreVersion.V2_0 -> "2.0"
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
