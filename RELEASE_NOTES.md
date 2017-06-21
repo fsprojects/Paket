@@ -1,3 +1,6 @@
+#### 5.1.7 - 21.06.2017
+* BUGFIX: Fixed Package targetFramework for netstandard - https://github.com/fsprojects/Paket/pull/2453
+
 #### 5.1.7 - 20.06.2017
 * BUGFIX: Fixed the warning reported in #2440 - https://github.com/fsprojects/Paket/pull/2449
 
