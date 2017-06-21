@@ -884,3 +884,32 @@ let ``should understand xamarinios``() =
 
     model.GetLegacyReferences(SinglePlatform (XamariniOS))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\FSharp.Core\lib\portable-net45+monoandroid10+monotouch10+xamarinios10\FSharp.Core.dll"
+
+[<Test>]
+let ``should prefer net40-full over net40-client``() = 
+    let model =
+        emptymodel.AddReferences
+            ([@"..\packages\MyPackage\lib\net40-client\MyPackage.dll"
+              @"..\packages\MyPackage\lib\net40-full\MyPackage.dll"] 
+             |> fromLegacyList @"..\packages\MyPackage\")
+
+    let refs =
+        model.GetLegacyReferences (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
+        |> Seq.map (fun f -> f.PathWithinPackage)
+    refs |> shouldContain @"lib/net40-full/MyPackage.dll"
+    refs |> shouldNotContain @"lib/net40-client/MyPackage.dll"
+    
+[<Test>]
+let ``should prefer net40-full over net40-client (reversed)``() = 
+    // Should not depend on any order.
+    let model =
+        emptymodel.AddReferences
+            ([@"..\packages\MyPackage\lib\net40-full\MyPackage.dll"
+              @"..\packages\MyPackage\lib\net40-client\MyPackage.dll"] 
+             |> fromLegacyList @"..\packages\MyPackage\")
+
+    let refs =
+        model.GetLegacyReferences (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
+        |> Seq.map (fun f -> f.PathWithinPackage)
+    refs |> shouldContain @"lib/net40-full/MyPackage.dll"
+    refs |> shouldNotContain @"lib/net40-client/MyPackage.dll"
