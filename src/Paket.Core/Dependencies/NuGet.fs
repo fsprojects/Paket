@@ -103,7 +103,7 @@ let GetLibFiles(targetFolder) =
     |> Array.append libs
     |> Array.append runtimeLibs
     |> Array.filter (fun p ->
-        let ext = System.IO.Path.GetFileExtension p.FullPath
+        let ext = System.IO.Path.GetExtension p.FullPath
         ".dll".Equals(ext, StringComparison.OrdinalIgnoreCase))
 
 /// Finds all targets files in a nuget package.
