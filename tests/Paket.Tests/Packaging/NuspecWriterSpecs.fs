@@ -119,7 +119,7 @@ let ``#913 should serialize dependencies by group with 2 group``() =
         <dependency id="Paket.Core" version="[3.1.0]" />
         <dependency id="xUnit" version="2.0.0" />
       </group>
-      <group targetFramework="netstandard13">
+      <group targetFramework="netstandard1.3">
         <dependency id="Paket.Core" version="[3.1.0]" />
         <dependency id="xUnit" version="2.0.0" />
       </group>
