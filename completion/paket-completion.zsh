@@ -899,7 +899,7 @@ _paket_version_constraints() {
 
 (( $+functions[_paket_should_run] )) ||
 _paket_should_run() {
-  local key=":completion::complete:${service%.*}:${1?Need type}:"
+  local key=":completion:${curcontext%:*:*}:${1?Need type}:"
 
   local disable_completion
   if zstyle -b "$key" disable-completion disable_completion; then
