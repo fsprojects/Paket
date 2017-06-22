@@ -299,18 +299,18 @@ _paket-add() {
 
   case $state in
     (package-id)
-      _paket_packages "${line[1]}" && ret=0
+      _paket_packages && ret=0
       ;;
 
     (version)
       if compset -P '* '; then
         _wanted package-version expl 'package version' \
-          _paket_package_versions "${line[1]}" "$IPREFIX" \
+          _paket_package_versions \
         && ret=0
       else
         _alternative \
           "version-constraint:version constraint:_paket_version_constraints" \
-          "package-version:package version:_paket_package_versions '${line[1]}'" \
+          "package-version:package version:_paket_package_versions" \
         && ret=0
       fi
       ;;
@@ -744,13 +744,12 @@ _paket_package_versions() {
     return
   fi
 
-  # TODO!!!
-  local package_id="$5"
+  local package_id="${line[1]}"
   if [[ -z "$package_id" ]]; then
     _message 'Cannot complete version without NuGet package ID'
     return 1
   fi
-  local constraint="$6"
+  local constraint="$IPREFIX"
 
   local cache_id="${service%.*}/$cmd/${(L)package_id:-_}"
 
