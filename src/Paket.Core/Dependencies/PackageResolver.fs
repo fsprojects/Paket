@@ -819,7 +819,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         | a ->
             match System.Int32.TryParse a with
             | true, v -> v
-            | _ -> traceWarnfn "PAKET_RESOLVER_TASK_TIMEOUT is not set to an interval in milliseconds, ignoring the value and defaulting to 30000"
+            | _ -> traceWarnfn "PAKET_RESOLVER_TASK_TIMEOUT is not set to an interval in milliseconds, ignoring the value and defaulting to 180000"
                    180000
 
     let getAndReport (sources:PackageSource list) blockReason (mem:ResolverTaskMemory<_>) =
