@@ -815,12 +815,12 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     // mainly for failing unit-tests to be faster
     let taskTimeout =
         match Environment.GetEnvironmentVariable("PAKET_RESOLVER_TASK_TIMEOUT") with
-        | a when System.String.IsNullOrWhiteSpace a -> 30000
+        | a when System.String.IsNullOrWhiteSpace a -> 180000
         | a ->
             match System.Int32.TryParse a with
             | true, v -> v
             | _ -> traceWarnfn "PAKET_RESOLVER_TASK_TIMEOUT is not set to an interval in milliseconds, ignoring the value and defaulting to 30000"
-                   30000
+                   180000
 
     let getAndReport (sources:PackageSource list) blockReason (mem:ResolverTaskMemory<_>) =
         try
