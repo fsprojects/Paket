@@ -58,12 +58,16 @@
 # You can configure some aspects of Paket completion. Add those to your
 # ~/.zshrc.
 #
-# Enable prefix matching for package IDs.
+# Enable infix matching for package IDs.
 #
-#   By default paket find-packages will match infixes, which might not be what
-#   you want when completing the package ID. You can disable this behavior:
+#   By default paket find-packages will match infixes, which is not the default
+#   mode for this completion script. I think it's unnatural to type
+#     paket add FAK<tab>
+#   which will get completed to
+#     paket add Altairis.Fakturoid.Client
+#   If you want this behavior, emable infix matches:
 #
-#   zstyle ':completion::complete:paket:*' prefix-match yes
+#   zstyle ':completion::complete:paket:*' infix-match yes
 #
 #
 # Disable fallback (i.e. default zsh) completion for Paket commands that do not
@@ -71,9 +75,11 @@
 #
 #   zstyle ':completion::complete:paket:*' use-fallback no
 #
+#
 # Disable verbose completion of main commands:
 #
 #   zstyle ':completion::complete:paket:*' verbose no
+#
 #
 # Define the zsh completion cache policy for expensive operations that generate
 # completions.
@@ -119,6 +125,7 @@
 #     return 0 # 0 == always outdated, you should better use use-cache off.
 #   }
 #
+#
 # Disable running Paket to get packages, versions etc. as completion arguments.
 #
 #   zstyle ':completion::complete:paket:*' disable-completion yes
@@ -132,6 +139,7 @@
 #
 #   # Used by e.g. paket why:
 #   zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
+#
 #
 # Custom feed URLs for --source argument:
 #
@@ -723,10 +731,10 @@ _paket_packages() {
     _store_cache $cache_id output
   fi
 
-  local prefix_match
-  local -a compadd_args=(-U)
-  if zstyle -b ":completion:${curcontext}" prefix-match prefix_match; then
-    compadd_args=()
+  local infix_match
+  local -a compadd_args
+  if zstyle -b ":completion:${curcontext}" infix-match infix_match; then
+    compadd_args=(-U)
   fi
 
   _wanted paket-packages expl $what \
