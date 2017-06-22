@@ -193,7 +193,8 @@ _paket_source_url() {
 
 (( $+functions[_paket-add] )) ||
 _paket-add() {
-  local curcontext=$curcontext state line ret=1
+  local curcontext=$curcontext state ret=1
+  local -a line
   declare -A opt_args
 
   local -a args
@@ -205,14 +206,24 @@ _paket-add() {
     '(--interactive -i)'{--interactive,-i}"[ask for every project whether to add the dependency]"
     '(--no-install)'--no-install'[do not add dependencies to projects]'
     '(--project -p)'{--project,-p}'[add the dependency to a single project only]:project:_path_files -g "**/*.??proj"'
-    '(--version -V)'{--version,-V}'[dependency version constraint]:version constraint'
+    '(--version -V)'{--version,-V}'[dependency version constraint]: :->version'
     "${(f)$(_paket_group_option 'add the dependency to a group (default: Main group)')}"
   )
 
   _arguments -C \
     $args \
-    ':NuGet package ID:_paket_nuget_packages "${words[-1]}"' \
-  && ret=0
+    ':NuGet package ID:->package-id' \
+  && return
+
+  case $state in
+    (package-id)
+      _paket_packages "${line[1]}" && ret=0
+      ;;
+
+    (version)
+      _paket_package_versions "${line[1]}" && ret=0
+      ;;
+  esac
 
   return ret
 }
@@ -380,7 +391,7 @@ _paket-find-package-versions() {
 
   _arguments -C \
     $args \
-    ':NuGet package ID:_paket_nuget_packages "${words[-1]}"' \
+    ':NuGet package ID:_paket_packages "${words[-1]}"' \
   && ret=0
 
   _paket_source_url "$state" "$curcontext" && ret=0
@@ -402,7 +413,7 @@ _paket-find-packages() {
 
   _arguments -C \
     $args \
-    ':NuGet package ID:_paket_nuget_packages "${words[-1]}"' \
+    ':NuGet package ID:_paket_packages "${words[-1]}"' \
   && ret=0
 
   _paket_source_url "$state" "$curcontext" && ret=0
@@ -588,19 +599,39 @@ _paket_groups() {
   _wanted paket-groups expl 'group' compadd -a - output
 }
 
-(( $+functions[_paket_nuget_packages] )) ||
-_paket_nuget_packages() {
-  local term="$5"
+(( $+functions[_paket_packages] )) ||
+_paket_packages() {
+  local package_id="$1"
 
   # We need to replace CR, in case we're running on Windows (//$'\r'/).
   local -a output
   output=(
-    ${(f)"$(_call_program nuget-packages \
-            "$(_paket_executable) find-packages --silent --max 100 '$term' 2> /dev/null")"//$'\r'/}
+    ${(f)"$(_call_program packages \
+            "$(_paket_executable) find-packages --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
     )
   _paket_command_successful $? || return 1
 
-  _wanted paket-nuget-packages expl 'NuGet package ID' compadd -U -a - output
+  _wanted paket-packages expl 'NuGet package ID' compadd -U -a - output
+}
+
+(( $+functions[_paket_package_versions] )) ||
+_paket_package_versions() {
+  local package_id="$1"
+  if [[ -z "$package_id" ]]; then
+    _message 'Cannot complete version constraint without NuGet package ID'
+    return 1
+  fi
+
+  # We need to replace CR, in case we're running on Windows (//$'\r'/).
+  local -a output
+  output=(
+    ${(f)"$(_call_program package-versions \
+            "$(_paket_executable) find-package-versions --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
+    )
+  _paket_command_successful $? || return 1
+
+  _wanted paket-package-versions expl "version constraint for $package_id" compadd -a - output
+  # _wanted paket-package-versions expl "version constraint for $term" _combination '' hosts-ports hosts -
 }
 
 (( $+functions[_paket_installed_packages] )) ||
