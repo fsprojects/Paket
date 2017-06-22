@@ -58,40 +58,91 @@
 # You can configure some aspects of Paket completion. Add those to your
 # ~/.zshrc.
 #
+# Enable prefix matching for package IDs.
+#
+#   By default paket find-packages will match infixes, which might not be what
+#   you want when completing the package ID. You can disable this behavior:
+#
+#   zstyle ':completion::complete:paket:*' prefix-match yes
+#
+#
 # Disable fallback (i.e. default zsh) completion for Paket commands that do not
 # have a completion function:
 #
-#   zstyle ':completion:complete:paket:*' use-fallback no
+#   zstyle ':completion::complete:paket:*' use-fallback no
 #
 # Disable verbose completion of main commands:
 #
-#   zstyle ':completion:complete:paket:*' verbose no
+#   zstyle ':completion::complete:paket:*' verbose no
 #
-# Disable running Paket to get packages, versions etc. as completion arguments
-# as it might lag:
+# Define the zsh completion cache policy for expensive operations that generate
+# completions.
 #
-#   zstyle ':completion:complete:paket:*' disable-completion yes
+#   Paket will e.g. issue HTTP requests when you complete a package ID or a
+#   version number. These take time so we take advantage of the zsh
+#   completion cache and store such results.
+#
+#   Enable the zsh completion cache globally (including completions for other
+#   commands that also leverage caching):
+#
+#   zstyle ':completion:*' use-cache on
+#   zstyle ':completion:*' cache-path instead/of/$HOME/.zcompcache # Optional.
+#
+#   To disable the cache for specific Paket commands to always get fresh
+#   results when completing e.g. paket add:
+#
+#   zstyle ':completion::complete:paket:add:*' use-cache off
+#
+#   The caches are stored under the cache path as follows:
+#
+#   <cache-path>/paket/<expensive command>/<parameter>, e.g.
+#   <cache-path>/paket/find-packages/FAK if you completed 'FAK' before.
+#
+#   The default cache policy caches results for 1 day (see _paket_cache_policy).
+#   To remove cached results you can either delete the
+#   <cache-path>/paket directory or provide a custom cache policy to control
+#   cache expiration for all or specific Paket commands:
+#
+#   zstyle ':completion::complete:paket:*' cache-policy _default_cache_policy
+#   zstyle ':completion::complete:paket:find-packages:*' cache-policy _strict_cache_policy
+#
+#   _default_cache_policy () {
+#     # Rebuild if cache is more than a week old.
+#     local file="$1"
+#     local -a outdated
+#     # See http://zsh.sourceforge.net/Doc/Release/Expansion.html#Glob-Qualifiers
+#     outdated=( "$file"(Nm+7) )
+#     (( $#outdated ))
+#   }
+#
+#   _strict_cache_policy () {
+#     return 0 # 0 == always outdated, you should better use use-cache off.
+#   }
+#
+# Disable running Paket to get packages, versions etc. as completion arguments.
+#
+#   zstyle ':completion::complete:paket:*' disable-completion yes
 #
 #   Disable only a single means to get completion values:
 #
 #   # Used by e.g. paket add:
-#   zstyle ':completion:complete:paket:find-packages:' disable-completion yes
-#   zstyle ':completion:complete:paket:find-package-versions:' disable-completion yes
-#   zstyle ':completion:complete:paket:show-groups:' disable-completion yes
+#   zstyle ':completion::complete:paket:find-packages:' disable-completion yes
+#   zstyle ':completion::complete:paket:find-package-versions:' disable-completion yes
+#   zstyle ':completion::complete:paket:show-groups:' disable-completion yes
 #
 #   # Used by e.g. paket why:
-#   zstyle ':completion:complete:paket:show-installed-packages:' disable-completion yes
+#   zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
 #
 # Custom feed URLs for --source argument:
 #
-#   zstyle ':completion:complete:paket:*' sources 'http://one.example.com/feed/v2'
-#   zstyle ':completion:complete:paket:*' sources \
+#   zstyle ':completion::complete:paket:*' sources 'http://one.example.com/feed/v2'
+#   zstyle ':completion::complete:paket:*' sources \
 #     'http://one.example.com/feed/v2' \
 #     'http://second.example.com/feed/v2'
 #
 #   Override list for a specific command; mind the trailing colon:
 #
-#   zstyle ':completion:complete:paket:find-package-versions:' sources \
+#   zstyle ':completion::complete:paket:find-package-versions:' sources \
 #     'http://another.example.com/feed/v2'
 
 _paket() {
@@ -100,6 +151,13 @@ _paket() {
 
   # Strip .exe extension.
   curcontext="${curcontext%.*}:"
+
+  # Set up default cache policy.
+  local cache_policy
+  zstyle -s ":completion:${curcontext}*" cache-policy cache_policy
+  if [[ -z "$cache_policy" ]]; then
+    zstyle ":completion:${curcontext}*" cache-policy _paket_cache_policy
+  fi
 
   # Do not offer anything after these options.
   local -a terminating_options
@@ -173,7 +231,7 @@ _paket() {
       if ! _call_function ret "_paket-${words[1]}"; then
         _message "Completion for Paket command '${words[1]}' is not implemented, please contact @agross"
 
-        if zstyle -T ":completion$curcontext:" use-fallback; then
+        if zstyle -T ":completion:$curcontext:" use-fallback; then
           _default && ret=0
         fi
       fi
@@ -193,7 +251,7 @@ _paket_source_url() {
   local state="$1" curcontext="${2%:*}" ret=1
 
   local -a user_sources
-  zstyle -a ":completion$curcontext:" sources user_sources
+  zstyle -a ":completion:$curcontext:" sources user_sources
 
   case $state in
     (source-url)
@@ -424,7 +482,7 @@ _paket-find-package-versions() {
 
   _arguments -C \
     $args \
-    ':NuGet package ID:_paket_packages "${words[-1]}"' \
+    ':NuGet package ID:_paket_packages' \
   && ret=0
 
   _paket_source_url "$state" "$curcontext" && ret=0
@@ -446,7 +504,7 @@ _paket-find-packages() {
 
   _arguments -C \
     $args \
-    ':NuGet package ID:_paket_packages "${words[-1]}"' \
+    ':NuGet package ID:_paket_packages' \
   && ret=0
 
   _paket_source_url "$state" "$curcontext" && ret=0
@@ -598,7 +656,7 @@ _paket_commands() {
 
   # Verbose/long display requested?
   local -a disp
-  if zstyle -T ":completion$curcontext:" verbose; then
+  if zstyle -T ":completion:$curcontext:" verbose; then
     disp=(-ld '${type}_desc')
   fi
 
@@ -622,7 +680,12 @@ _paket_commands() {
 (( $+functions[_paket_groups] )) ||
 _paket_groups() {
   local cmd=show-groups
-  _paket_should_run $cmd || return 1
+  local what='group'
+
+  if ! _paket_should_run $cmd; then
+    _message "Enter $what"
+    return
+  fi
 
   # We need to replace CR, in case we're running on Windows (//$'\r'/).
   local -a output
@@ -632,32 +695,56 @@ _paket_groups() {
     )
   _paket_command_successful $? || return 1
 
-  _wanted paket-groups expl 'group' compadd -a - output
+  _wanted paket-groups expl $what compadd -a - output
 }
 
 (( $+functions[_paket_packages] )) ||
 _paket_packages() {
   local cmd=find-packages
-  _paket_should_run $cmd || return 1
+  local what='NuGet package ID'
 
-  local package_id="$1"
+  if ! _paket_should_run $cmd; then
+    _message "Enter $what"
+    return
+  fi
 
-  # We need to replace CR, in case we're running on Windows (//$'\r'/).
-  local -a output
-  output=(
-    ${(f)"$(_call_program $cmd \
-            "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
-    )
-  _paket_command_successful $? || return 1
+  local package_id="${words[$CURRENT]}"
+  local cache_id="${service%.*}/$cmd/${(L)package_id:-_}"
 
-  _wanted paket-packages expl 'NuGet package ID' compadd -U -a - output
+  if ! _retrieve_cache $cache_id; then
+    # We need to replace CR, in case we're running on Windows (//$'\r'/).
+    local -a output
+    output=(
+      ${(f)"$(_call_program $cmd \
+              "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
+      )
+    _paket_command_successful $? || return 1
+
+    _store_cache $cache_id output
+  fi
+
+  local prefix_match
+  local -a compadd_args=(-U)
+  if zstyle -b ":completion:${curcontext}" prefix-match prefix_match; then
+    compadd_args=()
+  fi
+
+  _wanted paket-packages expl $what \
+    compadd $compadd_args \
+    -M 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' -a - output
 }
 
 (( $+functions[_paket_package_versions] )) ||
 _paket_package_versions() {
   local cmd=find-package-versions
-  _paket_should_run $cmd || return 1
+  local what='version'
 
+  if ! _paket_should_run $cmd; then
+    _message "Enter $what"
+    return
+  fi
+
+  # TODO!!!
   local package_id="$5"
   if [[ -z "$package_id" ]]; then
     _message 'Cannot complete version without NuGet package ID'
@@ -665,13 +752,19 @@ _paket_package_versions() {
   fi
   local constraint="$6"
 
+  local cache_id="${service%.*}/$cmd/${(L)package_id:-_}"
+
+  if ! _retrieve_cache $cache_id; then
   # We need to replace CR, in case we're running on Windows (//$'\r'/).
-  local -a output
-  output=(
-    ${(f)"$(_call_program $cmd \
-            "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
-    )
-  _paket_command_successful $? || return 1
+    local -a output
+    output=(
+      ${(f)"$(_call_program $cmd \
+              "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
+      )
+    _paket_command_successful $? || return 1
+
+    _store_cache $cache_id output
+  fi
 
   # If the there is a constraint, also complete fake values,
   # e.g. 1.2.3 adds 1.2 and 1.
@@ -692,16 +785,21 @@ _paket_package_versions() {
     fake_versions=(${fake_versions:|output})
   fi
 
-  _wanted paket-package-versions expl "version for $package_id" \
+  _wanted paket-package-versions expl "$what for $package_id" \
     compadd -a - output
-  _wanted paket-fake-package-versions expl "fake version for $package_id" \
+  _wanted paket-fake-package-versions expl "fake $what for $package_id" \
     compadd -n -a - fake_versions
 }
 
 (( $+functions[_paket_installed_packages] )) ||
 _paket_installed_packages() {
   local cmd=show-installed-packages
-  _paket_should_run $cmd || return 1
+  local what='NuGet package ID'
+
+  if ! _paket_should_run $cmd; then
+    _message "Enter $what"
+    return
+  fi
 
   local -a output
   output=(
@@ -720,7 +818,7 @@ _paket_installed_packages() {
     filtered+="${${(s. .)package}[2]}"
   done
 
-  _wanted paket-installed-packages expl 'NuGet package ID' compadd -a - filtered
+  _wanted paket-installed-packages expl $what compadd -a - filtered
 }
 
 (( $+functions[_paket_sources] )) ||
@@ -753,7 +851,6 @@ _paket_credential_keys() {
             "grep '^[[:space:]]*github[[:space:]]' paket.dependencies 2> /dev/null")"}
     )
   (( $? == 0 )) || return 1
-
 
   # Take the fourth word after splitting by space (the credential key).
   # Format: github repo file credential-key
@@ -802,7 +899,7 @@ _paket_version_constraints() {
 
 (( $+functions[_paket_should_run] )) ||
 _paket_should_run() {
-  local key=":completion:complete:${service%.*}:${1?Need type}:"
+  local key=":completion::complete:${service%.*}:${1?Need type}:"
 
   local disable_completion
   if zstyle -b "$key" disable-completion disable_completion; then
@@ -838,6 +935,20 @@ _paket_executable() {
     [[ -f "$location" ]] && printf '%s %s' "$mono" "$location" && return
   done
 
+  return 1
+}
+
+(( $+functions[_paket_cache_policy] )) ||
+_paket_cache_policy() {
+  local file="$1"
+
+  # Rebuild if cache is more than a day old.
+  # See http://zsh.sourceforge.net/Doc/Release/Expansion.html#Glob-Qualifiers
+  local -a outdated
+  outdated=("$file"(mh+24))
+  (( $#outdated )) && return 0
+
+  # Still fresh!
   return 1
 }
 
