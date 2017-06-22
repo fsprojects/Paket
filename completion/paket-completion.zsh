@@ -221,7 +221,16 @@ _paket-add() {
       ;;
 
     (version)
-      _paket_package_versions "${line[1]}" && ret=0
+      if compset -P '* '; then
+        _wanted package-version expl 'package version' \
+          _paket_package_versions "${line[1]}" "$IPREFIX" \
+        && ret=0
+      else
+        _alternative \
+          "version-constraint:version constraint:_paket_version_constraints" \
+          "package-version:package version:_paket_package_versions '${line[1]}'" \
+        && ret=0
+      fi
       ;;
   esac
 
@@ -616,11 +625,12 @@ _paket_packages() {
 
 (( $+functions[_paket_package_versions] )) ||
 _paket_package_versions() {
-  local package_id="$1"
+  local package_id="$5"
   if [[ -z "$package_id" ]]; then
-    _message 'Cannot complete version constraint without NuGet package ID'
+    _message 'Cannot complete version without NuGet package ID'
     return 1
   fi
+  local constraint="$6"
 
   # We need to replace CR, in case we're running on Windows (//$'\r'/).
   local -a output
@@ -630,8 +640,29 @@ _paket_package_versions() {
     )
   _paket_command_successful $? || return 1
 
-  _wanted paket-package-versions expl "version constraint for $package_id" compadd -a - output
-  # _wanted paket-package-versions expl "version constraint for $term" _combination '' hosts-ports hosts -
+  # If the there is a constraint, also complete fake values,
+  # e.g. 1.2.3 adds 1.2 and 1.
+  local -a fake_versions
+  if [[ -n "$constraint" ]]; then
+    local version index
+    for version in $output; do
+      local -a parts=(${(s:.:)version})
+
+      for (( index = 1; index <= $#parts; index++ )); do
+        local -a up_to_index=(${parts[1,index]})
+        version=${(j:.:)up_to_index}
+        fake_versions+=$version
+      done
+    done
+
+    # Remove fake versions that are real versions.
+    fake_versions=(${fake_versions:|output})
+  fi
+
+  _wanted paket-package-versions expl "version for $package_id" \
+    compadd -a - output
+  _wanted paket-fake-package-versions expl "fake version for $package_id" \
+    compadd -n -a - fake_versions
 }
 
 (( $+functions[_paket_installed_packages] )) ||
@@ -699,6 +730,38 @@ _paket_credential_keys() {
   done
 
   _wanted paket-credential-keys expl 'credential key' compadd -a - githubs
+}
+
+(( $+functions[_paket_version_constraints] )) ||
+_paket_version_constraints() {
+  # TODO: _values does not support the required -q argument.
+  #
+  # local -a args
+  # args=(
+  #   '(= == ~> > >= < <=)~>[pessimistic (i.e. ~> 1.0 equals >= 1.0 and < 2.0)]'
+  #   '(= == ~> > >= < <=)=[pin version]'
+  #   '(= == ~> > >= < <=)==[exact version]'
+  #   '(= == ~> > >= < <=)=>[at least]'
+  #   '(= == ~> > >= < <=)>[greater than]'
+  #   '(= == ~> > >= < <=)<=[less than or equal]'
+  #   '(= == ~> > >= < <=)<[less than]'
+  # )
+  #
+  # local -a compadd_args=(-qs ' ' -S '')
+  # _values -O compadd_args -s ' ' -S '' 'version constraint' $args
+
+  local -a args desc
+  args=('~>' '=' '==' '>=' '>' '<=' '<')
+  desc=('pessimistic (i.e. ~> 1.0 equals >= 1.0 and < 2.0)'
+        'pin version'
+        'exact version'
+        'at least'
+        'greater than'
+        'less than or equal'
+        'less than')
+
+  _wanted paket-version-constraint expl 'version constraint' \
+    compadd -qs ' ' -S ''  -old desc -a - args
 }
 
 (( $+functions[_paket_command_successful] )) ||
