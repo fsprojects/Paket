@@ -55,20 +55,44 @@
 #
 # CONFIGURATION
 #
-# You can configure some aspects of Paket completion:
+# You can configure some aspects of Paket completion. Add those to your
+# ~/.zshrc.
 #
 # Disable fallback (i.e. default zsh) completion for Paket commands that do not
 # have a completion function:
+#
 #   zstyle ':completion:complete:paket:*' use-fallback no
 #
 # Disable verbose completion of main commands:
+#
 #   zstyle ':completion:complete:paket:*' verbose no
 #
+# Disable running Paket to get packages, versions etc. as completion arguments
+# as it might lag:
+#
+#   zstyle ':completion:complete:paket:*' disable-completion yes
+#
+#   Disable only a single means to get completion values:
+#
+#   # Used by e.g. paket add:
+#   zstyle ':completion:complete:paket:find-packages:' disable-completion yes
+#   zstyle ':completion:complete:paket:find-package-versions:' disable-completion yes
+#   zstyle ':completion:complete:paket:show-groups:' disable-completion yes
+#
+#   # Used by e.g. paket why:
+#   zstyle ':completion:complete:paket:show-installed-packages:' disable-completion yes
+#
 # Custom feed URLs for --source argument:
+#
 #   zstyle ':completion:complete:paket:*' sources 'http://one.example.com/feed/v2'
-#   zstyle ':completion:complete:paket:*' sources 'http://one.example.com/feed/v2' 'http://second.example.com/feed/v2'
+#   zstyle ':completion:complete:paket:*' sources \
+#     'http://one.example.com/feed/v2' \
+#     'http://second.example.com/feed/v2'
+#
 #   Override list for a specific command; mind the trailing colon:
-#   zstyle ':completion:complete:paket:find-package-versions:' sources 'http://another.example.com/feed/v2'
+#
+#   zstyle ':completion:complete:paket:find-package-versions:' sources \
+#     'http://another.example.com/feed/v2'
 
 _paket() {
   local curcontext=$curcontext state line ret=1
@@ -597,11 +621,14 @@ _paket_commands() {
 
 (( $+functions[_paket_groups] )) ||
 _paket_groups() {
+  local cmd=show-groups
+  _paket_should_run $cmd || return 1
+
   # We need to replace CR, in case we're running on Windows (//$'\r'/).
   local -a output
   output=(
-    ${(f)"$(_call_program groups \
-            "$(_paket_executable) show-groups --silent 2> /dev/null")"//$'\r'/}
+    ${(f)"$(_call_program $cmd \
+            "$(_paket_executable) $cmd --silent 2> /dev/null")"//$'\r'/}
     )
   _paket_command_successful $? || return 1
 
@@ -610,13 +637,16 @@ _paket_groups() {
 
 (( $+functions[_paket_packages] )) ||
 _paket_packages() {
+  local cmd=find-packages
+  _paket_should_run $cmd || return 1
+
   local package_id="$1"
 
   # We need to replace CR, in case we're running on Windows (//$'\r'/).
   local -a output
   output=(
-    ${(f)"$(_call_program packages \
-            "$(_paket_executable) find-packages --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
+    ${(f)"$(_call_program $cmd \
+            "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
     )
   _paket_command_successful $? || return 1
 
@@ -625,6 +655,9 @@ _paket_packages() {
 
 (( $+functions[_paket_package_versions] )) ||
 _paket_package_versions() {
+  local cmd=find-package-versions
+  _paket_should_run $cmd || return 1
+
   local package_id="$5"
   if [[ -z "$package_id" ]]; then
     _message 'Cannot complete version without NuGet package ID'
@@ -635,8 +668,8 @@ _paket_package_versions() {
   # We need to replace CR, in case we're running on Windows (//$'\r'/).
   local -a output
   output=(
-    ${(f)"$(_call_program package-versions \
-            "$(_paket_executable) find-package-versions --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
+    ${(f)"$(_call_program $cmd \
+            "$(_paket_executable) $cmd --silent --max 100 '$package_id' 2> /dev/null")"//$'\r'/}
     )
   _paket_command_successful $? || return 1
 
@@ -667,10 +700,13 @@ _paket_package_versions() {
 
 (( $+functions[_paket_installed_packages] )) ||
 _paket_installed_packages() {
+  local cmd=show-installed-packages
+  _paket_should_run $cmd || return 1
+
   local -a output
   output=(
-    ${(f)"$(_call_program installed-packages \
-            "$(_paket_executable) show-installed-packages --silent --all 2> /dev/null")"}
+    ${(f)"$(_call_program $cmd \
+            "$(_paket_executable) $cmd --silent --all 2> /dev/null")"}
     )
   _paket_command_successful $? || return 1
 
@@ -762,6 +798,18 @@ _paket_version_constraints() {
 
   _wanted paket-version-constraint expl 'version constraint' \
     compadd -qs ' ' -S ''  -old desc -a - args
+}
+
+(( $+functions[_paket_should_run] )) ||
+_paket_should_run() {
+  local key=":completion:complete:${service%.*}:${1?Need type}:"
+
+  local disable_completion
+  if zstyle -b "$key" disable-completion disable_completion; then
+    return 1
+  fi
+
+  return 0
 }
 
 (( $+functions[_paket_command_successful] )) ||
