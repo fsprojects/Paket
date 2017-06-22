@@ -866,34 +866,21 @@ _paket_credential_keys() {
 
 (( $+functions[_paket_version_constraints] )) ||
 _paket_version_constraints() {
-  # TODO: _values does not support the required -q argument.
-  #
-  # local -a args
-  # args=(
-  #   '(= == ~> > >= < <=)~>[pessimistic (i.e. ~> 1.0 equals >= 1.0 and < 2.0)]'
-  #   '(= == ~> > >= < <=)=[pin version]'
-  #   '(= == ~> > >= < <=)==[exact version]'
-  #   '(= == ~> > >= < <=)=>[at least]'
-  #   '(= == ~> > >= < <=)>[greater than]'
-  #   '(= == ~> > >= < <=)<=[less than or equal]'
-  #   '(= == ~> > >= < <=)<[less than]'
-  # )
-  #
-  # local -a compadd_args=(-qs ' ' -S '')
-  # _values -O compadd_args -s ' ' -S '' 'version constraint' $args
+  local context state state_descr line
+  typeset -A val_args
 
-  local -a args desc
-  args=('~>' '=' '==' '>=' '>' '<=' '<')
-  desc=('pessimistic (i.e. ~> 1.0 equals >= 1.0 and < 2.0)'
-        'pin version'
-        'exact version'
-        'at least'
-        'greater than'
-        'less than or equal'
-        'less than')
+  local -a args
+  args=(
+    '~> [pessimistic (i.e. ~> 1.0 equals >= 1.0 and < 2.0)]::->version'
+    '= [pin version]::->version'
+    '== [exact version]::->version'
+    '=> [at least]::->version'
+    '> [greater than]::->version'
+    '<= [less than or equal]::->version'
+    '< [less than]::->version'
+  )
 
-  _wanted paket-version-constraint expl 'version constraint' \
-    compadd -qs ' ' -S ''  -old desc -a - args
+  _values -S '' 'version constraint' $args
 }
 
 (( $+functions[_paket_should_run] )) ||
