@@ -4,12 +4,37 @@
 
 ### Download
 
-Download the `_paket` file somewhere to your home directory and add its
-directory to your zsh `fpath` before running `compinit`.
+1. Download the `paket-completion.zsh` file to a subdirectory of your home
+   directory, preferably a directory with other function files.
+1. Rename it to `_paket`
+1. Add the directory to your zsh `fpath` before running `compinit`.
+
+```sh
+$ target="$HOME/.zsh-completions"
+$ mkdir "$target"
+$ curl --fail --location --proto-redir -all,https --output "$target/_paket" https://raw.githubusercontent.com/fsprojects/Paket/master/completion/paket-completion.zsh
+```
+
+In your `~/.zshrc`:
 
 ```sh
 fpath=($HOME/directory/where/_paket/resides $fpath)
 ```
+
+### Updating an existing installation
+
+Just repeat the download from above.
+
+Alternatively we provide the `paket-completion-update` function that will
+download the current `paket-completion.zsh` to the same file as above.
+
+**Please note:** `paket-completion-update` is only available after your
+first `paket` completion per shell session (i.e. after the Paket completion
+functions have been autoloaded by zsh).
+
+`paket-completion-update` supports an optional first parameter that allows you
+to override the default download root URL which is
+`https://raw.githubusercontent.com/fsprojects/Paket/master/completion/`.
 
 ### Paket alias
 

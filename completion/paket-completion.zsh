@@ -8,10 +8,34 @@
 #
 # INSTALLATION
 #
-# Download this file somewhere to your home directory and add its directory to
-# your zsh fpath before running compinit.
+# 1. Download the paket-completion.zsh file to a subdirectory of your home
+#    directory, preferably a directory with other function files.
+# 2. Rename it to _paket
+# 3. Add the directory to your zsh fpath before running compinit.
+#
+#   $ target="$HOME/.zsh-completions"
+#   $ mkdir "$target"
+#   $ curl --fail --location --proto-redir -all,https --output "$target/_paket" https://raw.githubusercontent.com/fsprojects/Paket/master/completion/paket-completion.zsh
+#
+# In your ~/.zshrc:
 #
 #   fpath=($HOME/directory/where/_paket/resides $fpath)
+#
+#
+# UPDATING AN EXISTING INSTALLATION
+#
+# Just repeat the download from above.
+#
+# Alternatively we provide the paket-completion-update function that will
+# download the current paket-completion.zsh to the same file as above.
+#
+# Please note: paket-completion-update is only available after your
+# first paket completion per shell session (i.e. after the Paket completion
+# functions have been autoloaded by zsh).
+#
+# paket-completion-update supports an optional first parameter that allows you
+# to override the default download root URL which is
+# https://raw.githubusercontent.com/fsprojects/Paket/master/completion/.
 #
 #
 # PAKET ALIAS
@@ -945,6 +969,47 @@ _paket_cache_policy() {
 
   # Still fresh!
   return 1
+}
+
+(( $+functions[paket-completion-update] )) ||
+paket-completion-update() {
+  local download_from="${1:-https://raw.githubusercontent.com/fsprojects/Paket/master/completion/}"
+
+  # entries are files under $download_from pointing to local files.
+  local -A entries
+  # Let the file point to the file defining our function.
+  # http://stackoverflow.com/a/28336473/149264
+  entries[paket-completion.zsh]=${(%):-%x}
+
+  local key
+  for key in "${(@k)entries}"; do
+    local file="$key"
+    local target="${entries[$key]}"
+
+    if [[ -z "$target" ]]; then
+      >&2 printf 'Could not determine target file for "%s"\n' "$file"
+      return 1
+    fi
+
+    if [[ ! -f "$target" ]]; then
+      >&2 printf 'Target file %s for %s does not exist\n' "$target" "$file"
+      return 1
+    fi
+
+    local url="$download_from/$file"
+
+    printf 'Downloading %s to %s\n' "$url" "$target"
+    if ! curl --fail \
+              --location \
+              --proto-redir -all,https \
+              "$url" \
+              --output "$target"; then
+      >&2 printf 'Error while downloading %s to %s\n' "$url" "$target"
+      return 1
+    fi
+  done
+
+  printf 'Paket completion was updated. Please restart your shell.\n'
 }
 
 _paket "$@"
