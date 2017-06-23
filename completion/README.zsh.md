@@ -6,7 +6,7 @@
 
 1. Download the `paket-completion.zsh` file to a subdirectory of your home
    directory, preferably a directory with other function files.
-1. Rename it to `_paket`
+1. Rename it to `_paket`.
 1. Add the directory to your zsh `fpath` before running `compinit`.
 
 ```sh
@@ -26,7 +26,8 @@ fpath=($HOME/directory/where/_paket/resides $fpath)
 Just repeat the download from above.
 
 Alternatively we provide the `paket-completion-update` function that will
-download the current `paket-completion.zsh` to the same file as above.
+download the current `paket-completion.zsh` to the same file as above, even if
+you changed its location after the initial download.
 
 **Please note:** `paket-completion-update` is only available after your
 first `paket` completion per shell session (i.e. after the Paket completion
