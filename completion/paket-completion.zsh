@@ -947,7 +947,7 @@ _paket_executable() {
     ./$service
   )
 
-  if [[ $OS != 'Windows_NT' ]]; then
+  if [[ $OS != Windows* ]]; then
     local mono=mono
   fi
 
