@@ -1056,6 +1056,24 @@ module ProjectFile =
                 if String.startsWithIgnoreCase  "<import" node && 
                    (String.containsIgnoreCase "microsoft.csharp.targets" node || 
                      String.containsIgnoreCase "microsoft.fsharp.targets" node ||
+                     //List of xamarin csharp targets generated with following bash command inside $(MSBuildExtensionsPath)\Xamarin
+                     //find . -name "*.CSharp.targets" | sed 's#.*/##'   | tr '[:upper:]' '[:lower:]' | xargs printf '                     String.containsIgnoreCase "%s" node ||\n'
+                     String.containsIgnoreCase "xamarin.android.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.android.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.ios.appextension.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.ios.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.ios.objcbinding.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.ios.watchapp.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.monotouch.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.mac.appextension.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.mac.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.mac.objcbinding.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.tvos.appextension.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.tvos.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.tvos.objcbinding.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.watchos.app.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.watchos.appextension.csharp.targets" node ||
+                     String.containsIgnoreCase "xamarin.watchos.csharp.targets" node ||
                      String.containsIgnoreCase "fsharptargetspath" node)
                 then
                     iTarget <- l + 1
