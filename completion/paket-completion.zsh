@@ -339,13 +339,22 @@ _paket-add() {
 
     (version)
       if compset -P '* '; then
-        _wanted package-version expl 'package version' \
-          _paket_package_versions \
-        && ret=0
+        # For some reason an ! properly escaped on the command line will
+        # unescaped when generating more completions.
+        [[ "$IPREFIX" == !* ]] && IPREFIX='\!'${IPREFIX[2,-1]}
+
+        _paket_package_versions && ret=0
+      elif compset -P '!' || compset -P '@'; then
+        # For some reason an ! properly escaped on the command line will
+        # unescaped when generating more completions.
+        [[ "$IPREFIX" == !* ]] && IPREFIX='\!'${IPREFIX[2,-1]}
+
+        _paket_version_constraints && ret=0
       else
         _alternative \
-          "version-constraint:version constraint:_paket_version_constraints" \
-          "package-version:package version:_paket_package_versions" \
+          "strategy-modifier::_paket_strategy_modifiers" \
+          "version-constraint::_paket_version_constraints" \
+          "package-version::_paket_package_versions" \
         && ret=0
       fi
       ;;
@@ -730,6 +739,7 @@ _paket_groups() {
     )
   _paket_command_successful $? || return 1
 
+  local expl
   _wanted paket-groups expl $what compadd -a - output
 }
 
@@ -764,6 +774,7 @@ _paket_packages() {
     compadd_args=(-U)
   fi
 
+  local expl
   _wanted paket-packages expl $what \
     compadd $compadd_args \
     -M 'm:{[:lower:][:upper:]}={[:upper:][:lower:]}' -a - output
@@ -789,7 +800,7 @@ _paket_package_versions() {
   local cache_id="${service%.*}/$cmd/${(L)package_id:-_}"
 
   if ! _retrieve_cache $cache_id; then
-  # We need to replace CR, in case we're running on Windows (//$'\r'/).
+    # We need to replace CR, in case we're running on Windows (//$'\r'/).
     local -a output
     output=(
       ${(f)"$(_call_program $cmd \
@@ -819,6 +830,7 @@ _paket_package_versions() {
     fake_versions=(${fake_versions:|output})
   fi
 
+  local expl
   _wanted paket-package-versions expl "$what for $package_id" \
     compadd -a - output
   _wanted paket-fake-package-versions expl "fake $what for $package_id" \
@@ -852,6 +864,7 @@ _paket_installed_packages() {
     filtered+="${${(s. .)package}[2]}"
   done
 
+  local expl
   _wanted paket-installed-packages expl $what compadd -a - filtered
 }
 
@@ -874,6 +887,7 @@ _paket_sources() {
     [[ -n "$maybe" ]] && sources+="$maybe"
   done
 
+  local expl
   _wanted paket-sources expl 'source URL' compadd -a - sources
 }
 
@@ -896,26 +910,35 @@ _paket_credential_keys() {
     [[ -n "$maybe" ]] && githubs+="$maybe"
   done
 
+  local expl
   _wanted paket-credential-keys expl 'credential key' compadd -a - githubs
+}
+
+(( $+functions[_paket_strategy_modifiers] )) ||
+_paket_strategy_modifiers() {
+  local -a args
+  args=(
+    '@:use maximum versions for transitive dependencies'
+    '!:use minimum versions for transitive dependencies'
+  )
+
+  _describe -t paket-strategy-modifier 'strategy modifier' args -qS ''
 }
 
 (( $+functions[_paket_version_constraints] )) ||
 _paket_version_constraints() {
-  local context state state_descr line
-  typeset -A val_args
-
   local -a args
   args=(
-    '~> [pessimistic (i.e. ~> 1.0 equals >= 1.0 and < 2.0)]::->version'
-    '= [pin version]::->version'
-    '== [exact version]::->version'
-    '=> [at least]::->version'
-    '> [greater than]::->version'
-    '<= [less than or equal]::->version'
-    '< [less than]::->version'
+    '~>:pessimistic (i.e. ~> 1.0 equals >= 1.0 and < 2.0)'
+    '=:pin version'
+    '==:exact version'
+    '=>:at least'
+    '>:greater than'
+    '<=:less than or equal'
+    '<:less than'
   )
 
-  _values -S '' 'version constraint' $args
+  _describe -t paket-version-constraint 'version constraint' args -qS '\ '
 }
 
 (( $+functions[_paket_should_run] )) ||
