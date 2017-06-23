@@ -21,7 +21,7 @@
 #
 # Somewhere in your ~/.zshrc:
 #
-#   if [[ "$OS" != "Windows_NT" ]]; then
+#   if [[ "$OS" != Windows* ]]; then
 #     alias paket='mono ./.paket/paket.exe'
 #   else
 #     alias paket='./.paket/paket.exe'
@@ -41,7 +41,7 @@
 #
 # MONO
 #
-# If you use mono (e.g. Linux or macOS) and do not have mono completion
+# If you use Mono (e.g. on Linux or macOS) and do not have Mono completion
 # installed, you need to define that mono invokes other programs:
 #
 #   compdef _precommand mono
@@ -50,24 +50,25 @@
 # completed. More details: https://unix.stackexchange.com/a/178054/72946
 #
 # For an exemplar mono completion, have a look here:
-# https://github.com/agross/dotfiles/tree/master/mono/_functions/_mono
+# https://github.com/agross/dotfiles/tree/master/mono/functions/_mono
 #
 #
 # CONFIGURATION
 #
-# You can configure some aspects of Paket completion. Add those to your
+# You can configure some aspects of Paket completion. Add these to your
 # ~/.zshrc.
 #
-# Enable infix matching for package IDs.
+# Enable infix matching for package IDs
 #
 #   By default paket find-packages will match infixes, which is not the default
 #   mode for this completion script. I think it's unnatural to type
 #     paket add FAK<tab>
 #   which will get completed to
 #     paket add Altairis.Fakturoid.Client
-#   If you want this behavior, emable infix matches:
+#   If you want this behavior, enable infix matches:
 #
 #   zstyle ':completion::complete:paket:*' infix-match yes
+#   zstyle ':completion::complete:paket:add:*' infix-match yes # Only for paket add.
 #
 #
 # Disable fallback (i.e. default zsh) completion for Paket commands that do not
@@ -88,8 +89,8 @@
 #   version number. These take time so we take advantage of the zsh
 #   completion cache and store such results.
 #
-#   Enable the zsh completion cache globally (including completions for other
-#   commands that also leverage caching):
+#   Enable the zsh completion cache globally, including completions for other
+#   commands that also leverage caching:
 #
 #   zstyle ':completion:*' use-cache on
 #   zstyle ':completion:*' cache-path instead/of/$HOME/.zcompcache # Optional.
@@ -99,10 +100,10 @@
 #
 #   zstyle ':completion::complete:paket:add:*' use-cache off
 #
-#   The caches are stored under the cache path as follows:
+#   The caches are stored under the cache-path as follows:
 #
 #   <cache-path>/paket/<expensive command>/<parameter>, e.g.
-#   <cache-path>/paket/find-packages/FAK if you completed 'FAK' before.
+#   <cache-path>/paket/find-packages/fak if you completed 'FAK' or 'fak' before.
 #
 #   The default cache policy caches results for 1 day (see _paket_cache_policy).
 #   To remove cached results you can either delete the
@@ -126,7 +127,7 @@
 #   }
 #
 #
-# Disable running Paket to get packages, versions etc. as completion arguments.
+# Disable running Paket to get packages, versions etc. as completion arguments
 #
 #   zstyle ':completion::complete:paket:*' disable-completion yes
 #
@@ -141,7 +142,7 @@
 #   zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
 #
 #
-# Custom feed URLs for --source argument:
+# Custom feed URLs for --source argument
 #
 #   zstyle ':completion::complete:paket:*' sources 'http://one.example.com/feed/v2'
 #   zstyle ':completion::complete:paket:*' sources \
