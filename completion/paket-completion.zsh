@@ -85,10 +85,12 @@
 # Enable infix matching for package IDs
 #
 #   By default paket find-packages will match infixes, which is not the default
-#   mode for this completion script. I think it's unnatural to type
+#   mode for Paket completion. I think it's unnatural to type
 #     paket add FAK<tab>
-#   which will get completed to
+#   which will be completed to
 #     paket add Altairis.Fakturoid.Client
+#   if infix matching is enabled.
+#
 #   If you want this behavior, enable infix matches:
 #
 #   zstyle ':completion::complete:paket:*' infix-match yes

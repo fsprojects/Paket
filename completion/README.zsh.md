@@ -90,17 +90,19 @@ You can configure some aspects of Paket completion. Add these to your
 ### Enable infix matching for package IDs
 
 By default `paket find-packages` will match infixes, which is not the default
-mode for this completion script. I think it's unnatural to type
+mode for Paket completion. I think it's unnatural to type
 
 ```sh
 paket add FAK<tab>
 ```
 
-which will get completed to
+which will be completed to
 
 ```sh
 paket add Altairis.Fakturoid.Client
 ```
+
+if infix matching is enabled.
 
 If you want this behavior, enable infix matches:
 
