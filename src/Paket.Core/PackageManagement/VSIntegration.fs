@@ -32,7 +32,7 @@ let TurnOnAutoRestore fromBootstrapper environment =
 
     trial {
         do! TurnOffAutoRestore environment
-        do! downloadLatestBootstrapperAndTargets fromBootstrapper environment 
+        do! downloadLatestBootstrapperAndTargets environment 
         let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
 
         environment.Projects
