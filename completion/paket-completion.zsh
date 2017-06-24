@@ -36,7 +36,7 @@
 #
 # paket-completion-update supports an optional first parameter that allows you
 # to override the default download root URL which is
-# https://raw.githubusercontent.com/fsprojects/Paket/master/completion/.
+# https://raw.githubusercontent.com/fsprojects/Paket/master/completion.
 #
 #
 # PAKET ALIAS
@@ -999,7 +999,7 @@ _paket_cache_policy() {
 
 (( $+functions[paket-completion-update] )) ||
 paket-completion-update() {
-  local download_from="${1:-https://raw.githubusercontent.com/fsprojects/Paket/master/completion/}"
+  local download_from="${1:-https://raw.githubusercontent.com/fsprojects/Paket/master/completion}"
 
   # entries are files under $download_from pointing to local files.
   local -A entries

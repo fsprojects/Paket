@@ -35,7 +35,7 @@ functions have been autoloaded by zsh).
 
 `paket-completion-update` supports an optional first parameter that allows you
 to override the default download root URL which is
-`https://raw.githubusercontent.com/fsprojects/Paket/master/completion/`.
+`https://raw.githubusercontent.com/fsprojects/Paket/master/completion`.
 
 ### Paket alias
 
