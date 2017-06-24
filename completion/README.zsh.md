@@ -37,10 +37,13 @@ functions have been autoloaded by zsh).
 to override the default download root URL which is
 `https://raw.githubusercontent.com/fsprojects/Paket/master/completion`.
 
-### Paket alias
+### `paket` alias
 
-For easier consumption of Paket (without `paket.sh` or `paket.cmd`) it is advised
-to create an alias and always run Paket from the repository root.
+For easier consumption of Paket (without `paket.sh` or `paket.cmd`) it is
+advised to create an alias and always run Paket from the repository root.
+
+Also have a look at
+[Paket's magic mode](https://fsprojects.github.io/Paket/bootstrapper.html#Magic-mode).
 
 Somewhere in your `~/.zshrc`:
 

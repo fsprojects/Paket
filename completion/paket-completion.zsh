@@ -44,6 +44,9 @@
 # For easier consumption of Paket (without paket.sh or paket.cmd) it is advised
 # to create an alias and always run Paket from the repository root.
 #
+# Also have a look at Paket's magic mode.
+# https://fsprojects.github.io/Paket/bootstrapper.html#Magic-mode
+#
 # Somewhere in your ~/.zshrc:
 #
 #   if [[ "$OS" != Windows* ]]; then
