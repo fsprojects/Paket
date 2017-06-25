@@ -15,7 +15,7 @@ type AddArgs =
     | [<Hidden;CustomCommandLine("project")>] Project_Legacy of name:string
 
     | [<AltCommandLine("-g")>] Group of name:string
-    | [<Hidden; CustomCommandLine("group")>] Group_Legacy of name:string
+    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
 
     | Create_New_Binding_Files
     | [<Hidden;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
@@ -109,7 +109,7 @@ with
 type AutoRestoreFlags = On | Off
 
 type AutoRestoreArgs =
-    | [<MainCommand; Mandatory>] Flags of AutoRestoreFlags
+    | [<MainCommand;Mandatory>] Flags of AutoRestoreFlags
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -250,13 +250,13 @@ with
 
 type FindPackagesArgs =
     | [<MainCommandAttribute()>] Search of package_id:string
-    | [<Hidden; CustomCommandLine("searchtext")>] Search_Legacy of package_id:string
+    | [<Hidden;CustomCommandLine("searchtext")>] Search_Legacy of package_id:string
 
     | Source of source_feed:string
-    | [<Hidden; CustomCommandLine("source")>] Source_Legacy of source_feed:string
+    | [<Hidden;CustomCommandLine("source")>] Source_Legacy of source_feed:string
 
     | [<CustomCommandLine("--max")>] Max_Results of int
-    | [<Hidden; CustomCommandLine("max")>] Max_Results_Legacy of int
+    | [<Hidden;CustomCommandLine("max")>] Max_Results_Legacy of int
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -312,7 +312,7 @@ with
             | Project(_) -> "Show only packages that are installed in the given project."
 
 type ShowGroupsArgs =
-    | [<Hidden; NoCommandLine>] PlaceHolder
+    | [<Hidden;NoCommandLine>] PlaceHolder
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -321,13 +321,13 @@ with
 
 type FindPackageVersionsArgs =
     | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
-    | [<Hidden; CustomCommandLine("nuget", "name")>] NuGet_Legacy of package_id:string
+    | [<Hidden;CustomCommandLine("nuget", "name")>] NuGet_Legacy of package_id:string
 
     | Source of source_feed:string
-    | [<Hidden; CustomCommandLine("source")>] Source_Legacy of source_feed:string
+    | [<Hidden;CustomCommandLine("source")>] Source_Legacy of source_feed:string
 
     | [<CustomCommandLine("--max")>] Max_Results of int
-    | [<Hidden; CustomCommandLine("max")>] Max_Results_Legacy of int
+    | [<Hidden;CustomCommandLine("max")>] Max_Results_Legacy of int
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -406,7 +406,7 @@ type WhyArgs =
     | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
 
     | [<AltCommandLine("-g")>] Group of name:string
-    | [<Hidden; CustomCommandLine("group")>] Group_Legacy of name:string
+    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
 
     | Details
 with
@@ -424,8 +424,8 @@ with
 type Command =
     // global options
     |                                                   Version
-    | [<AltCommandLine("-s"); Inherit>]                 Silent
-    | [<AltCommandLine("-v"); Inherit>]                 Verbose
+    | [<AltCommandLine("-s");Inherit>]                  Silent
+    | [<AltCommandLine("-v");Inherit>]                  Verbose
     | [<Inherit>]                                       Log_File of path:string
     | [<Inherit;Hidden>]                                From_Bootstrapper
     // subcommands
