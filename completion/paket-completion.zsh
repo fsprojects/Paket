@@ -515,6 +515,34 @@ _paket-convert-from-nuget() {
   return ret
 }
 
+(( $+functions[_paket-find-refs] )) ||
+_paket-find-refs() {
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    "${(f)$(_paket_group_option 'specify dependency group (default: Main group)')}"
+  )
+
+  _arguments -C \
+    $args \
+    '*: :->package-id' \
+  && ret=0
+
+  case $state in
+    (package-id)
+      local group=${(v)opt_args[(i)--group|-g]:-Main}
+
+      _paket_installed_packages $group \
+      && ret=0
+      ;;
+  esac
+
+  return ret
+}
+
 (( $+functions[_paket-find-package-versions] )) ||
 _paket-find-package-versions() {
   local curcontext=$curcontext context state state_descr line ret=1
@@ -573,8 +601,17 @@ _paket-why() {
 
   _arguments -C \
     $args \
-    ':NuGet package ID:_paket_installed_packages' \
+    ': :->package-id' \
   && ret=0
+
+  case $state in
+    (package-id)
+      local group=${(v)opt_args[(i)--group|-g]:-Main}
+
+      _paket_installed_packages $group \
+      && ret=0
+      ;;
+  esac
 
   return ret
 }
@@ -835,15 +872,18 @@ _paket_package_versions() {
 
   local expl
   _wanted paket-package-versions expl "$what for $package_id" \
-    compadd -a - output
+    compadd -a -- output
   _wanted paket-fake-package-versions expl "fake $what for $package_id" \
-    compadd -n -a - fake_versions
+    compadd -n -a -- fake_versions
 }
 
 (( $+functions[_paket_installed_packages] )) ||
 _paket_installed_packages() {
+  local group="$1"
   local cmd=show-installed-packages
+
   local what='NuGet package ID'
+  [[ -n "$group" ]] && what="$what for group $group"
 
   if ! _paket_should_run $cmd; then
     _message "Enter $what"
@@ -857,6 +897,9 @@ _paket_installed_packages() {
     )
   _paket_command_successful $? || return 1
 
+  # Filter packages by optional group name followed by space.
+  [[ -n "$group" ]] && output=(${(M)output:#$group *})
+
   # Take the second word after splitting by space (the package ID).
   # Format: <group> <package ID> - <version>
   # TODO: zsh parameter expansion?
@@ -868,7 +911,9 @@ _paket_installed_packages() {
   done
 
   local expl
-  _wanted paket-installed-packages expl $what compadd -a - filtered
+  # -F line: exclude elements as possible completions (i.e. remove packages
+  # already typed).
+  _wanted paket-installed-packages expl $what compadd -F line -a -- filtered
 }
 
 (( $+functions[_paket_sources] )) ||
