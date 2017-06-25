@@ -651,6 +651,24 @@ _paket-show-groups() {
   _arguments $global_options
 }
 
+(( $+functions[_paket-simplify] )) ||
+_paket-simplify() {
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    '(-i --interactive)'{-i,--interactive}'[confirm deletion of every transitive dependency]'
+  )
+
+  _arguments -C \
+    $args \
+  && ret=0
+
+  return ret
+}
+
 (( $+functions[_paket-why] )) ||
 _paket-why() {
   local curcontext=$curcontext context state state_descr line ret=1

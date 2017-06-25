@@ -220,7 +220,7 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Interactive -> "Asks to confirm to delete every transitive dependency from each of the files."
+            | Interactive -> "confirm deletion of every transitive dependency"
 
 type UpdateArgs =
     | [<CustomCommandLine("nuget")>] Nuget of package_id:string
