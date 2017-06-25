@@ -396,16 +396,26 @@ with
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
 type GenerateLoadScriptsArgs =
-    | [<CustomCommandLine("groups")>] Groups of groups:string list
-    | [<CustomCommandLine("framework")>] Framework of target:string
-    | [<CustomCommandLine("type")>] ScriptType of id:string
+    | [<AltCommandLine("-g")>] Groups of group:string list
+    | [<Hidden;CustomCommandLine("groups")>] Groups_Legacy of group:string list
+
+    | [<AltCommandLine("-f")>] Framework of target:string
+    | [<Hidden;CustomCommandLine("framework")>] Framework_Legacy of target:string
+
+    | [<AltCommandLine("-t")>] Type of script_type:string
+    | [<Hidden;CustomCommandLine("type")>] Type_Legacy of script_type:string
 with
   interface IArgParserTemplate with
       member this.Usage =
         match this with
-        | Groups _ -> "Groups to generate scripts for, if none are specified then generate for all groups"
-        | Framework _ -> "Framework identifier to generate scripts for, such as net45 or netstandard1.6"
-        | ScriptType _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
+        | Groups(_) -> "groups to generate scripts for (default: all groups)"
+        | Groups_Legacy(_) -> "[obsolete]"
+
+        | Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6"
+        | Framework_Legacy(_) -> "[obsolete]"
+
+        | Type(_) -> "language to generate scripts for, must be one of 'fsx' or 'csx'"
+        | Type_Legacy(_) -> "[obsolete]"
 
 type WhyArgs =
     | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string

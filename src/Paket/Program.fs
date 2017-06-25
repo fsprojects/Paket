@@ -122,6 +122,20 @@ let legacyBool (results : ParseResults<_>) newSyntax oldSyntax (list : bool*bool
     | (false, false) ->
         false
 
+let legacyList (results : ParseResults<_>) newSyntax oldSyntax list =
+    let some x =
+        List.isEmpty x |> not
+
+    match list with
+    | ([], []) -> []
+    | (x, []) when some x ->
+        x
+    | ([], y) when some y ->
+        warnObsolete oldSyntax newSyntax
+        y
+    | _ ->
+        failObsolete oldSyntax newSyntax
+
 let legacyOption (results : ParseResults<_>) newSyntax oldSyntax list =
     match list with
     | (Some id, None) ->
@@ -491,9 +505,20 @@ let push (results : ParseResults<_>) =
                       ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
 
 let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
-    let providedFrameworks = results.GetResults <@ GenerateLoadScriptsArgs.Framework @>
-    let providedScriptTypes = results.GetResults <@ GenerateLoadScriptsArgs.ScriptType @>
-    let providedGroups = defaultArg (results.TryGetResult<@ GenerateLoadScriptsArgs.Groups @>) []
+    let providedFrameworks =
+        (results.GetResults <@ GenerateLoadScriptsArgs.Framework @>,
+         results.GetResults <@ GenerateLoadScriptsArgs.Framework_Legacy @>)
+        |> legacyList results "--framework" "framework"
+    let providedScriptTypes =
+        (results.GetResults <@ GenerateLoadScriptsArgs.Type @>,
+         results.GetResults <@ GenerateLoadScriptsArgs.Type_Legacy @>)
+        |> legacyList results "--type" "type"
+    let providedGroups =
+        let arg = (results.TryGetResult<@ GenerateLoadScriptsArgs.Groups @>,
+                   results.TryGetResult<@ GenerateLoadScriptsArgs.Groups_Legacy @>)
+                  |> legacyOption results "--groups" "groups"
+        defaultArg arg []
+
     Dependencies.Locate().GenerateLoadScripts providedGroups providedFrameworks providedScriptTypes
 
 let generateNuspec (results:ParseResults<GenerateNuspecArgs>) =
