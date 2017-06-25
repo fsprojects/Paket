@@ -641,6 +641,11 @@ _paket-generate-load-scripts() {
   return ret
 }
 
+(( $+functions[_paket-init] )) ||
+_paket-init() {
+  _arguments $global_options
+}
+
 (( $+functions[_paket-why] )) ||
 _paket-why() {
   local curcontext=$curcontext context state state_descr line ret=1
