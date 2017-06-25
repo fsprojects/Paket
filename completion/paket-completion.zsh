@@ -614,6 +614,33 @@ _paket-find-packages() {
   return ret
 }
 
+(( $+functions[_paket-generate-load-scripts] )) ||
+_paket-generate-load-scripts() {
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    '(-f --framework)'{-f,--framework}'[framework identifier to generate scripts for]:framework: '
+    '(-t --type)'{-t,--type}'[language to generate scripts for]:language:(csx fsx)'
+    '(-g --groups)'{-g,--groups}'[groups to generate scripts for (default: all groups)]:*:::group:->group'
+  )
+
+  # TODO: Handle multiple groups without repeating them during completion.
+  _arguments -C \
+    $args \
+  && ret=0
+
+  case $state in
+    (group)
+      _paket_groups
+      ;;
+  esac
+
+  return ret
+}
+
 (( $+functions[_paket-why] )) ||
 _paket-why() {
   local curcontext=$curcontext context state state_descr line ret=1
@@ -742,7 +769,7 @@ _paket_commands() {
     auto-restore:'manage automatic package restore during the build process inside Visual Studio'
     clear-cache:'clear the NuGet and git cache directories'
     config:'store global configuration values like NuGet credentials'
-    generate-load-scripts:'generate C# and F# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS'
+    generate-load-scripts:'generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS'
     init:'create an empty paket.dependencies file in the current working directory'
   )
 
@@ -882,7 +909,6 @@ _paket_package_versions() {
     compadd -n -a -- fake_versions
 }
 
-
 (( $+functions[_paket_groups] )) ||
 _paket_groups() {
   local cmd=show-groups
@@ -952,9 +978,9 @@ _paket_installed_packages() {
     filtered+="${${(s. .)package}[2]}"
   done
 
-  local expl
   # -F line: exclude $line elements as possible completions (i.e. remove
   # packages already typed).
+  local expl
   _wanted paket-installed-packages expl $what compadd -F line -a -- filtered
 }
 

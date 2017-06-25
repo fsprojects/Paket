@@ -399,8 +399,8 @@ type GenerateLoadScriptsArgs =
     | [<AltCommandLine("-g")>] Groups of group:string list
     | [<Hidden;CustomCommandLine("groups")>] Groups_Legacy of group:string list
 
-    | [<AltCommandLine("-f")>] Framework of target:string
-    | [<Hidden;CustomCommandLine("framework")>] Framework_Legacy of target:string
+    | [<AltCommandLine("-f")>] Framework of framework:string
+    | [<Hidden;CustomCommandLine("framework")>] Framework_Legacy of framework:string
 
     | [<AltCommandLine("-t")>] Type of script_type:string
     | [<Hidden;CustomCommandLine("type")>] Type_Legacy of script_type:string
@@ -497,7 +497,7 @@ with
             | Pack _ -> "create NuGet packages from paket.template files"
             | Push _ -> "push a NuGet package"
             | GenerateIncludeScripts _ -> "obsolete, see generate-load-scripts"
-            | GenerateLoadScripts _ -> "generate C# and F# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
+            | GenerateLoadScripts _ -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Why _ -> "determine why a dependency is required"
             | Log_File _ -> "print output to a file"
             | Silent -> "suppress console output"
