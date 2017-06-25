@@ -1,4 +1,5 @@
 #### 5.2.0 - 25.06.2017
+* BUGFIX: Paket init in "magic" mode deleted paket.exe - https://github.com/fsprojects/Paket/issues/2451
 * BUGFIX: Take xamarin.*.csharp.targets into account when finding location - https://github.com/fsprojects/Paket/pull/2460
 * BUGFIX: Fixed Package targetFramework for netstandard - https://github.com/fsprojects/Paket/pull/2453
 * BUGFIX: Fixed the warning reported in #2440 - https://github.com/fsprojects/Paket/pull/2449
