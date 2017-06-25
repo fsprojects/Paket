@@ -185,8 +185,8 @@
 #     'http://another.example.com/feed/v2'
 
 _paket() {
-  local curcontext=$curcontext state line ret=1
-  local -A opt_args
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
 
   # Strip .exe extension.
   curcontext="${curcontext%.*}:"
@@ -289,13 +289,12 @@ _paket_group_option() {
 _paket_source_url() {
   local state="$1" curcontext="${2%:*}" ret=1
 
-  local -a user_sources
-  zstyle -a ":completion:$curcontext:" sources user_sources
-
   case $state in
     (source-url)
-      local -a args
+      local -a user_sources
+      zstyle -a ":completion:$curcontext:" sources user_sources
 
+      local -a args
       args=(
         'source::_paket_sources'
         'NuGet.org feed:NuGet.org feed:(https://www.nuget.org/api/v2 https://api.nuget.org/v3/index.json)'
@@ -314,9 +313,9 @@ _paket_source_url() {
 
 (( $+functions[_paket-add] )) ||
 _paket-add() {
-  local curcontext=$curcontext state ret=1
+  local curcontext=$curcontext context state state_descr ret=1
+  typeset -A opt_args
   local -a line
-  declare -A opt_args
 
   local -a args
   args=(
@@ -369,8 +368,8 @@ _paket-add() {
 
 (( $+functions[_paket-auto-restore] )) ||
 _paket-auto-restore() {
-  local curcontext=$curcontext state line ret=1
-  declare -A opt_args
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
 
   local -a args
   args=(
@@ -384,7 +383,7 @@ _paket-auto-restore() {
 
   case $state in
     (mode)
-      declare -a modes
+      local -a modes
 
       modes=(
         'on:enable automatic restore'
@@ -401,8 +400,8 @@ _paket-auto-restore() {
 
 (( $+functions[_paket-clear-cache] )) ||
 _paket-clear-cache() {
-  local curcontext=$curcontext state line ret=1
-  declare -A opt_args
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
 
   local -a args
   args=(
@@ -418,8 +417,8 @@ _paket-clear-cache() {
 
 (( $+functions[_paket-config] )) ||
 _paket-config() {
-  local curcontext=$curcontext state line ret=1
-  declare -A opt_args
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
 
   local -a args
   args=(
@@ -434,7 +433,7 @@ _paket-config() {
 
   case $state in
     (command)
-      declare -a commands
+      local -a commands
 
       commands=(
         'add-credentials:add credentials for URL or credential key'
@@ -494,8 +493,8 @@ _paket-config() {
 
 (( $+functions[_paket-convert-from-nuget] )) ||
 _paket-convert-from-nuget() {
-  local curcontext=$curcontext state line ret=1
-  declare -A opt_args
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
 
   local -a args
   args=(
@@ -518,8 +517,8 @@ _paket-convert-from-nuget() {
 
 (( $+functions[_paket-find-package-versions] )) ||
 _paket-find-package-versions() {
-  local curcontext=$curcontext state line ret=1
-  declare -A opt_args
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
 
   local -a args
   args=(
@@ -540,8 +539,8 @@ _paket-find-package-versions() {
 
 (( $+functions[_paket-find-packages] )) ||
 _paket-find-packages() {
-  local curcontext=$curcontext state line ret=1
-  declare -A opt_args
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
 
   local -a args
   args=(
@@ -562,8 +561,8 @@ _paket-find-packages() {
 
 (( $+functions[_paket-why] )) ||
 _paket-why() {
-  local curcontext=$curcontext state line ret=1
-  declare -A opt_args
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
 
   local -a args
   args=(
@@ -591,8 +590,8 @@ _paket-install() {
 
 (( $+functions[_paket-restore] )) ||
 _paket-restore() {
-  local curcontext=$curcontext state line ret=1
-  declare -A opt_args
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
 
   local -a args
   args=(
