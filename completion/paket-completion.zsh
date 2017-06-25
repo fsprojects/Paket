@@ -646,6 +646,11 @@ _paket-init() {
   _arguments $global_options
 }
 
+(( $+functions[_paket-show-groups] )) ||
+_paket-show-groups() {
+  _arguments $global_options
+}
+
 (( $+functions[_paket-why] )) ||
 _paket-why() {
   local curcontext=$curcontext context state state_descr line ret=1
