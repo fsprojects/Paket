@@ -91,14 +91,20 @@ with
             | Migrate_Credentials_Legacy(_) -> "[obsolete]"
 
 type FindRefsArgs =
-    | [<CustomCommandLine("group")>] Group of name:string
-    | [<CustomCommandLine("nuget")>][<ExactlyOnce>] Packages of package_name:string list
+    | [<Mandatory;MainCommandAttribute()>] NuGets of package_id:string list
+    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGets_Legacy of package_id:string list
+
+    | [<AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Group(_) -> "Allows to specify a group. If omitted the Main group is used."
-            | Packages(_) -> "List of packages."
+            | NuGets(_) -> "list of NuGet package IDs"
+            | NuGets_Legacy(_) -> "[obsolete]"
+
+            | Group(_) -> "specify dependency group (default: Main group)"
+            | Group_Legacy(_) -> "[obsolete]"
 
 type InitArgs =
     | [<Hidden>] NoArg

@@ -220,8 +220,19 @@ let convert (fromBootstrapper:bool) (results : ParseResults<_>) =
     Dependencies.ConvertFromNuget(force, noInstall |> not, noAutoRestore |> not, credsMigrationMode, fromBootstrapper=fromBootstrapper)
 
 let findRefs (results : ParseResults<_>) =
-    let packages = results.GetResult <@ FindRefsArgs.Packages @>
-    let group = defaultArg (results.TryGetResult <@ FindRefsArgs.Group @>) (Constants.MainDependencyGroup.ToString())
+    let packages =
+        let arg = (results.TryGetResult <@ FindRefsArgs.NuGets @>,
+                   results.TryGetResult <@ FindRefsArgs.NuGets_Legacy @>)
+                  |> legacyOption results "(omit, option is the new default argument)" "nuget"
+        match arg with
+        | Some(id) -> id
+        | _ -> results.GetResult <@ FindRefsArgs.NuGets @>
+    let group =
+        let arg = (results.TryGetResult <@ FindRefsArgs.Group @>,
+                   results.TryGetResult <@ FindRefsArgs.Group_Legacy @>)
+                  |> legacyOption results "--group" "group"
+
+        defaultArg arg (Constants.MainDependencyGroup.ToString())
     packages |> List.map (fun p -> group,p)
     |> Dependencies.Locate().ShowReferencesFor
 
