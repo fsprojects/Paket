@@ -55,16 +55,16 @@
 #     alias paket='./.paket/paket.exe'
 #   fi
 #
-#  Also ensure that zsh completes aliases based on the expanded alias contents.
-#  http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETEALIASES
+# Also ensure that zsh completes aliases based on the expanded alias contents.
+# http://zsh.sourceforge.net/Doc/Release/Options.html#index-COMPLETEALIASES
 #
-#    unsetopt completealiases
+#   unsetopt completealiases
 #
-#  If you don't like alias completion, define that the paket alias should be
-#  completed using the _paket function defined in this file.
+# If you don't like alias completion, define that the paket alias should be
+# completed using the _paket function defined in this file.
 #
-#    setopt completealiases
-#    compdef _paket paket
+#   setopt completealiases
+#   compdef _paket paket
 #
 #
 # MONO
@@ -97,8 +97,8 @@
 #
 #   If you want this behavior, enable infix matches:
 #
-#   zstyle ':completion::complete:paket:*' infix-match yes
-#   zstyle ':completion::complete:paket:add:*' infix-match yes # Only for paket add.
+#     zstyle ':completion::complete:paket:*' infix-match yes
+#     zstyle ':completion::complete:paket:add:*' infix-match yes # Only for paket add.
 #
 #
 # Disable fallback (i.e. default zsh) completion for Paket commands that do not
@@ -122,67 +122,84 @@
 #   Enable the zsh completion cache globally, including completions for other
 #   commands that also leverage caching:
 #
-#   zstyle ':completion:*' use-cache on
-#   zstyle ':completion:*' cache-path instead/of/$HOME/.zcompcache # Optional.
+#     zstyle ':completion:*' use-cache on
+#     zstyle ':completion:*' cache-path instead/of/$HOME/.zcompcache # Optional.
 #
 #   To disable the cache for specific Paket commands to always get fresh
 #   results when completing e.g. paket add:
 #
-#   zstyle ':completion::complete:paket:add:*' use-cache off
+#     zstyle ':completion::complete:paket:add:*' use-cache off
 #
 #   The caches are stored under the cache-path as follows:
 #
-#   <cache-path>/paket/<expensive command>/<parameter>, e.g.
-#   <cache-path>/paket/find-packages/fak if you completed 'FAK' or 'fak' before.
+#     <cache-path>/paket/<expensive command>/<parameter>
+#
+#   e.g.
+#
+#     <cache-path>/paket/find-packages/fak
+#
+#   if you completed 'paket find-packages FAK' or 'paket find-packages fak'
+#   before.
 #
 #   The default cache policy caches results for 1 day (see _paket_cache_policy).
 #   To remove cached results you can either delete the
 #   <cache-path>/paket directory or provide a custom cache policy to control
 #   cache expiration for all or specific Paket commands:
 #
-#   zstyle ':completion::complete:paket:*' cache-policy _default_cache_policy
-#   zstyle ':completion::complete:paket:find-packages:*' cache-policy _strict_cache_policy
+#     zstyle ':completion::complete:paket:*' cache-policy _default_cache_policy
+#     zstyle ':completion::complete:paket:find-packages:*' cache-policy _strict_cache_policy
 #
-#   _default_cache_policy () {
-#     # Rebuild if cache is more than a week old.
-#     local file="$1"
-#     local -a outdated
-#     # See http://zsh.sourceforge.net/Doc/Release/Expansion.html#Glob-Qualifiers
-#     outdated=( "$file"(Nm+7) )
-#     (( $#outdated ))
+#     _default_cache_policy () {
+#       # Rebuild if the cache is more than a week old.
+#       local file="$1"
+#       local -a outdated
+#       # See http://zsh.sourceforge.net/Doc/Release/Expansion.html#Glob-Qualifiers
+#       outdated=( "$file"(Nm+7) )
+#       (( $#outdated ))
+#     }
+#
+#     _strict_cache_policy () {
+#       return 0 # 0 == always outdated, you should better use use-cache off.
 #   }
 #
-#   _strict_cache_policy () {
-#     return 0 # 0 == always outdated, you should better use use-cache off.
-#   }
+#   There are two special default cache policies for completions relying on the
+#   existence of local files, e.g. paket.dependencies or paket.lock.
+#   For Paket commands that read these, the cache is invalidated as soon as the
+#   file's modification time is newer than the cache.
+#   (See _paket_cache_policy_dependencies_file and
+#   _paket_cache_policy_lock_file.)
 #
 #
 # Disable running Paket to get packages, versions etc. as completion arguments
 #
-#   zstyle ':completion::complete:paket:*' disable-completion yes
+#   Disable globally:
+#
+#     zstyle ':completion::complete:paket:*' disable-completion yes
 #
 #   Disable only a single means to get completion values:
 #
-#   # Used by e.g. paket add:
-#   zstyle ':completion::complete:paket:find-packages:' disable-completion yes
-#   zstyle ':completion::complete:paket:find-package-versions:' disable-completion yes
-#   zstyle ':completion::complete:paket:show-groups:' disable-completion yes
+#     # Used by e.g. paket add:
+#     zstyle ':completion::complete:paket:find-packages:' disable-completion yes
+#     zstyle ':completion::complete:paket:find-package-versions:' disable-completion yes
+#     zstyle ':completion::complete:paket:show-groups:' disable-completion yes
 #
-#   # Used by e.g. paket why:
-#   zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
+#     # Used by e.g. paket why:
+#     zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
 #
 #
 # Custom feed URLs for --source argument
 #
-#   zstyle ':completion::complete:paket:*' sources 'http://one.example.com/feed/v2'
-#   zstyle ':completion::complete:paket:*' sources \
-#     'http://one.example.com/feed/v2' \
-#     'http://second.example.com/feed/v2'
+#   Define additional sources that will be completed for all Paket commands:
+#
+#     zstyle ':completion::complete:paket:*' sources 'http://one.example.com/feed/v2'
+#     zstyle ':completion::complete:paket:*' sources \
+#            'http://one.example.com/feed/v2' \
+#            'http://second.example.com/feed/v2'
 #
 #   Override list for a specific command; mind the trailing colon:
 #
-#   zstyle ':completion::complete:paket:find-package-versions:' sources \
-#     'http://another.example.com/feed/v2'
+#     zstyle ':completion::complete:paket:find-package-versions:' sources \
+#            'http://another.example.com/feed/v2'
 
 _paket() {
   local curcontext=$curcontext context state state_descr line ret=1
@@ -192,11 +209,21 @@ _paket() {
   curcontext="${curcontext%.*}:"
 
   # Set up default cache policy.
-  local cache_policy
-  zstyle -s ":completion:${curcontext}*" cache-policy cache_policy
-  if [[ -z "$cache_policy" ]]; then
-    zstyle ":completion:${curcontext}*" cache-policy _paket_cache_policy
-  fi
+  local -A default_policies
+  default_policies[${curcontext}*]=_paket_cache_policy
+  default_policies[${curcontext}*:*:show-groups:]=_paket_cache_policy_dependencies_file
+  default_policies[${curcontext}*:*:show-installed-packages:]=_paket_cache_policy_lock_file
+
+  local key cache_policy
+  for key in "${(@kO)default_policies}"; do
+    local ctx="$key"
+    local policy="${default_policies[$key]}"
+
+    zstyle -s ":completion:$ctx" cache-policy cache_policy
+    if [[ -z "$cache_policy" ]]; then
+      zstyle ":completion:$ctx" cache-policy $policy
+    fi
+  done
 
   # Do not offer anything after these options.
   local -a terminating_options
@@ -761,28 +788,6 @@ _paket_commands() {
   _alternative $alternatives
 }
 
-(( $+functions[_paket_groups] )) ||
-_paket_groups() {
-  local cmd=show-groups
-  local what='group'
-
-  if ! _paket_should_run $cmd; then
-    _message "Enter $what"
-    return
-  fi
-
-  # We need to replace CR, in case we're running on Windows (//$'\r'/).
-  local -a output
-  output=(
-    ${(f)"$(_call_program $cmd \
-            "$(_paket_executable) $cmd --silent 2> /dev/null")"//$'\r'/}
-    )
-  _paket_command_successful $? || return 1
-
-  local expl
-  _wanted paket-groups expl $what compadd -a -- output
-}
-
 (( $+functions[_paket_packages] )) ||
 _paket_packages() {
   local cmd=find-packages
@@ -877,6 +882,36 @@ _paket_package_versions() {
     compadd -n -a -- fake_versions
 }
 
+
+(( $+functions[_paket_groups] )) ||
+_paket_groups() {
+  local cmd=show-groups
+  local what='group'
+
+  if ! _paket_should_run $cmd; then
+    _message "Enter $what"
+    return
+  fi
+
+  # Modify context for cache retrieval only.
+  local curcontext="$curcontext:$cmd"
+  local cache_id="${service%.*}/$cmd/${PWD//\//-}"
+  if ! _retrieve_cache $cache_id; then
+    # We need to replace CR, in case we're running on Windows (//$'\r'/).
+    local -a output
+    output=(
+      ${(f)"$(_call_program $cmd \
+              "$(_paket_executable) $cmd --silent 2> /dev/null")"//$'\r'/}
+      )
+    _paket_command_successful $? || return 1
+
+    _store_cache $cache_id output
+  fi
+
+  local expl
+  _wanted paket-groups expl $what compadd -a -- output
+}
+
 (( $+functions[_paket_installed_packages] )) ||
 _paket_installed_packages() {
   local group="$1"
@@ -890,12 +925,19 @@ _paket_installed_packages() {
     return
   fi
 
-  local -a output
-  output=(
-    ${(f)"$(_call_program $cmd \
-            "$(_paket_executable) $cmd --silent --all 2> /dev/null")"}
-    )
-  _paket_command_successful $? || return 1
+  # Modify context for cache retrieval only.
+  local curcontext="$curcontext:$cmd"
+  local cache_id="${service%.*}/$cmd/${PWD//\//-}"
+  if ! _retrieve_cache $cache_id; then
+    local -a output
+    output=(
+      ${(f)"$(_call_program $cmd \
+              "$(_paket_executable) $cmd --silent --all 2> /dev/null")"}
+      )
+    _paket_command_successful $? || return 1
+
+    _store_cache $cache_id output
+  fi
 
   # Filter packages by optional group name followed by space.
   [[ -n "$group" ]] && output=(${(M)output:#$group *})
@@ -911,8 +953,8 @@ _paket_installed_packages() {
   done
 
   local expl
-  # -F line: exclude elements as possible completions (i.e. remove packages
-  # already typed).
+  # -F line: exclude $line elements as possible completions (i.e. remove
+  # packages already typed).
   _wanted paket-installed-packages expl $what compadd -F line -a -- filtered
 }
 
@@ -1032,15 +1074,39 @@ _paket_executable() {
 
 (( $+functions[_paket_cache_policy] )) ||
 _paket_cache_policy() {
-  local file="$1"
+  local cache="$1"
 
-  # Rebuild if cache is more than a day old.
+  # Rebuild if the cache is more than a day old.
   # See http://zsh.sourceforge.net/Doc/Release/Expansion.html#Glob-Qualifiers
   local -a outdated
-  outdated=("$file"(mh+24))
+  outdated=("$cache"(mh+24))
   (( $#outdated )) && return 0
 
   # Still fresh!
+  return 1
+}
+
+(( $+functions[_paket_cache_policy_dependencies_file] )) ||
+_paket_cache_policy_dependencies_file() {
+  local cache="$1"
+
+  # Rebuild if paket.dependencies is newer than cache.
+  if [[ ! -f paket.dependencies || paket.dependencies -nt $cache ]]; then
+    return 0
+  fi
+
+  return 1
+}
+
+(( $+functions[_paket_cache_policy_lock_file] )) ||
+_paket_cache_policy_lock_file() {
+  local cache="$1"
+
+  # Rebuild if paket.dependencies is newer than cache.
+  if [[ ! -f paket.lock || paket.lock -nt $cache ]]; then
+    return 0
+  fi
+
   return 1
 }
 

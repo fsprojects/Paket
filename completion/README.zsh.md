@@ -167,11 +167,11 @@ zstyle ':completion::complete:paket:*' cache-policy _default_cache_policy
 zstyle ':completion::complete:paket:find-packages:*' cache-policy _strict_cache_policy
 
 _default_cache_policy () {
-  # Rebuild if cache is more than a week old.
-  local file="$1"
+  # Rebuild if the cache is more than a week old.
+  local cache="$1"
   local -a outdated
   # See http://zsh.sourceforge.net/Doc/Release/Expansion.html#Glob-Qualifiers
-  outdated=( "$file"(Nm+7) )
+  outdated=( "$cache"(Nm+7) )
   (( $#outdated ))
 }
 
@@ -179,6 +179,13 @@ _strict_cache_policy () {
   return 0 # 0 == always outdated, you should better use use-cache off.
 }
 ```
+
+There are two special default cache policies for completions relying on the
+existence of local files, e.g. `paket.dependencies` and `paket.lock`.
+For Paket commands that read these, the cache is invalidated as soon as the
+file's modification time is newer than the cache.
+(See `_paket_cache_policy_dependencies_file` and
+`_paket_cache_policy_lock_file`.)
 
 ### Disable running Paket to get packages, versions etc. as completion arguments
 
