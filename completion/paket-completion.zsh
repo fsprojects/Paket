@@ -697,7 +697,7 @@ _paket_commands() {
   local expl
   _description '' expl ''
   local -a all_matching_commands
-  compadd "$expl[@]" -O all_matching_commands -a all_commands
+  compadd "$expl[@]" -O all_matching_commands -a -- all_commands
   # Length of longest match.
   longest_match=${#${(O)all_matching_commands//?/.}[1]}
 
@@ -718,7 +718,7 @@ _paket_commands() {
     set -A "${type}_desc" \
       ${${(r.$COLUMNS-1.)${(P)type}/(#s)(#m)[^:]##:/${(r.longest_match.)MATCH[1,-2]} -- }%% #}
 
-    alternatives+=("${type}:$type command:compadd ${(e)disp} -a ${type}_commands")
+    alternatives+=("${type}:$type command:compadd ${(e)disp} -a -- ${type}_commands")
   done
 
   _alternative $alternatives
@@ -743,7 +743,7 @@ _paket_groups() {
   _paket_command_successful $? || return 1
 
   local expl
-  _wanted paket-groups expl $what compadd -a - output
+  _wanted paket-groups expl $what compadd -a -- output
 }
 
 (( $+functions[_paket_packages] )) ||
@@ -891,7 +891,7 @@ _paket_sources() {
   done
 
   local expl
-  _wanted paket-sources expl 'source URL' compadd -a - sources
+  _wanted paket-sources expl 'source URL' compadd -a -- sources
 }
 
 (( $+functions[_paket_credential_keys] )) ||
@@ -914,7 +914,7 @@ _paket_credential_keys() {
   done
 
   local expl
-  _wanted paket-credential-keys expl 'credential key' compadd -a - githubs
+  _wanted paket-credential-keys expl 'credential key' compadd -a -- githubs
 }
 
 (( $+functions[_paket_strategy_modifiers] )) ||
