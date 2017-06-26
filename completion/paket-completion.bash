@@ -10,7 +10,7 @@ paket-completion-update()
   # entries are files under $download_from pointing to local files.
   local -A entries
   # Let the file point to the file defining our function.
-  entries[paket-completion.bash]="${BASH_SOURCE[0]}"
+  entries[paket-completion.bash]="$(readlink "${BASH_SOURCE[0]}")"
 
   local key
   for key in "${!entries[@]}"; do

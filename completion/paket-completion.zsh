@@ -1168,9 +1168,11 @@ paket-completion-update() {
 
   # entries are files under $download_from pointing to local files.
   local -A entries
-  # Let the file point to the file defining our function.
+  # Let the file point to the file defining our function, even if it is
+  # symlinked.
   # http://stackoverflow.com/a/28336473/149264
-  entries[paket-completion.zsh]=${(%):-%x}
+  # https://unix.stackexchange.com/a/136565/72946
+  entries[paket-completion.zsh]=${${(%):-%x}:A}
 
   local key
   for key in "${(@k)entries}"; do
