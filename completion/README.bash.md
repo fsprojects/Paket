@@ -40,9 +40,13 @@ $ curl --fail --location --proto-redir -all,https --output "$target" \
 
 Just repeat the download from above.
 
-Alternatively we provide the `paket-completion-update` function that will
-download the current `paket-completion.bash` to the same file as above, even if
-you changed its location after the initial download.
+Alternatively the completion script comes bundled with the
+`paket-completion-update` function that will download the current
+`paket-completion.bash` to the same file as above, even if you changed its
+location after the initial download.
+
+**Please note:** The `paket-completion-update` function requires the completion
+script to be `source`d and `curl` to be installed.
 
 `paket-completion-update` supports an optional first parameter that allows you
 to override the default download root URL which is

@@ -26,12 +26,14 @@
 #
 # Just repeat the download from above.
 #
-# Alternatively we provide the paket-completion-update function that will
-# download the current paket-completion.zsh to the same file as above, even if
-# you changed its location after the initial download.
+# Alternatively the completion script comes bundled with the
+# paket-completion-update function that will download the current
+# paket-completion.zsh to the same file as above, even if you changed its
+# location after the initial download.
 #
-# Please note: paket-completion-update is only available after your
-# first paket completion per shell session (i.e. after the Paket completion
+# Please note: The paket-completion-update function requires curl to be
+# installed. paket-completion-update is *only available after your
+# first paket completion* per shell session (i.e. after the Paket completion
 # functions have been autoloaded by zsh).
 #
 # paket-completion-update supports an optional first parameter that allows you
