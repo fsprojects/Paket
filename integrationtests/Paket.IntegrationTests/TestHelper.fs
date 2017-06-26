@@ -107,7 +107,7 @@ let directPaketInPath command scenarioPath =
         failwith errors      
 
 
-    String.Join(Environment.NewLine,msgs |> Seq.filter (fst >> not) |> Seq.map snd)
+    String.Join(Environment.NewLine,msgs |> Seq.map snd)
     #endif
 
 let directPaket command scenario =
