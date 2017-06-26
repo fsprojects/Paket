@@ -787,8 +787,6 @@ _paket_commands() {
 
   NuGet=(
     convert-from-nuget:'convert projects from NuGet to Paket'
-    fix-nuspecs:'patch a list of .nuspec files to correct transitive dependencies'
-    generate-nuspec:'generate a default nuspec for a project including its direct dependencies'
     pack:'create NuGet packages from paket.template files'
     push:'push a NuGet package'
   )
