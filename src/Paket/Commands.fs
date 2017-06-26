@@ -5,8 +5,8 @@ open System
 open Argu
 
 type AddArgs =
-    | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
-    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
+    | [<Mandatory;MainCommandAttribute()>] NuGet of package_ID:string
+    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
 
     | [<AltCommandLine("-V")>] Version of version_constraint:string
     | [<Hidden;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
@@ -59,10 +59,10 @@ with
             | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
 
 type ConfigArgs =
-    | [<CustomCommandLine("add-credentials")>] AddCredentials of string
-    | [<CustomCommandLine("add-token")>] AddToken of string * string
-    | Username of string
-    | Password of string
+    | [<CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
+    | [<CustomCommandLine("add-token")>] AddToken of key_or_URL:string * token:string
+    | Username of username:string
+    | Password of password:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -91,8 +91,8 @@ with
             | Migrate_Credentials_Legacy(_) -> "[obsolete]"
 
 type FindRefsArgs =
-    | [<Mandatory;MainCommandAttribute()>] NuGets of package_id:string list
-    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGets_Legacy of package_id:string list
+    | [<Mandatory;MainCommandAttribute()>] NuGets of package_ID:string list
+    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGets_Legacy of package_ID:string list
 
     | [<AltCommandLine("-g")>] Group of name:string
     | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
@@ -188,7 +188,7 @@ with
             | Include_Prereleases -> "consider prerelease versions as updates"
 
 type RemoveArgs =
-    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of package_id:string
+    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of package_ID:string
     | [<CustomCommandLine("project")>] Project of name:string
     | [<CustomCommandLine("group")>] Group of name:string
     | [<AltCommandLine("-f")>] Force
@@ -276,11 +276,11 @@ with
             | Touch_Affected_Refs -> "Touches project files referencing packages which are affected, to help incremental build tools detecting the change."
 
 type FindPackagesArgs =
-    | [<MainCommandAttribute()>] Search of package_id:string
-    | [<Hidden;CustomCommandLine("searchtext")>] Search_Legacy of package_id:string
+    | [<MainCommandAttribute()>] Search of package_ID:string
+    | [<Hidden;CustomCommandLine("searchtext")>] Search_Legacy of package_ID:string
 
-    | Source of source_feed:string
-    | [<Hidden;CustomCommandLine("source")>] Source_Legacy of source_feed:string
+    | Source of source_URL:string
+    | [<Hidden;CustomCommandLine("source")>] Source_Legacy of source_URL:string
 
     | [<CustomCommandLine("--max")>] Max_Results of int
     | [<Hidden;CustomCommandLine("max")>] Max_Results_Legacy of int
@@ -291,7 +291,7 @@ with
             | Search(_) -> "search for NuGet package ID"
             | Search_Legacy(_) -> "[obsolete]"
 
-            | Source(_) -> "specify source feed"
+            | Source(_) -> "specify source URL"
             | Source_Legacy(_) -> "[obsolete]"
 
             | Max_Results(_) -> "limit maximum number of results"
@@ -351,11 +351,11 @@ with
             | PlaceHolder -> "Doesn't trace other output than installed packages."
 
 type FindPackageVersionsArgs =
-    | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
-    | [<Hidden;CustomCommandLine("nuget", "name")>] NuGet_Legacy of package_id:string
+    | [<Mandatory;MainCommandAttribute()>] NuGet of package_ID:string
+    | [<Hidden;CustomCommandLine("nuget", "name")>] NuGet_Legacy of package_ID:string
 
-    | Source of source_feed:string
-    | [<Hidden;CustomCommandLine("source")>] Source_Legacy of source_feed:string
+    | Source of source_URL:string
+    | [<Hidden;CustomCommandLine("source")>] Source_Legacy of source_URL:string
 
     | [<CustomCommandLine("--max")>] Max_Results of int
     | [<Hidden;CustomCommandLine("max")>] Max_Results_Legacy of int
@@ -366,7 +366,7 @@ with
             | NuGet(_) -> "NuGet package ID"
             | NuGet_Legacy(_) -> "[obsolete]"
 
-            | Source(_) -> "specify source feed"
+            | Source(_) -> "specify source URL"
             | Source_Legacy(_) -> "[obsolete]"
 
             | Max_Results(_) -> "limit maximum number of results"
@@ -421,8 +421,8 @@ with
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
 type GenerateLoadScriptsArgs =
-    | [<AltCommandLine("-g")>] Groups of group:string list
-    | [<Hidden;CustomCommandLine("groups")>] Groups_Legacy of group:string list
+    | [<AltCommandLine("-g")>] Groups of name:string list
+    | [<Hidden;CustomCommandLine("groups")>] Groups_Legacy of name:string list
 
     | [<AltCommandLine("-f")>] Framework of framework:string
     | [<Hidden;CustomCommandLine("framework")>] Framework_Legacy of framework:string
@@ -443,8 +443,8 @@ with
         | Type_Legacy(_) -> "[obsolete]"
 
 type WhyArgs =
-    | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
-    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
+    | [<Mandatory;MainCommandAttribute()>] NuGet of package_ID:string
+    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
 
     | [<AltCommandLine("-g")>] Group of name:string
     | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string

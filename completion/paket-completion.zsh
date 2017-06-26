@@ -578,7 +578,7 @@ _paket-find-package-versions() {
   local -a args
   args=(
     $global_options
-    '(--source)'--source'[specify source feed]: :->source-url'
+    '(--source)'--source'[specify source URL]: :->source-url'
     '(--max)'--max'[limit maximum number of results]:maxiumum results:(1 5 10 50 100 1000)'
   )
 
@@ -600,7 +600,7 @@ _paket-find-packages() {
   local -a args
   args=(
     $global_options
-    '(--source)'--source'[specify source feed]: :->source-url'
+    '(--source)'--source'[specify source URL]: :->source-url'
     '(--max)'--max'[limit maximum number of results]:maxiumum results:(1 5 10 50 100 1000)'
   )
 
