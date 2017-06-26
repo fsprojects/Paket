@@ -758,7 +758,7 @@ _paket_commands() {
   types=(
     dependency
     inspection
-    nuget
+    NuGet
     misc
   )
 
@@ -785,7 +785,7 @@ _paket_commands() {
     why:'determine why a dependency is required'
   )
 
-  nuget=(
+  NuGet=(
     convert-from-nuget:'convert projects from NuGet to Paket'
     fix-nuspecs:'patch a list of .nuspec files to correct transitive dependencies'
     generate-nuspec:'generate a default nuspec for a project including its direct dependencies'
