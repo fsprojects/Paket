@@ -342,9 +342,17 @@ let simplify (results : ParseResults<_>) =
     Dependencies.Locate().Simplify(interactive)
 
 let update (results : ParseResults<_>) =
+    let createNewBindingFiles =
+        (results.Contains <@ UpdateArgs.Create_New_Binding_Files @>,
+         results.Contains <@ UpdateArgs.Create_New_Binding_Files_Legacy @>)
+        |> legacyBool results "--create-new-binding-files" "--createnewbindingfiles"
+    let group =
+        (results.TryGetResult <@ UpdateArgs.Group @>,
+         results.TryGetResult <@ UpdateArgs.Group_Legacy @>)
+        |> legacyOption results "--group" "group"
+
     let force = results.Contains <@ UpdateArgs.Force @>
     let noInstall = results.Contains <@ UpdateArgs.No_Install @>
-    let group = results.TryGetResult <@ UpdateArgs.Group @>
     let withBindingRedirects = results.Contains <@ UpdateArgs.Redirects @>
     let cleanBindingRedirects = results.Contains <@ UpdateArgs.Clean_Redirects @>
     let createNewBindingFiles = results.Contains <@ UpdateArgs.Create_New_Binding_Files @>
@@ -356,9 +364,18 @@ let update (results : ParseResults<_>) =
     let touchAffectedRefs = results.Contains <@ UpdateArgs.Touch_Affected_Refs @>
     let filter = results.Contains <@ UpdateArgs.Filter @>
 
-    match results.TryGetResult <@ UpdateArgs.Nuget @> with
+    let nuget =
+        (results.TryGetResult <@ UpdateArgs.NuGet @>,
+         results.TryGetResult <@ UpdateArgs.NuGet_Legacy @>)
+        |> legacyOption results "(omit, option is the new default argument)" "nuget"
+
+    match nuget with
     | Some packageName ->
-        let version = results.TryGetResult <@ UpdateArgs.Version @>
+        let version =
+            (results.TryGetResult <@ UpdateArgs.Version @>,
+             results.TryGetResult <@ UpdateArgs.Version_Legacy @>)
+            |> legacyOption results "--version" "version"
+
         if filter then
             Dependencies.Locate().UpdateFilteredPackages(group, packageName, version, force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
         else

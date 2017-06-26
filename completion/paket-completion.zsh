@@ -368,25 +368,7 @@ _paket-add() {
       ;;
 
     (version)
-      if compset -P '* '; then
-        # For some reason an ! properly escaped on the command line will
-        # unescaped when generating more completions.
-        [[ "$IPREFIX" == !* ]] && IPREFIX='\!'${IPREFIX[2,-1]}
-
-        _paket_package_versions && ret=0
-      elif compset -P '!' || compset -P '@'; then
-        # For some reason an ! properly escaped on the command line will
-        # unescaped when generating more completions.
-        [[ "$IPREFIX" == !* ]] && IPREFIX='\!'${IPREFIX[2,-1]}
-
-        _paket_version_constraints && ret=0
-      else
-        _alternative \
-          "strategy-modifier::_paket_strategy_modifiers" \
-          "version-constraint::_paket_version_constraints" \
-          "package-version::_paket_package_versions" \
-        && ret=0
-      fi
+      _paket_version_constraint && ret=0
       ;;
   esac
 
@@ -728,6 +710,45 @@ _paket-simplify() {
   _arguments -C \
     $args \
   && ret=0
+
+  return ret
+}
+
+(( $+functions[_paket-update] )) ||
+_paket-update() {
+  local curcontext=$curcontext context state state_descr ret=1
+  typeset -A opt_args
+  local -a line
+
+  local -a args
+  args=(
+    $global_options
+    $keep_options
+    $binding_redirects_options
+    $download_options
+    '(--filter)'--filter'[treat the NuGet package ID as a regex to filter packages]'
+    '(--no-install)'--no-install'[do not add dependencies to projects]'
+    '(--version -V)'{--version,-V}'[dependency version constraint]: :->version'
+    "${(f)$(_paket_group_option 'specify dependency group to update (default: all groups)')}"
+  )
+
+  _arguments -C \
+    $args \
+    ':NuGet package ID:->package-id' \
+  && return
+
+  case $state in
+    (package-id)
+      local group=${(v)opt_args[(i)--group|-g]}
+
+      _paket_installed_packages $group \
+      && ret=0
+      ;;
+
+    (version)
+      _paket_version_constraint && ret=0
+      ;;
+  esac
 
   return ret
 }
@@ -1117,6 +1138,29 @@ _paket_version_constraints() {
   )
 
   _describe -t paket-version-constraint 'version constraint' args -qS '\ '
+}
+
+(( $+functions[_paket_version_constraint] )) ||
+_paket_version_constraint() {
+  if compset -P '* '; then
+    # For some reason an ! properly escaped on the command line will
+    # unescaped when generating more completions.
+    [[ "$IPREFIX" == !* ]] && IPREFIX='\!'${IPREFIX[2,-1]}
+
+    _paket_package_versions && ret=0
+  elif compset -P '!' || compset -P '@'; then
+    # For some reason an ! properly escaped on the command line will
+    # unescaped when generating more completions.
+    [[ "$IPREFIX" == !* ]] && IPREFIX='\!'${IPREFIX[2,-1]}
+
+    _paket_version_constraints && ret=0
+  else
+    _alternative \
+      "strategy-modifier::_paket_strategy_modifiers" \
+      "version-constraint::_paket_version_constraints" \
+      "package-version::_paket_package_versions" \
+    && ret=0
+  fi
 }
 
 (( $+functions[_paket_should_run] )) ||

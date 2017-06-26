@@ -244,12 +244,20 @@ with
             | Interactive -> "confirm deletion of every transitive dependency"
 
 type UpdateArgs =
-    | [<CustomCommandLine("nuget")>] Nuget of package_id:string
-    | [<CustomCommandLine("version")>] Version of version:string
-    | [<CustomCommandLine("group")>] Group of name:string
+    | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
+    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
+
+    | [<AltCommandLine("-V")>] Version of version_constraint:string
+    | [<Hidden;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
+
+    | [<AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
+
+    | Create_New_Binding_Files
+    | [<Hidden;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
+
     | [<AltCommandLine("-f")>] Force
     | Redirects
-    | [<AltCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files
     | Clean_Redirects
     | No_Install
     | Keep_Major
@@ -261,19 +269,27 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Nuget(_) -> "NuGet package id."
-            | Group(_) -> "Allows to specify the dependency group."
-            | Version(_) -> "Allows to specify version of the package."
-            | Force -> "Forces the download and reinstallation of all packages."
-            | Redirects -> "Creates binding redirects for the NuGet packages."
-            | Create_New_Binding_Files -> "Creates binding redirect files if needed."
-            | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
-            | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
-            | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
-            | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
-            | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
-            | Filter -> "Treat the nuget parameter as a regex to filter packages rather than an exact match."
-            | Touch_Affected_Refs -> "Touches project files referencing packages which are affected, to help incremental build tools detecting the change."
+            | NuGet(_) -> "NuGet package ID"
+            | NuGet_Legacy(_) -> "[obsolete]"
+
+            | Group(_) -> "specify dependency group to update (default: all groups)"
+            | Group_Legacy(_) -> "[obsolete]"
+
+            | Version(_) -> "dependency version constraint"
+            | Version_Legacy(_) -> "[obsolete]"
+
+            | Create_New_Binding_Files -> "create binding redirect files if needed"
+            | Create_New_Binding_Files_Legacy -> "[obsolete]"
+
+            | Force -> "force download and reinstallation of all dependencies"
+            | Redirects -> "create binding redirects"
+            | Clean_Redirects -> "remove binding redirects that were not created by Paket"
+            | No_Install -> "do not add dependencies to projects"
+            | Keep_Major -> "only allow updates that preserve the major version"
+            | Keep_Minor -> "only allow updates that preserve the minor version"
+            | Keep_Patch -> "only allow updates that preserve the patch version"
+            | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
+            | Filter -> "treat the NuGet package ID as a regex to filter packages"
 
 type FindPackagesArgs =
     | [<MainCommandAttribute()>] Search of package_ID:string
