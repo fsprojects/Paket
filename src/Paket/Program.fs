@@ -603,13 +603,17 @@ let main() =
             | Update r -> processCommand silent update r
             | FindPackages r -> processCommand silent (findPackages silent) r
             | FindPackageVersions r -> processCommand silent findPackageVersions r
-            | FixNuspec r -> processCommand silent (fixNuspec silent) r
+            | FixNuspec r ->
+                warnObsolete "fix-nuspec" "fix-nuspecs"
+                processCommand silent (fixNuspec silent) r
             | FixNuspecs r -> processCommand silent (fixNuspecs silent) r
             | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
             | ShowGroups r -> processCommand silent showGroups r
             | Pack r -> processCommand silent pack r
             | Push r -> processCommand silent push r
-            | GenerateIncludeScripts r -> traceWarn "please use generate-load-scripts" ; processCommand silent generateLoadScripts r
+            | GenerateIncludeScripts r ->
+                warnObsolete "generate-include-scripts" "generate-load-scripts"
+                processCommand silent generateLoadScripts r
             | GenerateLoadScripts r -> processCommand silent generateLoadScripts r
             | GenerateNuspec r -> processCommand silent generateNuspec r
             | Why r -> processCommand silent why r

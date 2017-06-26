@@ -460,14 +460,14 @@ type Command =
     | [<CustomCommandLine("update")>]                   Update of ParseResults<UpdateArgs>
     | [<CustomCommandLine("find-packages")>]            FindPackages of ParseResults<FindPackagesArgs>
     | [<CustomCommandLine("find-package-versions")>]    FindPackageVersions of ParseResults<FindPackageVersionsArgs>
-    | [<CustomCommandLine("fix-nuspec")>]               FixNuspec of ParseResults<FixNuspecArgs>
+    | [<Hidden;CustomCommandLine("fix-nuspec")>]        FixNuspec of ParseResults<FixNuspecArgs>
     | [<CustomCommandLine("fix-nuspecs")>]              FixNuspecs of ParseResults<FixNuspecsArgs>
     | [<CustomCommandLine("generate-nuspec")>]          GenerateNuspec of ParseResults<GenerateNuspecArgs>
     | [<CustomCommandLine("show-installed-packages")>]  ShowInstalledPackages of ParseResults<ShowInstalledPackagesArgs>
     | [<CustomCommandLine("show-groups")>]              ShowGroups of ParseResults<ShowGroupsArgs>
     | [<CustomCommandLine("pack")>]                     Pack of ParseResults<PackArgs>
     | [<CustomCommandLine("push")>]                     Push of ParseResults<PushArgs>
-    | [<CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs> // backward compatibility
+    | [<Hidden;CustomCommandLine("generate-include-scripts")>] GenerateIncludeScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("generate-load-scripts")>]    GenerateLoadScripts of ParseResults<GenerateLoadScriptsArgs>
     | [<CustomCommandLine("why")>]                      Why of ParseResults<WhyArgs>
 with
@@ -489,14 +489,14 @@ with
             | Update _ -> "update dependencies to their latest version"
             | FindPackages _ -> "search for NuGet packages"
             | FindPackageVersions _ -> "search for dependency versions"
-            | FixNuspec _ -> "obsolete, see fix-nuspecs"
+            | FixNuspec _ -> "[obsolete]"
             | FixNuspecs _ -> "patch a list of .nuspec files to correct transitive dependencies"
             | GenerateNuspec _ -> "generate a default nuspec for a project including its direct dependencies"
             | ShowInstalledPackages _ -> "show installed top-level packages"
             | ShowGroups _ -> "show groups"
             | Pack _ -> "create NuGet packages from paket.template files"
             | Push _ -> "push a NuGet package"
-            | GenerateIncludeScripts _ -> "obsolete, see generate-load-scripts"
+            | GenerateIncludeScripts _ -> "[obsolete]"
             | GenerateLoadScripts _ -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Why _ -> "determine why a dependency is required"
             | Log_File _ -> "print output to a file"
