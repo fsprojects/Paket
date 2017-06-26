@@ -62,6 +62,7 @@ open FSharp.MetadataFormat
 // Paths with template/source/output locations
 let bin        = __SOURCE_DIRECTORY__ @@ "../../bin"
 let content    = __SOURCE_DIRECTORY__ @@ "../content"
+let completion = __SOURCE_DIRECTORY__ @@ "../../completion"
 let output     = __SOURCE_DIRECTORY__ @@ "../output"
 let files      = __SOURCE_DIRECTORY__ @@ "../files"
 let templates  = __SOURCE_DIRECTORY__ @@ "templates"
@@ -103,7 +104,16 @@ let buildReference () =
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
-  let subdirs = Directory.EnumerateDirectories(content, "*", SearchOption.AllDirectories) 
+  !!(completion @@ "*.*.md")
+  |> Seq.iter (fun f ->
+    let target =
+      let name = filename f
+      name.Replace("README", "shell-completion")
+
+    CopyFile (content @@ target) f
+  )
+
+  let subdirs = Directory.EnumerateDirectories(content, "*", SearchOption.AllDirectories)
   for dir in Seq.append [content] subdirs do
     let sub = if dir.Length > content.Length then dir.Substring(content.Length + 1) else "."
     let langSpecificPath(lang, path:string) =

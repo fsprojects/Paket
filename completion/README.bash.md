@@ -6,14 +6,17 @@
 
 #### Option 1: Save the completion script to your home directory
 
-1. Download the `paket-completion.bash` file to a subdirectory of your home
-   directory, preferably a directory with other function files.
+1. Download the
+   [`paket-completion.bash` file](https://raw.githubusercontent.com/fsprojects/Paket/master/completion/paket-completion.bash)
+   to a subdirectory of your home directory, preferably a directory with other
+   function files.
 1. `source` the file in your `~/.bashrc`.
 
 ```sh
 $ target="$HOME/.bash-completions/paket-completion.bash"
 $ mkdir "$(dirname "$target")"
-$ curl --fail --location --proto-redir -all,https --output "$target" https://raw.githubusercontent.com/fsprojects/Paket/master/completion/paket-completion.bash
+$ curl --fail --location --proto-redir -all,https --output "$target" \
+  https://raw.githubusercontent.com/fsprojects/Paket/master/completion/paket-completion.bash
 ```
 
 In your `~/.bashrc`:
@@ -29,7 +32,8 @@ source "$HOME/.bash-completions/paket-completion.bash"
 
 ```sh
 $ target="/etc/bash_completion.d/paket-completion.bash"
-$ curl --fail --location --proto-redir -all,https --output "$target" https://raw.githubusercontent.com/fsprojects/Paket/master/completion/paket-completion.bash
+$ curl --fail --location --proto-redir -all,https --output "$target" \
+  https://raw.githubusercontent.com/fsprojects/Paket/master/completion/paket-completion.bash
 ```
 
 ### Updating an existing installation
