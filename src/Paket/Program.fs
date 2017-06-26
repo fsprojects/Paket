@@ -449,7 +449,10 @@ let fixNuspec silent (results : ParseResults<_>) =
 
 // separated out from showInstalledPackages to allow Paket.PowerShell to get the types
 let getInstalledPackages (results : ParseResults<_>) =
-    let project = results.TryGetResult <@ ShowInstalledPackagesArgs.Project @>
+    let project =
+        (results.TryGetResult <@ ShowInstalledPackagesArgs.Project @>,
+         results.TryGetResult <@ ShowInstalledPackagesArgs.Project_Legacy @>)
+        |> legacyOption results "--project" "project"
     let showAll = results.Contains <@ ShowInstalledPackagesArgs.All @>
     let dependenciesFile = Dependencies.Locate()
     match project with

@@ -8,11 +8,11 @@ type AddArgs =
     | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
     | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
 
-    | [<AltCommandLine("-V")>] Version of version:string
-    | [<Hidden;CustomCommandLine("version")>] Version_Legacy of version:string
+    | [<AltCommandLine("-V")>] Version of version_constraint:string
+    | [<Hidden;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
 
-    | [<AltCommandLine("-p")>] Project of name:string
-    | [<Hidden;CustomCommandLine("project")>] Project_Legacy of name:string
+    | [<AltCommandLine("-p")>] Project of path:string
+    | [<Hidden;CustomCommandLine("project")>] Project_Legacy of path:string
 
     | [<AltCommandLine("-g")>] Group of name:string
     | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
@@ -329,14 +329,18 @@ type GenerateNuspecArgs =
             | Output _ -> "Output directory to save generated nuspec to"
 
 type ShowInstalledPackagesArgs =
-    | All
-    | [<CustomCommandLine("project")>] Project of string
+    | [<AltCommandLine("-a")>] All
+
+    | [<AltCommandLine("-p")>] Project of path:string
+    | [<Hidden;CustomCommandLine("project")>] Project_Legacy of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | All -> "Shows all installed packages (incl. transitive dependencies)."
-            | Project(_) -> "Show only packages that are installed in the given project."
+            | All -> "include transitive dependencies"
+
+            | Project(_) -> "specify project to show dependencies for"
+            | Project_Legacy(_) -> "[obsolete]"
 
 type ShowGroupsArgs =
     | [<Hidden;NoCommandLine>] PlaceHolder

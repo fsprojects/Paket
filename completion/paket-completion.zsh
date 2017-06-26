@@ -695,6 +695,25 @@ _paket-show-groups() {
   _arguments $global_options
 }
 
+(( $+functions[_paket-show-installed-packages] )) ||
+_paket-show-installed-packages() {
+    local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    '(-p --project)'{-p,--project}'[specify project to show dependencies for]:project:_path_files -g "**/*.??proj"'
+    '(-a --all)'--all'[include transitive dependencies]'
+  )
+
+  _arguments -C \
+    $args \
+  && ret=0
+
+  return ret
+}
+
 (( $+functions[_paket-simplify] )) ||
 _paket-simplify() {
   local curcontext=$curcontext context state state_descr line ret=1
