@@ -994,20 +994,14 @@ _paket_installed_packages() {
   # Filter packages by optional group name followed by space.
   [[ -n "$group" ]] && output=(${(M)output:#$group *})
 
-  # Take the second word after splitting by space (the package ID).
+  # Take the second word (the package ID).
   # Format: <group> <package ID> - <version>
-  # TODO: zsh parameter expansion?
-  # packages=(${(i)${${(s. .)packages}[2]}})
-  local package
-  local -a filtered
-  for package in $output; do
-    filtered+="${${(s. .)package}[2]}"
-  done
+  output=(${output/(#m)*/${MATCH[(w)2]}})
 
   # -F line: exclude $line elements as possible completions (i.e. remove
   # packages already typed).
   local expl
-  _wanted paket-installed-packages expl $what compadd -F line -a -- filtered
+  _wanted paket-installed-packages expl $what compadd -F line -a -- output
 }
 
 (( $+functions[_paket_sources] )) ||
@@ -1015,22 +1009,16 @@ _paket_sources() {
   local -a output
   output=(
     ${(f)"$(_call_program credential-keys \
-            "grep '^[[:space:]]*source[[:space:]]' paket.dependencies 2> /dev/null")"}
+            "grep '^\s*source\s\+\S' paket.dependencies 2> /dev/null")"}
     )
   (( $? == 0 )) || return 1
 
-  # Take the second word after splitting by space (the source URL).
+  # Take the second word (the source URL).
   # Format: source URL ...
-  local source
-  local -a sources
-  for source in $output; do
-    # Only take lines that have a second word.
-    local maybe="${${(s. .)source}[2]}"
-    [[ -n "$maybe" ]] && sources+="$maybe"
-  done
+  output=(${output/(#m)*/${MATCH[(w)2]}})
 
   local expl
-  _wanted paket-sources expl 'source URL' compadd -a -- sources
+  _wanted paket-sources expl 'source URL' compadd -a -- output
 }
 
 (( $+functions[_paket_credential_keys] )) ||
@@ -1038,22 +1026,16 @@ _paket_credential_keys() {
   local -a output
   output=(
     ${(f)"$(_call_program credential-keys \
-            "grep '^[[:space:]]*github[[:space:]]' paket.dependencies 2> /dev/null")"}
+            "grep '^\s*github\(\s\+\S\+\)\{3\}' paket.dependencies 2> /dev/null")"}
     )
   (( $? == 0 )) || return 1
 
-  # Take the fourth word after splitting by space (the credential key).
+  # Take the fourth word (the credential key).
   # Format: github repo file credential-key
-  local github
-  local -a githubs
-  for github in $output; do
-    # Only take lines that have a fourth word.
-    local maybe="${${(s. .)github}[4]}"
-    [[ -n "$maybe" ]] && githubs+="$maybe"
-  done
+  output=(${output/(#m)*/${MATCH[(w)4]}})
 
   local expl
-  _wanted paket-credential-keys expl 'credential key' compadd -a -- githubs
+  _wanted paket-credential-keys expl 'credential key' compadd -a -- output
 }
 
 (( $+functions[_paket_strategy_modifiers] )) ||
