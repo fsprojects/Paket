@@ -298,7 +298,10 @@ let install (results : ParseResults<_>) =
 let outdated (results : ParseResults<_>) =
     let strict = results.Contains <@ OutdatedArgs.Ignore_Constraints @> |> not
     let includePrereleases = results.Contains <@ OutdatedArgs.Include_Prereleases @>
-    let group = results.TryGetResult <@ OutdatedArgs.Group @>
+    let group =
+        (results.TryGetResult<@ OutdatedArgs.Group @>,
+         results.TryGetResult<@ OutdatedArgs.Group_Legacy @>)
+        |> legacyOption results "--group" "group"
     Dependencies.Locate().ShowOutdated(strict, includePrereleases, group)
 
 let remove (results : ParseResults<_>) =

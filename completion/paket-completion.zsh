@@ -670,6 +670,26 @@ _paket-install() {
   return ret
 }
 
+(( $+functions[_paket-outdated] )) ||
+_paket-outdated() {
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    "${(f)$(_paket_group_option 'specify dependency group (default: all groups)')}"
+    '(--ignore-constraints)'--ignore-constraints'[ignore version constraints in the paket.dependencies file]'
+    '(--pre --include-prereleases)'{--pre,--include-prereleases}'[consider prerelease versions as updates]'
+  )
+
+  _arguments -C \
+    $args \
+  && ret=0
+
+  return ret
+}
+
 (( $+functions[_paket-show-groups] )) ||
 _paket-show-groups() {
   _arguments $global_options

@@ -171,15 +171,21 @@ with
 
 type OutdatedArgs =
     | Ignore_Constraints
-    | [<CustomCommandLine("group")>] Group of name:string
+
+    | [<AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
+
     | [<AltCommandLine("--pre")>] Include_Prereleases
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Ignore_Constraints -> "Ignores the version requirement as in the paket.dependencies file."
-            | Group(_) -> "Just check for one group."
-            | Include_Prereleases -> "Includes prereleases."
+            | Ignore_Constraints -> "ignore version constraints in the paket.dependencies file"
+
+            | Group(_) -> "specify dependency group (default: all groups)"
+            | Group_Legacy(_) -> "[obsolete]"
+
+            | Include_Prereleases -> "consider prerelease versions as updates"
 
 type RemoveArgs =
     | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of package_id:string
