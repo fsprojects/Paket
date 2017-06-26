@@ -259,13 +259,22 @@ let clearCache (results : ParseResults<ClearCacheArgs>) =
 let install (results : ParseResults<_>) =
     let force = results.Contains <@ InstallArgs.Force @>
     let withBindingRedirects = results.Contains <@ InstallArgs.Redirects @>
-    let createNewBindingFiles = results.Contains <@ InstallArgs.Create_New_Binding_Files @>
+    let createNewBindingFiles =
+        (results.Contains <@ InstallArgs.Create_New_Binding_Files @>,
+         results.Contains <@ InstallArgs.Create_New_Binding_Files_Legacy @>)
+        |> legacyBool results "--create-new-binding-files" "--createnewbindingfiles"
     let cleanBindingRedirects = results.Contains <@ InstallArgs.Clean_Redirects @>
     let installOnlyReferenced = results.Contains <@ InstallArgs.Install_Only_Referenced @>
     let generateLoadScripts = results.Contains <@ InstallArgs.Generate_Load_Scripts @>
     let alternativeProjectRoot = results.TryGetResult <@ InstallArgs.Project_Root @>
-    let providedFrameworks = results.GetResults <@ InstallArgs.Load_Script_Framework @>
-    let providedScriptTypes = results.GetResults <@ InstallArgs.Load_Script_Type @>
+    let providedFrameworks =
+        (results.GetResults <@ InstallArgs.Load_Script_Framework @>,
+         results.GetResults <@ InstallArgs.Load_Script_Framework_Legacy @>)
+        |> legacyList results "--load-script-framework" "load-script-framework"
+    let providedScriptTypes =
+        (results.GetResults <@ InstallArgs.Load_Script_Type @>,
+         results.GetResults <@ InstallArgs.Load_Script_Type_Legacy @>)
+        |> legacyList results "--load-script-type" "load-script-type"
     let semVerUpdateMode =
         if results.Contains <@ InstallArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
         if results.Contains <@ InstallArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else

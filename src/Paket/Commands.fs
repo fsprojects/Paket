@@ -125,34 +125,49 @@ with
 type InstallArgs =
     | [<AltCommandLine("-f")>] Force
     | Redirects
-    | [<AltCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files
+
+    | Create_New_Binding_Files
+    | [<Hidden;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
+
     | Clean_Redirects
     | Keep_Major
     | Keep_Minor
     | Keep_Patch
     | [<CustomCommandLine("--generate-load-scripts")>] Generate_Load_Scripts
     | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
-    | [<CustomCommandLine("project-root")>] Project_Root of target:string
-    | [<CustomCommandLine("load-script-framework")>] Load_Script_Framework of target:string
-    | [<CustomCommandLine("load-script-type")>] Load_Script_Type of id:string
+    | [<Hidden;CustomCommandLine("project-root")>] Project_Root of path:string
+
+    | Load_Script_Framework of framework:string
+    | [<Hidden;CustomCommandLine("load-script-framework")>] Load_Script_Framework_Legacy of framework:string
+
+    | Load_Script_Type of script_type:string
+    | [<Hidden;CustomCommandLine("load-script-type")>] Load_Script_Type_Legacy of script_type:string
+
     | Touch_Affected_Refs
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Force -> "Forces the download and reinstallation of all packages."
-            | Redirects -> "Creates binding redirects for the NuGet packages."
-            | Create_New_Binding_Files -> "Creates binding redirect files if needed."
-            | Clean_Redirects -> "Removes all binding redirects that are not specified by Paket."
-            | Install_Only_Referenced -> "Only install packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
-            | Generate_Load_Scripts -> "Allows to generate C# and F# include scripts which references installed packages in a interactive environment like F# Interactive or ScriptCS."
-            | Keep_Major -> "Allows only updates that are not changing the major version of the NuGet packages."
-            | Keep_Minor -> "Allows only updates that are not changing the minor version of the NuGet packages."
-            | Keep_Patch -> "Allows only updates that are not changing the patch version of the NuGet packages."
-            | Touch_Affected_Refs -> "Touches project files referencing packages which are affected, to help incremental build tools detecting the change."
-            | Project_Root _ -> "Alternative project root [only used for tooling]."
-            | Load_Script_Framework _ -> "Framework identifier to generate scripts for, such as net45 or net4."
-            | Load_Script_Type _ -> "Language to generate scripts for, must be one of 'fsx' or 'csx'."
+            | Force -> "force download and reinstallation of all dependencies"
+            | Redirects -> "create binding redirects"
+
+            | Create_New_Binding_Files -> "create binding redirect files if needed"
+            | Create_New_Binding_Files_Legacy -> "[obsolete]"
+
+            | Clean_Redirects -> "remove binding redirects that were not created by Paket"
+            | Install_Only_Referenced -> "only install dependencies listed in paket.references files, instead of all packages in paket.dependencies"
+            | Generate_Load_Scripts -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
+            | Keep_Major -> "only allow updates that preserve the major version"
+            | Keep_Minor -> "only allow updates that preserve the minor version"
+            | Keep_Patch -> "only allow updates that preserve the patch version"
+            | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
+            | Project_Root(_) -> "alternative project root (only used for tooling)"
+
+            | Load_Script_Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6"
+            | Load_Script_Framework_Legacy(_) -> "[obsolete]"
+
+            | Load_Script_Type(_) -> "language to generate scripts for, must be one of 'fsx' or 'csx'"
+            | Load_Script_Type_Legacy(_) -> "[obsolete]"
 
 type OutdatedArgs =
     | Ignore_Constraints

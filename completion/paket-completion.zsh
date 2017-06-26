@@ -646,6 +646,30 @@ _paket-init() {
   _arguments $global_options
 }
 
+(( $+functions[_paket-install] )) ||
+_paket-install() {
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    $keep_options
+    $binding_redirects_options
+    $download_options
+    '(--only-referenced)'--only-referenced'[only install dependencies listed in paket.references files, instead of all packages in paket.dependencies]'
+    '(--generate-load-scripts)'--generate-load-scripts'[generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS]'
+    '(--load-script-framework)'--load-script-framework'[framework identifier to generate scripts for]:framework: '
+    '(--load-script-type)'--load-script-type'[language to generate scripts for]:language:(csx fsx)'
+  )
+
+  _arguments -C \
+    $args \
+  && ret=0
+
+  return ret
+}
+
 (( $+functions[_paket-show-groups] )) ||
 _paket-show-groups() {
   _arguments $global_options
@@ -696,15 +720,6 @@ _paket-why() {
   esac
 
   return ret
-}
-
-(( $+functions[_paket-install] )) ||
-_paket-install() {
-  _arguments \
-    $global_options \
-    $keep_options \
-    $binding_redirects_options \
-    $download_options
 }
 
 (( $+functions[_paket-restore] )) ||
