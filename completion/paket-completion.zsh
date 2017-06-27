@@ -674,6 +674,52 @@ _paket-outdated() {
   return ret
 }
 
+(( $+functions[_paket-pack] )) ||
+_paket-pack() {
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    '(--build-config)'--build-config'[build configuration that should be packaged (default: Release)]:build configuration: '
+    '(--build-platform)'--build-platform'[build platform that should be packaged (default: check all known platform targets)]:build platform: '
+    '(--version)'--version'[version of the package]:version: '
+    '(--template)'--template'[pack a single paket.template file]:template:_path_files -g "**/paket.template"'
+    '*--exclude[exclude paket.template file by package ID]: :->template-id'
+    '*--specific-version[version number to use for package ID]: :->specific-version'
+    '(--release-notes)'--release-notes'[release notes]:release notes: '
+    '(--lock-dependencies)'--lock-dependencies'[use version constraints from paket.lock instead of paket.dependencies]'
+    '(--minimum-from-lock-file)'--minimum-from-lock-file'[use version constraints from paket.lock instead of paket.dependencies and add them as a minimum version; --lock-dependencies overrides this option]'
+    '(--pin-project-references)'--pin-project-references'[pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified]'
+    '(--symbols)'--symbols'[create symbol and source packages in addition to library and content packages]'
+    '(--include-referenced-projects)'--include-referenced-projects'[include symbols and source from referenced projects]'
+    '(--project-url)'--project-url'[homepage URL for the package]:URL:_urls'
+  )
+
+  _arguments -C \
+    $args \
+    ':output directory for .nupkg files:_directories' \
+  && ret=0
+
+  case $state in
+    (template-id)
+      local -a ids
+      ids=(${(vQs_:_)opt_args[(i)--exclude]})
+
+      _paket_template_ids -F ids \
+      && ret=0
+      ;;
+
+    (specific-version)
+      _message 'TODO, not implemented' \
+      && ret=0
+      ;;
+  esac
+
+  return ret
+}
+
 (( $+functions[_paket-show-groups] )) ||
 _paket-show-groups() {
   _arguments $global_options
@@ -1085,7 +1131,7 @@ _paket_installed_packages() {
 _paket_sources() {
   local -a output
   output=(
-    ${(f)"$(_call_program credential-keys \
+    ${(f)"$(_call_program sources \
             "grep '^\s*source\s\+\S' paket.dependencies 2> /dev/null")"}
     )
   (( $? == 0 )) || return 1
@@ -1113,6 +1159,26 @@ _paket_credential_keys() {
 
   local expl
   _wanted paket-credential-keys expl 'credential key' compadd -a -- output
+}
+
+(( $+functions[_paket_template_ids] )) ||
+_paket_template_ids() {
+  local -a output
+  output=(
+    ${(f)"$(_call_program template_ids \
+            "grep -r '^id\s\+\S' **/*paket.template 2> /dev/null")"}
+    )
+  (( $? == 0 )) || return 1
+
+  # TODO: Check for 'type project' templates and determine IDs from ??proj.
+  # src/Paket.Bootstrapper/paket.template is a good example.
+
+  # Take the second word (the package ID).
+  # Format: id package-id
+  output=(${output/(#m)*/${MATCH[(w)2]}})
+
+  local expl
+  _wanted paket-template-ids expl 'template package ID' compadd -a $@ -- output
 }
 
 (( $+functions[_paket_strategy_modifiers] )) ||

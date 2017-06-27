@@ -388,23 +388,82 @@ let update (results : ParseResults<_>) =
             Dependencies.Locate().Update(force, withBindingRedirects, cleanBindingRedirects, createNewBindingFiles, noInstall |> not, semVerUpdateMode, touchAffectedRefs)
 
 let pack (results : ParseResults<_>) =
-    let outputPath = results.GetResult <@ PackArgs.Output @>
+    let outputPath =
+        let arg = (results.TryGetResult <@ PackArgs.Output @>,
+                   results.TryGetResult <@ PackArgs.Output_Legacy @>)
+                  |> legacyOption results "(omit, option is the new default argument)" "output"
+        match arg with
+        | Some(id) -> id
+        | _ -> results.GetResult <@ PackArgs.Output @>
+    let buildConfig =
+        (results.TryGetResult <@ PackArgs.Build_Config @>,
+         results.TryGetResult <@ PackArgs.Build_Config_Legacy @>)
+        |> legacyOption results "--build-config" "buildconfig"
+    let buildPlatform =
+        (results.TryGetResult <@ PackArgs.Build_Platform @>,
+         results.TryGetResult <@ PackArgs.Build_Platform_Legacy @>)
+        |> legacyOption results "--build-platform" "buildplatform"
+    let version =
+        (results.TryGetResult <@ PackArgs.Version @>,
+         results.TryGetResult <@ PackArgs.Version_Legacy @>)
+        |> legacyOption results "--version" "version"
+    let specificVersions =
+        (results.GetResults <@ PackArgs.Specific_Version @>,
+         results.GetResults <@ PackArgs.Specific_Version_Legacy @>)
+        |> legacyList results "--specific-version" "specific-version"
+    let releaseNotes =
+        (results.TryGetResult <@ PackArgs.Release_Notes @>,
+         results.TryGetResult <@ PackArgs.Release_Notes_Legacy @>)
+        |> legacyOption results "--release-notes" "releaseNotes"
+    let templateFile =
+        (results.TryGetResult <@ PackArgs.Template_File @>,
+         results.TryGetResult <@ PackArgs.Template_File_Legacy @>)
+        |> legacyOption results "--template" "templatefile"
+    let excludedTemplates =
+        (results.GetResults <@ PackArgs.Exclude_Template @>,
+         results.GetResults <@ PackArgs.Exclude_Template_Legacy @>)
+        |> legacyList results "--exclude" "exclude"
+    let lockDependencies =
+        (results.Contains <@ PackArgs.Lock_Dependencies @>,
+         results.Contains <@ PackArgs.Lock_Dependencies_Legacy @>)
+        |> legacyBool results "--lock-dependencies" "lock-dependencies"
+    let minimumFromLockFile =
+        (results.Contains <@ PackArgs.Lock_Dependencies_To_Minimum @>,
+         results.Contains <@ PackArgs.Lock_Dependencies_To_Minimum_Legacy @>)
+        |> legacyBool results "--minimum-from-lock-file" "minimum-from-lock-file"
+    let pinProjectReferences =
+        (results.Contains <@ PackArgs.Pin_Project_References @>,
+         results.Contains <@ PackArgs.Pin_Project_References_Legacy @>)
+        |> legacyBool results "--pin-project-references" "pin-project-references"
+    let symbols =
+        (results.Contains <@ PackArgs.Symbols @>,
+         results.Contains <@ PackArgs.Symbols_Legacy @>)
+        |> legacyBool results "--symbols" "symbols"
+    let includeReferencedProjects =
+        (results.Contains <@ PackArgs.Include_Referenced_Projects @>,
+         results.Contains <@ PackArgs.Include_Referenced_Projects_Legacy @>)
+        |> legacyBool results "--include-referenced-projects" "Include_Referenced_Projects"
+    let projectUrl =
+        (results.TryGetResult <@ PackArgs.Project_Url @>,
+         results.TryGetResult <@ PackArgs.Project_Url_Legacy @>)
+        |> legacyOption results "--project-url" "project-url"
+
     Dependencies.Locate()
                 .Pack(outputPath,
-                      ?buildConfig = results.TryGetResult <@ PackArgs.BuildConfig @>,
-                      ?buildPlatform = results.TryGetResult <@ PackArgs.BuildPlatform @>,
-                      ?version = results.TryGetResult <@ PackArgs.Version @>,
-                      specificVersions = results.GetResults <@ PackArgs.SpecificVersion @>,
-                      ?releaseNotes = results.TryGetResult <@ PackArgs.ReleaseNotes @>,
-                      ?templateFile = results.TryGetResult <@ PackArgs.TemplateFile @>,
-                      excludedTemplates = results.GetResults <@ PackArgs.ExcludedTemplate @>,
+                      ?buildConfig = buildConfig,
+                      ?buildPlatform = buildPlatform,
+                      ?version = version,
+                      specificVersions = specificVersions,
+                      ?releaseNotes = releaseNotes,
+                      ?templateFile = templateFile,
+                      excludedTemplates = excludedTemplates,
                       workingDir = System.IO.Directory.GetCurrentDirectory(),
-                      lockDependencies = results.Contains <@ PackArgs.LockDependencies @>,
-                      minimumFromLockFile = results.Contains <@ PackArgs.LockDependenciesToMinimum @>,
-                      pinProjectReferences = results.Contains <@ PackArgs.PinProjectReferences @>,
-                      symbols = results.Contains <@ PackArgs.Symbols @>,
-                      includeReferencedProjects = results.Contains <@ PackArgs.IncludeReferencedProjects @>,
-                      ?projectUrl = results.TryGetResult <@ PackArgs.ProjectUrl @>)
+                      lockDependencies = lockDependencies,
+                      minimumFromLockFile = minimumFromLockFile,
+                      pinProjectReferences = pinProjectReferences,
+                      symbols = symbols,
+                      includeReferencedProjects = includeReferencedProjects,
+                      ?projectUrl = projectUrl)
 
 let findPackages silent (results : ParseResults<_>) =
     let maxResults =

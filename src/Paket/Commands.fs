@@ -387,38 +387,92 @@ with
             | Max_Results_Legacy(_) -> "[obsolete]"
 
 type PackArgs =
-    | [<CustomCommandLine("output")>][<Mandatory>] Output of path:string
-    | [<CustomCommandLine("buildconfig")>] BuildConfig of config_name:string
-    | [<CustomCommandLine("buildplatform")>] BuildPlatform of target:string
-    | [<CustomCommandLine("version")>] Version of version:string
-    | [<CustomCommandLine("templatefile")>] TemplateFile of path:string
-    | [<CustomCommandLine("exclude")>] ExcludedTemplate of templateId:string
-    | [<CustomCommandLine("specific-version")>] SpecificVersion of templateId:string * version:string
-    | [<CustomCommandLine("releaseNotes")>] ReleaseNotes of text:string
-    | [<CustomCommandLine("lock-dependencies")>] LockDependencies
-    | [<CustomCommandLine("minimum-from-lock-file")>] LockDependenciesToMinimum
-    | [<CustomCommandLine("pin-project-references")>] PinProjectReferences
-    | [<CustomCommandLine("symbols")>] Symbols
-    | [<CustomCommandLine("include-referenced-projects")>] IncludeReferencedProjects
-    | [<CustomCommandLine("project-url")>] ProjectUrl of url:string
+    | [<ExactlyOnce;MainCommand>] Output of path:string
+    | [<Hidden;ExactlyOnce;CustomCommandLine("output")>] Output_Legacy of path:string
+
+    | Build_Config of configuration:string
+    | [<Hidden;CustomCommandLine("buildconfig")>] Build_Config_Legacy of configuration:string
+
+    | Build_Platform of platform:string
+    | [<Hidden;CustomCommandLine("buildplatform")>] Build_Platform_Legacy of platform:string
+
+    | Version of version:string
+    | [<Hidden;CustomCommandLine("version")>] Version_Legacy of version:string
+
+    | [<CustomCommandLine("--template")>] Template_File of path:string
+    | [<Hidden;CustomCommandLine("templatefile")>] Template_File_Legacy of path:string
+
+    | [<CustomCommandLine("--exclude")>] Exclude_Template of package_ID:string
+    | [<Hidden;CustomCommandLine("exclude")>] Exclude_Template_Legacy of package_ID:string
+
+    | Specific_Version of package_ID:string * version:string
+    | [<Hidden;CustomCommandLine("specific-version")>] Specific_Version_Legacy of package_ID:string * version:string
+
+    | Release_Notes of text:string
+    | [<Hidden;CustomCommandLine("releaseNotes")>] Release_Notes_Legacy of text:string
+
+    | Lock_Dependencies
+    | [<Hidden;CustomCommandLine("lock-dependencies")>] Lock_Dependencies_Legacy
+
+    | [<CustomCommandLine("--minimum-from-lock-file")>] Lock_Dependencies_To_Minimum
+    | [<Hidden;CustomCommandLine("minimum-from-lock-file")>] Lock_Dependencies_To_Minimum_Legacy
+
+    | Pin_Project_References
+    | [<Hidden;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
+
+    | Symbols
+    | [<Hidden;CustomCommandLine("symbols")>] Symbols_Legacy
+
+    | Include_Referenced_Projects
+    | [<Hidden;CustomCommandLine("include-referenced-projects")>] Include_Referenced_Projects_Legacy
+
+    | Project_Url of URL:string
+    | [<Hidden;CustomCommandLine("project-url")>] Project_Url_Legacy of URL:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Output(_) -> "Output directory to put .nupkg files."
-            | BuildConfig(_) -> "Optionally specify build configuration that should be packaged (defaults to Release)."
-            | BuildPlatform(_) -> "Optionally specify build platform that should be packaged (if not provided or empty, checks all known platform targets)."
-            | Version(_) -> "Specify version of the package."
-            | TemplateFile(_) -> "Allows to specify a single template file."
-            | ExcludedTemplate(_) -> "Exclude template file by id."
-            | SpecificVersion(_) -> "Specifies a version number for template with given id."
-            | ReleaseNotes(_) -> "Specify relase notes for the package."
-            | LockDependencies -> "Get the version requirements from paket.lock instead of paket.dependencies."
-            | LockDependenciesToMinimum -> "Get the version requirements from paket.lock instead of paket.dependencies, and add them as a minimum version.  `lock-dependencies` will over-ride this option."
-            | PinProjectReferences -> "Pin dependencies generated from project references (=) instead of using minimum (>=) for version specification.  If `lock-dependencies` is specified, project references will be pinned even if this option is not specified."
-            | Symbols -> "Build symbol/source packages in addition to library/content packages."
-            | IncludeReferencedProjects -> "Include symbol/source from referenced projects."
-            | ProjectUrl(_) -> "Url to the projects home page."
+            | Output(_) -> "output directory for .nupkg files"
+            | Output_Legacy(_) -> "[obsolete]"
+
+            | Build_Config(_) -> "build configuration that should be packaged (default: Release)"
+            | Build_Config_Legacy(_) -> "[obsolete]"
+
+            | Build_Platform(_) -> "build platform that should be packaged (default: check all known platform targets)"
+            | Build_Platform_Legacy(_) -> "[obsolete]"
+
+            | Version(_) -> "version of the package"
+            | Version_Legacy(_) -> "[obsolete]"
+
+            | Template_File(_) -> "pack a single paket.template file"
+            | Template_File_Legacy(_) -> "[obsolete]"
+
+            | Exclude_Template(_) -> "exclude paket.template file by package ID"
+            | Exclude_Template_Legacy(_) -> "[obsolete]"
+
+            | Specific_Version(_) -> "version number to use for package ID"
+            | Specific_Version_Legacy(_) -> "[obsolete]"
+
+            | Release_Notes(_) -> "release notes"
+            | Release_Notes_Legacy(_) -> "[obsolete]"
+
+            | Lock_Dependencies -> "use version constraints from paket.lock instead of paket.dependencies"
+            | Lock_Dependencies_Legacy(_) -> "[obsolete]"
+
+            | Lock_Dependencies_To_Minimum -> "use version constraints from paket.lock instead of paket.dependencies and add them as a minimum version; --lock-dependencies overrides this option"
+            | Lock_Dependencies_To_Minimum_Legacy(_) -> "[obsolete]"
+
+            | Pin_Project_References -> "pin dependencies generated from project references to exact versions (=) instead of using minimum versions (>=); with --lock-dependencies project references will be pinned even if this option is not specified"
+            | Pin_Project_References_Legacy(_) -> "[obsolete]"
+
+            | Symbols -> "create symbol and source packages in addition to library and content packages"
+            | Symbols_Legacy(_) -> "[obsolete]"
+
+            | Include_Referenced_Projects -> "include symbols and source from referenced projects"
+            | Include_Referenced_Projects_Legacy(_) -> "[obsolete]"
+
+            | Project_Url(_) -> "homepage URL for the package"
+            | Project_Url_Legacy(_) -> "[obsolete]"
 
 type PushArgs =
     | [<CustomCommandLine("url")>][<Mandatory>] Url of url:string
