@@ -291,9 +291,6 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 (nugetEnv.NuGetConfig.PackageSources
                  |> Map.toList
                  |> List.map snd)
-            |> List.append 
-                [ Constants.DotnetCoreStream, None 
-                  Constants.CliDepsStream, None ]
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> ok
