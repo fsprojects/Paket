@@ -800,6 +800,8 @@ type ResolverTaskMemory<'a> =
 module ResolverTaskMemory =
     let ofWork w = { Work = w; WaitedAlready = false }
 
+let RequestTimeout = 180000
+
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
@@ -815,12 +817,12 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     // mainly for failing unit-tests to be faster
     let taskTimeout =
         match Environment.GetEnvironmentVariable("PAKET_RESOLVER_TASK_TIMEOUT") with
-        | a when System.String.IsNullOrWhiteSpace a -> 180000
+        | a when System.String.IsNullOrWhiteSpace a -> RequestTimeout
         | a ->
             match System.Int32.TryParse a with
             | true, v -> v
-            | _ -> traceWarnfn "PAKET_RESOLVER_TASK_TIMEOUT is not set to an interval in milliseconds, ignoring the value and defaulting to 180000"
-                   180000
+            | _ -> traceWarnfn "PAKET_RESOLVER_TASK_TIMEOUT is not set to an interval in milliseconds, ignoring the value and defaulting to %d" RequestTimeout
+                   RequestTimeout
 
     let getAndReport (sources:PackageSource list) blockReason (mem:ResolverTaskMemory<_>) =
         try
@@ -836,11 +838,11 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 // apparently the task didn't return, let's throw here
                 if not isFinished && not Debugger.IsAttached then
                     if waitedAlready then
-                        raise <| new TimeoutException("Tried (again) to access an unfinished task, not waiting 30 seconds this time...")
+                        raise <| new TimeoutException(sprintf "Tried (again) to access an unfinished task, not waiting %d seconds this time..." (taskTimeout / 1000))
                     else
                         raise <|
                             new TimeoutException(
-                                "Waited 30 seconds for a request to finish.\n" +
+                                (sprintf "Waited %d seconds for a request to finish.\n" (taskTimeout / 1000)) +
                                 "      Check the following sources, they might be rate limiting and stopped responding:\n" +
                                 "       - " + System.String.Join("\n       - ", sources |> Seq.map (fun s -> s.Url))
                             )
@@ -865,6 +867,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
                     |> fun a -> Async.StartAsTaskProperCancel(a, cancellationToken = ct))
             |> ResolverTaskMemory.ofWork)
+
     let getPackageDetailsBlock sources groupName packageName semVer =
         let workHandle = startRequestGetPackageDetails sources groupName packageName semVer
         try
@@ -881,6 +884,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 getVersionsRaw sources groupName packageName
                 |> fun a -> Async.StartAsTaskProperCancel(a, cancellationToken = ct))
             |> ResolverTaskMemory.ofWork)
+
     let getVersionsBlock sources resolverStrategy groupName packageName =
         let workHandle = startRequestGetVersions sources groupName packageName
         let versions =
