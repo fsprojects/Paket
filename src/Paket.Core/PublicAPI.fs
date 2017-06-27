@@ -354,7 +354,7 @@ type Dependencies(dependenciesFileName: string) =
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> 
-                Releases.downloadLatestBootstrapperAndTargets fromBootstrapper |> this.Process
+                this.Process Releases.downloadLatestBootstrapperAndTargets
                 let bootStrapperFileName = Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.BootstrapperFileName)
                 let paketFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName))
                 let configFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName + ".config"))

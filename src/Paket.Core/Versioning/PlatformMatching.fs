@@ -94,7 +94,9 @@ let getPathPenalty =
         match path.Platforms with
         | _ when String.IsNullOrWhiteSpace path.Name -> handleEmpty()
         | [] -> MaxPenalty // Ignore this path as it contains no platforms, but the folder apparently has a name -> we failed to detect the framework and ignore it
-        | [ h ] -> getPlatformPenalty(platform,SinglePlatform h)
+        | [ h ] ->
+            let additionalPen = if path.Name.EndsWith "-client" then 1 else 0
+            additionalPen + getPlatformPenalty(platform,SinglePlatform h)
         | _ ->
             getPlatformPenalty(platform, TargetProfile.FindPortable path.Platforms))
 

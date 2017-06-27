@@ -3,6 +3,12 @@ language: csharp
 env:
  - HOME=/home/travis APPDATA=/home/travis LocalAppData=/home/travis # DISABLE_NETCORE=true
 
+# dependencies (netcore)
+addons:
+  apt:
+    packages:
+       - libunwind8
+
 sudo: false  # use the new container-based Travis infrastructure
 #sudo: required
 dist: trusty # Ubuntu 14.04

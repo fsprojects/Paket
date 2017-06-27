@@ -10,23 +10,21 @@ open NUnit.Framework
 let ``Loading assembly metadata works``() = 
     let workingDir = Path.GetFullPath(".")
     
-    let fileName =
-        if File.Exists(Path.Combine(workingDir, "Paket.Tests.fsproj")) then
-            Path.Combine(workingDir, "Paket.Tests.fsproj")
-            |> normalizePath
-        else
-            Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
-            |> normalizePath
-
-    if File.Exists fileName |> not then
-        failwithf "%s does not exist." fileName
+    let trials =
+        [ Path.Combine(workingDir, "Paket.Tests.fsproj")
+          Path.Combine(workingDir, "tests", "Paket.Tests", "Paket.Tests.fsproj")
+          Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj") ]
+    match trials |> Seq.tryFind File.Exists with
+    | None ->
+        failwithf "Paket.Tests.fsproj was not found via '%s'. %A" workingDir trials
+    | Some testFsProjFile ->
 
     let projFile = 
-        fileName
+        testFsProjFile
         |> ProjectFile.LoadFromFile
-    
+
     let config = 
-        if workingDir.Contains "Debug" then "Debug"
+        if Assembly.GetExecutingAssembly().Location.Contains "Debug" then "Debug"
         else "Release"
     
     let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
