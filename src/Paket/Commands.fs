@@ -52,7 +52,7 @@ with
             | Interactive -> "ask for every project whether to add the dependency"
             | Redirects -> "create binding redirects"
             | Clean_Redirects -> "remove binding redirects that were not created by Paket"
-            | No_Install -> "do not add dependencies to projects"
+            | No_Install -> "do not modify projects"
             | Keep_Major -> "only allow updates that preserve the major version"
             | Keep_Minor -> "only allow updates that preserve the minor version"
             | Keep_Patch -> "only allow updates that preserve the patch version"
@@ -84,8 +84,8 @@ with
         member this.Usage =
             match this with
             | Force -> "force the conversion even if paket.dependencies or paket.references files are present"
-            | No_Install -> "do not add dependencies to projects"
-            | No_Auto_Restore -> "do not enable Paket's auto-restore"
+            | No_Install -> "do not modify projects"
+            | No_Auto_Restore -> "do not enable automatic package restore"
 
             | Migrate_Credentials(_) -> "specify mode for NuGet source credential migration: encrypt|plaintext|selective (default: encrypt)"
             | Migrate_Credentials_Legacy(_) -> "[obsolete]"
@@ -189,22 +189,34 @@ with
             | Include_Prereleases -> "consider prerelease versions as updates"
 
 type RemoveArgs =
-    | [<CustomCommandLine("nuget")>][<Mandatory>] Nuget of package_ID:string
-    | [<CustomCommandLine("project")>] Project of name:string
-    | [<CustomCommandLine("group")>] Group of name:string
-    | [<AltCommandLine("-f")>] Force
-    | [<AltCommandLine("-i")>] Interactive
-    | No_Install
+    | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
+    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
+
+    | [<Unique;AltCommandLine("-p")>] Project of path:string
+    | [<Hidden;Unique;CustomCommandLine("project")>] Project_Legacy of path:string
+
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
+
+    | [<Unique;AltCommandLine("-f")>] Force
+    | [<Unique;AltCommandLine("-i")>] Interactive
+    | [<Unique>] No_Install
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Nuget(_) -> "NuGet package id."
-            | Group(_) -> "Removes the package from the given group. If omitted the Main group is used."
-            | Project(_) -> "Allows to remove the package from a single project only."
-            | Force -> "Forces the download and reinstallation of all packages."
-            | Interactive -> "Asks the user for every project if he or she wants to remove the package from the projects's paket.references file. By default every installation of the package is removed."
-            | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
+            | NuGet(_) -> "NuGet package ID"
+            | NuGet_Legacy(_) -> "[obsolete]"
+
+            | Group(_) -> "remove the dependency from a group (default: Main group)"
+            | Group_Legacy(_) -> "[obsolete]"
+
+            | Project(_) -> "remove the dependency from a single project only"
+            | Project_Legacy(_) -> "[obsolete]"
+
+            | Force -> "force download and reinstallation of all dependencies"
+            | Interactive -> "ask for every project whether to remove the dependency"
+            | No_Install -> "do not modify projects"
 
 type ClearCacheArgs =
     | [<Hidden;NoCommandLine>] NoArgs
@@ -285,7 +297,7 @@ with
             | Force -> "force download and reinstallation of all dependencies"
             | Redirects -> "create binding redirects"
             | Clean_Redirects -> "remove binding redirects that were not created by Paket"
-            | No_Install -> "do not add dependencies to projects"
+            | No_Install -> "do not modify projects"
             | Keep_Major -> "only allow updates that preserve the major version"
             | Keep_Minor -> "only allow updates that preserve the minor version"
             | Keep_Patch -> "only allow updates that preserve the patch version"

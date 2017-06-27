@@ -306,11 +306,25 @@ let outdated (results : ParseResults<_>) =
     Dependencies.Locate().ShowOutdated(strict, includePrereleases, group)
 
 let remove (results : ParseResults<_>) =
-    let packageName = results.GetResult <@ RemoveArgs.Nuget @>
+    let packageName =
+        let arg = (results.TryGetResult <@ RemoveArgs.NuGet @>,
+                   results.TryGetResult <@ RemoveArgs.NuGet_Legacy @>)
+                  |> legacyOption results "(omit, option is the new default argument)" "nuget"
+        match arg with
+        | Some(id) -> id
+        | _ -> results.GetResult <@ RemoveArgs.NuGet @>
     let force = results.Contains <@ RemoveArgs.Force @>
     let noInstall = results.Contains <@ RemoveArgs.No_Install @>
-    let group = results.TryGetResult <@ RemoveArgs.Group @>
-    match results.TryGetResult <@ RemoveArgs.Project @> with
+    let group =
+        (results.TryGetResult <@ RemoveArgs.Group @>,
+         results.TryGetResult <@ RemoveArgs.Group_Legacy @>)
+        |> legacyOption results "--group" "group"
+    let project =
+        (results.TryGetResult <@ RemoveArgs.Project @>,
+         results.TryGetResult <@ RemoveArgs.Project_Legacy @>)
+        |> legacyOption results "--project" "project"
+
+    match project with
     | Some projectName ->
         Dependencies.Locate()
                     .RemoveFromProject(group, packageName, force, projectName, noInstall |> not)

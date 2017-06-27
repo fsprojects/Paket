@@ -355,7 +355,7 @@ _paket-add() {
     $binding_redirects_options
     $download_options
     '(--interactive -i)'{--interactive,-i}"[ask for every project whether to add the dependency]"
-    '(--no-install)'--no-install'[do not add dependencies to projects]'
+    '(--no-install)'--no-install'[do not modify projects]'
     '(--project -p)'{--project,-p}'[add the dependency to a single project only]:project:_path_files -g "**/*.??proj"'
     '(--version -V)'{--version,-V}'[dependency version constraint]: :->version'
     "${(f)$(_paket_group_option 'add the dependency to a group (default: Main group)')}"
@@ -513,8 +513,8 @@ _paket-convert-from-nuget() {
   args=(
     $global_options
     '(-f --force)'{-f,--force}'[force the conversion even if paket.dependencies or paket.references files are present]'
-    '(--no-install)'--no-install'[do not add dependencies to projects]'
-    '(--no-auto-restore)'--no-auto-restore"[do not enable Paket's auto-restore]"
+    '(--no-install)'--no-install'[do not modify projects]'
+    '(--no-auto-restore)'--no-auto-restore"[do not enable automatic package restore]"
     '(--migrate-credentials)'--migrate-credentials"[specify mode for NuGet source credential migration (default: encrypt)]:credential migration mode:((\
       encrypt\:'store encrypted in paket.config (default)' \
       plaintext\:'store as plain text in paket.dependencies' \
@@ -785,6 +785,39 @@ _paket-push() {
   return ret
 }
 
+(( $+functions[_paket-remove] )) ||
+_paket-remove() {
+  local curcontext=$curcontext context state state_descr ret=1
+  typeset -A opt_args
+  local -a line
+
+  local -a args
+  args=(
+    $global_options
+    '(-f --force)'{-f,--force}'[force download and reinstallation of all dependencies]'
+    '(--interactive -i)'{--interactive,-i}"[ask for every project whether to remove the dependency]"
+    '(--no-install)'--no-install'[do not modify projects]'
+    '(--project -p)'{--project,-p}'[remove the dependency from a single project only]:project:_path_files -g "**/*.??proj"'
+    "${(f)$(_paket_group_option 'remove the dependency from a group (default: Main group)')}"
+  )
+
+  _arguments -C \
+    $args \
+    ':NuGet package ID:->package-id' \
+  && return
+
+  case $state in
+    (package-id)
+      local group=${(v)opt_args[(i)--group|-g]}
+
+      _paket_installed_packages $group \
+      && ret=0
+      ;;
+  esac
+
+  return ret
+}
+
 (( $+functions[_paket-show-groups] )) ||
 _paket-show-groups() {
   _arguments $global_options
@@ -840,7 +873,7 @@ _paket-update() {
     $binding_redirects_options
     $download_options
     '(--filter)'--filter'[treat the NuGet package ID as a regex to filter packages]'
-    '(--no-install)'--no-install'[do not add dependencies to projects]'
+    '(--no-install)'--no-install'[do not modify projects]'
     '(--version -V)'{--version,-V}'[dependency version constraint]: :->version'
     "${(f)$(_paket_group_option 'specify dependency group to update (default: all groups)')}"
   )
