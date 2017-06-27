@@ -5,30 +5,30 @@ open System
 open Argu
 
 type AddArgs =
-    | [<Mandatory;MainCommandAttribute()>] NuGet of package_ID:string
-    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
+    | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
+    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
 
-    | [<AltCommandLine("-V")>] Version of version_constraint:string
-    | [<Hidden;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
+    | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
+    | [<Hidden;Unique;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
 
-    | [<AltCommandLine("-p")>] Project of path:string
-    | [<Hidden;CustomCommandLine("project")>] Project_Legacy of path:string
+    | [<Unique;AltCommandLine("-p")>] Project of path:string
+    | [<Hidden;Unique;CustomCommandLine("project")>] Project_Legacy of path:string
 
-    | [<AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
 
-    | Create_New_Binding_Files
-    | [<Hidden;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
+    | [<Unique>] Create_New_Binding_Files
+    | [<Hidden;Unique;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
 
-    | [<AltCommandLine("-f")>] Force
-    | [<AltCommandLine("-i")>] Interactive
-    | Redirects
-    | Clean_Redirects
-    | No_Install
-    | Keep_Major
-    | Keep_Minor
-    | Keep_Patch
-    | Touch_Affected_Refs
+    | [<Unique;AltCommandLine("-f")>] Force
+    | [<Unique;AltCommandLine("-i")>] Interactive
+    | [<Unique>] Redirects
+    | [<Unique>] Clean_Redirects
+    | [<Unique>] No_Install
+    | [<Unique>] Keep_Major
+    | [<Unique>] Keep_Minor
+    | [<Unique>] Keep_Patch
+    | [<Unique>] Touch_Affected_Refs
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -59,10 +59,10 @@ with
             | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
 
 type ConfigArgs =
-    | [<CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
-    | [<CustomCommandLine("add-token")>] AddToken of key_or_URL:string * token:string
-    | Username of username:string
-    | Password of password:string
+    | [<Unique;CustomCommandLine("add-credentials")>] AddCredentials of key_or_URL:string
+    | [<Unique;CustomCommandLine("add-token")>] AddToken of key_or_URL:string * token:string
+    | [<Unique>] Username of username:string
+    | [<Unique>] Password of password:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -73,12 +73,12 @@ with
             | Password(_) -> "provide password"
 
 type ConvertFromNugetArgs =
-    | [<AltCommandLine("-f")>] Force
-    | No_Install
-    | No_Auto_Restore
+    | [<Unique;AltCommandLine("-f")>] Force
+    | [<Unique>] No_Install
+    | [<Unique>] No_Auto_Restore
 
-    | Migrate_Credentials of mode:string
-    | [<Hidden;CustomCommandLine("--creds-migrations")>] Migrate_Credentials_Legacy of mode:string
+    | [<Unique>] Migrate_Credentials of mode:string
+    | [<Hidden;Unique;CustomCommandLine("--creds-migrations")>] Migrate_Credentials_Legacy of mode:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -91,11 +91,11 @@ with
             | Migrate_Credentials_Legacy(_) -> "[obsolete]"
 
 type FindRefsArgs =
-    | [<Mandatory;MainCommandAttribute()>] NuGets of package_ID:string list
+    | [<ExactlyOnce;MainCommand>] NuGets of package_ID:string list
     | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGets_Legacy of package_ID:string list
 
-    | [<AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -115,7 +115,7 @@ with
 type AutoRestoreFlags = On | Off
 
 type AutoRestoreArgs =
-    | [<MainCommand;Mandatory>] Flags of AutoRestoreFlags
+    | [<MainCommand;ExactlyOnce>] Flags of AutoRestoreFlags
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -125,27 +125,28 @@ with
 type LanguageFlags = Csx | Fsx
 
 type InstallArgs =
-    | [<AltCommandLine("-f")>] Force
-    | Redirects
+    | [<Unique;AltCommandLine("-f")>] Force
+    | [<Unique>] Redirects
 
-    | Create_New_Binding_Files
-    | [<Hidden;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
+    | [<Unique>] Create_New_Binding_Files
+    | [<Hidden;Unique;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
 
-    | Clean_Redirects
-    | Keep_Major
-    | Keep_Minor
-    | Keep_Patch
-    | [<CustomCommandLine("--generate-load-scripts")>] Generate_Load_Scripts
-    | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
-    | [<Hidden;CustomCommandLine("project-root")>] Project_Root of path:string
-
+    | [<Unique>] Clean_Redirects
+    | [<Unique>] Keep_Major
+    | [<Unique>] Keep_Minor
+    | [<Unique>] Keep_Patch
+    // TODO
+    | [<Unique;CustomCommandLine("--generate-load-scripts")>] Generate_Load_Scripts
+    | [<Unique;CustomCommandLine("--only-referenced")>] Install_Only_Referenced
+    | [<Hidden;Unique;CustomCommandLine("project-root")>] Project_Root of path:string
+    // TODO
     | Load_Script_Framework of framework:string
     | [<Hidden;CustomCommandLine("load-script-framework")>] Load_Script_Framework_Legacy of framework:string
 
     | Load_Script_Type of LanguageFlags
     | [<Hidden;CustomCommandLine("load-script-type")>] Load_Script_Type_Legacy of LanguageFlags
 
-    | Touch_Affected_Refs
+    | [<Unique>] Touch_Affected_Refs
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -172,12 +173,12 @@ with
             | Load_Script_Type_Legacy(_) -> "[obsolete]"
 
 type OutdatedArgs =
-    | Ignore_Constraints
+    | [<Unique>] Ignore_Constraints
 
-    | [<AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
 
-    | [<AltCommandLine("--pre")>] Include_Prereleases
+    | [<Unique;AltCommandLine("--pre")>] Include_Prereleases
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -238,7 +239,7 @@ with
             | Target_Framework(_) -> "Allows to restore only for a specified target framework."
 
 type SimplifyArgs =
-    | [<AltCommandLine("-i")>] Interactive
+    | [<Unique;AltCommandLine("-i")>] Interactive
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -246,27 +247,27 @@ with
             | Interactive -> "confirm deletion of every transitive dependency"
 
 type UpdateArgs =
-    | [<Mandatory;MainCommandAttribute()>] NuGet of package_id:string
-    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
+    | [<ExactlyOnce;MainCommand>] NuGet of package_id:string
+    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGet_Legacy of package_id:string
 
-    | [<AltCommandLine("-V")>] Version of version_constraint:string
-    | [<Hidden;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
+    | [<Unique;AltCommandLine("-V")>] Version of version_constraint:string
+    | [<Hidden;Unique;CustomCommandLine("version")>] Version_Legacy of version_constraint:string
 
-    | [<AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
 
-    | Create_New_Binding_Files
-    | [<Hidden;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
+    | [<Unique>] Create_New_Binding_Files
+    | [<Hidden;Unique;CustomCommandLine("--createnewbindingfiles")>] Create_New_Binding_Files_Legacy
 
-    | [<AltCommandLine("-f")>] Force
-    | Redirects
-    | Clean_Redirects
-    | No_Install
-    | Keep_Major
-    | Keep_Minor
-    | Keep_Patch
-    | Filter
-    | Touch_Affected_Refs
+    | [<Unique;AltCommandLine("-f")>] Force
+    | [<Unique>] Redirects
+    | [<Unique>] Clean_Redirects
+    | [<Unique>] No_Install
+    | [<Unique>] Keep_Major
+    | [<Unique>] Keep_Minor
+    | [<Unique>] Keep_Patch
+    | [<Unique>] Filter
+    | [<Unique>] Touch_Affected_Refs
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -294,14 +295,14 @@ with
             | Filter -> "treat the NuGet package ID as a regex to filter packages"
 
 type FindPackagesArgs =
-    | [<MainCommandAttribute()>] Search of package_ID:string
-    | [<Hidden;CustomCommandLine("searchtext")>] Search_Legacy of package_ID:string
+    | [<ExactlyOnce;MainCommand>] Search of package_ID:string
+    | [<Hidden;ExactlyOnce;CustomCommandLine("searchtext")>] Search_Legacy of package_ID:string
 
-    | Source of source_URL:string
-    | [<Hidden;CustomCommandLine("source")>] Source_Legacy of source_URL:string
+    | [<Unique>] Source of source_URL:string
+    | [<Hidden;Unique;CustomCommandLine("source")>] Source_Legacy of source_URL:string
 
-    | [<CustomCommandLine("--max")>] Max_Results of int
-    | [<Hidden;CustomCommandLine("max")>] Max_Results_Legacy of int
+    | [<Unique;CustomCommandLine("--max")>] Max_Results of int
+    | [<Hidden;Unique;CustomCommandLine("max")>] Max_Results_Legacy of int
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -316,8 +317,8 @@ with
             | Max_Results_Legacy(_) -> "[obsolete]"
 
 type FixNuspecArgs =
-    | [<Mandatory>][<CustomCommandLine("file")>] File of text:string
-    | [<Mandatory>][<CustomCommandLine("references-file")>] ReferencesFile of text:string
+    | [<ExactlyOnce;CustomCommandLine("file")>] File of text:string
+    | [<ExactlyOnce;CustomCommandLine("references-file")>] ReferencesFile of text:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -326,8 +327,8 @@ with
             | ReferencesFile _ -> "paket.references to use"
 
 type FixNuspecsArgs =
-    | [<Mandatory>][<CustomCommandLine("files")>] Files of nuspecPaths:string list
-    | [<Mandatory>][<CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
+    | [<ExactlyOnce;CustomCommandLine("files")>] Files of nuspecPaths:string list
+    | [<ExactlyOnce;CustomCommandLine("references-file")>] ReferencesFile of referencePath:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -336,9 +337,9 @@ with
             | ReferencesFile _ -> "paket.references to use"
 
 type GenerateNuspecArgs =
-    | [<CustomCommandLine "project">][<Mandatory>] Project of project:string
-    | [<CustomCommandLine "dependencies">][<Mandatory>] DependenciesFile of dependenciesPath:string
-    | [<CustomCommandLine "output">][<Mandatory>] Output of output:string
+    | [<ExactlyOnce;CustomCommandLine "project">] Project of project:string
+    | [<ExactlyOnce;CustomCommandLine "dependencies">] DependenciesFile of dependenciesPath:string
+    | [<ExactlyOnce;CustomCommandLine "output">] Output of output:string
     interface IArgParserTemplate with
         member this.Usage =
             match this with
@@ -347,10 +348,10 @@ type GenerateNuspecArgs =
             | Output _ -> "output directory of the .nuspec file"
 
 type ShowInstalledPackagesArgs =
-    | [<AltCommandLine("-a")>] All
+    | [<Unique;AltCommandLine("-a")>] All
 
-    | [<AltCommandLine("-p")>] Project of path:string
-    | [<Hidden;CustomCommandLine("project")>] Project_Legacy of path:string
+    | [<Unique;AltCommandLine("-p")>] Project of path:string
+    | [<Hidden;Unique;CustomCommandLine("project")>] Project_Legacy of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -367,14 +368,14 @@ with
         member __.Usage = ""
 
 type FindPackageVersionsArgs =
-    | [<Mandatory;MainCommandAttribute()>] NuGet of package_ID:string
-    | [<Hidden;CustomCommandLine("nuget", "name")>] NuGet_Legacy of package_ID:string
+    | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
+    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget", "name")>] NuGet_Legacy of package_ID:string
 
-    | Source of source_URL:string
-    | [<Hidden;CustomCommandLine("source")>] Source_Legacy of source_URL:string
+    | [<Unique>] Source of source_URL:string
+    | [<Hidden;Unique;CustomCommandLine("source")>] Source_Legacy of source_URL:string
 
-    | [<CustomCommandLine("--max")>] Max_Results of int
-    | [<Hidden;CustomCommandLine("max")>] Max_Results_Legacy of int
+    | [<Unique;CustomCommandLine("--max")>] Max_Results of int
+    | [<Hidden;Unique;CustomCommandLine("max")>] Max_Results_Legacy of int
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -392,44 +393,45 @@ type PackArgs =
     | [<ExactlyOnce;MainCommand>] Output of path:string
     | [<Hidden;ExactlyOnce;CustomCommandLine("output")>] Output_Legacy of path:string
 
-    | Build_Config of configuration:string
-    | [<Hidden;CustomCommandLine("buildconfig")>] Build_Config_Legacy of configuration:string
+    | [<Unique>] Build_Config of configuration:string
+    | [<Hidden;Unique;CustomCommandLine("buildconfig")>] Build_Config_Legacy of configuration:string
 
-    | Build_Platform of platform:string
-    | [<Hidden;CustomCommandLine("buildplatform")>] Build_Platform_Legacy of platform:string
+    | [<Unique>] Build_Platform of platform:string
+    | [<Hidden;Unique;CustomCommandLine("buildplatform")>] Build_Platform_Legacy of platform:string
 
-    | Version of version:string
-    | [<Hidden;CustomCommandLine("version")>] Version_Legacy of version:string
+    | [<Unique>] Version of version:string
+    | [<Hidden;Unique;CustomCommandLine("version")>] Version_Legacy of version:string
 
-    | [<CustomCommandLine("--template")>] Template_File of path:string
-    | [<Hidden;CustomCommandLine("templatefile")>] Template_File_Legacy of path:string
+    | [<Unique;CustomCommandLine("--template")>] Template_File of path:string
+    | [<Hidden;Unique;CustomCommandLine("templatefile")>] Template_File_Legacy of path:string
 
+    // TODO
     | [<CustomCommandLine("--exclude")>] Exclude_Template of package_ID:string
     | [<Hidden;CustomCommandLine("exclude")>] Exclude_Template_Legacy of package_ID:string
 
-    | Specific_Version of package_ID:string * version:string
-    | [<Hidden;CustomCommandLine("specific-version")>] Specific_Version_Legacy of package_ID:string * version:string
+    | [<Unique>] Specific_Version of package_ID:string * version:string
+    | [<Hidden;Unique;CustomCommandLine("specific-version")>] Specific_Version_Legacy of package_ID:string * version:string
 
-    | Release_Notes of text:string
-    | [<Hidden;CustomCommandLine("releaseNotes")>] Release_Notes_Legacy of text:string
+    | [<Unique>] Release_Notes of text:string
+    | [<Hidden;Unique;CustomCommandLine("releaseNotes")>] Release_Notes_Legacy of text:string
 
-    | Lock_Dependencies
-    | [<Hidden;CustomCommandLine("lock-dependencies")>] Lock_Dependencies_Legacy
+    | [<Unique>] Lock_Dependencies
+    | [<Hidden;Unique;CustomCommandLine("lock-dependencies")>] Lock_Dependencies_Legacy
 
     | [<CustomCommandLine("--minimum-from-lock-file")>] Lock_Dependencies_To_Minimum
-    | [<Hidden;CustomCommandLine("minimum-from-lock-file")>] Lock_Dependencies_To_Minimum_Legacy
+    | [<Hidden;Unique;CustomCommandLine("minimum-from-lock-file")>] Lock_Dependencies_To_Minimum_Legacy
 
-    | Pin_Project_References
-    | [<Hidden;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
+    | [<Unique>] Pin_Project_References
+    | [<Hidden;Unique;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
 
-    | Symbols
-    | [<Hidden;CustomCommandLine("symbols")>] Symbols_Legacy
+    | [<Unique>] Symbols
+    | [<Hidden;Unique;CustomCommandLine("symbols")>] Symbols_Legacy
 
-    | Include_Referenced_Projects
-    | [<Hidden;CustomCommandLine("include-referenced-projects")>] Include_Referenced_Projects_Legacy
+    | [<Unique>] Include_Referenced_Projects
+    | [<Hidden;Unique;CustomCommandLine("include-referenced-projects")>] Include_Referenced_Projects_Legacy
 
-    | Project_Url of URL:string
-    | [<Hidden;CustomCommandLine("project-url")>] Project_Url_Legacy of URL:string
+    | [<Unique>] Project_Url of URL:string
+    | [<Hidden;Unique;CustomCommandLine("project-url")>] Project_Url_Legacy of URL:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -477,10 +479,10 @@ with
             | Project_Url_Legacy(_) -> "[obsolete]"
 
 type PushArgs =
-    | [<CustomCommandLine("url")>][<Mandatory>] Url of url:string
-    | [<CustomCommandLine("file")>][<Mandatory>] FileName of path:string
-    | [<CustomCommandLine("apikey")>] ApiKey of key:string
-    | [<CustomCommandLine("endpoint")>] EndPoint of path:string
+    | [<ExactlyOnce;CustomCommandLine("url")>] Url of url:string
+    | [<ExactlyOnce;CustomCommandLine("file")>] FileName of path:string
+    | [<Unique;CustomCommandLine("apikey")>] ApiKey of key:string
+    | [<Unique;CustomCommandLine("endpoint")>] EndPoint of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -491,9 +493,10 @@ with
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
 type GenerateLoadScriptsArgs =
-    | [<AltCommandLine("-g")>] Groups of name:string list
-    | [<Hidden;CustomCommandLine("groups")>] Groups_Legacy of name:string list
+    | [<Unique;AltCommandLine("-g")>] Groups of name:string list
+    | [<Hidden;Unique;CustomCommandLine("groups")>] Groups_Legacy of name:string list
 
+    // TODO
     | [<AltCommandLine("-f")>] Framework of framework:string
     | [<Hidden;CustomCommandLine("framework")>] Framework_Legacy of framework:string
 
@@ -513,13 +516,13 @@ with
         | Type_Legacy(_) -> "[obsolete]"
 
 type WhyArgs =
-    | [<Mandatory;MainCommandAttribute()>] NuGet of package_ID:string
-    | [<Hidden;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
+    | [<ExactlyOnce;MainCommand>] NuGet of package_ID:string
+    | [<Hidden;ExactlyOnce;CustomCommandLine("nuget")>] NuGet_Legacy of package_ID:string
 
-    | [<AltCommandLine("-g")>] Group of name:string
-    | [<Hidden;CustomCommandLine("group")>] Group_Legacy of name:string
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
 
-    | Details
+    | [<Unique>] Details
 with
   interface IArgParserTemplate with
       member this.Usage =
@@ -538,7 +541,7 @@ type Command =
     | [<AltCommandLine("-s");Inherit>]                  Silent
     | [<AltCommandLine("-v");Inherit>]                  Verbose
     | [<Inherit>]                                       Log_File of path:string
-    | [<Inherit;Hidden>]                                From_Bootstrapper
+    | [<Hidden;Inherit>]                                From_Bootstrapper
     // subcommands
     | [<CustomCommandLine("add")>]                      Add of ParseResults<AddArgs>
     | [<CustomCommandLine("clear-cache")>]              ClearCache of ParseResults<ClearCacheArgs>
