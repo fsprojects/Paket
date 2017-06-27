@@ -1,3 +1,6 @@
+#### 5.2.2 - 27.06.2017
+* BUGFIX: Do not add old myget sources during NuGet convert
+
 #### 5.2.1 - 25.06.2017
 * BUGFIX: Increase download timeout - https://github.com/fsprojects/Paket/pull/2456
 
