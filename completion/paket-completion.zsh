@@ -606,9 +606,9 @@ _paket-generate-load-scripts() {
   local -a args
   args=(
     $global_options
-    '(-f --framework)'{-f,--framework}'[framework identifier to generate scripts for]:framework: '
-    '*'{-t,--type}'[language to generate scripts for; may be repeated]: :->language'
-    '(-g --groups)'{-g,--groups}'[groups to generate scripts for (default: all groups)]: :->group'
+    '*'{-f,--framework}'[framework identifier to generate scripts for]:framework: '
+    '*'{-t,--type}'[language to generate scripts for]: :->language'
+    '*'{-g,--group}'[group to generate scripts for (default: all groups)]: :->group'
   )
 
   _arguments -C \
@@ -618,14 +618,20 @@ _paket-generate-load-scripts() {
   case $state in
     (language)
       local -a languages
-      languages=(${(vQs_:_)opt_args[(i)--type]} ${(vQs_:_)opt_args[(i)-t]})
+      languages=(${(v@Qs_:_)opt_args[(I)--type|-t]})
 
       _paket_languages -F languages \
       && ret=0
       ;;
 
     (group)
-      _paket_groups
+      local -a groups
+      # Search --group and -g optargs for values (v), make array (@) and
+      # remove quotes (Q) and split by : (s_:_).
+      groups=(${(v@Qs_:_)opt_args[(I)--group|-g]})
+
+      _paket_groups -F groups \
+      && ret=0
       ;;
   esac
 
@@ -650,8 +656,8 @@ _paket-install() {
     $download_options
     '(--only-referenced)'--only-referenced'[only install dependencies listed in paket.references files, instead of all packages in paket.dependencies]'
     '(--generate-load-scripts)'--generate-load-scripts'[generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS]'
-    '(--load-script-framework)'--load-script-framework'[framework identifier to generate scripts for]:framework: '
-    '*--load-script-type[language to generate scripts for; may be repeated]: :->language'
+    '*--load-script-framework[framework identifier to generate scripts for]:framework: '
+    '*--load-script-type[language to generate scripts for]: :->language'
   )
 
   _arguments -C \
@@ -1101,7 +1107,7 @@ _paket_groups() {
   fi
 
   local expl
-  _wanted paket-groups expl $what compadd -a -- output
+  _wanted paket-groups expl $what compadd -a $@ -- output
 }
 
 (( $+functions[_paket_installed_packages] )) ||

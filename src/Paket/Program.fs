@@ -607,10 +607,9 @@ let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
         |> legacyList results "--type" "type"
         |> List.map (fun l -> l.ToString().ToLowerInvariant())
     let providedGroups =
-        let arg = (results.TryGetResult<@ GenerateLoadScriptsArgs.Groups @>,
-                   results.TryGetResult<@ GenerateLoadScriptsArgs.Groups_Legacy @>)
-                  |> legacyOption results "--groups" "groups"
-        defaultArg arg []
+        (results.GetResults<@ GenerateLoadScriptsArgs.Group @>,
+         (defaultArg (results.TryGetResult<@ GenerateLoadScriptsArgs.Group_Legacy @>) []))
+        |> legacyList results "--group" "groups"
 
     Dependencies.Locate().GenerateLoadScripts providedGroups providedFrameworks providedScriptTypes
 

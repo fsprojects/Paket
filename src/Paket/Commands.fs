@@ -135,18 +135,16 @@ type InstallArgs =
     | [<Unique>] Keep_Major
     | [<Unique>] Keep_Minor
     | [<Unique>] Keep_Patch
-    // TODO
-    | [<Unique;CustomCommandLine("--generate-load-scripts")>] Generate_Load_Scripts
     | [<Unique;CustomCommandLine("--only-referenced")>] Install_Only_Referenced
+    | [<Unique>] Touch_Affected_Refs
     | [<Hidden;Unique;CustomCommandLine("project-root")>] Project_Root of path:string
-    // TODO
+
+    | [<Unique>] Generate_Load_Scripts
     | Load_Script_Framework of framework:string
     | [<Hidden;CustomCommandLine("load-script-framework")>] Load_Script_Framework_Legacy of framework:string
 
     | Load_Script_Type of LanguageFlags
     | [<Hidden;CustomCommandLine("load-script-type")>] Load_Script_Type_Legacy of LanguageFlags
-
-    | [<Unique>] Touch_Affected_Refs
 with
     interface IArgParserTemplate with
         member this.Usage =
@@ -159,17 +157,17 @@ with
 
             | Clean_Redirects -> "remove binding redirects that were not created by Paket"
             | Install_Only_Referenced -> "only install dependencies listed in paket.references files, instead of all packages in paket.dependencies"
-            | Generate_Load_Scripts -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
             | Keep_Major -> "only allow updates that preserve the major version"
             | Keep_Minor -> "only allow updates that preserve the minor version"
             | Keep_Patch -> "only allow updates that preserve the patch version"
             | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
             | Project_Root(_) -> "alternative project root (only used for tooling)"
 
-            | Load_Script_Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6"
+            | Generate_Load_Scripts -> "generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS"
+            | Load_Script_Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6; may be repeated"
             | Load_Script_Framework_Legacy(_) -> "[obsolete]"
 
-            | Load_Script_Type(_) -> "language to generate scripts for; may be repeated"
+            | Load_Script_Type(_) -> "language to generate scripts for; may be repeated; may be repeated"
             | Load_Script_Type_Legacy(_) -> "[obsolete]"
 
 type OutdatedArgs =
@@ -405,12 +403,11 @@ type PackArgs =
     | [<Unique;CustomCommandLine("--template")>] Template_File of path:string
     | [<Hidden;Unique;CustomCommandLine("templatefile")>] Template_File_Legacy of path:string
 
-    // TODO
     | [<CustomCommandLine("--exclude")>] Exclude_Template of package_ID:string
     | [<Hidden;CustomCommandLine("exclude")>] Exclude_Template_Legacy of package_ID:string
 
-    | [<Unique>] Specific_Version of package_ID:string * version:string
-    | [<Hidden;Unique;CustomCommandLine("specific-version")>] Specific_Version_Legacy of package_ID:string * version:string
+    |  Specific_Version of package_ID:string * version:string
+    | [<Hidden;CustomCommandLine("specific-version")>] Specific_Version_Legacy of package_ID:string * version:string
 
     | [<Unique>] Release_Notes of text:string
     | [<Hidden;Unique;CustomCommandLine("releaseNotes")>] Release_Notes_Legacy of text:string
@@ -418,8 +415,8 @@ type PackArgs =
     | [<Unique>] Lock_Dependencies
     | [<Hidden;Unique;CustomCommandLine("lock-dependencies")>] Lock_Dependencies_Legacy
 
-    | [<CustomCommandLine("--minimum-from-lock-file")>] Lock_Dependencies_To_Minimum
-    | [<Hidden;Unique;CustomCommandLine("minimum-from-lock-file")>] Lock_Dependencies_To_Minimum_Legacy
+    | [<Unique;CustomCommandLine("--minimum-from-lock-file")>] Lock_Dependencies_To_Minimum
+    | [<Unique;CustomCommandLine("minimum-from-lock-file")>] Lock_Dependencies_To_Minimum_Legacy
 
     | [<Unique>] Pin_Project_References
     | [<Hidden;Unique;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
@@ -451,10 +448,10 @@ with
             | Template_File(_) -> "pack a single paket.template file"
             | Template_File_Legacy(_) -> "[obsolete]"
 
-            | Exclude_Template(_) -> "exclude paket.template file by package ID"
+            | Exclude_Template(_) -> "exclude paket.template file by package ID; may be repeated"
             | Exclude_Template_Legacy(_) -> "[obsolete]"
 
-            | Specific_Version(_) -> "version number to use for package ID"
+            | Specific_Version(_) -> "version number to use for package ID; may be repeated"
             | Specific_Version_Legacy(_) -> "[obsolete]"
 
             | Release_Notes(_) -> "release notes"
@@ -493,10 +490,9 @@ with
             | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
 
 type GenerateLoadScriptsArgs =
-    | [<Unique;AltCommandLine("-g")>] Groups of name:string list
-    | [<Hidden;Unique;CustomCommandLine("groups")>] Groups_Legacy of name:string list
+    | [<AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;CustomCommandLine("groups")>] Group_Legacy of name:string list
 
-    // TODO
     | [<AltCommandLine("-f")>] Framework of framework:string
     | [<Hidden;CustomCommandLine("framework")>] Framework_Legacy of framework:string
 
@@ -506,10 +502,10 @@ with
   interface IArgParserTemplate with
       member this.Usage =
         match this with
-        | Groups(_) -> "groups to generate scripts for (default: all groups)"
-        | Groups_Legacy(_) -> "[obsolete]"
+        | Group(_) -> "groups to generate scripts for (default: all groups); may be repeated"
+        | Group_Legacy(_) -> "[obsolete]"
 
-        | Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6"
+        | Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6; may be repeated"
         | Framework_Legacy(_) -> "[obsolete]"
 
         | Type(_) -> "language to generate scripts for; may be repeated"
