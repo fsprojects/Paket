@@ -107,7 +107,7 @@ with
             | Group_Legacy(_) -> "[obsolete]"
 
 type InitArgs =
-    | [<Hidden>] NoArg
+    | [<Hidden;NoCommandLine>] NoArgs
 with
     interface IArgParserTemplate with
         member __.Usage = ""
@@ -120,7 +120,7 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Flags _ -> "enables or disables auto restore for the repo."
+            | Flags(_) -> "enable or disable automatic package restore"
 
 type InstallArgs =
     | [<AltCommandLine("-f")>] Force
@@ -206,7 +206,7 @@ with
             | No_Install -> "Skips paket install process (patching of csproj, fsproj, ... files) after the generation of paket.lock file."
 
 type ClearCacheArgs =
-    | [<Hidden>] NoArg
+    | [<Hidden;NoCommandLine>] NoArgs
 with
     interface IArgParserTemplate with
         member __.Usage = ""
@@ -320,8 +320,8 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | File _ -> "FileName of the nuspec file."
-            | ReferencesFile _ -> "FileName of the nuspec file."
+            | File _ -> ".nuspec file to fix transitive dependencies within"
+            | ReferencesFile _ -> "paket.references to use"
 
 type FixNuspecsArgs =
     | [<Mandatory>][<CustomCommandLine("files")>] Files of nuspecPaths:string list
@@ -330,8 +330,8 @@ with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Files _ -> "List of .nuspec files to fix transitive dependencies within."
-            | ReferencesFile _ -> "FileName of the nuspec file."
+            | Files _ -> ".nuspec files to fix transitive dependencies within"
+            | ReferencesFile _ -> "paket.references to use"
 
 type GenerateNuspecArgs =
     | [<CustomCommandLine "project">][<Mandatory>] Project of project:string
@@ -340,9 +340,9 @@ type GenerateNuspecArgs =
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Project _ -> "Project to generate a nuspec file for."
-            | DependenciesFile _ -> "'paket.dependencies' file used to populate the generated nuspec file."
-            | Output _ -> "Output directory to save generated nuspec to"
+            | Project _ -> "generate .nuspec for project"
+            | DependenciesFile _ -> "paket.dependencies file used to populate .nuspec file"
+            | Output _ -> "output directory of the .nuspec file"
 
 type ShowInstalledPackagesArgs =
     | [<AltCommandLine("-a")>] All
@@ -359,12 +359,10 @@ with
             | Project_Legacy(_) -> "[obsolete]"
 
 type ShowGroupsArgs =
-    | [<Hidden;NoCommandLine>] PlaceHolder
+    | [<Hidden;NoCommandLine>] NoArgs
 with
     interface IArgParserTemplate with
-        member this.Usage =
-            match this with
-            | PlaceHolder -> "Doesn't trace other output than installed packages."
+        member __.Usage = ""
 
 type FindPackageVersionsArgs =
     | [<Mandatory;MainCommandAttribute()>] NuGet of package_ID:string
