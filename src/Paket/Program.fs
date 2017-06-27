@@ -147,14 +147,17 @@ let legacyOption (results : ParseResults<_>) newSyntax oldSyntax list =
         failObsolete oldSyntax newSyntax
     | (_, _) -> None
 
+let require arg fail =
+    match arg with
+    | Some(id) -> id
+    | _ -> fail()
+
 let add (results : ParseResults<_>) =
     let packageName =
         let arg = (results.TryGetResult <@ AddArgs.NuGet @>,
                    results.TryGetResult <@ AddArgs.NuGet_Legacy @>)
                   |> legacyOption results "(omit, option is the new default argument)" "nuget"
-        match arg with
-        | Some(id) -> id
-        | _ -> results.GetResult <@ AddArgs.NuGet @>
+        require arg (fun _ -> results.GetResult <@ AddArgs.NuGet @>)
     let version =
         let arg = (results.TryGetResult <@ AddArgs.Version @>,
                    results.TryGetResult <@ AddArgs.Version_Legacy @>)
@@ -238,9 +241,7 @@ let findRefs (results : ParseResults<_>) =
         let arg = (results.TryGetResult <@ FindRefsArgs.NuGets @>,
                    results.TryGetResult <@ FindRefsArgs.NuGets_Legacy @>)
                   |> legacyOption results "(omit, option is the new default argument)" "nuget"
-        match arg with
-        | Some(id) -> id
-        | _ -> results.GetResult <@ FindRefsArgs.NuGets @>
+        require arg (fun _ -> results.GetResult <@ FindRefsArgs.NuGets @>)
     let group =
         let arg = (results.TryGetResult <@ FindRefsArgs.Group @>,
                    results.TryGetResult <@ FindRefsArgs.Group_Legacy @>)
@@ -310,9 +311,7 @@ let remove (results : ParseResults<_>) =
         let arg = (results.TryGetResult <@ RemoveArgs.NuGet @>,
                    results.TryGetResult <@ RemoveArgs.NuGet_Legacy @>)
                   |> legacyOption results "(omit, option is the new default argument)" "nuget"
-        match arg with
-        | Some(id) -> id
-        | _ -> results.GetResult <@ RemoveArgs.NuGet @>
+        require arg (fun _ -> results.GetResult <@ RemoveArgs.NuGet @>)
     let force = results.Contains <@ RemoveArgs.Force @>
     let noInstall = results.Contains <@ RemoveArgs.No_Install @>
     let group =
@@ -416,9 +415,7 @@ let pack (results : ParseResults<_>) =
         let arg = (results.TryGetResult <@ PackArgs.Output @>,
                    results.TryGetResult <@ PackArgs.Output_Legacy @>)
                   |> legacyOption results "(omit, option is the new default argument)" "output"
-        match arg with
-        | Some(id) -> id
-        | _ -> results.GetResult <@ PackArgs.Output @>
+        require arg (fun _ -> results.GetResult <@ PackArgs.Output @>)
     let buildConfig =
         (results.TryGetResult <@ PackArgs.Build_Config @>,
          results.TryGetResult <@ PackArgs.Build_Config_Legacy @>)
@@ -587,9 +584,7 @@ let findPackageVersions (results : ParseResults<_>) =
         let arg = (results.TryGetResult <@ FindPackageVersionsArgs.NuGet @>,
                    results.TryGetResult <@ FindPackageVersionsArgs.NuGet_Legacy @>)
                   |> legacyOption results "(omit, option is the new default argument)" "nuget"
-        match arg with
-        | Some(id) -> id
-        | _ -> results.GetResult <@ FindPackageVersionsArgs.NuGet @>
+        require arg (fun _ -> results.GetResult <@ FindPackageVersionsArgs.NuGet @>)
     let sources =
         let arg = (results.TryGetResult <@ FindPackageVersionsArgs.Source @>,
                    results.TryGetResult <@ FindPackageVersionsArgs.Source_Legacy @>)
@@ -618,9 +613,7 @@ let push (results : ParseResults<_>) =
         let arg = (results.TryGetResult <@ PushArgs.Package @>,
                    results.TryGetResult <@ PushArgs.Package_Legacy @>)
                   |> legacyOption results "(omit, option is the new default argument)" "file"
-        match arg with
-        | Some(id) -> id
-        | _ -> results.GetResult <@ PushArgs.Package @>
+        require arg (fun _ -> results.GetResult <@ PushArgs.Package @>)
     let url =
         (results.TryGetResult <@ PushArgs.Url @>,
          results.TryGetResult <@ PushArgs.Url_Legacy @>)
@@ -669,9 +662,7 @@ let why (results: ParseResults<WhyArgs>) =
         let arg = (results.TryGetResult <@ WhyArgs.NuGet @>,
                    results.TryGetResult <@ WhyArgs.NuGet_Legacy @>)
                   |> legacyOption results "(omit, option is the new default argument)" "nuget"
-        match arg with
-        | Some(id) -> id
-        | _ -> results.GetResult <@ WhyArgs.NuGet @>
+        require arg (fun _ -> results.GetResult <@ WhyArgs.NuGet @>)
         |> Domain.PackageName
     let groupName =
         let arg = (results.TryGetResult <@ WhyArgs.Group @>,
