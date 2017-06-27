@@ -476,18 +476,32 @@ with
             | Project_Url_Legacy(_) -> "[obsolete]"
 
 type PushArgs =
-    | [<ExactlyOnce;CustomCommandLine("url")>] Url of url:string
-    | [<ExactlyOnce;CustomCommandLine("file")>] FileName of path:string
-    | [<Unique;CustomCommandLine("apikey")>] ApiKey of key:string
-    | [<Unique;CustomCommandLine("endpoint")>] EndPoint of path:string
+    | [<ExactlyOnce;MainCommand>] Package of path:string
+    | [<Hidden;ExactlyOnce;CustomCommandLine("file")>] Package_Legacy of path:string
+
+    | [<Unique>] Url of url:string
+    | [<Hidden;Unique;CustomCommandLine("url")>] Url_Legacy of url:string
+
+    | [<Unique>] Api_Key of key:string
+    | [<Hidden;Unique;CustomCommandLine("apikey")>] Api_Key_Legacy of key:string
+
+    | [<Unique>] Endpoint of path:string
+    | [<Hidden;Unique;CustomCommandLine("endpoint")>] Endpoint_Legacy of path:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Url(_) -> "Url of the NuGet feed."
-            | FileName(_) -> "Path to the package."
-            | ApiKey(_) -> "Optionally specify your API key on the command line. Otherwise uses the value of the `nugetkey` environment variable."
-            | EndPoint(_) -> "Optionally specify a custom api endpoint to push to. Defaults to `/api/v2/package`."
+            | Package(_) -> "path to the .nupkg file"
+            | Package_Legacy(_) -> "[obsolete]"
+
+            | Url(_) -> "URL of the NuGet feed"
+            | Url_Legacy(_) -> "[obsolete]"
+
+            | Api_Key(_) -> "API key for the URL (default: value of the NUGET_KEY environment variable)"
+            | Api_Key_Legacy(_) -> "[obsolete]"
+
+            | Endpoint(_) -> "API endpoint to push to (default: /api/v2/package)"
+            | Endpoint_Legacy(_) -> "[obsolete]"
 
 type GenerateLoadScriptsArgs =
     | [<AltCommandLine("-g")>] Group of name:string

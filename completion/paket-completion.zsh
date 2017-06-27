@@ -189,7 +189,7 @@
 #     zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
 #
 #
-# Custom feed URLs for --source argument
+# Custom feed URLs for --source and paket push --url argument
 #
 #   Define additional sources that will be completed for all Paket commands:
 #
@@ -198,10 +198,12 @@
 #            'http://one.example.com/feed/v2' \
 #            'http://second.example.com/feed/v2'
 #
-#   Override list for a specific command; mind the trailing colon:
+#   Override list for a specific command:
 #
-#     zstyle ':completion::complete:paket:find-package-versions:' sources \
+#     zstyle ':completion::complete:paket:find-package-versions:*' sources \
 #            'http://another.example.com/feed/v2'
+#     zstyle ':completion::complete:paket:push:*' sources \
+#            'https://myget.org/F/my-feed-name'
 
 _paket() {
   local curcontext=$curcontext context state state_descr line ret=1
@@ -736,6 +738,46 @@ _paket-pack() {
 
     (specific-version)
       _message 'TODO, not implemented' \
+      && ret=0
+      ;;
+  esac
+
+  return ret
+}
+
+(( $+functions[_paket-push] )) ||
+_paket-push() {
+  local curcontext=$curcontext context state state_descr line ret=1
+  typeset -A opt_args
+
+  local -a args
+  args=(
+    $global_options
+    '(--url)'--url'[URL of the NuGet feed]: :->url'
+    '(--api-key)'--api-key'[API key for the URL (default: value of the NUGET_KEY environment variable)]:API key: '
+    '(--endpoint)'--endpoint'[API endpoint to push to (default: /api/v2/package))]:endpoint: '
+  )
+
+  _arguments -C \
+    $args \
+    '1:NuGet package:_path_files -g "(^packages/)#/*.nupkg"' \
+  && ret=0
+
+  case $state in
+    (url)
+      local -a user_sources
+      zstyle -a ":completion:$curcontext:" sources user_sources
+
+      local -a args
+      args=(
+        'source::_paket_sources'
+        'NuGet.org feed:NuGet.org feed:(https://www.nuget.org/)'
+        "user-defined feed:user-defined feed:($user_sources)"
+        'urls::_urls'
+      )
+
+      _alternative \
+        $args \
       && ret=0
       ;;
   esac

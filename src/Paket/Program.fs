@@ -591,10 +591,30 @@ let findPackageVersions (results : ParseResults<_>) =
         tracefn "%s" p
 
 let push (results : ParseResults<_>) =
-    let fileName = results.GetResult <@ PushArgs.FileName @>
-    Dependencies.Push(fileName, ?url = results.TryGetResult <@ PushArgs.Url @>,
-                      ?endPoint = results.TryGetResult <@ PushArgs.EndPoint @>,
-                      ?apiKey = results.TryGetResult <@ PushArgs.ApiKey @>)
+    let fileName =
+        let arg = (results.TryGetResult <@ PushArgs.Package @>,
+                   results.TryGetResult <@ PushArgs.Package_Legacy @>)
+                  |> legacyOption results "(omit, option is the new default argument)" "file"
+        match arg with
+        | Some(id) -> id
+        | _ -> results.GetResult <@ PushArgs.Package @>
+    let url =
+        (results.TryGetResult <@ PushArgs.Url @>,
+         results.TryGetResult <@ PushArgs.Url_Legacy @>)
+        |> legacyOption results "--url" "url"
+    let endpoint =
+        (results.TryGetResult <@ PushArgs.Endpoint @>,
+         results.TryGetResult <@ PushArgs.Endpoint_Legacy @>)
+        |> legacyOption results "--endpoint" "endpoint"
+    let apiKey =
+        (results.TryGetResult <@ PushArgs.Api_Key @>,
+         results.TryGetResult <@ PushArgs.Api_Key_Legacy @>)
+        |> legacyOption results "--api-key" "apikey"
+
+    Dependencies.Push(fileName,
+                      ?url = url,
+                      ?endPoint = endpoint,
+                      ?apiKey = apiKey)
 
 let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
     let providedFrameworks =

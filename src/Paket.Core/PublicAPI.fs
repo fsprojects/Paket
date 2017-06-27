@@ -666,7 +666,16 @@ type Dependencies(dependenciesFileName: string) =
     /// Pushes a nupkg file.
     static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
-        let envKey = Environment.GetEnvironmentVariable("nugetkey") |> Option.ofObj 
+        let envKey =
+            match Environment.GetEnvironmentVariable("NUGET_KEY") |> Option.ofObj with
+            | Some(key) ->
+                Some(key)
+            | None ->
+                match Environment.GetEnvironmentVariable("nugetkey") |> Option.ofObj with
+                | Some(key) ->
+                    traceWarnfn "The environment variable nugetkey is deprecated. Please use the NUGET_KEY environment variable."
+                    Some(key)
+                | None -> None
         let configKey = url |> Option.bind ConfigFile.GetAuthentication |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
         let firstPresentKey = 
             [apiKey; envKey; configKey]

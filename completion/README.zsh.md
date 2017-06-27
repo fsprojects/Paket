@@ -210,7 +210,7 @@ zstyle ':completion::complete:paket:show-groups:' disable-completion yes
 zstyle ':completion::complete:paket:show-installed-packages:' disable-completion yes
 ```
 
-### Custom feed URLs for `--source` argument
+### Custom feed URLs for `--source` and `paket push --url` argument
 
 ```sh
 zstyle ':completion::complete:paket:*' sources 'http://one.example.com/feed/v2'
@@ -219,9 +219,11 @@ zstyle ':completion::complete:paket:*' sources \
   'http://second.example.com/feed/v2'
 ```
 
-Override list for a specific command; mind the trailing colon:
+Override list for a specific command:
 
 ```sh
-zstyle ':completion::complete:paket:find-package-versions:' sources \
+zstyle ':completion::complete:paket:find-package-versions:*' sources \
   'http://another.example.com/feed/v2'
+zstyle ':completion::complete:paket:push:*' sources \
+  'https://myget.org/F/my-feed-name'
 ```
