@@ -1,3 +1,6 @@
+#### 5.2.3 - 27.06.2017
+* BUGFIX: Automatic restore in VS should also work with bootstraper
+
 #### 5.2.2 - 27.06.2017
 * BUGFIX: Do not add old myget sources during NuGet convert
 
