@@ -818,6 +818,32 @@ _paket-remove() {
   return ret
 }
 
+(( $+functions[_paket-restore] )) ||
+_paket-restore() {
+  local curcontext=$curcontext context state state_descr ret=1
+  typeset -A opt_args
+  local -a line
+
+  local -a args
+  args=(
+    $global_options
+    $download_options
+    '*--references-file[restore packages from a paket.references file]:paket.references:_path_files -g "**/*paket.references"'
+    '(--only-referenced)'--only-referenced'[only restore packages that are referenced by paket.references files]'
+    '(--project -p)'{--project,-p}'[restore dependencies of a single project]:project:_path_files -g "**/*.??proj"'
+    '(--target-framework)'--target-framework'[restore only for the specified target framework]:target framework: '
+    '(--ignore-checks --fail-on-checks)'--ignore-checks'[do not check if paket.dependencies and paket.lock are in sync]'
+    '(--ignore-checks --fail-on-checks)'--fail-on-checks'[abort if any checks fail]'
+    "${(f)$(_paket_group_option 'restore dependencies of a single group')}"
+  )
+
+  _arguments -C \
+    $args \
+  && return
+
+  return ret
+}
+
 (( $+functions[_paket-show-groups] )) ||
 _paket-show-groups() {
   _arguments $global_options
@@ -922,51 +948,6 @@ _paket-why() {
 
       _paket_installed_packages $group \
       && ret=0
-      ;;
-  esac
-
-  return ret
-}
-
-(( $+functions[_paket-restore] )) ||
-_paket-restore() {
-  local curcontext=$curcontext context state state_descr line ret=1
-  typeset -A opt_args
-
-  local -a args
-  args=(
-    $global_options
-    $download_options
-    '(--ignore-checks)'--ignore-checks'[Skips the test if paket.dependencies and paket.lock are in sync]'
-    '(--references-files --only-referenced)'--references-files'[Restore all packages from the given paket.references files. This implies --only-referenced]'
-  )
-
-  _arguments -C \
-    $args \
-    ': :->command' \
-    '*:: :->option-or-argument' \
-  && ret=0
-
-  case $state in
-    (command)
-      local -a commands
-
-      commands=(
-        group:'Restore a single group'
-      )
-
-      _describe -t commands command commands && ret=0
-      ;;
-
-    (option-or-argument)
-      curcontext=${curcontext%:*}-$line[1]:
-
-      if [[ $line[1] == 'group' ]]; then
-        _arguments \
-          ': :_paket_groups' \
-          $args \
-        && ret=0
-      fi
       ;;
   esac
 

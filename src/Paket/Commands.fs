@@ -225,28 +225,43 @@ with
         member __.Usage = ""
 
 type RestoreArgs =
-    | [<AltCommandLine("-f")>] Force
-    | [<CustomCommandLine("--only-referenced")>] Install_Only_Referenced
-    | [<CustomCommandLine("--touch-affected-refs")>] Touch_Affected_Refs
-    | [<CustomCommandLine("--ignore-checks")>] Ignore_Checks
-    | [<CustomCommandLine("--fail-on-checks")>] Fail_On_Checks
-    | [<CustomCommandLine("group")>] Group of name:string
-    | [<Unique>] Project of file_name:string
-    | [<Unique>] References_Files of file_name:string list
-    | [<Unique>] Target_Framework of target_framework:string
+    | [<Unique;AltCommandLine("-f")>] Force
+    | [<Unique;CustomCommandLine("--only-referenced")>] Install_Only_Referenced
+    | [<Unique>] Touch_Affected_Refs
+    | [<Unique>] Ignore_Checks
+    | [<Unique>] Fail_On_Checks
+
+    | [<Unique;AltCommandLine("-g")>] Group of name:string
+    | [<Hidden;Unique;CustomCommandLine("group")>] Group_Legacy of name:string
+
+    | [<Unique;AltCommandLine("-p")>] Project of path:string
+    | [<Hidden;Unique;CustomCommandLine("project")>] Project_Legacy of path:string
+
+    | References_File of path:string
+    | [<Hidden;CustomCommandLine("--references-files")>] References_File_Legacy of path:string list
+
+    | [<Unique>] Target_Framework of framework:string
 with
     interface IArgParserTemplate with
         member this.Usage =
             match this with
-            | Force -> "Forces the download of all packages."
-            | Group(_) -> "Allows to restore a single group."
-            | Install_Only_Referenced -> "Allows to restore packages that are referenced in paket.references files, instead of all packages in paket.dependencies."
-            | Touch_Affected_Refs -> "Touches project files referencing packages which are being restored, to help incremental build tools detecting the change."
-            | Ignore_Checks -> "Skips the test if paket.dependencies and paket.lock are in sync."
-            | Fail_On_Checks -> "Causes the restore to fail if any of the checks fail."
-            | Project(_) -> "Allows to restore dependencies for a project."
-            | References_Files(_) -> "Allows to restore all packages from the given paket.references files."
-            | Target_Framework(_) -> "Allows to restore only for a specified target framework."
+            | Force -> "force download and reinstallation of all dependencies"
+
+            | Group(_) -> "restore dependencies of a single group"
+            | Group_Legacy(_) -> "[obsolete]"
+
+            | Install_Only_Referenced -> "only restore packages that are referenced by paket.references files"
+            | Touch_Affected_Refs -> "touch project files referencing affected dependencies to help incremental build tools detecting the change"
+            | Ignore_Checks -> "do not check if paket.dependencies and paket.lock are in sync"
+            | Fail_On_Checks -> "abort if any checks fail"
+
+            | Project(_) -> "restore dependencies of a single project"
+            | Project_Legacy(_) -> "[obsolete]"
+
+            | References_File(_) -> "restore packages from a paket.references file; may be repeated"
+            | References_File_Legacy(_) -> "[obsolete]"
+
+            | Target_Framework(_) -> "restore only for the specified target framework"
 
 type SimplifyArgs =
     | [<Unique;AltCommandLine("-i")>] Interactive

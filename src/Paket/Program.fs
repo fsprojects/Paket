@@ -334,9 +334,18 @@ let remove (results : ParseResults<_>) =
 
 let restore (results : ParseResults<_>) =
     let force = results.Contains <@ RestoreArgs.Force @>
-    let files = results.GetResult (<@ RestoreArgs.References_Files @>, defaultValue = [])
-    let project = results.TryGetResult (<@ RestoreArgs.Project @>)
-    let group = results.TryGetResult <@ RestoreArgs.Group @>
+    let files =
+        (results.GetResults<@ RestoreArgs.References_File @>,
+         (defaultArg (results.TryGetResult<@ RestoreArgs.References_File_Legacy @>) []))
+        |> legacyList results "--references-file" "--references-files"
+    let project =
+        (results.TryGetResult <@ RestoreArgs.Project @>,
+         results.TryGetResult <@ RestoreArgs.Project_Legacy @>)
+        |> legacyOption results "--project" "project"
+    let group =
+        (results.TryGetResult <@ RestoreArgs.Group @>,
+         results.TryGetResult <@ RestoreArgs.Group_Legacy @>)
+        |> legacyOption results "--group" "group"
     let installOnlyReferenced = results.Contains <@ RestoreArgs.Install_Only_Referenced @>
     let touchAffectedRefs = results.Contains <@ RestoreArgs.Touch_Affected_Refs @>
     let ignoreChecks = results.Contains <@ RestoreArgs.Ignore_Checks @>
