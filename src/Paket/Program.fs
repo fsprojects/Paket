@@ -275,6 +275,7 @@ let install (results : ParseResults<_>) =
         (results.GetResults <@ InstallArgs.Load_Script_Type @>,
          results.GetResults <@ InstallArgs.Load_Script_Type_Legacy @>)
         |> legacyList results "--load-script-type" "load-script-type"
+        |> List.map (fun l -> l.ToString().ToLowerInvariant())
     let semVerUpdateMode =
         if results.Contains <@ InstallArgs.Keep_Patch @> then SemVerUpdateMode.KeepPatch else
         if results.Contains <@ InstallArgs.Keep_Minor @> then SemVerUpdateMode.KeepMinor else
@@ -604,6 +605,7 @@ let generateLoadScripts (results : ParseResults<GenerateLoadScriptsArgs>) =
         (results.GetResults <@ GenerateLoadScriptsArgs.Type @>,
          results.GetResults <@ GenerateLoadScriptsArgs.Type_Legacy @>)
         |> legacyList results "--type" "type"
+        |> List.map (fun l -> l.ToString().ToLowerInvariant())
     let providedGroups =
         let arg = (results.TryGetResult<@ GenerateLoadScriptsArgs.Groups @>,
                    results.TryGetResult<@ GenerateLoadScriptsArgs.Groups_Legacy @>)

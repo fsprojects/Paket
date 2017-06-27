@@ -607,16 +607,23 @@ _paket-generate-load-scripts() {
   args=(
     $global_options
     '(-f --framework)'{-f,--framework}'[framework identifier to generate scripts for]:framework: '
-    '(-t --type)'{-t,--type}'[language to generate scripts for]:language:(csx fsx)'
-    '(-g --groups)'{-g,--groups}'[groups to generate scripts for (default: all groups)]:*:::group:->group'
+    '*'{-t,--type}'[language to generate scripts for; may be repeated]: :->language'
+    '(-g --groups)'{-g,--groups}'[groups to generate scripts for (default: all groups)]: :->group'
   )
 
-  # TODO: Handle multiple groups without repeating them during completion.
   _arguments -C \
     $args \
   && ret=0
 
   case $state in
+    (language)
+      local -a languages
+      languages=(${(vQs_:_)opt_args[(i)--type]} ${(vQs_:_)opt_args[(i)-t]})
+
+      _paket_languages -F languages \
+      && ret=0
+      ;;
+
     (group)
       _paket_groups
       ;;
@@ -644,12 +651,22 @@ _paket-install() {
     '(--only-referenced)'--only-referenced'[only install dependencies listed in paket.references files, instead of all packages in paket.dependencies]'
     '(--generate-load-scripts)'--generate-load-scripts'[generate F# and C# include scripts that reference installed packages in a interactive environment like F# Interactive or ScriptCS]'
     '(--load-script-framework)'--load-script-framework'[framework identifier to generate scripts for]:framework: '
-    '(--load-script-type)'--load-script-type'[language to generate scripts for]:language:(csx fsx)'
+    '*--load-script-type[language to generate scripts for; may be repeated]: :->language'
   )
 
   _arguments -C \
     $args \
   && ret=0
+
+  case $state in
+    (language)
+      local -a languages
+      languages=(${(vQs_:_)opt_args[(i)--load-script-type]})
+
+      _paket_languages -F languages \
+      && ret=0
+      ;;
+  esac
 
   return ret
 }
@@ -1179,6 +1196,22 @@ _paket_template_ids() {
 
   local expl
   _wanted paket-template-ids expl 'template package ID' compadd -a $@ -- output
+}
+
+(( $+functions[_paket_languages] )) ||
+_paket_languages() {
+  local -a args desc
+  args=(
+    fsx
+    csx
+  )
+  desc=(
+    'fsx for F# Interactive'
+    'csx for ScriptCS'
+  )
+
+  local expl
+  _wanted paket-language expl 'language' compadd -a -ld desc $@ -- args
 }
 
 (( $+functions[_paket_strategy_modifiers] )) ||

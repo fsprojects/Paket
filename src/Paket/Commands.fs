@@ -122,6 +122,8 @@ with
             match this with
             | Flags(_) -> "enable or disable automatic package restore"
 
+type LanguageFlags = Csx | Fsx
+
 type InstallArgs =
     | [<AltCommandLine("-f")>] Force
     | Redirects
@@ -140,8 +142,8 @@ type InstallArgs =
     | Load_Script_Framework of framework:string
     | [<Hidden;CustomCommandLine("load-script-framework")>] Load_Script_Framework_Legacy of framework:string
 
-    | Load_Script_Type of script_type:string
-    | [<Hidden;CustomCommandLine("load-script-type")>] Load_Script_Type_Legacy of script_type:string
+    | Load_Script_Type of LanguageFlags
+    | [<Hidden;CustomCommandLine("load-script-type")>] Load_Script_Type_Legacy of LanguageFlags
 
     | Touch_Affected_Refs
 with
@@ -166,7 +168,7 @@ with
             | Load_Script_Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6"
             | Load_Script_Framework_Legacy(_) -> "[obsolete]"
 
-            | Load_Script_Type(_) -> "language to generate scripts for, must be one of 'fsx' or 'csx'"
+            | Load_Script_Type(_) -> "language to generate scripts for; may be repeated"
             | Load_Script_Type_Legacy(_) -> "[obsolete]"
 
 type OutdatedArgs =
@@ -495,8 +497,8 @@ type GenerateLoadScriptsArgs =
     | [<AltCommandLine("-f")>] Framework of framework:string
     | [<Hidden;CustomCommandLine("framework")>] Framework_Legacy of framework:string
 
-    | [<AltCommandLine("-t")>] Type of script_type:string
-    | [<Hidden;CustomCommandLine("type")>] Type_Legacy of script_type:string
+    | [<AltCommandLine("-t")>] Type of LanguageFlags
+    | [<Hidden;CustomCommandLine("type")>] Type_Legacy of LanguageFlags
 with
   interface IArgParserTemplate with
       member this.Usage =
@@ -507,7 +509,7 @@ with
         | Framework(_) -> "framework identifier to generate scripts for, such as net45 or netstandard1.6"
         | Framework_Legacy(_) -> "[obsolete]"
 
-        | Type(_) -> "language to generate scripts for, must be one of 'fsx' or 'csx'"
+        | Type(_) -> "language to generate scripts for; may be repeated"
         | Type_Legacy(_) -> "[obsolete]"
 
 type WhyArgs =
