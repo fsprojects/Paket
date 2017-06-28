@@ -9,6 +9,6 @@ node_modules/.bin/http-server docs/output --silent &
 printf 'Started web server PID %s\n' $!
 
 # Ignore errors to be able to kill the web server.
-node_modules/.bin/blc --exclude-external --get --recursive --filter-level 3 http://localhost:8080 || true
+node_modules/.bin/blc --get --recursive --filter-level 3 http://localhost:8080 || true
 
 [[ -n "$!" ]] && kill -9 $!
