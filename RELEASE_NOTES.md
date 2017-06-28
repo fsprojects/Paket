@@ -1,4 +1,4 @@
-#### 5.2.4 - 28.06.2017
+#### 5.2.5 - 28.06.2017
 * BUGFIX: Don't remove placeholder from file view - https://github.com/fsprojects/Paket/issues/2469
 
 #### 5.2.3 - 27.06.2017
