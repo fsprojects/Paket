@@ -4,7 +4,7 @@ By default packages are only added to the solution directory, but not on any of
 its projects. It's possible to add the package to a specific project:
 
 ```sh
-paket add PACKAGE-ID --project PROJECT
+paket add <package ID> --project <project>
 ```
 
 See also [`paket remove`](paket-remove.html).
@@ -25,7 +25,7 @@ package:
 ```sh
 $ paket add NUnit --version '~> 2.6' --interactive
 Paket version 5.0.0
-Adding NUnit 2.6.4 to ~/Example/paket.dependencies into group Main
+Adding NUnit ~> 2.6 to ~/Example/paket.dependencies into group Main
 Resolving packages for group Main:
  - NUnit 2.6.4
  - FAKE 4.61.3

@@ -4,15 +4,16 @@
 [`paket.references` files](references-files.html), unless
 [`strict` mode](dependencies-file.html#Strict-references) is used.
 
-> Important: `paket simplify` is a heuristic approach to dependency
-> simplification. It often works very well, but there are rare cases where
-> simplify can result in changes of the package resolution.
+**Important:** `paket simplify` is a heuristic approach to dependency
+simplification. It often works very well, but there are rare cases where
+simplify can result in changes of the package resolution.
 
 ## Interactive mode
 
-Sometimes, you may still want to have control over some of the [transitive
-dependencies](faq.html#transitive). In this case you can use the `--interactive`
-flag, which will ask you to confirm before deleting a dependency from a file.
+Sometimes, you may still want to have control over some of the
+[transitive dependencies](faq.html#transitive). In this case you can use the
+`--interactive` flag, which will ask you to confirm before deleting a dependency
+from a file.
 
 ## Notes and Warnings
 
@@ -56,7 +57,7 @@ source https://nuget.org/api/v2
 nuget Bar 1.0.0
 ```
 
-like we expect.  But now, if an install is run, the Foo dependency will be free
+like we expect. But now, if an install is run, the Foo dependency will be free
 to update to the maximum allowed by the `Bar` dependency, which could have
 unforseen consequences if the author of Foo has introduced a breaking change.
 
@@ -73,9 +74,9 @@ generate a following `packages.config` file in the project location:
 </packages>
 ```
 
-After converting to Paket with [`paket
-convert-from-nuget`](paket-convert-from-nuget.html), you should get a following
-paket.dependencies file:
+After converting to Paket with
+[`paket convert-from-nuget`](paket-convert-from-nuget.html), you should get a
+following [`paket.dependencies` file](dependencies-file.html):
 
 ```paket
 source https://nuget.org/api/v2
@@ -96,8 +97,9 @@ As you have already probably guessed, the `Castle.Windsor` package happens to
 have a dependency on the `Castle.Core` package. Paket will by default (without
 [`strict`](dependencies-file.html#Strict-references) mode) add references to all
 required dependencies of a package that you define for a specific project in
-paket.references file. In other words, you still get the same result if you
-remove `Castle.Core` from your [`paket.references` file](references-files.html).
+[`paket.references` file](references-files.html). In other words, you still get
+the same result if you remove `Castle.Core` from your
+[`paket.references` file](references-files.html).
 
 This is exactly what happens after executing `paket simplify` command. After
 running it, [`paket.dependencies`](dependencies-file.html) will contain:
@@ -108,7 +110,7 @@ source https://nuget.org/api/v2
 nuget Castle.Windsor 3.3.0
 ```
 
-And [`paket.references` file](references-files.html). contains:
+And [`paket.references` file](references-files.html) contains:
 
 ```text
 Castle.Windsor

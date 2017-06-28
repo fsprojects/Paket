@@ -199,3 +199,7 @@ tests/Paket.Tests/NuGetConfig/PasswordConfig.xml
 paket.local
 dotnetcore
 .idea
+
+# For check-doc-links.sh.
+node_modules
+package-lock.json

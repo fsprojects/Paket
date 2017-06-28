@@ -15,8 +15,8 @@ One of your projects has a [`paket.references` file][reffile]:
 Castle.Windsor
 ```
 
-When you run `paket install`, your [`paket.lock` file][lockfile] will look like
-this:
+When you run [`paket install`](paket-install.html), your
+[`paket.lock` file][lockfile] will look like this:
 
 ```paket
 NUGET
@@ -32,33 +32,22 @@ project, create a [`paket.template` file][templatefile] with `type project` and
 run:
 
 ```sh
-paket pack --output nugets --version 1.0.0
+paket pack nugets --version 1.0.0
 ```
 
-You could aslo run:
+You could also run:
 
 ```sh
-paket pack --output nugets --version 1.0.0 --lock-dependencies
+paket pack nugets --version 1.0.0 --lock-dependencies
 ```
 
 Depending on which command you issue, Paket creates different version
 requirements of the packages you depend on in the resulting `.nuspec` file of
 your package:
 
-<table>
-  <thead>
-    <th>Dependency</th>
-    <th>Default</th>
-    <th>With locked dependencies</th>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Castle.Windsor</td>
-      <td><code>[3.2,4.0)</code></td>
-      <td><code>[3.3.0]</code></td>
-    </tr>
-  </tbody>
-</table>
+| Dependency       | Default     | With locked dependencies |
+| :--------------- | :---------- | :----------------------- |
+| `Castle.Windsor` | `[3.2,4.0)` | `[3.3.0]`                |
 
 The first command (without the `--lock-dependencies` parameter) creates the
 version requirements as specified in your [`paket.dependencies` file][depfile].
@@ -77,7 +66,7 @@ symbol/source packages, in addition to the regular packages, using the `symbols`
 parameter:
 
 ```sh
-paket pack --output nugets --symbols
+paket pack nugets --symbols
 ```
 
 ### Including referenced projects
@@ -90,7 +79,7 @@ project output to the package for inter-project dependencies that don't have a
 
 1. It recursively iterates referenced projects and adds their project output to
    the package
-1. When combined with the [symbols switch](paket-pack.html#Symbol-Packages), it
+1. When combined with the [symbols switch](#Symbol-Packages), it
    will also include the source code of the referenced projects.  Also
    recursively.
 1. Any projects that are encountered in this search that have their own project
@@ -112,8 +101,12 @@ localized satellite assemblies are included in the package created.
 The following layout is used:
 
 ```text
-lib/net45/Foo.dll
-         /se/Foo.resources.dll
+.
+└── lib
+    └── net45
+        ├── se
+        │   └── Foo.resources.dll
+        └── Foo.dll
 ```
 
   [lockfile]: lock-file.html

@@ -3,36 +3,36 @@
 ### URL credentials
 
 ```sh
-paket config add-credentials SOURCE-URL
+paket config add-credentials <source URL>
 ```
 
 Paket will then ask you for the username and password that will be used for the
-specified `SOURCE-URL`.
+specified `<source URL>`.
 
 The credentials you enter here will then be used for `source`s in the
-[`paket.dependencies` file](nuget-dependencies.html) that match `SOURCE-URL`
+[`paket.dependencies` file](nuget-dependencies.html) that match `<source URL>`
 unless they carry a username and password.
 
 ### GitHub credentials
 
 ```sh
-paket config add-credentials CREDENTIAL-KEY
+paket config add-credentials <credential key>
 ```
 
 Paket will then ask you for the username and password that will be used for the
-specified `CREDENTIAL-KEY`.
+specified `<credential key>`.
 
 The credentials you enter here will then be used to access any GitHub files from
 the [`paket.dependencies` file](github-dependencies.html) that carry the
-specified `CREDENTIAL-KEY`.
+specified `<credential key>`.
 
 ```sh
-paket config add-token CREDENTIAL-KEY TOKEN
+paket config addtoken <credential key> <token>
 ```
 
-The `TOKEN` you enter here will then be used to access any GitHub files from the
-[`paket.dependencies` file](github-dependencies.html) that carry the
-specified `CREDENTIAL-KEY`.
+The `<token>` you enter here will then be used to access any GitHub files from
+the [`paket.dependencies` file](github-dependencies.html) that carry the
+specified `<credential key>`.
 
 The configuration file can be found at:
 

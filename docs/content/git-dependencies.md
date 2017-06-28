@@ -18,7 +18,7 @@ git git@github.com:fsharp/FAKE.git
 ```
 
 This will clone the repository, checkout the latest version of the default
-branch and put it into your `paket-files` folder.
+branch and put it into your `paket-files` directory.
 
 If you want to restrict Paket to a special branch, tag or a concrete commit then
 this is also possible:
@@ -26,9 +26,9 @@ this is also possible:
 ```paket
 git https://github.com/fsprojects/Paket.git master
 git https://github.com/forki/AskMe.git 97ee5ae7074bdb414a3e5dd7d2f2d752547d0542
-git https://github.com/forki/AskMe.git 97ee5ae7074b // short hash
-git https://github.com/forki/FsUnit.git 1.0         // tag
-git file:///C:\Users\Steffen\AskMe master           // local git repo
+git https://github.com/forki/AskMe.git 97ee5ae7074b // Short hash.
+git https://github.com/forki/FsUnit.git 1.0         // Tag.
+git file:///C:\Users\Steffen\AskMe master           // Local git repository.
 ```
 
 ### Referencing Git tags
@@ -37,12 +37,12 @@ Paket allows you to specify version ranges for Git tags similar to
 [NuGet version ranges](nuget-dependencies.html#Version-constraints):
 
 ```paket
-git https://github.com/fsprojects/Paket.git >= 1.0 // at least 1.0
-git http://github.com/forki/AskMe.git < 3.0        // lower than version 3.0
+git https://github.com/fsprojects/Paket.git >= 1.0 // At least 1.0
+git http://github.com/forki/AskMe.git < 3.0        // :ower than version 3.0
 git http://github.com/forki/AskMe.git ~> 2.0       // 2.0 <= x < 3.0
-git https://github.com/forki/FsUnit.git 1.0        // exactly 1.0
-git file:///C:\Users\Steffen\AskMe >= 1 alpha      // at least 1.0 including alpha versions
-git file:///C:\Users\Steffen\AskMe >= 1 prerelease // at least 1.0 including prereleases
+git https://github.com/forki/FsUnit.git 1.0        // Exactly 1.0
+git file:///C:\Users\Steffen\AskMe >= 1 alpha      // At least 1.0 including alpha versions
+git file:///C:\Users\Steffen\AskMe >= 1 prerelease // At least 1.0 including prereleases
 ```
 
 You can read more about the version range details in the corresponding

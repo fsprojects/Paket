@@ -1,7 +1,7 @@
 # GitHub dependencies
 
 Paket allows you to automatically manage the linking of files from
-[github.com](http://www.github.com) or
+[github.com](https://github.com) or
 [gist.github.com](https://gist.github.com/) into your projects.
 
 If you have Git installed then Paket also allows you to
@@ -9,7 +9,7 @@ If you have Git installed then Paket also allows you to
 
 ## Referencing a single file
 
-You can reference a single file from [github.com](http://www.github.com) simply
+You can reference a single file from [github.com](https://github.com) simply
 by specifying the source repository and the file name in the
 [`paket.dependencies` file](dependencies-file.html):
 
@@ -33,8 +33,8 @@ perform a [`paket update` command](paket-update.html) at a time of your
 choosing.
 
 By default the `master` branch is used to determine the commit to reference, you
-can specify the desired branch or commit in the [`paket.dependencies`
-file](dependencies-file.html):
+can specify the desired branch or commit in the
+[`paket.dependencies` file](dependencies-file.html):
 
 ```paket
 github fsharp/fsfoundation:gh-pages img/logo/fsharp.svg
@@ -72,7 +72,7 @@ File: FsUnit.fs .
 
 ## Referencing a GitHub repository
 
-You can also reference a complete [github.com](http://www.github.com) repository
+You can also reference a complete [github.com](http://github.com) repository
 by specifying the repository id in the [`paket.dependencies`
 file](dependencies-file.html):
 
@@ -148,7 +148,7 @@ github fsharp/private src/myprivate/file.fs githubAuthKey
 ## Using a GitHub authentication key from environment variable
 
 Paket will use a GitHub token from a enviroment variable
-`PAKET_GITHUB_API_TOKEN`. This will allow you to access private repos and to
+`PAKET_GITHUB_API_TOKEN`. This will allow you to access private repositories and to
 work around the GitHub API limit on public repositories.
 
 ## Gist

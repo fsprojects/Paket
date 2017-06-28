@@ -14,15 +14,16 @@ and order of all dependencies for given package.
 Notes:
 
 * This command only works after packages have been restored. Please run
-  `paket restore` before using `paket generate-load-scripts` or `paket install`
-  if you just changed your `paket.dependencies` file.
+  [`paket restore`](paket-restore.html) before using `paket generate-load-scripts` or
+  [`paket install`](paket-install.html) if you just changed your
+  [`paket.dependencies` file](dependencies-file.html).
 * This command was called `generate-include-scripts` in Paket 3.x and used to
   put files under `paket-files/include-scripts` instead of `.paket/load`.
 
 ## Generate load scripts while installing packages
 
 Alternatively, load scripts can be generated automatically while running the
-`paket install` command.
+[`paket install` command](paket-install.html).
 
 To enable this feature, add the `generate_load_scripts` option to the
 [`paket.dependencies` file](dependencies-file.html)
@@ -44,7 +45,7 @@ source https://nuget.org/api/v2
 nuget FsLab
 ```
 
-Now we run `paket install` to install the package.
+Now we run [`paket install`](paket-install.html) to install the package.
 
 Then we run `paket generate-load-scripts --framework net45` to generate include
 scripts.
