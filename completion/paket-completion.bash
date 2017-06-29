@@ -1,6 +1,88 @@
 _paket()
 {
-  COMPREPLY=('Paket completion is not implemented')
+  COMPREPLY=()
+
+  local current="${COMP_WORDS[COMP_CWORD]}"
+  local previous="${COMP_WORDS[COMP_CWORD-1]}"
+
+  local -a line=(${COMP_WORDS[@]})
+  # Remove paket.exe
+  unset line[0]
+
+  local -a commands=(
+    add
+    auto-restore
+    clear-cache
+    config
+    convert-from-nuget
+    find-package-versions
+    find-packages
+    find-refs
+    generate-load-scripts
+    init
+    install
+    outdated
+    pack
+    push
+    remove
+    restore
+    show-groups
+    show-installed-packages
+    simplify
+    update
+    why
+  )
+  local -a opts=(
+    --help
+    --log-file
+    --silent
+    --verbose
+    --version
+  )
+
+  if [[ "$COMP_CWORD" == '1' ]]; then
+    if [[ "$current" == -* ]] ; then
+      COMPREPLY=( $(compgen -W "$(printf '%s ' "${opts[@]}")" -- "$current") )
+      return 0
+    fi
+
+    COMPREPLY=( $(compgen -W "$(printf '%s ' "${commands[@]}")" -- "$current") )
+    return 0
+  fi
+
+  case "${line[@]}" in
+    (--log-file*)
+      # Complete file name.
+      COMPREPLY=( $(compgen -f "$current") )
+      return 0
+      ;;
+
+    (add*)
+      opts+=(
+        --clean-redirects
+        --create-new-binding-files
+        --force
+        --group
+        --interactive
+        --keep-major
+        --keep-minor
+        --keep-patch
+        --no-install
+        --project
+        --redirects
+        --touch-affected-refs
+        --version
+      )
+
+      COMPREPLY=( $(compgen -W "$(printf '%s ' "${opts[@]}")" -- "$current") )
+      return 0
+      ;;
+
+    *)
+      ;;
+  esac
+
+  return 1
 }
 
 paket-completion-update()
