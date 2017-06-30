@@ -206,15 +206,6 @@ module DependenciesFileParser =
     | PackageSource of PackageSource
     | Cache of Cache
 
-    let private removeComment (text:string) =
-        let stripComment pos =
-            let ln = text.Substring(0,pos).Trim() in printfn "%s" ln; ln
-        match text.IndexOf "//", text.IndexOf "#" with
-        | -1 , -1 -> text
-        | -1, p | p , -1 -> stripComment p
-        | p1, p2 -> stripComment (min p1 p2) 
-            
-
     let private (|Remote|_|) (line:string) =
         match line.Trim()  with
         | String.RemovePrefix "source" _ as trimmed -> 

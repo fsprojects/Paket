@@ -38,7 +38,8 @@ type ReferencesFile =
     static member FromLines(lines : string[]) = 
         let groupedLines =
             lines
-            |> Array.fold (fun state line -> 
+            |> Seq.map removeComment
+            |> Seq.fold (fun state line -> 
                 match state with
                 | [] -> failwithf "error while parsing %A" lines
                 | ((name,lines) as currentGroup)::otherGroups ->
