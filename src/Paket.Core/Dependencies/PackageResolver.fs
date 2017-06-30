@@ -83,7 +83,7 @@ module DependencySetFilter =
         dependencies
         // exists any not matching stuff
         |> Seq.exists (fun (name, requirement, restriction) ->
-            if name = package.Name && not (requirement.IsInRange package.Version) then
+            if name = package.Name && not (requirement.IsInRange (package.Version, true)) then
                 tracefn "   Incompatible dependency: %O %O conflicts with resolved version %O" name requirement package.Version
                 true
             else false
