@@ -101,7 +101,7 @@ module internal NupkgWriter =
             g
 
 
-        let buildDependencyNodes (excludedDependencies, add, dependencyList: (Paket.Domain.PackageName * VersionRequirement) list)  =
+        let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
             dependencyList
             |> List.filter (fun (a, _) -> Set.contains a excludedDependencies |> not)
             |> List.map  (fun (a, b) -> a, b)
