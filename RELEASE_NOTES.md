@@ -1,13 +1,8 @@
-#### 5.2.5 - 28.06.2017
+#### 5.3.0 - 30.06.2017
+* BUGFIX: Ignoring pre-release status when deps file requested prerelease - https://github.com/fsprojects/Paket/pull/2474 
 * BUGFIX: Don't remove placeholder from file view - https://github.com/fsprojects/Paket/issues/2469
-
-#### 5.2.3 - 27.06.2017
 * BUGFIX: Automatic restore in VS should also work with bootstraper
-
-#### 5.2.2 - 27.06.2017
 * BUGFIX: Do not add old myget sources during NuGet convert
-
-#### 5.2.1 - 25.06.2017
 * BUGFIX: Increase download timeout - https://github.com/fsprojects/Paket/pull/2456
 
 #### 5.2.0 - 25.06.2017
