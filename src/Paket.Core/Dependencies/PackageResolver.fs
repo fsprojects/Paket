@@ -79,11 +79,12 @@ module DependencySetFilter =
             dependencies
             |> Set.filter (isIncluded restrictions)
 
-    let isPackageCompatible (dependencies:DependencySet) (package:ResolvedPackage) : bool =
+    let isPackageCompatible specialPrereleaseSettings (dependencies:DependencySet) (package:ResolvedPackage) : bool =
+        let prereleaseStatus = specialPrereleaseSettings |> Set.contains package.Name
         dependencies
-        // exists any not matching stuff
+        // exists any non-matching stuff
         |> Seq.exists (fun (name, requirement, restriction) ->
-            if name = package.Name && not (requirement.IsInRange (package.Version, true)) then
+            if name = package.Name && not (requirement.IsInRange (package.Version, prereleaseStatus)) then
                 tracefn "   Incompatible dependency: %O %O conflicts with resolved version %O" name requirement package.Version
                 true
             else false
@@ -806,6 +807,17 @@ let RequestTimeout = 180000
 let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
 
+    let specialPrereleaseSettings =
+        rootDependencies
+        |> Seq.choose (fun r ->
+            match r.Parent with
+            | PackageRequirementSource.DependenciesFile _ ->
+                match r.VersionRequirement.PreReleases with
+                | PreReleaseStatus.No -> None
+                | _ -> Some(r.Name)
+            | _ -> None)
+        |> Set.ofSeq
+
     use d = Profile.startCategory Profile.Category.ResolverAlgorithm
     use cts = new CancellationTokenSource()
     let workerQueue = ResolverRequestQueue.Create()
@@ -1085,8 +1097,6 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                         }
                 step (Outer((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags 
             else
-                
-
                 let flags = { flags with FirstTrial = false }
                 let (version,sources) & versionToExplore = Seq.head currentConflict.VersionsToExplore
 
@@ -1129,6 +1139,8 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                             tracefn "     %O %O was unlisted" exploredPackage.Name exploredPackage.Version
                         step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags 
                     else
+
+
                         // It might be that this version is already not possible because of our current set.
                         // Example: We took A with version 1.0.0 (in our current resolution), but this version depends on A > 1.0.0
                         let canTakePackage =
@@ -1137,7 +1149,8 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                             |> Seq.map snd
                             // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
                             |> Seq.filter (fun resolved -> lockedPackages.Contains resolved.Name |> not)
-                            |> Seq.forall (DependencySetFilter.isPackageCompatible exploredPackage.Dependencies)
+                            |> Seq.forall (DependencySetFilter.isPackageCompatible specialPrereleaseSettings exploredPackage.Dependencies)
+
                         if canTakePackage then
                             let nextStep =
                                 {   Relax              = currentStep.Relax

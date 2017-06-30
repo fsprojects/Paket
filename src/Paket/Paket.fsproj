@@ -42,8 +42,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>pack output NuGet include-referenced-projects -v</StartArguments>
-    <StartWorkingDirectory>C:\temp\PaketPackRepro</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>D:\temp\pre</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>
