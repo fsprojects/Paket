@@ -101,27 +101,26 @@ module internal NupkgWriter =
             g
 
 
-        let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
+        let buildDependencyNodes (excludedDependencies, add, dependencyList: (Paket.Domain.PackageName * VersionRequirement) list)  =
             dependencyList
-            |> List.filter (fun (a, _, _) -> Set.contains a excludedDependencies |> not)
-            |> List.map  (fun (a,b,_) -> a,b)
+            |> List.filter (fun (a, _) -> Set.contains a excludedDependencies |> not)
+            |> List.map  (fun (a, b) -> a, b)
             |> List.iter (buildDependencyNode >> add)
 
-        let buildDependencyNodesByGroup excludedDependencies add dependencyList framework  =
-            let node = buildGroupNode(framework, add)
-            buildDependencyNodes(excludedDependencies, node.Add, dependencyList)
+        let buildDependencyNodesByGroup excludedDependencies add dependencyGroup  =
+            let node = buildGroupNode(dependencyGroup.Framework.Value, add)
+            buildDependencyNodes(excludedDependencies, node.Add, dependencyGroup.Dependencies)
 
-        let buildDependenciesNode excludedDependencies dependencyList =
-            if List.isEmpty dependencyList then () else
+        let buildDependenciesNode excludedDependencies dependencyGroups =
+            if List.isEmpty dependencyGroups then () else
             let d = XElement(ns + "dependencies")
-            let groups = List.groupBy thirdOf3 dependencyList
-            match groups.Length, fst groups.Head with
+            match dependencyGroups.Length, dependencyGroups.Head.Framework with
             | (1, None) ->
-                buildDependencyNodes(excludedDependencies, d.Add, dependencyList)
+                buildDependencyNodes(excludedDependencies, d.Add, dependencyGroups.Head.Dependencies)
             | _ -> 
-                groups 
-                |> List.iter (fun  a -> buildDependencyNodesByGroup excludedDependencies d.Add (snd a) (fst a).Value)
-            metadataNode.Add d           
+                dependencyGroups 
+                |> List.iter (fun g -> buildDependencyNodesByGroup excludedDependencies d.Add g)
+            metadataNode.Add d
 
         let buildReferenceNode (fileName) =
             let dep = XElement(ns + "reference")
@@ -157,7 +156,7 @@ module internal NupkgWriter =
 
         optional.References |> buildReferencesNode
         optional.FrameworkAssemblyReferences |> buildFrameworkReferencesNode
-        optional.Dependencies |> buildDependenciesNode optional.ExcludedDependencies
+        optional.DependencyGroups |> buildDependenciesNode optional.ExcludedDependencies
         XDocument(declaration, box root)
 
     let corePropsPath = sprintf "package/services/metadata/core-properties/%s.psmdcp" corePropsId
@@ -390,14 +389,14 @@ module NuspecExtensions =
                         references.Groups |> Seq.collect (fun kvp -> 
                         kvp.Value.NugetPackages |> List.choose (fun pkg -> 
                             dependencies.TryGetPackage(kvp.Key,pkg.Name)
-                            |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement, None)))
+                            |> Option.map (fun verreq -> pkg.Name,verreq.VersionRequirement)))
                         |> List.ofSeq
                     ) |> Option.defaultValue []
                 let projectInfo, optionalInfo = project.GetTemplateMetadata ()
 
                 let optionalInfo = 
                     { optionalInfo with
-                        Dependencies = packages @ optionalInfo.Dependencies
+                        DependencyGroups = [ OptionalDependencyGroup.For None packages ]
                     }
                 let name = Path.GetFileNameWithoutExtension project.Name
                 // TODO - this might be the point to add in some info from the

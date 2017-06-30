@@ -107,18 +107,34 @@ let (|Valid|Invalid|) md =
                 Symbols = s }
     | _ -> Invalid
 
+let addDependencyToFrameworkGroup framework dependencyGroups dependency =
+    dependencyGroups
+    |> List.tryFind (fun g -> g.Framework = framework)
+    |> function
+    | None -> { Dependencies = [dependency]; Framework = framework } :: dependencyGroups
+    | _ ->
+        dependencyGroups
+        |> List.map (fun g ->
+            if g.Framework <> framework then g
+            else { g with Dependencies = dependency :: g.Dependencies })
 
-
-let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement * FrameworkIdentifier option) = 
+let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement) =
     match templateFile with
     | CompleteTemplate(core, opt) -> 
-        let packageName = dependency |> (fun (n,_,_) -> n)
-        let newDeps = 
-            match opt.Dependencies |> List.tryFind (fun (n,_,_) -> n = packageName) with
-            | None -> dependency :: opt.Dependencies
-            | _ -> opt.Dependencies
+        let packageName = dependency |> (fun (n,_) -> n)
+        let newDeps =
+            opt.DependencyGroups
+            |> List.tryFind (fun g ->
+                g.Dependencies
+                |> List.tryFind (fun (n, _) -> n = packageName)
+                |> Option.isSome)
+            |> function
+            | Some _ -> opt.DependencyGroups
+            | None -> dependency |> addDependencyToFrameworkGroup None opt.DependencyGroups
+
+
         { FileName = templateFile.FileName
-          Contents = CompleteInfo(core, { opt with Dependencies = newDeps }) }
+          Contents = CompleteInfo(core, { opt with DependencyGroups = newDeps }) }
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try to add dependencies to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
@@ -256,7 +272,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                    match core.Version with
                    | Some v -> 
                        let versionConstraint = if lockDependencies || pinProjectReferences then Specific v else Minimum v
-                       PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v), None
+                       PackageName core.Id, VersionRequirement(versionConstraint, getPreReleaseStatus v)
                    | None -> failwithf "There was no version given for %s." templateFile.FileName
                | IncompleteTemplate -> 
                    failwithf "You cannot create a dependency on a template file (%s) with incomplete metadata." templateFile.FileName)
@@ -360,7 +376,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                 | None ->
                     match version with
                     | Some v -> 
-                        np.Name,VersionRequirement.Parse (v.ToString()) , None
+                        np.Name,VersionRequirement.Parse (v.ToString())
                     | None -> 
                         if minimumFromLockFile then
                             let groupName =
@@ -371,7 +387,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                 |> Option.map fst
 
                             match groupName with
-                            | None -> np.Name,specificVersionRequirement, None
+                            | None -> np.Name,specificVersionRequirement
                             | Some groupName -> 
                                 let group = lockFile.GetGroup groupName
 
@@ -380,9 +396,9 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                                     | Some resolvedPackage -> VersionRequirement(GreaterThan resolvedPackage.Version, getPreReleaseStatus resolvedPackage.Version)
                                     | None -> specificVersionRequirement
 
-                                np.Name,lockedVersion, None
+                                np.Name,lockedVersion
                         else
-                            np.Name,specificVersionRequirement, None
+                            np.Name,specificVersionRequirement
                 | Some groupName ->
                     let dependencyVersionRequirement =
                         if not lockDependencies then
@@ -441,7 +457,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         | Some installed -> installed
                         | None -> failwithf "No package with id '%O' installed in group %O." np.Name groupName
                      
-                    np.Name, dep, None)
+                    np.Name, dep)
 
         deps
         |> List.fold addDependency withDepsAndIncluded

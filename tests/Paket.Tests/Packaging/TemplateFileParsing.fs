@@ -202,7 +202,9 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.RequireLicenseAcceptance |> shouldEqual false
     sut.DevelopmentDependency |> shouldEqual false
     sut.Language |> shouldEqual (Some "en-gb")
-    sut.Dependencies |> shouldContain (PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]"), None)
+    sut.DependencyGroups |> shouldContain ({ Framework = None; Dependencies =
+        [PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]")
+         PackageName "My.OtherThing",VersionRequirement.AllReleases] })
     sut.ExcludedDependencies |> shouldContain (PackageName "Newtonsoft.Json")
     sut.ExcludedDependencies |> shouldContain (PackageName "Chessie")
     sut.ExcludedGroups |> shouldContain (GroupName "build")
@@ -229,8 +231,10 @@ let ``Detect dependencies correctly`` fileContent =
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
-    match sut.Dependencies with
-    | [name1,range1,framework1;name2,range2,framework2] ->
+    
+    sut.DependencyGroups.Length |> shouldEqual 1
+    match sut.DependencyGroups.Head.Dependencies with
+    | [name1,range1;name2,range2] ->
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "My.OtherThing")
@@ -247,12 +251,13 @@ description
     on two lines.
 version
     1.0
-dependencies 
+dependencies
+    framework: net461
     framework: net45
         FSharp.Core 4.3.1
         My.OtherThing
     framework: netstandard11
-        FSharp.Core 4.3.1    
+        FSharp.Core 4.3.1
 """
 
     let sut =
@@ -261,17 +266,28 @@ dependencies
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
-    match sut.Dependencies with
-    | [name1,range1,framework1;name2,range2,framework2;name3,range3,framework3] ->
-        name1 |> shouldEqual (PackageName "FSharp.Core")
-        range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
-        framework1 |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)))
-        name2 |> shouldEqual (PackageName "My.OtherThing")
-        range2.Range |> shouldEqual (Minimum (SemVer.Parse "0"))
-        framework2 |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)))
-        name3 |> shouldEqual (PackageName "FSharp.Core")
-        range3.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
-        framework3 |> shouldEqual (Some(FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_1)))
+    
+    sut.DependencyGroups |> List.length |> shouldEqual 3
+    match sut.DependencyGroups with
+    | [ g1; g2; g3 ] ->
+        g1.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_6_1)))
+        g1.Dependencies |> List.length |> shouldEqual 0
+
+        g2.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)))
+        match g2.Dependencies with
+        | [ name1, range1; name2, range2 ] ->
+            name1 |> shouldEqual (PackageName "FSharp.Core")
+            range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
+            name2 |> shouldEqual (PackageName "My.OtherThing")
+            range2.Range |> shouldEqual (Minimum (SemVer.Parse "0"))
+        | _ -> Assert.Fail()
+
+        g3.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_1)))
+        match g3.Dependencies with
+        | [name, range] ->
+            name |> shouldEqual (PackageName "FSharp.Core")
+            range.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))            
+        | _ -> Assert.Fail()
     | _ -> Assert.Fail()
 
 
@@ -296,8 +312,8 @@ dependencies
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
-    match sut.Dependencies with
-    | [name1,range1,_;name2,range2,_] ->
+    match sut.DependencyGroups.Head.Dependencies with
+    | [name1,range1;name2,range2] ->
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "My.OtherThing")
@@ -332,8 +348,8 @@ dependencies
 
     version |> shouldEqual (Some specificVersion)
 
-    match sut.Dependencies with
-    | [name1,range1,_;name2,range2,_;name3,range3,_] ->
+    match sut.DependencyGroups.Head.Dependencies with
+    | [name1,range1;name2,range2;name3,range3] ->
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "Project.A")
@@ -403,8 +419,8 @@ GITHUB
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
-    match sut.Dependencies with
-    | [name1,range1,_;name2,range2,_] ->
+    match sut.DependencyGroups.Head.Dependencies with
+    | [name1,range1;name2,range2] ->
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "My.OtherThing")

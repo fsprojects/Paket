@@ -58,9 +58,13 @@ let ``should serialize dependencies``() =
     let optional = 
         { OptionalPackagingInfo.Epmty with 
             Tags = [ "f#"; "rules" ]
-            Dependencies = 
-                [ PackageName "Paket.Core", VersionRequirement.Parse "[3.1]", None
-                  PackageName "xUnit", VersionRequirement.Parse "2.0", None ] }
+            DependencyGroups =
+                [
+                   { Framework = None
+                     Dependencies =
+                        [ PackageName "Paket.Core", VersionRequirement.Parse "[3.1]"
+                          PackageName "xUnit", VersionRequirement.Parse "2.0" ] }
+                ] }
     
     let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString() 
@@ -96,9 +100,13 @@ let ``#913 should serialize dependencies by group``() =
     let optional = 
         { OptionalPackagingInfo.Epmty with 
             Tags = [ "f#"; "rules" ]
-            Dependencies = 
-                [ PackageName "Paket.Core", VersionRequirement.Parse "[3.1]", Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
-                  PackageName "xUnit", VersionRequirement.Parse "2.0", Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5)) ] }
+            DependencyGroups =
+              [
+                { Framework = Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
+                  Dependencies =
+                    [ PackageName "Paket.Core", VersionRequirement.Parse "[3.1]"
+                      PackageName "xUnit", VersionRequirement.Parse "2.0" ] }
+              ] }
     
     let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString() 
@@ -137,11 +145,61 @@ let ``#913 should serialize dependencies by group with 2 group``() =
     let optional = 
         { OptionalPackagingInfo.Epmty with 
             Tags = [ "f#"; "rules" ]
-            Dependencies = 
-                [ PackageName "Paket.Core", VersionRequirement.Parse "[3.1]", Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
-                  PackageName "xUnit", VersionRequirement.Parse "2.0", Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
-                  PackageName "Paket.Core", VersionRequirement.Parse "[3.1]", Some(FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_3))
-                  PackageName "xUnit", VersionRequirement.Parse "2.0", Some(FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_3)) ] }
+            DependencyGroups =
+              [
+                { Framework = Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V3_5))
+                  Dependencies =
+                    [ PackageName "Paket.Core", VersionRequirement.Parse "[3.1]"
+                      PackageName "xUnit", VersionRequirement.Parse "2.0" ] }
+                { Framework = Some(FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_3))
+                  Dependencies =
+                    [ PackageName "Paket.Core", VersionRequirement.Parse "[3.1]"
+                      PackageName "xUnit", VersionRequirement.Parse "2.0" ] }
+              ] }
+    
+    let doc = NupkgWriter.nuspecDoc (core, optional)
+    doc.ToString() 
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings result)
+
+[<Test>]
+let ``should serialize dependencies by group with empty group``() = 
+    let result = """<package xmlns="http://schemas.microsoft.com/packaging/2011/10/nuspec.xsd">
+  <metadata>
+    <id>Paket.Tests</id>
+    <version>1.0.0.0</version>
+    <authors>Two, Authors</authors>
+    <description>A description</description>
+    <tags>f# rules</tags>
+    <dependencies>
+      <group targetFramework="net461" />
+      <group targetFramework="netstandard1.3">
+        <dependency id="Paket.Core" version="[3.1.0]" />
+        <dependency id="xUnit" version="2.0.0" />
+      </group>
+    </dependencies>
+  </metadata>
+</package>"""
+
+    let core : CompleteCoreInfo =
+        { Id = "Paket.Tests"
+          Version = SemVer.Parse "1.0.0.0" |> Some
+          Authors = [ "Two"; "Authors" ]
+          Description = "A description"
+          Symbols = false }
+    
+    let optional = 
+        { OptionalPackagingInfo.Epmty with 
+            Tags = [ "f#"; "rules" ]
+            DependencyGroups =
+              [
+                { Framework = Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_6_1))
+                  Dependencies = [] }
+                { Framework = Some(FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_3))
+                  Dependencies =
+                    [ PackageName "Paket.Core", VersionRequirement.Parse "[3.1]"
+                      PackageName "xUnit", VersionRequirement.Parse "2.0" ] }
+              ] }
     
     let doc = NupkgWriter.nuspecDoc (core, optional)
     doc.ToString() 
