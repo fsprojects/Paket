@@ -128,6 +128,13 @@ type ProjectCoreInfo =
             Description = defaultArg self.Description String.Empty
             Symbols = self.Symbols}
 
+type OptionalDependencyGroup =
+    {  Framework : FrameworkIdentifier option
+       Dependencies : (PackageName * VersionRequirement) list }
+
+    static member ForNone = { Framework = None; Dependencies = [] }
+    static member ForFramework framework = { Framework = framework; Dependencies = [] }
+    static member For framework dependencies = { Framework = framework; Dependencies = dependencies }
 
 type OptionalPackagingInfo =
     { Title : string option
@@ -142,7 +149,7 @@ type OptionalPackagingInfo =
       RequireLicenseAcceptance : bool
       Tags : string list
       DevelopmentDependency : bool
-      Dependencies : (PackageName * VersionRequirement * FrameworkIdentifier option) list
+      DependencyGroups : OptionalDependencyGroup list
       ExcludedDependencies : Set<PackageName>
       ExcludedGroups : Set<GroupName>
       References : string list
@@ -166,7 +173,7 @@ type OptionalPackagingInfo =
           RequireLicenseAcceptance = false
           Tags = []
           DevelopmentDependency = false
-          Dependencies = []
+          DependencyGroups = []
           ExcludedDependencies = Set.empty
           ExcludedGroups = Set.empty
           References = []
@@ -272,15 +279,9 @@ module internal TemplateFile =
         | _ when String.IsNullOrWhiteSpace line -> Some (Empty line)
         | String.RemovePrefix "//" _ -> Some (Empty line)
         | String.RemovePrefix "#" _ -> Some (Empty line)
-        | _ -> None    
-    type TargetFrameworkGroup = 
-        {
-            Framework : FrameworkIdentifier option
-            Dependencies : (PackageName * VersionRequirement * FrameworkIdentifier option) List}
-        static member ForNone = { Framework = None ; Dependencies = [] }
-        static member ForFramework framework = { Framework = framework ; Dependencies = [] }
+        | _ -> None
    
-    let private getDependencyByLine (fileName, lockFile:LockFile,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>, line:string, framework:FrameworkIdentifier option)=      
+    let private getDependencyByLine (fileName, lockFile:LockFile,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>, line:string, framework:FrameworkIdentifier option) =
         let reg = Regex(@"(?<id>\S+)(?<version>.*)").Match line
         let name = PackageName reg.Groups.["id"].Value
         let versionRequirement =
@@ -311,32 +312,37 @@ module internal TemplateFile =
                 else s
                                 
             DependenciesFileParser.parseVersionRequirement versionString
-        name, versionRequirement, framework
+        name, versionRequirement
 
-    let private getDependenciesByTargetFramework fileName lockFile currentVersion  specificVersions  (lineNo, state: TargetFrameworkGroup list) line=
+    let private getDependenciesByTargetFramework fileName lockFile currentVersion  specificVersions (lineNo, state: OptionalDependencyGroup list) line =
+        let lineNo = lineNo + 1
         match state with
         | current::other ->
-            let lineNo = lineNo + 1
             match line with
             | Framework framework ->
-                let group = TargetFrameworkGroup.ForFramework framework::current::other
-                lineNo, group
-            | Empty  _ -> lineNo, current::other  
+                let groups = OptionalDependencyGroup.ForFramework framework::current::other
+                lineNo, groups
+            | Empty  _ -> lineNo, current::other
             | _ -> 
                 let dependency = getDependencyByLine(fileName, lockFile, currentVersion, specificVersions, line, current.Framework)
-                lineNo ,{ current with Dependencies = current.Dependencies  @ [dependency] }::other
-        | [] -> failwithf "Error in paket.dependencies line %d" lineNo     
+                lineNo, { current with Dependencies = current.Dependencies @ [dependency] }::other
+        | [] ->
+            match line with
+            | Framework framework -> lineNo, [OptionalDependencyGroup.ForFramework framework]
+            | Empty  _ -> lineNo, []
+            | _ ->
+                let dependency = getDependencyByLine(fileName, lockFile, currentVersion, specificVersions, line, None)
+                lineNo, [{ Framework = None; Dependencies = [dependency] }]
+            
    
-    let private getDependencies (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>) =
+    let private getDependencyGroups (fileName, lockFile:LockFile, info : Map<string, string>,currentVersion:SemVerInfo option, specificVersions:Map<string, SemVerInfo>) =
         match Map.tryFind "dependencies" info with
         | None -> []
         | Some d ->
             d.Split '\n'
-            |> Array.fold (getDependenciesByTargetFramework fileName  lockFile  currentVersion  specificVersions) (0, [TargetFrameworkGroup.ForNone])
+            |> Array.fold (getDependenciesByTargetFramework fileName lockFile currentVersion specificVersions) (0, [])
             |> snd
             |> List.rev
-            |> List.collect (fun a -> a.Dependencies)
-        
 
     let private getExcludedDependencies (info : Map<string, string>) =
         match Map.tryFind "excludeddependencies" info with
@@ -424,7 +430,7 @@ module internal TemplateFile =
             | Some x when String.equalsIgnoreCase x "true" -> true
             | _ -> false
 
-        let dependencies = getDependencies(fileName,lockFile,map,currentVersion,specificVersions)
+        let dependencyGroups = getDependencyGroups(fileName,lockFile,map,currentVersion,specificVersions)
 
         let excludedDependencies = map |> getExcludedDependencies
         let excludedGroups = map |> getExcludedGroups
@@ -451,7 +457,7 @@ module internal TemplateFile =
           RequireLicenseAcceptance = requireLicenseAcceptance
           Tags = tags
           DevelopmentDependency = developmentDependency
-          Dependencies = dependencies
+          DependencyGroups = dependencyGroups
           ExcludedDependencies = Set.ofList excludedDependencies
           ExcludedGroups = Set.ofList excludedGroups
           References = getReferences map

@@ -1893,7 +1893,7 @@ type ProjectFile with
             RequireLicenseAcceptance = propMap "RequireLicenseAcceptance" false tryBool
             Tags = propMap "Tags" [] splitString
             DevelopmentDependency = propMap "DevelopmentDependency" false tryBool
-            Dependencies = [] //propOr "Dependencies" []
+            DependencyGroups = []
             ExcludedDependencies = Set.empty //propOr "ExcludedDependencies" 
             ExcludedGroups = Set.empty // propOr "ExcludedGroups" Set.empty
             References = [] //propOr "References" []
