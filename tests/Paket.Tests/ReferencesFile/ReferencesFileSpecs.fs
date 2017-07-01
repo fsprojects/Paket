@@ -459,3 +459,36 @@ File:countdown.js Scripts link: false"""
 let ``should parse and serialize reffiles with aliases``() = 
     let refFile = ReferencesFile.FromLines(toLines refFileWithAliases).ToString()
     normalizeLineEndings refFile |> shouldEqual (normalizeLineEndings refFileWithAliases)
+
+
+let refFileWithComments = """
+# separate-line comment with hash
+Castle.Windsor # same-line comment with hash
+// separate-line comment with slashes
+Newtonsoft.Json // same-line comment with slashes
+
+// multiline
+// comment
+// here
+//    throw in some leading spaces
+# and a hash
+FSharp.Core //
+
+File: Some//File#With#Hashes.dot #and a comment after
+File: AnotherFile.txt //pluscomment
+
+// Some empty comments:
+#
+//
+# and another comment at the very end
+"""
+
+[<Test>]
+let ``should parse and serialize reffiles with comments``() = 
+    let refFile = ReferencesFile.FromLines(toLines refFileWithComments).Groups.[Constants.MainDependencyGroup]
+
+    [for p in refFile.NugetPackages -> p.Name.Name]
+        |> shouldEqual ["Castle.Windsor"; "Newtonsoft.Json"; "FSharp.Core"]
+
+    [for f in refFile.RemoteFiles -> f.Name]
+        |> shouldEqual ["Some//File#With#Hashes.dot"; "AnotherFile.txt"]

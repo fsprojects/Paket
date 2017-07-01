@@ -900,6 +900,15 @@ let removeFile (fileName : string) =
 let normalizeLineEndings (text : string) = 
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
 
+let removeComment (text:string) =
+    let stripComment pos =
+        if pos = 0 || text.[pos-1] = ' ' then text.Substring(0,pos).Trim()
+        else text
+    match text.IndexOf "//", text.IndexOf "#" with
+    | -1 , -1 -> text
+    | -1, p | p , -1 -> stripComment p
+    | p1, p2 -> stripComment (min p1 p2) 
+
 // adapted from MiniRx
 // http://minirx.codeplex.com/
 [<AutoOpen>]
