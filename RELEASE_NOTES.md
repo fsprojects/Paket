@@ -1,3 +1,6 @@
+#### 5.3.1 - 01.07.2017
+* BUGFIX: find-package-versions doesn't require paket.dependencies to be present as long as a source is explicitly specified - https://github.com/fsprojects/Paket/pull/2478
+
 #### 5.3.0 - 30.06.2017
 * BUGFIX: Ignoring pre-release status when deps file requested prerelease - https://github.com/fsprojects/Paket/pull/2474 
 * BUGFIX: Don't remove placeholder from file view - https://github.com/fsprojects/Paket/issues/2469
