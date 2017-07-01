@@ -252,6 +252,7 @@ description
 version
     1.0
 dependencies
+    xunit 2.0.0
     framework: net461
     framework: net45
         FSharp.Core 4.3.1
@@ -267,14 +268,21 @@ dependencies
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
     
-    sut.DependencyGroups |> List.length |> shouldEqual 3
+    sut.DependencyGroups |> List.length |> shouldEqual 4
     match sut.DependencyGroups with
-    | [ g1; g2; g3 ] ->
-        g1.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_6_1)))
-        g1.Dependencies |> List.length |> shouldEqual 0
+    | [ g1; g2; g3; g4 ] ->
+        g1.Framework |> shouldEqual None
+        match g1.Dependencies with
+        | [ name, range ] ->
+            name |> shouldEqual (PackageName "xunit")
+            range.Range |> shouldEqual (Specific (SemVer.Parse "2.0.0"))
+        | _ -> Assert.Fail()
 
-        g2.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)))
-        match g2.Dependencies with
+        g2.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_6_1)))
+        g2.Dependencies |> List.length |> shouldEqual 0
+
+        g3.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)))
+        match g3.Dependencies with
         | [ name1, range1; name2, range2 ] ->
             name1 |> shouldEqual (PackageName "FSharp.Core")
             range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
@@ -282,8 +290,8 @@ dependencies
             range2.Range |> shouldEqual (Minimum (SemVer.Parse "0"))
         | _ -> Assert.Fail()
 
-        g3.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_1)))
-        match g3.Dependencies with
+        g4.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_1)))
+        match g4.Dependencies with
         | [name, range] ->
             name |> shouldEqual (PackageName "FSharp.Core")
             range.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))            

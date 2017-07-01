@@ -94,9 +94,11 @@ module internal NupkgWriter =
                 dep.SetAttributeValue(XName.Get "version", version)
             dep
 
-        let buildGroupNode (framework:FrameworkIdentifier, add) = 
+        let buildGroupNode (framework:FrameworkIdentifier option, add) = 
             let g = XElement(ns + "group")
-            g.SetAttributeValue(XName.Get "targetFramework", framework.ToString())
+            match framework with
+            | Some f -> g.SetAttributeValue(XName.Get "targetFramework", f.ToString())
+            | _ -> ()
             add g
             g
 
@@ -108,7 +110,7 @@ module internal NupkgWriter =
             |> List.iter (buildDependencyNode >> add)
 
         let buildDependencyNodesByGroup excludedDependencies add dependencyGroup  =
-            let node = buildGroupNode(dependencyGroup.Framework.Value, add)
+            let node = buildGroupNode(dependencyGroup.Framework, add)
             buildDependencyNodes(excludedDependencies, node.Add, dependencyGroup.Dependencies)
 
         let buildDependenciesNode excludedDependencies dependencyGroups =
