@@ -370,17 +370,29 @@ let showGroups (results : ParseResults<ShowGroupsArgs>) =
 
 let findPackageVersions (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackageVersionsArgs.MaxResults @>) 10000
-    let dependencies = Dependencies.Locate()
+    let dependencies = Dependencies.TryLocate()
     let name =
         match results.TryGetResult <@ FindPackageVersionsArgs.NuGet @> with
         | Some name -> name
         | None -> results.GetResult <@ FindPackageVersionsArgs.Name @>
-    let sources  =
-        match results.TryGetResult <@ FindPackageVersionsArgs.Source @> with
-        | Some source -> [PackageSource.NuGetV2Source source]
-        | _ -> dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat
+    let sources =
+        match results.TryGetResult <@ FindPackageVersionsArgs.Source @>, dependencies with
+        | Some source, _ -> 
+            [PackageSource.NuGetV2Source source]
+        | _, Some dependencies -> 
+            dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat
+        | _ -> 
+            failwithf "Could not find '%s' at or above current directory, and no explicit source was given as parameter (e.g. 'paket.exe find-package-versions source https://www.nuget.org/api/v2')."
+                Constants.DependenciesFileName
+    let root = 
+        match dependencies with
+        | Some d -> 
+            d.RootPath
+        | None -> 
+            traceWarnfn "Could not find '%s' at or above current directory. Using current directory as project root." Constants.DependenciesFileName
+            Directory.GetCurrentDirectory()
 
-    for p in dependencies.FindPackageVersions(sources,name,maxResults) do
+    for p in Dependencies.FindPackageVersions(root,sources,name,maxResults) do
         tracefn "%s" p
 
 let push (results : ParseResults<_>) =

@@ -31,8 +31,11 @@ type Dependencies(dependenciesFileName: string) =
         emptyDir (Constants.NuGetCacheFolder)
         emptyDir (Constants.GitRepoCacheFolder)
 
-    /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
+    /// Tries to locate the paket.dependencies file in the current folder or a parent folder, throws an exception if unsuccessful.
     static member Locate(): Dependencies = Dependencies.Locate(Directory.GetCurrentDirectory())
+    
+    /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
+    static member TryLocate(): Dependencies option = Dependencies.TryLocate(Directory.GetCurrentDirectory())
 
     /// Returns an instance of the paket.lock file.
     member this.GetLockFile() = 
@@ -42,27 +45,28 @@ type Dependencies(dependenciesFileName: string) =
     /// Returns an instance of the paket.dependencies file.
     member this.GetDependenciesFile() = DependenciesFile.ReadFromFile dependenciesFileName
 
-    /// Tries to locate the paket.dependencies file in the given folder or a parent folder.
+    /// Tries to locate the paket.dependencies file in the given folder or a parent folder, throws an exception if unsuccessful.
     static member Locate(path: string): Dependencies =
-        let rec findInPath(dir:DirectoryInfo,withError) =
-            let path = Path.Combine(dir.FullName,Constants.DependenciesFileName)
-            if File.Exists(path) then
-                path
-            else
-                let parent = dir.Parent
-                match parent with
-                | null ->
-                    if withError then
-                        failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.%sIf you have already run 'paket.init' then ensure that '%s' is located in the top level directory of your repository.%sLike this:%sMySourceDir%s  .paket%s  paket.dependencies" 
-                          Constants.DependenciesFileName Environment.NewLine Constants.DependenciesFileName Environment.NewLine Environment.NewLine Environment.NewLine Environment.NewLine
-                    else
-                        Constants.DependenciesFileName
-                | _ -> findInPath(parent, withError)
+        match Dependencies.TryLocate path with
+        | None ->
+            failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.%sIf you have already run 'paket.init' then ensure that '%s' is located in the top level directory of your repository.%sLike this:%sMySourceDir%s  .paket%s  paket.dependencies" 
+                Constants.DependenciesFileName Environment.NewLine Constants.DependenciesFileName Environment.NewLine Environment.NewLine Environment.NewLine Environment.NewLine
+        | Some d ->
+            d
 
-        let dependenciesFileName = findInPath(DirectoryInfo path,true)
-        if verbose then
-            verbosefn "found: %s" dependenciesFileName
-        Dependencies(dependenciesFileName)
+    /// Tries to locate the paket.dependencies file in the given folder or a parent folder.
+    static member TryLocate(path: string): Dependencies option =
+        let rec findInPath(dir:DirectoryInfo) =
+            let path = Path.Combine(dir.FullName,Constants.DependenciesFileName)
+            match File.Exists path, dir.Parent with
+            | true, _ -> Some path
+            | false, null -> None
+            | false, parent -> findInPath parent
+
+        findInPath (DirectoryInfo path) 
+        |> Option.map (fun dependenciesFileName -> 
+            if verbose then verbosefn "found: %s" dependenciesFileName
+            Dependencies(dependenciesFileName))
 
     /// Initialize paket.dependencies file in current directory
     static member Init() = Dependencies.Init(Directory.GetCurrentDirectory())
