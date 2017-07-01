@@ -1,4 +1,5 @@
-#### 5.3.1 - 01.07.2017
+#### 5.4.0 - 01.07.2017
+* Allow comments in the references file - https://github.com/fsprojects/Paket/pull/2477
 * BUGFIX: find-package-versions doesn't require paket.dependencies to be present as long as a source is explicitly specified - https://github.com/fsprojects/Paket/pull/2478
 
 #### 5.3.0 - 30.06.2017
