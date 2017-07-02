@@ -901,13 +901,15 @@ let normalizeLineEndings (text : string) =
     text.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine)
 
 let removeComment (text:string) =
-    let stripComment pos =
-        if pos = 0 || text.[pos-1] = ' ' then text.Substring(0,pos).Trim()
-        else text
-    match text.IndexOf "//", text.IndexOf "#" with
-    | -1 , -1 -> text
-    | -1, p | p , -1 -> stripComment p
-    | p1, p2 -> stripComment (min p1 p2) 
+    let rec stripComment pos =
+        if pos = 0 || (Char.IsWhiteSpace text.[pos-1]) then text.Substring(0,pos).Trim()
+        else remove (pos+1)
+    and remove (startAt: int) =
+        match text.IndexOf( "//", startAt ), text.IndexOf( "#", startAt ) with
+        | -1 , -1 -> text
+        | -1, p | p , -1 -> stripComment p
+        | p1, p2 -> stripComment (min p1 p2) 
+    remove 0
 
 // adapted from MiniRx
 // http://minirx.codeplex.com/

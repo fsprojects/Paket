@@ -465,7 +465,7 @@ let refFileWithComments = """
 # separate-line comment with hash
 Castle.Windsor # same-line comment with hash
 // separate-line comment with slashes
-Newtonsoft.Json // same-line comment with slashes
+Newtonsoft.Json\t// same-line comment with slashes
 
 // multiline
 // comment
@@ -474,7 +474,7 @@ Newtonsoft.Json // same-line comment with slashes
 # and a hash
 FSharp.Core //
 
-File: Some//File#With#Hashes.dot #and a comment after
+File: Some//File#With#Hashes.dot\t#and a comment after
 File: AnotherFile.txt //pluscomment
 
 // Some empty comments:
@@ -485,7 +485,8 @@ File: AnotherFile.txt //pluscomment
 
 [<Test>]
 let ``should parse and serialize reffiles with comments``() = 
-    let refFile = ReferencesFile.FromLines(toLines refFileWithComments).Groups.[Constants.MainDependencyGroup]
+    let file = refFileWithComments.Replace( "\\t", "\t" )
+    let refFile = ReferencesFile.FromLines(toLines file).Groups.[Constants.MainDependencyGroup]
 
     [for p in refFile.NugetPackages -> p.Name.Name]
         |> shouldEqual ["Castle.Windsor"; "Newtonsoft.Json"; "FSharp.Core"]
