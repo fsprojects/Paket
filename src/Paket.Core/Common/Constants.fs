@@ -69,10 +69,9 @@ let getEnvDir specialPath =
 
 let AppDataFolder =
     getEnvDir Environment.SpecialFolder.ApplicationData 
-    |> Option.defaultValue (
+    |> Option.defaultWith (fun _ ->
         let fallback = Path.GetFullPath ".paket"
-        if Logging.verbose then
-            Logging.tracefn "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead." fallback
+        Logging.traceWarnfn "Could not find AppDataFolder, try to set the APPDATA environment variable. Using '%s' instead." fallback
         fallback)
 
 let PaketConfigFolder   = Path.Combine(AppDataFolder, "Paket")
@@ -81,10 +80,9 @@ let PaketConfigFile     = Path.Combine(PaketConfigFolder, "paket.config")
 let LocalRootForTempData =
     getEnvDir Environment.SpecialFolder.UserProfile 
     |> Option.orElse (getEnvDir Environment.SpecialFolder.LocalApplicationData)
-    |> Option.defaultValue (
+    |> Option.defaultWith (fun _ ->
         let fallback = Path.GetFullPath ".paket"
-        if Logging.verbose then
-            Logging.tracefn "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead." fallback
+        Logging.traceWarnfn "Could not detect a root for our (user specific) temporary files. Try to set the 'HOME' or 'LocalAppData' environment variable!. Using '%s' instead." fallback
         fallback
     )
 
@@ -96,7 +94,7 @@ let UserNuGetPackagesFolder =
     getEnVar GlobalPackagesFolderEnvironmentKey 
     |> Option.map (fun path ->
         path.Replace (Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar)
-    ) |> Option.defaultValue(
+    ) |> Option.defaultWith (fun _ ->
         Path.Combine (LocalRootForTempData,".nuget","packages")
     )
 
@@ -117,9 +115,8 @@ let NuGetCacheFolder =
             if not di.Exists then
                 di.Create ()
             Some di.FullName
-    ))|> Option.defaultValue (
+    ))|> Option.defaultWith (fun _ ->
         let fallback = Path.GetFullPath ".paket"
-        if Logging.verbose then
-            Logging.tracefn "Could not find LocalApplicationData folder, try to set the 'LocalAppData' environment variable. Using '%s' instead" fallback
+        Logging.traceWarnfn "Could not find LocalApplicationData folder, try to set the 'LocalAppData' environment variable. Using '%s' instead" fallback
         fallback
     )
