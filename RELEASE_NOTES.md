@@ -1,3 +1,7 @@
+#### 5.4.1 - 03.07.2017
+* BUGFIX: Allow any whitespace to precede a comment, not only space in the references file - https://github.com/fsprojects/Paket/pull/2479
+* BUGFIX: Doesn't always print the 'warning' message - https://github.com/fsprojects/Paket/pull/2463
+
 #### 5.4.0 - 01.07.2017
 * Allow comments in the references file - https://github.com/fsprojects/Paket/pull/2477
 * BUGFIX: Allowed empty framework conditionals in paket.template - https://github.com/fsprojects/Paket/pull/2476
