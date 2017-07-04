@@ -195,9 +195,9 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                 with 
                 | :? System.IO.IOException as exn ->
                     if verbose then
-                        traceWarnfn "Source '%O' exception: %O" source exn
+                        traceWarnfn "I/O error for source '%O': %O" source exn
                     else
-                        traceWarnfn "Source '%O' exception: %s" source exn.Message
+                        traceWarnfn "I/O error for source '%O': %s" source exn.Message
                     return EmptyResult 
                 | e ->
                     traceWarnfn "Source '%O' exception: %O" source e
