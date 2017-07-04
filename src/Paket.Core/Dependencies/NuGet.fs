@@ -194,6 +194,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                         return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
                 with 
                 | :? System.IO.IOException as exn ->
+                    // Handling IO exception here for less noise in output: https://github.com/fsprojects/Paket/issues/2480
                     if verbose then
                         traceWarnfn "I/O error for source '%O': %O" source exn
                     else
