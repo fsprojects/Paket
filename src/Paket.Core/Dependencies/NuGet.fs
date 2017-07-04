@@ -192,11 +192,15 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
 
                     | LocalNuGet(path,hasCache) ->
                         return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
-                with e ->
+                with 
+                | :? System.IO.IOException as exn ->
                     if verbose then
-                      traceWarnfn "Source '%O' exception: %O" source e
+                        traceWarnfn "Source '%O' exception: %O" source exn
                     else
-                      traceWarnfn "Source '%O' exception: %s" source e.Message
+                        traceWarnfn "Source '%O' exception: %s" source exn.Message
+                    return EmptyResult 
+                | e ->
+                    traceWarnfn "Source '%O' exception: %O" source e
                     //let capture = ExceptionDispatchInfo.Capture e
                     return EmptyResult })
             |> trySelectFirst
