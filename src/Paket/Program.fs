@@ -302,10 +302,16 @@ let pack (results : ParseResults<_>) =
 let findPackages silent (results : ParseResults<_>) =
     let maxResults = defaultArg (results.TryGetResult <@ FindPackagesArgs.MaxResults @>) 10000
     let sources  =
-        match results.TryGetResult <@ FindPackagesArgs.Source @> with
-        | Some source -> [PackageSource.NuGetV2Source source]
-        | _ -> PackageSources.DefaultNuGetSource ::
-                (Dependencies.Locate().GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)
+        let dependencies = Dependencies.TryLocate()
+
+        match results.TryGetResult <@ FindPackagesArgs.Source @>, dependencies with
+        | Some source, _ ->
+            [PackageSource.NuGetV2Source source]
+        | _, Some dependencies ->
+            dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat
+        | _ ->
+            failwithf "Could not find '%s' at or above current directory, and no explicit source was given as parameter (e.g. 'paket.exe find-packages source https://www.nuget.org/api/v2')."
+                Constants.DependenciesFileName
 
     let searchAndPrint searchText =
         for p in Dependencies.FindPackagesByName(sources,searchText,maxResults) do
