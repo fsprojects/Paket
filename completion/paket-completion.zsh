@@ -1,4 +1,4 @@
-#compdef paket.exe
+#compdef paket=paket.exe paket.exe
 
 # Zsh completion script for Paket (https://github.com/fsprojects/Paket/).
 #
@@ -87,6 +87,25 @@
 #
 # You can configure some aspects of Paket completion. Add these to your
 # ~/.zshrc.
+#
+# Define where to look for paket.exe
+#
+#   Depending on what should be completed the Paket executable will be run by
+#   the completion script. The completion script searches for a local
+#   installation at ./.paket/paket.exe first. Local installs will be prepended
+#   with mono unless you are running Windows. Global installations will be
+#   looked at last (i.e. paket in the $PATH). They are not prepended with
+#   mono.
+#
+#   To override the list of possible locations for local installations of
+#   paket.exe, define the following `paket-executable` style. The list of values
+#   will be searched as defined.
+#
+#     # This is the default.
+#     zstyle ':completion::complete:paket:*' paket-executable './.paket/paket.exe'
+#     # Useful for Paket developers: Prefer the locally built version in bin over the one in .paket.
+#     zstyle ':completion::complete:paket:*' paket-executable './bin/paket.exe' './.paket/paket.exe'
+#
 #
 # Enable infix matching for package IDs
 #
@@ -1350,10 +1369,9 @@ _paket_command_successful () {
 (( $+functions[_paket_executable] )) ||
 _paket_executable() {
   local -a locations
-  locations=(
-    ./.paket/$service
-    ./$service
-  )
+  if ! zstyle -a ":completion:$curcontext:" paket-executable locations; then
+    locations=(./.paket/$service)
+  fi
 
   if [[ $OS != Windows* ]]; then
     local mono=mono
@@ -1363,6 +1381,10 @@ _paket_executable() {
   for location in $locations; do
     [[ -f "$location" ]] && printf '%s %s' "$mono" "$location" && return
   done
+
+  if (($+commands[paket])); then
+    printf '%s' "$commands[paket]" && return
+  fi
 
   return 1
 }
