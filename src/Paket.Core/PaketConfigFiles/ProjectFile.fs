@@ -993,6 +993,10 @@ module ProjectFile =
     let getTargetFrameworkIdentifier (project:ProjectFile) = getProperty "TargetFrameworkIdentifier" project
 
     let getTargetFrameworkProfile (project:ProjectFile) = getProperty "TargetFrameworkProfile" project
+    let getTargetFrameworkVersion (project:ProjectFile) = getProperty "TargetFrameworkVersion" project
+    let getTargetFramework (project:ProjectFile) = getProperty "TargetFramework" project
+    let getTargetFrameworks (project:ProjectFile) = getProperty "TargetFrameworks" project
+
 
     let getTargetProfile (project:ProjectFile) =
         let fallback () =
@@ -1000,12 +1004,15 @@ module ProjectFile =
                 match getTargetFrameworkIdentifier project with
                 | None -> "net"
                 | Some x -> x
-            let framework = getProperty "TargetFrameworkVersion" project
+            let framework = 
+                match getTargetFrameworkVersion project with
+                | None -> getTargetFramework project
+                | Some x -> Some(prefix + x.Replace("v",""))
             let defaultResult = SinglePlatform (DotNetFramework FrameworkVersion.V4)
             match framework with
             | None -> defaultResult
             | Some s ->
-                match FrameworkDetection.Extract(prefix + s.Replace("v","")) with
+                match FrameworkDetection.Extract(s) with
                 | None -> defaultResult
                 | Some x -> SinglePlatform x
 
@@ -1432,6 +1439,11 @@ module ProjectFile =
         sprintf "%s.%s" assemblyName ending
 
     let getOutputDirectory buildConfiguration buildPlatform (project:ProjectFile) =
+        let targetFramework = 
+            match getTargetFramework project with
+            | Some x -> x
+            | None -> ""
+
         let platforms =
             if not <| String.IsNullOrWhiteSpace buildPlatform then 
                 [buildPlatform]
@@ -1449,12 +1461,14 @@ module ProjectFile =
         let rec tryNextPlat platforms attempted =
             match platforms with
             | [] ->
-                if String.IsNullOrWhiteSpace(buildPlatform) then
+                if String.IsNullOrEmpty(targetFramework) = false then
+                    Path.Combine("bin", buildConfiguration, targetFramework)
+                else if String.IsNullOrWhiteSpace(buildPlatform) then
                     failwithf "Unable to find %s output path node in file %s for any known platforms" buildConfiguration project.FileName
                 else
                     failwithf "Unable to find %s output path node in file %s targeting the %s platform" buildConfiguration project.FileName buildPlatform
             | x::xs ->
-                let startingData = Map.ofList [("Configuration", buildConfiguration); ("Platform", x)]
+                let startingData = Map.ofList [("Configuration", buildConfiguration); ("TargetFramework", targetFramework);("Platform", x)]
                 [getPropertyWithDefaults "OutputPath" startingData project; getPropertyWithDefaults "OutDir" startingData project]
                 |> List.choose id
                 |> function
@@ -1463,7 +1477,7 @@ module ProjectFile =
                         if String.IsNullOrWhiteSpace buildPlatform && attempted <> [] then
                             let tested = String.Join(", ", attempted)
                             traceWarnfn "No platform specified; found output path node for the %s platform after failing to find one for the following: %s" x tested
-                        s.TrimEnd [|'\\'|] |> normalizePath
+                        Path.Combine(s , targetFramework).TrimEnd [|'\\'|] |> normalizePath
 
         tryNextPlat platforms []
 

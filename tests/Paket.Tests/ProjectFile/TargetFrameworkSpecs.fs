@@ -29,6 +29,10 @@ let TestData: obj[][] =
             portable;
             "portable-net45+win8+wp8+wpa81";
             (DotNetFramework FrameworkVersion.V4_5)|];
+        [|"MicrosoftNetSdkWithTargetFramework.csprojtest";
+            (SinglePlatform(DotNetStandard DotNetStandardVersion.V1_4));
+            "netstandard1.4";
+            (DotNetStandard DotNetStandardVersion.V1_4)|];
     |]
     
 [<Test>]

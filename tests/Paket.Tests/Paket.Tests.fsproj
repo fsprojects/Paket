@@ -208,8 +208,8 @@
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="LocalFile\LocalFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
-    <None Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\EmptyFsharpGuid.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -273,6 +273,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\Unity.csprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFramework.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
