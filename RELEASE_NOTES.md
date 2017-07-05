@@ -1,3 +1,6 @@
+#### 5.4.3 - 05.07.2017
+* BUGFIX: Fixed for usage of the new csproj with targetFramework - https://github.com/fsprojects/Paket/pull/2482
+
 #### 5.4.2 - 05.07.2017
 * BUGFIX: Fixed off-by-one error when inserting lines in already-existing .paket folder in sln file - https://github.com/fsprojects/Paket/pull/2484
 
