@@ -1,0 +1,3 @@
+* text=auto
+*.bash text=auto eol=lf
+*.zsh  text=auto eol=lf

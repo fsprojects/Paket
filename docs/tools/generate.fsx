@@ -13,9 +13,9 @@ Paket.Commands.getAllCommands()
     let additionalText = 
         let verboseOption = """
 
-If you add the `-v` flag, then Paket will run in verbose mode and show detailed information.
+If you add the `--verbose` flag Paket will run in verbose mode and show detailed information.
 
-With `--log-file [FileName]` you can trace the logged information into a file.
+With `--log-file [path]` you can trace the logged information into a file.
 
 """
         let optFile = sprintf "../content/commands/%s.md" metadata.Name
@@ -40,7 +40,7 @@ let githubLink = "http://github.com/fsprojects/Paket"
 // Specify more information about your project
 let info =
   [ "project-name", "Paket"
-    "project-author", "Steffen Forkmann, Alexander Gross"
+    "project-author", "Steffen Forkmann, Alexander Groß"
     "project-summary", "A dependency manager for .NET with support for NuGet packages and git repositories."
     "project-github", githubLink
     "project-nuget", "http://nuget.org/packages/Paket" ]
@@ -62,6 +62,7 @@ open FSharp.MetadataFormat
 // Paths with template/source/output locations
 let bin        = __SOURCE_DIRECTORY__ @@ "../../bin"
 let content    = __SOURCE_DIRECTORY__ @@ "../content"
+let completion = __SOURCE_DIRECTORY__ @@ "../../completion"
 let output     = __SOURCE_DIRECTORY__ @@ "../output"
 let files      = __SOURCE_DIRECTORY__ @@ "../files"
 let templates  = __SOURCE_DIRECTORY__ @@ "templates"
@@ -103,7 +104,16 @@ let buildReference () =
 
 // Build documentation from `fsx` and `md` files in `docs/content`
 let buildDocumentation () =
-  let subdirs = Directory.EnumerateDirectories(content, "*", SearchOption.AllDirectories) 
+  !!(completion @@ "*.*.md")
+  |> Seq.iter (fun f ->
+    let target =
+      let name = filename f
+      name.Replace("README", "shell-completion")
+
+    CopyFile (content @@ target) f
+  )
+
+  let subdirs = Directory.EnumerateDirectories(content, "*", SearchOption.AllDirectories)
   for dir in Seq.append [content] subdirs do
     let sub = if dir.Length > content.Length then dir.Substring(content.Length + 1) else "."
     let langSpecificPath(lang, path:string) =

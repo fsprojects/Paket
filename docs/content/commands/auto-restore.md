@@ -1,10 +1,13 @@
-Auto-restore on:
+When enabling auto-restore, Paket will
 
-  - creates a `.paket` directory in your root directory,
-  - downloads `paket.targets` and `paket.bootstrapper.exe` into the `.paket` directory,
-  - adds an `<Import>` statement for `paket.targets` to projects that have the [references file](references-files.html).
-  
-Auto-restore off:
+- create a `.paket` directory in your root directory,
+- download `paket.targets` and [`paket.bootstrapper.exe`](bootstrapper.html)
+  into the `.paket` directory,
+- add an `<Import>` statement for `paket.targets` to projects that have a
+  [`paket.references` file](references-files.html).
 
-  - removes `paket.targets` from the `.paket` directory,
-  - removes the `<Import>` statement for `paket.targets` from projects that have the [references file](references-files.html).
+When disabling auto-restore, Paket will
+
+- remove `paket.targets` from the `.paket` directory,
+- remove the `<Import>` statement for `paket.targets` from projects that have a
+  [`paket.references` file](references-files.html).
