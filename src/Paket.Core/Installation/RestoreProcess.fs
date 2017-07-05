@@ -95,7 +95,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 
                 CopyToCaches force caches nupkg.FullName
 
-                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
+                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, package.IsCliToolPackage(), includeVersionInPath, force, false)
                 return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
         }
 

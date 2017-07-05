@@ -276,9 +276,13 @@ let rec private cleanup (dir : DirectoryInfo) =
 
 
 /// Extracts the given package to the user folder
-let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, detailed) =
+let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version:SemVerInfo, isCliTool, detailed) =
     async {
-        let targetFolder = DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize()))
+        let targetFolder =
+            if isCliTool then
+                DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,".tools",packageName.ToString(),version.Normalize()))
+            else
+                DirectoryInfo(Path.Combine(Constants.UserNuGetPackagesFolder,packageName.ToString(),version.Normalize()))
         
         use _ = Profile.startCategory Profile.Category.FileIO
         if isExtracted targetFolder fileName |> not then
@@ -303,7 +307,7 @@ let ExtractPackageToUserFolder(fileName:string, packageName:PackageName, version
     }
 
 /// Extracts the given package to the ./packages folder
-let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo, detailed) =
+let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, version:SemVerInfo, isCliTool, detailed) =
     async {
         use _ = Profile.startCategory Profile.Category.FileIO
         let directory = DirectoryInfo(targetFolder)
@@ -326,7 +330,7 @@ let ExtractPackage(fileName:string, targetFolder, packageName:PackageName, versi
             cleanup directory
             if verbose then
                 verbosefn "%O %O unzipped to %s" packageName version targetFolder
-        let! _ = ExtractPackageToUserFolder(fileName, packageName, version, detailed)
+        let! _ = ExtractPackageToUserFolder(fileName, packageName, version, isCliTool, detailed)
         return targetFolder
     }
 
@@ -348,7 +352,7 @@ let CopyLicenseFromCache(root, groupName, cacheFileName, packageName:PackageName
     }
 
 /// Extracts the given package to the ./packages folder
-let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) =
+let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:PackageName, version:SemVerInfo, isCliTool, includeVersionInPath, force, detailed) =
     async {
         let targetFolder = DirectoryInfo(getTargetFolder root groupName packageName version includeVersionInPath).FullName
         let fi = FileInfo(cacheFileName)
@@ -361,7 +365,7 @@ let CopyFromCache(root, groupName, cacheFileName, licenseCacheFile, packageName:
             CleanDir targetFolder
             File.Copy(cacheFileName, targetFile.FullName)
         try
-            let! extracted = ExtractPackage(targetFile.FullName,targetFolder,packageName,version,detailed)
+            let! extracted = ExtractPackage(targetFile.FullName,targetFolder,packageName,version,isCliTool,detailed)
             do! CopyLicenseFromCache(root, groupName, licenseCacheFile, packageName, version, includeVersionInPath, force)
             return extracted
         with

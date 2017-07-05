@@ -1,4 +1,4 @@
-#### 5.5.0-alpha002 - 05.07.2017
+#### 5.5.0-alpha003 - 05.07.2017
 * Support for dotnet cli tools - https://github.com/fsprojects/Paket/pull/2486
 * BUGFIX: Show stack trace only in verbose mode - https://github.com/fsprojects/Paket/pull/2481
 * BUGFIX: find-packages doesn't require paket.dependencies to be present - https://github.com/fsprojects/Paket/pull/2483
