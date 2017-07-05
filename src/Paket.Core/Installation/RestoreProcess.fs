@@ -285,7 +285,9 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             createAlternativeNuGetConfig alternativeConfigFileName
             
             for kv in groups do
-                let hull = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+                let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+                cliTools.AddRange cliToolsInGroup
+
                 let depsGroup =
                     match dependenciesFile.Groups |> Map.tryFind kv.Key with
                     | Some group -> group
@@ -319,10 +321,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                             (if direct then "Direct" else "Transitive") + "," +
                             kv.Key.ToString()
                         
-                        if package.IsCliToolPackage() then
-                            cliTools.Add package
-                        else
-                            list.Add line
+                        list.Add line
                 
             let output = String.Join(Environment.NewLine,list)
             if output = "" then
