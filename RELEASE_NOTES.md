@@ -1,3 +1,6 @@
+#### 5.4.2 - 05.07.2017
+* BUGFIX: Fixed off-by-one error when inserting lines in already-existing .paket folder in sln file - https://github.com/fsprojects/Paket/pull/2484
+
 #### 5.4.1 - 03.07.2017
 * BUGFIX: Allow any whitespace to precede a comment, not only space in the references file - https://github.com/fsprojects/Paket/pull/2479
 * BUGFIX: Doesn't always print the 'warning' message - https://github.com/fsprojects/Paket/pull/2463
