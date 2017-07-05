@@ -62,7 +62,7 @@
   * View dependencies and referenced NuGet packages in the Solution window
   * Execute Paket commands from the Solution window
   * Syntax highlighting for all Paket files
-  * Code completion whilst editing the paket.dependencies file
+  * Code completion whilst editing the [`paket.dependencies` file](dependencies-file.html)
   * Integrates with Xamarin Studio's unified search
 
 <a href="img/paket-xamarin-studio.png">

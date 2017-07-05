@@ -443,7 +443,7 @@ type PackArgs =
     | [<Hidden;Unique;CustomCommandLine("lock-dependencies")>] Lock_Dependencies_Legacy
 
     | [<Unique;CustomCommandLine("--minimum-from-lock-file")>] Lock_Dependencies_To_Minimum
-    | [<Unique;CustomCommandLine("minimum-from-lock-file")>] Lock_Dependencies_To_Minimum_Legacy
+    | [<Hidden;Unique;CustomCommandLine("minimum-from-lock-file")>] Lock_Dependencies_To_Minimum_Legacy
 
     | [<Unique>] Pin_Project_References
     | [<Hidden;Unique;CustomCommandLine("pin-project-references")>] Pin_Project_References_Legacy
