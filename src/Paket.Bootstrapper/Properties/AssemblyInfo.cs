@@ -6,7 +6,7 @@ using System.Reflection;
 [assembly: AssemblyDescriptionAttribute("A dependency manager for .NET with support for NuGet packages and git repositories.")]
 [assembly: AssemblyVersionAttribute("5.5.0")]
 [assembly: AssemblyFileVersionAttribute("5.5.0")]
-[assembly: AssemblyInformationalVersionAttribute("5.5.0-alpha002")]
+[assembly: AssemblyInformationalVersionAttribute("5.5.0-alpha003")]
 namespace System {
     internal static class AssemblyVersionInformation {
         internal const System.String AssemblyTitle = "Paket.Bootstrapper";
@@ -14,6 +14,6 @@ namespace System {
         internal const System.String AssemblyDescription = "A dependency manager for .NET with support for NuGet packages and git repositories.";
         internal const System.String AssemblyVersion = "5.5.0";
         internal const System.String AssemblyFileVersion = "5.5.0";
-        internal const System.String AssemblyInformationalVersion = "5.5.0-alpha002";
+        internal const System.String AssemblyInformationalVersion = "5.5.0-alpha003";
     }
 }
