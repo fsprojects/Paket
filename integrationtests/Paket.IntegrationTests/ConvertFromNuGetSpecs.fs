@@ -89,3 +89,16 @@ let ``#1922 should remove references to moved analyzers``() =
     StringAssert.Contains(@"<Analyzer Include=""..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\Newtonsoft.Json.dll"">", projectXml)
     StringAssert.Contains(@"<Analyzer Include=""..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll"">", projectXml)
     StringAssert.Contains(@"<Analyzer Include=""..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\StyleCop.Analyzers.dll"">", projectXml)
+
+[<Test>]
+let ``#2161 should put paket.dependencies inside the .paket folder when it's already present in the sln file``() =
+    let scenario = "i002161-convert-existing-paket-folder"
+    paket "convert-from-nuget" scenario |> ignore
+    
+    let slnLines = File.ReadAllLines(Path.Combine(scenarioTempPath scenario, "2161.sln"))
+    let sectionOpenLine = slnLines |> Array.findIndex (fun line -> line.StartsWith "Project" && line.Contains "\".paket\"")
+    let sectionEndLine = sectionOpenLine + (slnLines |> Seq.skip sectionOpenLine |> Seq.findIndex (fun line -> line.StartsWith "EndProject"))
+    let depsFileLine = slnLines |> Array.findIndex (fun line -> line.Contains "paket.dependencies")
+
+    sectionOpenLine |> shouldBeSmallerThan depsFileLine
+    sectionEndLine |> shouldBeGreaterThan depsFileLine

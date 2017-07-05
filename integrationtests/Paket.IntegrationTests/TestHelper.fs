@@ -36,16 +36,10 @@ let prepare scenario =
     let scenarioPath = scenarioTempPath scenario
     CleanDir scenarioPath
     CopyDir scenarioPath originalScenarioPath (fun _ -> true)
-    Directory.GetFiles(scenarioPath, "*.fsprojtemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "fsproj")))
-    Directory.GetFiles(scenarioPath, "*.csprojtemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "csproj")))
-    Directory.GetFiles(scenarioPath, "*.vcxprojtemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "vcxproj")))
-    Directory.GetFiles(scenarioPath, "*.templatetemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "template")))
-    Directory.GetFiles(scenarioPath, "*.jsontemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "json")))
+
+    for ext in ["fsproj";"csproj";"vcxproj";"template";"json"] do
+        for file in Directory.GetFiles(scenarioPath, (sprintf "*.%stemplate" ext), SearchOption.AllDirectories) do
+            File.Move(file, Path.ChangeExtension(file, ext))
 
 let directPaketInPath command scenarioPath =
     #if INTERACTIVE
