@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>The paket.template files
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -57,43 +58,57 @@
         <div class="span9" id="main">
           
 <h1><a name="The-paket-template-files" class="anchor" href="#The-paket-template-files">The paket.template files</a></h1>
-<p>The <code>paket.template</code> files are used to specify rules to create nupkgs by using the <a href="paket-pack.html"><code>paket pack</code> command</a>.</p>
-<p>The <code>type</code> specifier must be the first line of the template file. It has two possible
-values:</p>
+<p>The <code>paket.template</code> files are used to specify rules to create <code>.nupkg</code>s with
+the <a href="paket-pack.html"><code>paket pack</code> command</a>.</p>
+<p>The <code>type</code> specifier must be the first line of the template file. It has two
+possible values:</p>
 <ul>
-<li>file - All of the information to build the nupkg is contained within the template file</li>
-<li>project - Paket will look for a matching project file, and infer dependencies and metadata from the project</li>
+<li>
+<code>file</code>: All of the information to build the <code>.nupkg</code> is contained within the
+template file
+</li>
+<li>
+<code>project</code>: Paket will look for a matching project file, and infer dependencies
+and metadata from the project
+</li>
 </ul>
-<p>Matching project and template files must be in the same directory. If only one project is in the directory the template file
-can be called <code>paket.template</code>, otherwise the name of the template file must be the name of the project file with ".paket.template" added to the end.</p>
+<p>Matching project and template files must be in the same directory. If only one
+project is in the directory the template file can be called <code>paket.template</code>,
+otherwise the name of the template file must be the name of the project file
+with <code>.paket.template</code> added to the end.</p>
 <p>For example:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">Paket</span><span class="o">.</span><span class="i">Project</span><span class="o">.</span><span class="i">fsproj</span>
-<span class="i">Paket</span><span class="o">.</span><span class="i">Project</span><span class="o">.</span><span class="i">fsproj</span><span class="o">.</span><span class="i">paket</span><span class="o">.</span><span class="i">template</span>
-</code></pre></td>
-</tr>
-</table>
+<td class="snippet"><pre class="fssnip"><code lang="text">Paket.Project.fsproj
+Paket.Project.fsproj.paket.template
+</code></pre></td></tr></table>
 <p>are matching files.</p>
-<h3><a name="Sample-1" class="anchor" href="#Sample-1">Sample 1</a></h3>
+<h2><a name="Examples" class="anchor" href="#Examples">Examples</a></h2>
+<h3><a name="Example-1" class="anchor" href="#Example-1">Example 1</a></h3>
 <p>A <code>paket.template</code> file using <code>type project</code> may look like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span class="i">project</span>
-<span class="i">licenseUrl</span> <span class="i">http</span><span class="o">:</span><span class="c">//opensource.org/licenses/MIT</span>
-</code></pre></td>
-</tr>
-</table>
-<p>This template file will create a nupkg:
-- Named <code>Test.Paket.Package.[Version].nupkg</code>
-- Version, Author and Description from assembly attributes
-- Containing <code>$(OutDir)\$(ProjectName).*</code> (all files matching project name in the output directory) directory in the <code>lib</code> directory of the package.
-- Referencing all packages referenced by the project.
-- Package references
-- Project references, for projects in the sln that has <code>paket.template</code> files.</p>
-<h3><a name="Sample-2" class="anchor" href="#Sample-2">Sample 2</a></h3>
+<td class="snippet"><pre class="fssnip"><code lang="text">type project
+licenseUrl http://opensource.org/licenses/MIT
+</code></pre></td></tr></table>
+<p>This template file will be used to create a <code>.nupkg</code></p>
+<ul>
+<li>named <code>Test.Paket.Package.[Version].nupkg</code>,</li>
+<li>with <code>Version</code>, <code>Author</code> and <code>Description</code> from assembly attributes,</li>
+<li>
+containing <code>$(OutDir)\$(ProjectName).*</code> (all files matching project name in
+the output directory) directory in the <code>lib</code> directory of the package.
+</li>
+<li>referencing all packages referenced by the project,</li>
+<li>including package references,</li>
+<li>
+including project references for projects in the solution that have a
+<code>paket.template</code> file.
+</li>
+</ul>
+<h3><a name="Example-2" class="anchor" href="#Example-2">Example 2</a></h3>
 <p>A <code>paket.template</code> file using <code>type file</code> may look like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -104,23 +119,23 @@ can be called <code>paket.template</code>, otherwise the name of the template fi
 <span class="l">7: </span>
 <span class="l">8: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">type</span> <span class="i">file</span>
-<span class="i">id</span> <span class="i">Test</span><span class="o">.</span><span class="i">Paket</span><span class="o">.</span><span class="i">Package</span>
-<span class="i">version</span> <span class="n">1.0</span>
-<span class="i">authors</span> <span class="i">Michael</span> <span class="i">Newton</span>
-<span class="i">description</span>
-    <span class="i">description</span> <span class="k">of</span> <span class="i">this</span> <span class="i">test</span> <span class="i">package</span>
-<span class="i">files</span>
-    <span class="i">src</span><span class="o">/</span><span class="i">Test</span><span class="o">.</span><span class="i">Paket</span><span class="o">.</span><span class="i">Package</span><span class="o">/</span><span class="i">bin</span><span class="o">/</span><span class="i">Debug</span> <span class="o">==&gt;</span> <span class="i">lib</span>
-</code></pre></td>
-</tr>
-</table>
-<p>This template file will create a nupkg called <code>Test.Paket.Package.[Version].nupkg</code> with the
-contents of the <code>src/Test.Paket.Package/bin/Debug</code> directory in the <code>lib</code> directory
-of the package file.</p>
-<h3><a name="General-Metadata" class="anchor" href="#General-Metadata">General Metadata</a></h3>
-<p>Metadata fields can be specified in two ways; either on a single line prefixed with the property
-name (case insensitive), or in an indented block following a line containing nothing but the property name.</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">type file
+id Test.Paket.Package
+version 1.0
+authors Michael Newton
+description
+  description of this test package
+files
+  src/Test.Paket.Package/bin/Debug ==&gt; lib
+</code></pre></td></tr></table>
+<p>This template file will create a <code>.nupkg</code> called
+<code>Test.Paket.Package.&lt;version&gt;.nupkg</code> with the contents of the
+<code>src/Test.Paket.Package/bin/Debug</code> directory in the <code>lib</code> directory of the
+package file.</p>
+<h2><a name="General-metadata" class="anchor" href="#General-metadata">General metadata</a></h2>
+<p>Metadata fields can be specified in two ways; either on a single line prefixed
+with the property name (case insensitive), or in an indented block following a
+line containing nothing but the property name.</p>
 <p>For example:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -131,59 +146,63 @@ name (case insensitive), or in an indented block following a line containing not
 <span class="l">7: </span>
 <span class="l">8: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">description</span> <span class="i">This</span> <span class="i">is</span> <span class="i">a</span> <span class="i">valid</span> <span class="i">description</span>
+<td class="snippet"><pre class="fssnip"><code lang="text">description This is a valid description
 
-<span class="i">DESCRIPTION</span>
-  <span class="i">So</span> <span class="i">is</span> <span class="i">this</span>
-  <span class="i">description</span> <span class="i">here</span>
+DESCRIPTION
+  So is this
+  description here
 
-<span class="i">description</span> <span class="i">This</span> <span class="i">would</span>
-  <span class="i">cause</span> <span class="i">an</span> <span class="i">error</span>
-</code></pre></td>
-</tr>
-</table>
-<p>There are 4 compulsory fields required to create a nupkg. These can always be specified in the
-template file, or in a project based template can be omitted and an attempt will be made to infer
-them as below:</p>
+description This would
+  cause an error
+</code></pre></td></tr></table>
+<p>There are 4 compulsory fields required to create a <code>.nupkg</code>. These can always be
+specified in the template file, or in a project based template can be omitted
+and an attempt will be made to infer them as below:</p>
 <ul>
 <li>
-id - the Id of the resulting nupkg (which also determines the output filename). If omitted in a
-project template, reflection will be used to determine the assembly name.
+<code>id</code>: The package ID of the resulting <code>.nupkg</code> (which also determines the
+output filename). If omitted in a project template, reflection will be used to
+determine the assembly name.
 </li>
 <li>
-version - the version of the resulting nupkg. If omitted in a project template, reflection will
-be used to obtain the value of the <code>AssemblyInformationalVersionAttribute</code> or if that is missing
-the <code>AssemblyVersionAttribute</code>.
+<code>version</code>: The version of the resulting <code>.nupkg</code>. If omitted in a project
+template, reflection will be used to obtain the value of the
+<code>AssemblyInformationalVersionAttribute</code> or if that is missing the
+<code>AssemblyVersionAttribute</code>.
 </li>
 <li>
-authors - a comma separated list of authors for the nuget package. Inferred as the value of the
-<code>AssemblyCompanyAttribute</code> if omitted in a project template.
+<code>authors</code>: A comma separated list of authors for the <code>.nupkg</code>. Inferred as the
+value of the <code>AssemblyCompanyAttribute</code> if omitted in a project template.
 </li>
 <li>
-description - this will be displayed as the nupkg description. Inferred from the <code>AssemblyDescriptionAttribute</code>
-if unspecified.
+<code>description</code>: This will be displayed as the <code>.nupkg</code> description. Inferred
+from the <code>AssemblyDescriptionAttribute</code> if unspecified.
 </li>
 </ul>
-<p>The other general metadata properties are all optional, and map directly to the field of the same
-name in the nupkg.</p>
+<p>The other general metadata properties are all optional, and map directly to the
+field of the same name in the <code>.nupkg</code>.</p>
 <ul>
-<li>title (Inferred as the value of the <code>AssemblyTitleAttribute</code> if omitted in a project template)</li>
-<li>owners</li>
-<li>releaseNotes</li>
-<li>summary</li>
-<li>language</li>
-<li>projectUrl</li>
-<li>iconUrl</li>
-<li>licenseUrl</li>
-<li>copyright</li>
-<li>requireLicenseAcceptance (boolean)</li>
-<li>tags</li>
-<li>developmentDependency (boolean)</li>
+<li>
+<code>title</code>: Inferred as the value of the <code>AssemblyTitleAttribute</code> if omitted in a
+project template.
+</li>
+<li><code>owners</code></li>
+<li><code>releaseNotes</code></li>
+<li><code>summary</code></li>
+<li><code>language</code></li>
+<li><code>projectUrl</code></li>
+<li><code>iconUrl</code></li>
+<li><code>licenseUrl</code></li>
+<li><code>copyright</code></li>
+<li><code>requireLicenseAcceptance</code> (<code>true</code> or <code>false</code>)</li>
+<li><code>tags</code></li>
+<li><code>developmentDependency</code> (<code>true</code> or <code>false</code>)</li>
 </ul>
-<h3><a name="Dependencies-and-Files" class="anchor" href="#Dependencies-and-Files">Dependencies and Files</a></h3>
-<p>The dependencies the package relies on, and the files to package are specified in a slightly different format.
-These two fields will be ignored in project templates if specified, and instead the rules below will be used
-to decide on the files and dependencies added.</p>
+<h3><a name="Dependencies-and-files" class="anchor" href="#Dependencies-and-files">Dependencies and files</a></h3>
+<p>The dependencies the package relies on, and the files to package are specified
+in a slightly different format. These two fields will be ignored in project
+templates if specified, and instead the rules below will be used to decide on
+the files and dependencies added.</p>
 <h4><a name="Files" class="anchor" href="#Files">Files</a></h4>
 <p>A files block looks like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -191,16 +210,15 @@ to decide on the files and dependencies added.</p>
 <span class="l">3: </span>
 <span class="l">4: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">files</span>
-    <span class="i">relative</span><span class="o">/</span><span class="k">to</span><span class="o">/</span><span class="i">template</span><span class="o">/</span><span class="i">file</span> <span class="o">==&gt;</span> <span class="i">folder</span><span class="o">/</span><span class="k">in</span><span class="o">/</span><span class="i">nupkg</span>
-    <span class="i">second</span><span class="o">/</span><span class="i">thing</span><span class="o">/</span><span class="k">to</span><span class="o">/</span><span class="i">pack</span> <span class="o">==&gt;</span> <span class="i">folder</span><span class="o">/</span><span class="k">in</span><span class="o">/</span><span class="i">nupkg</span>
-	<span class="i">second</span><span class="o">/</span><span class="i">thing</span><span class="o">/**/</span><span class="i">file</span><span class="o">.</span><span class="o">*</span> <span class="o">==&gt;</span> <span class="i">folder</span><span class="o">/</span><span class="k">in</span><span class="o">/</span><span class="i">nupkg</span>
-</code></pre></td>
-</tr>
-</table>
-<p>If the source part refers to a file then it is copied into the target directory. If it
-refers to a directory, the contents of the directory will be copied into the target folder.
-If you omit the target folder, then the source is copied into the <code>lib</code> folder of the package.</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">files
+  relative/to/template/file ==&gt; directory/in/nupkg
+  second/thing/to/pack ==&gt; directory/in/nupkg
+  second/thing/**/file.* ==&gt; directory/in/nupkg
+</code></pre></td></tr></table>
+<p>If the source part refers to a file then it is copied into the target directory.
+If it refers to a directory, the contents of the directory will be copied into
+the target directory. If you omit the target directory, then the source is copied into
+the <code>lib</code> directory of the package.</p>
 <p>Excluding certain files looks like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -209,55 +227,57 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <span class="l">5: </span>
 <span class="l">6: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">files</span>
-    <span class="i">relative</span><span class="o">/</span><span class="k">to</span><span class="o">/</span><span class="i">template</span><span class="o">/</span><span class="i">file</span> <span class="o">==&gt;</span> <span class="i">folder</span><span class="o">/</span><span class="k">in</span><span class="o">/</span><span class="i">nupkg</span>
-    <span class="i">second</span><span class="o">/</span><span class="i">thing</span><span class="o">/**/</span><span class="i">file</span><span class="o">.</span><span class="o">*</span> <span class="o">==&gt;</span> <span class="i">folder</span><span class="o">/</span><span class="k">in</span><span class="o">/</span><span class="i">nupkg</span>
-    <span class="o">!</span><span class="i">second</span><span class="o">/</span><span class="i">thing</span><span class="o">/**/</span><span class="i">file</span><span class="o">.</span><span class="i">zip</span>
-    <span class="o">.</span><span class="o">./</span><span class="i">outside</span><span class="o">/</span><span class="i">file</span><span class="o">.</span><span class="o">*</span> <span class="o">==&gt;</span> <span class="i">folder</span><span class="o">/</span><span class="k">in</span><span class="o">/</span><span class="i">nupkg</span><span class="o">/</span><span class="i">other</span>
-    <span class="o">!../</span><span class="i">outside</span><span class="o">/</span><span class="i">file</span><span class="o">.</span><span class="i">zip</span>
-</code></pre></td>
-</tr>
-</table>
-<p>The pattern needs to match file-names, excluding directories like <code>!second</code> won't have an effect. Please use <code>!second/*.*</code> instead.</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">files
+  relative/to/template/file ==&gt; directory/in/nupkg
+  second/thing/**/file.* ==&gt; directory/in/nupkg
+  !second/thing/**/file.zip
+  ../outside/file.* ==&gt; directory/in/nupkg/other
+  !../outside/file.zip
+</code></pre></td></tr></table>
+<p>The pattern needs to match file names, excluding directories like <code>!second</code>
+won't have an effect. Please use <code>!second/*.*</code> instead.</p>
 <p>In a project template, the files included will be:</p>
 <ul>
-<li>the output assembly of the matching project (in the correct lib directory if a library, or tools if an exe)</li>
-<li>the output assemblies of any project references which do not have a matching template file</li>
+<li>
+The output assembly of the matching project (in the correct <code>lib</code> directory
+for a library, or <code>tools</code> for an executable).
+</li>
+<li>
+The output assemblies of any project references which do not have a matching
+template file.
+</li>
 </ul>
 <h4><a name="Referenced-projects" class="anchor" href="#Referenced-projects">Referenced projects</a></h4>
-<p>With the include-referenced-projects switch you can tell Paket to pack referenced projects into the package.</p>
+<p>With the <code>include-referenced-projects</code> switch you can tell Paket to pack
+referenced projects into the package.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">include</span><span class="o">-</span><span class="i">referenced</span><span class="o">-</span><span class="i">projects</span> <span class="k">true</span>
-</code></pre></td>
-</tr>
-</table>
+<td class="snippet"><pre class="fssnip"><code lang="text">include-referenced-projects true
+</code></pre></td></tr></table>
 <h4><a name="References" class="anchor" href="#References">References</a></h4>
 <p>A references block looks like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">references</span>
-    <span class="i">filename1</span><span class="o">.</span><span class="i">dll</span>
-    <span class="i">filename2</span><span class="o">.</span><span class="i">dll</span>
-</code></pre></td>
-</tr>
-</table>
-<p>If you omit the references block then all libraries in the packages will get referenced.</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">references
+  filename1.dll
+  filename2.dll
+</code></pre></td></tr></table>
+<p>If you omit the <code>references</code> block then all libraries in the packages will be
+references.</p>
 <h4><a name="Framework-assembly-references" class="anchor" href="#Framework-assembly-references">Framework assembly references</a></h4>
 <p>A block with framework assembly references looks like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">frameworkAssemblies</span>
-    <span class="i">System</span><span class="o">.</span><span class="i">Xml</span>
-	<span class="i">System</span><span class="o">.</span><span class="i">Xml</span><span class="o">.</span><span class="i">Linq</span>
-</code></pre></td>
-</tr>
-</table>
-<p>If you omit the references block then all libraries in the packages will get referenced.</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">frameworkAssemblies
+  System.Xml
+  System.Xml.Linq
+</code></pre></td></tr></table>
+<p>If you omit the <code>frameworkAssemblies</code> block then all libraries in the packages
+will be framework assemblies.</p>
 <h4><a name="Dependencies" class="anchor" href="#Dependencies">Dependencies</a></h4>
 <p>A dependency block looks like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -265,37 +285,34 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <span class="l">3: </span>
 <span class="l">4: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">dependencies</span>
-  <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
-  <span class="i">Other</span><span class="o">.</span><span class="i">Dep</span> <span class="o">~&gt;</span> <span class="n">2.5</span>
-  <span class="i">Any</span><span class="o">.</span><span class="i">Version</span>
-</code></pre></td>
-</tr>
-</table>
-<p>The syntax for specifying allowed dependency ranges are identical to in the ranges in <a href="dependencies-file.html"><code>paket.dependencies</code> files</a>.</p>
-<p>It's possible to use <code>CURRENTVERSION</code> as a placeholder for the current version of the package:</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">dependencies
+  FSharp.Core &gt;= 4.3.1
+  Other.Dep ~&gt; 2.5
+  Any.Version
+</code></pre></td></tr></table>
+<p>The syntax for specifying allowed dependency ranges are identical to in the
+ranges in <a href="dependencies-file.html"><code>paket.dependencies</code> files</a>.</p>
+<p>It's possible to use <code>CURRENTVERSION</code> as a placeholder for the current version
+of the package:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">dependencies</span>
-  <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
-  <span class="i">Other</span><span class="o">.</span><span class="i">Dep</span> <span class="o">~&gt;</span> <span class="i">CURRENTVERSION</span>
-</code></pre></td>
-</tr>
-</table>
-<p>The <code>LOCKEDVERSION</code> placeholder allows to reference the currently used dependency version from the paket.lock file:</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">dependencies
+  FSharp.Core &gt;= 4.3.1
+  Other.Dep ~&gt; CURRENTVERSION
+</code></pre></td></tr></table>
+<p>The <code>LOCKEDVERSION</code> placeholder allows to reference the currently used
+dependency version from the <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">dependencies</span>
-  <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="o">&gt;</span><span class="o">=</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
-  <span class="i">Other</span><span class="o">.</span><span class="i">Dep</span> <span class="o">~&gt;</span> <span class="i">LOCKEDVERSION</span>
-</code></pre></td>
-</tr>
-</table>
-<p>It's possible to add a line to constrain the targetFramework:</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">dependencies
+  FSharp.Core &gt;= 4.3.1
+  Other.Dep ~&gt; LOCKEDVERSION
+</code></pre></td></tr></table>
+<p>It's possible to add a line to constrain the target framework:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -303,55 +320,61 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
 <span class="l">5: </span>
 <span class="l">6: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">dependencies</span>
-  <span class="i">framework</span><span class="o">:</span> <span class="i">net45</span>
-    <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>
-	<span class="i">My</span><span class="o">.</span><span class="i">OtherThing</span>
-  <span class="i">framework</span><span class="o">:</span> <span class="i">netstandard11</span>
-	<span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span> <span class="n">4.3</span><span class="o">.</span><span class="n">1</span>  
-</code></pre></td>
-</tr>
-</table>
-<p>Like that the package is only going to be used by a project &gt;= net45 and for &gt;= netstandard11 it will not use My.OtherThing package.</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">dependencies
+  framework: net45
+    FSharp.Core 4.3.1
+    My.OtherThing
+  framework: netstandard11
+    FSharp.Core 4.3.1
+</code></pre></td></tr></table>
+<p>Like that the package is only going to be used by a project <code>&gt;= net45</code> and for
+<code>&gt;= netstandard11</code> it will not use the <code>My.OtherThing</code> package.</p>
 <p>In a project file, the following dependencies will be added:</p>
 <ul>
-<li>any Paket dependency with the range specified in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</li>
-<li>any Paket dependency with the range specified in the <a href="lock-file.html"><code>paket.lock</code> file</a> (if <code>lock-dependencies</code> parameter is used in <a href="paket-pack.html"><code>paket pack</code></a>).</li>
-<li>any project reference with a matching paket.template file with a minimum version requirement of the version currently being packaged.</li>
+<li>
+Any Paket dependency with the range specified in the
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.
+</li>
+<li>
+Any Paket dependency with the range specified in the
+<a href="lock-file.html"><code>paket.lock</code> file</a> (if <code>lock-dependencies</code> parameter is used
+in <a href="paket-pack.html"><code>paket pack</code></a>).
+</li>
+<li>
+Any project reference with a matching <code>paket.template</code> file with a minimum
+version requirement of the version currently being packaged.
+</li>
 </ul>
-<p>If you need to exclude dependencies from the automatic discovery then you can use the <code>excludeddependencies</code> block:</p>
+<p>If you need to exclude dependencies from the automatic discovery then you can
+use the <code>excludeddependencies</code> block:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">excludeddependencies</span>
-  <span class="i">FSharp</span><span class="o">.</span><span class="i">Core</span>
-  <span class="i">Other</span><span class="o">.</span><span class="i">Dep</span>
-</code></pre></td>
-</tr>
-</table>
-<p>Another way to exclude dependencies is to exclude a whole dependency group with the <code>excludedgroups</code> block:</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">excludeddependencies
+  FSharp.Core
+  Other.Dep
+</code></pre></td></tr></table>
+<p>Another way to exclude dependencies is to exclude a whole dependency group with
+the <code>excludedgroups</code> block:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">excludedgroups</span>
-  <span class="i">build</span>
-  <span class="i">test</span>
-</code></pre></td>
-</tr>
-</table>
+<td class="snippet"><pre class="fssnip"><code lang="text">excludedgroups
+  build
+  test
+</code></pre></td></tr></table>
 <h4><a name="PDB-files" class="anchor" href="#PDB-files">PDB files</a></h4>
-<p>With the include-pdbs switch you can tell Paket to pack PDBs into the package.</p>
+<p>With the <code>include-pdbs</code> switch you can tell Paket to pack PDBs into the package.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">include</span><span class="o">-</span><span class="i">pdbs</span> <span class="k">true</span>
-</code></pre></td>
-</tr>
-</table>
-<p>This only works for paket.template files of type <code>project</code>.</p>
-<h3><a name="Comments" class="anchor" href="#Comments">Comments</a></h3>
-<p>A line starting with a # or // is considered a comment and will be ignored by the parser.</p>
+<td class="snippet"><pre class="fssnip"><code lang="text">include-pdbs true
+</code></pre></td></tr></table>
+<p>This only works for <code>paket.template</code> files of type <code>project</code>.</p>
+<h2><a name="Comments" class="anchor" href="#Comments">Comments</a></h2>
+<p>A line starting with a <code>#</code> or <code>//</code> is considered a comment and will be ignored
+by the parser.</p>
 
 
         </div>
@@ -371,17 +394,17 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -392,11 +415,12 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -410,16 +434,16 @@ If you omit the target folder, then the source is copied into the <code>lib</cod
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>The paket.references files
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -57,17 +58,33 @@
         <div class="span9" id="main">
           
 <h1><a name="The-paket-references-files" class="anchor" href="#The-paket-references-files">The paket.references files</a></h1>
-<p><code>paket.references</code> is used to specify which dependencies are to be installed into the MSBuild projects in your repository. Paket determines the set of dependencies that are to be referenced by each MSBuild project within a directory from its <code>paket.references</code> file.</p>
-<p>It acts a lot like NuGet's <code>packages.config</code> files but there are some key differences:</p>
+<p><code>paket.references</code> is used to specify which dependencies are to be installed
+into the MSBuild projects in your repository. Paket determines the set of
+dependencies that are to be referenced by each MSBuild project within a
+directory from its <code>paket.references</code> file.</p>
+<p>It acts a lot like NuGet's <code>packages.config</code> files but there are some key
+differences:</p>
 <ul>
-<li>One does not specify package versions; these are instead sourced from the <a href="lock-file.html"><code>paket.lock</code> file</a> (which are in turn derived from the rules contained within the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in the course of the <em>initial</em> <a href="paket-install.html"><code>paket install</code></a> or subsequent <a href="paket-update.html"><code>paket update</code></a> commands)</li>
-<li>Only direct dependencies should be listed (see below, <a href="https://github.com/fsprojects/Paket/issues/38">we're currently evaluating options for other reference modes</a>)</li>
-<li>It's just a plain text file</li>
+<li>
+One does not specify package versions; these are instead sourced from the
+<a href="lock-file.html"><code>paket.lock</code> file</a>. Versions in turn derived from the rules
+contained within the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in
+the course of the <em>initial</em> <a href="paket-install.html"><code>paket install</code></a> or
+subsequent <a href="paket-update.html"><code>paket update</code></a> commands.
+</li>
+<li>
+Only direct dependencies should be listed unless you use
+<a href="dependencies-file.html#Strict-references"><code>strict</code> references</a>.
+</li>
+<li>It's just a plain text file.</li>
 </ul>
 <h2><a name="Location" class="anchor" href="#Location">Location</a></h2>
-<p>Paket looks for <code>paket.references</code> files underneath the folder where <a href="dependencies-file.html"><code>paket.dependencies</code></a> is located.</p>
+<p>Paket looks for <code>paket.references</code> files underneath the directory where
+<a href="dependencies-file.html"><code>paket.dependencies</code></a> is located.</p>
 <h2><a name="Layout" class="anchor" href="#Layout">Layout</a></h2>
-<p>The file whitelists any dependencies from the <a href="lock-file.html"><code>paket.lock</code> file</a> set that are to be referenced within the projects alongside it in a given directory:</p>
+<p>The file whitelists any dependencies from the
+<a href="lock-file.html"><code>paket.lock</code> file</a> set that are to be referenced within the
+projects alongside it in a given directory:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -82,79 +99,48 @@ DotNetZip
 RestSharp
 
 <span class="k">group</span> Test
-    NUnit
+  NUnit
 </code></pre></td></tr></table>
-<p>For each MSBuild project alongside a <code>paket.references</code>, <a href="paket-install.html"><code>paket install</code></a> and <a href="paket-update.html"><code>paket update</code></a> will add references to the dependencies listed in <code>paket.references</code> <em>and all their transitive dependencies</em> (unless <a href="dependencies-file.html#Strict-references">noted otherwise</a>).</p>
-<p>The references injected into the MSBuild project reflect the complete set of rules specified within the package for each <code>lib</code> and <code>Content</code> item; each reference is <code>Condition</code>al on an MSBuild expression predicated on the project's active framework etc. This allows you to change the target version of the MSBuild project (either within Visual Studio or e.g. as part of a multi-pass build) without reinstalling dependencies or incurring an impenetrable set of diffs.</p>
-<p>Any <a href="analyzers.html">Roslyn based analyzer</a> present in the packages will also be installed in the project.</p>
-<h2><a name="copy_local-settings" class="anchor" href="#copy_local-settings">copy_local settings</a></h2>
-<p>It's possible to influence the <code>Private</code> property for references in project files:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Newtonsoft.Json <span class="k">copy_local</span>: false
-</code></pre></td></tr></table>
-<h2><a name="specific_version-settings" class="anchor" href="#specific_version-settings">specific_version settings</a></h2>
-<p>It's possible to influence the <code>SpecificVersion</code> property for references in project files:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Newtonsoft.Json specific_version: false
-</code></pre></td></tr></table>
-<h2><a name="import_targets-settings" class="anchor" href="#import_targets-settings">import_targets settings</a></h2>
-<p>If you don't want to import <code>.targets</code> and <code>.props</code> files you can disable it via the <code>import_targets</code> switch:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Microsoft.Bcl.Build <span class="k">import_targets</span>: false
-</code></pre></td></tr></table>
-<h2><a name="No-content-option" class="anchor" href="#No-content-option">No content option</a></h2>
-<p>This option allows you to disable the installation of any content files for the given package:</p>
+<p>For each MSBuild project alongside a <code>paket.references</code>,
+<a href="paket-install.html"><code>paket install</code></a> and <a href="paket-update.html"><code>paket update</code></a>
+will add references to the dependencies listed in <code>paket.references</code> <em>and all
+their transitive dependencies</em> (unless
+<a href="dependencies-file.html#Strict-references">noted otherwise</a>).</p>
+<p>The references injected into the MSBuild project reflect the complete set of
+rules specified within the package for each <code>lib</code> and <code>Content</code> item; each
+reference is <code>Condition</code>al on an MSBuild expression predicated on the project's
+active framework etc. This allows you to change the target version of the
+MSBuild project (either within Visual Studio or e.g. as part of a multi-pass
+build) without reinstalling dependencies or incurring an impenetrable set of
+diffs.</p>
+<p>Any <a href="analyzers.html">Roslyn based analyzer</a> present in the packages will also be
+installed in the project.</p>
+<h2><a name="Overriding-settings-from" class="anchor" href="#Overriding-settings-from">Overriding settings from <a href="dependencies-file.html"><code>paket.dependencies</code></a></a></h2>
+<p>You can override these options either defined globally or per package in the
+<a href="dependencies-file.html"><code>paket.dependencies</code></a>:</p>
+<ul>
+<li><a href="nuget-dependencies.html#Controlling-whether-content-files-should-be-copied-to-the-project"><code>content</code></a></li>
+<li><a href="nuget-dependencies.html#Controlling-whether-assemblies-should-be-copied-to-the-output-directory-during-build"><code>copy_local</code></a></li>
+<li><a href="nuget-dependencies.html#Framework-restrictions"><code>framework</code></a></li>
+<li><a href="nuget-dependencies.html#Importing-and-files"><code>import_targets</code></a></li>
+<li><a href="nuget-dependencies.html#Controlling-assembly-binding-redirects"><code>redirects</code></a></li>
+<li><a href="nuget-dependencies.html#Referencing-specific-versions-in-projects"><code>specific_version</code></a></li>
+</ul>
+<p>A couple of examples:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">jQuery <span class="k">content</span>: none
-Fody   <span class="k">content</span>: once
-ServiceStack.Swagger <span class="k">content</span>: true
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Newtonsoft.Json <span class="k">copy_local</span>: false
+Newtonsoft.Json specific_version: false
+Microsoft.Bcl.Build <span class="k">import_targets</span>: false
+Fody <span class="k">content</span>: once
+DotNetZip <span class="k">framework</span>: <span class="o">&gt;=</span> net45
+FSharp.Core <span class="k">redirects</span>: on
 </code></pre></td></tr></table>
-<p>In this example,
-- <code>once</code> will install content files but not overwrite
-- <code>content: true</code> will install content and always override</p>
-<h2><a name="Framework-restrictions" class="anchor" href="#Framework-restrictions">Framework restrictions</a></h2>
-<p>Sometimes you don't want to generate dependencies for older framework versions. You can control this in the <a href="nuget-dependencies.html#Framework-restrictions"><code>paket.dependencies</code> file</a> or via the <code>framework</code> switch:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Newtonsoft.Json <span class="k">framework</span>: net35, net40
-DotNetZip <span class="k">framework</span>: <span class="o">&gt;=</span> net45           
-</code></pre></td></tr></table>
-<blockquote>
-<p>Note: This feature is deprecated and can be seen as an expert feature.
-Using framework restrictions on single packages might make you projects uncompilable.
-The recommended way is to globally (on a group) specifiy the frameworks you want to compile for.</p>
-</blockquote>
-<p>This feature basically tells paket to only consider the specified frameworks for this package on this particular project.
-The resolution will not be modified when restrictions are specified in the reference file.
-It means</p>
-<blockquote>
-<p>In this project 'Newtonsoft.Json' is only required when compiling against 'net35' or 'net40'.
-I never need this package to compile for another framework like 'net45', therefore don't add references for other frameworks.</p>
-</blockquote>
-<h2><a name="Redirects-settings" class="anchor" href="#Redirects-settings">Redirects settings</a></h2>
-<p>You can instruct Paket to create assembly binding redirects for NuGet packages:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">FSharp.Core <span class="k">redirects</span>: on
-</code></pre></td></tr></table>
-<p>Redirects are created only if they are required. However, you can instruct Paket to create it regardless:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">FSharp.Core <span class="k">redirects</span>: force
-</code></pre></td></tr></table>
-<p>In contrast, you have the option to force Paket to not create a redirect:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">FSharp.Core <span class="k">redirects</span>: off
-</code></pre></td></tr></table>
-<p>Redirects settings in <a href="references-files.html#Redirects-settings">references files</a> takes precedence over settings in <a href="nuget-dependencies.html#redirects-settings">dependencies file</a>.</p>
 <h2><a name="Excluding-libraries" class="anchor" href="#Excluding-libraries">Excluding libraries</a></h2>
 <p>This option allows you to exclude libraries from being referenced in project files:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -186,14 +172,57 @@ Dapper
 NUnit
 </code></pre></td></tr></table>
 <h2><a name="File-name-conventions" class="anchor" href="#File-name-conventions">File name conventions</a></h2>
-<p>If Paket finds <code>paket.references</code> in a folder, the dependencies it specifies will be added to all MSBuild projects in that folder.</p>
-<p>If you have multiple MSBuild projects in a folder that require a non-homogeneous set of references, you have two options:</p>
+<p>If Paket finds <code>paket.references</code> in a directory, the dependencies it specifies
+will be added to all MSBuild projects in that directory.</p>
+<p>If you have multiple MSBuild projects in a directory that require a
+non-homogeneous set of references, you have two options:</p>
 <ul>
-<li>Have a shared <code>paket.references</code> file that acts as a default for all except ones that require special treatment. For each special-case project, add a <code>&lt;MSBuild project&gt;.paket.references</code> file</li>
-<li>Add a project-specific <code>&lt;MSBuild project&gt;.paket.references</code> file for each and every project that requires any references</li>
+<li>
+Have a shared <code>paket.references</code> file that acts as a default for all except
+ones that require special treatment. For each special-case project, add a
+<code>&lt;MSBuild project&gt;.paket.references</code> file.
+</li>
+<li>
+Add a project-specific <code>&lt;MSBuild project&gt;.paket.references</code> file for each and
+every project that requires any references.
+</li>
 </ul>
-<p>Please note that Paket does not union the directory's shared reference list with the project-specific references. If a specific references file is present, it overrides the default (even if that file is empty, in which case it prevents anything being added to its sibling project file).</p>
-<h3><a name="Global-paket-references" class="anchor" href="#Global-paket-references">Global paket.references</a></h3>
+<p>Please note that Paket does not union the directory's shared reference list with
+the project-specific references. If a specific references file is present, it
+overrides the default (even if that file is empty, in which case it prevents
+anything being added to its sibling project file).</p>
+<h3><a name="Global" class="anchor" href="#Global">Global <code>paket.references</code></a></h3>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
+<span class="l"> 2: </span>
+<span class="l"> 3: </span>
+<span class="l"> 4: </span>
+<span class="l"> 5: </span>
+<span class="l"> 6: </span>
+<span class="l"> 7: </span>
+<span class="l"> 8: </span>
+<span class="l"> 9: </span>
+<span class="l">10: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="text">.
+├── src
+│   ├── Example.csproj
+│   ├── Example.fsproj
+│   ├── Example.vbproj
+│   └── paket.references
+├── test
+│   └── Example.csproj
+├── paket.dependencies
+└── paket.lock
+</code></pre></td></tr></table>
+<p>In this example,</p>
+<ul>
+<li>
+the dependencies specified in <code>/src/paket.references</code> will be added to
+<code>/src/Example.csproj</code>, <code>/src/Example.fsproj</code> and <code>/src/Example.vbproj</code>,
+</li>
+<li><code>/test/Example.csproj</code> is left untouched.</li>
+</ul>
+<h3><a name="Global-with-project-specific-override" class="anchor" href="#Global-with-project-specific-override">Global <code>paket.references</code> with project-specific override</a></h3>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -202,49 +231,32 @@ NUnit
 <span class="l">6: </span>
 <span class="l">7: </span>
 <span class="l">8: </span>
+<span class="l">9: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">/</span>
-<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>
-<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">lock</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">vbproj</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span>
-<span class="o">/</span><span class="i">test</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
-</code></pre></td>
-</tr>
-</table>
+<td class="snippet"><pre class="fssnip"><code lang="text">.
+├── src
+│   ├── Example.csproj
+│   ├── Example.fsproj
+│   ├── Example.vbproj
+│   ├── Example.vbproj.paket.references
+│   └── paket.references
+├── paket.dependencies
+└── paket.lock
+</code></pre></td></tr></table>
 <p>In this example,</p>
 <ul>
-<li>the dependencies specified in <code>/src/paket.references</code> will be added to <code>/src/Example.csproj</code>, <code>/src/Example.fsproj</code> and <code>/src/Example.vbproj</code></li>
-<li><code>/test/Example.csproj</code> is left untouched</li>
-</ul>
-<h3><a name="Global-paket-references-with-project-specific-override" class="anchor" href="#Global-paket-references-with-project-specific-override">Global paket.references with project-specific override</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-<span class="l">7: </span>
-<span class="l">8: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">/</span>
-<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>
-<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">lock</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">vbproj</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">vbproj</span><span class="o">.</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span>
-</code></pre></td>
-</tr>
-</table>
-<p>In this example,</p>
-<ul>
-<li>the dependencies specified in <code>/src/paket.references</code> will be added to <code>/src/Example.csproj</code> and <code>/src/Example.fsproj</code></li>
-<li>the dependencies specified in <code>/src/Example.vbproj.paket.references</code> will be added to <code>/src/Example.vbproj</code></li>
-<li>Paket does not merge the dependencies of <code>/src/paket.references</code> and <code>/src/Example.vbproj.paket.references</code></li>
+<li>
+the dependencies specified in <code>/src/paket.references</code> will be added to
+<code>/src/Example.csproj</code> and <code>/src/Example.fsproj</code>,
+</li>
+<li>
+the dependencies specified in <code>/src/Example.vbproj.paket.references</code> will be
+added to <code>/src/Example.vbproj</code>,
+</li>
+<li>
+Paket does not merge the dependencies of <code>/src/paket.references</code> and
+<code>/src/Example.vbproj.paket.references</code>.
+</li>
 </ul>
 <h3><a name="Project-specific-references-only" class="anchor" href="#Project-specific-references-only">Project-specific references only</a></h3>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -254,21 +266,27 @@ NUnit
 <span class="l">5: </span>
 <span class="l">6: </span>
 <span class="l">7: </span>
+<span class="l">8: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">/</span>
-<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>
-<span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">lock</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">csproj</span><span class="o">.</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span>
-<span class="o">/</span><span class="i">src</span><span class="o">/</span><span class="i">Example</span><span class="o">.</span><span class="i">fsproj</span><span class="o">.</span><span class="i">paket</span><span class="o">.</span><span class="i">references</span>
-</code></pre></td>
-</tr>
-</table>
+<td class="snippet"><pre class="fssnip"><code lang="text">.
+├── src
+│   ├── Example.csproj
+│   ├── Example.csproj.paket.references
+│   ├── Example.fsproj
+│   └── Example.fsproj.paket.references
+├── paket.dependencies
+└── paket.lock
+</code></pre></td></tr></table>
 <p>In this example,</p>
 <ul>
-<li>the dependencies specified in <code>/src/Example.csproj.paket.references</code> will be added to <code>/src/Example.csproj</code></li>
-<li>the dependencies specified in <code>/src/Example.fsproj.paket.references</code> will be added to <code>/src/Example.fsproj</code></li>
+<li>
+the dependencies specified in <code>/src/Example.csproj.paket.references</code> will be
+added to <code>/src/Example.csproj</code>,
+</li>
+<li>
+the dependencies specified in <code>/src/Example.fsproj.paket.references</code> will be
+added to <code>/src/Example.fsproj</code>.
+</li>
 </ul>
 
 
@@ -289,17 +307,17 @@ NUnit
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -310,11 +328,12 @@ NUnit
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -328,16 +347,16 @@ NUnit
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

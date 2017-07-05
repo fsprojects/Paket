@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>Getting Started
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -59,26 +60,51 @@
 <h1><a name="Getting-Started" class="anchor" href="#Getting-Started">Getting Started</a></h1>
 <p>This guide will show you</p>
 <ul>
-<li><a href="getting-started.html#Manual-setup">how to manually setup Paket</a> in your .NET / mono solutions</li>
-<li>and <a href="convert-from-nuget-tutorial.html">how to use the automatic NuGet conversion</a>.</li>
+<li>
+<a href="getting-started.html#Manual-setup">how to manually setup Paket</a> in your .NET
+and Mono solutions
+</li>
+<li>
+and
+<a href="convert-from-nuget-tutorial.html">how to use the automatic NuGet conversion</a>.
+</li>
 </ul>
-<blockquote>The following guide is assuming you are using the paket.exe command line tool. For information on installing the command line tool follow the instructions for your operating system for <a href="installation.html">installation</a>.
-There are editor plugins for Visual Studio, Atom and other which can make this process easier and provide additional tooling like syntax highlighting.
-Check our <a href="editor-support.html">editor support page</a> to see if your editor has a Paket plugin.</blockquote>
-<blockquote>If you are starting a new solution from scratch then take a look at <a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>.
-This project helps you get started with a new .NET/Mono project solution with everything needed for successful organising of code, tools and publishing and includes Paket.</blockquote>
+<blockquote>
+<p>The following guide is assuming you are using the <code>paket.exe</code> command line
+tool. For information on installing the command line tool follow the
+instructions for your operating system for <a href="installation.html">installation</a>.
+There are editor plugins for Visual Studio, Atom and other which can make this
+process easier and provide additional tooling like syntax highlighting. Check
+our <a href="editor-support.html">editor support page</a> to see if your editor has a
+Paket plugin.
+If you are starting a new solution from scratch then take a look at
+<a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>. This project
+helps you get started with a new .NET/Mono project solution with everything
+needed for successful organising of code, tools and publishing and includes
+Paket.</p>
+</blockquote>
 <h2><a name="Manual-setup" class="anchor" href="#Manual-setup">Manual setup</a></h2>
 <h3><a name="Downloading-Paket-and-its-Bootstrapper" class="anchor" href="#Downloading-Paket-and-its-Bootstrapper">Downloading Paket and its Bootstrapper</a></h3>
-<ul>
-<li>Create a <code>.paket</code> folder in the root of your solution.</li>
-<li>Download the latest <a href="https://github.com/fsprojects/Paket/releases/latest">paket.bootstrapper.exe</a> into that folder.</li>
-<li>Run <code>.paket/paket.bootstrapper.exe</code>. This will download the latest <code>paket.exe</code>.</li>
-<li>Commit <code>.paket/paket.bootstrapper.exe</code> into your repo and add <code>.paket/paket.exe</code> to your <code>.gitignore</code> file.</li>
-</ul>
+<ol>
+<li>Create a <code>.paket</code> directory in the root of your solution.</li>
+<li>
+Download the latest
+<a href="https://github.com/fsprojects/Paket/releases/latest"><code>paket.bootstrapper.exe</code></a>
+into that directory.
+</li>
+<li>Run <code>.paket/paket.bootstrapper.exe</code>. It will download the latest <code>paket.exe</code>.</li>
+<li>
+Commit <code>.paket/paket.bootstrapper.exe</code> into your repository and add
+<code>.paket/paket.exe</code> to your <code>.gitignore</code> file.
+</li>
+</ol>
 <h3><a name="Specifying-dependencies" class="anchor" href="#Specifying-dependencies">Specifying dependencies</a></h3>
-<p>Create a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's root and specify all your dependencies in it.
-You can use <a href="nuget-dependencies.html">NuGet packages</a>, <a href="github-dependencies.html">GitHub files</a> and <a href="http-dependencies.html">HTTP dependencies</a>.
-The file might look like this:</p>
+<p>Create a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's
+root and specify all your dependencies in it. You can use
+<a href="nuget-dependencies.html">NuGet packages</a>,
+<a href="github-dependencies.html">GitHub files</a> and
+<a href="http-dependencies.html">HTTP dependencies</a>.</p>
+<p>The file might look like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -93,15 +119,20 @@ The file might look like this:</p>
 
 <span class="k">github</span> forki/FsUnit FsUnit.fs
 </code></pre></td></tr></table>
-<blockquote>If you use a <a href="editor-support.html">Paket plugin for your editor</a>, you may get autocompletion for paket.dependencies files.</blockquote>
-<p>You can read more about the importance and the structure of the <code>paket.dependencies</code> file in the <a href="dependencies-file.html">docs</a>. This file should be committed to your version control system.</p>
+<blockquote>
+<p>If you use a <a href="editor-support.html">Paket plugin for your editor</a>, you may get
+autocompletion for <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</p>
+</blockquote>
+<p><a href="dependencies-file.html">Read more about the importance and the structure of the <code>paket.dependencies</code> file</a>.
+This file should be committed to your version control system.</p>
 <h3><a name="Installing-dependencies" class="anchor" href="#Installing-dependencies">Installing dependencies</a></h3>
 <p>Install all of the required packages from the specified sources:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="batchfile">$ .paket/paket.exe install
+<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe install
 </code></pre></td></tr></table>
-<p>The <a href="paket-install.html"><code>paket install</code> command</a> will analyze your dependencies and automatically generate a <a href="lock-file.html"><code>paket.lock</code> file</a> like:</p>
+<p>The <a href="paket-install.html"><code>paket install</code> command</a> will analyze your dependencies
+and automatically generate a <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -124,30 +155,38 @@ The file might look like this:</p>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
   <span class="k">remote</span>: https://nuget.org/api/v2
-  Castle.Core (<span class="n">3.3.3</span>)
-  Castle.Core-log4net (<span class="n">3.3.3</span>)
-    Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.3</span>)
+    Castle.Core (<span class="n">3.3.3</span>)
+    Castle.Core-log4net (<span class="n">3.3.3</span>)
+      Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.3</span>)
+      log4net (<span class="n">1.2.10</span>)
+    Castle.LoggingFacility (<span class="n">3.3.0</span>)
+      Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+      Castle.Windsor (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+    Castle.Windsor (<span class="n">3.3.0</span>)
+      Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+    Castle.Windsor-log4net (<span class="n">3.3.0</span>)
+      Castle.Core-log4net (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
+      Castle.LoggingFacility (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
     log4net (<span class="n">1.2.10</span>)
-  Castle.LoggingFacility (<span class="n">3.3.0</span>)
-    Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-    Castle.Windsor (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-  Castle.Windsor (<span class="n">3.3.0</span>)
-    Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-  Castle.Windsor-log4net (<span class="n">3.3.0</span>)
-    Castle.Core-log4net (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-    Castle.LoggingFacility (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-  log4net (<span class="n">1.2.10</span>)
-  NUnit (<span class="n">2.6.4</span>)
+    NUnit (<span class="n">2.6.4</span>)
 <span class="k">GITHUB</span>
   <span class="k">remote</span>: forki/FsUnit
-  FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
+    FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
 </code></pre></td></tr></table>
-<p>This file shows all direct and <a href="faq.html#transitive">transitive dependencies</a> and pins every dependency to a concrete version. In most cases you want to commit this file to your version control system (<a href="faq.html#Why-should-I-commit-the-lock-file">read why</a>).</p>
-<p>You can read more about the <code>paket.lock</code> file in the <a href="lock-file.html">docs</a>.</p>
+<p>This file shows all direct and <a href="faq.html#transitive">transitive dependencies</a>
+and pins every dependency to a concrete version. In most cases you want to
+commit this file to your version control system (<a href="faq.html#Why-should-I-commit-the-lock-file">read
+why</a>).</p>
+<p><a href="lock-file.html">Read more about the the <code>paket.lock</code> file</a>. This file should be
+committed to your version control system.</p>
 <h3><a name="Installing-dependencies-into-projects" class="anchor" href="#Installing-dependencies-into-projects">Installing dependencies into projects</a></h3>
-<p>In the last paragraph you learned how to install packages into your repository, but usually you want to use the dependencies in your C#, VB or F# projects.
-In order to do so you need a <a href="references-files.html"><code>paket.references</code> files</a> alongside your Visual Studio project files.
-By listing the direct dependencies in a <code>paket.references</code> file, Paket will automatically sync references to the corresponding projects whenever an <code>install</code> or <code>update</code> takes place.</p>
+<p>In the last paragraph you learned how to install packages into your repository,
+but usually you want to use the dependencies in your C#, VB or F# projects. In
+order to do so you need a <a href="references-files.html"><code>paket.references</code> files</a>
+alongside your Visual Studio project files. By listing the direct dependencies
+in a <a href="references-files.html"><code>paket.references</code> file</a>, Paket will automatically
+sync references to the corresponding projects whenever an
+<a href="paket-install.html"><code>install</code></a> or <a href="paket-update.html"><code>update</code></a> takes place.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -158,26 +197,34 @@ NUnit
 
 File:FsUnit.fs .
 </code></pre></td></tr></table>
-<p>Don't forget to run <code>install</code> again in order to let Paket reference the dependencies in your projects:</p>
+<p>Don't forget to run <a href="paket-install.html"><code>install</code></a> again in order to let Paket
+reference the dependencies in your projects:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="batchfile">$ .paket/paket.exe install
+<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe install
 </code></pre></td></tr></table>
-<p>Like all of the files above, you should <a href="faq.html#Why-should-I-commit-the-lock-file">commit</a> <code>paket.references</code> files to your version control system.</p>
+<p>Like all of the files above, you should
+<a href="faq.html#Why-should-I-commit-the-lock-file">commit</a>
+<a href="references-files.html"><code>paket.references</code> file</a> to your version control system.</p>
 <h3><a name="Updating-packages" class="anchor" href="#Updating-packages">Updating packages</a></h3>
-<p>If you want to check if your dependencies have updates you can run the <a href="paket-outdated.html"><code>outdated</code> command</a>:</p>
+<p>If you want to check if your dependencies have updates you can run the
+<a href="paket-outdated.html"><code>paket outdated</code> command</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="batchfile">$ .paket/paket.exe outdated
+<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe outdated
 </code></pre></td></tr></table>
-<p>If you want to update all packages you can use the <a href="paket-update.html"><code>update</code> command</a>:</p>
+<p>If you want to update all packages you can use the
+<a href="paket-update.html"><code>paket update</code> command</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="batchfile">$ .paket/paket.exe update
+<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe update
 </code></pre></td></tr></table>
-<p>This command will analyze your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> and update the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
+<p>This command will analyze your
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a> and update the
+<a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
 <h3><a name="Converting-from-NuGet" class="anchor" href="#Converting-from-NuGet">Converting from NuGet</a></h3>
-<p>If you are already using NuGet and want to learn how to use the automatic NuGet conversion, then read the next <a href="convert-from-nuget-tutorial.html">tutorial</a>.</p>
+<p>If you are already using NuGet and want to learn how to use the automatic NuGet
+conversion, then read the next <a href="convert-from-nuget-tutorial.html">tutorial</a>.</p>
 
 
         </div>
@@ -197,17 +244,17 @@ File:FsUnit.fs .
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -218,11 +265,12 @@ File:FsUnit.fs .
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -236,16 +284,16 @@ File:FsUnit.fs .
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

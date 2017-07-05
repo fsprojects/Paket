@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>The paket.dependencies file
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -57,7 +58,10 @@
         <div class="span9" id="main">
           
 <h1><a name="The-paket-dependencies-file" class="anchor" href="#The-paket-dependencies-file">The paket.dependencies file</a></h1>
-<p>The <code>paket.dependencies</code> file is used to specify rules regarding your application's dependencies. It contains top level dependencies from all projects in the solution, while <a href="references-files.html"><code>paket.references</code> file</a> specifies dependencies only for particular project.</p>
+<p>The <code>paket.dependencies</code> file is used to specify rules regarding your
+application's dependencies. It contains top level dependencies from all projects
+in the solution, while <a href="references-files.html"><code>paket.references</code> file</a>
+specifies dependencies for particular project.</p>
 <p>To give you an overview, consider the following <code>paket.dependencies</code> file:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
@@ -82,38 +86,60 @@
 <span class="k">nuget</span> FAKE <span class="o">~&gt;</span> <span class="n">3.4</span>
 <span class="k">nuget</span> DotNetZip <span class="o">&gt;=</span> <span class="n">1.9</span>
 
-<span class="c">// Files from GitHub repositories</span>
+<span class="c">// Files from GitHub repositories.</span>
 <span class="k">github</span> forki/FsUnit FsUnit.fs
 
-<span class="c">// Gist files</span>
+<span class="c">// Gist files.</span>
 <span class="k">gist</span> Thorium/<span class="n">1972349</span> timestamp.fs
 
-<span class="c">// HTTP resources</span>
+<span class="c">// HTTP resources.</span>
 <span class="k">http</span> http://www.fssnip.net/1n decrypt.fs
 </code></pre></td></tr></table>
-<p>The file specifies that Paket's NuGet dependencies should be downloaded from <a href="http://www.nuget.org">nuget.org</a> and that we need:</p>
+<p>The file specifies that Paket's NuGet dependencies should be downloaded from
+<a href="https://www.nuget.org">nuget.org</a> and that projects require:</p>
 <ul>
-<li><a href="http://www.nunit.org/">NUnit</a> in version <a href="nuget-dependencies.html#Pessimistic-version-constraint">2.6.3 &lt;= x &lt; 2.7</a></li>
-<li><a href="http://fsharp.github.io/FAKE/">FAKE</a> in version <a href="nuget-dependencies.html#Pessimistic-version-constraint">3.4 &lt;= x &lt; 4.0</a> as a build tool</li>
-<li><a href="http://dotnetzip.codeplex.com/">DotNetZip</a> with version which is at <a href="http://fsprojects.github.io/Paket/nuget-dependencies.html#Greater-than-or-equal-version-constraint">least 1.9</a></li>
-<li><a href="https://github.com/forki/FsUnit">FSUnit.fs</a> from GitHub.</li>
-<li>Gist number <a href="https://gist.github.com/Thorium/1972349">1972349</a> from GitHub Gist</li>
-<li>External HTTP resource, e.g. <a href="http://www.fssnip.net/1n">1n</a> from <a href="http://www.fssnip.net/">FSSnip</a></li>
+<li>
+<a href="http://www.nunit.org/">NUnit</a> version
+<a href="nuget-dependencies.html#Pessimistic-version-constraint">2.6.3 &lt;= x &lt; 2.7</a>
+</li>
+<li>
+<a href="http://fsharp.github.io/FAKE/">FAKE</a> version
+<a href="nuget-dependencies.html#Pessimistic-version-constraint">3.4 &lt;= x &lt; 4.0</a>
+</li>
+<li>
+<a href="http://dotnetzip.codeplex.com/">DotNetZip</a> with a version that is at
+<a href="nuget-dependencies.html#Greater-than-or-equal-version-constraint">least 1.9</a>
+</li>
+<li><a href="https://github.com/forki/FsUnit">FSUnit.fs</a> from GitHub</li>
+<li>
+<a href="https://gist.github.com">GitHub Gist</a> number
+<a href="https://gist.github.com/Thorium/1972349">1972349</a>
+</li>
+<li>External HTTP resource, i.e. <a href="http://www.fssnip.net/1n">1n</a> from <a href="http://www.fssnip.net/">FSSnip</a></li>
 </ul>
-<p>Paket uses this definition to compute a concrete dependency resolution, which also includes <a href="faq.html#transitive">transitive dependencies</a>. The resulting dependency graph is then persisted to the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
-<p>Only direct dependencies should be listed and you can use the <a href="paket-simplify.html"><code>paket simplify</code> command</a> to remove <a href="faq.html#transitive">transitive dependencies</a>.</p>
+<p>Paket uses this definition to compute a concrete dependency resolution, which
+also includes <a href="faq.html#transitive">transitive dependencies</a>. The resulting
+dependency graph is then persisted to the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
+<p>Only direct dependencies should be listed; you can use the
+<a href="paket-simplify.html"><code>paket simplify</code> command</a> to remove <a href="faq.html#transitive">transitive
+dependencies</a>.</p>
 <h2><a name="Sources" class="anchor" href="#Sources">Sources</a></h2>
 <p>Paket supports the following source types:</p>
 <ul>
 <li><a href="nuget-dependencies.html">NuGet</a></li>
 <li><a href="git-dependencies.html">Git</a></li>
 <li><a href="github-dependencies.html">GitHub and Gist</a></li>
-<li><a href="http-dependencies.html">HTTP</a> (any single file from any site without version control)</li>
+<li>
+<a href="http-dependencies.html">HTTP</a> (any single file from any site without version
+control)
+</li>
 </ul>
 <h2><a name="Global-options" class="anchor" href="#Global-options">Global options</a></h2>
 <h3><a name="Required-Paket-version" class="anchor" href="#Required-Paket-version">Required Paket version</a></h3>
-<p>It is possible to require a specific Paket version for a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.
-This can be achieved by a line which starts with <code>version</code> followed by a requested <code>paket.exe</code> version and optionally <a href="bootstrapper.html">bootstrapper command line</a> arguments:</p>
+<p>It is possible to require a specific Paket version for a
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>. This can be achieved by a
+line which starts with <code>version</code> followed by a requested <code>paket.exe</code> version and
+optionally <a href="bootstrapper.html">bootstrapper command line</a> arguments:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -140,8 +166,12 @@ This can be achieved by a line which starts with <code>version</code> followed b
 <span class="k">nuget</span> FSharp.Core <span class="o">~&gt;</span> <span class="n">4</span>
 </code></pre></td></tr></table>
 <h3><a name="Strict-references" class="anchor" href="#Strict-references">Strict references</a></h3>
-<p>Paket usually references all direct and <a href="faq.html#transitive">transitive dependencies</a> that are listed in your <a href="references-files.html"><code>paket.references</code> files</a> to your project file.
-In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</em> dependencies.</p>
+<p>Paket usually adds all direct and <a href="faq.html#transitive">transitive dependencies</a>
+that are listed in <a href="references-files.html"><code>paket.references</code> files</a> to project
+files next to the respective <a href="references-files.html"><code>paket.references</code> file</a>.
+In <code>strict</code> mode it will <strong>only add</strong> <em>direct</em> dependencies and you need to
+add transitive dependencies yourself to
+<a href="references-files.html"><code>paket.references</code></a>.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -154,52 +184,12 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 <span class="k">nuget</span> Newtonsoft.Json <span class="o">~&gt;</span> <span class="n">6.0</span>
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
-<p>Note that the resolution phase is not affected by this flag, it will still resolve, lock and download all transitive references.</p>
+<p>Note that the resolution phase is not affected by this option, it will still
+resolve, lock and download all transitive references.</p>
 <h3><a name="Framework-restrictions" class="anchor" href="#Framework-restrictions">Framework restrictions</a></h3>
-<p>Sometimes you don't want to generate dependencies for older framework versions. You can control this in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">framework</span>: net35, net40
-<span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="c">// only .NET 3.5 and .NET 4.0</span>
-</code></pre></td></tr></table>
-<p>It means</p>
-<blockquote>
-<p>Paket, I only compile for 'net35' and 'net40', please leave out all other stuff I don't need to compile for this set of frameworks.</p>
-</blockquote>
-<h4><a name="Automatic-framework-detection" class="anchor" href="#Automatic-framework-detection">Automatic framework detection</a></h4>
-<p>Paket can detect the target frameworks from your project and then limit the installation to these target frameworks. You can control this in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">framework</span>: auto-detect
-<span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="c">// only the target frameworks that are used in projects</span>
-</code></pre></td></tr></table>
-<p>If you change the target frameworks in the projects then you need to run <code>paket install</code> again.</p>
-<h3><a name="No-content-option" class="anchor" href="#No-content-option">No content option</a></h3>
-<p>This option disables the installation of any content files:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">content</span>: none
-<span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> jQuery <span class="o">&gt;=</span> <span class="n">0</span> <span class="c">// we don't install jQuery content files</span>
-<span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
-</code></pre></td></tr></table>
-<h3><a name="CopyToOutputDirectory-settings" class="anchor" href="#CopyToOutputDirectory-settings">CopyToOutputDirectory settings</a></h3>
-<p>It's possible to influence the <code>CopyToOutputDirectory</code> property for all content references in a group:</p>
+<p>Sometimes you do not want to generate dependencies for other .NET Framework
+versions than the ones your projects use. You can control this in the
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -207,78 +197,141 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 <span class="l">5: </span>
 <span class="l">6: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
-<span class="k">copy_content_to_output_dir</span>: always
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// Download and install only for .NET 3.5 and .NET 4.0.</span>
+<span class="k">framework</span>: net35, net40
 
-<span class="k">nuget</span> jQuery 
+<span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span>
+</code></pre></td></tr></table>
+<p>Which may be translated to:</p>
+<blockquote>
+<p>Paket, I only compile for <code>net35</code> and <code>net40</code>, please leave out all other
+stuff I don't need to compile for this set of frameworks.</p>
+</blockquote>
+<h4><a name="Automatic-framework-detection" class="anchor" href="#Automatic-framework-detection">Automatic framework detection</a></h4>
+<p>Paket is able to detect the target frameworks from your projects and then limit
+the installation to these. You can control this in the
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// Only the target frameworks that are used in projects.</span>
+<span class="k">framework</span>: auto-detect
+
+<span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span>
+</code></pre></td></tr></table>
+<p>If you change the target framework of the projects then you need to run
+<a href="paket-install.html"><code>paket install</code></a> again.</p>
+<h3><a name="Controlling-whether-content-files-should-be-copied-to-the-project" class="anchor" href="#Controlling-whether-content-files-should-be-copied-to-the-project">Controlling whether content files should be copied to the project</a></h3>
+<p>The <code>content</code> option controls the installation of any content files:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// Do not install jQuery content files.</span>
+<span class="k">content</span>: none
+
+<span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> jQuery <span class="o">&gt;=</span> <span class="n">0</span>
+</code></pre></td></tr></table>
+<p>The global option may be
+<a href="nuget-dependencies.html#Controlling-whether-content-files-should-be-copied-to-the-project">overridden per package</a>.</p>
+<h3><a name="Controlling-whether-content-files-should-be-copied-to-the-output-directory-during-build" class="anchor" href="#Controlling-whether-content-files-should-be-copied-to-the-output-directory-during-build">Controlling whether content files should be copied to the output directory during build</a></h3>
+<p>It's possible to influence the
+<a href="https://msdn.microsoft.com/en-us/library/bb629388.aspx#Anchor_0"><code>CopyToOutputDirectory</code> property</a>
+for content references via the <code>copy_content_to_output_dir</code> option:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">copy_content_to_output_dir</span>: always
+
+<span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> jQuery
 <span class="k">nuget</span> Fody
 <span class="k">nuget</span> ServiceStack.Swagger
 </code></pre></td></tr></table>
-<p>It is also possible to define this behavior on level of individual NuGet packages:</p>
+<p>The global option may be
+<a href="nuget-dependencies.html#Controlling-whether-content-files-should-be-copied-to-the-output-directory-during-build">overridden per package</a>.</p>
+<h3><a name="Controlling-whether-assemblies-should-be-copied-to-the-output-directory-during-build" class="anchor" href="#Controlling-whether-assemblies-should-be-copied-to-the-output-directory-during-build">Controlling whether assemblies should be copied to the output directory during build</a></h3>
+<p>It's possible to influence the
+<a href="https://msdn.microsoft.com/en-us/library/bb629388.aspx#Anchor_0"><code>Private</code> property</a>
+for references via the <code>copy_local</code> option:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
 <span class="l">5: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> jQuery 
-<span class="k">nuget</span> Fody <span class="k">copy_content_to_output_dir</span>: always
-<span class="k">nuget</span> ServiceStack.Swagger
-</code></pre></td></tr></table>
-<h3><a name="import_targets-settings" class="anchor" href="#import_targets-settings">import_targets settings</a></h3>
-<p>If you don't want to import <code>.targets</code> and <code>.props</code> files you can disable it via the <code>import_targets</code> switch:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">import_targets</span>: false
-<span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> Microsoft.Bcl.Build <span class="c">// we don't import .targets and .props</span>
-<span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
-</code></pre></td></tr></table>
-<h3><a name="copy_local-settings" class="anchor" href="#copy_local-settings">copy_local settings</a></h3>
-<p>It's possible to influence the <code>Private</code> property for references via the <code>copy_local</code> switch:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">copy_local</span>: false
+
 <span class="k">source</span> https://nuget.org/api/v2
 
 <span class="k">nuget</span> Newtonsoft.Json
 </code></pre></td></tr></table>
-<h3><a name="Redirects-option" class="anchor" href="#Redirects-option">Redirects option</a></h3>
-<p>This option tells paket to create <a href="https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx">Assembly Binding Redirects</a> for all referenced libraries. This option only instructs Paket to create and manage binding redirects in <strong>existing <code>App.config</code> files</strong>, it will not create a new <code>App.config</code> file for you. However you can create <code>App.config</code> files by adding the <code>--createnewbindingfiles</code> flag to <a href="commands/install.html"><code>paket install</code></a></p>
+<p>The global option may be
+<a href="nuget-dependencies.html#Controlling-whether-assemblies-should-be-copied-to-the-output-directory-during-build">overridden per package</a>.</p>
+<h3><a name="Importing-and-files" class="anchor" href="#Importing-and-files">Importing <code>*.targets</code> and <code>*.props</code> files</a></h3>
+<p>If you don't want to import <code>*.targets</code> and <code>*.props</code> files from packages, you
+can disable it via the <code>import_targets</code> option:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
+<span class="l">7: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">redirects</span>: on
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// Do not import *.targets and *.props.</span>
+<span class="k">import_targets</span>: false
+
 <span class="k">source</span> https://nuget.org/api/v2
 
+<span class="k">nuget</span> Microsoft.Bcl.Build
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
-<p>On the other hand, you can instruct Paket to create no <a href="https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx">Assembly Binding Redirects</a>, regardless a package instructs otherwise.</p>
+<p>The global option may be
+<a href="nuget-dependencies.html#Importing-and-files">overridden per package</a>.</p>
+<h3><a name="Controlling-assembly-binding-redirects" class="anchor" href="#Controlling-assembly-binding-redirects">Controlling assembly binding redirects</a></h3>
+<p>This option tells Paket to create
+<a href="https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx">Assembly Binding Redirects</a>
+for all referenced libraries. This option only instructs Paket to create and manage
+binding redirects in <strong>existing <code>App.config</code> files</strong>, it will not create new
+<code>App.config</code> files for you.</p>
+<p>However you can create <code>App.config</code> files as necessary by running
+<a href="paket-install.html"><code>paket install --create-new-binding-files</code></a>.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
 <span class="l">5: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">redirects</span>: off
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">redirects</span>: on
+
 <span class="k">source</span> https://nuget.org/api/v2
 
-<span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span> <span class="k">redirects</span>: on
-<span class="k">nuget</span> FSharp.Core <span class="k">redirects</span>: force
+<span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
-<p>If you're using multiple groups, you must set <code>redirects: off</code> for each one of them.</p>
+<p>The global option may be
+<a href="nuget-dependencies.html#Controlling-assembly-binding-redirects">overridden per package</a>.</p>
+<p>If you're using multiple <a href="groups.html">groups</a>, you must set <code>redirects: off</code>
+for each one.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -290,43 +343,61 @@ In <code>strict</code> mode it will <strong>only</strong> reference <em>direct</
 <span class="l"> 9: </span>
 <span class="l">10: </span>
 <span class="l">11: </span>
+<span class="l">12: </span>
+<span class="l">13: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">redirects</span>: off
+
 <span class="k">source</span> https://nuget.org/api/v2
 
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span> <span class="k">redirects</span>: on
 <span class="k">nuget</span> FSharp.Core <span class="k">redirects</span>: force
 
 <span class="k">group</span> Build
-    <span class="k">redirects</span>: off
-    <span class="k">source</span> https://nuget.org/api/v2
+  <span class="k">redirects</span>: off
 
-    <span class="k">nuget</span> FAKE <span class="k">redirects</span>: on
+  <span class="k">source</span> https://nuget.org/api/v2
+
+  <span class="k">nuget</span> FAKE <span class="k">redirects</span>: on
 </code></pre></td></tr></table>
-<h3><a name="Strategy-option" class="anchor" href="#Strategy-option">Strategy option</a></h3>
-<p>This option tells Paket what resolver strategy it should use for <a href="faq.html#transitive">transitive dependencies</a>.</p>
-<p>NuGet's dependency syntax led to a lot of incompatible packages on nuget.org.
-To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet when resolving <a href="faq.html#transitive">transitive dependencies</a> (i.e. defaulting to lowest matching versions).</p>
-<p>The strategy can be either <code>min</code> or <code>max</code> with max being the default.</p>
+<h3><a name="Resolver-strategy-for-transitive-dependencies" class="anchor" href="#Resolver-strategy-for-transitive-dependencies">Resolver strategy for transitive dependencies</a></h3>
+<p>The <code>strategy</code> option tells Paket what resolver strategy it should use for
+<a href="faq.html#transitive">transitive dependencies</a>. The strategy can be either <code>min</code>
+or <code>max</code> with <code>max</code> being the default.</p>
+<p>NuGet's dependency syntax led to a lot of incompatible packages on
+<a href="https://www.nuget.org">nuget.org</a>. To make your transition to Paket easier and
+to allow package authors to correct their version constraints you can have Paket
+behave like NuGet when resolving <a href="faq.html#transitive">transitive dependencies</a>
+(i.e. defaulting to lowest matching versions).</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
+<span class="l">5: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">strategy</span>: min
+
 <span class="k">source</span> https://nuget.org/api/v2
 
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
-<p>A <code>min</code> strategy means you get the <em>lowest matching version</em> of your <a href="faq.html#transitive">transitive dependencies</a> (i.e. NuGet-style). In contrast, a <code>max</code> strategy will get you the <em>highest matching version</em>.</p>
-<p>Note, however, that all direct dependencies will still get their <em>latest matching versions</em>, no matter the value of the <code>strategy</code> option.
-If you want to influence the resolution of direct dependencies then read about the <a href="dependencies-file.html#Lowest_matching-option">lowest_matching option</a>.</p>
-<p>The only exception is when you are updating a single package and one of your direct dependencies is a <a href="faq.html#transitive">transitive dependency</a> for that specific package.
-In this case, only the updating package will get its <em>latest matching version</em> and the dependency is treated as transitive.</p>
-<p>To override a strategy for a single NuGet package, you can use the package specific <a href="nuget-dependencies.html#Strategy-modifiers">strategy modifiers</a>.</p>
-<h3><a name="Lowest_matching-option" class="anchor" href="#Lowest_matching-option">Lowest_matching option</a></h3>
-<p>This option tells Paket what resolver strategy it should use for direct dependencies.</p>
-<p>The <code>lowest_matching</code> option can be either <code>true</code> or <code>false</code> with <code>false</code> being the default.</p>
+<p>The <code>min</code> strategy means you get the <em>lowest matching version</em> of your
+<a href="faq.html#transitive">transitive dependencies</a> (i.e. NuGet-style). In contrast,
+a <code>max</code> strategy will get you the <em>highest matching version</em>.</p>
+<p>Note, however, that all direct dependencies will still get their <em>latest
+matching versions</em>, no matter the value of the <code>strategy</code> option. If you want to
+influence the resolution of direct dependencies then read about the
+<a href="dependencies-file.html#Resolver-strategy-for-direct-dependencies">lowest_matching option</a>.</p>
+<p>The only exception is when you are updating a single package and one of your
+direct dependencies is a <a href="faq.html#transitive">transitive dependency</a> for that
+specific package. In this case, only the updating package will get its <em>latest
+matching version</em> and the dependency is treated as transitive.</p>
+<p>The global option may be
+<a href="nuget-dependencies.html#Strategy-modifiers">overridden per package</a>.</p>
+<h3><a name="Resolver-strategy-for-direct-dependencies" class="anchor" href="#Resolver-strategy-for-direct-dependencies">Resolver strategy for direct dependencies</a></h3>
+<p>The <code>lowest_matching</code> option tells Paket what resolver strategy it should use
+for direct dependencies. It can be either <code>true</code> or <code>false</code> with <code>false</code> being
+the default.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -337,19 +408,31 @@ In this case, only the updating package will get its <em>latest matching version
 
 <span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
-<p>A <code>lowest_matching: true</code> setting means you get the <em>lowest matching version</em> of your direct dependencies. In contrast, a <code>lowest_matching:false</code> will get you the <em>highest matching version</em>.</p>
-<p>Note, however, that all <a href="faq.html#transitive">transitive dependencies</a> will still get their <em>latest matching versions</em>, no matter the value of the <code>lowest_matching</code> option.
-If you want to influence the resolution of <a href="faq.html#transitive">transitive dependencies</a> then read about the <a href="dependencies-file.html#Strategy-option">strategy option</a>.</p>
-<p>To override a <code>lowest_matching</code> option for a single NuGet package, you can use the package specific <a href="nuget-dependencies.html#Lowest_matching-option">lowest_matching option</a>.</p>
-<h3><a name="Generate-load-scripts" class="anchor" href="#Generate-load-scripts">Generate load scripts</a></h3>
-<p>This option tells Paket to generate include scripts which reference installed packages during package installation.</p>
-<p>The <code>generate_load_scripts</code> option can be either <code>true</code> or <code>false</code> with <code>false</code> being the default.</p>
+<p><code>lowest_matching: true</code> means you get the <em>lowest matching version</em> of your
+direct dependencies. In contrast, a <code>lowest_matching: false</code> will get you the
+<em>highest matching version</em>.</p>
+<p>Note, however, that all <a href="faq.html#transitive">transitive dependencies</a> will
+still get their <em>latest matching versions</em>, no matter the value of the
+<code>lowest_matching</code> option. If you want to influence the resolution of
+<a href="faq.html#transitive">transitive dependencies</a> then read about the
+<a href="dependencies-file.html#Strategy-option">strategy option</a>.</p>
+<p>The global option may be
+<a href="nuget-dependencies.html#Resolver-strategy-for-direct-dependencies">overridden per package</a>.</p>
+<h3><a name="Load-script-generation" class="anchor" href="#Load-script-generation">Load script generation</a></h3>
+<p>This option tells Paket to
+<a href="paket-generate-load-scripts.html">generate load scripts</a> for interactive
+environments like F# Interactive or ScriptCS. These scripts reference installed
+packages.</p>
+<p>The <code>generate_load_scripts</code> option can be either <code>true</code> or <code>false</code> with <code>false</code>
+being the default.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
+<span class="l">5: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket">generate_load_scripts: true
+
 <span class="k">source</span> https://nuget.org/api/v2
 
 <span class="k">nuget</span> Suave
@@ -382,17 +465,17 @@ If you want to influence the resolution of <a href="faq.html#transitive">transit
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -403,11 +486,12 @@ If you want to influence the resolution of <a href="faq.html#transitive">transit
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -421,16 +505,16 @@ If you want to influence the resolution of <a href="faq.html#transitive">transit
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

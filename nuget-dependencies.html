@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>NuGet dependencies
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -57,62 +58,87 @@
         <div class="span9" id="main">
           
 <h1><a name="NuGet-dependencies" class="anchor" href="#NuGet-dependencies">NuGet dependencies</a></h1>
-<p>Paket allows to reference <a href="http://www.nuget.org">NuGet</a> packages in your application.</p>
+<p>Paket allows to reference <a href="http://www.nuget.org">NuGet</a> packages in your
+application.</p>
 <h2><a name="Sources" class="anchor" href="#Sources">Sources</a></h2>
-<p>Sources are defined by the <code>source "&lt;address&gt;"</code> statement.</p>
-<p>Paket supports multiple sources per <code>paket.dependencies</code>. It's recommended to put all <code>source</code> statements at the top of <code>paket.dependencies</code>.</p>
-<p>The <a href="lock-file.html"><code>paket.lock</code> file</a> will reflect the sources selected by dependency resolution.</p>
+<p>Sources are defined by the <code>source &lt;address&gt;</code> statement.</p>
+<p>Paket supports multiple sources in one
+<a href="dependencies-file.html"><code>paket.dependencies</code></a>. It's recommended to put all
+<code>source</code> statements at the top of
+<a href="dependencies-file.html"><code>paket.dependencies</code></a>.</p>
+<p>The <a href="lock-file.html"><code>paket.lock</code> file</a> will reflect the sources selected by
+dependency resolution.</p>
 <h3><a name="NuGet-feeds" class="anchor" href="#NuGet-feeds">NuGet feeds</a></h3>
-<p>Paket supports NuGet feeds like those provided by <a href="http://www.nuget.org">nuget.org</a>, <a href="https://www.myget.org/">MyGet</a> or <a href="http://www.jetbrains.com/teamcity/">TeamCity</a>.</p>
-<p>Please note that you need to specify all NuGet sources, including the default feed from <a href="http://www.nuget.org">nuget.org</a>. Paket does not take the current machine's NuGet Package Sources configuration (that you set up e.g. using Visual Studio) into account.</p>
+<p>Paket supports NuGet feeds like those provided by
+<a href="http://www.nuget.org">nuget.org</a>, <a href="https://www.myget.org/">MyGet</a> or
+<a href="http://www.jetbrains.com/teamcity/">TeamCity</a>.</p>
+<p>Please note that you need to specify all NuGet sources, including the default
+feed from <a href="http://www.nuget.org">nuget.org</a>. Paket does not take the current
+machine's NuGet Package Sources configuration (that you set up e.g. using Visual
+Studio) into account.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2     <span class="c">// nuget.org</span>
-<span class="k">source</span> http://myserver/nuget/api/v2 <span class="c">// custom feed</span>
+<span class="k">source</span> http://myserver/nuget/api/v2 <span class="c">// Custom feed.</span>
 </code></pre></td></tr></table>
 <div id="plaintext-credentials"></div>
-It's also possible to provide login information for private NuGet feeds:
+<p>It's also possible to provide login information for private NuGet feeds:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> http://myserver/nuget/api/v2 <span class="k">username</span>: <span class="s">"my user"</span> <span class="k">password</span>: <span class="s">"my pw"</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> http://example.com/nuget/api/v2 <span class="k">username</span>: <span class="s">"user name"</span> <span class="k">password</span>: <span class="s">"the password"</span>
 </code></pre></td></tr></table>
-<p>If you don't want to check your username and password into source control, you can use environment variables instead:</p>
+<p>If you don't want to check your username and password into source control, you
+can use environment variables instead:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> http://myserver/nuget/api/v2 <span class="k">username</span>: <span class="s">"%PRIVATE_FEED_USER%"</span> <span class="k">password</span>: <span class="s">"%PRIVATE_FEED_PASS%"</span>
 </code></pre></td></tr></table>
-<p><code>%PRIVATE_FEED_USER%</code> and <code>%PRIVATE_FEED_PASS%</code> will be expanded with the contents of your <code>PRIVATE_FEED_USER</code> and <code>PRIVATE_FEED_PASS</code> environment variables.</p>
+<p><code>%PRIVATE_FEED_USER%</code> and <code>%PRIVATE_FEED_PASS%</code> will be expanded with the
+contents of your <code>PRIVATE_FEED_USER</code> and <code>PRIVATE_FEED_PASS</code> environment
+variables.</p>
 <p>The <a href="lock-file.html"><code>paket.lock</code> file</a> will also reflect these settings.</p>
-<ul>
-<li>
-<em> </em><em>Note</em><em>:</em> In the case that a <code>paket.dependencies</code> file exists while running the <code>convert-from-nuget</code> command, the <code>PRIVATE_FEED_USER</code> and <code>PRIVATE_FEED_PASS</code>
-will <em>not</em> be expanded. Please see <a href="convert-from-nuget-tutorial.html">this document</a> for instructions on migrating credentials.
-</li>
-</ul>
+<p><strong>Note:</strong> If <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> exists while
+running the <a href="paket-convert-from-nuget.html"><code>convert-from-nuget</code> command</a>, the
+<code>PRIVATE_FEED_USER</code> and <code>PRIVATE_FEED_PASS</code> will <em>not</em> be expanded. Please see
+<a href="convert-from-nuget-tutorial.html">this document</a> for instructions on
+migrating credentials.</p>
 <h3><a name="Path-sources" class="anchor" href="#Path-sources">Path sources</a></h3>
-<p>Paket also supports file paths such as local directories or references to UNC shares:</p>
+<p>Paket also supports file paths such as local directories or references to UNC
+shares:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
+<span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> C:\Nugets
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> C:\nugets
 <span class="k">source</span> <span class="o">~</span>/project/nugets
+<span class="k">source</span> \\server\share
 </code></pre></td></tr></table>
-<p>As well Paket supports the source directory to be specified relative to the <code>paket.dependencies</code> file:</p>
+<p>Paket supports the source directory to be specified relative to the
+<code>paket.dependencies</code> file as well:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> ext/nugets
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> directory/relative/to/paket.dependencies
 </code></pre></td></tr></table>
 <h2><a name="Dependencies" class="anchor" href="#Dependencies">Dependencies</a></h2>
-<p>The dependencies of your project are defined by the <code>nuget &lt;package ID&gt; &lt;version constraint&gt;</code> statement.</p>
-<p>Paket also supports file dependencies, such as <a href="http-dependencies.html">referencing files directly from GitHub repositories</a>.</p>
+<p>The dependencies of your project are defined by the <code>nuget &lt;package ID&gt; &lt;version
+constraint&gt;</code> statement.</p>
+<p>Paket also supports file dependencies, such as
+<a href="http-dependencies.html">referencing files directly from GitHub repositories</a>.</p>
 <div id="package-id"></div>
 <h3><a name="Package-ID" class="anchor" href="#Package-ID">Package ID</a></h3>
-<p>The <code>package ID</code> parameter is the same as you find in NuGet's <code>packages.config</code> or on <a href="http://www.nuget.org">nuget.org</a>.</p>
+<p>The <code>package ID</code> parameter is the same as you find in NuGet's <code>packages.config</code>
+or on <a href="http://www.nuget.org">nuget.org</a>.</p>
 <h3><a name="Version-constraints" class="anchor" href="#Version-constraints">Version constraints</a></h3>
-<p>One key feature of Paket is that it separates the definition of dependencies from the actual resolution. NuGet stores resolution information in <code>packages.config</code>, where both package IDs and their respective pinned version are combined.</p>
-<p>With Paket you do not need to pin specific versions (although you can). Paket allows you to leverage <a href="http://semver.org">semantic versioning</a> and define version constraints in a very flexible manner.</p>
-<p>You can also <a href="#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies">influence the resolution of transitive dependencies</a>.</p>
+<p>One key feature of Paket is that it separates the definition of dependencies
+from the actual resolution. NuGet stores resolution information in
+<code>packages.config</code>, where both package IDs and their respective pinned version
+are combined.</p>
+<p>With Paket you do not need to pin specific versions (although you can). Paket
+allows you to leverage <a href="http://semver.org">semantic versioning</a> and define
+version constraints in a very flexible manner.</p>
+<p>You can also
+<a href="#Strategy-modifiers">influence the resolution of transitive dependencies</a>.</p>
 <h4><a name="Pinned-version-constraint" class="anchor" href="#Pinned-version-constraint">Pinned version constraint</a></h4>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -120,11 +146,12 @@ will <em>not</em> be expanded. Please see <a href="convert-from-nuget-tutorial.h
 <span class="l">4: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">=</span> <span class="n">1.2.3</span>
-<span class="k">nuget</span> Example <span class="n">1.2.3</span>   <span class="c">// same as above</span>
+<span class="k">nuget</span> Example <span class="n">1.2.3</span>   <span class="c">// Same as above.</span>
 
 <span class="k">nuget</span> Example <span class="n">1.2.3</span>-alpha001
 </code></pre></td></tr></table>
-<p>This is the strictest version constraint. Use the <code>=</code> operator to specify an exact version match; the <code>=</code> is optional.</p>
+<p>This is the strictest version constraint. Use the <code>=</code> operator to specify an
+exact version match; the <code>=</code> is optional.</p>
 <h4><a name="Omitting-the-version-constraint" class="anchor" href="#Omitting-the-version-constraint">Omitting the version constraint</a></h4>
 <p>If you omit the version constraint then Paket will assume <code>&gt;= 0</code>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -132,18 +159,28 @@ will <em>not</em> be expanded. Please see <a href="convert-from-nuget-tutorial.h
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example
 </code></pre></td></tr></table>
 <h4><a name="Use-exactly-this-version-constraint" class="anchor" href="#Use-exactly-this-version-constraint">"Use exactly this version" constraint</a></h4>
-<blockquote>We consider a situation with 3 packages A, B and C.
-<p>A and B are direct (or root level) dependencies, but both have a dependency on C.
-A needs exactly C 1.0 and B wants version 1.1 of C.
+<blockquote>
+<p>We consider a situation with 3 packages <code>A</code>, <code>B</code> and <code>C</code>.</p>
+<p><code>A</code> and <code>B</code> are direct (or root-level) dependencies, but both have a
+dependency on <code>C</code>. <code>A</code> needs exactly <code>C 1.0</code> and <code>B</code> wants version <code>C 1.1</code>.
 This is a version conflict and Paket will complain during resolution phase.</p>
-<p>If we specify C = 1.1 in the dependencies file then Paket still considers this as a version conflict with the version requirement in A.
-By specifying C == 1.1 we overwrite all other requirements and Paket will not complain about the conflict anymore.</blockquote></p>
-<p>If your <a href="faq.html#transitive">transitive dependencies</a> result in a version conflict you might want to instruct Paket to use a specific version. The <code>==</code> operator allows you to manually resolve the conflict:</p>
+<p>If we specify <code>C = 1.1</code> in the
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a> then Paket still considers
+this as a version conflict with the version requirement in <code>A</code>. By specifying
+<code>C == 1.1</code> we overwrite all other requirements and Paket will not complain
+about the conflict anymore.</p>
+</blockquote>
+<p>If your <a href="faq.html#transitive">transitive dependencies</a> result in a version
+conflict you might want to instruct Paket to use a specific version. The <code>==</code>
+operator allows you to manually resolve the conflict:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">==</span> <span class="n">1.2.3</span> <span class="c">// take exactly this version</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">==</span> <span class="n">1.2.3</span> <span class="c">// Take exactly this version.</span>
 </code></pre></td></tr></table>
-<blockquote>Important: If you want to restrict the version to a specific version then use the <a href="nuget-dependencies.html#Pinned-version-constraint">= operator</a>. The == operator should only be used if you need to overwrite a dependency resolution due to a conflict.</blockquote>
+<p><strong>Note:</strong> If you want to restrict the version to a specific version then
+use the <a href="#Pinned-version-constraint"><code>= operator</code></a>. The
+<code>==</code> operator should only be used if you need to overwrite a dependency
+resolution due to a conflict.</p>
 <h4><a name="Further-version-constraints" class="anchor" href="#Further-version-constraints">Further version constraints</a></h4>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -151,139 +188,138 @@ By specifying C == 1.1 we overwrite all other requirements and Paket will not co
 <span class="l">4: </span>
 <span class="l">5: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">1.2.3</span>        <span class="c">// at least 1.2.3</span>
-<span class="k">nuget</span> Example <span class="o">&gt;</span> <span class="n">1.2.3</span>         <span class="c">// greater than 1.2.3</span>
-<span class="k">nuget</span> Example <span class="o">&lt;=</span> <span class="n">1.2.3</span>        <span class="c">// less than or equal to 1.2.3</span>
-<span class="k">nuget</span> Example <span class="o">&lt;</span> <span class="n">1.2.3</span>         <span class="c">// less than 1.2.3</span>
-<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">1.2.3</span> <span class="o">&lt;</span> <span class="n">1.5</span>  <span class="c">// at least 1.2.3 but less than 1.5</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">1.2.3</span>       <span class="c">// At least 1.2.3</span>
+<span class="k">nuget</span> Example <span class="o">&gt;</span> <span class="n">1.2.3</span>        <span class="c">// Greater than 1.2.3</span>
+<span class="k">nuget</span> Example <span class="o">&lt;=</span> <span class="n">1.2.3</span>       <span class="c">// Less than or equal to 1.2.3</span>
+<span class="k">nuget</span> Example <span class="o">&lt;</span> <span class="n">1.2.3</span>        <span class="c">// Less than 1.2.3</span>
+<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">1.2.3</span> <span class="o">&lt;</span> <span class="n">1.5</span> <span class="c">// At least 1.2.3 but less than 1.5</span>
 </code></pre></td></tr></table>
 <h4><a name="Pessimistic-version-constraint" class="anchor" href="#Pessimistic-version-constraint">Pessimistic version constraint</a></h4>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">~&gt;</span> <span class="n">1.2.3</span>
 </code></pre></td></tr></table>
-<p>The <code>~&gt;</code> "twiddle-wakka" operator is borrowed from <a href="http://bundler.io/">bundler</a>. It is used to specify a version range.</p>
-<p>It translates to "use the minimum version specified, but allow upgrades up to, but not including, <version specified>, last part chopped off, last number incremented by 1". In other words, allow the last part stated explicitly to increase, but pin any of the elements before that.</p>
+<p>The <code>~&gt;</code> "twiddle-wakka" operator is borrowed from
+<a href="http://bundler.io/">bundler</a>. It is used to specify a version range.</p>
+<p>It translates to:</p>
+<blockquote>
+<p>Use the minimum version specified, but allow upgrades up to,
+but not including, <code>&lt;version specified&gt;</code>, last part chopped off, last number
+incremented by 1.</p>
+</blockquote>
+<p>In other words, allow the last part stated explicitly to increase, but pin any
+of the elements before that.</p>
 <p>Let us illustrate:</p>
 <table>
-  <thead>
-    <td>Constraint</td>
-    <td>Version range</td>
-  </thead>
-  <tr>
-    <td><pre>~> 0</pre></td>
-    <td><pre>0 <= x < 1</pre></td>
-  </tr>
-  <tr>
-    <td><pre>~> 1.0</pre></td>
-    <td><pre>1.0 <= x < 2.0</pre></td>
-  </tr>
-  <tr>
-    <td><pre>~> 1.2</pre></td>
-    <td><pre>1.2 <= x < 2.0</pre></td>
-  </tr>
-  <tr>
-    <td><pre>~> 1.2.3</pre></td>
-    <td><pre>1.2.3 <= x < 1.3</pre></td>
-  </tr>
-  <tr>
-    <td><pre>~> 1.2.3.4</pre></td>
-    <td><pre>1.2.3.4 <= x < 1.2.4</pre></td>
-  </tr>
-  <tr>
-    <td><pre>~> 1.2.3-alpha001</pre></td>
-    <td><pre>1.2.3-alpha001 <= x < 1.3</pre></td>
-  </tr>
-<table>
+<thead>
+<tr class="header">
+<th align="left"><p>Constraint</p></th>
+<th align="left"><p>Version range</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><p><code>~&gt; 0</code></p></td>
+<td align="left"><p><code>0 &lt;= x &lt; 1</code></p></td>
+</tr>
+<tr class="even">
+<td align="left"><p><code>~&gt; 1.0</code></p></td>
+<td align="left"><p><code>1.0 &lt;= x &lt; 2.0</code></p></td>
+</tr>
+<tr class="odd">
+<td align="left"><p><code>~&gt; 1.2</code></p></td>
+<td align="left"><p><code>1.2 &lt;= x &lt; 2.0</code></p></td>
+</tr>
+<tr class="even">
+<td align="left"><p><code>~&gt; 1.2.3</code></p></td>
+<td align="left"><p><code>1.2.3 &lt;= x &lt; 1.3</code></p></td>
+</tr>
+<tr class="odd">
+<td align="left"><p><code>~&gt; 1.2.3.4</code></p></td>
+<td align="left"><p><code>1.2.3.4 &lt;= x &lt; 1.2.4</code></p></td>
+</tr>
+<tr class="even">
+<td align="left"><p><code>~&gt; 1.2.3-alpha001</code></p></td>
+<td align="left"><p><code>1.2.3-alpha001 &lt;= x &lt; 1.3</code></p></td>
+</tr>
+</tbody>
+</table>
+
 <h4><a name="Pessimistic-version-constraint-with-compound" class="anchor" href="#Pessimistic-version-constraint-with-compound">Pessimistic version constraint with compound</a></h4>
-<p>If want to allow newer backward-compatible versions but also need a specific fix version within the allowed range, use a compound constraint.</p>
+<p>If want to allow newer backward-compatible versions but also need a specific fix
+version within the allowed range, use a compound constraint.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">~&gt;</span> <span class="n">1.2</span> <span class="o">&gt;=</span> <span class="n">1.2.3</span>
 </code></pre></td></tr></table>
 <p>The example above translates to <code>1.2.3 &lt;= x &lt; 2.0</code>.</p>
 <h3><a name="Prereleases" class="anchor" href="#Prereleases">Prereleases</a></h3>
-<p>If you want to depend on prereleases then Paket can assist you. In contrast to NuGet, Paket allows you to depend on different prerelease channels:</p>
+<p>If you want to depend on prereleases then Paket can assist you. In contrast to
+NuGet, Paket allows you to depend on different prerelease channels:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">1.2.3</span> alpha      <span class="c">// at least 1.2.3 including alpha versions</span>
-<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2</span> beta rc        <span class="c">// at least 2.0 including rc and beta versions</span>
-<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">3</span> rc             <span class="c">// at least 3.0 but including rc versions</span>
-<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">3</span> prerelease     <span class="c">// at least 3.0 but including all prerelease versions</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">1.2.3</span> alpha  <span class="c">// At least 1.2.3 including alpha versions.</span>
+<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2</span> beta rc    <span class="c">// At least 2.0 including rc and beta versions.</span>
+<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">3</span> rc         <span class="c">// At least 3.0 including rc versions.</span>
+<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">3</span> prerelease <span class="c">// At least 3.0 including all prerelease versions.</span>
 </code></pre></td></tr></table>
 <h3><a name="Framework-restrictions" class="anchor" href="#Framework-restrictions">Framework restrictions</a></h3>
-<p>Sometimes you don't want to generate dependencies for older framework versions. You can control this in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<p>Sometimes you do not want to generate dependencies for other .NET Framework
+versions than the ones your projects use. You can control this in the
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</p>
+<p>The <code>framework</code> modifier tells Paket to only consider the specified frameworks
+for a package:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="k">framework</span>: net35, net40  <span class="c">// .NET 3.5 and .NET 4.0</span>
-<span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="k">framework</span>: <span class="o">&gt;=</span> net45      <span class="c">// .NET 4.5 and above</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="k">framework</span>: net35, net40 <span class="c">// .NET 3.5 and .NET 4.0.</span>
 </code></pre></td></tr></table>
+<p>It translates to:</p>
 <blockquote>
-<p>Note: This feature is deprecated and can be seen as an expert feature.
-Using framework restrictions on single packages might make you projects uncompilable.
-The recommended way is to globally (on a group) specifiy the frameworks you want to compile for.</p>
+<p>I use <code>Example</code> only to compile against <code>net35</code> and <code>net40</code>. I never compile
+projects against another framework like <code>net45</code>.</p>
 </blockquote>
-<p>This feature basically tells paket to only consider the specified frameworks for this package.
-It means</p>
-<blockquote>
-<p>Paket I use 'Example' only to compile against 'net35' and 'net40'.
-I never need this package to compile for another framework like 'net45'."</p>
-</blockquote>
-<h3><a name="Putting-the-version-no-into-the-path" class="anchor" href="#Putting-the-version-no-into-the-path">Putting the version no. into the path</a></h3>
-<p>If you need to be NuGet compatible and want to have the version no. in the package path you can do the following:</p>
+<p>Another example restricts to frameworks greater or equal than:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Example <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="k">framework</span>: <span class="o">&gt;=</span> net45     <span class="c">// .NET 4.5 and above.</span>
+</code></pre></td></tr></table>
+<p><strong>Note:</strong> This feature is deprecated and can be seen as an expert feature. Using
+framework restrictions on a single package might make you projects uncompilable.
+It is recommended to specify the frameworks you want to compile for globally or
+for a <a href="groups.html">group</a>).</p>
+<h3><a name="Putting-the-version-number-in-the-path" class="anchor" href="#Putting-the-version-number-in-the-path">Putting the version number in the path</a></h3>
+<p>If you need to be NuGet-compatible and want to have the package version number
+in the package path below <code>packages</code> you can do the following:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
-<span class="l">4: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
 
 <span class="k">nuget</span> xunit.runner.visualstudio <span class="o">&gt;=</span> <span class="n">2.0</span> <span class="k">version_in_path</span>: true
-<span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
 </code></pre></td></tr></table>
-<h3><a name="No-content-option" class="anchor" href="#No-content-option">No content option</a></h3>
-<p>This option disables the installation of any content files:</p>
+<h3><a name="Controlling-whether-content-files-should-be-copied-to-the-project" class="anchor" href="#Controlling-whether-content-files-should-be-copied-to-the-project">Controlling whether content files should be copied to the project</a></h3>
+<p>The <code>content</code> modifier controls the installation of any content files:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
 <span class="l">5: </span>
-<span class="l">6: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
 
-<span class="k">nuget</span> jQuery <span class="k">content</span>: none <span class="c">// we don't install jQuery content files</span>
-<span class="k">nuget</span> Fody   <span class="k">content</span>: once <span class="c">// install content files but don't overwrite</span>
-<span class="k">nuget</span> ServiceStack.Swagger <span class="k">content</span>: true <span class="c">// install content and always override</span>
-<span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
+<span class="k">nuget</span> jQuery <span class="k">content</span>: none               <span class="c">// Do not install jQuery content files.</span>
+<span class="k">nuget</span> Fody   <span class="k">content</span>: once               <span class="c">// Install content files but do not overwrite.</span>
+<span class="k">nuget</span> ServiceStack.Swagger <span class="k">content</span>: true <span class="c">// Install content and always overwrite.</span>
 </code></pre></td></tr></table>
 <p>The default is <code>content: true</code>.</p>
-<h3><a name="copy_local-settings" class="anchor" href="#copy_local-settings">copy_local settings</a></h3>
-<p>It's possible to influence the <code>Private</code> property for references in project files:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> Newtonsoft.Json <span class="k">copy_local</span>: false
-</code></pre></td></tr></table>
-<h3><a name="specific_version-settings" class="anchor" href="#specific_version-settings">specific_version settings</a></h3>
-<p>It's possible to influence the <code>SpecificVersion</code> property for references in project files:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> Newtonsoft.Json specific_version: false
-</code></pre></td></tr></table>
-<h3><a name="CopyToOutputDirectory-settings" class="anchor" href="#CopyToOutputDirectory-settings">CopyToOutputDirectory settings</a></h3>
-<p>It's possible to influence the <code>CopyToOutputDirectory</code> property for content references in project files:</p>
+<h3><a name="Controlling-whether-content-files-should-be-copied-to-the-output-directory-during-build" class="anchor" href="#Controlling-whether-content-files-should-be-copied-to-the-output-directory-during-build">Controlling whether content files should be copied to the output directory during build</a></h3>
+<p>It's possible to influence the
+<a href="https://msdn.microsoft.com/en-us/library/bb629388.aspx#Anchor_0"><code>CopyToOutputDirectory</code> property</a>
+for content references via the <code>copy_content_to_output_dir</code> modifier:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -296,8 +332,34 @@ I never need this package to compile for another framework like 'net45'."</p>
 <span class="k">nuget</span> Fody <span class="k">copy_content_to_output_dir</span>: never
 <span class="k">nuget</span> ServiceStack.Swagger <span class="k">copy_content_to_output_dir</span>: preserve-newest
 </code></pre></td></tr></table>
-<h3><a name="redirects-settings" class="anchor" href="#redirects-settings">redirects settings</a></h3>
-<p>You can instruct Paket to create assembly binding redirects for NuGet packages:</p>
+<h3><a name="Controlling-whether-assemblies-should-be-copied-to-the-output-directory-during-build" class="anchor" href="#Controlling-whether-assemblies-should-be-copied-to-the-output-directory-during-build">Controlling whether assemblies should be copied to the output directory during build</a></h3>
+<p>It's possible to influence the
+<a href="https://msdn.microsoft.com/en-us/library/bb629388.aspx#Anchor_0"><code>Private</code> property</a>
+for references via the <code>copy_local</code> modifier:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Newtonsoft.Json <span class="k">copy_local</span>: false
+</code></pre></td></tr></table>
+<p>The default is <code>content: true</code>.</p>
+<h3><a name="Importing-and-files" class="anchor" href="#Importing-and-files">Importing <code>*.targets</code> and <code>*.props</code> files</a></h3>
+<p>If you don't want to import <code>*.targets</code> and <code>*.props</code> files from packages, you
+can disable it via the <code>import_targets</code> modifier:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Microsoft.Bcl.Build <span class="k">import_targets</span>: false <span class="c">// Do not import *.targets and *.props.</span>
+</code></pre></td></tr></table>
+<h3><a name="Controlling-assembly-binding-redirects" class="anchor" href="#Controlling-assembly-binding-redirects">Controlling assembly binding redirects</a></h3>
+<p>You can instruct Paket to create
+<a href="https://msdn.microsoft.com/en-us/library/433ysdt1(v=vs.110).aspx">Assembly Binding Redirects</a>
+for NuGet packages:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -306,7 +368,8 @@ I never need this package to compile for another framework like 'net45'."</p>
 
 <span class="k">nuget</span> FSharp.Core <span class="k">redirects</span>: on
 </code></pre></td></tr></table>
-<p>Redirects are created only if they are required. However, you can instruct Paket to create it regardless:</p>
+<p>Redirects are created only if they are required. However, you can instruct Paket
+to create them regardless:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -315,7 +378,7 @@ I never need this package to compile for another framework like 'net45'."</p>
 
 <span class="k">nuget</span> FSharp.Core <span class="k">redirects</span>: force
 </code></pre></td></tr></table>
-<p>In contrast, you have the option to force Paket to not create a redirect:</p>
+<p>In contrast, you may force Paket to not create a redirect:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -324,25 +387,32 @@ I never need this package to compile for another framework like 'net45'."</p>
 
 <span class="k">nuget</span> FSharp.Core <span class="k">redirects</span>: off
 </code></pre></td></tr></table>
-<p>You can also override the redirects settings per project, from its <a href="references-files.html#Redirects-settings">references file</a>.</p>
-<h3><a name="import_targets-settings" class="anchor" href="#import_targets-settings">import_targets settings</a></h3>
-<p>If you don't want to import <code>.targets</code> and <code>.props</code> files you can disable it via the <code>import_targets</code> switch:</p>
+<p>You can also override the redirects settings per project, from its
+<a href="references-files.html#Redirects-settings"><code>paket.references</code> file</a>.</p>
+<h3><a name="Referencing-specific-versions-in-projects" class="anchor" href="#Referencing-specific-versions-in-projects">Referencing specific versions in projects</a></h3>
+<p>It's possible to influence the
+<a href="https://msdn.microsoft.com/en-us/library/bb629388.aspx#Anchor_0"><code>SpecificVersion</code> property</a>
+for references via the <code>specific_version</code> modifier:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
-<span class="l">4: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
 
-<span class="k">nuget</span> Microsoft.Bcl.Build <span class="k">import_targets</span>: false <span class="c">// we don't import .targets and .props</span>
-<span class="k">nuget</span> UnionArgParser <span class="o">~&gt;</span> <span class="n">0.7</span>
+<span class="k">nuget</span> Newtonsoft.Json specific_version: false
 </code></pre></td></tr></table>
 <h3><a name="Strategy-modifiers" class="anchor" href="#Strategy-modifiers">Strategy modifiers</a></h3>
-<p>To override the <a href="dependencies-file.html#Strategy-option">strategy option</a> you can use one of the strategy modifiers.</p>
-<p>Note, however, that all direct dependencies will still get their <em>latest matching versions</em>, no matter the value of the <code>strategy</code> option.
-If you want to influence the resolution of direct dependencies then read about the <a href="dependencies-file.html#Lowest_matching-option">lowest_matching option</a>.</p>
-<h4><a name="Max-modifier" class="anchor" href="#Max-modifier">Max modifier</a></h4>
-<p>To request Paket to override the resolver strategy for the <a href="faq.html#transitive">transitive dependencies</a> of a package, use the <code>strategy:max</code> setting:</p>
+<p>To override the
+<a href="dependencies-file.html#Resolver-strategy-for-transitive-dependencies"><code>strategy</code> option</a>
+you can use one of the <code>strategy</code> modifiers below.</p>
+<p>Note, however, that all direct dependencies will still get their <em>latest
+matching versions</em>, no matter the value of the <code>strategy</code> option. If you want to
+influence the resolution of direct dependencies then read about the
+<a href="dependencies-file.html#Resolver-strategy-for-direct-dependencies"><code>lowest_matching</code> option</a>.</p>
+<h4><a name="The-modifier" class="anchor" href="#The-modifier">The <code>max</code> modifier</a></h4>
+<p>To override the resolver strategy for the
+<a href="faq.html#transitive">transitive dependencies</a> of a package, use the
+<code>strategy: max</code> setting:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -353,8 +423,10 @@ If you want to influence the resolution of direct dependencies then read about t
 
 <span class="k">nuget</span> Example <span class="o">~&gt;</span> <span class="n">1.2</span> <span class="k">strategy</span>: max
 </code></pre></td></tr></table>
-<p>This effectively will get you the <em>latest matching versions</em> of <code>Example</code>'s dependencies.
-The following code is doing the same by using the <code>@</code> operator in your version constraint:</p>
+<p>This effectively will get you the <em>latest matching versions</em> of <code>Example</code>'s
+dependencies.</p>
+<p>The following code is doing the same by using the <code>@</code> operator in
+your version constraint:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -363,10 +435,12 @@ The following code is doing the same by using the <code>@</code> operator in you
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">strategy</span>: min
 <span class="k">source</span> https://nuget.org/api/v2
 
-<span class="k">nuget</span> Example <span class="o">@</span><span class="o">~&gt;</span> <span class="n">1.2</span> <span class="c">// use "max" version resolution strategy</span>
+<span class="k">nuget</span> Example <span class="o">@</span><span class="o">~&gt;</span> <span class="n">1.2</span> <span class="c">// Use "max" version resolution strategy.</span>
 </code></pre></td></tr></table>
-<h4><a name="Min-modifier" class="anchor" href="#Min-modifier">Min modifier</a></h4>
-<p>To request Paket to override the resolver strategy for the <a href="faq.html#transitive">transitive dependencies</a> of a package, use the <code>strategy:min</code> setting:</p>
+<h4><a name="The-modifier-1" class="anchor" href="#The-modifier-1">The <code>min</code> modifier</a></h4>
+<p>To override the resolver strategy for the
+<a href="faq.html#transitive">transitive dependencies</a> of a package, use the
+<code>strategy: min</code> modifier:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -375,8 +449,12 @@ The following code is doing the same by using the <code>@</code> operator in you
 
 <span class="k">nuget</span> Example <span class="o">~&gt;</span> <span class="n">1.2</span> <span class="k">strategy</span>: min
 </code></pre></td></tr></table>
-<p>This effectively will get you the <em>lowest matching versions</em> of <code>Example</code>'s dependencies. Still, you will get the <em>latest matching version</em> of <code>Example</code> itself according to its <a href="#Pessimistic-version-constraint">version constraint of <code>1.2 &lt;= x &lt; 2</code></a>.
-The following code is doing the same by using the <code>!</code> operator in your version constraint:</p>
+<p>This effectively will get you the <em>lowest matching versions</em> of <code>Example</code>'s
+dependencies. Still, you will get the <em>latest matching version</em> of <code>Example</code>
+itself according to its
+<a href="#Pessimistic-version-constraint">version constraint of <code>1.2 &lt;= x &lt;2</code></a>.</p>
+<p>The following code is doing the same by using the <code>!</code> modifier in your version
+constraint:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -385,7 +463,8 @@ The following code is doing the same by using the <code>!</code> operator in you
 
 <span class="k">nuget</span> Example <span class="o">!</span><span class="o">~&gt;</span> <span class="n">1.2</span> <span class="c">// use "min" version resolution strategy</span>
 </code></pre></td></tr></table>
-<p>The strategy setting and the corresponding <code>!</code> and <code>@</code> modifiers are applicable to all <a href="#Version-constraints">version constraints</a>:</p>
+<p>The strategy modifier and the corresponding <code>!</code> and <code>@</code> modifiers are applicable
+to all <a href="#Version-constraints">version constraints</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -395,16 +474,22 @@ The following code is doing the same by using the <code>!</code> operator in you
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
 
-<span class="k">nuget</span> Example-A <span class="o">@</span><span class="o">&gt;</span> <span class="n">0</span> <span class="c">// use "max" version resolution strategy</span>
-<span class="k">nuget</span> Example-B <span class="o">!</span><span class="o">=</span> <span class="n">1.2</span>  <span class="c">// use "min" version resolution strategy</span>
-<span class="k">nuget</span> Example-C <span class="o">!</span><span class="o">&gt;=</span> <span class="n">1.2</span> <span class="c">// use "min" version resolution strategy</span>
-<span class="k">nuget</span> Example-C <span class="o">&gt;=</span> <span class="n">1.2</span> <span class="k">strategy</span> min
+<span class="k">nuget</span> Example-A <span class="o">@</span><span class="o">&gt;</span> <span class="n">0</span>    <span class="c">// Use "max" version resolution strategy.</span>
+<span class="k">nuget</span> Example-B <span class="o">!</span><span class="o">=</span> <span class="n">1.2</span>  <span class="c">// Use "min" version resolution strategy.</span>
+<span class="k">nuget</span> Example-C <span class="o">!</span><span class="o">&gt;=</span> <span class="n">1.2</span> <span class="c">// Use "min" version resolution strategy.</span>
+<span class="k">nuget</span> Example-C <span class="o">&gt;=</span> <span class="n">1.2</span> <span class="k">strategy</span>: min
 </code></pre></td></tr></table>
-<h3><a name="Lowest_matching-option" class="anchor" href="#Lowest_matching-option">Lowest_matching option</a></h3>
-<p>To override the <a href="dependencies-file.html#Lowest_matching-option">lowest_matching option</a> you can use one of the following modifiers.</p>
-<p>Note, however, that all <a href="faq.html#transitive">transitive dependencies</a> will still get their <em>latest matching versions</em>, no matter the value of the <code>lowest_matching</code> option.
-If you want to influence the resolution of <a href="faq.html#transitive">transitive dependencies</a> then read about the <a href="dependencies-file.html#Strategy-option">strategy option</a>.</p>
-<p>To request Paket to override the resolver strategy for a package, use the <code>lowest_matching:true</code> setting:</p>
+<h3><a name="Resolver-strategy-for-direct-dependencies" class="anchor" href="#Resolver-strategy-for-direct-dependencies">Resolver strategy for direct dependencies</a></h3>
+<p>To override the
+<a href="dependencies-file.html#Resolver-strategy-for-direct-dependencies"><code>lowest_matching</code> option</a>
+you can use the following modifier.</p>
+<p>Note, however, that all <a href="faq.html#transitive">transitive dependencies</a> will
+still get their <em>latest matching versions</em>, no matter the value of the
+<code>lowest_matching</code> modifier. If you want to influence the resolution of <a href="faq.html#transitive">transitive
+dependencies</a> then read about the <a href="dependencies-file.html##Resolver-strategy-for-transitive-dependencies"><code>strategy</code>
+option</a>.</p>
+<p>To request Paket to override the resolver strategy for a package, use the
+<code>lowest_matching: true</code> modifier:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -413,15 +498,18 @@ If you want to influence the resolution of <a href="faq.html#transitive">transit
 
 <span class="k">nuget</span> Example <span class="o">~&gt;</span> <span class="n">1.2</span> <span class="k">lowest_matching</span>: true
 </code></pre></td></tr></table>
-<h3><a name="Specifying-multiple-targeting-options" class="anchor" href="#Specifying-multiple-targeting-options">Specifying multiple targeting options</a></h3>
-<p>It is possible to apply more than one of the options above to a particular package.  To do so, simply separate them by commas, like so:</p>
+<h3><a name="Combine-multiple-modifiers" class="anchor" href="#Combine-multiple-modifiers">Combine multiple modifiers</a></h3>
+<p>It is possible to apply more than one of the modifiers above to a particular
+package. To do so, simply separate them by commas:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
+<span class="l">4: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
 
-<span class="k">nuget</span> ClearScript.Installer <span class="k">import_targets</span>: false, <span class="k">content</span>: none <span class="c">// we don't import .targets and .props, and also don't add any content</span>
+<span class="c">// Do not import .targets and .props and also do not add any content.</span>
+<span class="k">nuget</span> ClearScript.Installer <span class="k">import_targets</span>: false, <span class="k">content</span>: none
 </code></pre></td></tr></table>
 
 
@@ -442,17 +530,17 @@ If you want to influence the resolution of <a href="faq.html#transitive">transit
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -463,11 +551,12 @@ If you want to influence the resolution of <a href="faq.html#transitive">transit
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -481,16 +570,16 @@ If you want to influence the resolution of <a href="faq.html#transitive">transit
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

@@ -2,11 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Additional Caches
+    <title>Additional caches
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -56,16 +57,26 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Additional-Caches" class="anchor" href="#Additional-Caches">Additional Caches</a></h1>
-<p>Paket works well with central repositories like <a href="https://www.nuget.org/">nuget.org</a> or <a href="http://myget.org/">myget.org</a>. Under normal circumstances these repositories are always available and allow you to retrieve all packages for the rest of all time.
-Unfortunately there are times when the central repository is not reachable or even worse: packages can be removed permanently from the feed.</p>
-<p>This happened in other ecosystems, but also on <a href="https://www.nuget.org/">nuget.org</a> and can lead to breaking builds and a lot of trouble for the users.</p>
-<p>There are different solutions to this problem and one is using "additional caches" with Paket.</p>
+<h1><a name="Additional-caches" class="anchor" href="#Additional-caches">Additional caches</a></h1>
+<p>Paket works well with central repositories like
+<a href="https://www.nuget.org/">nuget.org</a> or <a href="http://myget.org/">myget.org</a>. Under
+normal circumstances these repositories are always available and allow you to
+retrieve all packages for the rest of all time. Unfortunately there are times
+when the central repository is not reachable or even worse: packages may be
+removed permanently from the feed.</p>
+<p>This happened in other ecosystems, but also on
+<a href="https://www.nuget.org/">nuget.org</a> and can lead to breaking builds and a lot of
+trouble for the users.</p>
+<p>There are different solutions to this problem and one is using "additional
+caches" with Paket.</p>
 <h2><a name="Caching-on-a-network-share" class="anchor" href="#Caching-on-a-network-share">Caching on a network share</a></h2>
-<p>By using a network share as an additional package cache Paket will store all used packages automatically on that network share.
-Every restore process tries to retrieve the package from the cache before hitting the central repository.
-As long as nobody deletes packages from the network share, package restore will continue to work.</p>
-<p>Configuration of additional network share as caches can be done in the  <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<p>By using a network share as an additional package cache Paket will store all
+used packages automatically on that network share. Every
+<a href="paket-restore.html">restore process</a> will try to retrieve the package from the
+cache before hitting the central repository. As long as nobody deletes packages
+from the network share, package restore will continue to work.</p>
+<p>Configuration of additional network share as caches can be done in the
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -82,11 +93,17 @@ As long as nobody deletes packages from the network share, package restore will 
 </code></pre></td></tr></table>
 <h2><a name="Caching-locally-inside-the-repository" class="anchor" href="#Caching-locally-inside-the-repository">Caching locally inside the repository</a></h2>
 <p>Many projects decide to commit all dependencies into the version control system.
-Some people argue that this bloats the version control system, but it also ensures that dependencies are always available after checkout.</p>
-<p>With a local dependencies cache you can instruct Paket to copy dependencies to a local folder.
-This folder will then contain the <code>*.nupkgs files</code> of all dependencies and can be committed to source control.</p>
-<blockquote>In contrast to the default <i>packages</i> folder this new folder will only contain the zipped dependencies. This way the <i>packages</i> folder which contains also the unzipped versions can still be gitignored.</blockquote>
-<p>The configuration can be done in the  <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+Some people argue that this bloats the version control system, but it also
+ensures that dependencies are always available after checkout.</p>
+<p>With a local dependency cache you can instruct Paket to copy dependencies to a
+local directory. This directory will then contain the <code>*.nupkg</code> files of all
+dependencies and may be committed to source control.</p>
+<p><strong>Note:</strong> In contrast to the default <code>packages</code> directory this new directory
+will only contain the zipped dependencies. This way the <code>packages</code> directory
+which also contains the unzipped versions can still be excluded from version
+control.</p>
+<p>The configuration can be done in the
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -102,25 +119,41 @@ This folder will then contain the <code>*.nupkgs files</code> of all dependencie
 <span class="k">nuget</span> FSharp.Core
 </code></pre></td></tr></table>
 <h3><a name="Caching-options" class="anchor" href="#Caching-options">Caching options</a></h3>
-<p>Paket allows you two caching options:</p>
+<p>Paket allows you to set two caching options:</p>
 <ul>
-<li><code>versions:all</code> - stores all versions of the dependencies ever used.</li>
-<li><code>versions:current</code> - stores only currently used version of the dependencies and deletes all other version. This option should not be used with network shares since it might affect other projects.</li>
+<li><code>versions:all</code>: Store all versions of the dependencies ever used.</li>
+<li>
+<code>versions:current</code>: Store only currently used version of the dependencies and
+delete all other version. This option should not be used with network shares
+since it might affect other projects.
+</li>
 </ul>
 <h2><a name="Caches-as-package-feeds" class="anchor" href="#Caches-as-package-feeds">Caches as package feeds</a></h2>
-<p>All configured caches are automatically used as additional package feeds. So if a package gets removed from the central repository even "paket update" will work.
-The fact that it's now only found in the cache will be written to the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
-<p>All packages in the cache are treated as "unlisted". This means Paket's resolver will only use these packages in a new resolution if the central feed has no unlisted packages.</p>
+<p>All configured caches are automatically used as additional <code>source</code> feeds. Even
+if a package gets removed from the central repository
+<a href="paket-update.html"><code>paket update</code></a> will work. The fact that it's now only found
+in the cache will be written to the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
+<p>All packages in the cache are treated as "unlisted". This means Paket's resolver
+will only use these packages in a new resolution if the central feed has no
+unlisted packages.</p>
 <h2><a name="NuGet-machine-cache" class="anchor" href="#NuGet-machine-cache">NuGet machine cache</a></h2>
-<p>In addition to the above, Paket will also cache packages to a local machine cache, which defaults to <code>%LocalAppData%\NuGet\Cache</code>.</p>
-<p>This location can be overridden to support cases where parallelised package installs (or updates) are prone to file locks, such as when running multiple build agent processes on a single server.</p>
-<p>To override at the process level, define a process environment variable called <code>"NuGetCachePath"</code> with the custom location, such as</p>
+<p>In addition to the above, Paket will also cache packages to a local machine
+cache, which defaults to <code>%LocalAppData%\NuGet\Cache</code>.</p>
+<p>This location can be overridden to support cases where parallelized installs (or
+updates) are prone to file locks, such as when running multiple build agent
+processes on a single server.</p>
+<p>To override at the process level, define a process environment variable called
+<code>NuGetCachePath</code> with the custom location, such as</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="powershell">$ $env:NuGetCachePath = "C:\NuGetCaches\BuildAgentName"
+$ paket install
+</code></pre></td></tr></table>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">$</span><span class="i">env</span><span class="o">:</span><span class="i">NuGetCachePath</span> <span class="o">=</span> <span class="s">&quot;C:\NuGetCaches\BuildAgentName&quot;</span>
-</code></pre></td>
-</tr>
-</table>
+<td class="snippet"><pre class="fssnip"><code lang="sh">$ NuGetCachePath=/tmp paket install
+</code></pre></td></tr></table>
 
 
         </div>
@@ -140,17 +173,17 @@ The fact that it's now only found in the cache will be written to the <a href="l
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -161,11 +194,12 @@ The fact that it's now only found in the cache will be written to the <a href="l
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -179,16 +213,16 @@ The fact that it's now only found in the cache will be written to the <a href="l
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

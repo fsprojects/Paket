@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>paket install
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -57,25 +58,7 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-install" class="anchor" href="#paket-install">paket install</a></h1>
-<p>Download the dependencies specified by the paket.dependencies or paket.lock file into the <code>packages/</code> directory and update projects.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="console">paket install [--help] [--force] [--redirects] [--createnewbindingfiles] [--clean-redirects]
-              [--keep-major] [--keep-minor] [--keep-patch] [--generate-load-scripts]
-              [--only-referenced] [project-root &lt;target&gt;] [load-script-framework &lt;target&gt;]
-              [load-script-type &lt;id&gt;] [--touch-affected-refs]
-</code></pre></td></tr></table>
-<p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
-<p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
-<p>If the paket.dependencies file has been changed since the last update of the paket.lock file (e.g. added dependencies or changed version requirements),
-Paket will update the paket.lock file to make it match paket.dependencies again.</p>
-<p>Unlike <a href="paket-update.html"><code>paket update</code></a>, <a href="paket-install.html"><code>paket install</code></a> will only look for
-new versions of dependencies that have been modified in paket.dependencies,
-and use the version from paket.lock for all other dependencies.</p>
-<p>OPTIONS:</p>
+<p>Download dependencies and update projects.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -104,38 +87,57 @@ and use the version from paket.lock for all other dependencies.</p>
 <span class="l">26: </span>
 <span class="l">27: </span>
 <span class="l">28: </span>
+<span class="l">29: </span>
+<span class="l">30: </span>
+<span class="l">31: </span>
+<span class="l">32: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">--</span><span class="i">force</span>, <span class="o">-</span><span class="i">f</span>           <span class="i">Forces</span> <span class="i">the</span> <span class="i">download</span> <span class="k">and</span> <span class="i">reinstallation</span> <span class="k">of</span> <span class="i">all</span> <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">redirects</span>           <span class="i">Creates</span> <span class="i">binding</span> <span class="i">redirects</span> <span class="k">for</span> <span class="i">the</span> <span class="i">NuGet</span> <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">createnewbindingfiles</span>
-                      <span class="i">Creates</span> <span class="i">binding</span> <span class="i">redirect</span> <span class="i">files</span> <span class="k">if</span> <span class="i">needed</span><span class="o">.</span>
-<span class="o">--</span><span class="i">clean</span><span class="o">-</span><span class="i">redirects</span>     <span class="i">Removes</span> <span class="i">all</span> <span class="i">binding</span> <span class="i">redirects</span> <span class="i">that</span> <span class="i">are</span> <span class="i">not</span> <span class="i">specified</span> <span class="i">by</span> <span class="i">Paket</span><span class="o">.</span>
-<span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">major</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">major</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span>
-                      <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">minor</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">minor</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span>
-                      <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">keep</span><span class="o">-</span><span class="i">patch</span>          <span class="i">Allows</span> <span class="i">only</span> <span class="i">updates</span> <span class="i">that</span> <span class="i">are</span> <span class="i">not</span> <span class="i">changing</span> <span class="i">the</span> <span class="i">patch</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">NuGet</span>
-                      <span class="i">packages</span><span class="o">.</span>
-<span class="o">--</span><span class="i">generate</span><span class="o">-</span><span class="i">load</span><span class="o">-</span><span class="i">scripts</span>
-                      <span class="i">Allows</span> <span class="k">to</span> <span class="i">generate</span> <span class="i">C#</span> <span class="k">and</span> <span class="i">F#</span> <span class="i">include</span> <span class="i">scripts</span> <span class="i">which</span> <span class="i">references</span> <span class="i">installed</span>
-                      <span class="i">packages</span> <span class="k">in</span> <span class="i">a</span> <span class="i">interactive</span> <span class="i">environment</span> <span class="i">like</span> <span class="i">F#</span> <span class="i">Interactive</span> <span class="k">or</span> <span class="i">ScriptCS</span><span class="o">.</span>
-<span class="o">--</span><span class="i">only</span><span class="o">-</span><span class="i">referenced</span>     <span class="i">Only</span> <span class="i">install</span> <span class="i">packages</span> <span class="i">that</span> <span class="i">are</span> <span class="i">referenced</span> <span class="k">in</span> <span class="i">paket</span><span class="o">.</span><span class="i">references</span> <span class="i">files</span>,
-                      <span class="i">instead</span> <span class="k">of</span> <span class="i">all</span> <span class="i">packages</span> <span class="k">in</span> <span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span><span class="o">.</span>
-<span class="i">project</span><span class="o">-</span><span class="i">root</span> <span class="o">&lt;</span><span class="i">target</span><span class="o">&gt;</span> <span class="i">Alternative</span> <span class="i">project</span> <span class="i">root</span> [<span class="i">only</span> <span class="i">used</span> <span class="k">for</span> <span class="i">tooling</span>]<span class="o">.</span>
-<span class="i">load</span><span class="o">-</span><span class="i">script</span><span class="o">-</span><span class="i">framework</span> <span class="o">&lt;</span><span class="i">target</span><span class="o">&gt;</span>
-                      <span class="i">Framework</span> <span class="i">identifier</span> <span class="k">to</span> <span class="i">generate</span> <span class="i">scripts</span> <span class="k">for</span>, <span class="i">such</span> <span class="k">as</span> <span class="i">net45</span> <span class="k">or</span> <span class="i">net4</span><span class="o">.</span>
-<span class="i">load</span><span class="o">-</span><span class="i">script</span><span class="o">-</span><span class="k">type</span> <span class="o">&lt;</span><span class="i">id</span><span class="o">&gt;</span> <span class="i">Language</span> <span class="k">to</span> <span class="i">generate</span> <span class="i">scripts</span> <span class="k">for</span>, <span class="i">must</span> <span class="i">be</span> <span class="i">one</span> <span class="k">of</span> <span class="o">&#39;</span><span class="i">fsx&#39;</span> <span class="k">or</span> <span class="o">&#39;</span><span class="i">csx&#39;</span><span class="o">.</span>
-<span class="o">--</span><span class="i">touch</span><span class="o">-</span><span class="i">affected</span><span class="o">-</span><span class="i">refs</span> <span class="i">Touches</span> <span class="i">project</span> <span class="i">files</span> <span class="i">referencing</span> <span class="i">packages</span> <span class="i">which</span> <span class="i">are</span> <span class="i">affected</span>, <span class="k">to</span> <span class="i">help</span>
-                      <span class="i">incremental</span> <span class="i">build</span> <span class="i">tools</span> <span class="i">detecting</span> <span class="i">the</span> <span class="i">change</span><span class="o">.</span>
-<span class="o">--</span><span class="i">verbose</span>, <span class="o">-</span><span class="i">v</span>         <span class="i">Enable</span> <span class="i">verbose</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">log</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">a</span> <span class="i">log</span> <span class="i">file</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">silent</span>, <span class="o">-</span><span class="i">s</span>          <span class="i">Suppress</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">version</span>             <span class="i">Display</span> <span class="i">the</span> <span class="i">version</span><span class="o">.</span>
-<span class="o">--</span><span class="i">from</span><span class="o">-</span><span class="i">bootstrapper</span>   <span class="i">Call</span> <span class="i">coming</span> <span class="i">from</span> <span class="i">the</span> <span class="o">&#39;</span><span class="o">--</span><span class="i">run&#39;</span> <span class="i">feature</span> <span class="k">of</span> <span class="i">the</span> <span class="i">bootstrapper</span><span class="o">.</span>
-<span class="o">--</span><span class="i">help</span>                <span class="i">display</span> <span class="i">this</span> <span class="i">list</span> <span class="k">of</span> <span class="i">options</span><span class="o">.</span>
-</code></pre></td>
-</tr>
-</table>
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket install [--help] [--force] [--redirects] [--create-new-binding-files] [--clean-redirects]
+              [--keep-major] [--keep-minor] [--keep-patch] [--only-referenced]
+              [--touch-affected-refs] [--generate-load-scripts]
+              [--load-script-framework &lt;framework&gt;] [--load-script-type &lt;csx|fsx&gt;]
+
+OPTIONS:
+
+    --force, -f           force download and reinstallation of all dependencies
+    --redirects           create binding redirects
+    --create-new-binding-files
+                          create binding redirect files if needed
+    --clean-redirects     remove binding redirects that were not created by Paket
+    --keep-major          only allow updates that preserve the major version
+    --keep-minor          only allow updates that preserve the minor version
+    --keep-patch          only allow updates that preserve the patch version
+    --only-referenced     only install dependencies listed in paket.references files, instead of
+                          all packages in paket.dependencies
+    --touch-affected-refs touch project files referencing affected dependencies to help incremental
+                          build tools detecting the change
+    --generate-load-scripts
+                          generate F# and C# include scripts that reference installed packages in a
+                          interactive environment like F# Interactive or ScriptCS
+    --load-script-framework &lt;framework&gt;
+                          framework identifier to generate scripts for, such as net45 or
+                          netstandard1.6; may be repeated
+    --load-script-type &lt;csx|fsx&gt;
+                          language to generate scripts for; may be repeated; may be repeated
+    --silent, -s          suppress console output
+    --verbose, -v         print detailed information to the console
+    --log-file &lt;path&gt;     print output to a file
+    --from-bootstrapper   call coming from the '--run' feature of the bootstrapper
+    --help                display this list of options.
+</code></pre></td></tr></table>
+<p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
+<p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
+<h2><a name="Notes-on-changes-to" class="anchor" href="#Notes-on-changes-to">Notes on changes to <a href="dependencies-file.html"><code>paket.dependencies</code></a></a></h2>
+<p>If the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> has been changed
+since the last update of the <a href="lock-file.html"><code>paket.lock</code> file</a> (e.g. you added
+dependencies or changed version constraints), Paket will update the
+<a href="lock-file.html"><code>paket.lock</code> file</a> to make it match
+<a href="dependencies-file.html"><code>paket.dependencies</code></a> again.</p>
+<p>Unlike <a href="paket-update.html"><code>paket update</code></a>,
+<a href="paket-install.html"><code>paket install</code></a> will only look for new versions of
+dependencies that have been modified in
+<a href="dependencies-file.html"><code>paket.dependencies</code></a> and use the version from
+<a href="lock-file.html"><code>paket.lock</code></a> for all other dependencies.</p>
 
 
         </div>
@@ -155,17 +157,17 @@ and use the version from paket.lock for all other dependencies.</p>
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -176,11 +178,12 @@ and use the version from paket.lock for all other dependencies.</p>
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -194,16 +197,16 @@ and use the version from paket.lock for all other dependencies.</p>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>
