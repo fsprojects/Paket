@@ -1,16 +1,9 @@
-#### 5.4.5 - 05.07.2017
+#### 5.5.0-alpha001 - 05.07.2017
+* Support for dotnet cli tools - https://github.com/fsprojects/Paket/pull/2486
 * BUGFIX: Show stack trace only in verbose mode - https://github.com/fsprojects/Paket/pull/2481
-
-#### 5.4.4 - 05.07.2017
 * BUGFIX: find-packages doesn't require paket.dependencies to be present - https://github.com/fsprojects/Paket/pull/2483
-
-#### 5.4.3 - 05.07.2017
 * BUGFIX: Fixed for usage of the new csproj with targetFramework - https://github.com/fsprojects/Paket/pull/2482
-
-#### 5.4.2 - 05.07.2017
 * BUGFIX: Fixed off-by-one error when inserting lines in already-existing .paket folder in sln file - https://github.com/fsprojects/Paket/pull/2484
-
-#### 5.4.1 - 03.07.2017
 * BUGFIX: Allow any whitespace to precede a comment, not only space in the references file - https://github.com/fsprojects/Paket/pull/2479
 * BUGFIX: Doesn't always print the 'warning' message - https://github.com/fsprojects/Paket/pull/2463
 
