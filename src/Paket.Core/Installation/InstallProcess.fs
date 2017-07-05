@@ -327,6 +327,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
         let toolsVersion = project.GetToolsVersion()
         if verbose then
             verbosefn "Installing to %s with ToolsVersion %O" project.FileName toolsVersion
+
         let directDependencies, errorMessages =
             referenceFile.Groups
             |> Seq.map (fun kv ->

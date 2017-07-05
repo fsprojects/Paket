@@ -806,18 +806,32 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         let usedPackageKeys = HashSet<_>()
         let toVisit = ref Set.empty
         let visited = ref Set.empty
+        let cliTools = ref Set.empty
+        let resolution =
+            match this.Groups |> Map.tryFind groupName with
+            | Some group -> group.Resolution
+            | None -> failwithf "Error for %s: Group %O can't be found in paket.lock file." referencesFile.FileName groupName
 
         match referencesFile.Groups |> Map.tryFind groupName with
         | Some g ->
             for p in g.NugetPackages do
                 let k = groupName,p.Name
-                if usedPackageKeys.Contains k then
-                    failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
-                usedPackageKeys.Add k |> ignore
-
-                let deps = this.GetDirectDependenciesOfSafe(groupName,p.Name,referencesFile.FileName) 
+                let package = 
+                    match resolution |> Map.tryFind p.Name with
+                    | Some p -> p
+                    | None -> failwithf "Error for %s: Package %O was not found in group %O of the paket.lock file." referencesFile.FileName p.Name groupName
                 
-                toVisit := Set.add (k,p,deps) !toVisit
+                if package.IsCliToolPackage() then
+                    cliTools := Set.add package !cliTools
+                else
+                    if usedPackageKeys.Contains k then
+                        failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
+                
+                    usedPackageKeys.Add k |> ignore
+
+                    let deps = this.GetDirectDependenciesOfSafe(groupName,p.Name,referencesFile.FileName) 
+                
+                    toVisit := Set.add (k,p,deps) !toVisit
         | None -> ()
 
         while !toVisit <> Set.empty do
@@ -842,7 +856,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             visited := 
                 !visited
                 |> Set.remove ((groupName,packageName),p,deps)
-                |> Set.map (fun ((g,p),b,c) -> if g = groupName then (g,p),b,Set.filter ((<>) packageName) c else (g,p),b,c)]
+                |> Set.map (fun ((g,p),b,c) -> if g = groupName then (g,p),b,Set.filter ((<>) packageName) c else (g,p),b,c)],!cliTools
 
 
     member this.GetPackageHull(groupName,referencesFile:ReferencesFile) =

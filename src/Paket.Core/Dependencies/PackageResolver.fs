@@ -42,6 +42,9 @@ type ResolvedPackage = {
     member self.HasFrameworkRestrictions =
         getExplicitRestriction self.Settings.FrameworkRestrictions <> FrameworkRestriction.NoRestriction
 
+    member self.IsCliToolPackage() =
+        self.Name.ToString().StartsWith "dotnet-"
+
     member private self.Display
         with get() =
             let deps =
