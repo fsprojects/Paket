@@ -1,3 +1,6 @@
+#### 5.4.4 - 05.07.2017
+* BUGFIX: find-packages doesn't require paket.dependencies to be present - https://github.com/fsprojects/Paket/pull/2483
+
 #### 5.4.3 - 05.07.2017
 * BUGFIX: Fixed for usage of the new csproj with targetFramework - https://github.com/fsprojects/Paket/pull/2482
 
