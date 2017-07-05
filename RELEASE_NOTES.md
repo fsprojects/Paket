@@ -1,4 +1,4 @@
-#### 5.5.0-alpha004 - 05.07.2017
+#### 5.5.0-alpha005 - 05.07.2017
 * Support for dotnet cli tools - https://github.com/fsprojects/Paket/pull/2486
 * GNU-compatible command line - https://github.com/fsprojects/Paket/pull/2429
 * BUGFIX: Show stack trace only in verbose mode - https://github.com/fsprojects/Paket/pull/2481
