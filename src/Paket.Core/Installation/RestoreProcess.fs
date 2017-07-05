@@ -170,7 +170,7 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         return (groupName,package.Name), (package,model)
     }
 
-let createAlternativeNuGetConfig (alternativeConfigFileInfo:FileInfo) =    
+let createAlternativeNuGetConfig (alternativeConfigFileInfo:FileInfo) =
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
@@ -277,8 +277,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let cliTools = System.Collections.Generic.List<_>()
             let fi = FileInfo projectFile.FileName
             let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
-            let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))            
-                        
+            let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))
+
             if not newFileName.Directory.Exists then
                 newFileName.Directory.Create()
             
@@ -319,7 +319,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                             (if direct then "Direct" else "Transitive") + "," +
                             kv.Key.ToString()
                         
-                        if packageName.ToString().StartsWith "dotnet-" then
+                        if package.IsCliToolPackage() then
                             cliTools.Add package
                         else
                             list.Add line
@@ -328,6 +328,7 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             if output = "" then
                 if File.Exists(newFileName.FullName) then
                     File.Delete(newFileName.FullName)
+
             elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
                 File.WriteAllText(newFileName.FullName,output)                
                 tracefn " - %s created" newFileName.FullName
