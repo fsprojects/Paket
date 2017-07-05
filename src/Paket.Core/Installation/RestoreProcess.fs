@@ -170,7 +170,7 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         return (groupName,package.Name), (package,model)
     }
 
-let createAlternativeNuGetConfig alternativeConfigFileName =
+let createAlternativeNuGetConfig (alternativeConfigFileInfo:FileInfo) =    
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
@@ -180,7 +180,36 @@ let createAlternativeNuGetConfig alternativeConfigFileName =
      <clear />
   </disabledPackageSources>
 </configuration>"""
-    File.WriteAllText(alternativeConfigFileName,config)
+    if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
+        File.WriteAllText(alternativeConfigFileInfo.FullName,config)
+
+let createPaketPropsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
+    if Seq.isEmpty cliTools then
+        if fileInfo.Exists then 
+            File.Delete(fileInfo.FullName)
+    else
+        let cliParts =
+            cliTools
+            |> Seq.map (fun cliTool -> sprintf """        <DotNetCliToolReference Include="%O" Version="%O" />""" cliTool.Name cliTool.Version)
+            
+        let content = 
+            sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
+    <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+      <PropertyGroup>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+      </PropertyGroup>
+      <ItemGroup>
+%s
+      </ItemGroup>
+    </Project>""" 
+             (String.Join(Environment.NewLine,cliParts))
+
+        if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
+            File.WriteAllText(fileInfo.FullName,content)
+            tracefn " - %s created" fileInfo.FullName
+        else
+            if verbose then
+                tracefn " - %s already up-to-date" fileInfo.FullName
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFramework: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -233,10 +262,10 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let referencesFile =
                 match projectFile.FindReferencesFile() with
                 | Some fileName -> 
-                        try
-                            ReferencesFile.FromFile fileName
-                        with _ ->
-                            failwith ((ReferencesFileParseError (FileInfo fileName)).ToString())
+                    try
+                        ReferencesFile.FromFile fileName
+                    with _ ->
+                        failwith ((ReferencesFileParseError (FileInfo fileName)).ToString())
                 | None ->
                     let fileName = 
                         let fi = FileInfo(projectFile.FileName)
@@ -245,15 +274,15 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     ReferencesFile.New fileName
 
             let list = System.Collections.Generic.List<_>()
+            let cliTools = System.Collections.Generic.List<_>()
             let fi = FileInfo projectFile.FileName
             let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
-            let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))
-            
+            let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))            
+                        
             if not newFileName.Directory.Exists then
                 newFileName.Directory.Create()
-
-            createAlternativeNuGetConfig alternativeConfigFileName.FullName
-
+            
+            createAlternativeNuGetConfig alternativeConfigFileName
             
             for kv in groups do
                 let hull = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
@@ -283,13 +312,17 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     if restore then
                         let _,packageName = key
                         let direct = allDirectPackages.Contains packageName
+                        let package = resolved.Force().[key]
                         let line =
                             packageName.ToString() + "," + 
-                            resolved.Force().[key].Version.ToString() + "," + 
+                            package.Version.ToString() + "," + 
                             (if direct then "Direct" else "Transitive") + "," +
                             kv.Key.ToString()
-
-                        list.Add line
+                        
+                        if packageName.ToString().StartsWith "dotnet-" then
+                            cliTools.Add package
+                        else
+                            list.Add line
                 
             let output = String.Join(Environment.NewLine,list)
             if output = "" then
@@ -301,6 +334,10 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             else
                 if verbose then
                     tracefn " - %s already up-to-date" newFileName.FullName
+
+            let paketPropsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.props"))
+            
+            createPaketPropsFile cliTools paketPropsFileName
 
             [referencesFile.FileName]
         | None -> referencesFileNames
