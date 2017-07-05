@@ -216,6 +216,26 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
+let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
+    if Seq.isEmpty cliTools then
+        if fileInfo.Exists then 
+            File.Delete(fileInfo.FullName)
+    else
+        let cliParts =
+            cliTools
+            |> Seq.map (fun package -> 
+                package.Name.ToString() + "," + 
+                package.Version.ToString())
+            
+        let content = String.Join(Environment.NewLine,cliParts)
+
+        if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
+            File.WriteAllText(fileInfo.FullName,content)
+            tracefn " - %s created" fileInfo.FullName
+        else
+            if verbose then
+                tracefn " - %s already up-to-date" fileInfo.FullName
+
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFramework: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
@@ -340,8 +360,10 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                 if verbose then
                     tracefn " - %s already up-to-date" newFileName.FullName
 
-            let paketPropsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.props"))
+            let paketCLIToolsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.clitools"))
+            createPaketCLIToolsFile cliTools paketCLIToolsFileName
             
+            let paketPropsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.props"))
             createPaketPropsFile cliTools paketPropsFileName
 
             [referencesFile.FileName]
