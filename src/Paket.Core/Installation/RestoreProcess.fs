@@ -194,14 +194,14 @@ let createPaketPropsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             
         let content = 
             sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
-    <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-      <PropertyGroup>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
         <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-      </PropertyGroup>
-      <ItemGroup>
+    </PropertyGroup>
+    <ItemGroup>
 %s
-      </ItemGroup>
-    </Project>""" 
+    </ItemGroup>
+</Project>""" 
              (String.Join(Environment.NewLine,cliParts))
 
         if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
