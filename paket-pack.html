@@ -102,16 +102,12 @@
 <span class="l">41: </span>
 <span class="l">42: </span>
 <span class="l">43: </span>
-<span class="l">44: </span>
-<span class="l">45: </span>
-<span class="l">46: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">paket pack [--help] [--build-config &lt;configuration&gt;] [--build-platform &lt;platform&gt;]
            [--version &lt;version&gt;] [--template &lt;path&gt;] [--exclude &lt;package ID&gt;]
            [--specific-version &lt;package ID&gt; &lt;version&gt;] [--release-notes &lt;text&gt;]
-           [--lock-dependencies] [--minimum-from-lock-file] [minimum-from-lock-file]
-           [--pin-project-references] [--symbols] [--include-referenced-projects]
-           [--project-url &lt;URL&gt;] &lt;path&gt;
+           [--lock-dependencies] [--minimum-from-lock-file] [--pin-project-references] [--symbols]
+           [--include-referenced-projects] [--project-url &lt;URL&gt;] &lt;path&gt;
 
 OUTPUT:
 
@@ -136,8 +132,6 @@ OPTIONS:
     --minimum-from-lock-file
                           use version constraints from paket.lock instead of paket.dependencies and
                           add them as a minimum version; --lock-dependencies overrides this option
-    minimum-from-lock-file
-                          [obsolete]
     --pin-project-references
                           pin dependencies generated from project references to exact versions (=)
                           instead of using minimum versions (&gt;=); with --lock-dependencies project
