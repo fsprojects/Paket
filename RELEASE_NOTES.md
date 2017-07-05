@@ -1,3 +1,6 @@
+#### 5.4.5 - 05.07.2017
+* BUGFIX: Show stack trace only in verbose mode - https://github.com/fsprojects/Paket/pull/2481
+
 #### 5.4.4 - 05.07.2017
 * BUGFIX: find-packages doesn't require paket.dependencies to be present - https://github.com/fsprojects/Paket/pull/2483
 
