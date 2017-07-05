@@ -48,6 +48,29 @@ let ``should detect output path for proj file``
     outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
 
 [<Test>]
+let ``should detect output path for netsdk csproj file``
+        ([<Values("MicrosoftNetSdkWithTargetFramework.csprojtest")>] project)
+        ([<Values("Debug", "Release", "dEbUg", "rElEaSe")>] configuration) =
+    ensureDir ()
+    let projectFile = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s" project).Value 
+    let target = projectFile.GetTargetProfile().ToString()
+    let outPath = projectFile.GetOutputDirectory configuration ""
+    let expected = (System.IO.Path.Combine(@"bin", configuration, target) |> normalizePath)
+    outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
+
+[<Test>]
+let ``should detect output path for netsdk with outputPath csproj file``
+        ([<Values("MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest")>] project)
+        ([<Values("Release")>] configuration) =
+    ensureDir ()
+    let projectFile = ProjectFile.TryLoad(sprintf "./ProjectFile/TestData/%s" project).Value 
+    let target = projectFile.GetTargetProfile().ToString()
+    let outPath = projectFile.GetOutputDirectory configuration ""
+    let expected = (System.IO.Path.Combine(@"bin", configuration,"netstandard1.4_bin", target) |> normalizePath)
+    outPath.ToLowerInvariant() |> shouldEqual (expected.ToLowerInvariant())
+
+
+[<Test>]
 let ``should detect framework profile for ProjectWithConditions file`` () =
     ensureDir ()
     ProjectFile.TryLoad("./ProjectFile/TestData/ProjectWithConditions.fsprojtest").Value.GetTargetProfile()
