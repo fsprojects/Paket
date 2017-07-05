@@ -36,7 +36,11 @@ let CopyToCaches force caches fileName =
 /// returns - package, libs files, props files, targets files, analyzers files
 let private extractPackage caches package alternativeProjectRoot root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
-        let! fileName,folder = NuGet.DownloadPackage(alternativeProjectRoot, root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let! fileName,folder = 
+            NuGet.DownloadPackage(
+                alternativeProjectRoot, root, source, caches, groupName, 
+                package.Name, version, package.IsCliToolPackage(), includeVersionInPath, force, detailed)
+
         CopyToCaches force caches fileName
         return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
     }
@@ -74,10 +78,10 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                     let source =
                         sources 
                         |> List.tryPick (fun source -> 
-                                match source with
-                                | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some(source)
-                                | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some(source)
-                                | _ -> None)
+                            match source with
+                            | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some source
+                            | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some source
+                            | _ -> None)
 
                     match source with
                     | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
@@ -109,10 +113,11 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 let internal restore (alternativeProjectRoot, root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
-        let! _ = lockFile.Groups.[groupName].Resolution
-                 |> Map.filter (fun name r -> packages.Contains name)
-                 |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
-                 |> Async.Parallel
+        let! _ = 
+            lockFile.Groups.[groupName].Resolution
+            |> Map.filter (fun name r -> packages.Contains name)
+            |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
+            |> Async.Parallel
         return ()
     }
 

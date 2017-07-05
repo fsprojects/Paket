@@ -200,7 +200,7 @@ module RuntimeGraph =
     let getRuntimeGraphFromNugetCache root groupName (package:ResolvedPackage) =
         // 1. downloading packages into cache
         let targetFileName, _ =
-            NuGet.DownloadPackage (None, root, package.Source, [], groupName, package.Name, package.Version, false, false, false)
+            NuGet.DownloadPackage (None, root, package.Source, [], groupName, package.Name, package.Version, package.IsCliToolPackage(), false, false, false)
             |> Async.RunSynchronously
 
         let extractedDir = NuGetCache.ExtractPackageToUserFolder (targetFileName, package.Name, package.Version, null) |> Async.RunSynchronously

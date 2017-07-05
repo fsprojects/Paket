@@ -505,10 +505,14 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
             SemVer.Parse v,sorted |> List.map (fun (_,_,x) -> x)) }
 
 /// Downloads the given package to the NuGet Cache folder
-let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, includeVersionInPath, force, detailed) =
+let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), caches:Cache list, groupName, packageName:PackageName, version:SemVerInfo, isCLITool, includeVersionInPath, force, detailed) =
     let nupkgName = packageName.ToString() + "." + version.ToString() + ".nupkg"
     let normalizedNupkgName = packageName.ToString() + "." + version.Normalize() + ".nupkg"
-    let targetFileName = Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
+    let targetFileName =
+        if isCLITool then
+            Path.Combine(Constants.NuGetCacheFolder, ".tools", normalizedNupkgName)
+        else
+            Path.Combine(Constants.NuGetCacheFolder, normalizedNupkgName)
     let targetFile = FileInfo targetFileName
     let licenseFileName = Path.Combine(Constants.NuGetCacheFolder, packageName.ToString() + "." + version.Normalize() + ".license.html")
 
