@@ -48,6 +48,8 @@ Instead it will only generate a single line:
 ```
 
 This hook will tell the dotnet cli to restore packages via Paket's restore mechanism. 
+This restore mechanism will download all packages and create a couple of temp files in the project's `obj` folder that are automatically imported in your project. Note: The `obj` folder should always be in your `.gitignore`.
+
 A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.
 
 ### Restoring packages
