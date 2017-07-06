@@ -134,7 +134,30 @@ Instead it will only generate a single line:</p>
 </code></pre></td></tr></table>
 <p>This step is absolutely the same as with traditional .NET projects.</p>
 <h3><a name="Creating-packages" class="anchor" href="#Creating-packages">Creating packages</a></h3>
-<p>If you want to create NuGet packages you can continue to use the <a href="paket-pack.html">paket pack</a> command and <a href="template-files.html">template files</a> or you use the new <code>dotnet pack</code> command that comes with the dotnet cli. <code>dotnet pack</code> will take project information from your MSBuild project and dependency information from the <a href="references-files.html"><code>paket.references</code> file</a>.</p>
+<p>If you want to create NuGet packages you can continue to use the <a href="paket-pack.html">paket pack</a> command and <a href="template-files.html">template files</a>.</p>
+<p>Or you can use the new <code>pack</code> support in the <code>.NET SDK</code>, that will take package metadata info from your MSBuild project and dependency information from the <a href="references-files.html"><code>paket.references</code> file</a>.</p>
+<ul>
+<li>
+<p>With dotnet cli you can now call:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet pack
+</code></pre></td></tr></table>
+</li>
+<li>
+<p>With MSBuild 15 (Developer Command Prompt for VS2017 or mono 5) you can now call:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">msbuild /t:Pack
+</code></pre></td></tr></table>
+</li>
+</ul>
+<p>As a note for <code>.NET SDK</code>, all usual nuget metadata for <code>pack</code> can be customized (for example <code>Author</code>) for automation as:</p>
+<ul>
+<li>MSBuild property in the project <code>&lt;Author&gt;Nigel Sheldon&lt;/Author&gt;</code> or defined inside an imported files.</li>
+<li>Environment variable: <code>Author=Nigel Sheldon</code></li>
+<li>Command line arg, passing <code>/p:Author="Nigel Sheldon"</code></li>
+</ul>
 <h3><a name="Converting-from-NuGet" class="anchor" href="#Converting-from-NuGet">Converting from NuGet</a></h3>
 <p>The NuGet conversion process is identical to traditional .NET projects you can read about it in the <a href="convert-from-nuget-tutorial.html"><code>Convert from NuGet</code> tutorial</a>.</p>
 
