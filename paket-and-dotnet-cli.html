@@ -88,19 +88,18 @@ root and specify all your dependencies in it.</p>
 <p>This is absolutely the same as with traditional .NET projects.</p>
 <h3><a name="Installing-dependencies-into-projects" class="anchor" href="#Installing-dependencies-into-projects">Installing dependencies into projects</a></h3>
 <p>Like with traditional .NET projects you also need to put a <a href="references-files.html"><code>paket.references</code> files</a> alongside your MSBuild project files.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Castle.Windsor-log4net
-NUnit
-</code></pre></td></tr></table>
 <p>In contrast to traditional .NET projects Paket will not generate .dll references into your project files.
 Instead it will only generate a single line:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="xml">      <span class="k">&lt;</span><span class="i">Import</span> <span class="o">Project</span><span class="k">="..\..\.paket\Paket.Restore.targets"</span> <span class="k">/&gt;</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="xml"><span class="k">&lt;</span><span class="i">Import</span> <span class="o">Project</span><span class="k">="..\..\.paket\Paket.Restore.targets"</span> <span class="k">/&gt;</span>
 </code></pre></td></tr></table>
 <p>This hook will tell the dotnet cli to restore packages via Paket's restore mechanism. A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.</p>
+<h3><a name="Restoring-packages" class="anchor" href="#Restoring-packages">Restoring packages</a></h3>
+<p>In traditional .NET projects you were used to call the <a href="paket-restore.html">paket restore</a> command from the root of your solution.
+With dotnet cli you now call <code>dotnet restore</code> per project and this will call <code>paket restore</code> under the hood.</p>
+<p>So this step integrates well into the <code>dotnet cli</code> philosophy. It also works automatically in Visual Studio 2017.
+If you open a solution with paket set up properly then Visual Studio's background build will restore paket dependencies automatically.</p>
 <h3><a name="Updating-packages" class="anchor" href="#Updating-packages">Updating packages</a></h3>
 <p>If you want to check if your dependencies have updates you can run the
 <a href="paket-outdated.html"><code>paket outdated</code> command</a>:</p>
