@@ -34,6 +34,7 @@ type ResolvedPackage = {
     Dependencies        : DependencySet
     Unlisted            : bool
     IsRuntimeDependency : bool
+    IsCliTool           : bool
     Settings            : InstallSettings
     Source              : PackageSource
 } with
@@ -41,9 +42,6 @@ type ResolvedPackage = {
 
     member self.HasFrameworkRestrictions =
         getExplicitRestriction self.Settings.FrameworkRestrictions <> FrameworkRestriction.NoRestriction
-
-    member self.IsCliToolPackage() =
-        self.Name.ToString().StartsWith "dotnet-"
 
     member private self.Display
         with get() =
@@ -432,13 +430,14 @@ let private explorePackageConfig getPackageDetailsBlock (pkgConfig:PackageConfig
                 | _ -> dependency.Settings
             |> fun x -> x.AdjustWithSpecialCases packageDetails.Name
         Result.Ok
-            {   Name                = packageDetails.Name
-                Version             = version
-                Dependencies        = filteredDependencies
-                Unlisted            = packageDetails.Unlisted
-                Settings            = { settings with FrameworkRestrictions = newRestrictions }
-                Source              = packageDetails.Source
-                IsRuntimeDependency = false
+            { Name                = packageDetails.Name
+              Version             = version
+              Dependencies        = filteredDependencies
+              Unlisted            = packageDetails.Unlisted
+              Settings            = { settings with FrameworkRestrictions = newRestrictions }
+              Source              = packageDetails.Source
+              IsCliTool           = pkgConfig.Dependency.IsCliTool
+              IsRuntimeDependency = false
             }
     with
     | exn ->

@@ -39,7 +39,7 @@ let private extractPackage caches package alternativeProjectRoot root source gro
         let! fileName,folder = 
             NuGet.DownloadPackage(
                 alternativeProjectRoot, root, source, caches, groupName, 
-                package.Name, version, package.IsCliToolPackage(), includeVersionInPath, force, detailed)
+                package.Name, version, package.IsCliTool, includeVersionInPath, force, detailed)
 
         CopyToCaches force caches fileName
         return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
@@ -95,7 +95,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 
                 CopyToCaches force caches nupkg.FullName
 
-                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, package.IsCliToolPackage(), includeVersionInPath, force, false)
+                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, package.IsCliTool, includeVersionInPath, force, false)
                 return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
         }
 
