@@ -53,6 +53,14 @@ Instead it will only generate a single line:
 
 This hook will tell the dotnet cli to restore packages via Paket's restore mechanism. A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.
 
+### Restoring packages
+
+In traditional .NET projects you were used to call the [paket restore](paket-restore.html) command from the root of your solution.
+With dotnet cli you now call `dotnet restore` per project and this will call `paket restore` under the hood.
+
+So this step integrates well into the `dotnet cli` philosophy. It also works automatically in Visual Studio 2017. 
+If you open a solution with paket set up properly then Visual Studio's background build will restore paket dependencies automatically.
+
 ### Updating packages
 
 If you want to check if your dependencies have updates you can run the
