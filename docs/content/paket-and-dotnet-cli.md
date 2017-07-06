@@ -104,7 +104,7 @@ This step is absolutely the same as with traditional .NET projects.
 
 If you want to create NuGet packages you can continue to use the [paket pack](paket-pack.html) command and [template files](template-files.html).
 
-Or you can use the new `Pack` support in the `.NET Sdk`, that will take package metadata info from your MSBuild project and dependency information from the [`paket.references` file](references-files.html).
+Or you can use the new `pack` support in the `.NET SDK`, that will take package metadata info from your MSBuild project and dependency information from the [`paket.references` file](references-files.html).
 
 - With dotnet cli you can now call:
 
@@ -118,11 +118,11 @@ Or you can use the new `Pack` support in the `.NET Sdk`, that will take package 
     msbuild /t:Pack
     ```
 
-As a note for `.NET Sdk`, all usual nuget metadata for `pack` can be customized (for example `Author`) for automation as:
+As a note for `.NET SDK`, all usual nuget metadata for `pack` can be customized (for example `Author`) for automation as:
 
-- msbuild property in the project `<Author>Nigel Sheldon</Author>` or defined inside an imported files.
-- env var `Author=Nigel Sheldon`
-- command line arg, passing `/p:Author="Nigel Sheldon"`
+- MSBuild property in the project `<Author>Nigel Sheldon</Author>` or defined inside an imported files.
+- Environment variable: `Author=Nigel Sheldon`
+- Command line arg, passing `/p:Author="Nigel Sheldon"`
 
 
 ### Converting from NuGet
