@@ -32,6 +32,13 @@ As usual, to create an empty `paket.dependencies` file, just run
 
 This step is absolutely the same as with traditional .NET projects.
 
+### Specifying dependencies to dotnet cli tools
+
+With Paket 5.5 comes a new keyword for the [`paket.dependencies` file](dependencies-file.html). The [`clitool` reference](nuget-dependencies.html#Special-case-dotnet-cli-tools) allows to use specialized NuGet packages as dotnet cli tools.
+
+
+This is only available for new .NET SDK projects.
+
 ### Installing dependencies
 
 Install all required packages with:

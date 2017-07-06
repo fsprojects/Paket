@@ -1,5 +1,5 @@
 #### 5.5.0-alpha009 - 06.07.2017
-* Support for dotnet cli tools with clitools keyword in paket.dependencies - https://github.com/fsprojects/Paket/pull/2486
+* Support for dotnet cli tools with clitools keyword in paket.dependencies - https://fsprojects.github.io/Paket/nuget-dependencies.html#Special-case-dotnet-cli-tools
 * GNU-compatible command line - https://github.com/fsprojects/Paket/pull/2429
 
 #### 5.4.8 - 06.07.2017
