@@ -83,6 +83,9 @@ root and specify all your dependencies in it.</p>
 <td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe init
 </code></pre></td></tr></table>
 <p>This step is absolutely the same as with traditional .NET projects.</p>
+<h3><a name="Specifying-dependencies-to-dotnet-cli-tools" class="anchor" href="#Specifying-dependencies-to-dotnet-cli-tools">Specifying dependencies to dotnet cli tools</a></h3>
+<p>With Paket 5.5 comes a new keyword for the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>. The <a href="nuget-dependencies.html#Special-case-dotnet-cli-tools"><code>clitool</code> reference</a> allows to use specialized NuGet packages as dotnet cli tools.</p>
+<p>This is only available for new .NET SDK projects.</p>
 <h3><a name="Installing-dependencies" class="anchor" href="#Installing-dependencies">Installing dependencies</a></h3>
 <p>Install all required packages with:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
