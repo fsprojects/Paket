@@ -1036,4 +1036,4 @@ let ``should parse lock file with cli tool``() =
 
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
-    |> shouldEqual (normalizeLineEndings lockFileWithDependencies)
+    |> shouldEqual (normalizeLineEndings lockFileWithCLiTool)
