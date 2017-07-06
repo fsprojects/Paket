@@ -447,17 +447,6 @@ source https://nuget.org/api/v2
 nuget Example ~> 1.2 lowest_matching: true
 ```
 
-### Special case: dotnet cli tools
-
-```paket
-clitool dotnet-fable 1.17
-nuget Fable.Core
-```
-
-Command line tools that hook into dotnet cli are special NuGet packages. 
-These packages are referenced with the keyword `clitool` instead of `nuget`.
-This will exclude the tool and all it's dependencies from getting referenced as a dependency of a project.
-
 ### Combine multiple modifiers
 
 It is possible to apply more than one of the modifiers above to a particular
@@ -469,3 +458,15 @@ source https://nuget.org/api/v2
 // Do not import .targets and .props and also do not add any content.
 nuget ClearScript.Installer import_targets: false, content: none
 ```
+
+### Special case: `dotnet` CLI tools
+
+```paket
+clitool dotnet-fable 1.17
+nuget Fable.Core
+```
+
+Command line (CLI) tools that hook into the `dotnet` CLI are special NuGet
+packages. These packages are added with the keyword `clitool` instead of
+`nuget`. This will exclude the tool and all its dependencies from getting
+referenced as a dependency for any project.
