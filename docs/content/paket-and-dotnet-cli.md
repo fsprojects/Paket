@@ -24,7 +24,7 @@ There are already a couple of dotnet templates available that will ship with Pak
 Create a [`paket.dependencies` file](dependencies-file.html) in your project's
 root and specify all your dependencies in it. 
 
-This is absolutely the same as with traditional .NET projects.
+This step is absolutely the same as with traditional .NET projects.
 
 ### Installing dependencies
 
@@ -34,7 +34,7 @@ Install all required packages with:
 .paket/paket.exe install
 ```
 
-This is absolutely the same as with traditional .NET projects.
+This step is absolutely the same as with traditional .NET projects.
 
 ### Installing dependencies into projects
 
@@ -47,7 +47,8 @@ Instead it will only generate a single line:
 <Import Project="..\..\.paket\Paket.Restore.targets" />
 ```
 
-This hook will tell the dotnet cli to restore packages via Paket's restore mechanism. A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.
+This hook will tell the dotnet cli to restore packages via Paket's restore mechanism. 
+A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.
 
 ### Restoring packages
 
@@ -59,23 +60,13 @@ If you open a solution with paket set up properly then Visual Studio's backgroun
 
 ### Updating packages
 
-If you want to check if your dependencies have updates you can run the
-[`paket outdated` command](paket-outdated.html):
-
-```sh
-.paket/paket.exe outdated
-```
-
-If you want to update all packages you can use the
-[`paket update` command](paket-update.html):
+If you want to update packages you can use the [`paket update` command](paket-update.html):
 
 ```sh
 .paket/paket.exe update
 ```
 
-This command will analyze your
-[`paket.dependencies` file](dependencies-file.html) and update the
-[`paket.lock` file](lock-file.html).
+This step is absolutely the same as with traditional .NET projects.
 
 ### Converting from NuGet
 
