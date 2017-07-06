@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>paket pack
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -57,20 +58,7 @@
         <div class="span9" id="main">
           
 <h1><a name="paket-pack" class="anchor" href="#paket-pack">paket pack</a></h1>
-<p>Packs all paket.template files within this repository.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="console">paket pack [--help] output &lt;path&gt; [buildconfig &lt;config name&gt;] [buildplatform &lt;target&gt;]
-           [version &lt;version&gt;] [templatefile &lt;path&gt;] [exclude &lt;templateId&gt;]
-           [specific-version &lt;templateId&gt; &lt;version&gt;] [releaseNotes &lt;text&gt;] [lock-dependencies]
-           [minimum-from-lock-file] [pin-project-references] [symbols] [include-referenced-projects]
-           [project-url &lt;url&gt;]
-</code></pre></td></tr></table>
-<p>OPTIONS:</p>
+<p>Create NuGet packages from paket.template files.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -105,48 +93,64 @@
 <span class="l">32: </span>
 <span class="l">33: </span>
 <span class="l">34: </span>
+<span class="l">35: </span>
+<span class="l">36: </span>
+<span class="l">37: </span>
+<span class="l">38: </span>
+<span class="l">39: </span>
+<span class="l">40: </span>
+<span class="l">41: </span>
+<span class="l">42: </span>
+<span class="l">43: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">output</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>         <span class="i">Output</span> <span class="i">directory</span> <span class="k">to</span> <span class="i">put</span> <span class="o">.</span><span class="i">nupkg</span> <span class="i">files</span><span class="o">.</span>
-<span class="i">buildconfig</span> <span class="o">&lt;</span><span class="i">config</span> <span class="i">name</span><span class="o">&gt;</span>
-                      <span class="i">Optionally</span> <span class="i">specify</span> <span class="i">build</span> <span class="i">configuration</span> <span class="i">that</span> <span class="i">should</span> <span class="i">be</span> <span class="i">packaged</span> (<span class="i">defaults</span>
-                      <span class="k">to</span> <span class="i">Release</span>)<span class="o">.</span>
-<span class="i">buildplatform</span> <span class="o">&lt;</span><span class="i">target</span><span class="o">&gt;</span>
-                      <span class="i">Optionally</span> <span class="i">specify</span> <span class="i">build</span> <span class="i">platform</span> <span class="i">that</span> <span class="i">should</span> <span class="i">be</span> <span class="i">packaged</span> (<span class="k">if</span> <span class="i">not</span>
-                      <span class="i">provided</span> <span class="k">or</span> <span class="i">empty</span>, <span class="i">checks</span> <span class="i">all</span> <span class="i">known</span> <span class="i">platform</span> <span class="i">targets</span>)<span class="o">.</span>
-<span class="i">version</span> <span class="o">&lt;</span><span class="i">version</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">version</span> <span class="k">of</span> <span class="i">the</span> <span class="i">package</span><span class="o">.</span>
-<span class="i">templatefile</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>   <span class="i">Allows</span> <span class="k">to</span> <span class="i">specify</span> <span class="i">a</span> <span class="i">single</span> <span class="i">template</span> <span class="i">file</span><span class="o">.</span>
-<span class="i">exclude</span> <span class="o">&lt;</span><span class="i">templateId</span><span class="o">&gt;</span>  <span class="i">Exclude</span> <span class="i">template</span> <span class="i">file</span> <span class="i">by</span> <span class="i">id</span><span class="o">.</span>
-<span class="i">specific</span><span class="o">-</span><span class="i">version</span> <span class="o">&lt;</span><span class="i">templateId</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="i">version</span><span class="o">&gt;</span>
-                      <span class="i">Specifies</span> <span class="i">a</span> <span class="i">version</span> <span class="i">number</span> <span class="k">for</span> <span class="i">template</span> <span class="k">with</span> <span class="i">given</span> <span class="i">id</span><span class="o">.</span>
-<span class="i">releaseNotes</span> <span class="o">&lt;</span><span class="i">text</span><span class="o">&gt;</span>   <span class="i">Specify</span> <span class="i">relase</span> <span class="i">notes</span> <span class="k">for</span> <span class="i">the</span> <span class="i">package</span><span class="o">.</span>
-<span class="i">lock</span><span class="o">-</span><span class="i">dependencies</span>     <span class="i">Get</span> <span class="i">the</span> <span class="i">version</span> <span class="i">requirements</span> <span class="i">from</span> <span class="i">paket</span><span class="o">.</span><span class="i">lock</span> <span class="i">instead</span> <span class="k">of</span>
-                      <span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span><span class="o">.</span>
-<span class="i">minimum</span><span class="o">-</span><span class="i">from</span><span class="o">-</span><span class="i">lock</span><span class="o">-</span><span class="i">file</span>
-                      <span class="i">Get</span> <span class="i">the</span> <span class="i">version</span> <span class="i">requirements</span> <span class="i">from</span> <span class="i">paket</span><span class="o">.</span><span class="i">lock</span> <span class="i">instead</span> <span class="k">of</span>
-                      <span class="i">paket</span><span class="o">.</span><span class="i">dependencies</span>, <span class="k">and</span> <span class="i">add</span> <span class="i">them</span> <span class="k">as</span> <span class="i">a</span> <span class="i">minimum</span> <span class="i">version</span><span class="o">.</span>
-                      <span class="k">`</span><span class="i">lock</span><span class="o">-</span><span class="i">dependencies</span><span class="k">`</span> <span class="i">will</span> <span class="i">over</span><span class="o">-</span><span class="i">ride</span> <span class="i">this</span> <span class="i">option</span><span class="o">.</span>
-<span class="i">pin</span><span class="o">-</span><span class="i">project</span><span class="o">-</span><span class="i">references</span>
-                      <span class="i">Pin</span> <span class="i">dependencies</span> <span class="i">generated</span> <span class="i">from</span> <span class="i">project</span> <span class="i">references</span> (<span class="o">=</span>) <span class="i">instead</span> <span class="k">of</span> <span class="i">using</span>
-                      <span class="i">minimum</span> (<span class="o">&gt;</span><span class="o">=</span>) <span class="k">for</span> <span class="i">version</span> <span class="i">specification</span><span class="o">.</span>  <span class="i">If</span> <span class="k">`</span><span class="i">lock</span><span class="o">-</span><span class="i">dependencies</span><span class="k">`</span> <span class="i">is</span>
-                      <span class="i">specified</span>, <span class="i">project</span> <span class="i">references</span> <span class="i">will</span> <span class="i">be</span> <span class="i">pinned</span> <span class="i">even</span> <span class="k">if</span> <span class="i">this</span> <span class="i">option</span> <span class="i">is</span> <span class="i">not</span>
-                      <span class="i">specified</span><span class="o">.</span>
-<span class="i">symbols</span>               <span class="i">Build</span> <span class="i">symbol</span><span class="o">/</span><span class="i">source</span> <span class="i">packages</span> <span class="k">in</span> <span class="i">addition</span> <span class="k">to</span> <span class="i">library</span><span class="o">/</span><span class="i">content</span> <span class="i">packages</span><span class="o">.</span>
-<span class="i">include</span><span class="o">-</span><span class="i">referenced</span><span class="o">-</span><span class="i">projects</span>
-                      <span class="i">Include</span> <span class="i">symbol</span><span class="o">/</span><span class="i">source</span> <span class="i">from</span> <span class="i">referenced</span> <span class="i">projects</span><span class="o">.</span>
-<span class="i">project</span><span class="o">-</span><span class="i">url</span> <span class="o">&lt;</span><span class="i">url</span><span class="o">&gt;</span>     <span class="i">Url</span> <span class="k">to</span> <span class="i">the</span> <span class="i">projects</span> <span class="i">home</span> <span class="i">page</span><span class="o">.</span>
-<span class="o">--</span><span class="i">verbose</span>, <span class="o">-</span><span class="i">v</span>         <span class="i">Enable</span> <span class="i">verbose</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">log</span><span class="o">-</span><span class="i">file</span> <span class="o">&lt;</span><span class="i">path</span><span class="o">&gt;</span>     <span class="i">Specify</span> <span class="i">a</span> <span class="i">log</span> <span class="i">file</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">silent</span>, <span class="o">-</span><span class="i">s</span>          <span class="i">Suppress</span> <span class="i">console</span> <span class="i">output</span> <span class="k">for</span> <span class="i">the</span> <span class="i">paket</span> <span class="i">process</span><span class="o">.</span>
-<span class="o">--</span><span class="i">version</span>             <span class="i">Display</span> <span class="i">the</span> <span class="i">version</span><span class="o">.</span>
-<span class="o">--</span><span class="i">from</span><span class="o">-</span><span class="i">bootstrapper</span>   <span class="i">Call</span> <span class="i">coming</span> <span class="i">from</span> <span class="i">the</span> <span class="o">&#39;</span><span class="o">--</span><span class="i">run&#39;</span> <span class="i">feature</span> <span class="k">of</span> <span class="i">the</span> <span class="i">bootstrapper</span><span class="o">.</span>
-<span class="o">--</span><span class="i">help</span>                <span class="i">display</span> <span class="i">this</span> <span class="i">list</span> <span class="k">of</span> <span class="i">options</span><span class="o">.</span>
-</code></pre></td>
-</tr>
-</table>
-<p>If you add the <code>-v</code> flag, then Paket will run in verbose mode and show detailed information.</p>
-<p>With <code>--log-file [FileName]</code> you can trace the logged information into a file.</p>
-<h2><a name="Creating-NuGet-Packages" class="anchor" href="#Creating-NuGet-Packages">Creating NuGet-Packages</a></h2>
-<p>Consider the following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's root:</p>
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket pack [--help] [--build-config &lt;configuration&gt;] [--build-platform &lt;platform&gt;]
+           [--version &lt;version&gt;] [--template &lt;path&gt;] [--exclude &lt;package ID&gt;]
+           [--specific-version &lt;package ID&gt; &lt;version&gt;] [--release-notes &lt;text&gt;]
+           [--lock-dependencies] [--minimum-from-lock-file] [--pin-project-references] [--symbols]
+           [--include-referenced-projects] [--project-url &lt;URL&gt;] &lt;path&gt;
+
+OUTPUT:
+
+    &lt;path&gt;                output directory for .nupkg files
+
+OPTIONS:
+
+    --build-config &lt;configuration&gt;
+                          build configuration that should be packaged (default: Release)
+    --build-platform &lt;platform&gt;
+                          build platform that should be packaged (default: check all known platform
+                          targets)
+    --version &lt;version&gt;   version of the package
+    --template &lt;path&gt;     pack a single paket.template file
+    --exclude &lt;package ID&gt;
+                          exclude paket.template file by package ID; may be repeated
+    --specific-version &lt;package ID&gt; &lt;version&gt;
+                          version number to use for package ID; may be repeated
+    --release-notes &lt;text&gt;
+                          release notes
+    --lock-dependencies   use version constraints from paket.lock instead of paket.dependencies
+    --minimum-from-lock-file
+                          use version constraints from paket.lock instead of paket.dependencies and
+                          add them as a minimum version; --lock-dependencies overrides this option
+    --pin-project-references
+                          pin dependencies generated from project references to exact versions (=)
+                          instead of using minimum versions (&gt;=); with --lock-dependencies project
+                          references will be pinned even if this option is not specified
+    --symbols             create symbol and source packages in addition to library and content
+                          packages
+    --include-referenced-projects
+                          include symbols and source from referenced projects
+    --project-url &lt;URL&gt;   homepage URL for the package
+    --silent, -s          suppress console output
+    --verbose, -v         print detailed information to the console
+    --log-file &lt;path&gt;     print output to a file
+    --from-bootstrapper   call coming from the '--run' feature of the bootstrapper
+    --help                display this list of options.
+</code></pre></td></tr></table>
+<p>If you add the <code>--verbose</code> flag Paket will run in verbose mode and show detailed information.</p>
+<p>With <code>--log-file [path]</code> you can trace the logged information into a file.</p>
+<h2><a name="Creating-NuGet-packages" class="anchor" href="#Creating-NuGet-packages">Creating NuGet packages</a></h2>
+<p>Consider the following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> file:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -157,12 +161,13 @@
 <span class="k">nuget</span> Castle.Windsor <span class="o">~&gt;</span> <span class="n">3.2</span>
 <span class="k">nuget</span> NUnit
 </code></pre></td></tr></table>
-<p>And one of your projects having a <a href="references-files.html"><code>paket.references</code> file</a> like this:</p>
+<p>One of your projects has a <a href="references-files.html"><code>paket.references</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Castle.Windsor
 </code></pre></td></tr></table>
-<p>Now, when you run <code>paket install</code>, your <a href="lock-file.html"><code>paket.lock</code> file</a> would look like this:</p>
+<p>When you run <a href="paket-install.html"><code>paket install</code></a>, your
+<a href="lock-file.html"><code>paket.lock</code> file</a> will look like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -177,62 +182,100 @@
       Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
     NUnit (<span class="n">2.6.4</span>)
 </code></pre></td></tr></table>
-<p>Now, when you are done programming and wish to create a NuGet-Package of your project, create a <a href="template-files.html"><code>paket.template</code></a> file with <code>type project</code> and run:</p>
+<p>When you are done programming and wish to create a NuGet package of your
+project, create a <a href="template-files.html"><code>paket.template</code> file</a> with <code>type project</code> and
+run:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="batch">paket pack output nugets version 1.0.0
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket pack nugets --version 1.0.0
 </code></pre></td></tr></table>
-<p>Or, you could run:</p>
+<p>You could also run:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="batch">paket pack output nugets version 1.0.0 lock-dependencies
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket pack nugets --version 1.0.0 --lock-dependencies
 </code></pre></td></tr></table>
-<p>Depending on which command you issue, Paket creates different version requirements of the packages you depend on in the resulting <code>.nuspec</code> file of your package:</p>
+<p>Depending on which command you issue, Paket creates different version
+requirements of the packages you depend on in the resulting <code>.nuspec</code> file of
+your package:</p>
 <table>
-  <thead>
-    <th>Dependency</th>
-    <th>Default</th>
-    <th>With locked dependencies</th>
-  </thead>
-  <tbody>
-    <tr>
-      <td>Castle.Windsor</td>
-      <td><code>[3.2,4.0)</code></td>
-      <td><code>[3.3.0]</code></td>
-    </tr>
-  </tbody>
+<thead>
+<tr class="header">
+<th align="left"><p>Dependency</p></th>
+<th align="left"><p>Default</p></th>
+<th align="left"><p>With locked dependencies</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><p><code>Castle.Windsor</code></p></td>
+<td align="left"><p><code>[3.2,4.0)</code></p></td>
+<td align="left"><p><code>[3.3.0]</code></p></td>
+</tr>
+</tbody>
 </table>
-<p>As you see here, the first command (without the <code>lock-dependencies</code> parameter) creates version requirements as specified in your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>. The second command takes the currently resolved versions from your <a href="lock-file.html"><code>paket.lock</code> file</a> and "locks" them to these specific versions.</p>
-<h3><a name="Symbol-Packages" class="anchor" href="#Symbol-Packages">Symbol Packages</a></h3>
-<p>Visual Studio can be configured to download symbol/source versions of installed packages from a symbol server, allowing the developer to use the debugger to step into the source (see <a href="http://www.symbolsource.org/Public/Home/VisualStudio">SymbolSource</a>).
-These symbol/source packages are the same as the regular packages, but contain the source files (under <code>src</code>) and PDBs alongside the DLLs.
-Paket can build these symbol/source packages, in addition to the regular packages, using the <code>symbols</code> parameter:</p>
+
+<p>The first command (without the <code>--lock-dependencies</code> parameter) creates the
+version requirements as specified in your <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.
+The second command takes the currently resolved versions from your
+<a href="lock-file.html"><code>paket.lock</code> file</a> and "locks" them to these specific versions.</p>
+<h3><a name="Symbol-packages" class="anchor" href="#Symbol-packages">Symbol packages</a></h3>
+<p>Visual Studio can be configured to download symbol/source versions of installed
+packages from a symbol server, allowing the developer to use the debugger to
+step into the source (see
+<a href="http://www.symbolsource.org/Public/Home/VisualStudio">SymbolSource</a>). These
+symbol/source packages are the same as the regular packages, but contain the
+source files (under <code>src</code>) and PDBs alongside the DLLs. Paket can build these
+symbol/source packages, in addition to the regular packages, using the <code>symbols</code>
+parameter:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="batch">paket pack output nugets symbols
+<td class="snippet"><pre class="fssnip"><code lang="sh">paket pack nugets --symbols
 </code></pre></td></tr></table>
 <h3><a name="Including-referenced-projects" class="anchor" href="#Including-referenced-projects">Including referenced projects</a></h3>
-<p>Paket automatically replaces inter-project dependencies with NuGet dependencies if the dependency has it's own <a href="template-files.html"><code>paket.template</code></a>.
-In addition to this the switch <code>include-referenced-projects</code> instructs Paket to add project output to the package for inter-project dependencies that don't have a paket.template file.</p>
+<p>Paket automatically replaces inter-project dependencies with NuGet dependencies
+if the dependency has it's own <a href="template-files.html"><code>paket.template</code></a>. In addition to
+this the parameter <code>--include-referenced-projects</code> instructs Paket to add
+project output to the package for inter-project dependencies that don't have a
+<a href="template-files.html"><code>paket.template</code> file</a>.</p>
 <ol>
-<li>It recursively iterates referenced projects and adds their project output to the package</li>
-<li>When combined with the <a href="paket-pack.html#Symbol-Packages">symbols switch</a>, it will also include the source code of the referenced projects.  Also recursively.</li>
-<li>Any projects that are encountered in this search that have their own project template are ignored.</li>
+<li>
+It recursively iterates referenced projects and adds their project output to
+the package
+</li>
+<li>
+When combined with the <a href="#Symbol-Packages">symbols switch</a>, it
+will also include the source code of the referenced projects.  Also
+recursively.
+</li>
+<li>
+Any projects that are encountered in this search that have their own project
+template are ignored.
+</li>
 </ol>
 <h3><a name="Version-ranges" class="anchor" href="#Version-ranges">Version ranges</a></h3>
-<p>By default Paket uses the specified version ranges from the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> as version ranges for dependencies of the new NuGet package.
-by using the <code>minimum-from-lock-file</code> parameter the dependencies of the generated NuGet will use the versions from the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
-<h3><a name="Localized-Packages" class="anchor" href="#Localized-Packages">Localized Packages</a></h3>
-<p>When using a <code>.template</code> with <code>type project</code> any localized satellite dlls are included in the created packages.
-The following layout is created:</p>
+<p>By default Paket uses the specified version ranges from the
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a> as version ranges for dependencies of the
+new NuGet package. The <code>--minimum-from-lock-file</code> parameter instructs Paket to
+use the version from the <a href="lock-file.html"><code>paket.lock</code> file</a> and use it as the minimum
+version.</p>
+<h3><a name="Localized-packages" class="anchor" href="#Localized-packages">Localized packages</a></h3>
+<p>When using a <a href="template-files.html"><code>paket.template</code> file</a> with <code>type project</code> any
+localized satellite assemblies are included in the package created.</p>
+<p>The following layout is used:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+<span class="l">6: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">lib</span><span class="o">/</span><span class="i">net45</span><span class="o">/</span><span class="i">Foo</span><span class="o">.</span><span class="i">dll</span>
-         <span class="o">/</span><span class="i">se</span><span class="o">/</span><span class="i">Foo</span><span class="o">.</span><span class="i">resources</span><span class="o">.</span><span class="i">dll</span>
-</code></pre></td>
-</tr>
-</table>
+<td class="snippet"><pre class="fssnip"><code lang="text">.
+└── lib
+    └── net45
+        ├── se
+        │   └── Foo.resources.dll
+        └── Foo.dll
+</code></pre></td></tr></table>
 
 
         </div>
@@ -252,17 +295,17 @@ The following layout is created:</p>
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -273,11 +316,12 @@ The following layout is created:</p>
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -291,16 +335,16 @@ The following layout is created:</p>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

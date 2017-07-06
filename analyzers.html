@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>Analyzers
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -57,25 +58,32 @@
         <div class="span9" id="main">
           
 <h1><a name="Analyzers" class="anchor" href="#Analyzers">Analyzers</a></h1>
-<p><a href="https://github.com/dotnet/roslyn">Roslyn</a> the new open source compiler for C# and Visual Basic introduced the
-possibility to add new warnings and errors to the build via <strong>Analyzers</strong>.</p>
-<p>Visual Studio 2015 or Visual Studio Code present them visually and also allow <strong>Code Fixes</strong>: Automated
-actions to fix a specific warning or error.</p>
-<p><img src="img/analyzers-demo.png" alt="A CodeFix appearing in Visual Studio" /></p>
-<p>While analyzers can be installed from the Visual Studio extension gallery, for them to be used in command line
-builds and shared by all developers they must be installed as NuGet packages for each project.</p>
-<p>Each package can either contain only analyzers or analyzers along with other files, allowing a library to include
-automated migration from now-Obsolete constructs or warnings on incorrect usage.</p>
+<p><a href="https://github.com/dotnet/roslyn">Roslyn</a>, the open source compiler for C# and
+Visual Basic, introduced the possibility to add new warnings and errors to the
+build via <strong>Analyzers</strong>.</p>
+<p>Visual Studio 2015 and Visual Studio Code present them visually and also allow
+<strong>Code Fixes</strong>: Automated actions to fix a specific warning or error.</p>
+<p><img src="img/analyzers-demo.png" alt="A code fix appearing in Visual Studio" /></p>
+<p>While analyzers can be installed from the Visual Studio Extension Gallery, for
+them to be used in command line builds and shared by all developers they must be
+installed as NuGet packages for each project.</p>
+<p>Each package can either contain only analyzers or analyzers along with other
+files, allowing a library to include automated migration from now-obsolete
+constructs or warnings on incorrect usage.</p>
 <h2><a name="Referencing-analyzers" class="anchor" href="#Referencing-analyzers">Referencing analyzers</a></h2>
-<p>When a NuGet package containing analyzers is added to a <a href="references-files.html"><code>paket.references</code></a>
-file, the analyzers will be installed in the corresponding projects automatically by Paket.</p>
+<p>When a NuGet package containing analyzers is added to a
+<a href="references-files.html"><code>paket.references</code> file</a>, Paket will automatically
+install the analyzers in the corresponding projects.</p>
 <p><img src="img/analyzers-in-vs.png" alt="Analyzer node in Visual Studio project" /></p>
-<p><em>Analyzers are only supported by roslyn based compilers, in other versions the nodes added by Paket will be ignored.</em></p>
+<p><em>Analyzers are only supported by Roslyn-based compilers. Other versions will
+ignore them.</em></p>
 <h2><a name="Conventions-for-NuGet-packages" class="anchor" href="#Conventions-for-NuGet-packages">Conventions for NuGet packages</a></h2>
-<p>Analyzers created by the "Analyzer with Code Fix" template are currently installed via <code>Install.ps1</code> in Visual Studio
-that Paket doesn't plan support (See the <a href="faq.html#paket-vs-powershell-install-scripts">FAQ</a> for more details)</p>
-<p>For them to work in Paket they need to be placed in specific folders inside the NuGet package.</p>
-<p>The structure look like :</p>
+<p>Analyzers created by the "Analyzer with Code Fix" template are currently
+installed via <code>Install.ps1</code> in Visual Studio that Paket
+<a href="faq.html#paket-vs-powershell-install-scripts">doesn't support</a>.</p>
+<p>For analyzers to work in Paket they need to be placed in specific directories
+inside the NuGet package.</p>
+<p>The structure looks like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -83,23 +91,30 @@ that Paket doesn't plan support (See the <a href="faq.html#paket-vs-powershell-i
 <span class="l">5: </span>
 <span class="l">6: </span>
 <span class="l">7: </span>
+<span class="l">8: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="none">|- analyzers
-|  |- dotnet
-|  |  |- cs
-|  |  |  |- My.CSharpAnalyzer.dll
-|  |  |- vb
-|  |  |  |- My.VisualBasicAnalyzer.dll
-|  |  |- My.SharedAnalyzer.dll
+<td class="snippet"><pre class="fssnip"><code lang="text">.
+└── analyzers
+    └── dotnet
+        ├── cs
+        │   └── My.CSharpAnalyzer.dll
+        ├── vb
+        │    └── My.VisualBasicAnalyzer.dll
+        └── My.SharedAnalyzer.dll
 </code></pre></td></tr></table>
-<p>The general structure is :</p>
-<p>/analyzers/dotnet/<em>language</em>/<em>my_analyzer</em>.dll</p>
-<p>This structure is already the one generated by the "Analyzer with Code Fix" template and conform to the
-<a href="https://docs.nuget.org/Create/Analyzers-Conventions">documented convention</a> for analyzers to be installed by NuGet
-in <code>project.json</code> based projects.</p>
-<p>If the language is absent from the path the analyzer will be installed in any supported project type
-(<code>.csproj</code>, <code>.vbproj</code> and <code>.fsproj</code>) if it is present the analyzer will only be installed in the corresponding
-project type :</p>
+<p>The general structure is:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="text">&lt;NuGet package root&gt;/analyzers/dotnet/&lt;language&gt;/&lt;analyzer&gt;.dll
+</code></pre></td></tr></table>
+<p>This structure is the one generated by the "Analyzer with Code Fix" template and
+conforms to the
+<a href="https://docs.nuget.org/Create/Analyzers-Conventions">documented convention</a>
+for analyzers to be installed by NuGet in <code>project.json</code>-based projects.</p>
+<p>If the <code>&lt;language&gt;&lt;/language&gt;</code> is absent from the path the analyzer will be
+installed in any supported project type (<code>.csproj</code>, <code>.vbproj</code> and <code>.fsproj</code>).
+If it is present the analyzer will only be installed in the corresponding
+project type:</p>
 <ul>
 <li><code>cs</code> -&gt; <code>.csproj</code></li>
 <li><code>vb</code> -&gt; <code>.vbproj</code></li>
@@ -109,13 +124,15 @@ project type :</p>
 <ul>
 <li>There is currently no way to create analyzers for F#.</li>
 <li>
-The <code>dotnet</code> part of the path is in fact the host platform that is targeted. The only one currently in existence
-is the Roslyn compiler and it require the <code>dotnet</code> framework.
+The <code>dotnet</code> part of the path is in fact the host platform that is targeted.
+The only one currently in existence is the Roslyn compiler and it requires the
+<code>dotnet</code> framework.
 </li>
 <li>
-The Roslyn developers maintains some analyzers under the
-<a href="https://github.com/dotnet/roslyn-analyzers">roslyn-analyzers</a> project but others have started to appear
-like <a href="http://vsrefactoringessentials.com/">Refactoring Essentials</a> or
+The Roslyn developers maintain some analyzers under the
+<a href="https://github.com/dotnet/roslyn-analyzers">roslyn-analyzers</a> project but
+others have started to appear like
+<a href="http://vsrefactoringessentials.com/">Refactoring Essentials</a> or
 <a href="https://code-cracker.github.io/">Code Cracker</a>.
 </li>
 </ul>
@@ -138,17 +155,17 @@ like <a href="http://vsrefactoringessentials.com/">Refactoring Essentials</a> or
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -159,11 +176,12 @@ like <a href="http://vsrefactoringessentials.com/">Refactoring Essentials</a> or
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -177,16 +195,16 @@ like <a href="http://vsrefactoringessentials.com/">Refactoring Essentials</a> or
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

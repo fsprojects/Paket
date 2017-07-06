@@ -4,9 +4,10 @@
     <meta charset="utf-8"/>
     <title>Controlling NuGet dependency resolution
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -58,19 +59,57 @@
           
 <h1><a name="Controlling-NuGet-dependency-resolution" class="anchor" href="#Controlling-NuGet-dependency-resolution">Controlling NuGet dependency resolution</a></h1>
 <h2><a name="A-word-on-NuGet" class="anchor" href="#A-word-on-NuGet">A word on NuGet</a></h2>
-<p>The NuGet dependency resolution strategy was a major motivation for us to develop Paket in the first place.</p>
-<p>NuGet made the decision very early that if package <code>A</code> depends on package <code>B</code>, you will always get the <em>lowest matching version</em> of package <code>B</code>, regardless of available newer versions. One side effect of this decision is that after you install <code>A</code> (and <code>B</code>), you will  be able to immediately update <code>B</code> to a newer version as long as it satisfies the version constraint defined by <code>A</code>.</p>
-<p>Installing packages like this is almost always a two-step operation: install and then try to update. We found it very hard to keep our project's dependencies at the latest version, that's why we chose to handle things differently.</p>
+<p>The NuGet dependency resolution strategy was a major motivation for us to
+develop Paket.</p>
+<p>NuGet made the decision very early that if package <code>A</code> depends on package <code>B</code>,
+you will always get the <em>lowest matching version</em> of package <code>B</code>, regardless of
+available newer versions. One side effect of this decision is that after you
+install <code>A</code> (and <code>B</code>), you will  be able to immediately update <code>B</code> to a newer
+version as long as it satisfies the version constraint defined by <code>A</code>.</p>
+<p>Installing packages like this is almost always a two-step operation: install and
+then try to update. We found it very hard to keep our project's dependencies at
+the latest version, that's why we chose to handle things differently.</p>
 <h2><a name="How-Paket-works-by-default" class="anchor" href="#How-Paket-works-by-default">How Paket works by default</a></h2>
-<p>Paket uses the definitions from <code>paket.dependencies</code> to compute the dependency graph.</p>
-<p>The resolution algorithm balances direct and <a href="faq.html#transitive">transitive dependencies</a> such that you will get the <em>latest matching versions</em> of direct dependencies (defined using the <a href="#dependencies"><code>nuget</code> statement</a>) and transitive dependencies (defined by your direct dependency's <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec</a>). Paket checks compatibility by comparing available versions to the constraints of either source, <code>paket.dependencies</code>, or <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec</a>.</p>
-<p>As stated above, the algorithm defaults to resolving the latest versions matching the constraints.</p>
-<p>As long as everybody follows <a href="http://semver.org">SemVer</a> and you define sane version constraints (e.g. within a major version) for your direct dependencies the system is very likely to work well.</p>
-<p>While developing Paket we found that many packages available on <a href="http://www.nuget.org">NuGet</a> today (September 2014) don't follow <a href="http://semver.org">SemVer</a> very well with regard to specifying their own dependencies.</p>
+<p>Paket uses the definitions from <code>paket.dependencies</code> to compute the dependency
+graph.</p>
+<p>The resolution algorithm balances direct and
+<a href="faq.html#transitive">transitive dependencies</a> such that you will get the
+<em>latest matching versions</em> of direct dependencies (defined using the
+<a href="#dependencies"><code>nuget</code> statement</a>) and transitive dependencies (defined by your
+direct dependency's
+<a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec</a>). Paket checks
+compatibility by comparing available versions to the constraints of either
+source, <code>paket.dependencies</code>, or
+<a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec</a>.</p>
+<p>As stated above, the algorithm defaults to resolving the latest versions
+matching the constraints.</p>
+<p>As long as everybody follows <a href="http://semver.org">semantic versioning</a> and you
+define sane version constraints (e.g. within a major version) for your direct
+dependencies the system is very likely to work well.</p>
+<p>While developing Paket we found that many packages available on
+<a href="http://www.nuget.org">nuget.org</a> (as of September 2014) don't follow
+<a href="http://semver.org">semantic versioning</a> very well with regard to specifying
+their own dependencies.</p>
 <h2><a name="A-real-world-example" class="anchor" href="#A-real-world-example">A real-world example</a></h2>
-<p>For example, an assembly inside a NuGet package <code>A</code> might have a reference to a strong-named assembly that is pulled from another NuGet package <code>B</code>. Despite strong-naming the <code>B</code> assembly, <code>A</code> still specifies an open version constraint (<code>&gt;=</code>).</p>
-<p>This might be due to the fact that the <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec file format</a> requires you to pin the dependency version using double brackets: <code>&lt;dependency id="B" version="[1.2.3]" /&gt;</code>. Many package authors made the mistake of omitting the brackets, effectively specifying <code>&gt;= 1.2.3</code> when they wanted to specify <code>= 1.2.3</code>. Newer releases of <code>B</code> package might still work together with <code>A</code> using <a href="http://msdn.microsoft.com/en-us/library/7wd6ex19(v=vs.110).aspx">assembly binding redirects</a>, a feature of .NET that the authors of Paket are not very fond of. Even if you are OK with binding redirects, what would happen after <code>B</code> <code>2.0</code> is released? If you assume that <code>B</code> follows <a href="http://semver.org">SemVer</a>, the <code>2.0</code> version, by definition, <strong>will</strong> have breaking changes. NuGet will allow the update regardless, giving the false impression that your app still works.</p>
-<p>To make your transition to Paket easier and to allow package authors to correct their version constraints you can have Paket behave like NuGet by using the <a href="nuget-dependencies.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies">! prefix</a>.</p>
+<p>For example, an assembly inside a NuGet package <code>A</code> might have a reference to a
+strong-named assembly that is pulled from another NuGet package <code>B</code>. Despite
+strong-naming the <code>B</code> assembly, <code>A</code> still specifies an open version constraint
+(<code>&gt;=</code>).</p>
+<p>This might be due to the fact that the <a href="http://docs.nuget.org/docs/reference/nuspec-reference">nuspec file
+format</a> requires you to
+pin the dependency version using double brackets: <code>&lt;dependency id="B"
+version="[1.2.3]" /&gt;</code>. Many package authors made the mistake of omitting the
+brackets, effectively specifying <code>&gt;= 1.2.3</code> when they wanted to specify <code>=
+1.2.3</code>. Newer releases of <code>B</code> package might still work together with <code>A</code> using
+<a href="http://msdn.microsoft.com/en-us/library/7wd6ex19(v=vs.110).aspx">assembly binding redirects</a>,
+a feature of .NET that the authors of Paket are not very fond of. Even if you
+are OK with binding redirects, what would happen after <code>B</code> <code>2.0</code> is released? If
+you assume that <code>B</code> follows <a href="http://semver.org">semantic versioning</a>, the <code>2.0</code>
+version, by definition, <strong>will</strong> have breaking changes. NuGet will allow the
+update regardless, giving the false impression that your app still works.</p>
+<p>To make your transition to Paket easier and to allow package authors to correct
+their version constraints you can have Paket behave like NuGet by using the
+<a href="nuget-dependencies.html#Paket-s-NuGet-style-dependency-resolution-for-transitive-dependencies"><code>!</code> prefix</a>.</p>
 
 
         </div>
@@ -90,17 +129,17 @@
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -111,11 +150,12 @@
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -129,16 +169,16 @@
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

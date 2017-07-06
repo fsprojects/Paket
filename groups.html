@@ -2,11 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Dependency Groups
+    <title>Dependency groups
 </title>
+    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -56,9 +57,10 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Dependency-Groups" class="anchor" href="#Dependency-Groups">Dependency Groups</a></h1>
-<p><em>Groups</em> allow for better organization of dependencies and also enable <a href="groups.html#Conflict-resolution-with-groups">easier conflict resolution</a>.
-Let's consider a small example:</p>
+<h1><a name="Dependency-groups" class="anchor" href="#Dependency-groups">Dependency groups</a></h1>
+<p>Groups allow for better organization of dependencies and also enable <a href="groups.html#Conflict-resolution-with-groups">easier
+conflict resolution</a>.</p>
+<p>Let's consider a small example:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -98,25 +100,28 @@ Let's consider a small example:</p>
 
 <span class="k">group</span> Build
 
-    <span class="k">source</span> https://nuget.org/api/v2
+  <span class="k">source</span> https://nuget.org/api/v2
 
-    <span class="k">nuget</span> FAKE
-    <span class="k">nuget</span> FSharp.Formatting
-    <span class="k">nuget</span> ILRepack
+  <span class="k">nuget</span> FAKE
+  <span class="k">nuget</span> FSharp.Formatting
+  <span class="k">nuget</span> ILRepack
 
-    <span class="k">github</span> fsharp/FAKE modules/Octokit/Octokit.fsx
+  <span class="k">github</span> fsharp/FAKE modules/Octokit/Octokit.fsx
 
 <span class="k">group</span> Test
 
-    <span class="k">source</span> https://nuget.org/api/v2
+  <span class="k">source</span> https://nuget.org/api/v2
 
-    <span class="k">nuget</span> NUnit.Runners
-    <span class="k">nuget</span> NUnit
+  <span class="k">nuget</span> NUnit.Runners
+  <span class="k">nuget</span> NUnit
 </code></pre></td></tr></table>
-<p>As you can see we have 3 different groups in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.
-The first one is the default group (internally called "Main") and the other two groups contain dependencies that are used for <code>Build</code> and <code>Test</code>.</p>
-<blockquote>Notice the indentation in groups is optional.</blockquote>
-<p>After <a href="paket-install.html"><code>paket install</code></a> the generated <a href="lock-file.html"><code>paket.lock</code> file</a> looks like the following:</p>
+<p>As you can see we have 3 different groups in the
+<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>. The first one is the
+default group (internally called <code>Main</code>) and the other two groups contain
+dependencies that are used for <code>Build</code> and <code>Test</code>.</p>
+<p><strong>Note:</strong> The indentation in groups is optional.</p>
+<p>After <a href="paket-install.html"><code>paket install</code></a> the generated
+<a href="lock-file.html"><code>paket.lock</code> file</a> looks like this:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
 <span class="l"> 2: </span>
 <span class="l"> 3: </span>
@@ -203,8 +208,10 @@ The first one is the default group (internally called "Main") and the other two 
     NUnit (<span class="n">2.6.4</span>)
     NUnit.Runners (<span class="n">2.6.4</span>)
 </code></pre></td></tr></table>
-<p>As you can see every group is listed separately and it's possible to let Paket <a href="paket-restore.html">restore only specific groups</a>.
-If you want to reference dependencies from projects you can do this via the following syntax in the <a href="references-files.html"><code>paket.references</code> file.</a>:</p>
+<p>As you can see every group is listed separately and it's possible to let Paket
+<a href="paket-restore.html">restore only specific groups</a>.</p>
+<p>If you want to reference dependencies from projects you can do this via the
+following syntax in the <a href="references-files.html"><code>paket.references</code> file.</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -218,7 +225,8 @@ If you want to reference dependencies from projects you can do this via the foll
   NUnit.Runners
 </code></pre></td></tr></table>
 <h2><a name="Conflict-resolution-with-groups" class="anchor" href="#Conflict-resolution-with-groups">Conflict resolution with groups</a></h2>
-<p>Paket's group feature allows you to use multiple versions of the same package. Let consider the following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<p>Paket's group feature allows you to use multiple versions of the same package.
+Let consider the following <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -233,11 +241,12 @@ If you want to reference dependencies from projects you can do this via the foll
 <span class="k">nuget</span> Newtonsoft.Json
 
 <span class="k">group</span> Legacy
-    <span class="k">source</span> https://nuget.org/api/v2
+  <span class="k">source</span> https://nuget.org/api/v2
 
-    <span class="k">nuget</span> Newtonsoft.Json <span class="o">~&gt;</span> <span class="n">6</span>
+  <span class="k">nuget</span> Newtonsoft.Json <span class="o">~&gt;</span> <span class="n">6</span>
 </code></pre></td></tr></table>
-<p>Every group will be resolved independently to the following <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
+<p>Every group will be resolved independently to the following
+<a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -256,13 +265,16 @@ If you want to reference dependencies from projects you can do this via the foll
   <span class="k">remote</span>: https://nuget.org/api/v2
     Newtonsoft.Json (<span class="n">6.0.8</span>)
 </code></pre></td></tr></table>
-<p>Paket is downloading both version. You will get <code>packages/Newtonsoft.Json</code> with version 7.0.1 and <code>packages/legacy/Newtonsoft.Json</code> with the 6.0.8 bits.
-In your  <a href="references-files.html"><code>paket.references</code> file.</a> you can now decide which version you want to use:</p>
+<p>Paket is downloading both version. You will get <code>packages/Newtonsoft.Json</code> with
+version <code>7.0.1</code> and <code>packages/legacy/Newtonsoft.Json</code> with the <code>6.0.8</code>
+libraries.</p>
+<p>In your <a href="references-files.html"><code>paket.references</code> files</a> you can now decide
+which version you want to use:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">group</span> Legacy
-Newtonsoft.Json <span class="c">// uses 6.0.8</span>
+Newtonsoft.Json <span class="c">// Version 6.0.8</span>
 </code></pre></td></tr></table>
 
 
@@ -283,17 +295,17 @@ Newtonsoft.Json <span class="c">// uses 6.0.8</span>
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-            
+
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>            
-            <li><a href="./local-file.html">paket.local</a></li>            
+            <li><a href="./template-files.html">paket.template</a></li>
+            <li><a href="./local-file.html">paket.local</a></li>
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -304,11 +316,12 @@ Newtonsoft.Json <span class="c">// uses 6.0.8</span>
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>            
+            <li><a href="./analyzers.html">Analyzers</a></li>
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
+            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -322,16 +335,16 @@ Newtonsoft.Json <span class="c">// uses 6.0.8</span>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>          
+            <li><a href="./paket-init.html">paket init</a></li>
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>   
+            <li><a href="./paket-simplify.html">paket simplify</a></li>
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>
