@@ -1016,8 +1016,8 @@ let lockFileWithCLiTool = """NUGET
     Argu (2.1)
     Chessie (0.4)
       FSharp.Core (>= 0.0)
-    FSharp.Core (4.0.0.1) - redirects: force
     dotnet-fable (1.1.7) - clitool: true
+    FSharp.Core (4.0.0.1) - redirects: force
     Newtonsoft.Json (8.0.3) - redirects: force"""
 
 [<Test>]
