@@ -31,6 +31,7 @@ This guide will show you
    into that directory.
 1. Rename `.paket/paket.bootstrapper.exe` to `.paket/paket.exe`. [read more about "Magic Mode"](bootstrapper.html#Magic-mode).
 1. Commit `.paket/paket.exe` into your repository.
+1. After the first `.paket/paket.exe` call Paket will create a couple of files in `.paket` - commit those as well.
 
 ### Specifying dependencies
 
@@ -59,7 +60,7 @@ This file should be committed to your version control system.
 
 ### Installing dependencies
 
-Install all of the required packages from the specified sources:
+Install all required packages from the specified sources:
 
 ```sh
 .paket/paket.exe install
