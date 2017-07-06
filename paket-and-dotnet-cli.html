@@ -94,7 +94,8 @@ Instead it will only generate a single line:</p>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="xml"><span class="k">&lt;</span><span class="i">Import</span> <span class="o">Project</span><span class="k">="..\..\.paket\Paket.Restore.targets"</span> <span class="k">/&gt;</span>
 </code></pre></td></tr></table>
-<p>This hook will tell the dotnet cli to restore packages via Paket's restore mechanism. A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.</p>
+<p>This hook will tell the dotnet cli to restore packages via Paket's restore mechanism.
+A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.</p>
 <h3><a name="Restoring-packages" class="anchor" href="#Restoring-packages">Restoring packages</a></h3>
 <p>In traditional .NET projects you were used to call the <a href="paket-restore.html">paket restore</a> command from the root of your solution.
 With dotnet cli you now call <code>dotnet restore</code> per project and this will call <code>paket restore</code> under the hood.</p>
