@@ -1,4 +1,4 @@
-# Getting Started
+# Getting Started with Paket
 
 This guide will show you
 
@@ -23,7 +23,7 @@ This guide will show you
 
 ## Manual setup
 
-### Downloading Paket and its Bootstrapper
+### Downloading Paket's Bootstrapper
 
 1. Create a `.paket` directory in the root of your solution.
 1. Download the latest

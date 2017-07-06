@@ -256,3 +256,8 @@ set HTTP_PROXY=http://user:password@proxy.company.com:port/
 set HTTPS_PROXY=https://user:password@proxy.company.com:port/
 set NO_PROXY=.company.com,localhost
 ```
+
+## I want to use Paket with .NET Core - is that possible?
+
+Short answer: Yes. For more information about Paket and dotnet cli / dotnet sdk see the
+["Paket and dotnet CLI" guide](paket-and-dotnet-cli.html).

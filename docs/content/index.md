@@ -13,6 +13,9 @@ If you are already using NuGet for package management in your solution then you
 can learn about the upgrade process in the
 [convert from NuGet](getting-started.html#Automatic-NuGet-conversion) section.
 
+For information about Paket and .NET Core / dotnet cli / dotnet sdk see the
+["Paket and dotnet CLI" guide](paket-and-dotnet-cli.html).
+
 [![Paket Overview](img/paket-overview.png)](img/paket-overview.png)
 
 ## How to get Paket
