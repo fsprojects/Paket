@@ -1012,10 +1012,9 @@ let ``should parse lockfile with missing version``() =
 
 let lockFileWithCLiTool = """NUGET
   remote: https://www.nuget.org/api/v2
-  specs:
     Argu (2.1)
     Chessie (0.4)
-      FSharp.Core (>= 0.0)
+      FSharp.Core
     dotnet-fable (1.1.7) - clitool: true
     FSharp.Core (4.0.0.1) - redirects: force
     Newtonsoft.Json (8.0.3) - redirects: force"""
