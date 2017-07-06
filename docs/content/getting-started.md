@@ -29,9 +29,8 @@ This guide will show you
 1. Download the latest
    [`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest)
    into that directory.
-1. Run `.paket/paket.bootstrapper.exe`. It will download the latest `paket.exe`.
-1. Commit `.paket/paket.bootstrapper.exe` into your repository and add
-   `.paket/paket.exe` to your `.gitignore` file.
+1. Rename `.paket/paket.bootstrapper.exe` to `.paket/paket.exe`. [read more about "Magic Mode"](bootstrapper.html#Magic-mode).
+1. Commit `.paket/paket.exe` into your repository.
 
 ### Specifying dependencies
 
