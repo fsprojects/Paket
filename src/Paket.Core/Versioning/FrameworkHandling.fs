@@ -17,6 +17,7 @@ type DotNetStandardVersion =
     | V1_4
     | V1_5
     | V1_6
+    | V1_7
     | V2_0
     override this.ToString() =
         match this with
@@ -27,6 +28,7 @@ type DotNetStandardVersion =
         | V1_4 -> "v1.4"
         | V1_5 -> "v1.5"
         | V1_6 -> "v1.6"
+        | V1_7 -> "v1.7"
         | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
@@ -37,6 +39,7 @@ type DotNetStandardVersion =
         | DotNetStandardVersion.V1_4 -> "1.4"
         | DotNetStandardVersion.V1_5 -> "1.5"
         | DotNetStandardVersion.V1_6 -> "1.6"
+        | DotNetStandardVersion.V1_7 -> "1.7"
         | DotNetStandardVersion.V2_0 -> "2.0"
 
 [<RequireQualifiedAccess>]
@@ -347,6 +350,18 @@ type WindowsVersion =
         | WindowsVersion.V8_1 -> "v8.1"
         | WindowsVersion.V10 -> "v10.0"
 
+[<RequireQualifiedAccess>]
+type TizenVersion =
+    V3 | V4
+    member this.ShortString() =
+        match this with
+        | V3 -> "3.0"
+        | V4 -> "4.0"
+    override this.ToString() =
+        match this with
+        | V3 -> "v3.0"
+        | V4 -> "v4.0"
+
 /// Framework Identifier type.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkIdentifier = 
@@ -367,6 +382,7 @@ type FrameworkIdentifier =
     | WindowsPhone of WindowsPhoneVersion
     | WindowsPhoneApp of WindowsPhoneAppVersion
     | Silverlight of SilverlightVersion
+    | Tizen of TizenVersion
 
     override x.ToString() = 
         match x with
@@ -387,6 +403,7 @@ type FrameworkIdentifier =
         | WindowsPhone v -> "wp" + v.ShortString()
         | WindowsPhoneApp v -> "wpa" + v.ShortString()
         | Silverlight v -> "sl" + v.ShortString()
+        | Tizen v -> "tizen" + v.ShortString()
 
 
     member internal x.RawSupportedPlatformsTransitive =
@@ -458,7 +475,8 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V1_4 -> [ DotNetStandard DotNetStandardVersion.V1_3 ]
         | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
         | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
-        | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetStandard DotNetStandardVersion.V1_7 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_7 ]
         | DotNetCore DotNetCoreVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_1 -> [ DotNetCore DotNetCoreVersion.V1_0 ]
         | DotNetCore DotNetCoreVersion.V2_0 -> [ DotNetCore DotNetCoreVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
@@ -479,6 +497,8 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V7_5 -> [ WindowsPhone WindowsPhoneVersion.V7_1 ]
         | WindowsPhone WindowsPhoneVersion.V8 -> [ WindowsPhone WindowsPhoneVersion.V7_5; DotNetStandard DotNetStandardVersion.V1_0 ]
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
+        | Tizen TizenVersion.V3 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_7 ]
 
 module FrameworkDetection =
 
@@ -585,10 +605,13 @@ module FrameworkDetection =
                 | "netstandard14" -> Some(DotNetStandard DotNetStandardVersion.V1_4)
                 | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | "netstandard16" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
+                | "netstandard17" -> Some(DotNetStandard DotNetStandardVersion.V1_7)
                 | "netstandard20" -> Some(DotNetStandard DotNetStandardVersion.V2_0)
                 | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
                 | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
                 | "netcore20" -> Some (DotNetCore DotNetCoreVersion.V2_0)
+                | "tizen3" -> Some (Tizen TizenVersion.V3)
+                | "tizen4" -> Some (Tizen TizenVersion.V4)
                 | _ -> None
             result)
 
@@ -841,6 +864,7 @@ module KnownTargetProfiles =
         DotNetStandardVersion.V1_4
         DotNetStandardVersion.V1_5
         DotNetStandardVersion.V1_6
+        DotNetStandardVersion.V1_7
         DotNetStandardVersion.V2_0
     ]
         
@@ -1127,7 +1151,8 @@ module SupportCalculation =
                     | UAP _
                     | MonoAndroid _ -> false
                     | DotNetCore _
-                    | DotNetStandard _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
+                    | DotNetStandard _
+                    | Tizen _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
                     | _ -> true)
             if minimal.Length > 0 then
                 let matches = 
