@@ -46,11 +46,7 @@ This step is absolutely the same as with traditional .NET projects.
 
 Like with traditional .NET projects you also need to put a [`paket.references` files](references-files.html) alongside your MSBuild project files.
 
-After `paket.references` files are created, to update your existing projects, just run
-
-```sh
-.paket/paket.exe install
-```
+After `paket.references` files are created, to update your existing projects, just run `dotnet restore`.
 
 In contrast to traditional .NET projects Paket will not generate .dll references into your project files. 
 Instead it will only generate a single line:
