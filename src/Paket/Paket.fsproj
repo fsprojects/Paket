@@ -43,7 +43,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\temp\pre</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\fable-suave-scaffold</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

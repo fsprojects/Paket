@@ -387,7 +387,13 @@ module LockFileParser =
                 else
                     parts.[1]
 
-            let isCliTool = optionsString.Contains "clitool: true"
+            let isCliTool, optionsString =
+                if optionsString.EndsWith ", clitool: true" then
+                    true,optionsString.Replace(", clitool: true","")
+                elif optionsString.EndsWith "clitool: true" then
+                    true,optionsString.Replace("clitool: true","")
+                else
+                    false,optionsString
 
             let isRuntimeDependency, optionsString =
                 if optionsString.EndsWith ", isRuntimeDependency: true" then
