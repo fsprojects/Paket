@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Getting Started with Paket
+    <title>Paket and dotnet CLI
 </title>
     <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -57,34 +57,12 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Getting-Started-with-Paket" class="anchor" href="#Getting-Started-with-Paket">Getting Started with Paket</a></h1>
-<p>This guide will show you</p>
-<ul>
-<li>
-<a href="getting-started.html#Manual-setup">how to manually setup Paket</a> in your .NET
-and Mono solutions
-</li>
-<li>
-and
-<a href="convert-from-nuget-tutorial.html">how to use the automatic NuGet conversion</a>.
-</li>
-</ul>
-<blockquote>
-<p>The following guide is assuming you are using the <code>paket.exe</code> command line
-tool. For information on installing the command line tool follow the
-instructions for your operating system for <a href="installation.html">installation</a>.
-There are editor plugins for Visual Studio, Atom and other which can make this
-process easier and provide additional tooling like syntax highlighting. Check
-our <a href="editor-support.html">editor support page</a> to see if your editor has a
-Paket plugin.
-If you are starting a new solution from scratch then take a look at
-<a href="http://fsprojects.github.io/ProjectScaffold/">ProjectScaffold</a>. This project
-helps you get started with a new .NET/Mono project solution with everything
-needed for successful organising of code, tools and publishing and includes
-Paket.</p>
-</blockquote>
-<h2><a name="Manual-setup" class="anchor" href="#Manual-setup">Manual setup</a></h2>
+<h1><a name="Paket-and-dotnet-CLI" class="anchor" href="#Paket-and-dotnet-CLI">Paket and dotnet CLI</a></h1>
+<p>Paket provides support for <a href="https://github.com/dotnet/core">.NET Core</a> and the <a href="https://github.com/dotnet/cli">dotnet cli</a>.
+The general workflow is not much different to using Paket with traditional .NET projects which it is described in the <a href="getting-started.html">"Getting started" tutorial</a>. This article describes the differences and gives some additional context.</p>
+<h2><a name="Setup" class="anchor" href="#Setup">Setup</a></h2>
 <h3><a name="Downloading-Paket-s-Bootstrapper" class="anchor" href="#Downloading-Paket-s-Bootstrapper">Downloading Paket's Bootstrapper</a></h3>
+<p>For dotnet cli to work properly Paket needs to be used in <a href="bootstrapper.html#Magic-mode">"magic mode"</a>.</p>
 <ol>
 <li>Create a <code>.paket</code> directory in the root of your solution.</li>
 <li>
@@ -92,117 +70,37 @@ Download the latest
 <a href="https://github.com/fsprojects/Paket/releases/latest"><code>paket.bootstrapper.exe</code></a>
 into that directory.
 </li>
-<li>Rename <code>.paket/paket.bootstrapper.exe</code> to <code>.paket/paket.exe</code>. <a href="bootstrapper.html#Magic-mode">read more about "Magic Mode"</a>.</li>
+<li>Rename <code>.paket/paket.bootstrapper.exe</code> to <code>.paket/paket.exe</code>.</li>
 <li>Commit <code>.paket/paket.exe</code> into your repository.</li>
+<li>After the first <code>.paket/paket.exe</code> call Paket will create a couple of files in <code>.paket</code> - commit those as well.</li>
 </ol>
+<p>There are already a couple of dotnet templates available that will ship with Paket set up properly. In this case you don't need to setup the bootstrapper manually.</p>
 <h3><a name="Specifying-dependencies" class="anchor" href="#Specifying-dependencies">Specifying dependencies</a></h3>
 <p>Create a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's
-root and specify all your dependencies in it. You can use
-<a href="nuget-dependencies.html">NuGet packages</a>,
-<a href="github-dependencies.html">GitHub files</a> and
-<a href="http-dependencies.html">HTTP dependencies</a>.</p>
-<p>The file might look like this:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
-<span class="l">5: </span>
-<span class="l">6: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> Castle.Windsor-log4net <span class="o">&gt;=</span> <span class="n">3.2</span>
-<span class="k">nuget</span> NUnit
-
-<span class="k">github</span> forki/FsUnit FsUnit.fs
-</code></pre></td></tr></table>
-<blockquote>
-<p>If you use a <a href="editor-support.html">Paket plugin for your editor</a>, you may get
-autocompletion for <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</p>
-</blockquote>
-<p><a href="dependencies-file.html">Read more about the importance and the structure of the <code>paket.dependencies</code> file</a>.
-This file should be committed to your version control system.</p>
+root and specify all your dependencies in it.</p>
+<p>This is absolutely the same as with traditional .NET projects.</p>
 <h3><a name="Installing-dependencies" class="anchor" href="#Installing-dependencies">Installing dependencies</a></h3>
-<p>Install all of the required packages from the specified sources:</p>
+<p>Install all required packages with:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe install
 </code></pre></td></tr></table>
-<p>The <a href="paket-install.html"><code>paket install</code> command</a> will analyze your dependencies
-and automatically generate a <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-<span class="l">12: </span>
-<span class="l">13: </span>
-<span class="l">14: </span>
-<span class="l">15: </span>
-<span class="l">16: </span>
-<span class="l">17: </span>
-<span class="l">18: </span>
-<span class="l">19: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
-  <span class="k">remote</span>: https://nuget.org/api/v2
-    Castle.Core (<span class="n">3.3.3</span>)
-    Castle.Core-log4net (<span class="n">3.3.3</span>)
-      Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.3</span>)
-      log4net (<span class="n">1.2.10</span>)
-    Castle.LoggingFacility (<span class="n">3.3.0</span>)
-      Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-      Castle.Windsor (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-    Castle.Windsor (<span class="n">3.3.0</span>)
-      Castle.Core (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-    Castle.Windsor-log4net (<span class="n">3.3.0</span>)
-      Castle.Core-log4net (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-      Castle.LoggingFacility (<span class="o">&gt;=</span> <span class="n">3.3.0</span>)
-    log4net (<span class="n">1.2.10</span>)
-    NUnit (<span class="n">2.6.4</span>)
-<span class="k">GITHUB</span>
-  <span class="k">remote</span>: forki/FsUnit
-    FsUnit.fs (81d27fd09575a32c4ed52eadb2eeac5f365b8348)
-</code></pre></td></tr></table>
-<p>This file shows all direct and <a href="faq.html#transitive">transitive dependencies</a>
-and pins every dependency to a concrete version. In most cases you want to
-commit this file to your version control system (<a href="faq.html#Why-should-I-commit-the-lock-file">read
-why</a>).</p>
-<p><a href="lock-file.html">Read more about the the <code>paket.lock</code> file</a>. This file should be
-committed to your version control system.</p>
+<p>This is absolutely the same as with traditional .NET projects.</p>
 <h3><a name="Installing-dependencies-into-projects" class="anchor" href="#Installing-dependencies-into-projects">Installing dependencies into projects</a></h3>
-<p>In the last paragraph you learned how to install packages into your repository,
-but usually you want to use the dependencies in your C#, VB or F# projects. In
-order to do so you need a <a href="references-files.html"><code>paket.references</code> files</a>
-alongside your Visual Studio project files. By listing the direct dependencies
-in a <a href="references-files.html"><code>paket.references</code> file</a>, Paket will automatically
-sync references to the corresponding projects whenever an
-<a href="paket-install.html"><code>install</code></a> or <a href="paket-update.html"><code>update</code></a> takes place.</p>
+<p>Like with traditional .NET projects you also need to put a <a href="references-files.html"><code>paket.references</code> files</a> alongside your MSBuild project files.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
-<span class="l">3: </span>
-<span class="l">4: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket">Castle.Windsor-log4net
 NUnit
-
-File:FsUnit.fs .
 </code></pre></td></tr></table>
-<p>Don't forget to run <a href="paket-install.html"><code>install</code></a> again in order to let Paket
-reference the dependencies in your projects:</p>
+<p>In contrast to traditional .NET projects Paket will not generate .dll references into your project files.
+Instead it will only generate a single line:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe install
+<td class="snippet"><pre class="fssnip highlighted"><code lang="xml">      <span class="k">&lt;</span><span class="i">Import</span> <span class="o">Project</span><span class="k">="..\..\.paket\Paket.Restore.targets"</span> <span class="k">/&gt;</span>
 </code></pre></td></tr></table>
-<p>Like all of the files above, you should
-<a href="faq.html#Why-should-I-commit-the-lock-file">commit</a>
-<a href="references-files.html"><code>paket.references</code> file</a> to your version control system.</p>
+<p>This hook will tell the dotnet cli to restore packages via Paket's restore mechanism. A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.</p>
 <h3><a name="Updating-packages" class="anchor" href="#Updating-packages">Updating packages</a></h3>
 <p>If you want to check if your dependencies have updates you can run the
 <a href="paket-outdated.html"><code>paket outdated</code> command</a>:</p>
