@@ -447,6 +447,17 @@ source https://nuget.org/api/v2
 nuget Example ~> 1.2 lowest_matching: true
 ```
 
+#### Special case: dotnet cli tools
+
+```paket
+clitool dotnet-fable 1.17
+nuget Fable.Core
+```
+
+Command line tools that hook into dotnet cli are special NuGet packages. 
+These packages are referenced with the keyword `clitool` instead of `nuget`.
+This will exclude the tool and all it's dependencies from getting referenced as a dependency of a project.
+
 ### Combine multiple modifiers
 
 It is possible to apply more than one of the modifiers above to a particular
