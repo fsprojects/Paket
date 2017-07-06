@@ -373,29 +373,29 @@ module DependenciesFileParser =
         let vr = (version + " " + prereleases).Trim(VersionRange.StrategyOperators |> Array.ofList)
         let versionRequirement = parseVersionRequirement vr
 
-        {   Name = packageName
-            ResolverStrategyForTransitives = 
-                if optionsText.Contains "strategy" then 
-                    let kvPairs = parseKeyValuePairs optionsText
-                    match kvPairs.TryGetValue "strategy" with
-                    | true, "max" -> Some ResolverStrategy.Max 
-                    | true, "min" -> Some ResolverStrategy.Min
-                    | _ -> parseResolverStrategy version
-                else parseResolverStrategy version 
-            ResolverStrategyForDirectDependencies = 
-                if optionsText.Contains "lowest_matching" then 
-                    let kvPairs = parseKeyValuePairs optionsText
-                    match kvPairs.TryGetValue "lowest_matching" with
-                    | true, "false" -> Some ResolverStrategy.Max 
-                    | true, "true" -> Some ResolverStrategy.Min
-                    | _ -> None
-                else None 
-            Parent = parent
-            Graph = Set.empty
-            Sources = sources
-            Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
-            VersionRequirement = versionRequirement 
-        } 
+        { Name = packageName
+          ResolverStrategyForTransitives = 
+            if optionsText.Contains "strategy" then 
+                let kvPairs = parseKeyValuePairs optionsText
+                match kvPairs.TryGetValue "strategy" with
+                | true, "max" -> Some ResolverStrategy.Max 
+                | true, "min" -> Some ResolverStrategy.Min
+                | _ -> parseResolverStrategy version
+            else parseResolverStrategy version 
+          ResolverStrategyForDirectDependencies = 
+            if optionsText.Contains "lowest_matching" then 
+                let kvPairs = parseKeyValuePairs optionsText
+                match kvPairs.TryGetValue "lowest_matching" with
+                | true, "false" -> Some ResolverStrategy.Max 
+                | true, "true" -> Some ResolverStrategy.Min
+                | _ -> None
+            else None 
+          Parent = parent
+          Graph = Set.empty
+          Sources = sources
+          Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
+          VersionRequirement = versionRequirement 
+          IsCliTool = false } 
 
     let parsePackageLine(sources,parent,line:string) =
         match line with 

@@ -1483,3 +1483,23 @@ let ``parsing generate load scripts`` () =
             printfn "case %A expected %A got %A" case expectation result
         failwith "failed"
 
+
+let configWithCLitTool = """
+source https://www.nuget.org/api/v2
+
+clitool dotnet-fable
+nuget FAKE
+"""
+
+[<Test>]
+let ``should read config with cli tool``() = 
+    let cfg = DependenciesFile.FromSource(configWithCLitTool)
+    cfg.Groups.[Constants.MainDependencyGroup].Options.Strict |> shouldEqual false
+
+    cfg.Groups.[Constants.MainDependencyGroup].Sources 
+    |> shouldEqual [PackageSources.DefaultNuGetSource]
+
+    let tool = cfg.Groups.[Constants.MainDependencyGroup].Packages.Head
+    let nuget = cfg.Groups.[Constants.MainDependencyGroup].Packages.Tail.Head
+    tool.IsCliTool |> shouldEqual true
+    nuget.IsCliTool |> shouldEqual false

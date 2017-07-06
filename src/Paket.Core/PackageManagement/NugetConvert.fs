@@ -222,6 +222,7 @@ let createPackageRequirement sources (packageName, versionRange, restrictions) d
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName
        Sources = sources
+       IsCliTool = false
        Graph = Set.empty }
 
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =

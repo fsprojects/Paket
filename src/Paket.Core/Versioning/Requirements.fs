@@ -893,6 +893,7 @@ type PackageRequirement =
       Parent: PackageRequirementSource
       Graph: PackageRequirement Set
       Sources: PackageSource list
+      IsCliTool : bool
       Settings: InstallSettings }
 
     override this.Equals(that) = 
