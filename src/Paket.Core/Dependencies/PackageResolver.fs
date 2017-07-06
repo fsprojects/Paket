@@ -354,6 +354,7 @@ type private PackageConfig = {
     GroupName          : GroupName
     GlobalRestrictions : FrameworkRestrictions
     RootSettings       : IDictionary<PackageName,InstallSettings>
+    CliTools           : Set<PackageName>
     Version            : SemVerInfo
     Sources            : PackageSource list
     UpdateMode         : UpdateMode
@@ -436,7 +437,7 @@ let private explorePackageConfig getPackageDetailsBlock (pkgConfig:PackageConfig
               Unlisted            = packageDetails.Unlisted
               Settings            = { settings with FrameworkRestrictions = newRestrictions }
               Source              = packageDetails.Source
-              IsCliTool           = pkgConfig.Dependency.IsCliTool
+              IsCliTool           = Set.contains packageDetails.Name pkgConfig.CliTools
               IsRuntimeDependency = false
             }
     with
@@ -816,7 +817,16 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
             | PackageRequirementSource.DependenciesFile _ ->
                 match r.VersionRequirement.PreReleases with
                 | PreReleaseStatus.No -> None
-                | _ -> Some(r.Name)
+                | _ -> Some r.Name
+            | _ -> None)
+        |> Set.ofSeq
+
+    let cliToolSettings =
+        rootDependencies
+        |> Seq.choose (fun r ->
+            match r.Parent with
+            | PackageRequirementSource.DependenciesFile _ when r.IsCliTool ->
+                Some r.Name
             | _ -> None)
         |> Set.ofSeq
 
@@ -1105,7 +1115,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 let currentConflict = 
                     { currentConflict with VersionsToExplore = Seq.tail currentConflict.VersionsToExplore }
 
-                let packageDetails = {
+                let packageConfig = {
                     GroupName          = groupName
                     Dependency         = currentRequirement
                     GlobalRestrictions = globalFrameworkRestrictions
@@ -1113,9 +1123,10 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     Version            = version
                     Sources            = sources
                     UpdateMode         = updateMode
+                    CliTools           = cliToolSettings
                 }
 
-                match getExploredPackage packageDetails getPackageDetailsBlock stackpack with
+                match getExploredPackage packageConfig getPackageDetailsBlock stackpack with
                 | stackpack, Result.Error err ->
                     step (Inner((currentConflict.AddError err.SourceException,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
 
