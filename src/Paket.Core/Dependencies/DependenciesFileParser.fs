@@ -239,6 +239,28 @@ module DependenciesFileParser =
             | [name] -> Some (Package(name,">= 0",""))
             | _ -> failwithf "could not retrieve NuGet package from %s" trimmed
         | _ -> None
+
+    let private (|CliTool|_|) (line:string) =        
+        match line.Trim() with
+        | String.RemovePrefix "nuget" trimmed -> 
+            let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
+
+            let isVersion(text:string) = 
+                let (result,_) = Int32.TryParse(text.[0].ToString()) in result
+           
+            match parts with
+            | name :: operator1 :: version1  :: operator2 :: version2 :: rest
+                when List.exists ((=) operator1) operators && List.exists ((=) operator2) operators -> 
+                Some (CliTool(name,operator1+" "+version1+" "+operator2+" "+version2, String.Join(" ",rest) |> removeComment))
+            | name :: operator :: version  :: rest 
+                when List.exists ((=) operator) operators ->
+                Some (CliTool(name,operator + " " + version, String.Join(" ",rest) |> removeComment))
+            | name :: version :: rest when isVersion version -> 
+                Some (CliTool(name,version,String.Join(" ",rest) |> removeComment))
+            | name :: rest -> Some (CliTool(name,">= 0", String.Join(" ",rest) |> removeComment))
+            | [name] -> Some (CliTool(name,">= 0",""))
+            | _ -> failwithf "could not retrieve cli tool from %s" trimmed
+        | _ -> None
     
     let private (|Empty|_|) (line:string) =
         match line.Trim()  with
@@ -351,8 +373,8 @@ module DependenciesFileParser =
         match line.Trim()  with
         | String.RemovePrefix "group" _ as trimmed -> Some (Group (trimmed.Replace("group ","")))
         | _ -> None
-    
-    let parsePackage (sources,parent,name,version,rest:string) =
+
+    let parsePackage (sources,parent,name,version,isCliTool,rest:string) =
         let prereleases,optionsText =
             if rest.Contains ":" then
                 // boah that's reaaaally ugly, but keeps backwards compat
@@ -395,11 +417,12 @@ module DependenciesFileParser =
           Sources = sources
           Settings = InstallSettings.Parse(optionsText).AdjustWithSpecialCases packageName
           VersionRequirement = versionRequirement 
-          IsCliTool = false } 
+          IsCliTool = isCliTool } 
 
     let parsePackageLine(sources,parent,line:string) =
         match line with 
-        | Package(name,version,rest) -> parsePackage(sources,parent,name,version,rest)
+        | Package(name,version,rest) -> parsePackage(sources,parent,name,version,false,rest)
+        | CliTool(name,version,rest) -> parsePackage(sources,parent,name,version,true,rest)
         | _ -> failwithf "Not a package line: %s" line
 
     let private parseOptions (current  : DependenciesGroup) options =
@@ -446,12 +469,21 @@ module DependenciesFileParser =
                     lineNo, { current with Caches = caches; Sources = sources }::other
                 | ParserOptions options ->
                     lineNo,{ current with Options = parseOptions current options} ::other
+
                 | Package(name,version,rest) ->
-                    let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,rest) 
+                    let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,false,rest) 
                     if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
                         traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
                     
-                    lineNo, { current with Packages = current.Packages  @ [package] }::other
+                    lineNo, { current with Packages = current.Packages @ [package] }::other
+
+                | CliTool(name,version,rest) ->
+                    let package = parsePackage(current.Sources,DependenciesFile fileName,name,version,true,rest) 
+                    if checkDuplicates && current.Packages |> List.exists (fun p -> p.Name = package.Name) then
+                        traceWarnfn "Package %O is defined more than once in group %O of %s" package.Name current.Name fileName
+                    
+                    lineNo, { current with Packages = current.Packages @ [package] }::other
+
                 | SourceFile(origin, (owner,project, vr), path, authKey) ->
                     let remoteFile : UnresolvedSource = { 
                         Owner = owner
