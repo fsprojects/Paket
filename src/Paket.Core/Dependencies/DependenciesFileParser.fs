@@ -242,7 +242,7 @@ module DependenciesFileParser =
 
     let private (|CliTool|_|) (line:string) =        
         match line.Trim() with
-        | String.RemovePrefix "nuget" trimmed -> 
+        | String.RemovePrefix "clitool" trimmed -> 
             let parts = trimmed.Trim().Replace("\"", "").Split([|' '|],StringSplitOptions.RemoveEmptyEntries) |> Seq.toList
 
             let isVersion(text:string) = 
