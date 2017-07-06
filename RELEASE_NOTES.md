@@ -1,3 +1,6 @@
+#### 5.4.6 - 06.07.2017
+* BUGFIX: Add default NuGet source back to find-packages - https://github.com/fsprojects/Paket/pull/2489
+
 #### 5.4.5 - 05.07.2017
 * BUGFIX: Show stack trace only in verbose mode - https://github.com/fsprojects/Paket/pull/2481
 
