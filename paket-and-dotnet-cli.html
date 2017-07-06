@@ -78,14 +78,14 @@ into that directory.
 <h3><a name="Specifying-dependencies" class="anchor" href="#Specifying-dependencies">Specifying dependencies</a></h3>
 <p>Create a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's
 root and specify all your dependencies in it.</p>
-<p>This is absolutely the same as with traditional .NET projects.</p>
+<p>This step is absolutely the same as with traditional .NET projects.</p>
 <h3><a name="Installing-dependencies" class="anchor" href="#Installing-dependencies">Installing dependencies</a></h3>
 <p>Install all required packages with:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe install
 </code></pre></td></tr></table>
-<p>This is absolutely the same as with traditional .NET projects.</p>
+<p>This step is absolutely the same as with traditional .NET projects.</p>
 <h3><a name="Installing-dependencies-into-projects" class="anchor" href="#Installing-dependencies-into-projects">Installing dependencies into projects</a></h3>
 <p>Like with traditional .NET projects you also need to put a <a href="references-files.html"><code>paket.references</code> files</a> alongside your MSBuild project files.</p>
 <p>In contrast to traditional .NET projects Paket will not generate .dll references into your project files.
@@ -101,24 +101,14 @@ With dotnet cli you now call <code>dotnet restore</code> per project and this wi
 <p>So this step integrates well into the <code>dotnet cli</code> philosophy. It also works automatically in Visual Studio 2017.
 If you open a solution with paket set up properly then Visual Studio's background build will restore paket dependencies automatically.</p>
 <h3><a name="Updating-packages" class="anchor" href="#Updating-packages">Updating packages</a></h3>
-<p>If you want to check if your dependencies have updates you can run the
-<a href="paket-outdated.html"><code>paket outdated</code> command</a>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe outdated
-</code></pre></td></tr></table>
-<p>If you want to update all packages you can use the
-<a href="paket-update.html"><code>paket update</code> command</a>:</p>
+<p>If you want to update packages you can use the <a href="paket-update.html"><code>paket update</code> command</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe update
 </code></pre></td></tr></table>
-<p>This command will analyze your
-<a href="dependencies-file.html"><code>paket.dependencies</code> file</a> and update the
-<a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
+<p>This step is absolutely the same as with traditional .NET projects.</p>
 <h3><a name="Converting-from-NuGet" class="anchor" href="#Converting-from-NuGet">Converting from NuGet</a></h3>
-<p>If you are already using NuGet and want to learn how to use the automatic NuGet
-conversion, then read the next <a href="convert-from-nuget-tutorial.html">tutorial</a>.</p>
+<p>The NuGet conversion process is identical to traditional .NET projects you can read about it in the <a href="convert-from-nuget-tutorial.html"><code>Convert from NuGet</code> tutorial</a>.</p>
 
 
         </div>
