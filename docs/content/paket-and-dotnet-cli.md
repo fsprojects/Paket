@@ -1,7 +1,7 @@
-# Paket and .NET Sdk (dotnet cli and msbuild 15)
+# Paket and .NET Sdk (dotnet cli and MSBuild 15)
 
-Paket provides support for the new [.NET Sdk](https://github.com/dotnet/sdk) projects.
-That's used by [dotnet cli](https://github.com/dotnet/cli) (running with [.NET Core](https://github.com/dotnet/core)) or by MSBuild 15 (Visual Studio 2017 and mono 5)
+Paket provides support for the new [.NET Sdk](https://github.com/dotnet/sdk) projects that are used by [dotnet cli](https://github.com/dotnet/cli) (running with [.NET Core](https://github.com/dotnet/core)) or by MSBuild 15 (Visual Studio 2017 and mono 5).
+
 The general workflow is not much different to using Paket with traditional .NET projects which it is described in the ["Getting started" tutorial](getting-started.html). 
 
 ## Setup
