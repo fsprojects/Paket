@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Paket and dotnet CLI
+    <title>Paket and .NET Sdk (dotnet cli and msbuild 15)
 </title>
     <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -57,17 +57,17 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Paket-and-dotnet-CLI" class="anchor" href="#Paket-and-dotnet-CLI">Paket and dotnet CLI</a></h1>
-<p>Paket provides support for <a href="https://github.com/dotnet/core">.NET Core</a> and the <a href="https://github.com/dotnet/cli">dotnet cli</a>.
-The general workflow is not much different to using Paket with traditional .NET projects which it is described in the <a href="getting-started.html">"Getting started" tutorial</a>. This article describes the differences and gives some additional context.</p>
+<h1><a name="Paket-and-NET-Sdk-dotnet-cli-and-msbuild-15" class="anchor" href="#Paket-and-NET-Sdk-dotnet-cli-and-msbuild-15">Paket and .NET Sdk (dotnet cli and msbuild 15)</a></h1>
+<p>Paket provides support for the new <a href="https://github.com/dotnet/sdk">.NET Sdk</a> projects.
+That's used by <a href="https://github.com/dotnet/cli">dotnet cli</a> (running with <a href="https://github.com/dotnet/core">.NET Core</a>) or by MSBuild 15 (Visual Studio 2017 and mono 5)
+The general workflow is not much different to using Paket with traditional .NET projects which it is described in the <a href="getting-started.html">"Getting started" tutorial</a>.</p>
 <h2><a name="Setup" class="anchor" href="#Setup">Setup</a></h2>
 <h3><a name="Downloading-Paket-s-Bootstrapper" class="anchor" href="#Downloading-Paket-s-Bootstrapper">Downloading Paket's Bootstrapper</a></h3>
 <p>For dotnet cli to work properly Paket needs to be used in <a href="bootstrapper.html#Magic-mode">"magic mode"</a>.</p>
 <ol>
 <li>Create a <code>.paket</code> directory in the root of your solution.</li>
 <li>
-Download the latest
-<a href="https://github.com/fsprojects/Paket/releases/latest"><code>paket.bootstrapper.exe</code></a>
+Download the latest <a href="https://github.com/fsprojects/Paket/releases/latest"><code>paket.bootstrapper.exe</code></a>
 into that directory.
 </li>
 <li>Rename <code>.paket/paket.bootstrapper.exe</code> to <code>.paket/paket.exe</code>.</li>
@@ -78,6 +78,11 @@ into that directory.
 <h3><a name="Specifying-dependencies" class="anchor" href="#Specifying-dependencies">Specifying dependencies</a></h3>
 <p>Create a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's
 root and specify all your dependencies in it.</p>
+<p>As usual, to create an empty <code>paket.dependencies</code> file, just run</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe init
+</code></pre></td></tr></table>
 <p>This step is absolutely the same as with traditional .NET projects.</p>
 <h3><a name="Installing-dependencies" class="anchor" href="#Installing-dependencies">Installing dependencies</a></h3>
 <p>Install all required packages with:</p>
@@ -88,20 +93,37 @@ root and specify all your dependencies in it.</p>
 <p>This step is absolutely the same as with traditional .NET projects.</p>
 <h3><a name="Installing-dependencies-into-projects" class="anchor" href="#Installing-dependencies-into-projects">Installing dependencies into projects</a></h3>
 <p>Like with traditional .NET projects you also need to put a <a href="references-files.html"><code>paket.references</code> files</a> alongside your MSBuild project files.</p>
+<p>After <code>paket.references</code> files are created, to update your existing projects, just run <code>dotnet restore</code> (see <a href="paket-and-dotnet-cli.html#Restoring-packages">restoring packages</a>).</p>
 <p>In contrast to traditional .NET projects Paket will not generate .dll references into your project files.
 Instead it will only generate a single line:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="xml"><span class="k">&lt;</span><span class="i">Import</span> <span class="o">Project</span><span class="k">="..\..\.paket\Paket.Restore.targets"</span> <span class="k">/&gt;</span>
 </code></pre></td></tr></table>
-<p>This hook will tell the dotnet cli to restore packages via Paket's restore mechanism.
-This restore mechanism will download all packages and create a couple of temp files in the project's <code>obj</code> folder that are automatically imported in your project. Note: The <code>obj</code> folder should always be in your <code>.gitignore</code>.</p>
+<p>This hook will tell the .net sdk to restore packages via Paket's restore mechanism.</p>
 <p>A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.</p>
 <h3><a name="Restoring-packages" class="anchor" href="#Restoring-packages">Restoring packages</a></h3>
-<p>In traditional .NET projects you were used to call the <a href="paket-restore.html">paket restore</a> command from the root of your solution.
-With dotnet cli you now call <code>dotnet restore</code> per project and this will call <code>paket restore</code> under the hood.</p>
-<p>So this step integrates well into the <code>dotnet cli</code> philosophy. It also works automatically in Visual Studio 2017.
-If you open a solution with paket set up properly then Visual Studio's background build will restore paket dependencies automatically.</p>
+<p><strong>NOTE</strong> changed from traditional .NET behaviour</p>
+<p>In traditional .NET projects you were used to call the <a href="paket-restore.html">paket restore</a> command from the root of your solution.</p>
+<ul>
+<li>
+<p>With dotnet cli you can now call:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">dotnet restore
+</code></pre></td></tr></table>
+</li>
+<li>
+<p>With MSBuild 15 (Developer Command Prompt for VS2017 or mono 5) you can now call:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip"><code lang="sh">msbuild /t:Restore
+</code></pre></td></tr></table>
+</li>
+</ul>
+<p>As a note, this will call <code>paket restore</code> under the hood.</p>
+<p>So this step integrates well into the new <code>.NET Sdk</code> philosophy.</p>
+<p>It also works automatically where auto-restore is supported. Like in Visual Studio 2017, where if you open a solution with paket set up properly then Visual Studio's background build will restore paket dependencies automatically.</p>
 <h3><a name="Updating-packages" class="anchor" href="#Updating-packages">Updating packages</a></h3>
 <p>If you want to update packages you can use the <a href="paket-update.html"><code>paket update</code> command</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
@@ -109,6 +131,8 @@ If you open a solution with paket set up properly then Visual Studio's backgroun
 <td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe update
 </code></pre></td></tr></table>
 <p>This step is absolutely the same as with traditional .NET projects.</p>
+<h3><a name="Creating-packages" class="anchor" href="#Creating-packages">Creating packages</a></h3>
+<p>If you want to create NuGet packages you can continue to use the <a href="paket-pack.html">paket pack</a> command and <a href="template-files.html">template files</a> or you use the new <code>dotnet pack</code> command that comes with the dotnet cli. <code>dotnet pack</code> will take project information from your MSBuild project and dependency information from the <a href="references-files.html"><code>paket.references</code> file</a>.</p>
 <h3><a name="Converting-from-NuGet" class="anchor" href="#Converting-from-NuGet">Converting from NuGet</a></h3>
 <p>The NuGet conversion process is identical to traditional .NET projects you can read about it in the <a href="convert-from-nuget-tutorial.html"><code>Convert from NuGet</code> tutorial</a>.</p>
 
