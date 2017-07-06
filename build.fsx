@@ -501,8 +501,8 @@ Target "ReleaseGitHub" (fun _ ->
     |> releaseDraft
     |> Async.RunSynchronously
 
-    Branches.tag "" release.NugetVersion
-    Branches.pushTag "" remote release.NugetVersion
+    // Branches.tag "" release.NugetVersion
+    // Branches.pushTag "" remote release.NugetVersion
 )
 
 Target "Release" DoNothing
