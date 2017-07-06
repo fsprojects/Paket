@@ -77,7 +77,7 @@ In traditional .NET projects you were used to call the [paket restore](paket-res
     msbuild /t:Restore
     ```
 
-as a note, this will call `paket restore` under the hood.
+As a note, this will call `paket restore` under the hood.
 
 So this step integrates well into the new `.NET Sdk` philosophy.
 
@@ -92,6 +92,10 @@ If you want to update packages you can use the [`paket update` command](paket-up
 ```
 
 This step is absolutely the same as with traditional .NET projects.
+
+### Creating packages
+
+If you want to create NuGet packages you can continue to use the [paket pack](paket-pack.html) command and [template files](template-files.html) or you use the new `dotnet pack` command that comes with the dotnet cli. `dotnet pack` will take project information from your MSBuild project and dependency information from the [`paket.references` file](references-files.html).
 
 ### Converting from NuGet
 
