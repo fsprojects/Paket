@@ -502,7 +502,8 @@ let findPackages silent (results : ParseResults<_>) =
         | Some source, _ ->
             [PackageSource.NuGetV2Source source]
         | _, Some dependencies ->
-            dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat
+            PackageSources.DefaultNuGetSource ::
+            (dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)
         | _ ->
             failwithf "Could not find '%s' at or above current directory, and no explicit source was given as parameter (e.g. 'paket.exe find-packages --source https://www.nuget.org/api/v2')."
                 Constants.DependenciesFileName

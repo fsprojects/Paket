@@ -1,6 +1,9 @@
-#### 5.5.0-alpha007 - 05.07.2017
+#### 5.5.0-alpha008 - 06.07.2017
 * Support for dotnet cli tools - https://github.com/fsprojects/Paket/pull/2486
 * GNU-compatible command line - https://github.com/fsprojects/Paket/pull/2429
+
+#### 5.4.8 - 06.07.2017
+* BUGFIX: Added default NuGet source back to find-packages - https://github.com/fsprojects/Paket/pull/2489
 * BUGFIX: Fixed NugetV2 querying - https://github.com/fsprojects/Paket/pull/2485
 * BUGFIX: Show stack trace only in verbose mode - https://github.com/fsprojects/Paket/pull/2481
 * BUGFIX: find-packages doesn't require paket.dependencies to be present - https://github.com/fsprojects/Paket/pull/2483
