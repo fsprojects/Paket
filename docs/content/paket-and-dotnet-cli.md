@@ -57,7 +57,7 @@ Instead it will only generate a single line:
 
 This hook will tell the .net sdk to restore packages via Paket's restore mechanism. 
 
-A nice benefit is that your project files are now much cleaner and don't contains all the package .dll references.
+A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.
 
 ### Restoring packages
 
