@@ -40,15 +40,11 @@ This is absolutely the same as with traditional .NET projects.
 
 Like with traditional .NET projects you also need to put a [`paket.references` files](references-files.html) alongside your MSBuild project files.
 
-```paket
-Castle.Windsor-log4net
-NUnit
-```
 In contrast to traditional .NET projects Paket will not generate .dll references into your project files. 
 Instead it will only generate a single line:
 
 ```xml
-      <Import Project="..\..\.paket\Paket.Restore.targets" />
+<Import Project="..\..\.paket\Paket.Restore.targets" />
 ```
 
 This hook will tell the dotnet cli to restore packages via Paket's restore mechanism. A nice benefit is that your project files are now much cleaner and don't contain all the package .dll references.
@@ -83,5 +79,4 @@ This command will analyze your
 
 ### Converting from NuGet
 
-If you are already using NuGet and want to learn how to use the automatic NuGet
-conversion, then read the next [tutorial](convert-from-nuget-tutorial.html).
+The NuGet conversion process is identical to traditional .NET projects you can read about it in the [`Convert from NuGet` tutorial](convert-from-nuget-tutorial.html).
