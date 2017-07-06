@@ -447,7 +447,7 @@ source https://nuget.org/api/v2
 nuget Example ~> 1.2 lowest_matching: true
 ```
 
-#### Special case: dotnet cli tools
+### Special case: dotnet cli tools
 
 ```paket
 clitool dotnet-fable 1.17
