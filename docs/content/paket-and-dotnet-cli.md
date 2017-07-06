@@ -46,7 +46,7 @@ This step is absolutely the same as with traditional .NET projects.
 
 Like with traditional .NET projects you also need to put a [`paket.references` files](references-files.html) alongside your MSBuild project files.
 
-After `paket.references` files are created, to update your existing projects, just run `dotnet restore`.
+After `paket.references` files are created, to update your existing projects, just run `dotnet restore` (see [restoring packages](paket-and-dotnet-cli.html#Restoring-packages)).
 
 In contrast to traditional .NET projects Paket will not generate .dll references into your project files. 
 Instead it will only generate a single line:
@@ -65,13 +65,13 @@ A nice benefit is that your project files are now much cleaner and don't contain
 
 In traditional .NET projects you were used to call the [paket restore](paket-restore.html) command from the root of your solution.
 
-- With dotnet cli instead you now call:
+- With dotnet cli you can now call:
 
     ```sh
     dotnet restore
     ```
 
-- With MSBuild 15 (Developer Command Prompt for VS2017 or mono 5), now you call
+- With MSBuild 15 (Developer Command Prompt for VS2017 or mono 5) you can now call:
 
     ```sh
     msbuild /t:Restore
