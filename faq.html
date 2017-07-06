@@ -4,10 +4,9 @@
     <meta charset="utf-8"/>
     <title>FAQ — Frequently Asked Questions
 </title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -58,78 +57,37 @@
         <div class="span9" id="main">
           
 <h1><a name="FAQ-Frequently-Asked-Questions" class="anchor" href="#FAQ-Frequently-Asked-Questions">FAQ — Frequently Asked Questions</a></h1>
-<h2><a name="I-do-not-understand-why-I-need-Paket-to-manage-my-packages-Why-can-t-I-just-use-NuGet" class="anchor" href="#I-do-not-understand-why-I-need-Paket-to-manage-my-packages-Why-can-t-I-just-use-NuGet">I do not understand why I need Paket to manage my packages. Why can't I just use NuGet?</a></h2>
-<p>NuGet does not separate out the concept of
-<a href="faq.html#transitive">transitive dependencies</a>; if you install a package into
-your project and that package has further dependencies then all transitive
-packages are included in the <code>packages.config</code>. There is no way to tell which
-packages are only transitive dependencies.</p>
-<p>Even more importantly: If two packages reference conflicting versions of a
-package, NuGet will silently take the latest version
-(<a href="controlling-nuget-resolution.html">read more</a>). You have no control over this
-process.</p>
-<p>Paket on the other hand maintains this information on a consistent and stable
-basis within the <a href="lock-file.html"><code>paket.lock</code> file</a> in the solution root. This
-file, together with the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>
-enables you to determine exactly what's happening with your dependencies.</p>
-<p>The <a href="paket-outdated.html"><code>paket outdated</code> command</a> lists packages that have new
-versions available.</p>
-<p>Paket also enables one to reference files directly from
-<a href="github-dependencies.html">GitHub repositories, Gists</a> and
-<a href="http-dependencies.html">HTTP</a>.</p>
+<h2><a name="I-don-t-understand-why-I-need-Paket-to-manage-my-packages-Why-can-t-I-just-use-NuGet" class="anchor" href="#I-don-t-understand-why-I-need-Paket-to-manage-my-packages-Why-can-t-I-just-use-NuGet">I don't understand why I need Paket to manage my packages. Why can't I just use NuGet?</a></h2>
+<p>NuGet does not separate out the concept of <a href="faq.html#transitive">transitive dependencies</a>; if you install a package into your project and that package has further dependencies then all transitive packages are included in the <code>packages.config</code>. There is no way to tell which packages are only transitive dependencies.</p>
+<p>Even more importantly: If two packages reference conflicting versions of a package, NuGet will silently take the latest version (<a href="controlling-nuget-resolution.html">read more</a>). You have no control over this process.</p>
+<p>Paket on the other hand maintains this information on a consistent and stable basis within the <a href="lock-file.html"><code>paket.lock</code> file</a> in the solution root. This file, together with the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> enables you to determine exactly what's happening with your dependencies.</p>
+<p>The <a href="paket-outdated.html"><code>paket outdated</code> command</a> lists packages that have new versions available.</p>
+<p>Paket also enables one to reference files directly from <a href="github-dependencies.html">GitHub repositories, Gists</a> and <a href="http-dependencies.html">HTTP</a>.</p>
 <div id="no-version"></div>
 <h2><a name="NuGet-puts-the-package-version-into-the-path-Is-Paket-doing-the-same" class="anchor" href="#NuGet-puts-the-package-version-into-the-path-Is-Paket-doing-the-same">NuGet puts the package version into the path. Is Paket doing the same?</a></h2>
-<p>No, since Paket provides a global view of your dependencies it usually installs
-only one version of a package and therefore the version number is not needed in
-the path. This makes it much easier to reference files in the package and you
-don't have to edit these references when you update a package.</p>
-<p>If you really need to have the version in the path for certain packages (like
-<code>xunit.runners.visualstudio</code>) you
-<a href="nuget-dependencies.html#Putting-the-version-number-in-the-path">can still do that</a>.</p>
+<p>No, since Paket provides a global view of your dependencies it usually installs only one version of a package and therefore the version number is not needed in the path.
+This makes it much easier to reference files in the package and you don't have to edit these references when you update a package.</p>
+<p>If you really need to have the version in the path for certain packages (like xunit.runners.visualstudio) you <a href="nuget-dependencies.html#Putting-the-version-no-into-the-path">can still do that</a>.</p>
 <h2><a name="NuGet-allows-to-use-multiple-versions-of-the-same-package-Can-I-do-that-with-Paket" class="anchor" href="#NuGet-allows-to-use-multiple-versions-of-the-same-package-Can-I-do-that-with-Paket">NuGet allows to use multiple versions of the same package. Can I do that with Paket?</a></h2>
-<p>Usually you don't want that to happen. Most solutions that have multiple
-versions of the same package installed did this by accident. Since NuGet has no
-global lock file and stores version information in packages.config (per
-project), it's hard to keep all projects consolidated. Paket on the other gives
-you a global/consolidated view of all your dependencies in the
-<a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
-<p>In the very rare cases when you really need to maintain different versions of
-the same package you can use the
-<a href="groups.html">dependency groups feature</a>. Every dependency group gets resolved
-independently so it also deals with the conflict resolution of indirect
-dependencies, but the most important difference is that using groups is a
-deliberate action. You need to explicitly name the group in
-<a href="references-files.html"><code>paket.references</code> files</a>, so it won't happen by accident.</p>
+<p>Usually you don't want that to happen. Most solutions that have multiple versions of the same package installed did this by accident.
+Since NuGet has no global lock file and stores version information in packages.config (per project), it's hard to keep all projects consolidated.
+Paket on the other gives you a global/consolidated view of all your dependencies in the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
+<p>In the very rare cases when you really need to maintain different versions of the same package you can use the <a href="http://fsprojects.github.io/Paket/groups.html">dependency groups feature</a>.
+Every dependency group gets resolved independently so it also deals with the conflict resolution of indirect dependencies, but the most important difference is that using groups is a deliberate action.
+You need to explicitly name the group in <a href="references-files.html"><code>paket.references</code> files</a>, so it won't happen by accident.</p>
 <h2><a name="Why-does-Paket-add-references-to-the-libraries-associated-with-each-supported-framework-version-within-a-NuGet-package-to-my-projects" class="anchor" href="#Why-does-Paket-add-references-to-the-libraries-associated-with-each-supported-framework-version-within-a-NuGet-package-to-my-projects">Why does Paket add references to the libraries associated with each supported framework version within a NuGet package to my projects?</a></h2>
-<p>A NuGet package installation adds references only for the currently selected
-target .NET framework version of your project at the time of installation.
-Whenever you switch the framework version of your project, there's a potential
-need to reinstall all of the packages.</p>
-<p>However the Visual Studio tooling does not address this — it's up to you to
-remember to reinstall. In the best case, this leads to compiler errors about
-missing methods/types etc. In the worst case, it's a variance that's either
-deeply buried within the code (meaning it might be difficult to trap in a test
-cycle) or a more difficult to detect 'silent' problem.</p>
-<p>Paket adds references to all of them, but with <code>Condition</code> attributes filtering
-them based on the currently selected <code>TargetFramework</code> and other relevant
-MSBuild properties.</p>
-<p>If you only want to use a subset of the target frameworks you can use
-<a href="nuget-dependencies.html#Framework-restrictions">framework restrictions</a>.</p>
+<p>A NuGet package installation adds references only for the currently selected target .NET framework version of your project at the time of installation. Whenever you switch the framework version of your project, there's a potential need to reinstall all of the packages.</p>
+<p>However the Visual Studio tooling does not address this – it's up to you to remember to reinstall. In the best case, this leads to compiler errors about missing methods/types etc. In the worst case, it's a variance that's either deeply buried within the code (meaning it might be difficult to trap in a test cycle) or a more difficult to detect 'silent' problem.</p>
+<p>Paket adds references to all of them, but with <code>Condition</code> attributes filtering them based on the currently selected <code>TargetFramework</code> and other relevant MSBuild properties.</p>
+<p>If you only want to use a subset of the target frameworks you can use <a href="http://fsprojects.github.io/Paket/nuget-dependencies.html#Framework-restrictions">framework restrictions</a>.</p>
 <h2><a name="Why-does-Paket-use-a-different-package-resolution-strategy-than-NuGet" class="anchor" href="#Why-does-Paket-use-a-different-package-resolution-strategy-than-NuGet">Why does Paket use a different package resolution strategy than NuGet?</a></h2>
-<p>Paket tries to embrace <a href="http://semver.org/">semantic versioning</a> while NuGet
-uses a pessimistic version resolution strategy. You can prefix your
-<a href="nuget-dependencies.html#Version-constraints">version constraints</a> with
-<a href="nuget-dependencies.html#Strategy-modifiers"><code>!</code></a> if you need to
-<a href="dependencies-file.html#Strategy-option">stay compatible to NuGet</a>.
-<a href="resolver.html">Read about more about Paket's resolver algorithm.</a></p>
-<div id="paket-vs-powershell-install-scripts"></div>
+<p>Paket tries to embrace <a href="http://semver.org/">SemVer</a> while NuGet uses a pessimistic version resolution strategy. You can prefix your version constraints with <code>!</code> if you need to use <a href="dependencies-file.html#Strategy-option">NuGet compatibility</a>.
+If you want to know more about Paket's resolver algorithm, then you can read <a href="resolver.html">this article</a>.</p>
 <h2><a name="Does-Paket-run-install-ps1-scripts" class="anchor" href="#Does-Paket-run-install-ps1-scripts">Does Paket run install.ps1 scripts?</a></h2>
-<p>No, Paket does not run any script or program from NuGet packages and we have no
-plans to do this in the future. We know that this might cause you some manual
-work for some of the currently available NuGet packages, but we think these
-install scripts cause more harm than good. In fact our current model would not
-be able to work consistently alongside an <code>install.ps1</code> script like the
-following from <code>FontAwesome.4.1.0</code>:</p>
+<div id="paket-vs-powershell-install-scripts"></div>
+<p>No, we don't run any script or program from NuGet packages and we have no plans to do this in the future.
+We know that this might cause you some manual work for some of the currently available NuGet packages, but we think these install scripts cause more harm than good.
+In fact our current model would not be able to work consistently alongside an <code>install.ps1</code> script like the following from <code>FontAwesome.4.1.0</code>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -137,166 +95,87 @@ following from <code>FontAwesome.4.1.0</code>:</p>
 <span class="l">5: </span>
 <span class="l">6: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="powershell">param($installPath, $toolsPath, $package, $project)
+<td class="snippet"><pre class="fssnip"><code lang="batchfile">param($installPath, $toolsPath, $package, $project)
 
 foreach ($fontFile in $project.ProjectItems.Item("fonts").ProjectItems)
 {
-  $fontFile.Properties.Item("BuildAction").Value = 2;
+    $fontFile.Properties.Item("BuildAction").Value = 2;
 }
 </code></pre></td></tr></table>
-<p>The reason is simply that even if we would support PowerShell on Windows we
-can't access the Visual Studio project system. Paket is a command line tool and
-doesn't run inside of Visual Studio. There is no reasonable way to make this
-work – and even NuGet.exe can't do it in command line mode.</p>
-<p>Instead we encourage the .NET community to use a declarative install process and
-we will help to fix this in the affected packages.</p>
+<p>The reason is simply that even if we would support PowerShell on Windows we can't access the Visual Studio project system. Paket is a command line tool and doesn't run inside of Visual Studio.
+There is no reasonable way to make this work – and even NuGet.exe can't do it in command line mode.</p>
+<p>Instead we encourage the .NET community to use a declarative install process and we will help to fix this in the affected packages.</p>
 <h2><a name="What-files-should-I-commit" class="anchor" href="#What-files-should-I-commit">What files should I commit?</a></h2>
-<p>Paket creates a number of files in your repository, and most of them should be
-committed to source control. To be clear, these are the files that should be
-committed to source control:</p>
+<p>Paket creates a number of files in your solution folders, and most of them should be committed to source control. To be clear, these are the files that should be committed to source control:</p>
 <ul>
-<li>
-<a href="dependencies-file.html"><code>paket.dependencies</code></a> specifies your application's
-dependencies, and how they should be fulfilled.
-</li>
-<li>
-<a href="lock-file.html"><code>paket.lock</code></a> records the actual versions used during
-resolution. If it exists, Paket will ensure that the same versions are used
-when <a href="paket-restore.html">restoring packages</a>. It is not strictly necessary to
-commit this file, but strongly recommended. See
-<a href="faq.html#Why-should-I-commit-the-lock-file">this question</a> for details.
-</li>
-<li>
-All <a href="references-files.html"><code>paket.references</code> files</a>. Each project will have
-a <a href="references-files.html"><code>paket.references</code> file</a> that specifies which of the
-dependencies are installed in the project. Each of these files should be
-committed to source control.
-</li>
-<li>
-All <a href="template-files.html"><code>paket.template</code></a>. Tf a project is supposed to be
-deployed as a NuGet project it will have a
-<a href="template-files.html"><code>paket.template</code> file</a> that specifies package metadata.
-Each of these files should be committed to source control.
-</li>
+<li><a href="dependencies-file.html"><code>paket.dependencies</code></a> - specifies your application's dependencies, and how they should be fulfilled.</li>
+<li>All <a href="references-files.html"><code>paket.references</code></a> files - each project will have a <code>paket.references</code> file that specifies which of the dependencies are installed in the project. Each of these files should be committed to source control.</li>
+<li>All <a href="template-files.html"><code>paket.template</code></a> files - if a project is supposed to be deployed as a NuGet project it will have a <code>paket.template</code> file that specifies package meta data. Each of these files should be committed to source control.</li>
+<li><a href="lock-file.html"><code>paket.lock</code></a> - records the actual versions used during resolution. If it exists, Paket will ensure that the same versions are used when restoring packages. It is not strictly necessary to commit this file, but strongly recommended (see <a href="faq.html#Why-should-I-commit-the-lock-file">this question</a> for details why).</li>
 </ul>
 <p>The following files can be committed, but are not essential:</p>
 <ul>
-<li>
-<a href="paket-folder.html"><code>.paket/paket.targets</code></a> allows you to enable automatic
-package restore in Visual Studio.
-</li>
-<li>
-<a href="bootstrapper.html"><code>.paket/paket.bootstrapper.exe</code></a> is a small,
-rarely updated executable that will download the latest version of the main
-<code>paket.exe</code>. It is not necessary, but can be very useful for other developers
-and build servers, so they can easily retrieve <code>paket.exe</code> and restore
-packages without having Paket already installed and in the <code>PATH</code>. For
-example, it is common to have a
-<a href="https://github.com/fsprojects/Paket/blob/master/build.sh"><code>build.sh</code></a> or
-<a href="https://github.com/fsprojects/Paket/blob/master/build.cmd"><code>build.cmd</code></a> file
-in the root of a repository that will do the equivalent of:
-
-<code>sh
-.paket/paket.bootstrapper.exe
-.paket/paket.exe restore
-
-// Invoke build tool/scripts to build solution.</code>
-</li>
-</ul>
-<p>The following files should <em>not</em> be committed to your version control system,
-and should be added to any ignore files:</p>
-<ul>
-<li>
-<code>.paket/paket.exe</code>, the main Paket executable, downloaded by
-<a href="bootstrapper.html"><code>.paket/paket.bootstrapper.exe</code></a>. It should not be
-committed, as it is a binary file which can unnecessarily bloat repositories,
-and because it is likely to be updated on a regular basis.
-</li>
-<li>
-<code>paket-files</code> directory, as <a href="paket-install.html"><code>paket install</code></a> will restore
-this.
-</li>
-<li>Same applies to the <code>packages</code> directory.</li>
-</ul>
-<h2><a name="Why-should-I-commit-the-lock-file" class="anchor" href="#Why-should-I-commit-the-lock-file">Why should I commit the lock file?</a></h2>
-<p>Committing the <a href="lock-file.html"><code>paket.lock</code> file</a> to your version control
-system guarantees that other developers and/or build servers will always end up
-with a reliable and consistent set of packages regardless of where or when
-<a href="paket-restore.html"><code>paket restore</code></a> is run.</p>
-<p>If your <em>project is an application</em> you should always commit the
-<a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
-<p>If your <em>project is a library</em> then you probably want to commit it as well.
-There are rare cases where you always want to test your lib against the latest
-version of your dependencies, but we recommend to set up a second CI build
-instead. This new build should be run regularly (maybe once a day) and execute
-<a href="paket-update.html"><code>paket update</code></a> at the beginning. This will ensure that you
-get notified whenever a dependency update breaks your library.</p>
-<h2><a name="I-m-already-using-NuGet-How-can-I-convert-to-Paket" class="anchor" href="#I-m-already-using-NuGet-How-can-I-convert-to-Paket">I'm already using NuGet. How can I convert to Paket?</a></h2>
-<p>The process can be automated with
-<a href="paket-convert-from-nuget.html"><code>paket convert-from-nuget</code></a> command.</p>
-<p>In case of the command's failure, you can fallback to manual approach:</p>
-<ol>
-<li>
-Analyze your <code>packages.config</code> files and extract the referenced packages into
-a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.
-</li>
-<li>
-Convert each <code>packages.config</code> file to a
-<a href="references-files.html"><code>paket.references</code> file</a>. This is very easy — you
-just have to remove all the XML and keep the package names.
-</li>
-<li>
-Run <a href="paket-install.html"><code>paket install</code></a>. This will analyze the
-dependencies, generate a <a href="lock-file.html"><code>paket.lock</code> file</a>, remove all the
-old package references from your project files and replace them with
-equivalent <code>Reference</code>s in a syntax that can be managed automatically by
-Paket.
-</li>
-<li>
-We encourage you to raise
-<a href="https://github.com/fsprojects/Paket/issues">a corresponding issue</a> so that
-we can make the command even better.
-</li>
-</ol>
-<h2><a name="How-do-I-convert-a-new-project-to-Paket-when-my-solution-is-already-using-Paket" class="anchor" href="#How-do-I-convert-a-new-project-to-Paket-when-my-solution-is-already-using-Paket">How do I convert a new project to Paket when my solution is already using Paket</a></h2>
-<p>In this case it's okay to use the <code>--force</code> flag for the
-<a href="paket-convert-from-nuget.html"><code>convert-from-nuget</code> command</a> as described in
-<a href="getting-started.html#Partial-NuGet-conversion">partial NuGet conversion</a>. Paket
-will then go through your solution and convert all new NuGet projects to Paket.</p>
-<h2><a name="Paket-stores-and-files-in-the-root-of-a-repository-How-can-I-change-that" class="anchor" href="#Paket-stores-and-files-in-the-root-of-a-repository-How-can-I-change-that">Paket stores <code>paket.dependencies</code> and <code>paket.lock</code> files in the root of a repository. How can I change that?</a></h2>
-<p>Very old Paket versions allowed to specify the location. We disabled that
-because we have very strong opinions about the location of the
-<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>. We believe dependency
-management is so important that these files belong in the root of the
-repository. People should know about the project's dependencies.</p>
-<p>That said: if you don't agree with that (but please take some time and think
-about it) you can use batch file to change the working directory.</p>
-<h2><a name="Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies" class="anchor" href="#Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies">Can I use Paket to manage npm/bower/whatever dependencies?</a></h2>
-<p><a href="https://github.com/fsprojects/Paket/issues/61">No.</a> We don't believe in
-reinventing the wheel.</p>
-<p>On top of that, such a "meta package manager" abstraction is likely to be less
-flexible and behind on what native tools have to offer. Paket serves a specific
-need, that is <a href="http://semver.org">SemVer-compatible</a> NuGet.</p>
-<div id="transitive"></div>
-<h2><a name="What-does-transitive-dependencies-mean" class="anchor" href="#What-does-transitive-dependencies-mean">What does "transitive dependencies" mean?</a></h2>
-<p>If you install NuGet packages into your project then these packages can have
-dependencies on other NuGet packages. Paket calls these dependencies
-"transitive". They will be automatically uninstalled if none of your "direct
-dependencies" (the packages that you actually installed) still depend on them.</p>
-<h2><a name="I-am-behind-a-proxy-Can-I-use-Paket" class="anchor" href="#I-am-behind-a-proxy-Can-I-use-Paket">I am behind a proxy. Can I use Paket?</a></h2>
-<p>If your proxy uses default (Active Directory) credentials, you have nothing to
-do, Paket will handle it automatically.</p>
-<p>If your proxy uses custom credentials, you need to set the following environment variables:</p>
-<ul>
-<li><code>HTTP_PROXY</code>: HTTP proxy to use for all connections</li>
-<li><code>HTTPS_PROXY</code>: HTTPS proxy to use for all connections</li>
-<li><code>NO_PROXY</code>: hosts that should bypass the proxy</li>
+<li><a href="paket-folder.html"><code>.paket/paket.targets</code></a> - the paket.targets file allows you to set up automatic package restore in Visual Studio.</li>
+<li><a href="getting-started.html"><code>.paket/paket.bootstrapper.exe</code></a> - this is a small, rarely updated executable that will download the latest version of the main <code>paket.exe</code>. It is not necessary, but can be very useful for other developers and build servers, so they can easily retrieve <code>paket.exe</code> and restore packages without having Paket already installed in the path. For example, it is common to have a <a href="https://github.com/fsprojects/Paket/blob/master/build.sh"><code>build.sh</code></a> or <a href="https://github.com/fsprojects/Paket/blob/master/build.cmd"><code>build.cmd</code></a> file in the root of a repo that will do the equivalent of:</li>
 </ul>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
+<span class="l">4: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">set HTTP_PROXY=http://user:password@proxy.company.com:port/
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">.</span><span class="i">paket</span><span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">bootstrapper</span><span class="o">.</span><span class="i">exe</span>
+<span class="o">.</span><span class="i">paket</span><span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">exe</span> <span class="i">restore</span>
+
+<span class="c">// Invoke build tool/scripts to build solution</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The following files should <em>not</em> be committed to your version control system, and should be added to any ignore files:</p>
+<ul>
+<li><code>.paket/paket.exe</code> - the main Paket executable, downloaded by <a href="getting-started.html"><code>.paket/paket.bootstrapper.exe</code></a>. This should not be committed, as it is a binary file, which can unnecessarily bloat repositories, and because it is likely to be updated on a regular basis.</li>
+<li><code>paket-files</code> directory, as paket install will restore this. Same goes for the <code>packages</code> directory</li>
+</ul>
+<h2><a name="Why-should-I-commit-the-lock-file" class="anchor" href="#Why-should-I-commit-the-lock-file">Why should I commit the lock file?</a></h2>
+<p>Committing the <a href="lock-file.html"><code>paket.lock</code> file</a> to your version control system guarantees that other developers and/or build servers will always end up with a reliable and consistent set of packages regardless of where or when <a href="paket-restore.html"><code>paket restore</code></a> is run.</p>
+<p>If your <em>project is an application</em> you should always commit the <a href="lock-file.html"><code>paket.lock</code> file</a>.</p>
+<p>If your <em>project is a library</em> then you probably want to commit it as well. There are rare cases where you always want to test your lib against the latest version of your dependencies,
+but we recommend to set up a second CI build instead. This new build should be run regularly (maybe once a day) and execute <a href="paket-update.html"><code>paket update</code></a> at the beginning.
+This will ensure that you get notified whenever a dependency update breaks your library.</p>
+<h2><a name="I-m-already-using-NuGet-How-can-I-convert-to-Paket" class="anchor" href="#I-m-already-using-NuGet-How-can-I-convert-to-Paket">I'm already using NuGet. How can I convert to Paket?</a></h2>
+<p>The process can be automated with <a href="paket-convert-from-nuget.html">paket convert-from-nuget</a> command.</p>
+<p>In case of the command's failure, you can fallback to manual approach:</p>
+<ol>
+<li>Analyse your <code>packages.config</code> files and extract the referenced packages into a paket.dependencies file.</li>
+<li>Convert each <code>packages.config</code> file to a paket.references file. This is very easy - you just have to remove all the XML and keep the package names.</li>
+<li>Run <a href="paket-install.html">paket install</a>. This will analyze the dependencies, generate a paket.lock file, remove all the old package references from your project files and replace them with equivalent <code>Reference</code>s in a syntax that can be managed automatically by Paket.</li>
+<li>(Optional) Raise corresponding issue <a href="https://github.com/fsprojects/Paket/issues">here</a> so that we can make the command even better.</li>
+</ol>
+<h2><a name="How-do-I-convert-a-new-project-to-Paket-when-my-solution-is-already-using-Paket" class="anchor" href="#How-do-I-convert-a-new-project-to-Paket-when-my-solution-is-already-using-Paket">How do I convert a new project to Paket when my solution is already using Paket</a></h2>
+<p>In this case it's okay to use the <code>--force</code> flag for the <code>convert-from-nuget</code> command as described in <a href="getting-started.html#Partial-NuGet-conversion">partial NuGet conversion</a>. Paket will then go through your solution and convert all new NuGet projects to Paket.</p>
+<h2><a name="Paket-stores-paket-dependencies-and-paket-lock-files-in-the-root-of-a-repository-How-can-I-change-that" class="anchor" href="#Paket-stores-paket-dependencies-and-paket-lock-files-in-the-root-of-a-repository-How-can-I-change-that">Paket stores paket.dependencies and paket.lock files in the root of a repository. How can I change that?</a></h2>
+<p>Very old paket.exe versions allowed to specify the location. We disabled that because we have very strong opinions about the location of the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.
+We believe dependency management is so important that these files belong in the root of the repository. People should know about the project's dependencies.</p>
+<p>That said: if you don't agree with that (but please take some time and think about it) you can use batch file to change the working folder.</p>
+<h2><a name="Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies" class="anchor" href="#Can-I-use-Paket-to-manage-npm-bower-whatever-dependencies">Can I use Paket to manage npm/bower/whatever dependencies?</a></h2>
+<p><a href="https://github.com/fsprojects/Paket/issues/61">No.</a> We don't believe in reinventing the wheel.</p>
+<p>On top of that, such a "meta package manager" abstraction is likely to be less flexible and behind on what native tools have to offer. Paket serves a specific need, that is <a href="http://semver.org">SemVer-compatible</a> NuGet.</p>
+<div id="transitive"></div>
+<h2><a name="What-does-transitive-dependencies-mean" class="anchor" href="#What-does-transitive-dependencies-mean">What does "transitive dependencies" mean?</a></h2>
+<p>If you install NuGet packages into your project then these packages can have dependencies on other NuGet packages. Paket calls these dependencies "transitive". They will be automatically uninstalled if none of your "direct dependencies" (the packages that you actually installed) still depend on them.</p>
+<h2><a name="I-am-behind-a-proxy-Can-I-use-Paket" class="anchor" href="#I-am-behind-a-proxy-Can-I-use-Paket">I am behind a proxy. Can I use Paket?</a></h2>
+<p>If your proxy uses default (Active Directory) credentials, you have nothing to do, Paket will handle it automatically.</p>
+<p>If your proxy uses custom credentials, you need to set the following environment variables:</p>
+<ul>
+<li><code>HTTP_PROXY</code>: http proxy to use for all connections</li>
+<li><code>HTTPS_PROXY</code>: https proxy to use for all connections</li>
+<li><code>NO_PROXY</code>: hosts that should bypass the proxy</li>
+</ul>
+<p>For example:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">set HTTP_PROXY=http://user:password@proxy.company.com:port/
 set HTTPS_PROXY=https://user:password@proxy.company.com:port/
 set NO_PROXY=.company.com,localhost
 </code></pre></td></tr></table>
@@ -319,17 +198,17 @@ set NO_PROXY=.company.com,localhost
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
+            
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -340,12 +219,11 @@ set NO_PROXY=.company.com,localhost
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -359,16 +237,16 @@ set NO_PROXY=.company.com,localhost
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

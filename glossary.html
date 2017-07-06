@@ -4,10 +4,9 @@
     <meta charset="utf-8"/>
     <title>Glossary
 </title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -58,26 +57,18 @@
         <div class="span9" id="main">
           
 <h1><a name="Glossary" class="anchor" href="#Glossary">Glossary</a></h1>
-<h2><a name="paket-dependencies" class="anchor" href="#paket-dependencies">paket.dependencies</a></h2>
-<p>The <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> is used to specify rules
-regarding your application's dependencies.</p>
-<h2><a name="paket-lock" class="anchor" href="#paket-lock">paket.lock</a></h2>
-<p>The <a href="lock-file.html"><code>paket.lock</code> file</a> records the concrete dependency
-resolution of all direct and indirect dependencies of your project.</p>
-<h2><a name="paket-references" class="anchor" href="#paket-references">paket.references</a></h2>
-<p>The <a href="references-files.html"><code>paket.references</code> files</a> are used to specify which
-dependencies are to be installed into the MSBuild projects in your repository.</p>
-<h2><a name="paket-template" class="anchor" href="#paket-template">paket.template</a></h2>
-<p>The <a href="template-files.html"><code>paket.template</code> files</a> are used to specify rules to
-create new NuGet packages by using the <a href="paket-pack.html"><code>paket pack</code> command</a>.</p>
-<h2><a name="paket-directory" class="anchor" href="#paket-directory">.paket directory</a></h2>
-<p>This directory is used the same way a <code>.nuget</code> directory is used for the NuGet
-package restore, that is to cache package archives for reference by the
-development project. Place this directory into the root of your repository. It
-should include the paket.targets and
-<a href="https://github.com/fsprojects/Paket/releases/latest"><code>paket.bootstrapper.exe</code></a>
-files which can be downloaded from GitHub. The bootstrapper executable will
-always download the latest version of the <code>paket.exe</code> file into this directory.</p>
+<h3><a name="paket-dependencies" class="anchor" href="#paket-dependencies">paket.dependencies</a></h3>
+<p>The <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> is used to specify rules regarding your application's dependencies.</p>
+<h3><a name="paket-lock" class="anchor" href="#paket-lock">paket.lock</a></h3>
+<p>The <a href="lock-file.html"><code>paket.lock</code> file</a> records the concrete dependency resolution of all direct and indirect dependencies of your project.</p>
+<h3><a name="paket-references" class="anchor" href="#paket-references">paket.references</a></h3>
+<p>The <a href="references-files.html"><code>paket.references</code> files</a> are used to specify which dependencies are to be installed into the MSBuild projects in your repository.</p>
+<h3><a name="paket-template" class="anchor" href="#paket-template">paket.template</a></h3>
+<p>The <a href="template-files.html"><code>paket.template</code> files</a> are used to specify rules to create new NuGet packages by using the <a href="paket-pack.html"><code>paket pack</code> command</a>.</p>
+<h3><a name="paket-folder" class="anchor" href="#paket-folder">.paket folder</a></h3>
+<p>This folder is used the same way a <code>.nuget</code> folder is used for the NuGet package restore, that is to cache package archives for reference by the development project. Place this folder into the root of your solution.
+It should include the paket.targets and <a href="https://github.com/fsprojects/Paket/releases/latest">paket.bootstrapper.exe</a> files which can be downloaded from GitHub.
+The bootstrapper.exe will always download the latest version of the paket.exe file into this folder.</p>
 
 
         </div>
@@ -97,17 +88,17 @@ always download the latest version of the <code>paket.exe</code> file into this 
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
+            
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -118,12 +109,11 @@ always download the latest version of the <code>paket.exe</code> file into this 
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -137,16 +127,16 @@ always download the latest version of the <code>paket.exe</code> file into this 
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

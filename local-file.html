@@ -4,10 +4,9 @@
     <meta charset="utf-8"/>
     <title>The paket.local file
 </title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -58,61 +57,48 @@
         <div class="span9" id="main">
           
 <h1><a name="The-paket-local-file" class="anchor" href="#The-paket-local-file">The paket.local file</a></h1>
-<p>The <code>paket.local</code> file is used for testing changes before releasing new version
-of a dependent project.</p>
-<p><strong>Note:</strong> You <em>should not commit</em> <code>paket.local</code>. This file should always be
-added to <code>.gitignore</code>, because it specifies file paths that are only accessible
-on your machine.</p>
-<h2><a name="Example-use-case" class="anchor" href="#Example-use-case">Example use case</a></h2>
-<p>In this tutorial you will learn how <code>paket.local</code> can help you to speed up your
-development process.</p>
-<p>The Paket project uses <a href="http://fsprojects.github.io/Argu/">Argu</a> as one of its
-own dependencies. Argu is a library that allows to manage command line
-parameters:</p>
-<p><code>paket.dependencies</code>:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-<span class="l">3: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
-
-<span class="k">nuget</span> Argu
-</code></pre></td></tr></table>
-<p>When running
-<a href="paket-restore.html"><code>paket restore</code></a>, the Argu package is always restored from
-the NuGet source that was specified in Paket's own
-<a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
+<p>The <code>paket.local</code> file is used for testing changes before releasing new version of a dependent project.</p>
+<blockquote>
+<p>Note: you <strong>shouldn't commit</strong> <code>paket.local</code>. This file should always be added to <code>.gitignore</code>, because it specifies file paths that are only accessible on your machine.</p>
+</blockquote>
+<h2><a name="Sample-use-case" class="anchor" href="#Sample-use-case">Sample use case</a></h2>
+<p>In this tutorial you will learn how <code>paket.local</code> can help you to speed up your development process.</p>
+<p>The Paket project uses <a href="http://fsprojects.github.io/Argu/">Argu</a> as one of its own dependencies. Argu is a library that allows to manage command line parameters:</p>
+<p><code>paket.dependencies</code> (<a href="https://github.com/fsprojects/Paket/blob/master/paket.dependencies">browse</a>)</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
 <span class="l">4: </span>
 </pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">source</span> https://nuget.org/api/v2
+
+<span class="k">nuget</span> Argu
+...
+</code></pre></td></tr></table>
+<p>When running <a href="file:///C:/github/Paket/docs/output/paket-restore.html"><code>paket restore</code></a>, the Argu package is always restored from the NuGet source that was specified in Paket's own <code>paket.lock</code> file:</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+<span class="l">3: </span>
+<span class="l">4: </span>
+<span class="l">5: </span>
+</pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">NUGET</span>
   <span class="k">remote</span>: https://www.nuget.org/api/v2
   <span class="k">specs</span>:
     Argu (<span class="n">2.1</span>)
+...
 </code></pre></td></tr></table>
-<p>Let's assume that we want to contribute to Paket by adding a new feature. The
-new feature, however, requires a change to Argu, so we'll need to contribute to
-the Argu project first.</p>
-<p>Before we create a Pull Request to Argu, we might want to test the change
-locally by running Paket with the applied change in the Argu package. Up until
-now, there was no convenient mechanism to do so, and e.g. we would manually copy
-updated Argu libraries to the packages directory in Paket's project after each
-rebuild.</p>
-<p>With the <code>paket.local</code> file, we can improve this process, by <strong>temporarily
-overriding</strong> the source for a specific package. We create a <code>paket.local</code> file
-in the root of own Paket source code copy:</p>
+<p>Now let's assume that we want to contribute to Paket by adding a new feature.
+The new feature, however, requires a change to Argu, so we'll need to contribute to the Argu project first.</p>
+<p>Before we create a Pull Request to Argu, we might want to test the change locally by running Paket with the applied change in the Argu package.<br />
+Up until now, there was no convenient mechanism to do so, and e.g. we would manually copy updated Argu libraries to the packages folder in Paket's project after each rebuild.</p>
+<p>With the <code>paket.local</code> file, we can improve this process, by <strong>temporarily overriding</strong> the source for a specific package. We create a <code>paket.local</code> file in the root of own Paket source code copy:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Argu -<span class="o">&gt;</span> <span class="k">git</span> file:///c:\github\Argu feature_branch build:<span class="s">"build.cmd NuGet"</span>, Packages: /bin/
 </code></pre></td></tr></table>
-<p>The line can be translated to:</p>
-<blockquote>
-<p>Whenever <a href="paket-restore.html"><code>paket restore</code></a> is run, <strong>override</strong> the source
-of the Argu package with the source given after <code>-&gt;</code>.</p>
-</blockquote>
-<p>Now when running <a href="paket-restore.html"><code>paket restore</code></a>, we get the following:</p>
+<p>The line above basically says: whenever <code>paket restore</code> is run, <strong>override</strong> the source of the Argu package with the source given after <code>-&gt;</code>.</p>
+<p>Now when running <code>paket restore</code>, we get the following:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -121,31 +107,27 @@ of the Argu package with the source given after <code>-&gt;</code>.</p>
 <span class="l">6: </span>
 <span class="l">7: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">$ .paket\paket.exe restore
+<td class="snippet"><pre class="fssnip"><code lang="bash">$ .paket\paket.exe restore
 Paket version 3.0.0.0
-paket.local override: nuget Argu group main -&gt;
+paket.local override: nuget Argu group main -&gt; 
     file:///c:\github\Argu feature_branch build:"build.cmd NuGet", Packages: /bin/
 Setting C:\github\Paket\paket-files\localfilesystem\Argu to b14ea1a00431335ca3b60d49573b3831cd2deeb4
 Running "C:\github\Paket\paket-files\localfilesystem\Argu\build.cmd NuGet"
 11 seconds - ready.
 </code></pre></td></tr></table>
-<p>The result is:</p>
+<p>As a result:</p>
 <ul>
-<li>The build command <code>build.cmd NuGet</code> is triggered for Argu on <code>feature_branch</code>.</li>
-<li>A new Argu NuGet package is built by this command in the <code>/bin/</code> directory.</li>
-<li>
-The Argu NuGet package is extracted to <code>packages/Argu</code> directory in the Paket
-project directory.
-</li>
-<li>Paket can be run and tested with the updated Argu library.</li>
+<li>the build command <code>build.cmd NuGet</code> is triggered for Argu on <code>feature_branch</code></li>
+<li>a new Argu NuGet package is built by this command in the <code>/bin/</code> directory</li>
+<li>the Argu NuGet package is extracted to <code>packages/Argu</code> directory in the Paket project folder</li>
+<li>Paket can be run and tested with the updated Argu library</li>
 </ul>
-<p><strong>Note:</strong> Any override specified in <code>paket.local</code> will result in a <strong>warning</strong>
-upon running <code>restore</code> as in the above example. This is to emphasize that we
-have a local override, and the build might not be reproducible on any other
-machine.</p>
+<blockquote>
+<p>Note: Any override specified in <code>paket.local</code> will result in a <strong>warning</strong> upon running <code>restore</code> as in the above example.
+This is to emphasize that we have a local override, and the build might not be reproducible on any other machine.</p>
+</blockquote>
 <h2><a name="Format" class="anchor" href="#Format">Format</a></h2>
-<p>Each line in <code>paket.local</code> means one override and you can have multiple
-overrides at once:</p>
+<p>Each line in <code>paket.local</code> means one override - you can have multiple overrides at once:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
@@ -157,11 +139,10 @@ overrides at once:</p>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Argu -<span class="o">&gt;</span> <span class="k">git</span> file:///c:\github\Argu feature_branch build:<span class="s">"build.cmd NuGet"</span>, Packages: /bin/
 </code></pre></td></tr></table>
-<p>The format of a <code>git</code> source is the same as used in <code>paket.dependencies</code> for
-specifying
-<a href="git-dependencies.html#Using-Git-repositories-as-NuGet-source">git repositories</a>.</p>
-<p><strong>Note:</strong> Only <strong>git repositories as NuGet source</strong> (with <code>Packages: ...</code>) are
-currently supported.</p>
+<p>Format of git source is the same as used in <code>paket.dependencies</code> for specifying <a href="git-dependencies.html#Using-Git-repositories-as-NuGet-source">git repositories</a>.</p>
+<blockquote>
+<p>Note: only <strong>git repositories as NuGet source</strong> (with <code>Packages: ...</code>) are currently supported</p>
+</blockquote>
 <h3><a name="Source-override" class="anchor" href="#Source-override">Source override</a></h3>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -170,21 +151,17 @@ currently supported.</p>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">nuget</span> Fake -<span class="o">&gt;</span> <span class="k">source</span> c:\github\FAKE\bin
 
-<span class="c">// Argu is searched in specific version.</span>
+<span class="c">// Argu is searched in specific version</span>
 <span class="k">nuget</span> Argu -<span class="o">&gt;</span> <span class="k">source</span> C:\github\Argu\bin version <span class="n">0.0.0</span>
 </code></pre></td></tr></table>
-<p>The format of the source is the same as in
-<a href="nuget-dependencies.html#Path-sources">path sources</a>.</p>
-<p><strong>Note:</strong> In the case of source overrides, <code>paket restore</code> assumes that the
-NuGet package <strong>already exists</strong> in the directory pointed to, no build will be
-triggered.</p>
+<p>The Format of the source is the same as in <a href="nuget-dependencies.html#Path-sources">path sources</a>.</p>
+<blockquote>
+<p>Note: In case of source override, <code>paket restore</code> assumes the NuGet package <strong>already exists</strong> in   pointed directory - no build is going to be triggered.</p>
+</blockquote>
 <h3><a name="Nupkg-version" class="anchor" href="#Nupkg-version">Nupkg version</a></h3>
-<p>If you happen to have a <code>.nupkg</code> file in a local path, but with a different
-version than in <code>paket.lock</code>, you can optionally specify the version which
-should be used for this override. One use case might be when the package version
-is determined by your build server, and <code>.nupkg</code>s created locally have zero
-version. This is currently supported only for <a href="#Source-override">source
-override</a>.</p>
+<p>If you happen to have a nupkg in local path, but with a different version than in <code>paket.lock</code>, you can optionally specify version which should be used for this override.
+One use case might be when the package version is determined by your build server, and nupkgs created locally have zero version.
+This is currently supported only for <a href="#Source-override">Source override</a>.</p>
 <h3><a name="Groups" class="anchor" href="#Groups">Groups</a></h3>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
@@ -196,23 +173,21 @@ override</a>.</p>
 <span class="c">// Fake is in Build group</span>
 <span class="k">nuget</span> Fake <span class="k">group</span> Build -<span class="o">&gt;</span> <span class="k">source</span> c:\github\FAKE\bin
 </code></pre></td></tr></table>
-<p>The <a href="groups.html">dependency group</a> can be specified with <code>group &lt;group name&gt;</code>
-after <code>nuget &lt;package ID&gt;</code>. If not specified, the default group <code>Main</code> is used.</p>
-<h2><a name="Comments" class="anchor" href="#Comments">Comments</a></h2>
+<p>The <a href="groups.html">dependency group</a> can be specified with <code>group &lt;GroupName&gt;</code> after <code>nuget &lt;PackageName&gt;</code>.
+If not specified, the default group ("Main") is used.</p>
+<h3><a name="Comments" class="anchor" href="#Comments">Comments</a></h3>
 <p>All lines starting with with <code>//</code> or <code>#</code> are considered comments.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// This line is treated as comment.</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// this line is treated as comment</span>
 <span class="k">nuget</span> Fake -<span class="o">&gt;</span> <span class="k">source</span> c:\github\FAKE\bin
 </code></pre></td></tr></table>
-<p>Comments might prove helpful if you use <code>paket.local</code> overrides on a regular
-basis instead of typing the override by hand, you can just comment/uncomment
-relevant line:</p>
+<p>Comments might prove helpful if you use <code>paket.local</code> override on regular basis - instead of typing the override by hand, you can just comment/uncomment relevant line:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// Uncomment below to override FAKE package.</span>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="c">// uncomment below to override FAKE package</span>
 <span class="c">// nuget FAKE -&gt; source C:\github\FAKE\bin</span>
 </code></pre></td></tr></table>
 
@@ -234,17 +209,17 @@ relevant line:</p>
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
+            
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -255,12 +230,11 @@ relevant line:</p>
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -274,16 +248,16 @@ relevant line:</p>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

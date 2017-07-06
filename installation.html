@@ -2,12 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>Paket installation
+    <title>Paket Installation Options
 </title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -57,88 +56,74 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="Paket-installation" class="anchor" href="#Paket-installation">Paket installation</a></h1>
+<h1><a name="Paket-Installation-Options" class="anchor" href="#Paket-Installation-Options">Paket Installation Options</a></h1>
 <p>This guide will show you</p>
 <ul>
 <li>How to set up Paket for a specific repository.</li>
-<li>How to install Paket for Windows, Linux, or macOS.</li>
-<li>
-How to ensure <code>paket.exe</code> is available via command line and other methods of
-use.
-</li>
-<li>Install <a href="editor-support.html">editor support</a>.</li>
-<li>Set up <a href="shell-completion.html">shell completion</a> for Paket commands.</li>
+<li>How to install Paket for Windows, Linux, or OS-X.</li>
+<li>How to ensure <code>paket</code> is available via command line and other methods of use.</li>
 </ul>
 <h2><a name="Installation-per-repository" class="anchor" href="#Installation-per-repository">Installation per repository</a></h2>
-<p>The most common use of Paket is as a command line tool inside your project
-repository.</p>
-<ol>
-<li>Create a <code>.paket</code> directory in the root of your solution.</li>
-<li>
-Download the latest
-<a href="https://github.com/fsprojects/Paket/releases/latest"><code>paket.bootstrapper.exe</code></a>
-into that directory.
-</li>
-<li>Run <code>.paket/paket.bootstrapper.exe</code>. It will download the latest <code>paket.exe</code>.</li>
-<li>
-Commit <code>.paket/paket.bootstrapper.exe</code> into your repository and add
-<code>.paket/paket.exe</code> to your <code>.gitignore</code> file.
-</li>
-</ol>
+<p>The most common use of Paket is as a command line tool inside your project repository.</p>
+<ul>
+<li>Create a <code>.paket</code> folder in the root of your solution.</li>
+<li>Download the latest <a href="https://github.com/fsprojects/Paket/releases/latest">paket.bootstrapper.exe</a> into that folder.</li>
+<li>Run <code>.paket/paket.bootstrapper.exe</code>. This will download the latest <code>paket.exe</code>.</li>
+<li>Commit <code>.paket/paket.bootstrapper.exe</code> into your repo and add <code>.paket/paket.exe</code> to your <code>.gitignore</code> file.</li>
+</ul>
 <p>You can now run Paket from the command line:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe install
-</code></pre></td></tr></table>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">$</span> <span class="o">.</span><span class="i">paket</span><span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">exe</span> <span class="i">install</span>
+</code></pre></td>
+</tr>
+</table>
 <h2><a name="System-wide-Installation" class="anchor" href="#System-wide-Installation">System-wide Installation</a></h2>
-<p>If you want to install Paket as a system-wide tool then the following guide will
-help you to get started.</p>
+<p>If you want to install Paket as a system-wide tool then the following guide will help you to get started.</p>
 <h3><a name="Cloning-the-Paket-repository" class="anchor" href="#Cloning-the-Paket-repository">Cloning the Paket repository</a></h3>
-<p>The first step for any operating system is to clone the <a href="https://github.com/fsprojects/Paket">Paket
-repository</a> locally.</p>
+<p>The first step for any operating system is to clone the <a href="https://github.com/fsprojects/Paket">Paket repository</a> locally.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">git clone git@github.com:fsprojects/Paket.git
-</code></pre></td></tr></table>
-<p>Then follow the instructions for building and installing for your preferred
-operating system.</p>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="i">git</span> <span class="i">clone</span> <span class="i">git</span><span class="o">@</span><span class="i">github</span><span class="o">.</span><span class="i">com</span><span class="o">:</span><span class="i">fsprojects</span><span class="o">/</span><span class="i">Paket</span><span class="o">.</span><span class="i">git</span>
+</code></pre></td>
+</tr>
+</table>
+<p>Then follow the instructions for building and installing for your preferred operating system.</p>
 <h3><a name="Installation-on-Linux" class="anchor" href="#Installation-on-Linux">Installation on Linux</a></h3>
-<p>For Linux the easiest way to get things installed is to clone the repository and
-run the build and install scripts as shown below.</p>
+<p>For Linux the easiest way to get things installed is to clone the repository and run the build and install scripts as shown below.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">./build.sh
-</code></pre></td></tr></table>
-<p>After that completes execute the install, to install Paket as a command line
-utility.</p>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">.</span><span class="o">/</span><span class="i">build</span><span class="o">.</span><span class="i">sh</span>
+</code></pre></td>
+</tr>
+</table>
+<p>After that completes execute the install, to install Paket as a command line utility.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">./install.sh
-</code></pre></td></tr></table>
-<p>The <code>install.sh</code> script will add Paket as a command line option into bash and
-most other shells available. If you are using a unique shell and run into
-problems, please post an issue so we can take a look.</p>
-<h3><a name="Installation-on-macOS" class="anchor" href="#Installation-on-macOS">Installation on macOS</a></h3>
-<p>For macOS the build and installation process is as follows.</p>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">.</span><span class="o">/</span><span class="i">install</span><span class="o">.</span><span class="i">sh</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The install.sh script will add Paket as a command line option into bash and most other shells available. If you are using a unique shell and run into problems, please post an issue so we can take a look.</p>
+<h3><a name="Installation-on-OS-X" class="anchor" href="#Installation-on-OS-X">Installation on OS-X</a></h3>
+<p>For OS-X the build and installation process is as follows.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">./build.sh
-</code></pre></td></tr></table>
-<p>After that completes execute the install, to install Paket as a command line
-utility.</p>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">.</span><span class="o">/</span><span class="i">build</span><span class="o">.</span><span class="i">sh</span>
+</code></pre></td>
+</tr>
+</table>
+<p>After that completes execute the install, to install Paket as a command line utility.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">./install.sh
-</code></pre></td></tr></table>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">.</span><span class="o">/</span><span class="i">install</span><span class="o">.</span><span class="i">sh</span>
+</code></pre></td>
+</tr>
+</table>
 <h3><a name="Installation-on-Windows" class="anchor" href="#Installation-on-Windows">Installation on Windows</a></h3>
-<p>Please <a href="installation.html#Installation-per-repository">install per repository</a>.</p>
-<h3><a name="Post-installation" class="anchor" href="#Post-installation">Post installation</a></h3>
-<p>Once the basic installation is complete on your operating system of choice it is
-often very useful to add some tools to your shell/IDE/Text Editor of choice.</p>
-<ul>
-<li><a href="editor-support.html">Editor support</a></li>
-<li><a href="shell-completion.html">Shell completion</a></li>
-</ul>
+<p>Please use the <a href="installation.html#Installation-per-repository">Installation per repository</a> option.</p>
+<h3><a name="Post-Installation" class="anchor" href="#Post-Installation">Post Installation</a></h3>
+<p>Once the basic installation is complete on your operating system of choice it is often very useful to add some tools to your IDE/Text Editor of choice. Here's some of the options that are available.</p>
 <p>For next steps check out the <a href="getting-started.html">Getting Started</a> section.</p>
 
 
@@ -159,17 +144,17 @@ often very useful to add some tools to your shell/IDE/Text Editor of choice.</p>
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
+            
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -180,12 +165,11 @@ often very useful to add some tools to your shell/IDE/Text Editor of choice.</p>
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -199,16 +183,16 @@ often very useful to add some tools to your shell/IDE/Text Editor of choice.</p>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

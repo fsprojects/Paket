@@ -4,10 +4,9 @@
     <meta charset="utf-8"/>
     <title>Converting from NuGet
 </title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -59,162 +58,89 @@
           
 <h1><a name="Converting-from-NuGet" class="anchor" href="#Converting-from-NuGet">Converting from NuGet</a></h1>
 <h2><a name="Automatic-NuGet-conversion" class="anchor" href="#Automatic-NuGet-conversion">Automatic NuGet conversion</a></h2>
-<p>Paket comes with a command that helps to convert existing solution from NuGet's
-<code>packages.config</code> format to Paket's format.</p>
-<ol>
-<li>Please start by making a <strong>backup of your repository</strong></li>
-<li>
-Download Paket and it's bootstrapper as described in the
-<a href="getting-started.html#Downloading-Paket-and-it-s-BootStrapper">"Getting started" tutorial</a>
-</li>
-<li>Run the <a href="paket-convert-from-nuget.html"><code>convert-from-nuget</code></a> command:</li>
-</ol>
+<p>Paket comes with a command that helps to convert existing solution from NuGet's <code>packages.config</code> format to Paket's format.
+If you want to use the command then:</p>
+<ul>
+<li>Please start by making a <strong>back-up of your repository</strong></li>
+<li>Download Paket and it's bootstrapper as described in the <a href="getting-started.html#Downloading-Paket-and-it-s-BootStrapper">"Getting started" tutorial</a></li>
+<li>Run the <code>convert-from-nuget</code> command:</li>
+</ul>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">$ .paket/paket.exe convert-from-nuget
+<td class="snippet"><pre class="fssnip"><code lang="batchfile">$ .paket/paket.exe convert-from-nuget
 </code></pre></td></tr></table>
-<p>Read more about the details and parameters for
-<a href="paket-convert-from-nuget.html"><code>convert-from-nuget</code></a>.</p>
+<p>You can read more about the details and specific parameters for <code>convert-from-nuget</code> in the <a href="paket-convert-from-nuget.html">docs</a>.</p>
 <h3><a name="Preparation" class="anchor" href="#Preparation">Preparation</a></h3>
-<p>Choose a directory to run the conversion from that is parent to <strong>all</strong> the
-projects to be converted.</p>
-<p>When NuGet package restore is enabled, the <code>packages</code> directory is located next
-to the solution. It is also possible that the parent directory of <code>packages</code> is
-<strong>not</strong> also parent to all the projects in the solution.</p>
-<p>A solution is effectively acting as a symlink, but this indirection via the
-solution is not possible with Paket because Paket manages projects and not
-solutions. In the example below, it would not be possible to run the
-<code>paket convert-from-nuget</code> command from the <code>Build</code> directory but it would be
-from the root directory.</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="text">.
-├── Build
-│   ├── Numbers.sln
-│   ├── .nuget
-│   │   ├── NuGet.Config
-│   │   ├── NuGet.exe
-│   │   └── NuGet.targets
-│   └── packages
-└── Encoding
-    ├── Encoding.fsproj
-    └── packages.config
-</code></pre></td></tr></table>
-<p>After running the conversion from the root directory:</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l"> 1: </span>
-<span class="l"> 2: </span>
-<span class="l"> 3: </span>
-<span class="l"> 4: </span>
-<span class="l"> 5: </span>
-<span class="l"> 6: </span>
-<span class="l"> 7: </span>
-<span class="l"> 8: </span>
-<span class="l"> 9: </span>
-<span class="l">10: </span>
-<span class="l">11: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="text">.
-├── .paket
-│   ├── paket.bootstrapper.exe
-│   ├── paket.exe
-│   └── paket.targets
-├── packages
-├── Build
-│   └── Numbers.sln
-└── Encoding
-    ├── Encoding.fsproj
-    └── paket.references
-</code></pre></td></tr></table>
+<p>Choose a folder to run the conversion from that is parent to <strong>all</strong> the projects to be converted.</p>
+<p>When using NuGet package restore, the <code>packages</code> folder is alongside the solution. It is possible with a solution that the folder parent to <code>packages</code> is <strong>not</strong> also parent to all the projects in the solution.</p>
+<p>A solution is in effect acting as a symlink but this indirection via the solution is not possible with Paket because Paket manages projects and not solutions. In the example below, it would not be possible to run the <code>paket convert-from-nuget</code> command from the <code>Build</code> folder but it would be from the root folder.</p>
+<pre>
++---Build
+|   |   Numbers.sln
+|   |   
+|   +---.nuget
+|   |   NuGet.Config
+|   |   NuGet.exe
+|   |   NuGet.targets
+|   |   
+|   +---packages
+|   
++---Encoding
+|   |   Encoding.fsproj
+|   |   packages.config
+</pre>
+<p>After running the conversion from the root folder:</p>
+<pre>
++---.paket
+|   |   paket.bootstrapper.exe
+|   |   paket.exe
+|   |   paket.targets
+|
++---packages
+|
++---Build
+|   |   Numbers.sln
+|   
++---Encoding
+|   |   Encoding.fsproj
+|   |   paket.references
+</pre>
 <h3><a name="Command-steps" class="anchor" href="#Command-steps">Command steps</a></h3>
 <p>The <code>paket convert-from-nuget</code> command:</p>
 <ol>
+<li><p>Finds all <code>packages.config</code> files, generates a paket.dependencies file in the solution root and replaces each <code>packages.config</code> with an equivalent paket.references file.</p></li>
+<li><p>If there is a solution-level <code>packages.config</code>, then it will be removed and its dependencies will be included into the paket.dependencies file.</p></li>
+<li><p>If you use NuGet Package Restore (<a href="http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore">MSBuild-Integrated or Automatic Visual Studio Package Restore</a>), then the <a href="paket-auto-restore.html"><code>paket auto-restore</code></a> command will be invoked.</p></li>
 <li>
-<p>Finds all <code>packages.config</code> files, generates a paket.dependencies file in the
-solution root and replaces each <code>packages.config</code> with an equivalent
-<a href="references-files.html"><code>paket.references</code> file</a>.</p>
-</li>
-<li>
-<p>If there is a solution-level <code>packages.config</code>, then it will be removed and
-its dependencies will be included in the
-<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</p>
-</li>
-<li>
-<p>If you use NuGet Package Restore
-(<a href="http://docs.nuget.org/docs/workflows/migrating-to-automatic-package-restore">MSBuild-Integrated or Automatic Visual Studio Package Restore</a>),
-then the <a href="paket-auto-restore.html"><code>paket auto-restore on</code></a> command will be
-invoked.</p>
-</li>
-<li>
-<p>Unless <code>--no-install</code> is specified, the
-<a href="paket-install.html"><code>paket install</code></a> process will be executed. This will</p>
+<p>Next (unless <code>--no-install</code> is specified), the <a href="paket-install.html">paket install</a> process will be executed. This will:</p>
 <ul>
-<li>analyze the dependencies,</li>
-<li><p>generate a <a href="lock-file.html"><code>paket.lock</code> file</a>,</p></li>
-<li>
-<p>remove all the old package references from your project files and install
-new references in Paket's syntax.</p>
-</li>
+<li>analyze the dependencies.</li>
+<li>generate a paket.lock file.</li>
+<li>remove all the old package references from your project files and install new references in Paket's syntax.</li>
 </ul>
 </li>
 <li>
-<p>If you specify <code>--force</code>, the conversion will attempt to infer additional
-dependencies from newly added or previously unprocessed <code>packages.config</code>
-files and</p>
+<p>If you specify <code>--force</code>, the conversion will attempt to infer additional dependencies from newly added / previously unprocessed <code>packages.config</code> files and</p>
 <ul>
-<li>
-<p>add any newly discovered dependencies to the end of an existing
-<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>,</p>
-</li>
-<li>
-<p>add references from the <code>packages.config</code> files to
-<a href="references-files.html"><code>paket.references</code> files</a>.</p>
-</li>
+<li><p>add any newly discovered dependencies to the end of an existing <code>paket.dependencies</code> file.</p></li>
+<li><p>transfer/append references from the <code>packages.config</code> files into <code>paket.references</code> files alongside.</p></li>
 </ul>
 </li>
 </ol>
 <h3><a name="Migrating-NuGet-source-credentials" class="anchor" href="#Migrating-NuGet-source-credentials">Migrating NuGet source credentials</a></h3>
-<p>If you are using authorized NuGet feeds, <code>convert-from-nuget</code> will automatically
-migrate the credentials for you. Following are valid modes for the
-<code>--migrate-credentials</code> option:</p>
-<ul>
-<li>
-<code>encrypt</code>: Encrypt credentials and save them in the
-<a href="paket-config.html">Paket configuration file</a>.
-</li>
-<li>
-<code>plaintext</code>: Include credentials in plaintext in the
-<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.
-See <a href="nuget-dependencies.html#plaintext-credentials">example</a>.
-</li>
-<li>
-<code>selective</code>: Use this option if have more than one authorized NuGet
-feed and you want to apply different modes for each of them.
-</li>
-</ul>
-<h2><a name="Simplify-to-direct-dependencies" class="anchor" href="#Simplify-to-direct-dependencies">Simplify to direct dependencies</a></h2>
-<p>After converting your solution from NuGet, you may end up with many
-<a href="faq.html#transitive">transitive dependencies</a> in your Paket files. Consider
-using <a href="paket-simplify.html"><code>paket simplify</code></a> to remove unnecessary
-<a href="faq.html#transitive">transitive dependencies</a> from your
-<a href="dependencies-file.html"><code>paket.dependencies</code></a> and
-<a href="references-files.html"><code>paket.references</code> files</a>.</p>
+<p>If you are using authorized NuGet feeds, convert-from-nuget command will automatically migrate the credentials for you.
+Following are valid modes for the <code>--creds-migration</code> option:</p>
+<ol>
+<li><code>encrypt</code> -  Encrypt your credentials and save them in the <a href="paket-config-file.html">paket configuration file</a>.</li>
+<li><code>plaintext</code> - Include your credentials in plaintext in the paket.dependencies file. See <a href="nuget-dependencies.html#plaintext-credentials">example</a>.</li>
+<li><code>selective</code> - Use this switch if you're using more than one authorized NuGet feed, and you want to apply different modes for each of them.</li>
+</ol>
+<h2><a name="Simplify-direct-dependencies" class="anchor" href="#Simplify-direct-dependencies">Simplify direct dependencies</a></h2>
+<p>After converting your solution from NuGet, you may end up with many <a href="faq.html#transitive">transitive dependencies</a>in your Paket files.
+Consider using <a href="paket-simplify.html"><code>paket simplify</code></a> to remove unnecessary <a href="faq.html#transitive">transitive dependencies</a> from your paket.dependencies and paket.references files.</p>
 <h2><a name="Partial-NuGet-conversion" class="anchor" href="#Partial-NuGet-conversion">Partial NuGet conversion</a></h2>
-<p><a href="paket-convert-from-nuget.html"><code>convert-from-nuget</code></a> will not work if it
-discovers that the codebase already utilizes Paket (i.e.
-<a href="dependencies-file.html"><code>paket.dependencies</code> file</a> is found). However, if for
-some reason you happen to have a mixture of projects already migrated to Paket
-and projects still using NuGet, you can pass the <code>--force</code> flag to
-<code>convert-from-nuget</code> for the remaining projects.</p>
+<p>The <code>convert-from-nuget</code> will not work if it discovers that the codebase already utilizes Paket (when <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> is found).
+However, if for some reason you happen to have a mixture of projects already migrated to Paket and projects still using NuGet, you can pass the <code>--force</code> flag to <code>convert-from-nuget</code> for the remaining projects.</p>
 
 
         </div>
@@ -234,17 +160,17 @@ and projects still using NuGet, you can pass the <code>--force</code> flag to
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
+            
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -255,12 +181,11 @@ and projects still using NuGet, you can pass the <code>--force</code> flag to
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -274,16 +199,16 @@ and projects still using NuGet, you can pass the <code>--force</code> flag to
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

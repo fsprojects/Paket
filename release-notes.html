@@ -3,10 +3,9 @@
   <head>
     <meta charset="utf-8"/>
     <title>release-notes</title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -56,15 +55,28 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h4><a name="5-5-0-alpha007-05-07-2017" class="anchor" href="#5-5-0-alpha007-05-07-2017">5.5.0-alpha007 - 05.07.2017</a></h4>
+<h4><a name="5-4-8-06-07-2017" class="anchor" href="#5-4-8-06-07-2017">5.4.8 - 06.07.2017</a></h4>
 <ul>
-<li>Support for dotnet cli tools - <a href="https://github.com/fsprojects/Paket/pull/2486">https://github.com/fsprojects/Paket/pull/2486</a></li>
-<li>GNU-compatible command line - <a href="https://github.com/fsprojects/Paket/pull/2429">https://github.com/fsprojects/Paket/pull/2429</a></li>
-<li>BUGFIX: Fixed NugetV2 querying - <a href="https://github.com/fsprojects/Paket/pull/2485">https://github.com/fsprojects/Paket/pull/2485</a></li>
+<li>BUGFIX: Add default NuGet source back to find-packages - <a href="https://github.com/fsprojects/Paket/pull/2489">https://github.com/fsprojects/Paket/pull/2489</a></li>
+</ul>
+<h4><a name="5-4-5-05-07-2017" class="anchor" href="#5-4-5-05-07-2017">5.4.5 - 05.07.2017</a></h4>
+<ul>
 <li>BUGFIX: Show stack trace only in verbose mode - <a href="https://github.com/fsprojects/Paket/pull/2481">https://github.com/fsprojects/Paket/pull/2481</a></li>
+</ul>
+<h4><a name="5-4-4-05-07-2017" class="anchor" href="#5-4-4-05-07-2017">5.4.4 - 05.07.2017</a></h4>
+<ul>
 <li>BUGFIX: find-packages doesn't require paket.dependencies to be present - <a href="https://github.com/fsprojects/Paket/pull/2483">https://github.com/fsprojects/Paket/pull/2483</a></li>
+</ul>
+<h4><a name="5-4-3-05-07-2017" class="anchor" href="#5-4-3-05-07-2017">5.4.3 - 05.07.2017</a></h4>
+<ul>
 <li>BUGFIX: Fixed for usage of the new csproj with targetFramework - <a href="https://github.com/fsprojects/Paket/pull/2482">https://github.com/fsprojects/Paket/pull/2482</a></li>
+</ul>
+<h4><a name="5-4-2-05-07-2017" class="anchor" href="#5-4-2-05-07-2017">5.4.2 - 05.07.2017</a></h4>
+<ul>
 <li>BUGFIX: Fixed off-by-one error when inserting lines in already-existing .paket folder in sln file - <a href="https://github.com/fsprojects/Paket/pull/2484">https://github.com/fsprojects/Paket/pull/2484</a></li>
+</ul>
+<h4><a name="5-4-1-03-07-2017" class="anchor" href="#5-4-1-03-07-2017">5.4.1 - 03.07.2017</a></h4>
+<ul>
 <li>BUGFIX: Allow any whitespace to precede a comment, not only space in the references file - <a href="https://github.com/fsprojects/Paket/pull/2479">https://github.com/fsprojects/Paket/pull/2479</a></li>
 <li>BUGFIX: Doesn't always print the 'warning' message - <a href="https://github.com/fsprojects/Paket/pull/2463">https://github.com/fsprojects/Paket/pull/2463</a></li>
 </ul>
@@ -106,12 +118,12 @@
 <li>Live release from NDC room 4</li>
 <li>Support for Fable 1.1</li>
 <li>Using NuGet's new SemVer 2 support - <a href="https://github.com/fsprojects/Paket/pull/2402">https://github.com/fsprojects/Paket/pull/2402</a></li>
-<li>Xamarin targets integrate with netstandard - <a href="https://github.com/fsprojects/Paket/pull/2396">https://github.com/fsprojects/Paket/pull/2396</a></li>
+<li>Xamarin targets integrate with netstandard (<a href="https://github.com/fsprojects/Paket/pull/2396).">https://github.com/fsprojects/Paket/pull/2396).</a></li>
 <li>Support for SpecificVersion attribute on assembly references - <a href="https://github.com/fsprojects/Paket/pull/2413">https://github.com/fsprojects/Paket/pull/2413</a></li>
 <li>New command <code>paket generate-nuspec</code></li>
 <li>New command: <code>FixNuspecs</code> - Can fix a list of nuspec files now</li>
 <li>
-New restriction system - <a href="https://github.com/fsprojects/Paket/pull/2336">https://github.com/fsprojects/Paket/pull/2336</a>
+New restriction system (<a href="https://github.com/fsprojects/Paket/pull/2336):">https://github.com/fsprojects/Paket/pull/2336):</a>
 <ul>
 <li>Paket is now more accurate in calculating restrictions and referencing libraries</li>
 <li>Paket will convert (lock-)files to a new syntax (but still understands the old syntax)</li>
@@ -119,15 +131,15 @@ New restriction system - <a href="https://github.com/fsprojects/Paket/pull/2336"
 <li>Add support for net403 (required for some portable profiles)</li>
 </ul>
 </li>
-<li>BREAKING CHANGE: Paket simplify no longer support simplifying restrictions - <a href="https://github.com/fsprojects/Paket/pull/2336">https://github.com/fsprojects/Paket/pull/2336</a></li>
+<li>BREAKING CHANGE: Paket simplify no longer support simplifying restrictions (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
 <li>BREAKING CHANGE: Paket.PowerShell is no longer supported</li>
 <li>BREAKING CHANGE: <code>InstallModel</code> API changed and Paket.Core.dll users might need to adapt</li>
-<li>PERFORMANCE: Improved performance by pre-loading requests - <a href="https://github.com/fsprojects/Paket/pull/2336">https://github.com/fsprojects/Paket/pull/2336</a></li>
-<li>PERFORMANCE: Report performance in a more detailed way - <a href="https://github.com/fsprojects/Paket/pull/2336">https://github.com/fsprojects/Paket/pull/2336</a></li>
+<li>PERFORMANCE: Improved performance by pre-loading requests (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
+<li>PERFORMANCE: Report performance in a more detailed way (<a href="https://github.com/fsprojects/Paket/pull/2336)">https://github.com/fsprojects/Paket/pull/2336)</a></li>
 <li>PERFORMANCE: Improved performance for some edge case - <a href="https://github.com/fsprojects/Paket/pull/2299">https://github.com/fsprojects/Paket/pull/2299</a></li>
-<li>PERFORMANCE: Limit the number of concurrent requests to 7 - <a href="https://github.com/fsprojects/Paket/pull/2362">https://github.com/fsprojects/Paket/pull/2362</a></li>
-<li>PERFORMANCE: Report how often the pre-loading feature worked - <a href="https://github.com/fsprojects/Paket/pull/2362">https://github.com/fsprojects/Paket/pull/2362</a></li>
-<li>PERFORMANCE: Request queue can now re-prioritize on-demand - <a href="https://github.com/fsprojects/Paket/pull/2362">https://github.com/fsprojects/Paket/pull/2362</a></li>
+<li>PERFORMANCE: Limit the number of concurrent requests to 7 (<a href="https://github.com/fsprojects/Paket/pull/2362)">https://github.com/fsprojects/Paket/pull/2362)</a></li>
+<li>PERFORMANCE: Report how often the pre-loading feature worked (<a href="https://github.com/fsprojects/Paket/pull/2362)">https://github.com/fsprojects/Paket/pull/2362)</a></li>
+<li>PERFORMANCE: Request queue can now re-prioritize on-demand (<a href="https://github.com/fsprojects/Paket/pull/2362)">https://github.com/fsprojects/Paket/pull/2362)</a></li>
 <li>PERFOMANCE: Much faster paket pack <a href="https://github.com/fsprojects/Paket/pull/2409">https://github.com/fsprojects/Paket/pull/2409</a></li>
 <li>DEPRECATED: <code>FixNuspec</code> function is now obsolete, use <code>FixNuspecs</code> instead</li>
 <li>DEPRECATED: /package-versions API was deprecated for lookup from NuGet team - <a href="https://github.com/fsprojects/Paket/pull/2420">https://github.com/fsprojects/Paket/pull/2420</a></li>
@@ -147,11 +159,11 @@ New restriction system - <a href="https://github.com/fsprojects/Paket/pull/2336"
 <li>BUGFIX: Proper encoding "+" in package download url - <a href="https://github.com/fsprojects/Paket/pull/2288">https://github.com/fsprojects/Paket/pull/2288</a></li>
 <li>BUGFIX: Paket failed when group is removed (or renamed) - <a href="https://github.com/fsprojects/Paket/pull/2281">https://github.com/fsprojects/Paket/pull/2281</a></li>
 <li>BUGFIX: Filter .targets / .props earlier - <a href="https://github.com/fsprojects/Paket/pull/2286">https://github.com/fsprojects/Paket/pull/2286</a></li>
-<li>BUGFIX: Downgrade to tooling 1.0 - <a href="https://github.com/fsprojects/Paket/pull/2380">https://github.com/fsprojects/Paket/pull/2380</a></li>
-<li>BUGFIX: Paket added too many targets and props - <a href="https://github.com/fsprojects/Paket/pull/2388">https://github.com/fsprojects/Paket/pull/2388</a></li>
-<li>BUGFIX: Paket failed with: String cannot be of zero length - <a href="https://github.com/fsprojects/Paket/pull/2407">https://github.com/fsprojects/Paket/pull/2407</a></li>
-<li>BOOTSTRAPPER: Don't crash in DownloadHashFile - <a href="https://github.com/fsprojects/Paket/pull/2376">https://github.com/fsprojects/Paket/pull/2376</a></li>
-<li>BOOTSTRAPPER: Search harder for the paket.dependencies file - <a href="https://github.com/fsprojects/Paket/pull/2384">https://github.com/fsprojects/Paket/pull/2384</a></li>
+<li>BUGFIX: Downgrade to tooling 1.0 (<a href="https://github.com/fsprojects/Paket/pull/2380)">https://github.com/fsprojects/Paket/pull/2380)</a></li>
+<li>BUGFIX: Paket added too many targets and props (<a href="https://github.com/fsprojects/Paket/pull/2388)">https://github.com/fsprojects/Paket/pull/2388)</a></li>
+<li>BUGFIX: Paket failed with: String cannot be of zero length (<a href="https://github.com/fsprojects/Paket/pull/2407)">https://github.com/fsprojects/Paket/pull/2407)</a></li>
+<li>BOOTSTRAPPER: Don't crash in DownloadHashFile (<a href="https://github.com/fsprojects/Paket/pull/2376)">https://github.com/fsprojects/Paket/pull/2376)</a></li>
+<li>BOOTSTRAPPER: Search harder for the paket.dependencies file (<a href="https://github.com/fsprojects/Paket/pull/2384)">https://github.com/fsprojects/Paket/pull/2384)</a></li>
 <li>USABILITY: Don't let build continue when paket failed - <a href="https://github.com/fsprojects/Paket/pull/2302">https://github.com/fsprojects/Paket/pull/2302</a></li>
 <li>Cleanup <a href="https://github.com/fsprojects/Paket/pull/2412">https://github.com/fsprojects/Paket/pull/2412</a> <a href="https://github.com/fsprojects/Paket/pull/2410">https://github.com/fsprojects/Paket/pull/2410</a></li>
 <li>
@@ -165,7 +177,7 @@ Internals: Started proper dotnetcore integration (disabled by default, can be en
 </ul>
 <h4><a name="4-8-8-11-06-2017" class="anchor" href="#4-8-8-11-06-2017">4.8.8 - 11.06.2017</a></h4>
 <ul>
-<li>paket adds too many targets and props - <a href="https://github.com/fsprojects/Paket/pull/2388">https://github.com/fsprojects/Paket/pull/2388</a></li>
+<li>paket adds too many targets and props (<a href="https://github.com/fsprojects/Paket/pull/2388)">https://github.com/fsprojects/Paket/pull/2388)</a></li>
 </ul>
 <h4><a name="4-8-6-23-05-2017" class="anchor" href="#4-8-6-23-05-2017">4.8.6 - 23.05.2017</a></h4>
 <ul>
@@ -177,7 +189,7 @@ Internals: Started proper dotnetcore integration (disabled by default, can be en
 </ul>
 <h4><a name="4-8-4-26-04-2017" class="anchor" href="#4-8-4-26-04-2017">4.8.4 - 26.04.2017</a></h4>
 <ul>
-<li>BUGFIX: Proper encoding "+" in package download url - <a href="https://github.com/fsprojects/Paket/pull/2288">https://github.com/fsprojects/Paket/pull/2288</a></li>
+<li>BUGFIX: Proper encoding "+" in package download url  - <a href="https://github.com/fsprojects/Paket/pull/2288">https://github.com/fsprojects/Paket/pull/2288</a></li>
 </ul>
 <h4><a name="4-8-3-26-04-2017" class="anchor" href="#4-8-3-26-04-2017">4.8.3 - 26.04.2017</a></h4>
 <ul>
@@ -251,7 +263,7 @@ BREAKING CHANGE: Made pushing changes from Git dependency repositories easier - 
 <li>Tail Recursive Package Resolution - <a href="https://github.com/fsprojects/Paket/pull/2066">https://github.com/fsprojects/Paket/pull/2066</a></li>
 <li>Reorganized resolver - <a href="https://github.com/fsprojects/Paket/pull/2039">https://github.com/fsprojects/Paket/pull/2039</a></li>
 <li>USABILITY: Added option to have paket restore fail on check failure - <a href="https://github.com/fsprojects/Paket/pull/1963">https://github.com/fsprojects/Paket/pull/1963</a></li>
-<li>USABILITY: Collect multiple install errors before failing - <a href="https://github.com/fsprojects/Paket/pull/2177">https://github.com/fsprojects/Paket/pull/2177</a></li>
+<li>USABILITY: Collect multiple install errors before failing  - <a href="https://github.com/fsprojects/Paket/pull/2177">https://github.com/fsprojects/Paket/pull/2177</a></li>
 <li>Generate load scripts on install abidding to new paket.dependencies option - <a href="https://fsprojects.github.io/Paket/dependencies-file.html#Generate-load-scripts">https://fsprojects.github.io/Paket/dependencies-file.html#Generate-load-scripts</a></li>
 </ul>
 <h4><a name="3-37-0-15-03-2017" class="anchor" href="#3-37-0-15-03-2017">3.37.0 - 15.03.2017</a></h4>
@@ -404,7 +416,7 @@ BREAKING CHANGE: Made pushing changes from Git dependency repositories easier - 
 <h4><a name="3-18-0-02-09-2016" class="anchor" href="#3-18-0-02-09-2016">3.18.0 - 02.09.2016</a></h4>
 <ul>
 <li>BUGFIX: Fixed issues around .NET Standard resolution</li>
-<li>BUGFIX: Fixed toLower &gt; tolower for odata url parameter - <a href="https://github.com/fsprojects/Paket/pull/1906">https://github.com/fsprojects/Paket/pull/1906</a></li>
+<li>BUGFIX: Fixed toLower &gt; tolower for odata url parameter  - <a href="https://github.com/fsprojects/Paket/pull/1906">https://github.com/fsprojects/Paket/pull/1906</a></li>
 <li>BUGFIX: Fix deduplication condition</li>
 <li>Revert fix for #1898</li>
 </ul>
@@ -519,7 +531,7 @@ BREAKING CHANGE: Made pushing changes from Git dependency repositories easier - 
 <li>BUGFIX: Allows to use colons in git build argument - <a href="https://github.com/fsprojects/Paket/issues/1773">https://github.com/fsprojects/Paket/issues/1773</a></li>
 <li>BUGFIX: auto-restore on fixes old targets file references - <a href="https://github.com/fsprojects/Paket/issues/1768">https://github.com/fsprojects/Paket/issues/1768</a></li>
 <li>BUGFIX: Added handling for cache not being accessible - <a href="https://github.com/fsprojects/Paket/pull/1764">https://github.com/fsprojects/Paket/pull/1764</a></li>
-<li>BUGFIX: Fixed out-of-date check for remote files - <a href="https://github.com/fsprojects/Paket/issues/1760">https://github.com/fsprojects/Paket/issues/1760</a>  <a href="https://github.com/fsprojects/Paket/issues/1762">https://github.com/fsprojects/Paket/issues/1762</a> <a href="https://github.com/fsprojects/Paket/issues/1766">https://github.com/fsprojects/Paket/issues/1766</a></li>
+<li>BUGFIX: Fixed out-of-date check for remote files - <a href="https://github.com/fsprojects/Paket/issues/1760,">https://github.com/fsprojects/Paket/issues/1760,</a> <a href="https://github.com/fsprojects/Paket/issues/1762,">https://github.com/fsprojects/Paket/issues/1762,</a> <a href="https://github.com/fsprojects/Paket/issues/1766">https://github.com/fsprojects/Paket/issues/1766</a></li>
 <li>BUGFIX: Using network cache with invalid credentials should not fail restore - <a href="https://github.com/fsprojects/Paket/issues/1758">https://github.com/fsprojects/Paket/issues/1758</a></li>
 <li>BUGFIX: Make the copy task more robust if we can't parse target framework - <a href="https://github.com/fsprojects/Paket/issues/1756">https://github.com/fsprojects/Paket/issues/1756</a></li>
 <li>BUGFIX: Paket warns on dependencies file that has same package twice in same group - <a href="https://github.com/fsprojects/Paket/issues/1757">https://github.com/fsprojects/Paket/issues/1757</a></li>
@@ -745,7 +757,7 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
 <li>BUGFIX: Do not pack absolute paths - <a href="https://github.com/fsprojects/Paket/issues/1472">https://github.com/fsprojects/Paket/issues/1472</a></li>
 <li>BUGFIX: Keep Auth from dependencies file for fast path - <a href="https://github.com/fsprojects/Paket/issues/1469">https://github.com/fsprojects/Paket/issues/1469</a></li>
 <li>BUGFIX: Fix Platform matching bug in CPP projects - <a href="https://github.com/fsprojects/Paket/issues/1467">https://github.com/fsprojects/Paket/issues/1467</a></li>
-<li>USABILITY: Touch project files when paket.lock changed in order to support incremental builds with MsBuild - <a href="https://github.com/fsprojects/Paket/issues/1471">https://github.com/fsprojects/Paket/issues/1471</a></li>
+<li>USABILITY: Touch project files when paket.lock changed in order to support incremental builds with MsBuild  - <a href="https://github.com/fsprojects/Paket/issues/1471">https://github.com/fsprojects/Paket/issues/1471</a></li>
 <li>USABILITY: Prevent paket holding locks on assemblies during binding redirects</li>
 <li>USABILITY: Don't fail when we can't turn on auto-restote during convert</li>
 </ul>
@@ -864,7 +876,7 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
 </ul>
 <h4><a name="2-35-0-09-12-2015" class="anchor" href="#2-35-0-09-12-2015">2.35.0 - 09.12.2015</a></h4>
 <ul>
-<li>"redirects off" skips binding redirects completely - <a href="https://github.com/fsprojects/Paket/pull/1299">https://github.com/fsprojects/Paket/pull/1299</a></li>
+<li>"redirects off" skips binding redirects completely  - <a href="https://github.com/fsprojects/Paket/pull/1299">https://github.com/fsprojects/Paket/pull/1299</a></li>
 </ul>
 <h4><a name="2-34-0-07-12-2015" class="anchor" href="#2-34-0-07-12-2015">2.34.0 - 07.12.2015</a></h4>
 <ul>
@@ -1513,7 +1525,7 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
 <li>New command: <code>paket pack</code> - <a href="http://fsprojects.github.io/Paket/paket-pack.html">http://fsprojects.github.io/Paket/paket-pack.html</a></li>
 <li>New command: <code>paket push</code> - <a href="http://fsprojects.github.io/Paket/paket-push.html">http://fsprojects.github.io/Paket/paket-push.html</a></li>
 <li>Improved command line help - <a href="https://github.com/fsprojects/Paket/pull/639">https://github.com/fsprojects/Paket/pull/639</a></li>
-<li>BUGFIX: fix no<em>auto</em>restore option parsing - <a href="https://github.com/fsprojects/Paket/issues/632">https://github.com/fsprojects/Paket/issues/632</a></li>
+<li>BUGFIX: fix no<em>auto</em>restore option parsing  - <a href="https://github.com/fsprojects/Paket/issues/632">https://github.com/fsprojects/Paket/issues/632</a></li>
 </ul>
 <h4><a name="0-29-0-18-02-2015" class="anchor" href="#0-29-0-18-02-2015">0.29.0 - 18.02.2015</a></h4>
 <ul>
@@ -1633,7 +1645,7 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
 <ul>
 <li><code>paket install</code> performs a selective update based on the changes in the dependencies file - <a href="http://fsprojects.github.io/Paket/lock-file.html#Performing-updates">http://fsprojects.github.io/Paket/lock-file.html#Performing-updates</a></li>
 <li>Paket.exe acquires a lock for all write processes - <a href="https://github.com/fsprojects/Paket/pull/469">https://github.com/fsprojects/Paket/pull/469</a></li>
-<li>New command to add credentials - <a href="http://fsprojects.github.io/Paket/paket-config.html#Add-credentials">http://fsprojects.github.io/Paket/paket-config.html#Add-credentials</a></li>
+<li>New command to add credentials - <a href="http://fsprojects.github.io/Paket/paket-config-file.html#Add-credentials">http://fsprojects.github.io/Paket/paket-config-file.html#Add-credentials</a></li>
 <li>Smarter conditional NuGet dependencies - <a href="https://github.com/fsprojects/Paket/pull/462">https://github.com/fsprojects/Paket/pull/462</a></li>
 <li>If environment auth variables are empty a fallback to the config is used- <a href="https://github.com/fsprojects/Paket/pull/459">https://github.com/fsprojects/Paket/pull/459</a></li>
 <li>Better handling for multiple files from same GitHub repository - <a href="https://github.com/fsprojects/Paket/pull/451">https://github.com/fsprojects/Paket/pull/451</a></li>
@@ -1721,7 +1733,7 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
 </ul>
 <h4><a name="0-12-0-07-11-2014" class="anchor" href="#0-12-0-07-11-2014">0.12.0 - 07.11.2014</a></h4>
 <ul>
-<li>New global paket.config file - <a href="http://fsprojects.github.io/Paket/paket-config.html">http://fsprojects.github.io/Paket/paket-config.html</a></li>
+<li>New global paket.config file - <a href="http://fsprojects.github.io/Paket/paket-config-file.html">http://fsprojects.github.io/Paket/paket-config-file.html</a></li>
 <li>Trace warning when we replace NuGet.exe with NuGet.CommandLine - <a href="https://github.com/fsprojects/Paket/issues/320">https://github.com/fsprojects/Paket/issues/320</a></li>
 <li>Allow to parse relative NuGet folders - <a href="https://github.com/fsprojects/Paket/issues/317">https://github.com/fsprojects/Paket/issues/317</a></li>
 <li>When paket skips a framework install because of custom nodes it shows a warning - <a href="https://github.com/fsprojects/Paket/issues/316">https://github.com/fsprojects/Paket/issues/316</a></li>
@@ -1795,7 +1807,7 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
 <li>Restore command doesn't calc install model.</li>
 <li>Use https in DefaultNugetStream - <a href="https://github.com/fsprojects/Paket/pull/251">https://github.com/fsprojects/Paket/pull/251</a></li>
 <li>BUGFIX: Paket only deletes files which will are downloaded by init-auto-restore process - <a href="https://github.com/fsprojects/Paket/pull/254">https://github.com/fsprojects/Paket/pull/254</a></li>
-<li>BUGFIX: Paket convert-from-nuget failed when package source keys contain invalid XML element chars - <a href="https://github.com/fsprojects/Paket/issues/253">https://github.com/fsprojects/Paket/issues/253</a></li>
+<li>BUGFIX: Paket convert-from-nuget failed when package source keys contain invalid XML element chars  - <a href="https://github.com/fsprojects/Paket/issues/253">https://github.com/fsprojects/Paket/issues/253</a></li>
 </ul>
 <h4><a name="0-6-0-11-10-2014" class="anchor" href="#0-6-0-11-10-2014">0.6.0 - 11.10.2014</a></h4>
 <ul>
@@ -1850,13 +1862,13 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
 <ul>
 <li>New command: paket add [--interactive] - <a href="http://fsprojects.github.io/Paket/paket-add.html">http://fsprojects.github.io/Paket/paket-add.html</a></li>
 <li>New command: paket simplify - <a href="http://fsprojects.github.io/Paket/paket-simplify.html">http://fsprojects.github.io/Paket/paket-simplify.html</a></li>
-<li>Better Visual Studio integration by using paket.targets file - <a href="http://fsprojects.github.io/Paket/paket-auto-restore.html">http://fsprojects.github.io/Paket/paket-auto-restore.html</a></li>
+<li>Better Visual Studio integration by using paket.targets file - <a href="http://fsprojects.github.io/Paket/paket-init-auto-restore.html">http://fsprojects.github.io/Paket/paket-init-auto-restore.html</a></li>
 <li>Support for NuGet prereleases - <a href="http://fsprojects.github.io/Paket/nuget-dependencies.html#PreReleases">http://fsprojects.github.io/Paket/nuget-dependencies.html#PreReleases</a></li>
 <li>Support for private NuGet feeds - <a href="http://fsprojects.github.io/Paket/nuget-dependencies.html#NuGet-feeds">http://fsprojects.github.io/Paket/nuget-dependencies.html#NuGet-feeds</a></li>
 <li>New NuGet package version constraints - <a href="http://fsprojects.github.io/Paket/nuget-dependencies.html#Further-version-constraints">http://fsprojects.github.io/Paket/nuget-dependencies.html#Further-version-constraints</a></li>
 <li>Respect case sensitivity for package paths for Linux - <a href="https://github.com/fsprojects/Paket/pull/137">https://github.com/fsprojects/Paket/pull/137</a></li>
 <li>Improved convert-from-nuget command - <a href="http://fsprojects.github.io/Paket/paket-convert-from-nuget.html">http://fsprojects.github.io/Paket/paket-convert-from-nuget.html</a></li>
-<li>New paket.bootstrapper.exe (7KB) allows to download paket.exe from github.com - <a href="http://fsprojects.github.io/Paket/paket-auto-restore.html">http://fsprojects.github.io/Paket/paket-auto-restore.html</a></li>
+<li>New paket.bootstrapper.exe (7KB) allows to download paket.exe from github.com - <a href="http://fsprojects.github.io/Paket/paket-init-auto-restore.html">http://fsprojects.github.io/Paket/paket-init-auto-restore.html</a></li>
 <li>New package resolver algorithm</li>
 <li>Better verbose mode - use -v flag</li>
 <li>Version info is shown at paket.exe start</li>
@@ -1910,17 +1922,17 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
+            
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -1931,12 +1943,11 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -1950,16 +1961,16 @@ BREAKING CHANGE: Removed --hard parameter from all commands.
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

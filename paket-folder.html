@@ -2,12 +2,11 @@
 <html lang="en">
   <head>
     <meta charset="utf-8"/>
-    <title>The .paket directory
+    <title>The .paket folder
 </title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -57,36 +56,23 @@
       <div class="row">
         <div class="span9" id="main">
           
-<h1><a name="The-paket-directory" class="anchor" href="#The-paket-directory">The .paket directory</a></h1>
-<p>The <a href="https://github.com/fsprojects/Paket/tree/master/.paket"><code>.paket</code> directory</a> is
-used the same way a <code>.nuget</code> directory is used for the
-<a href="http://docs.nuget.org/docs/workflows/using-nuget-without-committing-packages">NuGet package restore</a>.</p>
-<p>Place this directory into the root of your repository. It should include the
-<code>paket.targets</code> and <a href="bootstrapper.html"><code>paket.bootstrapper.exe</code></a> files which
-can be downloaded from
-<a href="https://github.com/fsprojects/Paket/releases/latest">GitHub</a>. The
-<a href="bootstrapper.html">bootstrapper</a> will always download the latest version of the
-<code>paket.exe</code> file and it will be placed into the same directory.</p>
-<p>Now, to install all the packages from the
-<a href="dependencies-file.html"><code>paket.dependencies</code> file</a>, just run the following
-command.</p>
+<h1><a name="The-paket-folder" class="anchor" href="#The-paket-folder">The .paket folder</a></h1>
+<p>The <a href="https://github.com/fsprojects/Paket/tree/master/.paket"><code>.paket</code> folder</a> is used the same way a <code>.nuget</code> folder is used for the <a href="http://docs.nuget.org/docs/workflows/using-nuget-without-committing-packages">NuGet package restore</a>.</p>
+<p>Place this folder into the root of your repository. It should include the <code>paket.targets</code> and <code>paket.bootstrapper.exe</code> files which can be downloaded from <a href="https://github.com/fsprojects/Paket/releases/latest">GitHub</a>.
+The <a href="http://fsprojects.github.io/Paket/bootstrapper.html">bootstrapper</a> will always download the latest version of the <code>paket.exe</code> file and it will be placed into the same folder.</p>
+<p>Now, to install all the packages from the <code>paket.dependencies</code> files, just run the following command.</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip"><code lang="sh">.paket/paket.exe install
-</code></pre></td></tr></table>
-<p>The location of <code>.paket</code> directory and Paket related files is not bound to
-location of Visual Studio solution file. Paket does not read or look for any
-solution files. If you have multiple solutions in subdirectories of some root
-directory, then that root directory is a good place to create <code>.paket</code> directory
-and put the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>.</p>
-<p>The <a href="paket-install.html"><code>.paket/paket.exe install</code> command</a> processes all
-directories under the root recursively and touch only those projects which have
-a respective <a href="references-files.html"><code>paket.references</code> files</a>. When Paket
-encounters <a href="dependencies-file.html"><code>paket.dependencies</code> files</a> in
-subdirectories it ignores that subdirectory (and everything under it) entirely,
-implying that they use an independent <a href="lock-file.html"><code>paket.lock</code> file</a> and
-<code>packages</code> directory. The <code>packages</code> directory will be created at the root level
-for all projects under it.</p>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="o">.</span><span class="i">paket</span><span class="o">/</span><span class="i">paket</span><span class="o">.</span><span class="i">exe</span> <span class="i">install</span>
+</code></pre></td>
+</tr>
+</table>
+<p>The location of .paket folder and Paket related files is not bound to location of Visual Studio solution file. Paket does not read or look for any solution files.
+In case you have multiple solutions in subfolders of some root folder, then that root folder would be a good place to put .paket folder and the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> there.
+<code>.paket/paket.exe install</code> command processes all folders under the root recursively and touch only those projects which have <code>paket.references</code> file in their folder.
+When Paket encounters <a href="dependencies-file.html"><code>paket.dependencies</code> files</a> in subfolder it ignores that subfolder (and everything under it) completely,
+implying that they use an independent <a href="lock-file.html"><code>paket.lock</code> file</a> and <code>packages</code> folder.
+<code>packages</code> folder would also be created at the root level for all projects under it.</p>
 
 
         </div>
@@ -106,17 +92,17 @@ for all projects under it.</p>
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
+            
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -127,12 +113,11 @@ for all projects under it.</p>
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -146,16 +131,16 @@ for all projects under it.</p>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>

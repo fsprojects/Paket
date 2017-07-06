@@ -4,10 +4,9 @@
     <meta charset="utf-8"/>
     <title>HTTP dependencies
 </title>
-    <link rel="icon" type="image/png" href="./img/logo.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A dependency manager for .NET with support for NuGet packages and git repositories."/>
-    <meta name="author" content="Steffen Forkmann, Alexander Groß"/>
+    <meta name="author" content="Steffen Forkmann, Alexander Gross"/>
 
     <script src="https://code.jquery.com/jquery-1.8.0.js"></script>
     <script src="https://code.jquery.com/ui/1.8.23/jquery-ui.js"></script>
@@ -58,17 +57,14 @@
         <div class="span9" id="main">
           
 <h1><a name="HTTP-dependencies" class="anchor" href="#HTTP-dependencies">HTTP dependencies</a></h1>
-<p>Paket allows one to automatically manage the linking of files from HTTP
-resources into your projects.</p>
+<p>Paket allows one to automatically manage the linking of files from HTTP resources into your projects.</p>
 <h2><a name="Referencing-a-single-file" class="anchor" href="#Referencing-a-single-file">Referencing a single file</a></h2>
-<p>You can reference a single file from a HTTP resource simply by specifying the
-URL in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
+<p>You can reference a single file from a HTTP resource simply by specifying the URL in the <a href="dependencies-file.html"><code>paket.dependencies</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">http</span> http://www.fssnip.net/raw/1M/test1.fs
 </code></pre></td></tr></table>
-<p>If you run the <a href="paket-install.html"><code>paket install</code> command</a>, it will add a new
-section to your <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
+<p>If you run the <a href="paket-install.html"><code>paket install</code> command</a>, it will add a new section to your <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>
 <span class="l">3: </span>
@@ -77,74 +73,56 @@ section to your <a href="lock-file.html"><code>paket.lock</code> file</a>:</p>
   <span class="k">remote</span>: http://www.fssnip.net/raw/1M/test1.fs
     test1.fs
 </code></pre></td></tr></table>
-<p>If you want to reference the file in one of your project files then add an entry
-to the project's <a href="references-files.html"><code>paket.references</code> file.</a>:</p>
+<p>If you want to reference the file in one of your project files then add an entry to the project's <a href="references-files.html"><code>paket.references</code> file.</a>:</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
 <td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">File</span>: test1.fs
 </code></pre></td></tr></table>
-<p>This will reference the linked file directly into your project. By default the
-linked file will be visible under <code>paket-files</code> directory in project.</p>
+<p>This will reference the linked file directly into your project.
+By default the linked file will be visible under <code>paket-files</code> folder in project.</p>
 <h2><a name="Build-action-conventions" class="anchor" href="#Build-action-conventions">Build action conventions</a></h2>
 <p>The build action is determined depending on the file extension:</p>
 <ul>
-<li>
-If the file extension is equal to project type it is added as compile items. For
-instance <code>.cs</code> for <code>.csproj</code> projects and <code>.fs</code> for <code>.fsproj</code> projects.
-</li>
-<li>If  the file extension is <code>.dll</code> then it is added as reference.</li>
-<li>
-Otherwise it is added as an
-<a href="https://msdn.microsoft.com/en-us/library/windows/apps/jj714082(v=vs.105).aspx">'Add as link' content file</a>.
-</li>
+<li>If file extension is equal to project type it is added as compile items. For instance <code>.cs</code> for <code>.csproj</code> projects and <code>.fs</code> for <code>.fsproj</code> projects.</li>
+<li>If file extension is <code>.dll</code> then it is added as reference.</li>
+<li>Otherwise it is added as an <a href="https://msdn.microsoft.com/en-us/library/windows/apps/jj714082(v=vs.105).aspx">'add as link' content file</a>.</li>
 </ul>
-<h2><a name="Options-for-HTTP-dependencies" class="anchor" href="#Options-for-HTTP-dependencies">Options for HTTP dependencies</a></h2>
-<p>When referencing a file using a <code>http</code> dependency, there are several options
-that help you to deal with things like authentication and file name. The pattern
-expected is:</p>
+<h2><a name="Options-on-http-dependencies" class="anchor" href="#Options-on-http-dependencies">Options on http dependencies</a></h2>
+<p>When referencing a file using a http dependency, there are several options that help you to deal with things like authentication and file name.
+The pattern expected is</p>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">    <span class="k">http</span> &lt;url&gt; &lt;file&gt; &lt;source name&gt;
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">http</span> url [FileSpec] [SourceName]
 </code></pre></td></tr></table>
 <ul>
 <li>
-<p><code>&lt;file&gt;</code> allows you to define the path to which the file that is downloaded
-will be written to. For example specifying the following</p>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket"><span class="k">http</span> http://www.fssnip.net/raw/1M/test1.fs src/test1.fs
-</code></pre></td></tr></table>
-<p>will write the file to <code>paket-files/www.fssnip.net/src/test.fs</code></p>
+<p><strong>FileSpec</strong> - This allows you to define the path to which the file that is downloaded will be written to. For example specifying the following</p>
+<p>[lang=paket]
+http <a href="http://www.fssnip.net/raw/1M/test1.fs">http://www.fssnip.net/raw/1M/test1.fs</a> src/test1.fs</p>
+<p>will write the file to <code>paket-files\www.fssnip.net\src\test.fs</code></p>
 </li>
 <li>
-<p><code>&lt;source name&gt;</code> allows you to override the directory which the downloaded file
-is written to and also acts as a key to lookup any credentials that maybe
-associated for that key. For example you add credentials
-using <a href="paket-config.html"><code>paket config add-credentials MySource</code></a> then
-each time Paket extracts a HTTP dependency with <code>MySource</code> as a
-<code>&lt;source name&gt;</code> the credentials will be made part of the HTTP request. If no
-keys exist in the credential store then the request will be made without
-any <code>Authorization</code> headers.</p>
+<p><strong>SourceName</strong> - The source name allows you to override the folder which the downloaded file is written to and also acts as a key to lookup any authentication
+that maybe associated for that key. For example if I had added an authentication source using <a href="commands\config.html"><code>paket config add-authentication MySource</code></a>
+then each time Paket extracts a HTTP dependency with <code>MySource</code> as a <code>SourceName</code> the credentials will be made part of the HTTP request. If no keys exist in the authentication store
+then the request will be made without any authentication headers.</p>
 </li>
 </ul>
-<h2><a name="Allowed-schemes" class="anchor" href="#Allowed-schemes">Allowed schemes</a></h2>
-<p>All <code>http://</code>, <code>https://</code> and <code>file://</code> URIs schemes are allowed. Examples:</p>
+<h2><a name="Allowed-http-schemes" class="anchor" href="#Allowed-http-schemes">Allowed http schemes</a></h2>
+<p>All <code>http</code>, <code>https</code> and <code>file protocol</code> <code>URIs</code> are allowed. Examples:</p>
 <ul>
 <li>
-<p><code>http https://raw.githubusercontent.com/fsprojects/Paket/master/src/Paket.Core/ProjectFile.fs</code>
-will write the file to <code>paket-files/raw.githubusercontent.com/ProjectFile.fs</code></p>
+<p>http <a href="https://raw.githubusercontent.com/fsprojects/Paket/master/src/Paket.Core/ProjectFile.fs">https://raw.githubusercontent.com/fsprojects/Paket/master/src/Paket.Core/ProjectFile.fs</a></p>
+<p>will write the file to <code>paket-files\raw.githubusercontent.com\ProjectFile.fs</code></p>
 </li>
 <li>
-<p><code>http file:///c:/projects/library.dll</code>
-will write the file to <code>paket-files/localhost/library.dll</code></p>
+<p>http file:///c:/projects/library.dll</p>
+<p>will write the file to <code>paket-files\localhost\library.dll</code></p>
 </li>
 </ul>
-<h2><a name="Updating-HTTP-dependencies" class="anchor" href="#Updating-HTTP-dependencies">Updating HTTP dependencies</a></h2>
-<p>If you want to update a file you need to use the
-<a href="paket-install.html"><code>paket install</code> command</a> or
-<a href="paket-update.html"><code>paket update</code> command</a> with <code>--force</code> option.</p>
-<p>Using <a href="groups.html">groups</a> for HTTP-dependent files can be helpful to reduce
-the number of files that are reinstalled.</p>
+<h2><a name="Updating-http-dependencies" class="anchor" href="#Updating-http-dependencies">Updating http dependencies</a></h2>
+<p>If you want to update a file you need to use the <a href="paket-install.html"><code>paket install</code> command</a> or <a href="paket-update.html"><code>paket update</code> command</a>  with <code>--force [-f]</code> option.</p>
+<p>Using <a href="groups.html">groups</a> for http dependent files can be helpful in order to reduce the number of files that are re-installed.</p>
 
 
         </div>
@@ -164,17 +142,17 @@ the number of files that are reinstalled.</p>
             <li class="nav-header">Download Paket</li>
             <li><a href="http://nuget.org/packages/Paket" target="_blank">From NuGet</a></li>
             <li><a href="https://github.com/fsprojects/Paket/releases/latest" target="_blank">From GitHub</a></li>
-
+            
             <li class="nav-header">GitHub</li>
             <li><a href="http://github.com/fsprojects/Paket" target="_blank">Source Code on GitHub</a></li>
-            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>
+            <li><a href="http://github.com/fsprojects/Paket/issues" target="_blank">Report an issue</a></li>          
 
             <li class="nav-header">Documentation</li>
             <li><a href="./dependencies-file.html">paket.dependencies</a></li>
             <li><a href="./lock-file.html">paket.lock</a></li>
             <li><a href="./references-files.html">paket.references</a></li>
-            <li><a href="./template-files.html">paket.template</a></li>
-            <li><a href="./local-file.html">paket.local</a></li>
+            <li><a href="./template-files.html">paket.template</a></li>            
+            <li><a href="./local-file.html">paket.local</a></li>            
             <li><a href="./paket-folder.html">.paket folder</a></li>
             <li><a href="./bootstrapper.html">paket.bootstrapper.exe</a></li>
             <li class="divider"></li>
@@ -185,12 +163,11 @@ the number of files that are reinstalled.</p>
             <li><a href="./git-dependencies.html">Git dependencies</a></li>
             <li><a href="./github-dependencies.html">GitHub dependencies</a></li>
             <li><a href="./http-dependencies.html">HTTP dependencies</a></li>
-            <li><a href="./analyzers.html">Analyzers</a></li>
+            <li><a href="./analyzers.html">Analyzers</a></li>            
             <li class="divider"></li>
             <li><a href="./installation.html">Installation</a></li>
             <li><a href="./reference-from-repl.html">Using Paket from F# Interactive</a></li>
             <li><a href="./editor-support.html">Editor support</a></li>
-            <li><a href="./shell-completion.html">Shell completion</a></li>
             <li class="divider"></li>
             <li><a href="./reference/index.html">API Reference</a></li>
 
@@ -204,16 +181,16 @@ the number of files that are reinstalled.</p>
             <li><a href="./paket-find-packages.html">paket find-packages</a></li>
             <li><a href="./paket-find-package-versions.html">paket find-package-versions</a></li>
             <li><a href="./paket-generate-load-scripts.html">paket generate-load-scripts</a></li>
-            <li><a href="./paket-init.html">paket init</a></li>
+            <li><a href="./paket-init.html">paket init</a></li>          
             <li><a href="./paket-install.html">paket install</a></li>
             <li><a href="./paket-outdated.html">paket outdated</a></li>
             <li><a href="./paket-pack.html">paket pack</a></li>
             <li><a href="./paket-push.html">paket push</a></li>
             <li><a href="./paket-remove.html">paket remove</a></li>
             <li><a href="./paket-restore.html">paket restore</a></li>
-            <li><a href="./paket-simplify.html">paket simplify</a></li>
+            <li><a href="./paket-simplify.html">paket simplify</a></li>   
             <li><a href="./paket-show-groups.html">paket show-groups</a></li>
-            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>
+            <li><a href="./paket-show-installed-packages.html">paket show-installed-packages</a></li>         
             <li><a href="./paket-update.html">paket update</a></li>
             <li><a href="./paket-why.html">paket why</a></li>
           </ul>
