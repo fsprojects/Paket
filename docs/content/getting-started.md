@@ -37,6 +37,7 @@ This guide will show you
 Create a [`paket.dependencies` file](dependencies-file.html) in your project's
 root and specify all your dependencies in it. You can use
 [NuGet packages](nuget-dependencies.html),
+[Git repos](git-dependencies.html),
 [GitHub files](github-dependencies.html) and
 [HTTP dependencies](http-dependencies.html).
 
