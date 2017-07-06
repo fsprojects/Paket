@@ -92,16 +92,14 @@ Download the latest
 <a href="https://github.com/fsprojects/Paket/releases/latest"><code>paket.bootstrapper.exe</code></a>
 into that directory.
 </li>
-<li>Run <code>.paket/paket.bootstrapper.exe</code>. It will download the latest <code>paket.exe</code>.</li>
-<li>
-Commit <code>.paket/paket.bootstrapper.exe</code> into your repository and add
-<code>.paket/paket.exe</code> to your <code>.gitignore</code> file.
-</li>
+<li>Rename <code>.paket/paket.bootstrapper.exe</code> to <code>.paket/paket.exe</code>. <a href="bootstrapper.html#Magic-mode">read more about "Magic Mode"</a>.</li>
+<li>Commit <code>.paket/paket.exe</code> into your repository.</li>
 </ol>
 <h3><a name="Specifying-dependencies" class="anchor" href="#Specifying-dependencies">Specifying dependencies</a></h3>
 <p>Create a <a href="dependencies-file.html"><code>paket.dependencies</code> file</a> in your project's
 root and specify all your dependencies in it. You can use
 <a href="nuget-dependencies.html">NuGet packages</a>,
+<a href="git-dependencies.html">Git repos</a>,
 <a href="github-dependencies.html">GitHub files</a> and
 <a href="http-dependencies.html">HTTP dependencies</a>.</p>
 <p>The file might look like this:</p>
