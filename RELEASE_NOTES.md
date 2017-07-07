@@ -1,6 +1,7 @@
 #### 5.5.0-rc001 - 06.07.2017
 * Support for dotnet cli tools with clitools keyword in paket.dependencies - https://fsprojects.github.io/Paket/nuget-dependencies.html#Special-case-dotnet-cli-tools
 * GNU-compatible command line - https://github.com/fsprojects/Paket/pull/2429
+* USABILITY: find-package-versions now includes default source to match behavior of find-packages - https://github.com/fsprojects/Paket/pull/2493
 
 #### 5.4.8 - 06.07.2017
 * BUGFIX: Added default NuGet source back to find-packages - https://github.com/fsprojects/Paket/pull/2489
