@@ -486,6 +486,18 @@ let pack (results : ParseResults<_>) =
                       includeReferencedProjects = includeReferencedProjects,
                       ?projectUrl = projectUrl)
 
+/// This is source-discovering logic shared between `findPackages` and `findPackageVersions`
+let discoverPackageSources explicitSource (dependencies: Dependencies option) =
+    match explicitSource, dependencies with
+    | Some source, _ ->
+        [PackageSource.NuGetV2Source source]
+    | _, Some dependencies ->
+        PackageSources.DefaultNuGetSource ::
+        (dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)
+    | _ ->
+        failwithf "Could not find '%s' at or above current directory, and no explicit source was given as parameter (e.g. 'paket.exe find-packages --source https://www.nuget.org/api/v2')."
+            Constants.DependenciesFileName
+
 let findPackages silent (results : ParseResults<_>) =
     let maxResults =
         let arg = (results.TryGetResult <@ FindPackagesArgs.Max_Results @>,
@@ -497,16 +509,7 @@ let findPackages silent (results : ParseResults<_>) =
         let arg = (results.TryGetResult <@ FindPackagesArgs.Source @>,
                    results.TryGetResult <@ FindPackagesArgs.Source_Legacy @>)
                   |> legacyOption results "--source" "source"
-
-        match arg, dependencies with
-        | Some source, _ ->
-            [PackageSource.NuGetV2Source source]
-        | _, Some dependencies ->
-            PackageSources.DefaultNuGetSource ::
-            (dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat)
-        | _ ->
-            failwithf "Could not find '%s' at or above current directory, and no explicit source was given as parameter (e.g. 'paket.exe find-packages --source https://www.nuget.org/api/v2')."
-                Constants.DependenciesFileName
+        discoverPackageSources arg dependencies
 
     let searchAndPrint searchText =
         for p in Dependencies.FindPackagesByName(sources,searchText,maxResults) do
@@ -590,14 +593,8 @@ let findPackageVersions (results : ParseResults<_>) =
         let arg = (results.TryGetResult <@ FindPackageVersionsArgs.Source @>,
                    results.TryGetResult <@ FindPackageVersionsArgs.Source_Legacy @>)
                   |> legacyOption results "--source" "source"
-        match arg, dependencies with
-        | Some source, _ ->
-            [PackageSource.NuGetV2Source source]
-        | _, Some dependencies ->
-            dependencies.GetSources() |> Seq.map (fun kv -> kv.Value) |> List.concat
-        | _ ->
-            failwithf "Could not find '%s' at or above current directory, and no explicit source was given as parameter (e.g. 'paket.exe find-package-versions --source https://www.nuget.org/api/v2')."
-                Constants.DependenciesFileName
+        discoverPackageSources arg dependencies
+        
     let root =
         match dependencies with
         | Some d ->
