@@ -17,7 +17,6 @@ type DotNetStandardVersion =
     | V1_4
     | V1_5
     | V1_6
-    | V1_7
     | V2_0
     override this.ToString() =
         match this with
@@ -28,7 +27,6 @@ type DotNetStandardVersion =
         | V1_4 -> "v1.4"
         | V1_5 -> "v1.5"
         | V1_6 -> "v1.6"
-        | V1_7 -> "v1.7"
         | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
@@ -39,7 +37,6 @@ type DotNetStandardVersion =
         | DotNetStandardVersion.V1_4 -> "1.4"
         | DotNetStandardVersion.V1_5 -> "1.5"
         | DotNetStandardVersion.V1_6 -> "1.6"
-        | DotNetStandardVersion.V1_7 -> "1.7"
         | DotNetStandardVersion.V2_0 -> "2.0"
 
 [<RequireQualifiedAccess>]
@@ -475,8 +472,7 @@ type FrameworkIdentifier =
         | DotNetStandard DotNetStandardVersion.V1_4 -> [ DotNetStandard DotNetStandardVersion.V1_3 ]
         | DotNetStandard DotNetStandardVersion.V1_5 -> [ DotNetStandard DotNetStandardVersion.V1_4 ]
         | DotNetStandard DotNetStandardVersion.V1_6 -> [ DotNetStandard DotNetStandardVersion.V1_5 ]
-        | DotNetStandard DotNetStandardVersion.V1_7 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
-        | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_7 ]
+        | DotNetStandard DotNetStandardVersion.V2_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_0 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | DotNetCore DotNetCoreVersion.V1_1 -> [ DotNetCore DotNetCoreVersion.V1_0 ]
         | DotNetCore DotNetCoreVersion.V2_0 -> [ DotNetCore DotNetCoreVersion.V1_1;  DotNetStandard DotNetStandardVersion.V2_0 ]
@@ -605,7 +601,6 @@ module FrameworkDetection =
                 | "netstandard14" -> Some(DotNetStandard DotNetStandardVersion.V1_4)
                 | "netstandard15" -> Some(DotNetStandard DotNetStandardVersion.V1_5)
                 | "netstandard16" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
-                | "netstandard17" -> Some(DotNetStandard DotNetStandardVersion.V1_7)
                 | "netstandard20" -> Some(DotNetStandard DotNetStandardVersion.V2_0)
                 | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
                 | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
@@ -864,7 +859,6 @@ module KnownTargetProfiles =
         DotNetStandardVersion.V1_4
         DotNetStandardVersion.V1_5
         DotNetStandardVersion.V1_6
-        DotNetStandardVersion.V1_7
         DotNetStandardVersion.V2_0
     ]
         
