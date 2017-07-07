@@ -211,6 +211,7 @@ let getTargetCondition (target:TargetProfile) =
         | Native(NoBuildMode,NoPlatform) -> "true", ""
         | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
+        | Tizen version ->"$(TargetFrameworkIdentifier) == 'Tizen'", sprintf "$(TargetFrameworkVersion) == '%O'" version
     | PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
 let getCondition (referenceCondition:string option) (allTargets: TargetProfile Set list) (targets : TargetProfile Set) =
