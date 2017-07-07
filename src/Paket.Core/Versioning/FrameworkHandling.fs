@@ -494,7 +494,7 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V8 -> [ WindowsPhone WindowsPhoneVersion.V7_5; DotNetStandard DotNetStandardVersion.V1_0 ]
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
         | Tizen TizenVersion.V3 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
-        | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_7 ]
+        | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
 
 module FrameworkDetection =
 
