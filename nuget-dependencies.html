@@ -498,16 +498,6 @@ option</a>.</p>
 
 <span class="k">nuget</span> Example <span class="o">~&gt;</span> <span class="n">1.2</span> <span class="k">lowest_matching</span>: true
 </code></pre></td></tr></table>
-<h3><a name="Special-case-dotnet-cli-tools" class="anchor" href="#Special-case-dotnet-cli-tools">Special case: dotnet cli tools</a></h3>
-<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
-<span class="l">2: </span>
-</pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">clitool dotnet-fable <span class="n">1.17</span>
-<span class="k">nuget</span> Fable.Core
-</code></pre></td></tr></table>
-<p>Command line tools that hook into dotnet cli are special NuGet packages.
-These packages are referenced with the keyword <code>clitool</code> instead of <code>nuget</code>.
-This will exclude the tool and all it's dependencies from getting referenced as a dependency of a project.</p>
 <h3><a name="Combine-multiple-modifiers" class="anchor" href="#Combine-multiple-modifiers">Combine multiple modifiers</a></h3>
 <p>It is possible to apply more than one of the modifiers above to a particular
 package. To do so, simply separate them by commas:</p>
@@ -521,6 +511,17 @@ package. To do so, simply separate them by commas:</p>
 <span class="c">// Do not import .targets and .props and also do not add any content.</span>
 <span class="k">nuget</span> ClearScript.Installer <span class="k">import_targets</span>: false, <span class="k">content</span>: none
 </code></pre></td></tr></table>
+<h3><a name="Special-case-CLI-tools" class="anchor" href="#Special-case-CLI-tools">Special case: <code>dotnet</code> CLI tools</a></h3>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">clitool dotnet-fable <span class="n">1.17</span>
+<span class="k">nuget</span> Fable.Core
+</code></pre></td></tr></table>
+<p>Command line (CLI) tools that hook into the <code>dotnet</code> CLI are special NuGet
+packages. These packages are added with the keyword <code>clitool</code> instead of
+<code>nuget</code>. This will exclude the tool and all its dependencies from getting
+referenced as a dependency for any project.</p>
 
 
         </div>
