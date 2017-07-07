@@ -42,8 +42,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\templates\src\react\Content</StartWorkingDirectory>
+    <StartArguments>convert-from-nuget</StartArguments>
+    <StartWorkingDirectory>D:\temp\cs</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

@@ -1,3 +1,6 @@
+#### 5.5.2 - 07.07.2017
+* BUGFIX: Trace warnings to stdout instead of stderr
+
 #### 5.5.1 - 07.07.2017
 * USABILITY: Better error message when references file parsing fails
 
