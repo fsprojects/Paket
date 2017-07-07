@@ -43,7 +43,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>D:\code\fable-suave-scaffold</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\code\templates\src\react\Content</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

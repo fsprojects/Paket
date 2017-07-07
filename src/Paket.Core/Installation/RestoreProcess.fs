@@ -134,8 +134,8 @@ let findAllReferencesFiles root =
         | Some fileName -> 
             try
                 Some(ok <| (p, ReferencesFile.FromFile fileName))
-            with _ ->
-                Some(fail <| (ReferencesFileParseError (FileInfo fileName)))
+            with e ->
+                Some(fail <| (ReferencesFileParseError (FileInfo fileName, e)))
         | None ->
             None
             
@@ -147,8 +147,7 @@ let copiedElements = ref false
 
 let extractElement root name =
     let a = Assembly.GetEntryAssembly()
-    let s = a.GetManifestResourceStream(name)
-    let fi = FileInfo a.FullName
+    let s = a.GetManifestResourceStream name
     let targetFile = FileInfo(Path.Combine(root,".paket",name))
     if not targetFile.Directory.Exists then
         targetFile.Directory.Create()
@@ -289,8 +288,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                 | Some fileName -> 
                     try
                         ReferencesFile.FromFile fileName
-                    with _ ->
-                        failwith ((ReferencesFileParseError (FileInfo fileName)).ToString())
+                    with e ->
+                        failwith ((ReferencesFileParseError (FileInfo fileName,e)).ToString())
                 | None ->
                     let fileName = 
                         let fi = FileInfo(projectFile.FileName)
