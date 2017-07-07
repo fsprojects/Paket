@@ -1,3 +1,6 @@
+#### 5.5.3 - 07.07.2017
+* UABILITY: Convert-From-NuGet tries to restore into magic mode
+
 #### 5.5.2 - 07.07.2017
 * BUGFIX: Trace warnings to stdout instead of stderr
 

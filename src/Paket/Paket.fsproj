@@ -43,7 +43,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>convert-from-nuget</StartArguments>
-    <StartWorkingDirectory>D:\temp\cs</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\cs2</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

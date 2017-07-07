@@ -353,7 +353,7 @@ type Dependencies(dependenciesFileName: string) =
     member this.DownloadLatestBootstrapper() : unit =
         this.DownloadLatestBootstrapper(false)
 
-    /// Downloads the latest paket.bootstrapper into the .paket folder andtry to rename it to paket.exe in order to activate magic mode.
+    /// Downloads the latest paket.bootstrapper into the .paket folder and try to rename it to paket.exe in order to activate magic mode.
     member this.DownloadLatestBootstrapper(fromBootstrapper) : unit =
         RunInLockedAccessMode(
             this.RootPath,
@@ -361,22 +361,12 @@ type Dependencies(dependenciesFileName: string) =
                 this.Process Releases.downloadLatestBootstrapperAndTargets
                 let bootStrapperFileName = Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.BootstrapperFileName)
                 let paketFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName))
-                let configFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName + ".config"))
                 try
                     if paketFileName.Exists then
                         paketFileName.Delete()
                     File.Move(bootStrapperFileName,paketFileName.FullName)
-
-                    let config = """<?xml version="1.0" encoding="utf-8" ?>
-<configuration>
-  <appSettings>
-    <add key="Prerelease" value="True"/>
-  </appSettings>
-</configuration>"""
-                    File.WriteAllText(configFileName.FullName, config)
                 with
-                | _ ->()
-                )
+                | _ ->())
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(fromBootstrapper: bool): unit =

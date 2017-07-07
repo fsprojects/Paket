@@ -56,3 +56,4 @@ let private downloadLatestVersionOf files destDir =
 let downloadLatestBootstrapperAndTargets environment =
     let exeDir = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName)
     downloadLatestVersionOf [Constants.TargetsFileName; Constants.BootstrapperFileName] exeDir
+

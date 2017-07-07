@@ -260,7 +260,10 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             let latestVersion, _ = versions |> List.maxBy fst
             let restrictions =
                 match versions with
-                | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.map (Requirements.parseRestrictionsLegacy false)
+                | [ version, targetFramework ] -> 
+                    targetFramework 
+                    |> Option.toList 
+                    |> List.map (Requirements.parseRestrictionsLegacy false)
                 | _ -> []
             let restrictions =
                 if restrictions = [] then FrameworkRestriction.NoRestriction
@@ -413,6 +416,7 @@ let replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper result =
     |> List.map (fun (_,n) -> n |> Option.map (fun x -> x.File))
     |> List.choose id 
     |> List.iter remove
+
     result.NuGetEnv.NuGetTargets |> Option.iter remove
     result.NuGetEnv.NuGetExe 
     |> Option.iter 
@@ -427,10 +431,13 @@ let replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper result =
     | _ -> ()
 
     result.PaketEnv.DependenciesFile.Save()
-    result.PaketEnv.Projects |> List.iter (fun (project, referencesFile) -> 
-                                                project.Save(true)
-                                                referencesFile.Save())
-    result.SolutionFiles |> Array.iter (fun s -> s.Save())
+    result.PaketEnv.Projects 
+    |> List.iter (fun (project, referencesFile) -> 
+        project.Save(true)
+        referencesFile.Save())
+
+    result.SolutionFiles 
+    |> Array.iter (fun s -> s.Save())
 
     let autoVSPackageRestore = 
         result.NuGetEnv.NuGetConfig.PackageRestoreAutomatic &&
@@ -446,5 +453,5 @@ let replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper result =
     UpdateProcess.Update(
         result.PaketEnv.DependenciesFile.FileName, 
         { UpdaterOptions.Default with 
-                Common = { InstallerOptions.Default with Force = true; Redirects = true }
-                NoInstall = not installAfter })
+            Common = { InstallerOptions.Default with Force = true; Redirects = true }
+            NoInstall = not installAfter })
