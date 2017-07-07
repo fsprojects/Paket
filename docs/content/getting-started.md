@@ -29,9 +29,11 @@ This guide will show you
 1. Download the latest
    [`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest)
    into that directory.
-1. Rename `.paket/paket.bootstrapper.exe` to `.paket/paket.exe`. [read more about "Magic Mode"](bootstrapper.html#Magic-mode).
-1. Commit `.paket/paket.exe` into your repository.
-1. After the first `.paket/paket.exe` call Paket will create a couple of files in `.paket` - commit those as well.
+1. Rename `.paket/paket.bootstrapper.exe` to `.paket/paket.exe`.
+   [Read more about "magic mode"](bootstrapper.html#Magic-mode).
+1. Commit `.paket/paket.exe` to your repository.
+1. After the first `.paket/paket.exe` invocation Paket will create a couple of
+   files in `.paket` — commit those as well.
 
 ### Specifying dependencies
 
