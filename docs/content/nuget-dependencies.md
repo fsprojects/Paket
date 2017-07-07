@@ -294,7 +294,7 @@ source https://nuget.org/api/v2
 nuget Newtonsoft.Json copy_local: false
 ```
 
-The default is `content: true`.
+The default is `copy_local: true`.
 
 ### Importing `*.targets` and `*.props` files
 
