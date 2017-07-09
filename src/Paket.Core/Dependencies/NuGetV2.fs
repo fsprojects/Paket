@@ -255,8 +255,6 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
             return! fallback()
     }
 
-let urlSimilarToTfsOrVsts url =
-    String.containsIgnoreCase "visualstudio.com" url || (String.containsIgnoreCase "/_packaging/" url && String.containsIgnoreCase "/nuget/v" url)
 
 /// Gets package details from NuGet via OData
 let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
@@ -270,9 +268,9 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                 | SafeWebResult.SuccessResponse r -> async { return Some r }
                 | SafeWebResult.NotFound -> async { return None }
                 | SafeWebResult.UnknownError err when
-                        String.containsIgnoreCase "myget.org" nugetURL ||
-                        String.containsIgnoreCase "nuget.org" nugetURL ||
-                        String.containsIgnoreCase "visualstudio.com" nugetURL ->
+                        urlIsMyGet nugetURL ||
+                        urlIsNugetGallery nugetURL ||
+                        urlSimilarToTfsOrVsts nugetURL ->
                     raise <|
                         System.Exception(
                             sprintf "Could not get package details for %O from %s" packageName nugetURL,

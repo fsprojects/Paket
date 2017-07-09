@@ -309,7 +309,6 @@ let normalizeFeedUrl (source:string) =
     | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
     | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
     | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-    | url when url.EndsWith("/api/v3/index.json") -> url.Replace("/api/v3/index.json","")
     | source -> source
 
 #if NETSTANDARD1_6
@@ -385,12 +384,24 @@ let getDefaultProxyFor =
             | Some p -> if p.GetProxy uri <> uri then p else getDefault()
             | None -> getDefault())
 
+
+exception RequestReturnedError of statusCode:HttpStatusCode * content:Stream * mediaType:string
+let failIfNoSuccess (resp:HttpResponseMessage) = async {
+    if not resp.IsSuccessStatusCode then
+        if verbose then
+            tracefn "Request failed with '%d': '%s'" (int resp.StatusCode) (resp.RequestMessage.RequestUri.ToString())
+        let mem = new MemoryStream()
+        do! resp.Content.CopyToAsync(mem) |> Async.AwaitTaskWithoutAggregate
+        mem.Position <- 0L
+        raise <| RequestReturnedError(resp.StatusCode, mem, resp.Content.Headers.ContentType.MediaType)
+    () }
 type HttpClient with
     member x.DownloadFileTaskAsync (uri : Uri, tok : CancellationToken, filePath : string) =
       async {
-        let! response = x.GetAsync(uri, tok) |> Async.AwaitTask
+        let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
+        do! failIfNoSuccess response
         use fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None)
-        do! response.Content.CopyToAsync(fileStream) |> Async.AwaitTask
+        do! response.Content.CopyToAsync(fileStream) |> Async.AwaitTaskWithoutAggregate
         fileStream.Flush()
       } |> Async.StartAsTask
     member x.DownloadFileTaskAsync (uri : string, tok : CancellationToken, filePath : string) = x.DownloadFileTaskAsync(Uri uri, tok, filePath)
@@ -400,8 +411,9 @@ type HttpClient with
         x.DownloadFileTaskAsync(uri, CancellationToken.None, filePath).GetAwaiter().GetResult()
     member x.DownloadStringTaskAsync (uri : Uri, tok : CancellationToken) =
       async { 
-        let! response = x.GetAsync(uri, tok) |> Async.AwaitTask
-        let! result = response.Content.ReadAsStringAsync() |> Async.AwaitTask
+        let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
+        do! failIfNoSuccess response
+        let! result = response.Content.ReadAsStringAsync() |> Async.AwaitTaskWithoutAggregate
         return result
       } |> Async.StartAsTask
     member x.DownloadStringTaskAsync (uri : string, tok : CancellationToken) = x.DownloadStringTaskAsync(Uri uri, tok)
@@ -412,8 +424,9 @@ type HttpClient with
 
     member x.DownloadDataTaskAsync(uri : Uri, tok : CancellationToken) =
       async {
-        let! response = x.GetAsync(uri, tok) |> Async.AwaitTask
-        let! result = response.Content.ReadAsByteArrayAsync() |> Async.AwaitTask
+        let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
+        do! failIfNoSuccess response
+        let! result = response.Content.ReadAsByteArrayAsync() |> Async.AwaitTaskWithoutAggregate
         return result
       } |> Async.StartAsTask
     member x.DownloadDataTaskAsync (uri : string, tok : CancellationToken) = x.DownloadDataTaskAsync(Uri uri, tok)
@@ -491,7 +504,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
             if verbose then
                 verbosefn "Starting download from '%O'" url
             use _ = Profile.startCategory Profile.Category.NuGetDownload
-            let task = client.DownloadFileTaskAsync (Uri url, tok, filePath) |> Async.AwaitTask
+            let task = client.DownloadFileTaskAsync (Uri url, tok, filePath) |> Async.AwaitTaskWithoutAggregate
             do! task
         with
         | exn ->
@@ -510,7 +523,7 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
             if verbose then
                 verbosefn "Starting request to '%O'" url
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTask
+            return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTaskWithoutAggregate
         with
         | exn -> 
             return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
@@ -530,7 +543,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             if verbose then
                 verbosefn "Starting request to '%O'" url
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTask
+            return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTaskWithoutAggregate
         with
         | exn ->
             return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
@@ -569,12 +582,12 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             if verbose then
                 verbosefn "Starting request to '%O'" uri
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            let! raw = client.DownloadStringTaskAsync(uri, tok) |> Async.awaitTaskWithToken (fun () -> failwithf "Uri '%O' failed to respond and cancellation was requested." uri)
+            let! raw = client.DownloadStringTaskAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
             return SuccessResponse raw
         with
-        | :? WebException as w ->
-            match w.Response with
-            | :? HttpWebResponse as wr when wr.StatusCode = HttpStatusCode.NotFound -> return NotFound
+        | RequestReturnedError(statusCode, content, mediaType) as w ->
+            match statusCode with
+            | HttpStatusCode.NotFound -> return NotFound
             | _ ->
                 if verbose then
                     Logging.verbosefn "Error while retrieving '%s': %O" url w

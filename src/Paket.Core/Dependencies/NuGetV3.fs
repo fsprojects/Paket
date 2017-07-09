@@ -131,7 +131,11 @@ let FindAutoCompleteVersionsForPackage(nugetURL, auth, package, includingPrerele
 
 
 let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName) =
-    let url = sprintf "%s%O/index.json?semVerLevel=2.0.0" v3Url packageName
+    // Comment from http://api.nuget.org/v3/index.json
+    // explicitely says
+    // Base URL of Azure storage where NuGet package registration info for NET Core is stored, in the format https://api.nuget.org/v3-flatcontainer/{id-lower}/{id-lower}.{version-lower}.nupkg
+    // so I guess we need to take "id-lower" here -> myget actually needs tolower
+    let url = sprintf "%s%s/index.json?semVerLevel=2.0.0" v3Url (packageName.CompareString)
     NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
         async {
             let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first

@@ -166,6 +166,37 @@ module ODataSearchResult =
         match x with
         | EmptyResult -> failwithf "Cannot call get on 'EmptyResult'"
         | Match r -> r
+
+let tryGetDetailsFromCache force nugetURL (packageName:PackageName) (version:SemVerInfo) : ODataSearchResult option =
+    let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
+    oldFiles |> Seq.iter (fun f -> File.Delete f)
+    if not force && cacheFile.Exists then
+        let json = File.ReadAllText(cacheFile.FullName)
+        let cacheResult =
+            try
+                let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
+                if (PackageName cachedObject.PackageName <> packageName) ||
+                    (cachedObject.Version <> version.Normalize())
+                then
+                    traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
+                    cacheFile.Delete()
+                    None
+                else
+                    Some cachedObject
+            with
+            | exn ->
+                cacheFile.Delete()
+                if verbose then
+                    traceWarnfn "Error while loading cache: %O" exn
+                else
+                    traceWarnfn "Error while loading cache: %s" exn.Message
+                None
+        match cacheResult with
+        | Some res -> Some (ODataSearchResult.Match res)
+        | None -> None
+    else
+        None
+
 let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemVerInfo) (get : unit -> ODataSearchResult Async) : ODataSearchResult Async =
     let cacheFile, oldFiles = getCacheFiles NuGetPackageCache.CurrentCacheVersion nugetURL packageName version
     oldFiles |> Seq.iter (fun f -> File.Delete f)
@@ -181,32 +212,9 @@ let getDetailsFromCacheOr force nugetURL (packageName:PackageName) (version:SemV
             return result
         }
     async {
-        if not force && cacheFile.Exists then
-            let json = File.ReadAllText(cacheFile.FullName)
-            let cacheResult =
-                try
-                    let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
-                    if (PackageName cachedObject.PackageName <> packageName) ||
-                      (cachedObject.Version <> version.Normalize())
-                    then
-                        traceVerbose (sprintf "Invalidating Cache '%s:%s' <> '%s:%s'" cachedObject.PackageName cachedObject.Version packageName.Name (version.Normalize()))
-                        cacheFile.Delete()
-                        None
-                    else
-                        Some cachedObject
-                with
-                | exn ->
-                    cacheFile.Delete()
-                    if verbose then
-                        traceWarnfn "Error while loading cache: %O" exn
-                    else
-                        traceWarnfn "Error while loading cache: %s" exn.Message
-                    None
-            match cacheResult with
-            | Some res -> return ODataSearchResult.Match res
-            | None -> return! get()
-        else
-            return! get()
+        match tryGetDetailsFromCache force nugetURL packageName version with
+        | None -> return! get()
+        | Some res -> return res
     }
 
 

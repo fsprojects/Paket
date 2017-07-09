@@ -57,6 +57,22 @@ let RemoveOutsideQuotes(path : string) =
     let trimChars = [|'\"'|]
     path.Trim(trimChars)
 
+let urlSimilarToTfsOrVsts url =
+    String.containsIgnoreCase "visualstudio.com" url || (String.containsIgnoreCase "/_packaging/" url && String.containsIgnoreCase "/nuget/v" url)
+
+let urlIsNugetGallery url =
+    String.containsIgnoreCase "nuget.org" url
+
+let urlIsMyGet url =
+    String.containsIgnoreCase "myget.org" url
+
+type KnownNuGetSources =
+    | OfficialNuGetGallery
+    | TfsOrVsts
+    | MyGet
+    | UnknownNuGetServer
+
+
 type NugetSource = 
     { Url : string
       Authentication : NugetSourceAuthentication option }
@@ -166,7 +182,12 @@ type PackageSource =
         | NuGetV2 source -> source.Url
         | NuGetV3 source -> source.Url
         | LocalNuGet(path,_) -> path
-
+    member x.NuGetType =
+        match x.Url with
+        | _ when urlIsNugetGallery x.Url -> KnownNuGetSources.OfficialNuGetGallery
+        | _ when urlIsMyGet x.Url -> KnownNuGetSources.MyGet
+        | _ when urlSimilarToTfsOrVsts x.Url -> KnownNuGetSources.TfsOrVsts
+        | _ -> KnownNuGetSources.UnknownNuGetServer
     static member Parse(line : string) =
         let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
         let parts = line.Split ' '
