@@ -207,6 +207,7 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
     let projectsAndReferences = RestoreProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
+        tracefn "Installing into projects:"
         let forceTouch = hasChanged && options.Common.TouchAffectedRefs
         InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
         GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
