@@ -835,7 +835,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     let workerQueue = ResolverRequestQueue.Create()
     let workers =
         // start maximal 8 requests at the same time.
-        [ 0 .. 1 ]
+        [ 0 .. 5 ]
         |> List.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
 
     // mainly for failing unit-tests to be faster

@@ -31,8 +31,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>install --createnewbindingfiles</StartArguments>
-    <StartWorkingDirectory>D:\code\FSharpx.Collections</StartWorkingDirectory>
+    <StartArguments>update --verbose</StartArguments>
+    <StartWorkingDirectory>C:\proj\testing\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
