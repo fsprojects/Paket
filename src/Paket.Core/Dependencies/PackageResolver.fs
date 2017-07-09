@@ -824,8 +824,9 @@ let selectVersionsToPreload (verReq:VersionRequirement) versions =
         for v in versions |> Seq.filter (verReq.IsInRange) |> Seq.tryTake 10 do
             yield v, WorkPriority.MightBeRequired
     }
-
+    
 let RequestTimeout = 180000
+let WorkerCount = 6
 
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
@@ -854,9 +855,17 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     use d = Profile.startCategory Profile.Category.ResolverAlgorithm
     use cts = new CancellationTokenSource()
     let workerQueue = ResolverRequestQueue.Create()
+    let workerCount =
+        match Environment.GetEnvironmentVariable("PAKET_RESOLVER_WORKERS") with
+        | a when System.String.IsNullOrWhiteSpace a -> WorkerCount
+        | a ->
+            match System.Int32.TryParse a with
+            | true, v when v > 0 -> v
+            | _ -> traceWarnfn "PAKET_RESOLVER_WORKERS is not set to a number > 0, ignoring the value and defaulting to %d" WorkerCount
+                   WorkerCount
     let workers =
         // start maximal 8 requests at the same time.
-        [ 0 .. 5 ]
+        [ 1 .. workerCount ]
         |> List.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
 
     // mainly for failing unit-tests to be faster
