@@ -32,7 +32,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\proj\Paket\integrationtests\scenarios\i001635-wrong-pw\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\proj\testing\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

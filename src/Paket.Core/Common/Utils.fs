@@ -388,17 +388,24 @@ let getDefaultProxyFor =
 type RequestFailedInfo =
     { StatusCode:HttpStatusCode
       Content:Stream
-      MediaType:string
+      MediaType:string option
       Url:string }
     static member ofResponse (resp:HttpResponseMessage) = async {
         let mem = new MemoryStream()
-        do! resp.Content.CopyToAsync(mem) |> Async.AwaitTaskWithoutAggregate
+        if not (isNull resp.Content) then
+            do! resp.Content.CopyToAsync(mem) |> Async.AwaitTaskWithoutAggregate
         mem.Position <- 0L
         //raise <| RequestReturnedError(resp.StatusCode, mem, resp.Content.Headers.ContentType.MediaType)
+        let mediaType =
+            resp.Content
+            |> Option.ofObj
+            |> Option.bind (fun c -> c.Headers |> Option.ofObj)
+            |> Option.bind (fun h -> h.ContentType |> Option.ofObj)
+            |> Option.bind (fun c -> c.MediaType |> Option.ofObj)
         return
             { StatusCode = resp.StatusCode
               Content = mem
-              MediaType = resp.Content.Headers.ContentType.MediaType
+              MediaType = mediaType
               Url = resp.RequestMessage.RequestUri.ToString() } }
     override x.ToString() =
         sprintf "Request to '%s' failed with: '%A'" x.Url x.StatusCode
