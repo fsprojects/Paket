@@ -514,10 +514,10 @@ let private getCompatibleVersions
                 let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
                 getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
 
-        let compatibleVersions = Seq.filter (isInRange id) (availableVersions)
+        let compatibleVersions = Seq.filter (isInRange id) (availableVersions) |> Seq.cache
         let compatibleVersions, globalOverride =
             if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
-                compatibleVersions |> Seq.cache, true
+                compatibleVersions, true
             elif Seq.isEmpty compatibleVersions then
                 let prereleaseStatus (r:PackageRequirement) =
                     if r.Parent.IsRootRequirement() && r.VersionRequirement <> VersionRequirement.AllReleases then
@@ -531,9 +531,9 @@ let private getCompatibleVersions
                 if allPrereleases then
                     Seq.ofList prereleases, globalOverride
                 else
-                    compatibleVersions|> Seq.cache, globalOverride
+                    compatibleVersions, globalOverride
             else
-                compatibleVersions|> Seq.cache, globalOverride
+                compatibleVersions, globalOverride
 
         compatibleVersions, globalOverride, false
 
@@ -692,6 +692,8 @@ type private Stage =
 
 type WorkPriority =
     | BackgroundWork = 10
+    | MightBeRequired = 5
+    | LikelyRequired = 3
     | BlockingWork = 1
 
 type RequestWork =
@@ -786,9 +788,12 @@ module ResolverRequestQueue =
         |> fun a -> Async.StartAsTaskProperCancel(a, TaskCreationOptions.None, linked.Token)
 
 type WorkHandle<'a> with
-    member x.Reprioritize prio =
+    member x.TryReprioritize onlyHigher prio =
         let { Work = work } = x
-        work.Priority <- prio
+        if not onlyHigher || work.Priority > prio then
+            work.Priority <- prio
+    member x.Reprioritize prio =
+        x.TryReprioritize false prio
     member x.Task =
         let { TaskSource = task } = x
         task.Task
@@ -803,6 +808,22 @@ type ResolverTaskMemory<'a> =
             false, x.Work.Task.Wait timeout
 module ResolverTaskMemory =
     let ofWork w = { Work = w; WaitedAlready = false }
+
+let selectVersionsToPreload (verReq:VersionRequirement) versions =
+    seq {
+        match versions |> Seq.tryFind (fun v -> verReq.IsInRange(v, true)) with
+        | Some verToPreload ->
+            yield verToPreload, WorkPriority.LikelyRequired
+        | None -> ()
+        match versions |> Seq.tryFind (verReq.IsInRange) with
+        | Some verToPreload ->
+            yield verToPreload, WorkPriority.LikelyRequired
+        | None -> ()
+        for v in versions |> Seq.filter (fun v -> verReq.IsInRange(v, true)) |> Seq.tryTake 10 do
+            yield v, WorkPriority.MightBeRequired
+        for v in versions |> Seq.filter (verReq.IsInRange) |> Seq.tryTake 10 do
+            yield v, WorkPriority.MightBeRequired
+    }
 
 let RequestTimeout = 180000
 
@@ -1137,13 +1158,13 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     // Start pre-loading infos about dependencies.
                     for (pack,verReq,restr) in exploredPackage.Dependencies do
                         async {
-                            let! versions = (startRequestGetVersions currentRequirement.Sources groupName pack).Work.Task |> Async.AwaitTask
+                            let requestVersions = startRequestGetVersions currentRequirement.Sources groupName pack
+                            requestVersions.Work.TryReprioritize true WorkPriority.LikelyRequired
+                            let! versions = (requestVersions).Work.Task |> Async.AwaitTask
                             // Preload the first version in range of this requirement
-                            match versions |> Seq.map fst |> Seq.tryFind (verReq.IsInRange) with
-                            | Some verToPreload ->
-                                let! details = (startRequestGetPackageDetails currentRequirement.Sources groupName pack verToPreload).Work.Task |> Async.AwaitTask
-                                ()
-                            | None -> ()
+                            for (verToPreload, prio) in selectVersionsToPreload verReq (versions |> Seq.map fst) do
+                                let w = startRequestGetPackageDetails currentRequirement.Sources groupName pack verToPreload
+                                w.Work.TryReprioritize true prio
                             return ()
                         } |> Async.Start
 

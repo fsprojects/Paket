@@ -980,6 +980,15 @@ module Seq =
         ) |> fun (xs,ys) ->
             List.rev xs :> seq<_>, List.rev ys :> seq<_>
 
+    let tryTake n (s:#seq<_>) =
+        let mutable i = 0
+        seq {
+            use e = s.GetEnumerator()
+            while (i < n && e.MoveNext()) do
+                i <- i + 1
+                yield e.Current
+        }
+
 [<RequireQualifiedAccess>]
 module List =
     // Try to find an element in a list.
