@@ -142,7 +142,10 @@ let ``#1635 should tell about auth issue``() =
         update "i001635-wrong-pw" |> ignore
         failwith "error expected"
     with
-    | exn when exn.Message.Contains("Could not find versions for package Argu") -> ()
+    | exn when exn.Message.Contains("Unable to retrieve package versions for 'Argu'") -> 
+        exn.Message.Contains "Request to 'https://www.myget.org/F/paket-test/api/v3/index.json' failed with: 'Unauthorized'"
+            |> shouldEqual true
+        ()
 
 
 #if INTERACTIVE

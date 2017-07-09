@@ -385,24 +385,62 @@ let getDefaultProxyFor =
             | None -> getDefault())
 
 
-exception RequestReturnedError of statusCode:HttpStatusCode * content:Stream * mediaType:string
+type RequestFailedInfo =
+    { StatusCode:HttpStatusCode
+      Content:Stream
+      MediaType:string
+      Url:string }
+    static member ofResponse (resp:HttpResponseMessage) = async {
+        let mem = new MemoryStream()
+        do! resp.Content.CopyToAsync(mem) |> Async.AwaitTaskWithoutAggregate
+        mem.Position <- 0L
+        //raise <| RequestReturnedError(resp.StatusCode, mem, resp.Content.Headers.ContentType.MediaType)
+        return
+            { StatusCode = resp.StatusCode
+              Content = mem
+              MediaType = resp.Content.Headers.ContentType.MediaType
+              Url = resp.RequestMessage.RequestUri.ToString() } }
+    override x.ToString() =
+        sprintf "Request to '%s' failed with: '%A'" x.Url x.StatusCode
+/// Exception for request errors
+#if !NETSTANDARD1_6
+[<System.Serializable>]
+#endif
+type RequestFailedException =
+    val private info : RequestFailedInfo option
+    inherit Exception
+    new (msg:string, inner:exn) = {
+      inherit Exception(msg, inner)
+      info = None }
+    new (info:RequestFailedInfo, inner:exn) = {
+      inherit Exception(info.ToString(), inner)
+      info = Some info }
+#if !NETSTANDARD1_5
+    new (info:System.Runtime.Serialization.SerializationInfo, context:System.Runtime.Serialization.StreamingContext) = {
+      inherit Exception(info, context)
+      info = None
+    }
+#endif
+    member x.Info with get () = x.info
+
 let failIfNoSuccess (resp:HttpResponseMessage) = async {
     if not resp.IsSuccessStatusCode then
         if verbose then
             tracefn "Request failed with '%d': '%s'" (int resp.StatusCode) (resp.RequestMessage.RequestUri.ToString())
-        let mem = new MemoryStream()
-        do! resp.Content.CopyToAsync(mem) |> Async.AwaitTaskWithoutAggregate
-        mem.Position <- 0L
-        raise <| RequestReturnedError(resp.StatusCode, mem, resp.Content.Headers.ContentType.MediaType)
+        let! info = RequestFailedInfo.ofResponse resp
+        raise <| RequestFailedException(info, null)
     () }
 type HttpClient with
     member x.DownloadFileTaskAsync (uri : Uri, tok : CancellationToken, filePath : string) =
       async {
-        let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
-        do! failIfNoSuccess response
-        use fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None)
-        do! response.Content.CopyToAsync(fileStream) |> Async.AwaitTaskWithoutAggregate
-        fileStream.Flush()
+        if uri.Scheme = "file" then
+            File.Copy(uri.AbsolutePath, filePath, true)
+        else
+            let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
+            do! failIfNoSuccess response
+            use fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None)
+            do! response.Content.CopyToAsync(fileStream) |> Async.AwaitTaskWithoutAggregate
+            fileStream.Flush()
       } |> Async.StartAsTask
     member x.DownloadFileTaskAsync (uri : string, tok : CancellationToken, filePath : string) = x.DownloadFileTaskAsync(Uri uri, tok, filePath)
     member x.DownloadFile (uri : string, filePath : string) =
@@ -585,9 +623,9 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
             let! raw = client.DownloadStringTaskAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
             return SuccessResponse raw
         with
-        | RequestReturnedError(statusCode, content, mediaType) as w ->
-            match statusCode with
-            | HttpStatusCode.NotFound -> return NotFound
+        | :? RequestFailedException as w ->
+            match w.Info with
+            | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
             | _ ->
                 if verbose then
                     Logging.verbosefn "Error while retrieving '%s': %O" url w
