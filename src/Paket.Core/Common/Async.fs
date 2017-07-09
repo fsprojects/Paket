@@ -96,7 +96,26 @@ module AsyncExtensions =
 
     static member map f a =
         async { return f a }
-    static member tryFind (f : 'T -> bool) (tasks : Async<'T> seq) = async {
+    static member tryFindSequential (f : 'T -> bool) (tasks : Async<'T> seq) = 
+        let work = tasks |> Seq.mapi (fun i item -> i,item) |> Seq.toList
+        let results = Array.init work.Length (fun _ -> TaskCompletionSource<'T>())
+        let retResults = results |> Array.map (fun tcs -> tcs.Task)
+        let rec workNext l = async {
+            match l with
+            | [] -> return retResults, None
+            | (i, nextWork) :: rest ->
+                let! res = nextWork
+                results.[i].SetResult res
+                if f res then
+                    for j in i + 1 .. work.Length - 1 do results.[j].SetCanceled()
+                    return retResults, Some i 
+                else
+                    return! workNext rest
+        }
+
+        workNext work
+
+    static member tryFindParallel (f : 'T -> bool) (tasks : Async<'T> seq) = async {
          match Seq.toArray tasks with
          | [||] -> return [||], None
          | [|t|] ->

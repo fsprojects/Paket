@@ -38,7 +38,7 @@
         <Version>%(PaketReferencesFileLinesInfo.PackageVersion)</Version>
       </PackageReference>
     </ItemGroup>
-    
+
     <PropertyGroup>
       <PaketCliToolFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).paket.clitools</PaketCliToolFilePath>
     </PropertyGroup>

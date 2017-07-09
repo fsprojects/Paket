@@ -364,7 +364,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                     let! runningTasks, result =
                         requests
                         |> List.map NuGetCache.NuGetRequestGetVersions.run
-                        |> Async.tryFind (fun req -> req.IsSuccess)
+                        |> Async.tryFindSequential (fun req -> req.IsSuccess)
                     let zippedTasks =
                         Array.zip (requests |> List.toArray) runningTasks
                         |> Array.map (fun (req, task) ->
