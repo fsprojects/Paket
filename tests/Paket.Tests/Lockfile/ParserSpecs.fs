@@ -1009,3 +1009,30 @@ let ``should parse lockfile with missing version``() =
     LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
     |> normalizeLineEndings
     |> shouldEqual (normalizeLineEndings lockFileWithMissingVersion)
+
+let lockFileWithCLiTool = """NUGET
+  remote: https://www.nuget.org/api/v2
+    Argu (2.1)
+    Chessie (0.4)
+      FSharp.Core
+    dotnet-fable (1.1.7) - clitool: true
+    FSharp.Core (4.0.0.1) - redirects: force
+    Newtonsoft.Json (8.0.3) - redirects: force"""
+
+[<Test>]
+let ``should parse lock file with cli tool``() = 
+    let lockFile = LockFileParser.Parse(toLines lockFileWithCLiTool)
+    let main = lockFile.Head
+    let packages = List.rev main.Packages
+    
+    packages
+    |> List.find (fun p -> p.Name = PackageName "dotnet-fable")
+    |> fun p -> p.IsCliTool |> shouldEqual true
+
+    packages
+    |> List.find (fun p -> p.Name = PackageName "Argu")
+    |> fun p -> p.IsCliTool |> shouldEqual false
+
+    LockFileSerializer.serializePackages main.Options (main.Packages |> List.map (fun p -> p.Name,p) |> Map.ofList)
+    |> normalizeLineEndings
+    |> shouldEqual (normalizeLineEndings lockFileWithCLiTool)

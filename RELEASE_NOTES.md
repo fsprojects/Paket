@@ -1,6 +1,18 @@
-#### 5.5.0-alpha008 - 06.07.2017
-* Support for dotnet cli tools - https://github.com/fsprojects/Paket/pull/2486
+#### 5.6.1 - 10.07.2017
+* BUGFIX: Check result of PutAsync - https://github.com/fsprojects/Paket/pull/2502
+
+#### 5.6.0 - 10.07.2017
+* PERFORMANCE: Fixed access to multiple sources (performance) - https://github.com/fsprojects/Paket/pull/2499
+* BUGFIX: Improved penalty system https://github.com/fsprojects/Paket/pull/2498
+* BUGFIX: Trace warnings to stdout instead of stderr
+* USABILITY: Convert-From-NuGet tries to restore into magic mode
+* USABILITY: Better error message when references file parsing fails
+
+#### 5.5.0 - 07.07.2017
+* Support for dotnet cli tools with clitools keyword in paket.dependencies - https://fsprojects.github.io/Paket/nuget-dependencies.html#Special-case-dotnet-cli-tools
 * GNU-compatible command line - https://github.com/fsprojects/Paket/pull/2429
+* Add Tizen framework (v3 and v4) - https://github.com/fsprojects/Paket/pull/2492
+* USABILITY: find-package-versions now includes default source to match behavior of find-packages - https://github.com/fsprojects/Paket/pull/2493
 
 #### 5.4.8 - 06.07.2017
 * BUGFIX: Added default NuGet source back to find-packages - https://github.com/fsprojects/Paket/pull/2489

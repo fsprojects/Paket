@@ -36,7 +36,7 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
                 return json.["sha"].ToString()
             | NotFound ->
                 return raise <| new Exception(sprintf "Could not find (404) hash for %s" url)
-            | UnknownError (err) ->
+            | UnknownError err ->
                 return raise <| new Exception(sprintf "Could not find hash for %s" url, err.SourceException)
         | ModuleResolver.Origin.GistLink ->
             let branch = ModuleResolver.getVersionRequirement versionRestriction
@@ -134,18 +134,24 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
         if exists then
             return parserF (File.ReadAllText(destination.FullName))
         else
-            let! result = lookupDocument(auth,url)
+            let! text,depsFile = async {
+                // TODO: Fixme, something is wrong on testcase #1341
+                if url <> "file://" then
+                    let! result = lookupDocument(auth,url)
 
-            let text,depsFile =
-                match result with
-                | SuccessResponse text ->
-                        try
-                            text,parserF text
-                        with 
-                        | _ -> "",parserF ""
-                | NotFound
-                | UnknownError _ ->
-                    "",parserF ""
+                    match result with
+                    | SuccessResponse text ->
+                            try
+                                return text,parserF text
+                            with
+                            | _ -> return  "",parserF ""
+                    | NotFound -> return "", parserF ""
+                    | UnknownError e ->
+                        Logging.traceWarnfn "Error while retrieving '%s': %O" url e.SourceException
+                        return  "",parserF ""
+                else
+                    Logging.traceWarnfn "Fixme #1341, proper search for dependencies file when using 'http file:///'"
+                    return "",parserF "" }
 
             Directory.CreateDirectory(destination.FullName |> Path.GetDirectoryName) |> ignore
             File.WriteAllText(destination.FullName, text)

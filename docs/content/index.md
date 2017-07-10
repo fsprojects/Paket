@@ -7,11 +7,16 @@ referencing files directly from [Git repositories](git-dependencies.html) or any
 control over what packages the projects within your application reference.
 
 If you want to learn how to use Paket then read the
-["Getting started" tutorial](getting-started.html) and take a look at the [FAQs](faq.html).
+["Getting started" tutorial](getting-started.html) and take a look at the
+[FAQ](faq.html).
 
 If you are already using NuGet for package management in your solution then you
 can learn about the upgrade process in the
 [convert from NuGet](getting-started.html#Automatic-NuGet-conversion) section.
+
+For information about Paket with .NET SDK, .NET Core and the `dotnet` CLI see
+the
+["Paket and the .NET SDK / .NET Core CLI tools" guide](paket-and-dotnet-cli.html).
 
 [![Paket Overview](img/paket-overview.png)](img/paket-overview.png)
 

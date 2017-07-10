@@ -121,6 +121,12 @@ let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
 
 let rec private getPackageDetails alternativeProjectRoot root force (sources:PackageSource list) packageName (version:SemVerInfo) : Async<PackageResolver.PackageDetails> =
     async {
+        let inCache =
+            sources
+            |> Seq.choose(fun source ->
+                NuGetCache.tryGetDetailsFromCache force source.Url packageName version |> Option.map (fun details -> source, details))
+            |> Seq.tryHead
+
         let tryV2 (nugetSource:NugetSource) force =
             NuGetV2.getDetailsFromNuGet
                 force
@@ -156,30 +162,23 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                         | ODataSearchResult.EmptyResult -> return! trySelectFirst rest
                     | [] -> return None
                 }
-            sources
-            |> List.sortBy (fun source ->
-                match source with  // put local caches to the end
-                | LocalNuGet(_,Some _) -> true
-                | _ -> false)
-            |> List.map (fun source -> source, async {
-                try
+            match inCache with
+            | Some (source, ODataSearchResult.Match result) -> async { return Some (source, result) }
+            | _ ->
+                sources
+                |> List.sortBy (fun source ->
+                    // put local caches to the end
+                    // prefer nuget gallery
                     match source with
-                    | NuGetV2 nugetSource ->
-                        return! tryV2 nugetSource force
-                    | NuGetV3 nugetSource when NuGetV2.urlSimilarToTfsOrVsts nugetSource.Url  ->
-                        match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                        | Some url ->
-                            let nugetSource : NugetSource =
-                                { Url = url
-                                  Authentication = nugetSource.Authentication }
+                    | LocalNuGet(_,Some _) -> 10
+                    | s when s.NuGetType = KnownNuGetSources.OfficialNuGetGallery -> 1
+                    | _ -> 3)
+                |> List.map (fun source -> source, async {
+                    try
+                        match source with
+                        | NuGetV2 nugetSource ->
                             return! tryV2 nugetSource force
-                        | _ ->
-                            return! tryV3 nugetSource force
-                    | NuGetV3 nugetSource ->
-                        try
-                            return! tryV3 nugetSource force
-                        with
-                        | exn ->
+                        | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
                             match NuGetV3.calculateNuGet2Path nugetSource.Url with
                             | Some url ->
                                 let nugetSource : NugetSource =
@@ -187,24 +186,37 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                                       Authentication = nugetSource.Authentication }
                                 return! tryV2 nugetSource force
                             | _ ->
-                                raise exn
                                 return! tryV3 nugetSource force
+                        | NuGetV3 nugetSource ->
+                            try
+                                return! tryV3 nugetSource force
+                            with
+                            | exn ->
+                                match NuGetV3.calculateNuGet2Path nugetSource.Url with
+                                | Some url ->
+                                    let nugetSource : NugetSource =
+                                        { Url = url
+                                          Authentication = nugetSource.Authentication }
+                                    return! tryV2 nugetSource force
+                                | _ ->
+                                    raise exn
+                                    return! tryV3 nugetSource force
 
-                    | LocalNuGet(path,hasCache) ->
-                        return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
-                with 
-                | :? System.IO.IOException as exn ->
-                    // Handling IO exception here for less noise in output: https://github.com/fsprojects/Paket/issues/2480
-                    if verbose then
-                        traceWarnfn "I/O error for source '%O': %O" source exn
-                    else
-                        traceWarnfn "I/O error for source '%O': %s" source exn.Message
-                    return EmptyResult 
-                | e ->
-                    traceWarnfn "Source '%O' exception: %O" source e
-                    //let capture = ExceptionDispatchInfo.Capture e
-                    return EmptyResult })
-            |> trySelectFirst
+                        | LocalNuGet(path,hasCache) ->
+                            return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
+                    with
+                    | :? System.IO.IOException as exn ->
+                        // Handling IO exception here for less noise in output: https://github.com/fsprojects/Paket/issues/2480
+                        if verbose then
+                            traceWarnfn "I/O error for source '%O': %O" source exn
+                        else
+                            traceWarnfn "I/O error for source '%O': %s" source exn.Message
+                        return EmptyResult
+                    | e ->
+                        traceWarnfn "Source '%O' exception: %O" source e
+                        //let capture = ExceptionDispatchInfo.Capture e
+                        return EmptyResult })
+                |> trySelectFirst
 
         let! maybePackageDetails = getPackageDetails force
         let! source,nugetObject =
@@ -347,11 +359,8 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                                 | Some v3Url -> return (getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, v3Url, packageName)) :: v2Feeds
                        | NuGetV3 source ->
                             let! versionsAPI = PackageSources.getNuGetV3Resource source AllVersionsAPI
-                            let req = tryNuGetV3
-                                            (source.Authentication |> Option.map toBasicAuth,
-                                             versionsAPI,
-                                             packageName)
-                            return [ req ]
+                            let auth = source.Authentication |> Option.map toBasicAuth
+                            return [ getVersionsCached "V3" tryNuGetV3 (nugetSource, auth, versionsAPI, packageName) ]
                        | LocalNuGet(path,Some _) ->
                             return [ NuGetLocal.getAllVersionsFromLocalPath (true, path, packageName, alternativeProjectRoot, root) ]
                        | LocalNuGet(path,None) ->
@@ -364,7 +373,7 @@ let GetVersions force alternativeProjectRoot root (sources, packageName:PackageN
                     let! runningTasks, result =
                         requests
                         |> List.map NuGetCache.NuGetRequestGetVersions.run
-                        |> Async.tryFind (fun req -> req.IsSuccess)
+                        |> Async.tryFindSequential (fun req -> req.IsSuccess)
                     let zippedTasks =
                         Array.zip (requests |> List.toArray) runningTasks
                         |> Array.map (fun (req, task) ->

@@ -39,7 +39,7 @@ let private extractPackage caches package alternativeProjectRoot root source gro
         let! fileName,folder = 
             NuGet.DownloadPackage(
                 alternativeProjectRoot, root, source, caches, groupName, 
-                package.Name, version, package.IsCliToolPackage(), includeVersionInPath, force, detailed)
+                package.Name, version, package.IsCliTool, includeVersionInPath, force, detailed)
 
         CopyToCaches force caches fileName
         return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
@@ -95,7 +95,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 
                 CopyToCaches force caches nupkg.FullName
 
-                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, package.IsCliToolPackage(), includeVersionInPath, force, false)
+                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, package.IsCliTool, includeVersionInPath, force, false)
                 return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
         }
 
@@ -134,8 +134,8 @@ let findAllReferencesFiles root =
         | Some fileName -> 
             try
                 Some(ok <| (p, ReferencesFile.FromFile fileName))
-            with _ ->
-                Some(fail <| (ReferencesFileParseError (FileInfo fileName)))
+            with e ->
+                Some(fail <| (ReferencesFileParseError (FileInfo fileName, e)))
         | None ->
             None
             
@@ -147,8 +147,7 @@ let copiedElements = ref false
 
 let extractElement root name =
     let a = Assembly.GetEntryAssembly()
-    let s = a.GetManifestResourceStream(name)
-    let fi = FileInfo a.FullName
+    let s = a.GetManifestResourceStream name
     let targetFile = FileInfo(Path.Combine(root,".paket",name))
     if not targetFile.Directory.Exists then
         targetFile.Directory.Create()
@@ -289,8 +288,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                 | Some fileName -> 
                     try
                         ReferencesFile.FromFile fileName
-                    with _ ->
-                        failwith ((ReferencesFileParseError (FileInfo fileName)).ToString())
+                    with e ->
+                        failwith ((ReferencesFileParseError (FileInfo fileName,e)).ToString())
                 | None ->
                     let fileName = 
                         let fi = FileInfo(projectFile.FileName)

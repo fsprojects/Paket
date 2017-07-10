@@ -16,6 +16,7 @@ let require packageName strategyForTransitives text : PackageRequirement =
       Parent = PackageRequirementSource.DependenciesFile ""
       Graph = Set.empty
       Sources = []
+      IsCliTool = false
       Settings = InstallSettings.Default }
 
 [<Test>]

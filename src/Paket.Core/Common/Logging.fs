@@ -59,8 +59,9 @@ let traceColored color (s:string) =
     use textWriter = 
         match color with
         | ConsoleColor.Red -> Console.Error
-        | ConsoleColor.Yellow -> Console.Error
+        | ConsoleColor.Yellow -> Console.Out
         | _ -> Console.Out
+
     textWriter.WriteLine s
     if curColor <> color then Console.ForegroundColor <- curColor
 

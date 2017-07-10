@@ -27,6 +27,7 @@ let ``should resolve source files with correct sha``() =
         Sources = []
         Parent = Requirements.PackageRequirementSource.DependenciesFile ""
         Settings = InstallSettings.Default
+        IsCliTool = false
         VersionRequirement = VersionRequirement.NoRestriction }
     let sha = "sha1"
     let cfg = DependenciesFile.FromSource(config1)

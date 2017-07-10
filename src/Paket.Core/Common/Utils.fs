@@ -14,9 +14,10 @@ open Chessie.ErrorHandling
 open Paket.Domain
 open FSharp.Polyfill
 
-#if NETSTANDARD1_6
 open System.Net.Http
-#else
+open System.Threading
+
+#if !NETSTANDARD1_6
 // TODO: Activate this in .NETCore 2.0
 ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 ||| unbox 48
                                         ///SecurityProtocolType.Tls ||| SecurityProtocolType.Tls11 ||| SecurityProtocolType.Tls12 ||| SecurityProtocolType.Ssl3
@@ -308,7 +309,6 @@ let normalizeFeedUrl (source:string) =
     | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
     | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
     | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-    | url when url.EndsWith("/api/v3/index.json") -> url.Replace("/api/v3/index.json","")
     | source -> source
 
 #if NETSTANDARD1_6
@@ -384,44 +384,101 @@ let getDefaultProxyFor =
             | Some p -> if p.GetProxy uri <> uri then p else getDefault()
             | None -> getDefault())
 
-#if USE_HTTP_CLIENT
-type WebClient = HttpClient
-type HttpClient with
-    member x.DownloadFileTaskAsync (uri : Uri, filePath : string) =
-      async {
-        let! response = x.GetAsync(uri) |> Async.AwaitTask
-        use fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None)
-        do! response.Content.CopyToAsync(fileStream) |> Async.AwaitTask
-        fileStream.Flush()
-      } |> Async.StartAsTask
-    member x.DownloadFileTaskAsync (uri : string, filePath : string) = x.DownloadFileTaskAsync(Uri uri, filePath)
-    member x.DownloadFile (uri : string, filePath : string) =
-        x.DownloadFileTaskAsync(uri, filePath).GetAwaiter().GetResult()
-    member x.DownloadFile (uri : Uri, filePath : string) =
-        x.DownloadFileTaskAsync(uri, filePath).GetAwaiter().GetResult()
-    member x.DownloadStringTaskAsync (uri : Uri) =
-      async {
-        let! response = x.GetAsync(uri) |> Async.AwaitTask
-        let! result = response.Content.ReadAsStringAsync() |> Async.AwaitTask
-        return result
-      } |> Async.StartAsTask
-    member x.DownloadStringTaskAsync (uri : string) = x.DownloadStringTaskAsync(Uri uri)
-    member x.DownloadString (uri : string) =
-        x.DownloadStringTaskAsync(uri).GetAwaiter().GetResult()
-    member x.DownloadString (uri : Uri) =
-        x.DownloadStringTaskAsync(uri).GetAwaiter().GetResult()
 
-    member x.DownloadDataTaskAsync(uri : Uri) =
+type RequestFailedInfo =
+    { StatusCode:HttpStatusCode
+      Content:Stream
+      MediaType:string option
+      Url:string }
+    static member ofResponse (resp:HttpResponseMessage) = async {
+        let mem = new MemoryStream()
+        if not (isNull resp.Content) then
+            do! resp.Content.CopyToAsync(mem) |> Async.AwaitTaskWithoutAggregate
+        mem.Position <- 0L
+        //raise <| RequestReturnedError(resp.StatusCode, mem, resp.Content.Headers.ContentType.MediaType)
+        let mediaType =
+            resp.Content
+            |> Option.ofObj
+            |> Option.bind (fun c -> c.Headers |> Option.ofObj)
+            |> Option.bind (fun h -> h.ContentType |> Option.ofObj)
+            |> Option.bind (fun c -> c.MediaType |> Option.ofObj)
+        return
+            { StatusCode = resp.StatusCode
+              Content = mem
+              MediaType = mediaType
+              Url = resp.RequestMessage.RequestUri.ToString() } }
+    override x.ToString() =
+        sprintf "Request to '%s' failed with: '%A'" x.Url x.StatusCode
+/// Exception for request errors
+#if !NETSTANDARD1_6
+[<System.Serializable>]
+#endif
+type RequestFailedException =
+    val private info : RequestFailedInfo option
+    inherit Exception
+    new (msg:string, inner:exn) = {
+      inherit Exception(msg, inner)
+      info = None }
+    new (info:RequestFailedInfo, inner:exn) = {
+      inherit Exception(info.ToString(), inner)
+      info = Some info }
+#if !NETSTANDARD1_5
+    new (info:System.Runtime.Serialization.SerializationInfo, context:System.Runtime.Serialization.StreamingContext) = {
+      inherit Exception(info, context)
+      info = None
+    }
+#endif
+    member x.Info with get () = x.info
+
+let failIfNoSuccess (resp:HttpResponseMessage) = async {
+    if not resp.IsSuccessStatusCode then
+        if verbose then
+            tracefn "Request failed with '%d': '%s'" (int resp.StatusCode) (resp.RequestMessage.RequestUri.ToString())
+        let! info = RequestFailedInfo.ofResponse resp
+        raise <| RequestFailedException(info, null)
+    () }
+type HttpClient with
+    member x.DownloadFileTaskAsync (uri : Uri, tok : CancellationToken, filePath : string) =
       async {
-        let! response = x.GetAsync(uri) |> Async.AwaitTask
-        let! result = response.Content.ReadAsByteArrayAsync() |> Async.AwaitTask
+        if uri.Scheme = "file" then
+            File.Copy(uri.AbsolutePath, filePath, true)
+        else
+            let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
+            do! failIfNoSuccess response
+            use fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None)
+            do! response.Content.CopyToAsync(fileStream) |> Async.AwaitTaskWithoutAggregate
+            fileStream.Flush()
+      } |> Async.StartAsTask
+    member x.DownloadFileTaskAsync (uri : string, tok : CancellationToken, filePath : string) = x.DownloadFileTaskAsync(Uri uri, tok, filePath)
+    member x.DownloadFile (uri : string, filePath : string) =
+        x.DownloadFileTaskAsync(uri, CancellationToken.None, filePath).GetAwaiter().GetResult()
+    member x.DownloadFile (uri : Uri, filePath : string) =
+        x.DownloadFileTaskAsync(uri, CancellationToken.None, filePath).GetAwaiter().GetResult()
+    member x.DownloadStringTaskAsync (uri : Uri, tok : CancellationToken) =
+      async { 
+        let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
+        do! failIfNoSuccess response
+        let! result = response.Content.ReadAsStringAsync() |> Async.AwaitTaskWithoutAggregate
         return result
       } |> Async.StartAsTask
-    member x.DownloadDataTaskAsync (uri : string) = x.DownloadDataTaskAsync(Uri uri)
+    member x.DownloadStringTaskAsync (uri : string, tok : CancellationToken) = x.DownloadStringTaskAsync(Uri uri, tok)
+    member x.DownloadString (uri : string) =
+        x.DownloadStringTaskAsync(uri, CancellationToken.None).GetAwaiter().GetResult()
+    member x.DownloadString (uri : Uri) =
+        x.DownloadStringTaskAsync(uri, CancellationToken.None).GetAwaiter().GetResult()
+
+    member x.DownloadDataTaskAsync(uri : Uri, tok : CancellationToken) =
+      async {
+        let! response = x.GetAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
+        do! failIfNoSuccess response
+        let! result = response.Content.ReadAsByteArrayAsync() |> Async.AwaitTaskWithoutAggregate
+        return result
+      } |> Async.StartAsTask
+    member x.DownloadDataTaskAsync (uri : string, tok : CancellationToken) = x.DownloadDataTaskAsync(Uri uri, tok)
     member x.DownloadData(uri : string) =
-        x.DownloadDataTaskAsync(uri).GetAwaiter().GetResult()
+        x.DownloadDataTaskAsync(uri, CancellationToken.None).GetAwaiter().GetResult()
     member x.DownloadData(uri : Uri) =
-        x.DownloadDataTaskAsync(uri).GetAwaiter().GetResult()
+        x.DownloadDataTaskAsync(uri, CancellationToken.None).GetAwaiter().GetResult()
 
     member x.UploadFileAsMultipart (url : Uri) filename =
         let fileTemplate = 
@@ -443,7 +500,10 @@ type HttpClient with
         stream.Write(trailerbytes, 0, trailerbytes.Length)
         stream.Write(newlineBytes, 0, newlineBytes.Length)
         stream.Position <- 0L
-        x.PutAsync(url, new StreamContent(stream)).GetAwaiter().GetResult()
+        let result = x.PutAsync(url, new StreamContent(stream)).GetAwaiter().GetResult()
+        failIfNoSuccess result |> Async.RunSynchronously
+        result
+        
 
 let internal addAcceptHeader (client:HttpClient) (contentType:string) =
     for headerVal in contentType.Split([|','|], System.StringSplitOptions.RemoveEmptyEntries) do
@@ -451,39 +511,7 @@ let internal addAcceptHeader (client:HttpClient) (contentType:string) =
 let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string) =
     client.DefaultRequestHeaders.Add(headerKey, headerVal)
 
-#else
-
-type System.Net.WebClient with
-    member x.UploadFileAsMultipart (url : Uri) filename = 
-        let fileTemplate = 
-            "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n"
-        let boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", System.Globalization.CultureInfo.InvariantCulture)
-        let fileInfo = (new FileInfo(Path.GetFullPath(filename)))
-        let fileHeaderBytes = 
-            System.String.Format
-                (System.Globalization.CultureInfo.InvariantCulture, fileTemplate, boundary, "package", "package", "application/octet-stream") 
-            |> Encoding.UTF8.GetBytes
-        // we use a windows-style newline rather than Environment.NewLine for compatibility
-        let newlineBytes = "\r\n" |> Encoding.UTF8.GetBytes
-        let trailerbytes = String.Format(System.Globalization.CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
-        x.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary)
-        use stream = x.OpenWrite(url, "PUT")
-        stream.Write(fileHeaderBytes, 0, fileHeaderBytes.Length)
-        use fileStream = File.OpenRead fileInfo.FullName
-        fileStream.CopyTo(stream, (4 * 1024))
-        stream.Write(newlineBytes, 0, newlineBytes.Length)
-        stream.Write(trailerbytes, 0, trailerbytes.Length)
-        stream.Write(newlineBytes, 0, newlineBytes.Length) 
-        ()
-
-let internal addAcceptHeader (client:WebClient) contentType =
-    client.Headers.Add (HttpRequestHeader.Accept, contentType)
-let internal addHeader (client:WebClient) (headerKey:string) (headerVal:string) =
-    client.Headers.Add (headerKey, headerVal)
-#endif
-
 let createWebClient (url,auth:Auth option) =
-#if USE_HTTP_CLIENT
     let handler =
         new HttpClientHandler(
             UseProxy = true,
@@ -508,42 +536,10 @@ let createWebClient (url,auth:Auth option) =
     client.DefaultRequestHeaders.Add("user-agent", "Paket")
     handler.UseProxy <- true
     client
-#else
-    let client = new WebClient()
-    client.Headers.Add("User-Agent", "Paket")
-    client.Proxy <- getDefaultProxyFor url
-
-    let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
-
-    match auth with
-    | Some (Credentials(username, password)) ->
-        // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
-        //this works ONLY if the server returns 401 first
-        //client DOES NOT send credentials on first request
-        //ONLY after a 401
-        //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
-
-        //so use THIS instead to send credentials RIGHT AWAY
-        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
-        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
-        client.Credentials <- new NetworkCredential(username,password)
-    
-    | Some (Token token) ->
-        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
-
-    | None when not (isNull githubToken) ->
-        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" githubToken
-
-    | None ->
-        client.UseDefaultCredentials <- true
-    client
-#endif
-
 
 #nowarn "40"
 
 open System.Diagnostics
-open System.Threading
 open System.Collections.Generic
 open System.Runtime.ExceptionServices
 
@@ -552,10 +548,11 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
             use client = createWebClient (url,auth)
+            let! tok = Async.CancellationToken
             if verbose then
                 verbosefn "Starting download from '%O'" url
             use _ = Profile.startCategory Profile.Category.NuGetDownload
-            let task = client.DownloadFileTaskAsync (Uri url, filePath) |> Async.AwaitTask
+            let task = client.DownloadFileTaskAsync (Uri url, tok, filePath) |> Async.AwaitTaskWithoutAggregate
             do! task
         with
         | exn ->
@@ -567,13 +564,14 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try
             use client = createWebClient(url,auth)
+            let! tok = Async.CancellationToken
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
 
             if verbose then
                 verbosefn "Starting request to '%O'" url
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            return! client.DownloadStringTaskAsync (Uri url) |> Async.awaitTaskWithToken (fun () -> failwithf "Uri '%O' failed to respond and cancellation was requested." url)
+            return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTaskWithoutAggregate
         with
         | exn -> 
             return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
@@ -584,6 +582,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
     async {
         try
             use client = createWebClient (url,auth)
+            let! tok = Async.CancellationToken
             // mimic the headers sent from nuget client to odata/ endpoints
             addAcceptHeader client "application/atom+xml, application/xml"
             addHeader client "AcceptCharset" "UTF-8"
@@ -592,7 +591,7 @@ let getXmlFromUrl (auth:Auth option, url : string) =
             if verbose then
                 verbosefn "Starting request to '%O'" url
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            return! client.DownloadStringTaskAsync (Uri url) |> Async.awaitTaskWithToken (fun () -> failwithf "Uri '%O' failed to respond and cancellation was requested." url)
+            return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTaskWithoutAggregate
         with
         | exn ->
             return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
@@ -623,22 +622,20 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
         try
             let uri = Uri url
             use client = createWebClient (url,auth)
+            let! tok = Async.CancellationToken
 
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
-#if NETSTANDARD1_6
-#else
-            client.Encoding <- Encoding.UTF8
-#endif
+
             if verbose then
                 verbosefn "Starting request to '%O'" uri
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            let! raw = client.DownloadStringTaskAsync(uri) |> Async.awaitTaskWithToken (fun () -> failwithf "Uri '%O' failed to respond and cancellation was requested." uri)
+            let! raw = client.DownloadStringTaskAsync(uri, tok) |> Async.AwaitTaskWithoutAggregate
             return SuccessResponse raw
         with
-        | :? WebException as w ->
-            match w.Response with
-            | :? HttpWebResponse as wr when wr.StatusCode = HttpStatusCode.NotFound -> return NotFound
+        | :? RequestFailedException as w ->
+            match w.Info with
+            | Some { StatusCode = HttpStatusCode.NotFound } -> return NotFound
             | _ ->
                 if verbose then
                     Logging.verbosefn "Error while retrieving '%s': %O" url w
@@ -868,13 +865,13 @@ let parseKeyValuePairs (s:string) : Dictionary<string,string> =
     | exn -> 
         raise <| Exception(sprintf "Could not parse '%s' as key/value pairs." s, exn)
 
-let downloadStringSync (url : string) (client : WebClient) = 
+let downloadStringSync (url : string) (client : HttpClient) = 
     try 
         client.DownloadString url |> ok
     with _ ->
         DownloadError url |> fail 
 
-let downloadFileSync (url : string) (fileName : string) (client : WebClient) = 
+let downloadFileSync (url : string) (fileName : string) (client : HttpClient) = 
     tracefn "Downloading file from %s to %s" url fileName
     try 
         client.DownloadFile(url, fileName) |> ok
@@ -1043,6 +1040,15 @@ module Seq =
                 | None -> xs,ys
         ) |> fun (xs,ys) ->
             List.rev xs :> seq<_>, List.rev ys :> seq<_>
+
+    let tryTake n (s:#seq<_>) =
+        let mutable i = 0
+        seq {
+            use e = s.GetEnumerator()
+            while (i < n && e.MoveNext()) do
+                i <- i + 1
+                yield e.Current
+        }
 
 [<RequireQualifiedAccess>]
 module List =

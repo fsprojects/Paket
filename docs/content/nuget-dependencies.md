@@ -294,7 +294,7 @@ source https://nuget.org/api/v2
 nuget Newtonsoft.Json copy_local: false
 ```
 
-The default is `content: true`.
+The default is `copy_local: true`.
 
 ### Importing `*.targets` and `*.props` files
 
@@ -458,3 +458,15 @@ source https://nuget.org/api/v2
 // Do not import .targets and .props and also do not add any content.
 nuget ClearScript.Installer import_targets: false, content: none
 ```
+
+### Special case: `dotnet` CLI tools
+
+```paket
+clitool dotnet-fable 1.17
+nuget Fable.Core
+```
+
+Command line (CLI) tools that hook into the `dotnet` CLI are special NuGet
+packages. These packages are added with the keyword `clitool` instead of
+`nuget`. This will exclude the tool and all its dependencies from getting
+referenced as a dependency for any project.

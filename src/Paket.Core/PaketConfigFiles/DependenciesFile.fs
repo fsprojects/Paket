@@ -234,6 +234,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           Parent = PackageRequirementSource.DependenciesFile fileName
                           Graph = Set.empty
                           Sources = group.Sources
+                          IsCliTool = false
                           Settings = group.Options.Settings })
                 |> Seq.toList
 
@@ -281,6 +282,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
                               Graph = Set.empty
                               Sources = group.Sources
+                              IsCliTool = false
                               Settings = group.Options.Settings })
                         |> Seq.toList
 
@@ -307,6 +309,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
                               Graph = Set.empty
                               Sources = group.Sources
+                              IsCliTool = false
                               Settings =
                                 match oldDepsInfo with
                                 | Some d -> d.Settings
@@ -456,11 +459,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let sourceCount =
             match groups |> Map.tryFind groupName with
             | None -> 0
-            | Some group ->
-                match group.Sources with
-                | [] -> 0
-                | sources -> group.Sources |> Seq.length
-
+            | Some group -> List.length group.Sources
 
         let smaller = 
             match groups |> Map.tryFind groupName with

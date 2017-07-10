@@ -8,6 +8,7 @@ open Paket.Logging
 open Chessie.ErrorHandling
 
 open Newtonsoft.Json
+open System.Threading.Tasks
 
 let private envVarRegex = Regex("^%(\w*)%$", RegexOptions.Compiled)
 
@@ -56,6 +57,22 @@ let RemoveOutsideQuotes(path : string) =
     let trimChars = [|'\"'|]
     path.Trim(trimChars)
 
+let urlSimilarToTfsOrVsts url =
+    String.containsIgnoreCase "visualstudio.com" url || (String.containsIgnoreCase "/_packaging/" url && String.containsIgnoreCase "/nuget/v" url)
+
+let urlIsNugetGallery url =
+    String.containsIgnoreCase "nuget.org" url
+
+let urlIsMyGet url =
+    String.containsIgnoreCase "myget.org" url
+
+type KnownNuGetSources =
+    | OfficialNuGetGallery
+    | TfsOrVsts
+    | MyGet
+    | UnknownNuGetServer
+
+
 type NugetSource = 
     { Url : string
       Authentication : NugetSourceAuthentication option }
@@ -85,14 +102,12 @@ type NugetV3ResourceType =
         | Registration -> "RegistrationsBaseUrl"
         | AllVersionsAPI -> "PackageBaseAddress/3.0.0"
 
-let private nugetV3Resources = ref Map.empty 
+let private nugetV3Resources = System.Collections.Concurrent.ConcurrentDictionary<_,_>()
         
-let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceType) =
-    async {
-        let key = (source, resourceType)
-        match !nugetV3Resources |> Map.tryFind key with
-        | Some x -> return x
-        | None -> 
+let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceType) : Async<string> =
+    let key = (source, resourceType) 
+    let getResourceRaw () = 
+        async {
             let basicAuth = source.Authentication |> Option.map toBasicAuth
             let! rawData = safeGetFromUrl(basicAuth, source.Url, acceptJson)
             let rawData =
@@ -107,34 +122,29 @@ let getNuGetV3Resource (source : NugetV3Source) (resourceType : NugetV3ResourceT
             let resources = 
                 json.Resources 
                 |> Seq.distinctBy(fun x -> x.Type.ToLower())
-                |> Seq.map(fun x -> x.Type.ToLower(), x.ID) 
+                |> Seq.map(fun x -> x.Type.ToLower(), x.ID)
+            for (res, value) in resources do
+                let resType =
+                    match res.ToLower() with
+                    | "searchautocompleteservice" -> Some AutoComplete
+                    | "registrationsbaseurl" -> Some Registration
+                    | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
+                    | _ -> None
+                match resType with
+                | None -> ()
+                | Some _ ->
+                    nugetV3Resources.AddOrUpdate(key, (fun _ -> Task.FromResult value), (fun _ _ -> Task.FromResult value))
+                        |> ignore
+        
+            match nugetV3Resources.TryGetValue key with
+            | true, v when v.IsCompleted -> return v.Result
+            | _ -> return failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
+        } |> Async.StartAsTask
 
-            let newMap = 
-                lock !nugetV3Resources (fun() ->
-                    let newMap =
-                        resources
-                        |> Seq.fold(fun m (res, value) ->
-                            let resType =
-                                match res.ToLower() with
-                                | "searchautocompleteservice" -> Some AutoComplete
-                                | "registrationsbaseurl" -> Some Registration
-                                | "packagebaseaddress/3.0.0" -> Some AllVersionsAPI
-                                | _ -> None
-                            match resType with
-                            | None -> m
-                            | Some resType ->
-                                m |> Map.add (source, resType) value
-                        ) !nugetV3Resources
-                            
-                    nugetV3Resources := newMap
-                        
-                    newMap)
-
-            return
-                match newMap |> Map.tryFind key with
-                | Some x -> x
-                | None ->
-                    failwithf "could not find an %s endpoint for %s" (resourceType.ToString()) source.Url
+    async {
+        let t = nugetV3Resources.GetOrAdd(key, (fun _ -> getResourceRaw()))
+        let! res = t |> Async.AwaitTask
+        return res
     }
 let userNameRegex = Regex("username[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
 let passwordRegex = Regex("password[:][ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase ||| RegexOptions.Compiled)
@@ -172,7 +182,12 @@ type PackageSource =
         | NuGetV2 source -> source.Url
         | NuGetV3 source -> source.Url
         | LocalNuGet(path,_) -> path
-
+    member x.NuGetType =
+        match x.Url with
+        | _ when urlIsNugetGallery x.Url -> KnownNuGetSources.OfficialNuGetGallery
+        | _ when urlIsMyGet x.Url -> KnownNuGetSources.MyGet
+        | _ when urlSimilarToTfsOrVsts x.Url -> KnownNuGetSources.TfsOrVsts
+        | _ -> KnownNuGetSources.UnknownNuGetServer
     static member Parse(line : string) =
         let sourceRegex = Regex("source[ ]*[\"]([^\"]*)[\"]", RegexOptions.IgnoreCase)
         let parts = line.Split ' '

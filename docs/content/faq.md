@@ -245,7 +245,8 @@ dependencies" (the packages that you actually installed) still depend on them.
 If your proxy uses default (Active Directory) credentials, you have nothing to
 do, Paket will handle it automatically.
 
-If your proxy uses custom credentials, you need to set the following environment variables:
+If your proxy uses custom credentials, you need to set the following environment
+variables:
 
 * `HTTP_PROXY`: HTTP proxy to use for all connections
 * `HTTPS_PROXY`: HTTPS proxy to use for all connections
@@ -256,3 +257,9 @@ set HTTP_PROXY=http://user:password@proxy.company.com:port/
 set HTTPS_PROXY=https://user:password@proxy.company.com:port/
 set NO_PROXY=.company.com,localhost
 ```
+
+## I want to use Paket with .NET Core — is that possible?
+
+Short answer: Yes. For information about Paket with .NET SDK, .NET Core and the
+`dotnet` CLI see the
+["Paket and the .NET SDK / .NET Core CLI tools" guide](paket-and-dotnet-cli.html).

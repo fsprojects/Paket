@@ -34,6 +34,7 @@ type ResolvedPackage = {
     Dependencies        : DependencySet
     Unlisted            : bool
     IsRuntimeDependency : bool
+    IsCliTool           : bool
     Settings            : InstallSettings
     Source              : PackageSource
 } with
@@ -41,9 +42,6 @@ type ResolvedPackage = {
 
     member self.HasFrameworkRestrictions =
         getExplicitRestriction self.Settings.FrameworkRestrictions <> FrameworkRestriction.NoRestriction
-
-    member self.IsCliToolPackage() =
-        self.Name.ToString().StartsWith "dotnet-"
 
     member private self.Display
         with get() =
@@ -356,6 +354,7 @@ type private PackageConfig = {
     GroupName          : GroupName
     GlobalRestrictions : FrameworkRestrictions
     RootSettings       : IDictionary<PackageName,InstallSettings>
+    CliTools           : Set<PackageName>
     Version            : SemVerInfo
     Sources            : PackageSource list
     UpdateMode         : UpdateMode
@@ -432,13 +431,14 @@ let private explorePackageConfig getPackageDetailsBlock (pkgConfig:PackageConfig
                 | _ -> dependency.Settings
             |> fun x -> x.AdjustWithSpecialCases packageDetails.Name
         Result.Ok
-            {   Name                = packageDetails.Name
-                Version             = version
-                Dependencies        = filteredDependencies
-                Unlisted            = packageDetails.Unlisted
-                Settings            = { settings with FrameworkRestrictions = newRestrictions }
-                Source              = packageDetails.Source
-                IsRuntimeDependency = false
+            { Name                = packageDetails.Name
+              Version             = version
+              Dependencies        = filteredDependencies
+              Unlisted            = packageDetails.Unlisted
+              Settings            = { settings with FrameworkRestrictions = newRestrictions }
+              Source              = packageDetails.Source
+              IsCliTool           = Set.contains packageDetails.Name pkgConfig.CliTools
+              IsRuntimeDependency = false
             }
     with
     | exn ->
@@ -514,10 +514,10 @@ let private getCompatibleVersions
                 let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
                 getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
 
-        let compatibleVersions = Seq.filter (isInRange id) (availableVersions)
+        let compatibleVersions = Seq.filter (isInRange id) (availableVersions) |> Seq.cache
         let compatibleVersions, globalOverride =
             if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
-                compatibleVersions |> Seq.cache, true
+                compatibleVersions, true
             elif Seq.isEmpty compatibleVersions then
                 let prereleaseStatus (r:PackageRequirement) =
                     if r.Parent.IsRootRequirement() && r.VersionRequirement <> VersionRequirement.AllReleases then
@@ -531,9 +531,9 @@ let private getCompatibleVersions
                 if allPrereleases then
                     Seq.ofList prereleases, globalOverride
                 else
-                    compatibleVersions|> Seq.cache, globalOverride
+                    compatibleVersions, globalOverride
             else
-                compatibleVersions|> Seq.cache, globalOverride
+                compatibleVersions, globalOverride
 
         compatibleVersions, globalOverride, false
 
@@ -692,6 +692,8 @@ type private Stage =
 
 type WorkPriority =
     | BackgroundWork = 10
+    | MightBeRequired = 5
+    | LikelyRequired = 3
     | BlockingWork = 1
 
 type RequestWork =
@@ -786,9 +788,12 @@ module ResolverRequestQueue =
         |> fun a -> Async.StartAsTaskProperCancel(a, TaskCreationOptions.None, linked.Token)
 
 type WorkHandle<'a> with
-    member x.Reprioritize prio =
+    member x.TryReprioritize onlyHigher prio =
         let { Work = work } = x
-        work.Priority <- prio
+        if not onlyHigher || work.Priority > prio then
+            work.Priority <- prio
+    member x.Reprioritize prio =
+        x.TryReprioritize false prio
     member x.Task =
         let { TaskSource = task } = x
         task.Task
@@ -804,7 +809,24 @@ type ResolverTaskMemory<'a> =
 module ResolverTaskMemory =
     let ofWork w = { Work = w; WaitedAlready = false }
 
+let selectVersionsToPreload (verReq:VersionRequirement) versions =
+    seq {
+        match versions |> Seq.tryFind (fun v -> verReq.IsInRange(v, true)) with
+        | Some verToPreload ->
+            yield verToPreload, WorkPriority.LikelyRequired
+        | None -> ()
+        match versions |> Seq.tryFind (verReq.IsInRange) with
+        | Some verToPreload ->
+            yield verToPreload, WorkPriority.LikelyRequired
+        | None -> ()
+        for v in versions |> Seq.filter (fun v -> verReq.IsInRange(v, true)) |> Seq.tryTake 10 do
+            yield v, WorkPriority.MightBeRequired
+        for v in versions |> Seq.filter (verReq.IsInRange) |> Seq.tryTake 10 do
+            yield v, WorkPriority.MightBeRequired
+    }
+    
 let RequestTimeout = 180000
+let WorkerCount = 6
 
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
@@ -817,16 +839,33 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
             | PackageRequirementSource.DependenciesFile _ ->
                 match r.VersionRequirement.PreReleases with
                 | PreReleaseStatus.No -> None
-                | _ -> Some(r.Name)
+                | _ -> Some r.Name
+            | _ -> None)
+        |> Set.ofSeq
+
+    let cliToolSettings =
+        rootDependencies
+        |> Seq.choose (fun r ->
+            match r.Parent with
+            | PackageRequirementSource.DependenciesFile _ when r.IsCliTool ->
+                Some r.Name
             | _ -> None)
         |> Set.ofSeq
 
     use d = Profile.startCategory Profile.Category.ResolverAlgorithm
     use cts = new CancellationTokenSource()
     let workerQueue = ResolverRequestQueue.Create()
+    let workerCount =
+        match Environment.GetEnvironmentVariable("PAKET_RESOLVER_WORKERS") with
+        | a when System.String.IsNullOrWhiteSpace a -> WorkerCount
+        | a ->
+            match System.Int32.TryParse a with
+            | true, v when v > 0 -> v
+            | _ -> traceWarnfn "PAKET_RESOLVER_WORKERS is not set to a number > 0, ignoring the value and defaulting to %d" WorkerCount
+                   WorkerCount
     let workers =
         // start maximal 8 requests at the same time.
-        [ 0 .. 7 ]
+        [ 1 .. workerCount ]
         |> List.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
 
     // mainly for failing unit-tests to be faster
@@ -1106,7 +1145,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                 let currentConflict = 
                     { currentConflict with VersionsToExplore = Seq.tail currentConflict.VersionsToExplore }
 
-                let packageDetails = {
+                let packageConfig = {
                     GroupName          = groupName
                     Dependency         = currentRequirement
                     GlobalRestrictions = globalFrameworkRestrictions
@@ -1114,9 +1153,10 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     Version            = version
                     Sources            = sources
                     UpdateMode         = updateMode
+                    CliTools           = cliToolSettings
                 }
 
-                match getExploredPackage packageDetails getPackageDetailsBlock stackpack with
+                match getExploredPackage packageConfig getPackageDetailsBlock stackpack with
                 | stackpack, Result.Error err ->
                     step (Inner((currentConflict.AddError err.SourceException,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
 
@@ -1127,13 +1167,13 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     // Start pre-loading infos about dependencies.
                     for (pack,verReq,restr) in exploredPackage.Dependencies do
                         async {
-                            let! versions = (startRequestGetVersions currentRequirement.Sources groupName pack).Work.Task |> Async.AwaitTask
+                            let requestVersions = startRequestGetVersions currentRequirement.Sources groupName pack
+                            requestVersions.Work.TryReprioritize true WorkPriority.LikelyRequired
+                            let! versions = (requestVersions).Work.Task |> Async.AwaitTask
                             // Preload the first version in range of this requirement
-                            match versions |> Seq.map fst |> Seq.tryFind (verReq.IsInRange) with
-                            | Some verToPreload ->
-                                let! details = (startRequestGetPackageDetails currentRequirement.Sources groupName pack verToPreload).Work.Task |> Async.AwaitTask
-                                ()
-                            | None -> ()
+                            for (verToPreload, prio) in selectVersionsToPreload verReq (versions |> Seq.map fst) do
+                                let w = startRequestGetPackageDetails currentRequirement.Sources groupName pack verToPreload
+                                w.Work.TryReprioritize true prio
                             return ()
                         } |> Async.Start
 

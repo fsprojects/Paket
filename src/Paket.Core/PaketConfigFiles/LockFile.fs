@@ -110,17 +110,26 @@ module LockFileSerializer =
                             { package.Settings with FrameworkRestrictions = ExplicitRestriction FrameworkRestriction.NoRestriction }
                         else
                             package.Settings
+
+                      let s =
+                        // add "clitool"
+                        match package.IsCliTool, settings.ToString().ToLower()  with
+                        | true, "" -> "clitool: true"
+                        | true, s -> s + ", clitool: true"
+                        | _, s -> s
+
                       let s =
                         // add "isRuntimeDependency"
-                        match package.IsRuntimeDependency, settings.ToString().ToLower() with
+                        match package.IsRuntimeDependency, s with
                         | true, "" -> "isRuntimeDependency: true"
                         | true, s -> s + ", isRuntimeDependency: true"
                         | _, s -> s
 
+
                       if s = "" then 
-                        yield sprintf "    %O %s" package.Name versionStr 
+                          yield sprintf "    %O %s" package.Name versionStr 
                       else
-                        yield sprintf "    %O %s - %s" package.Name versionStr s
+                          yield sprintf "    %O %s - %s" package.Name versionStr s
 
                       for name,v,restrictions in package.Dependencies do
                           let versionStr = 
@@ -377,6 +386,15 @@ module LockFileParser =
                     ("framework: " + parts.[1])
                 else
                     parts.[1]
+
+            let isCliTool, optionsString =
+                if optionsString.EndsWith ", clitool: true" then
+                    true,optionsString.Replace(", clitool: true","")
+                elif optionsString.EndsWith "clitool: true" then
+                    true,optionsString.Replace("clitool: true","")
+                else
+                    false,optionsString
+
             let isRuntimeDependency, optionsString =
                 if optionsString.EndsWith ", isRuntimeDependency: true" then
                     true, optionsString.Substring(0, optionsString.Length - ", isRuntimeDependency: true".Length)
@@ -384,7 +402,8 @@ module LockFileParser =
                     assert (optionsString = "isRuntimeDependency: true")
                     true, ""
                 else false, optionsString
-            parts.[0],isRuntimeDependency,InstallSettings.Parse(optionsString)
+
+            parts.[0],isCliTool,isRuntimeDependency,InstallSettings.Parse(optionsString)
 
         ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
         ||> Seq.fold(fun state line ->
@@ -419,7 +438,7 @@ module LockFileParser =
                 | NugetPackage details ->
                     match currentGroup.RemoteUrl with
                     | Some remote -> 
-                        let package,isRuntimeDependency,settings = parsePackage details
+                        let package,isCliTool,isRuntimeDependency,settings = parsePackage details
                         let parts' = package.Split ' '
                         let version = 
                             if parts'.Length < 2 then
@@ -435,11 +454,12 @@ module LockFileParser =
                                       Unlisted = false
                                       Settings = settings
                                       Version = SemVer.Parse version
+                                      IsCliTool = isCliTool
                                       // TODO: write stuff into the lockfile and read it here
                                       IsRuntimeDependency = isRuntimeDependency } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
-                    let version,isRuntimeDependency,settings = parsePackage v
+                    let version,_,isRuntimeDependency,settings = parsePackage v
                     assert (not isRuntimeDependency)
                     if currentGroup.LastWasPackage then
                         match currentGroup.Packages with
@@ -458,6 +478,7 @@ module LockFileParser =
                                                     Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version) currentFile.Dependencies
                                                 } :: rest }  ::otherGroups
                         | [] -> failwithf "cannot set a dependency to %s %s- no remote file has been specified." name v
+
                 | SourceFile(origin, details) ->
                     match origin with
                     | GitHubLink | GistLink ->
@@ -821,7 +842,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                     | Some p -> p
                     | None -> failwithf "Error for %s: Package %O was not found in group %O of the paket.lock file." referencesFile.FileName p.Name groupName
                 
-                if package.IsCliToolPackage() then
+                if package.IsCliTool then
                     cliTools := Set.add package !cliTools
                 else
                     if usedPackageKeys.Contains k then

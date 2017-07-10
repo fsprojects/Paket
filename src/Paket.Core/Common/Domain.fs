@@ -128,7 +128,7 @@ type DomainMessage =
     | DependenciesFileParseError of FileInfo * exn
     | LockFileNotFound of DirectoryInfo
     | LockFileParseError of FileInfo
-    | ReferencesFileParseError of FileInfo
+    | ReferencesFileParseError of FileInfo * exn
 
     | PackageSourceParseError of string
     
@@ -164,8 +164,8 @@ type DomainMessage =
             sprintf "Lock file not found in %s. Create lock file by running paket install." di.FullName
         | LockFileParseError(fi) -> 
             sprintf "Unable to parse lock %s." fi.FullName
-        | ReferencesFileParseError(fi) -> 
-            sprintf "Unable to parse %s" fi.FullName
+        | ReferencesFileParseError(fi,e) -> 
+            sprintf "Unable to parse %s. (%s)" fi.FullName e.Message
         
         | PackageSourceParseError(source) -> 
             sprintf "Unable to parse package source: %s." source

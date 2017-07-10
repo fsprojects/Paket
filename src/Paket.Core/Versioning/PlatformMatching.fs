@@ -5,7 +5,7 @@ open ProviderImplementation.AssemblyReader.Utils.SHA1
 open Logging
 
 [<Literal>]
-let MaxPenalty = 1000000
+let MaxPenalty = 10000000
 
 type ParsedPlatformPath =
   { Name : string
@@ -49,6 +49,19 @@ let forceExtractPlatforms path =
     | None -> failwithf "Extracting platforms from path '%s' failed" path
 
 // TODO: In future work this stuff should be rewritten. This penalty stuff is more random than a proper implementation.
+// Penalty: 000000
+//               ^ Minor adjustments
+//              ^ Version jump
+//             ^ Switch between netcore -> full
+//            ^ Portable profiles
+//           ^ Unsupported Profiles
+//          ^ Fallback
+let [<Literal>] Penalty_Client = 1
+let [<Literal>] Penalty_VersionJump = 10
+let [<Literal>] Penalty_Netcore = 100
+let [<Literal>] Penalty_Portable = 1000
+let [<Literal>] Penalty_UnsupportedProfile = 10000
+let [<Literal>] Penalty_Fallback = 100000
 let rec getPlatformPenalty =
     memoize (fun (targetPlatform:TargetProfile,packagePlatform:TargetProfile) ->
         if packagePlatform = targetPlatform then
@@ -63,7 +76,7 @@ let rec getPlatformPenalty =
                 // Just check if we are compatible at all and return a high penalty
                 
                 if packagePlatform.IsSupportedBy targetPlatform then
-                    700
+                    Penalty_UnsupportedProfile
                 else MaxPenalty
             | _ ->
                 let penalty =
@@ -71,13 +84,13 @@ let rec getPlatformPenalty =
                     |> Seq.map (fun target -> getPlatformPenalty (target, packagePlatform))
                     |> Seq.append [MaxPenalty]
                     |> Seq.min
-                    |> fun p -> p + 1
+                    |> fun p -> p + Penalty_VersionJump
 
                 match targetPlatform, packagePlatform with
-                | SinglePlatform (DotNetFramework _), SinglePlatform (DotNetStandard _) -> 200 + penalty
-                | SinglePlatform (DotNetStandard _), SinglePlatform(DotNetFramework _) -> 200 + penalty
-                | SinglePlatform _, PortableProfile _ -> 500 + penalty
-                | PortableProfile _, SinglePlatform _ -> 500 + penalty
+                | SinglePlatform (DotNetFramework _), SinglePlatform (DotNetStandard _) -> Penalty_Netcore + penalty
+                | SinglePlatform (DotNetStandard _), SinglePlatform(DotNetFramework _) -> Penalty_Netcore + penalty
+                | SinglePlatform _, PortableProfile _ -> Penalty_Portable + penalty
+                | PortableProfile _, SinglePlatform _ -> Penalty_Portable + penalty
                 | _ -> penalty)
 
 let getFrameworkPenalty (fr1, fr2) =
@@ -90,12 +103,12 @@ let getPathPenalty =
         let handleEmpty () =
             match platform with
             | SinglePlatform(Native(_)) -> MaxPenalty // an empty path is considered incompatible with native targets            
-            | _ -> 2000 // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
+            | _ -> Penalty_Fallback // an empty path is considered compatible with every .NET target, but with a high penalty so explicit paths are preferred
         match path.Platforms with
         | _ when String.IsNullOrWhiteSpace path.Name -> handleEmpty()
         | [] -> MaxPenalty // Ignore this path as it contains no platforms, but the folder apparently has a name -> we failed to detect the framework and ignore it
         | [ h ] ->
-            let additionalPen = if path.Name.EndsWith "-client" then 1 else 0
+            let additionalPen = if path.Name.EndsWith "-client" then Penalty_Client else 0
             additionalPen + getPlatformPenalty(platform,SinglePlatform h)
         | _ ->
             getPlatformPenalty(platform, TargetProfile.FindPortable path.Platforms))
@@ -211,6 +224,7 @@ let getTargetCondition (target:TargetProfile) =
         | Native(NoBuildMode,NoPlatform) -> "true", ""
         | Native(NoBuildMode,bits) -> (sprintf "'$(Platform)'=='%s'" bits.AsString), ""
         | Native(profile,bits) -> (sprintf "'$(Configuration)|$(Platform)'=='%s|%s'" profile.AsString bits.AsString), ""
+        | Tizen version ->"$(TargetFrameworkIdentifier) == 'Tizen'", sprintf "$(TargetFrameworkVersion) == '%O'" version
     | PortableProfile p -> sprintf "$(TargetFrameworkProfile) == '%O'" p.ProfileName,""
 
 let getCondition (referenceCondition:string option) (allTargets: TargetProfile Set list) (targets : TargetProfile Set) =

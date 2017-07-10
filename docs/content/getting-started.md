@@ -1,4 +1,4 @@
-# Getting Started
+# Getting Started with Paket
 
 This guide will show you
 
@@ -23,14 +23,17 @@ This guide will show you
 
 ## Manual setup
 
-### Downloading Paket and its Bootstrapper
+### Downloading Paket's Bootstrapper
 
 1. Create a `.paket` directory in the root of your solution.
 1. Download the latest
    [`paket.bootstrapper.exe`](https://github.com/fsprojects/Paket/releases/latest)
    into that directory.
-1. Rename `.paket/paket.bootstrapper.exe` to `.paket/paket.exe`. [read more about "Magic Mode"](bootstrapper.html#Magic-mode).
-1. Commit `.paket/paket.exe` into your repository.
+1. Rename `.paket/paket.bootstrapper.exe` to `.paket/paket.exe`.
+   [Read more about "magic mode"](bootstrapper.html#Magic-mode).
+1. Commit `.paket/paket.exe` to your repository.
+1. After the first `.paket/paket.exe` invocation Paket will create a couple of
+   files in `.paket` — commit those as well.
 
 ### Specifying dependencies
 
@@ -60,7 +63,7 @@ This file should be committed to your version control system.
 
 ### Installing dependencies
 
-Install all of the required packages from the specified sources:
+Install all required packages from the specified sources:
 
 ```sh
 .paket/paket.exe install

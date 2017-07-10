@@ -35,6 +35,15 @@ let TurnOnAutoRestore fromBootstrapper environment =
         do! downloadLatestBootstrapperAndTargets environment 
         let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
 
+        let bootStrapperFileName = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName, Constants.BootstrapperFileName)
+        let paketFileName = FileInfo(Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName, Constants.PaketFileName))
+        try
+            if paketFileName.Exists then
+                paketFileName.Delete()
+            File.Move(bootStrapperFileName,paketFileName.FullName)
+        with
+        | _ -> ()
+
         environment.Projects
         |> List.map fst
         |> List.iter (fun project ->

@@ -347,6 +347,18 @@ type WindowsVersion =
         | WindowsVersion.V8_1 -> "v8.1"
         | WindowsVersion.V10 -> "v10.0"
 
+[<RequireQualifiedAccess>]
+type TizenVersion =
+    V3 | V4
+    member this.ShortString() =
+        match this with
+        | V3 -> "3.0"
+        | V4 -> "4.0"
+    override this.ToString() =
+        match this with
+        | V3 -> "v3.0"
+        | V4 -> "v4.0"
+
 /// Framework Identifier type.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkIdentifier = 
@@ -367,6 +379,7 @@ type FrameworkIdentifier =
     | WindowsPhone of WindowsPhoneVersion
     | WindowsPhoneApp of WindowsPhoneAppVersion
     | Silverlight of SilverlightVersion
+    | Tizen of TizenVersion
 
     override x.ToString() = 
         match x with
@@ -387,6 +400,7 @@ type FrameworkIdentifier =
         | WindowsPhone v -> "wp" + v.ShortString()
         | WindowsPhoneApp v -> "wpa" + v.ShortString()
         | Silverlight v -> "sl" + v.ShortString()
+        | Tizen v -> "tizen" + v.ShortString()
 
 
     member internal x.RawSupportedPlatformsTransitive =
@@ -479,6 +493,8 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V7_5 -> [ WindowsPhone WindowsPhoneVersion.V7_1 ]
         | WindowsPhone WindowsPhoneVersion.V8 -> [ WindowsPhone WindowsPhoneVersion.V7_5; DotNetStandard DotNetStandardVersion.V1_0 ]
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
+        | Tizen TizenVersion.V3 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
 
 module FrameworkDetection =
 
@@ -589,6 +605,8 @@ module FrameworkDetection =
                 | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
                 | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
                 | "netcore20" -> Some (DotNetCore DotNetCoreVersion.V2_0)
+                | "tizen3" -> Some (Tizen TizenVersion.V3)
+                | "tizen4" -> Some (Tizen TizenVersion.V4)
                 | _ -> None
             result)
 
@@ -1127,7 +1145,8 @@ module SupportCalculation =
                     | UAP _
                     | MonoAndroid _ -> false
                     | DotNetCore _
-                    | DotNetStandard _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
+                    | DotNetStandard _
+                    | Tizen _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
                     | _ -> true)
             if minimal.Length > 0 then
                 let matches = 
