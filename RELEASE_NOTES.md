@@ -1,5 +1,7 @@
 #### 5.6.1 - 10.07.2017
 * BUGFIX: Check result of PutAsync - https://github.com/fsprojects/Paket/pull/2502
+* BUGFIX: Fixed push command
+* REVERT "Fixed NugetV2 querying"
 
 #### 5.6.0 - 10.07.2017
 * PERFORMANCE: Fixed access to multiple sources (performance) - https://github.com/fsprojects/Paket/pull/2499
