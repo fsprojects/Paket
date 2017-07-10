@@ -82,7 +82,7 @@ let private followODataLink auth url =
     }
 
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
-    let url = sprintf "%s/Packages()?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
+    let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
     NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
         async {
             try
@@ -229,7 +229,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
     async {
         let fallback () =
             async {
-                let url = sprintf "%s/Packages()?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
+                let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
                 let! raw = getFromUrl(auth,url,acceptXml)
                 if verbose then
                     tracefn "Response from %s:" url
@@ -237,7 +237,7 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                     tracefn "%s" raw
                 return parseODataListDetails(url,nugetURL,packageName,version,raw)
             }
-        let firstUrl = sprintf "%s/Packages()?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) (version.Normalize())
+        let firstUrl = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) (version.Normalize())
         try
             let! raw = getFromUrl(auth,firstUrl,acceptXml)
             if verbose then
