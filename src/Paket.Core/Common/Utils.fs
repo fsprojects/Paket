@@ -500,7 +500,10 @@ type HttpClient with
         stream.Write(trailerbytes, 0, trailerbytes.Length)
         stream.Write(newlineBytes, 0, newlineBytes.Length)
         stream.Position <- 0L
-        x.PutAsync(url, new StreamContent(stream)).GetAwaiter().GetResult()
+        let result = x.PutAsync(url, new StreamContent(stream)).GetAwaiter().GetResult()
+        failIfNoSuccess result |> Async.RunSynchronously
+        result
+        
 
 let internal addAcceptHeader (client:HttpClient) (contentType:string) =
     for headerVal in contentType.Split([|','|], System.StringSplitOptions.RemoveEmptyEntries) do
