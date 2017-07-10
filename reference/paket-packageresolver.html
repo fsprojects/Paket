@@ -233,10 +233,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '300', 300)" onmouseover="showTip(event, '300', 300)">
+          <code onmouseout="hideTip(event, '304', 304)" onmouseover="showTip(event, '304', 304)">
             calcOpenRequirements (...)
           </code>
-          <div class="tip" id="300">
+          <div class="tip" id="304">
             <strong>Signature:</strong> (exploredPackage:ResolvedPackage * globalFrameworkRestrictions:FrameworkRestrictions * (SemVerInfo * &#39;?9627) * dependency:PackageRequirement * resolverStep:ResolverStep) -&gt; Set&lt;PackageRequirement&gt;<br />
                           <strong>Type parameters:</strong> '?9627          </div>
         </td>
@@ -251,10 +251,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '301', 301)" onmouseover="showTip(event, '301', 301)">
+          <code onmouseout="hideTip(event, '305', 305)" onmouseover="showTip(event, '305', 305)">
             cleanupNames model
           </code>
-          <div class="tip" id="301">
+          <div class="tip" id="305">
             <strong>Signature:</strong> model:PackageResolution -&gt; PackageResolution<br />
                       </div>
         </td>
@@ -269,10 +269,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '302', 302)" onmouseover="showTip(event, '302', 302)">
+          <code onmouseout="hideTip(event, '306', 306)" onmouseover="showTip(event, '306', 306)">
             getResolverStrategy (...)
           </code>
-          <div class="tip" id="302">
+          <div class="tip" id="306">
             <strong>Signature:</strong> globalStrategyForDirectDependencies:ResolverStrategy option -&gt; globalStrategyForTransitives:ResolverStrategy option -&gt; allRequirementsOfCurrentPackage:Set&lt;PackageRequirement&gt; -&gt; currentRequirement:PackageRequirement -&gt; ResolverStrategy<br />
                       </div>
         </td>
@@ -287,15 +287,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '303', 303)" onmouseover="showTip(event, '303', 303)">
+          <code onmouseout="hideTip(event, '307', 307)" onmouseover="showTip(event, '307', 307)">
             RequestTimeout 
           </code>
-          <div class="tip" id="303">
+          <div class="tip" id="307">
             <strong>Signature:</strong> int<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L807-807" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L828-828" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -305,21 +305,57 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '304', 304)" onmouseover="showTip(event, '304', 304)">
+          <code onmouseout="hideTip(event, '308', 308)" onmouseover="showTip(event, '308', 308)">
             Resolve (...)
           </code>
-          <div class="tip" id="304">
+          <div class="tip" id="308">
             <strong>Signature:</strong> (getVersionsRaw:(PackageSource list -&gt; GroupName -&gt; PackageName -&gt; Async&lt;&#39;d&gt;) * getPreferredVersionsRaw:(PackageSource list -&gt; ResolverStrategy -&gt; GroupName -&gt; PackageName -&gt; (SemVerInfo * PackageSource list) list) * getPackageDetailsRaw:(PackageSource list -&gt; GroupName -&gt; PackageName -&gt; SemVerInfo -&gt; Async&lt;PackageDetails&gt;) * groupName:GroupName * globalStrategyForDirectDependencies:ResolverStrategy option * globalStrategyForTransitives:ResolverStrategy option * globalFrameworkRestrictions:FrameworkRestrictions * rootDependencies:Set&lt;PackageRequirement&gt; * updateMode:UpdateMode) -&gt; Resolution<br />
                           <strong>Type parameters:</strong> 'd          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L810-810" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L832-832" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           <p>Resolves all direct and transitive dependencies</p>
 
 
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '309', 309)" onmouseover="showTip(event, '309', 309)">
+            selectVersionsToPreload verReq versions
+          </code>
+          <div class="tip" id="309">
+            <strong>Signature:</strong> verReq:VersionRequirement -&gt; versions:seq&lt;SemVerInfo&gt; -&gt; seq&lt;SemVerInfo * WorkPriority&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L812-812" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '310', 310)" onmouseover="showTip(event, '310', 310)">
+            WorkerCount 
+          </code>
+          <div class="tip" id="310">
+            <strong>Signature:</strong> int<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/PackageResolver.fs#L829-829" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
         </td>
       </tr>
     </tbody>

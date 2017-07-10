@@ -70,6 +70,32 @@
 
 <!-- Render nested types and modules, if there are any -->
 
+  <h3>Functions and values</h3>
+  <table class="table table-bordered member-list">
+    <thead>
+      <tr><td>Function or value</td><td>Description</td></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '1', 1)" onmouseover="showTip(event, '1', 1)">
+            getCancelledException (...)
+          </code>
+          <div class="tip" id="1">
+            <strong>Signature:</strong> completedTask:Task -&gt; waitWithAwaiter:(unit -&gt; unit) -&gt; OperationCanceledException<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L20-20" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+    </tbody>
+  </table>
   <h3>Type extensions</h3>
   <table class="table table-bordered member-list">
     <thead>
@@ -79,15 +105,53 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '1', 1)" onmouseover="showTip(event, '1', 1)">
+          <code onmouseout="hideTip(event, '2', 2)" onmouseover="showTip(event, '2', 2)">
+            AwaitTaskWithoutAggregate(task)
+          </code>
+          <div class="tip" id="2">
+            <strong>Signature:</strong> task:Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />
+                          <strong>Type parameters:</strong> 'T          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L41-41" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>Async.AwaitTaskWithoutAggregate.Static</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
+            AwaitTaskWithoutAggregate(task)
+          </code>
+          <div class="tip" id="3">
+            <strong>Signature:</strong> task:Task -&gt; Async&lt;unit&gt;<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L56-56" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>Async.AwaitTaskWithoutAggregate.Static</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '4', 4)" onmouseover="showTip(event, '4', 4)">
             awaitTaskWithToken(fallBack item)
           </code>
-          <div class="tip" id="1">
+          <div class="tip" id="4">
             <strong>Signature:</strong> (fallBack:(unit -&gt; &#39;T)) -&gt; item:Task&lt;&#39;T&gt; -&gt; Async&lt;&#39;T&gt;<br />
                           <strong>Type parameters:</strong> 'T          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L28-28" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L72-72" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -98,15 +162,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '2', 2)" onmouseover="showTip(event, '2', 2)">
+          <code onmouseout="hideTip(event, '5', 5)" onmouseover="showTip(event, '5', 5)">
             map(f a)
           </code>
-          <div class="tip" id="2">
-            <strong>Signature:</strong> (f:(&#39;?10738 -&gt; &#39;?10739)) -&gt; a:&#39;?10738 -&gt; Async&lt;&#39;?10739&gt;<br />
-                          <strong>Type parameters:</strong> '?10738, '?10739          </div>
+          <div class="tip" id="5">
+            <strong>Signature:</strong> (f:(&#39;?10798 -&gt; &#39;?10799)) -&gt; a:&#39;?10798 -&gt; Async&lt;&#39;?10799&gt;<br />
+                          <strong>Type parameters:</strong> '?10798, '?10799          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L97-97" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L141-141" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -117,15 +181,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '3', 3)" onmouseover="showTip(event, '3', 3)">
+          <code onmouseout="hideTip(event, '6', 6)" onmouseover="showTip(event, '6', 6)">
             Parallel(a, b)
           </code>
-          <div class="tip" id="3">
+          <div class="tip" id="6">
             <strong>Signature:</strong> (a:Async&lt;&#39;a&gt; * b:Async&lt;&#39;b&gt;) -&gt; Async&lt;&#39;a * &#39;b&gt;<br />
                           <strong>Type parameters:</strong> 'a, 'b          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L20-20" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L33-33" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -138,15 +202,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '4', 4)" onmouseover="showTip(event, '4', 4)">
+          <code onmouseout="hideTip(event, '7', 7)" onmouseover="showTip(event, '7', 7)">
             StartAsTaskProperCancel(...)
           </code>
-          <div class="tip" id="4">
+          <div class="tip" id="7">
             <strong>Signature:</strong> (computation:Async&lt;&#39;a&gt; * taskCreationOptions:TaskCreationOptions option * cancellationToken:CancellationToken option) -&gt; Task&lt;&#39;a&gt;<br />
                           <strong>Type parameters:</strong> 'a          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L79-79" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L123-123" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -159,15 +223,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '5', 5)" onmouseover="showTip(event, '5', 5)">
+          <code onmouseout="hideTip(event, '8', 8)" onmouseover="showTip(event, '8', 8)">
             StartCatchCancellation(...)
           </code>
-          <div class="tip" id="5">
-            <strong>Signature:</strong> (work:Async&lt;&#39;?10734&gt; * cancellationToken:CancellationToken option) -&gt; Async&lt;&#39;?10734&gt;<br />
-                          <strong>Type parameters:</strong> '?10734          </div>
+          <div class="tip" id="8">
+            <strong>Signature:</strong> (work:Async&lt;&#39;?10794&gt; * cancellationToken:CancellationToken option) -&gt; Async&lt;&#39;?10794&gt;<br />
+                          <strong>Type parameters:</strong> '?10794          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L68-68" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L112-112" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -178,20 +242,39 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '6', 6)" onmouseover="showTip(event, '6', 6)">
-            tryFind(f tasks)
+          <code onmouseout="hideTip(event, '9', 9)" onmouseover="showTip(event, '9', 9)">
+            tryFindParallel(f tasks)
           </code>
-          <div class="tip" id="6">
+          <div class="tip" id="9">
             <strong>Signature:</strong> (f:(&#39;T -&gt; bool)) -&gt; tasks:seq&lt;Async&lt;&#39;T&gt;&gt; -&gt; Async&lt;Task&lt;&#39;T&gt; [] * int option&gt;<br />
                           <strong>Type parameters:</strong> 'T          </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L99-99" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L162-162" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
           
-              <p>CompiledName: <code>Async.tryFind.Static</code></p>
+              <p>CompiledName: <code>Async.tryFindParallel.Static</code></p>
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '10', 10)" onmouseover="showTip(event, '10', 10)">
+            tryFindSequential(f tasks)
+          </code>
+          <div class="tip" id="10">
+            <strong>Signature:</strong> (f:(&#39;T -&gt; bool)) -&gt; tasks:seq&lt;Async&lt;&#39;T&gt;&gt; -&gt; Async&lt;Task&lt;&#39;T&gt; [] * int option&gt;<br />
+                          <strong>Type parameters:</strong> 'T          </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Common/Async.fs#L143-143" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+              <p>CompiledName: <code>Async.tryFindSequential.Static</code></p>
         </td>
       </tr>
     </tbody>
