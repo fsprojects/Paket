@@ -16,6 +16,7 @@ open FSharp.Polyfill
 
 open System.Net.Http
 open System.Threading
+open Microsoft.FSharp.Core.Printf
 
 #if !NETSTANDARD1_6
 // TODO: Activate this in .NETCore 2.0
@@ -26,6 +27,8 @@ ServicePointManager.SecurityProtocol <- unbox 192 ||| unbox 768 ||| unbox 3072 |
 let sndOf3 (_,v,_) = v
 let thirdOf3 (_,_,v) = v
 
+let rethrowf f inner fmt =
+    ksprintf (fun msg -> raise <| f(msg,inner)) fmt
 
 /// Adds quotes around the string
 /// [omit]
@@ -437,6 +440,32 @@ let failIfNoSuccess (resp:HttpResponseMessage) = async {
         let! info = RequestFailedInfo.ofResponse resp
         raise <| RequestFailedException(info, null)
     () }
+
+#if USE_WEB_CLIENT_FOR_UPLOAD
+type System.Net.WebClient with
+    member x.UploadFileAsMultipart (url : Uri) filename =
+        let fileTemplate =
+            "--{0}\r\nContent-Disposition: form-data; name=\"{1}\"; filename=\"{2}\"\r\nContent-Type: {3}\r\n\r\n"
+        let boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x", System.Globalization.CultureInfo.InvariantCulture)
+        let fileInfo = (new FileInfo(Path.GetFullPath(filename)))
+        let fileHeaderBytes =
+            System.String.Format
+                (System.Globalization.CultureInfo.InvariantCulture, fileTemplate, boundary, "package", "package", "application/octet-stream")
+            |> Encoding.UTF8.GetBytes
+        // we use a windows-style newline rather than Environment.NewLine for compatibility
+        let newlineBytes = "\r\n" |> Encoding.UTF8.GetBytes
+        let trailerbytes = String.Format(System.Globalization.CultureInfo.InvariantCulture, "--{0}--", boundary) |> Encoding.UTF8.GetBytes
+        x.Headers.Add(HttpRequestHeader.ContentType, "multipart/form-data; boundary=" + boundary)
+        use stream = x.OpenWrite(url, "PUT")
+        stream.Write(fileHeaderBytes, 0, fileHeaderBytes.Length)
+        use fileStream = File.OpenRead fileInfo.FullName
+        fileStream.CopyTo(stream, (4 * 1024))
+        stream.Write(newlineBytes, 0, newlineBytes.Length)
+        stream.Write(trailerbytes, 0, trailerbytes.Length)
+        stream.Write(newlineBytes, 0, newlineBytes.Length)
+        ()
+#endif
+
 type HttpClient with
     member x.DownloadFileTaskAsync (uri : Uri, tok : CancellationToken, filePath : string) =
       async {
@@ -503,7 +532,6 @@ type HttpClient with
         let result = x.PutAsync(url, new StreamContent(stream)).GetAwaiter().GetResult()
         failIfNoSuccess result |> Async.RunSynchronously
         result
-        
 
 let internal addAcceptHeader (client:HttpClient) (contentType:string) =
     for headerVal in contentType.Split([|','|], System.StringSplitOptions.RemoveEmptyEntries) do
@@ -511,7 +539,7 @@ let internal addAcceptHeader (client:HttpClient) (contentType:string) =
 let internal addHeader (client:HttpClient) (headerKey:string) (headerVal:string) =
     client.DefaultRequestHeaders.Add(headerKey, headerVal)
 
-let createWebClient (url,auth:Auth option) =
+let createHttpClient (url,auth:Auth option) =
     let handler =
         new HttpClientHandler(
             UseProxy = true,
@@ -537,6 +565,35 @@ let createWebClient (url,auth:Auth option) =
     handler.UseProxy <- true
     client
 
+#if USE_WEB_CLIENT_FOR_UPLOAD
+let createWebClient (url,auth:Auth option) =
+    let client = new WebClient()
+    client.Headers.Add("User-Agent", "Paket")
+    client.Proxy <- getDefaultProxyFor url
+
+    let githubToken = Environment.GetEnvironmentVariable "PAKET_GITHUB_API_TOKEN"
+
+    match auth with
+    | Some (Credentials(username, password)) ->
+        // htttp://stackoverflow.com/questions/16044313/webclient-httpwebrequest-with-basic-authentication-returns-404-not-found-for-v/26016919#26016919
+        //this works ONLY if the server returns 401 first
+        //client DOES NOT send credentials on first request
+        //ONLY after a 401
+        //client.Credentials <- new NetworkCredential(auth.Username,auth.Password)
+
+        //so use THIS instead to send credentials RIGHT AWAY
+        let credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes(username + ":" + password))
+        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "Basic %s" credentials
+        client.Credentials <- new NetworkCredential(username,password)
+    | Some (Token token) ->
+        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" token
+    | None when not (isNull githubToken) ->
+        client.Headers.[HttpRequestHeader.Authorization] <- sprintf "token %s" githubToken
+    | None ->
+        client.UseDefaultCredentials <- true
+    client
+#endif
+
 #nowarn "40"
 
 open System.Diagnostics
@@ -547,7 +604,7 @@ open System.Runtime.ExceptionServices
 let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
     async {
         try
-            use client = createWebClient (url,auth)
+            use client = createHttpClient (url,auth)
             let! tok = Async.CancellationToken
             if verbose then
                 verbosefn "Starting download from '%O'" url
@@ -563,7 +620,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
 let getFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
         try
-            use client = createWebClient(url,auth)
+            use client = createHttpClient(url,auth)
             let! tok = Async.CancellationToken
             if notNullOrEmpty contentType then
                 addAcceptHeader client contentType
@@ -581,7 +638,7 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
 let getXmlFromUrl (auth:Auth option, url : string) =
     async {
         try
-            use client = createWebClient (url,auth)
+            use client = createHttpClient (url,auth)
             let! tok = Async.CancellationToken
             // mimic the headers sent from nuget client to odata/ endpoints
             addAcceptHeader client "application/atom+xml, application/xml"
@@ -621,7 +678,7 @@ let safeGetFromUrl (auth:Auth option, url : string, contentType : string) =
     async {
         try
             let uri = Uri url
-            use client = createWebClient (url,auth)
+            use client = createHttpClient (url,auth)
             let! tok = Async.CancellationToken
 
             if notNullOrEmpty contentType then

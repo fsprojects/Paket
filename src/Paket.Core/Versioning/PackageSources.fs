@@ -245,7 +245,7 @@ type PackageSource =
 
     static member WarnIfNoConnection (source,_) = 
         let n url auth =
-            use client = Utils.createWebClient(url, auth |> Option.map toBasicAuth)
+            use client = Utils.createHttpClient(url, auth |> Option.map toBasicAuth)
             try client.DownloadData url |> ignore 
             with _ ->
                 traceWarnfn "Unable to ping remote NuGet feed: %s." url

@@ -32,6 +32,9 @@ let GetUrlWithEndpoint (url: string option) (endPoint: string option) =
   
 let Push maxTrials url apiKey packageFileName =
     let tracefnVerbose m = Printf.kprintf traceVerbose m
+#if USE_WEB_CLIENT_FOR_UPLOAD
+    let useHttpClient = Environment.GetEnvironmentVariable "PAKET_PUSH_HTTPCLIENT" = "true"
+#endif
     let rec push trial =
         if not (File.Exists packageFileName) then
             failwithf "The package file %s does not exist." packageFileName
@@ -45,26 +48,47 @@ let Push maxTrials url apiKey packageFileName =
                 tracefnVerbose "Authorizing using token"
             | None ->
                 tracefnVerbose "No authorization found in config file."
-            let client = Utils.createWebClient(url, authOpt)
-            Utils.addHeader client "X-NuGet-ApiKey" apiKey
+            let uploadWithHttpClient () =
+                let client = Utils.createHttpClient(url, authOpt)
+                Utils.addHeader client "X-NuGet-ApiKey" apiKey
+                client.UploadFileAsMultipart (new Uri(url)) packageFileName
+                    |> ignore
 
-            client.UploadFileAsMultipart (new Uri(url)) packageFileName
-            |> ignore
+#if !USE_WEB_CLIENT_FOR_UPLOAD
+            uploadWithHttpClient()
+#else
+            if useHttpClient then
+                uploadWithHttpClient()
+            else
+                let client = Utils.createWebClient(url, authOpt)
+                client.Headers.Add ("X-NuGet-ApiKey", apiKey)
 
+                client.UploadFileAsMultipart (new Uri(url)) packageFileName
+                |> ignore
+#endif
             tracefn "Pushing %s complete." packageFileName
         with
-        | exn when trial = 1 && exn.Message.Contains("(409)") ->
+        | :? RequestFailedException as rfe when rfe.Info.IsSome && rfe.Info.Value.StatusCode = HttpStatusCode.Conflict ->
+            rethrowf Exception rfe "Package %s already exists" packageFileName
+        | exn when exn.Message.Contains("(409)") ->
             failwithf "Package %s already exists." packageFileName
         | exn when trial < maxTrials ->            
-            if exn.Message.Contains("(409)") |> not then // exclude conflicts
-                match exn with
-                | :? WebException as we when not (isNull we.Response) -> 
-                    let response = (exn :?> WebException).Response
-                    use reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8)
+            match exn with
+#if USE_WEB_CLIENT_FOR_UPLOAD
+            | :? WebException as we when not (isNull we.Response) ->
+                let response = (exn :?> WebException).Response
+                use reader = new StreamReader(response.GetResponseStream(), Encoding.UTF8)
+                let text = reader.ReadToEnd()
+                tracefnVerbose "Response body was: %s" text
+#endif
+            | :? RequestFailedException as rfe ->
+                match rfe.Info with
+                | Some info ->
+                    use reader = new StreamReader(info.Content, Encoding.UTF8)
                     let text = reader.ReadToEnd()
                     tracefnVerbose "Response body was: %s" text
-                | _ -> ()
-                traceWarnfn "Could not push %s: %s" packageFileName exn.Message
-                push (trial + 1)
-
+                | None -> ()
+            | _ -> ()
+            traceWarnfn "Could not push %s: %s" packageFileName exn.Message
+            push (trial + 1)
     push 1
