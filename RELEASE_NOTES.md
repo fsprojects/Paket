@@ -1,8 +1,9 @@
 #### 5.6.0 - 10.07.2017
-* UABILITY: Convert-From-NuGet tries to restore into magic mode
-* BUGFIX: Trace warnings to stdout instead of stderr
-* USABILITY: Better error message when references file parsing fails
 * PERFORMANCE: Fixed access to multiple sources (performance) - https://github.com/fsprojects/Paket/pull/2499
+* BUGFIX: Improved penalty system https://github.com/fsprojects/Paket/pull/2498
+* BUGFIX: Trace warnings to stdout instead of stderr
+* USABILITY: Convert-From-NuGet tries to restore into magic mode
+* USABILITY: Better error message when references file parsing fails
 
 #### 5.5.0 - 07.07.2017
 * Support for dotnet cli tools with clitools keyword in paket.dependencies - https://fsprojects.github.io/Paket/nuget-dependencies.html#Special-case-dotnet-cli-tools

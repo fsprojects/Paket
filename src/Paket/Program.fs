@@ -10,7 +10,6 @@ open Paket.Commands
 
 open Argu
 open PackageSources
-open System.Xml
 open Paket.Domain
 
 let sw = Stopwatch.StartNew()
