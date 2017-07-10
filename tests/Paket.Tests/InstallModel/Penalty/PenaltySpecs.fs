@@ -15,7 +15,7 @@ module ``Given a target platform`` =
     [<Test>]
     let ``it should return the right penalty for a compatible platform``() =
         getFrameworkPenalty (DotNetFramework FrameworkVersion.V4_5, DotNetFramework FrameworkVersion.V4)
-        |> shouldEqual 2
+        |> shouldEqual (Penalty_VersionJump * 2)
 
     [<Test>]
     let ``it should return > 1000 for an incompatible platform``() =
@@ -62,26 +62,26 @@ module ``Given a path`` =
         getFrameworkPathPenalty 
             [ DotNetFramework FrameworkVersion.V4
               Silverlight SilverlightVersion.V5 ] path
-        |> shouldEqual 1
+        |> shouldEqual (Penalty_VersionJump)
 
     [<Test>]
     let ``it should return the correct penalty for compatible .NET Frameworks``() =
         let path = forceExtractPlatforms "net20"
         getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V2 ] path |> shouldEqual 0
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V3 ] path |> shouldEqual 1
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V3_5 ] path |> shouldEqual 2
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4 ] path |> shouldEqual 3
+        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V3 ] path |> shouldEqual Penalty_VersionJump
+        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V3_5 ] path |> shouldEqual (Penalty_VersionJump * 2)
+        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4 ] path |> shouldEqual (Penalty_VersionJump * 3)
 
 module ``Given an empty path`` =
     [<Test>]
     let ``it should be okay to use from .NET``() =
         let path = forceExtractPlatforms ""
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4_5 ] path |> shouldBeSmallerThan 2000
+        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4_5 ] path |> shouldBeSmallerThan MaxPenalty
 
     [<Test>]
     let ``it should be okay to use from a portable profile``() =
         let path = forceExtractPlatforms ""
-        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ] path |> shouldBeSmallerThan 2000
+        getFrameworkPathPenalty [ DotNetFramework FrameworkVersion.V4_5; Windows WindowsVersion.V8; WindowsPhoneApp WindowsPhoneAppVersion.V8_1 ] path |> shouldBeSmallerThan MaxPenalty
 
 module ``Given a list of paths`` =
     let paths =
@@ -136,6 +136,11 @@ module ``General Penalty checks`` =
     let ``best match for DotNet Standard 1.0``()=
         Paket.PlatformMatching.findBestMatch (["net20"; "net40"; "net45"; "net451"]|> List.map forceExtractPlatforms, SinglePlatform(DotNetStandard(DotNetStandardVersion.V1_0)))
         |> shouldEqual (None)
+    
+    [<Test>]
+    let ``prefer net40-client over net35``()=
+        Paket.PlatformMatching.findBestMatch (["net20"; "net35"; "net40-client"]|> List.map forceExtractPlatforms, SinglePlatform(DotNetFramework(FrameworkVersion.V4_5)))
+        |> shouldEqual (Some (forceExtractPlatforms "net40-client"))
 
 
     [<Test>]
