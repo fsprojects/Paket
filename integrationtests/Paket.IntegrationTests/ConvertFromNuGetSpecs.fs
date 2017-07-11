@@ -90,15 +90,30 @@ let ``#1922 should remove references to moved analyzers``() =
     StringAssert.Contains(@"<Analyzer Include=""..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll"">", projectXml)
     StringAssert.Contains(@"<Analyzer Include=""..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\StyleCop.Analyzers.dll"">", projectXml)
 
+let testPaketDependenciesFileInSolution scenario expectedFiles =
+    paket "convert-from-nuget" scenario |> ignore
+
+    let expectedLines = 
+        [ yield "Project\\(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\"\\) = \"\\.paket\", \"\\.paket\", \"{[^}]+}\""
+          yield "\s*ProjectSection\\(SolutionItems\\) = preProject"
+          for f in expectedFiles do yield sprintf "\s*%s = %s" f f
+          yield "\s*EndProjectSection"
+          yield "EndProject" ]
+        |> String.concat Environment.NewLine
+
+    let slnFileText = File.ReadAllText(Path.Combine(scenarioTempPath scenario, "sln.sln"))
+    
+    System.Text.RegularExpressions.Regex.IsMatch(slnFileText, expectedLines)
+    |> shouldEqual true
+
 [<Test>]
 let ``#2161 should put paket.dependencies inside the .paket folder when it's already present in the sln file``() =
-    let scenario = "i002161-convert-existing-paket-folder"
-    paket "convert-from-nuget" scenario |> ignore
-    
-    let slnLines = File.ReadAllLines(Path.Combine(scenarioTempPath scenario, "2161.sln"))
-    let sectionOpenLine = slnLines |> Array.findIndex (fun line -> line.StartsWith "Project" && line.Contains "\".paket\"")
-    let sectionEndLine = sectionOpenLine + (slnLines |> Seq.skip sectionOpenLine |> Seq.findIndex (fun line -> line.StartsWith "EndProject"))
-    let depsFileLine = slnLines |> Array.findIndex (fun line -> line.Contains "paket.dependencies")
+    testPaketDependenciesFileInSolution "i002161-convert-existing-paket-folder" ["paket.dependencies"]
 
-    sectionOpenLine |> shouldBeSmallerThan depsFileLine
-    sectionEndLine |> shouldBeGreaterThan depsFileLine
+[<Test>]
+let ``#2512 should put paket.dependencies inside the .paket folder when it's absent in the sln file``() =
+    testPaketDependenciesFileInSolution "i002512-convert-absent-paket-folder" ["paket.dependencies"]
+
+[<Test>]
+let ``#2512 should put paket.dependencies inside the .paket folder that already has files in it``() =
+    testPaketDependenciesFileInSolution "i002512-convert-paket-folder-with-files" ["paket.dependencies"; "SomeFile"]

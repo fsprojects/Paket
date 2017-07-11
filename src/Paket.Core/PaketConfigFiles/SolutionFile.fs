@@ -22,12 +22,15 @@ type SolutionFile(fileName: string) =
                 content.RemoveRange(index, 4)
         | None -> ()
 
+    let projectSectionLines = 
+        [ "\tProjectSection(SolutionItems) = preProject";
+          "\tEndProjectSection" ]
+
     let addPaketFolder () = 
         let lines = 
-            [sprintf   "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" Constants.SolutionFolderProjectGuid (Guid.NewGuid().ToString("D").ToUpper());
-                       "	ProjectSection(SolutionItems) = preProject";
-                       "	EndProjectSection";
-                       "EndProject"]
+              [sprintf "Project(\"{%s}\") = \".paket\", \".paket\", \"{%s}\"" Constants.SolutionFolderProjectGuid (Guid.NewGuid().ToString("D").ToUpper())]
+            @ projectSectionLines
+            @ [ "EndProject" ]
 
         let index = 
             match content |> Seq.tryFindIndex (fun line -> line.StartsWith("Project")) with
@@ -46,10 +49,24 @@ type SolutionFile(fileName: string) =
 
     let addPaketFiles(paketProjectIndex, length, dependenciesFile, lockFile) = 
         let projectLines = content.GetRange(paketProjectIndex, length)
+
+        // This here is ad-hoc hacky solution to sln ambiguity.
+        // The problen is that the .sln file may or may not contain a "ProjectSection" within the ".paket" "Project" (see #2161 and #2512).
+        // When the "ProjectSection" is not there, we need to add it, and then add new files within it.
+        // A better solution would be to have a proper parser for the .sln file, but that would take too long, and would probably be a waste anyway.
+        let firstLineInPaketProject = if paketProjectIndex < content.Count-1 then content.[paketProjectIndex+1] else ""
+        if not (firstLineInPaketProject.Contains "ProjectSection") then
+            if firstLineInPaketProject.Contains "EndProject" then 
+                // The "Project" is empty => insert "ProjectSection"
+                content.InsertRange( paketProjectIndex+1, projectSectionLines )
+            else 
+                // The "Project" is not empty, but also doesn't contain a "ProjectSection" => no idea what this means, 
+                // so just fall back to old behavior and insert new lines at +2 after "Project" start.
+                ()
         
         let add s =
             if not <| Seq.exists (fun line -> line = s) projectLines 
-            then content.Insert(paketProjectIndex + 1, s)
+            then content.Insert(paketProjectIndex + 2, s)
 
         Option.iter (fun lockFile -> 
             add (sprintf"		%s = %s" lockFile lockFile)) lockFile
