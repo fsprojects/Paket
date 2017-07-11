@@ -1,3 +1,6 @@
+#### 5.6.4 - 11.07.2017
+* BUGFIX: Work around Proget perf issue - https://github.com/fsprojects/Paket/issues/2466
+
 #### 5.6.3 - 11.07.2017
 * BUGFIX: Work around sonatype bug - https://github.com/fsprojects/Paket/issues/2320
 

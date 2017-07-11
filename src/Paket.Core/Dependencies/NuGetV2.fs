@@ -82,16 +82,22 @@ let private followODataLink auth url =
     }
 
 let tryGetAllVersionsFromNugetODataWithFilter (auth, nugetURL, package:PackageName) =
-    let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
+    let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=Id eq '%O'" nugetURL package
     NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
         async {
             try
                 let! result = followODataLink auth url
                 return SuccessResponse result
-            with exn ->
-                let cap = ExceptionDispatchInfo.Capture exn
-                return UnknownError cap
+            with _ ->
+                let url = sprintf "%s/Packages?semVerLevel=2.0.0&$filter=tolower(Id) eq '%s'" nugetURL (package.CompareString)
+                try
+                    let! result = followODataLink auth url
+                    return SuccessResponse result
+                with exn ->
+                    let cap = ExceptionDispatchInfo.Capture exn
+                    return UnknownError cap
         })
+
 
 let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName) =
     let url = sprintf "%s/FindPackagesById()?semVerLevel=2.0.0&id='%O'" nugetURL package
@@ -99,7 +105,7 @@ let tryGetAllVersionsFromNugetODataFindById (auth, nugetURL, package:PackageName
         async {
             try
                 let! result = followODataLink auth url
-                return SuccessResponse  result
+                return SuccessResponse result
             with exn ->
                 let cap = ExceptionDispatchInfo.Capture exn
                 return UnknownError cap
