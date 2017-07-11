@@ -1,3 +1,6 @@
+#### 5.6.5 - 11.07.2017
+* BUGFIX: Better tracing around download link - https://github.com/fsprojects/Paket/issues/2508
+
 #### 5.6.4 - 11.07.2017
 * BUGFIX: Work around Proget perf issue - https://github.com/fsprojects/Paket/issues/2466
 
