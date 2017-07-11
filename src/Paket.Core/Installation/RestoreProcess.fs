@@ -73,8 +73,12 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
             match package.Source with
             | NuGetV2 _ | NuGetV3 _ -> 
                 let source = 
-                    let normalizeFeedUrl s = (normalizeFeedUrl s).Replace("https://","http://")
-                    let normalized = package.Source.Url |> normalizeFeedUrl
+                    let normalizeFeedUrl s = 
+                        (normalizeFeedUrl s)
+                          .Replace("https://","http://")
+                          .Replace("/api/v3/index.json","")
+
+                    let normalized = normalizeFeedUrl package.Source.Url
                     let source =
                         sources 
                         |> List.tryPick (fun source -> 
@@ -88,6 +92,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                     | Some s -> s 
 
                 return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
+
             | LocalNuGet(path,_) ->
                 let path = Utils.normalizeLocalPath path
                 let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root

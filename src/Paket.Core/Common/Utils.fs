@@ -312,7 +312,6 @@ let normalizeFeedUrl (source:string) =
     | "http://nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
     | "https://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream
     | "http://www.nuget.org/api/v2" -> Constants.DefaultNuGetStream.Replace("https","http")
-    | url when url.EndsWith("/api/v3/index.json") -> url.Replace("/api/v3/index.json","")
     | source -> source
 
 #if NETSTANDARD1_6
