@@ -227,9 +227,10 @@ let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerI
 
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     async {
-        let fallback () =
+        let normalizedVersion = version.Normalize()
+        let fallback2 () =
             async {
-                let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
+                let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) normalizedVersion
                 let! raw = getFromUrl(auth,url,acceptXml)
                 if verbose then
                     tracefn "Response from %s:" url
@@ -237,7 +238,26 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                     tracefn "%s" raw
                 return parseODataListDetails(url,nugetURL,packageName,version,raw)
             }
-        let firstUrl = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) (version.Normalize())
+
+        let fallback () =
+            async {
+                try
+                    let url = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (Version eq '%O')" nugetURL (packageName.CompareString) version
+                    let! raw = getFromUrl(auth,url,acceptXml)
+                    if verbose then
+                        tracefn "Response from %s:" url
+                        tracefn ""
+                        tracefn "%s" raw
+                    match parseODataListDetails(url,nugetURL,packageName,version,raw) with
+                    | EmptyResult ->
+                        if verbose then tracefn "No results, trying again with NormalizedVersion as Version instead of Version."
+                        return! fallback2()
+                    | res -> return res
+                with ex ->
+                    return! fallback2()
+            }
+
+        let firstUrl = sprintf "%s/Packages?$filter=(tolower(Id) eq '%s') and (NormalizedVersion eq '%s')" nugetURL (packageName.CompareString) normalizedVersion
         try
             let! raw = getFromUrl(auth,firstUrl,acceptXml)
             if verbose then

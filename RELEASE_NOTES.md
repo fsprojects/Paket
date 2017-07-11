@@ -1,3 +1,6 @@
+#### 5.6.3 - 11.07.2017
+* BUGFIX: Work around sonatype bug - https://github.com/fsprojects/Paket/issues/2320
+
 #### 5.6.2 - 11.07.2017
 * BUGFIX: Work around https://github.com/NuGet/NuGetGallery/issues/4315
 
