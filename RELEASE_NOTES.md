@@ -1,4 +1,7 @@
-#### 5.6.1 - 10.07.2017
+#### 5.6.2 - 11.07.2017
+* BUGFIX: Work around https://github.com/NuGet/NuGetGallery/issues/4315
+
+#### 5.6.1 - 11.07.2017
 * BUGFIX: Check result of PutAsync - https://github.com/fsprojects/Paket/pull/2502
 * BUGFIX: Fixed push command
 * REVERT "Fixed NugetV2 querying"

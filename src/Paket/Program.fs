@@ -605,7 +605,7 @@ let findPackageVersions (results : ParseResults<_>) =
     for p in Dependencies.FindPackageVersions(root,sources,name,maxResults) do
         tracefn "%s" p
 
-let push (results : ParseResults<_>) =
+let push paketVersion (results : ParseResults<_>) =
     let fileName =
         let arg = (results.TryGetResult <@ PushArgs.Package @>,
                    results.TryGetResult <@ PushArgs.Package_Legacy @>)
@@ -733,7 +733,7 @@ let main() =
             | ShowInstalledPackages r -> processCommand silent showInstalledPackages r
             | ShowGroups r -> processCommand silent showGroups r
             | Pack r -> processCommand silent pack r
-            | Push r -> processCommand silent push r
+            | Push r -> processCommand silent (push paketVersion) r
             | GenerateIncludeScripts r ->
                 warnObsolete "generate-include-scripts" "generate-load-scripts"
                 processCommand silent generateLoadScripts r

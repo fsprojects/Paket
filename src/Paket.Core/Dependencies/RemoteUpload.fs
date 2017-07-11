@@ -30,7 +30,7 @@ let GetUrlWithEndpoint (url: string option) (endPoint: string option) =
     urlWithEndpoint.ToString ()
 
   
-let Push maxTrials url apiKey packageFileName =
+let Push maxTrials url apiKey clientVersion packageFileName =
     let tracefnVerbose m = Printf.kprintf traceVerbose m
 #if USE_WEB_CLIENT_FOR_UPLOAD
     let useHttpClient = Environment.GetEnvironmentVariable "PAKET_PUSH_HTTPCLIENT" = "true"
@@ -39,6 +39,7 @@ let Push maxTrials url apiKey packageFileName =
         if not (File.Exists packageFileName) then
             failwithf "The package file %s does not exist." packageFileName
         tracefn "Pushing package %s to %s - trial %d" packageFileName url trial
+
         try
             let authOpt = ConfigFile.GetAuthentication(url)
             match authOpt with
@@ -51,6 +52,8 @@ let Push maxTrials url apiKey packageFileName =
             let uploadWithHttpClient () =
                 let client = Utils.createHttpClient(url, authOpt)
                 Utils.addHeader client "X-NuGet-ApiKey" apiKey
+                Utils.addHeader client "X-NuGet-Client-Version" clientVersion // see https://github.com/NuGet/NuGetGallery/issues/4315
+
                 client.UploadFileAsMultipart (new Uri(url)) packageFileName
                     |> ignore
 
@@ -62,6 +65,7 @@ let Push maxTrials url apiKey packageFileName =
             else
                 let client = Utils.createWebClient(url, authOpt)
                 client.Headers.Add ("X-NuGet-ApiKey", apiKey)
+                client.Headers.Add ("X-NuGet-Client-Version", clientVersion) // see https://github.com/NuGet/NuGetGallery/issues/4315
 
                 client.UploadFileAsMultipart (new Uri(url)) packageFileName
                 |> ignore

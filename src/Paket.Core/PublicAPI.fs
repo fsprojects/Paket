@@ -654,7 +654,7 @@ type Dependencies(dependenciesFileName: string) =
         PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, symbols, includeReferencedProjects, projectUrl)
 
     /// Pushes a nupkg file.
-    static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
+    static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?paketVersion, ?maxTrials) =
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
         let envKey =
             match Environment.GetEnvironmentVariable("NUGET_KEY") |> Option.ofObj with
@@ -666,6 +666,7 @@ type Dependencies(dependenciesFileName: string) =
                     traceWarnfn "The environment variable nugetkey is deprecated. Please use the NUGET_KEY environment variable."
                     Some(key)
                 | None -> None
+
         let configKey = url |> Option.bind ConfigFile.GetAuthentication |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
         let firstPresentKey = 
             [apiKey; envKey; configKey]
@@ -678,7 +679,12 @@ type Dependencies(dependenciesFileName: string) =
             failwithf "Could not push package %s due to missing credentials for the url %s. Please specify a NuGet API key via the command line, the environment variable \"nugetkey\", or by using 'paket config add-token'." packageFileName urlWithEndpoint
         | Some apiKey -> 
             let maxTrials = defaultArg maxTrials 5
-            RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName
+            RemoteUpload.Push 
+                maxTrials 
+                urlWithEndpoint 
+                apiKey 
+                "4.1.0"  // see https://github.com/NuGet/NuGetGallery/issues/4315 - maybe us (defaultArg paketVersion "4.1.0")
+                packageFileName
 
     /// Lists all paket.template files in the current solution.
     member this.ListTemplateFiles() : TemplateFile list =
