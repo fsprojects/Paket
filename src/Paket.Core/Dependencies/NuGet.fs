@@ -589,8 +589,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                     downloadUrl := downloadUri.ToString()
 
                     if authenticated && verbose then
-                        tracefn "  from %O" !downloadUrl
-                        tracefn "  to %s" targetFileName
+                        tracefn "Downloading from %O to %s" !downloadUrl targetFileName
                     
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
                     let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
