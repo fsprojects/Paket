@@ -61,6 +61,8 @@ let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licens
                     bytesRead := bytes
                     do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
 
+                if verbose then
+                    verbosefn "License for %O %O downloaded from %s." packageName version licenseUrl
             with
             | exn ->
                 if verbose then
