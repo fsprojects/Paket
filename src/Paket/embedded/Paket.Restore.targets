@@ -79,7 +79,7 @@
       <_NuspecFiles Include="$(BaseIntermediateOutputPath)*.nuspec"/>
     </ItemGroup>
 
-    <Exec Command='$(PaketCommand) fix-nuspec file "@(_NuspecFiles)" references-file "$(PaketReferencesFilePath)" ' />
+    <Exec Command='$(PaketCommand) fix-nuspec file "@(_NuspecFiles)" references-file "$(PaketReferencesFilePath)" ' Condition="@(_NuspecFiles) != ''" />
 
     <ConvertToAbsolutePath Condition="@(_NuspecFiles) != ''" Paths="@(_NuspecFiles)">
       <Output TaskParameter="AbsolutePaths" PropertyName="NuspecFileAbsolutePath" />

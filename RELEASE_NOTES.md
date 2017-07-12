@@ -1,3 +1,6 @@
+#### 5.6.10 - 12.07.2017
+* BUGFIX: Fix nuspecs only if we use nuspecs
+
 #### 5.6.9 - 12.07.2017
 * BUGFIX: Better tracing while downloading packages and licenses
 
