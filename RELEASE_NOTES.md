@@ -1,3 +1,6 @@
+#### 5.6.7 - 12.07.2017
+* BUGFIX: Carefuly handle cases when the .paket folder is present in .sln file, not present, or is empty - https://github.com/fsprojects/Paket/pull/2513
+
 #### 5.6.6 - 11.07.2017
 * BUGFIX: Better tracing around download link - https://github.com/fsprojects/Paket/issues/2508
 
