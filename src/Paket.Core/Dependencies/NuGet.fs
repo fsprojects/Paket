@@ -642,6 +642,9 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode
 
+                    if verbose then
+                        verbosefn "Downloaded %O %O from %s." packageName version !downloadUrl
+
                     try
                         do! license
                     with

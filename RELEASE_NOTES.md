@@ -1,5 +1,5 @@
-#### 5.6.8 - 12.07.2017
-* BUGFIX: Better tracing while downloading a license
+#### 5.6.9 - 12.07.2017
+* BUGFIX: Better tracing while downloading packages and licenses
 
 #### 5.6.7 - 12.07.2017
 * BUGFIX: Carefuly handle cases when the .paket folder is present in .sln file, not present, or is empty - https://github.com/fsprojects/Paket/pull/2513
