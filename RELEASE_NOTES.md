@@ -1,3 +1,6 @@
+#### 5.6.11 - 13.07.2017
+* BUGFIX: Do not reference implicit packages - https://github.com/fsprojects/Paket/issues/2448
+
 #### 5.6.10 - 12.07.2017
 * BUGFIX: Fix nuspecs only if we use nuspecs
 

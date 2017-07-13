@@ -240,6 +240,12 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
+            
+let ImplicitPackages =
+    [ PackageName "Microsoft.NETCore.App"
+      PackageName "NetStandard.Library"]
+    |> Set.ofList
+
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFramework: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
@@ -329,7 +335,9 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                 
 
                 for (key,_,_) in hull do
+                    let _,packageName = key
                     let restore =
+                        if Set.contains packageName ImplicitPackages then false else
                         match targetFilter with
                         | None -> true
                         | Some target ->
@@ -341,7 +349,6 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                             | _ -> true
                             
                     if restore then
-                        let _,packageName = key
                         let direct = allDirectPackages.Contains packageName
                         let package = resolved.Force().[key]
                         let line =
