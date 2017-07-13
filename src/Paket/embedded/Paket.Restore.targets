@@ -74,6 +74,7 @@
       <PaketReferencesFilePath>$(MSBuildProjectDirectory)/obj/$(MSBuildProjectFile).references</PaketReferencesFilePath>
       <ContinuePackingAfterGeneratingNuspec>true</ContinuePackingAfterGeneratingNuspec>
       <UseNewPack>false</UseNewPack>
+      <UseNewPack Condition=" '$(NuGetToolVersion)' != '4.0.0' ">true</UseNewPack>
     </PropertyGroup>
 
     <ItemGroup>
