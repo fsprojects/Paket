@@ -5,7 +5,7 @@ open System
 open System.IO
 open System.Xml
 open Paket.Xml
-open Paket.PackageSources  // NugetPackage moved there
+open Paket.PackageSources
 
 let Read fileName = 
     let file = FileInfo fileName
@@ -17,6 +17,7 @@ let Read fileName =
     [for node in doc.SelectNodes("//package") ->
         { NugetPackage.Id = node.Attributes.["id"].Value
           VersionRange = VersionRange.Specific (SemVer.Parse node.Attributes.["version"].Value)
+          CliTool = false
           TargetFramework = 
             node 
             |> getAttribute "targetFramework" 

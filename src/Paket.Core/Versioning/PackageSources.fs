@@ -262,5 +262,6 @@ let DefaultNuGetSource = PackageSource.NuGetV2Source Constants.DefaultNuGetStrea
 type NugetPackage = {
     Id : string
     VersionRange : VersionRange
+    CliTool : bool
     TargetFramework : string option
 }

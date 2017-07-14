@@ -25,6 +25,7 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
         |> Seq.map (fun kv ->
             { NugetPackage.Id = (snd kv.Key).ToString()
               VersionRange = VersionRange.Specific (fst kv.Value)
+              CliTool = false
               TargetFramework = None })
         |> Seq.toList
 

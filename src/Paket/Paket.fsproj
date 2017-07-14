@@ -43,7 +43,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <StartArguments>convert-from-nuget</StartArguments>
-    <StartWorkingDirectory>D:\temp\cs2</StartWorkingDirectory>
+    <StartWorkingDirectory>D:\temp\convert\PaketReferenceBug</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>

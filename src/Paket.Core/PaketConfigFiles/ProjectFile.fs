@@ -1343,12 +1343,32 @@ module ProjectFile =
                         List.exists (fun x -> x.InnerText = "All") >>
                         not)
 
+
+    let cliToolsNoPrivateAssets project =
+        project.ProjectNode
+        |> getDescendants "DotNetCliToolReference"
+        |> List.filter (getDescendants "PrivateAssets" >>
+                        List.exists (fun x -> x.InnerText = "All") >>
+                        not)
+        
     let getPackageReferences project =
         packageReferencesNoPrivateAssets project
         |> List.map (getAttribute "Include" >> Option.get)
 
+    let getCliReferences project =
+        cliToolsNoPrivateAssets project
+        |> List.map (getAttribute "Include" >> Option.get)
+
     let removePackageReferenceEntries project =
         let toDelete = packageReferencesNoPrivateAssets project
+        
+        toDelete 
+        |> List.iter (fun node -> node.ParentNode.RemoveChild node |> ignore)
+
+        deleteIfEmpty "ItemGroup" project |> ignore
+
+    let removeCliToolReferenceEntries project =
+        let toDelete = cliToolsNoPrivateAssets project
         
         toDelete 
         |> List.iter (fun node -> node.ParentNode.RemoveChild node |> ignore)
@@ -1500,6 +1520,29 @@ module ProjectFile =
 
             { NugetPackage.Id = node |> getAttribute "Include" |> Option.get
               VersionRange = versionRange
+              CliTool = false
+              TargetFramework = None })
+
+    let cliTools (projectFile: ProjectFile) =
+        cliToolsNoPrivateAssets projectFile
+        |> List.map (fun node ->
+            let versionRange =
+                let v = 
+                    match node |> getAttribute "Version" with
+                    | Some version -> version
+                    | None ->
+                        match node |> getNode "Version" with
+                        | Some n -> n.InnerText
+                        | None -> "*"
+                
+                if v.Contains "*" then
+                    VersionRange.AtLeast (v.Replace("*","0"))
+                else
+                    VersionRange.Exactly v
+
+            { NugetPackage.Id = node |> getAttribute "Include" |> Option.get
+              VersionRange = versionRange
+              CliTool = true
               TargetFramework = None })
 
 type ProjectFile with
@@ -1558,7 +1601,11 @@ type ProjectFile with
 
     member this.GetPackageReferences () = ProjectFile.getPackageReferences this
 
+    member this.GetCliToolReferences () = ProjectFile.getCliReferences this
+
     member this.RemovePackageReferenceEntries () = ProjectFile.removePackageReferenceEntries this
+
+    member this.RemoveCliToolReferenceEntries () = ProjectFile.removeCliToolReferenceEntries this
 
     member this.OutputType =  ProjectFile.outputType this
 

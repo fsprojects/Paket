@@ -15,7 +15,6 @@ type PaketEnv = {
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
 module PaketEnv = 
-
     let create root dependenciesFile lockFile projects = 
         { RootDirectory = root
           DependenciesFile = dependenciesFile
