@@ -21,7 +21,7 @@ open FSharp.Polyfill
 open System.Runtime.ExceptionServices
 
 let private followODataLink auth url =
-    let rec followODataLinkSafe (knownVersions:Set<_>) url =
+    let rec followODataLinkSafe (knownVersions:Set<_>) (url:string) =
         async {
             let! raw = getFromUrl(auth, url, acceptXml)
             if String.IsNullOrWhiteSpace raw then return true, [||] else
@@ -48,8 +48,12 @@ let private followODataLink auth url =
                 feed
                 |> getNodes "link"
                 |> List.filter (fun node -> node |> getAttribute "rel" = Some "next")
-                |> List.choose (getAttribute "href")
-                |> List.filter (fun x -> x <> url)
+                |> List.choose (fun a ->
+                    match getAttribute "href" a with
+                    | Some data ->
+                        let newUrl = Uri.UnescapeDataString data
+                        if newUrl <> url then Some newUrl else None
+                    | _ -> None )
 
             let! linksVersions =
                 linksToFollow

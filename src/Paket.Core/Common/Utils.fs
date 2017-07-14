@@ -544,6 +544,7 @@ let createHttpClient (url,auth:Auth option) =
         new HttpClientHandler(
             UseProxy = true,
             Proxy = getDefaultProxyFor url)
+
     let client = new HttpClient(handler)
     match auth with
     | None -> handler.UseDefaultCredentials <- true
@@ -619,6 +620,7 @@ let downloadFromUrl (auth:Auth option, url : string) (filePath: string) =
 /// [omit]
 let getFromUrl (auth:Auth option, url : string, contentType : string) =
     async { 
+        let uri = Uri url
         try
             use client = createHttpClient(url,auth)
             let! tok = Async.CancellationToken
@@ -628,9 +630,10 @@ let getFromUrl (auth:Auth option, url : string, contentType : string) =
             if verbose then
                 verbosefn "Starting request to '%O'" url
             use _ = Profile.startCategory Profile.Category.NuGetRequest
-            return! client.DownloadStringTaskAsync (Uri url, tok) |> Async.AwaitTaskWithoutAggregate
+            
+            return! client.DownloadStringTaskAsync (uri, tok) |> Async.AwaitTaskWithoutAggregate
         with
-        | exn -> 
+        | exn ->
             return raise <| Exception(sprintf "Could not retrieve data from '%s'" url, exn)
 
     }

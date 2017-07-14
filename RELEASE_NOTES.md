@@ -1,3 +1,6 @@
+#### 5.6.11 - 14.07.2017
+* BUGFIX: Unescape urls in odata response - https://github.com/fsprojects/Paket/issues/2504
+
 #### 5.6.10 - 12.07.2017
 * BUGFIX: Fix nuspecs only if we use nuspecs
 
