@@ -107,15 +107,34 @@ let (|Valid|Invalid|) md =
                 Symbols = s }
     | _ -> Invalid
 
-let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement) = 
+let addDependencyToFrameworkGroup framework dependencyGroups dependency =
+    dependencyGroups
+    |> List.tryFind (fun g -> g.Framework = framework)
+    |> function
+    | None -> { Dependencies = [dependency]; Framework = framework } :: dependencyGroups
+    | _ ->
+        dependencyGroups
+        |> List.map (fun g ->
+            if g.Framework <> framework then g
+            else { g with Dependencies = dependency :: g.Dependencies })
+
+let addDependency (templateFile : TemplateFile) (dependency : PackageName * VersionRequirement) =
     match templateFile with
     | CompleteTemplate(core, opt) -> 
-        let newDeps = 
-            match opt.Dependencies |> List.tryFind (fun (n,_) -> n = fst dependency) with
-            | None -> dependency :: opt.Dependencies
-            | _ -> opt.Dependencies
+        let packageName = dependency |> (fun (n,_) -> n)
+        let newDeps =
+            opt.DependencyGroups
+            |> List.tryFind (fun g ->
+                g.Dependencies
+                |> List.tryFind (fun (n, _) -> n = packageName)
+                |> Option.isSome)
+            |> function
+            | Some _ -> opt.DependencyGroups
+            | None -> dependency |> addDependencyToFrameworkGroup None opt.DependencyGroups
+
+
         { FileName = templateFile.FileName
-          Contents = CompleteInfo(core, { opt with Dependencies = newDeps }) }
+          Contents = CompleteInfo(core, { opt with DependencyGroups = newDeps }) }
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try to add dependencies to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
@@ -140,7 +159,7 @@ let addFile (source : string) (target : string) (templateFile : TemplateFile) =
     | IncompleteTemplate -> 
         failwith (sprintf "You should only try and add files to template files with complete metadata.%sFile: %s" Environment.NewLine templateFile.FileName)
 
-let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions =
+let findDependencies (dependenciesFile : DependenciesFile) config platform (template : TemplateFile) (project : ProjectFile) lockDependencies minimumFromLockFile pinProjectReferences (map : Map<string, TemplateFile * ProjectFile>) includeReferencedProjects (version :SemVerInfo option) specificVersions (projDeps) =
     let includeReferencedProjects = template.IncludeReferencedProjects || includeReferencedProjects
     let targetDir = 
         match project.OutputType with
@@ -153,13 +172,13 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
         match v.PreRelease with
         | None -> PreReleaseStatus.No
         | _ -> PreReleaseStatus.All
-    
+
     let deps, files = 
         let interProjectDeps = 
             if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates()
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates projDeps
             else 
-                project.GetAllInterProjectDependenciesWithProjectTemplates()
+                project.GetAllInterProjectDependenciesWithProjectTemplates projDeps
             |> Seq.toList
 
         interProjectDeps
@@ -179,7 +198,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
     let templateWithOutput =
         let projects =                 
             if includeReferencedProjects then 
-                project.GetAllInterProjectDependenciesWithoutProjectTemplates() 
+                project.GetAllInterProjectDependenciesWithoutProjectTemplates projDeps 
                 |> Seq.toList 
             else 
                 [ project ]
@@ -279,7 +298,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
             | None -> []
           
         [if includeReferencedProjects then
-            for proj in project.GetAllReferencedProjects() |> Seq.filter ((<>) project) do
+            for proj in project.GetAllReferencedProjects(false,projDeps) |> Seq.filter ((<>) project) do
                 match proj.FindTemplatesFile() with
                 | Some templateFileName when TemplateFile.IsProjectType templateFileName ->
                     match TemplateFile.Load(templateFileName, lockFile, None, Seq.empty |> Map.ofSeq).Contents with
@@ -437,6 +456,7 @@ let findDependencies (dependenciesFile : DependenciesFile) config platform (temp
                         match dependencyVersionRequirement with
                         | Some installed -> installed
                         | None -> failwithf "No package with id '%O' installed in group %O." np.Name groupName
+                     
                     np.Name, dep)
 
         deps

@@ -31,7 +31,7 @@ let getInstalledPackageModel (lockFile: LockFile) (QualifiedPackageName(groupNam
             let folder = DirectoryInfo(sprintf "%s/packages%s/%O" lockFile.RootPath groupFolder packageName)
             let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" lockFile.RootPath groupFolder packageName packageName)
             let nuspec = Nuspec.Load nuspec.FullName
-            let files = NuGetV2.GetLibFiles(folder.FullName)
+            let files = NuGet.GetLibFiles(folder.FullName)
             InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, files, [], [], nuspec)
 
 let getRuntimeGraph (lockFile: LockFile) (groupName:GroupName) =

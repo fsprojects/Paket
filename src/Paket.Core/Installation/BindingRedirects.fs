@@ -113,9 +113,6 @@ let private createAppConfigInDirectory folder =
     let config = Path.Combine(folder, "app.config")
     File.WriteAllText(config, baseConfig)
     config
-let private getProjectFilesInDirectory folder =
-    Directory.GetFiles(folder, "*proj")
-    |> Seq.filter (Path.GetExtension >> isDotNetProject)
 
 let private addConfigFileToProject project =
     project.ProjectNode

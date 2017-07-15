@@ -48,14 +48,18 @@ module TestTargetProfiles =
         SinglePlatform(WindowsPhone WindowsPhoneVersion.V8)
         SinglePlatform(WindowsPhone WindowsPhoneVersion.V8_1)]
 
+
+    let MonoAndroidProfiles =
+       [SinglePlatform(MonoAndroid MonoAndroidVersion.V1)]
+
     let AllProfiles =
        DotNetFrameworkProfiles @ 
        WindowsProfiles @ 
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
+       MonoAndroidProfiles @
        DotNetUnityProfiles @
-       [SinglePlatform(MonoAndroid)
-        SinglePlatform(MonoTouch)
+       [SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
         SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)

@@ -47,7 +47,7 @@ let ``CustomProfile is Supported by its Platforms``() =
     unknownProfile.IsSupportedBy (SinglePlatform (DotNetFramework FrameworkVersion.V4))
     |> shouldEqual false
 
-    unknownProfile.IsSupportedBy (SinglePlatform (MonoAndroid))
+    unknownProfile.IsSupportedBy (SinglePlatform (MonoAndroid MonoAndroidVersion.V1))
     |> shouldEqual true
     unknownProfile.IsSupportedBy (SinglePlatform (MonoTouch))
     |> shouldEqual true
@@ -118,7 +118,7 @@ let ``Generate Support Table``() =
 let ``Unknown Portables are detected correctly``() = 
     PlatformMatching.forceExtractPlatforms "portable-monotouch+monoandroid"
     |> function { Platforms = o } -> TargetProfile.FindPortable o
-    |> shouldEqual (PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid; MonoTouch]))
+    |> shouldEqual (PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid MonoAndroidVersion.V1; MonoTouch]))
 [<Test>]
 let ``Portables are detected correctly``() = 
     // http://nugettoolsdev.azurewebsites.net/4.0.0/parse-framework?framework=portable-net451%2Bwin81%2Bwpa81%2Bwaspt2
@@ -134,7 +134,7 @@ let ``Portables are detected correctly``() =
         |> List.map (function { Platforms = [ h] } -> SinglePlatform h | {Platforms = o} -> TargetProfile.FindPortable o)
     let expected =
         [ SinglePlatform (DotNetFramework FrameworkVersion.V4);
-          PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid; MonoTouch])
+          PortableProfile (PortableProfileType.UnsupportedProfile [MonoAndroid MonoAndroidVersion.V1; MonoTouch])
           PortableProfile (PortableProfileType.Profile328); PortableProfile (PortableProfileType.Profile259)
           PortableProfile (PortableProfileType.Profile32)
           PortableProfile (PortableProfileType.Profile78)

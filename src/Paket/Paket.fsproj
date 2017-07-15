@@ -32,7 +32,7 @@
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
     <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Yaaf\Paket\integrationtests\scenarios\i002294-pin-netstandard-1-6\temp</StartWorkingDirectory>
+    <StartWorkingDirectory>C:\proj\testing\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
@@ -42,8 +42,8 @@
     <WarningLevel>3</WarningLevel>
     <DocumentationFile>
     </DocumentationFile>
-    <StartArguments>update</StartArguments>
-    <StartWorkingDirectory>C:\PROJ\Yaaf\paket-tests\test2\</StartWorkingDirectory>
+    <StartArguments>convert-from-nuget</StartArguments>
+    <StartWorkingDirectory>D:\temp\convert\PaketReferenceBug</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">14.0</VisualStudioVersion>
@@ -69,6 +69,7 @@
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Xml" />
   </ItemGroup>

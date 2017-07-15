@@ -11,6 +11,7 @@ let config1 = """
 references strict
 framework: >= net45
 copy_local false
+specific_version true
 source "http://www.nuget.org/api/v2"
 
 nuget "Castle.Windsor-log4net" "~> 3.2"
@@ -23,6 +24,7 @@ let graph1 =
 
 let expected1 = """REFERENCES: STRICT
 COPY-LOCAL: FALSE
+SPECIFIC-VERSION: TRUE
 RESTRICTION: >= net45
 NUGET
   remote: http://www.nuget.org/api/v2

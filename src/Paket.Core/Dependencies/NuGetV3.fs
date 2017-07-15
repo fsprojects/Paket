@@ -6,7 +6,7 @@ open System.IO
 open System.Collections.Generic
 
 open Paket.Domain
-open Paket.NuGet
+open Paket.NuGetCache
 open Paket.Utils
 open Paket.Xml
 open Paket.PackageSources
@@ -107,51 +107,49 @@ let extractVersions(response:string) =
 
 let internal findAutoCompleteVersionsForPackage(v3Url, auth, packageName:Domain.PackageName, includingPrereleases, maxResults) =
     async {
-        let url = sprintf "%s?id=%O&take=%d%s" v3Url packageName (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else "")
-        let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
-        match response with
-        | Some text ->
-            let versions =
-                let extracted = extractAutoCompleteVersions text
-                if extracted.Length > maxResults then
-                    SemVer.SortVersions extracted |> Array.take maxResults
-                else
-                    SemVer.SortVersions extracted
+        let url = sprintf "%s?semVerLevel=2.0.0&id=%O&take=%d%s" v3Url packageName (max maxResults 100000) (if includingPrereleases then "&prerelease=true" else "")
 
-            return Some versions
-        | None -> return None
+        let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
+        return
+            response
+            |> SafeWebResult.map (fun text ->
+                let versions =
+                    let extracted = extractAutoCompleteVersions text
+                    if extracted.Length > maxResults then
+                        SemVer.SortVersions extracted |> Array.take maxResults
+                    else
+                        SemVer.SortVersions extracted
+                versions)
     }
 
 /// Uses the NuGet v3 autocomplete service to retrieve all package versions for the given package.
 let FindAutoCompleteVersionsForPackage(nugetURL, auth, package, includingPrereleases, maxResults) =
     async {
         let! raw = findAutoCompleteVersionsForPackage(nugetURL, auth, package, includingPrereleases, maxResults)
-        match raw with 
-        | Some versions -> return versions
-        | None -> return [||]
+        return raw
     }
 
 
 let internal findVersionsForPackage(v3Url, auth, packageName:Domain.PackageName) =
-    async {
-        let url = sprintf "%s%O/index.json" v3Url packageName
-        let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
-        match response with
-        | Some text ->
-            let versions = extractVersions text
+    // Comment from http://api.nuget.org/v3/index.json
+    // explicitely says
+    // Base URL of Azure storage where NuGet package registration info for NET Core is stored, in the format https://api.nuget.org/v3-flatcontainer/{id-lower}/{id-lower}.{version-lower}.nupkg
+    // so I guess we need to take "id-lower" here -> myget actually needs tolower
+    let url = sprintf "%s%s/index.json?semVerLevel=2.0.0" v3Url (packageName.CompareString)
+    NuGetRequestGetVersions.ofSimpleFunc url (fun _ ->
+        async {
+            let! response = safeGetFromUrl(auth,url,acceptJson) // NuGet is showing old versions first
+            return
+                response
+                |> SafeWebResult.map (fun text ->
+                    let versions = extractVersions text
 
-            return Some(SemVer.SortVersions versions)
-        | None -> return None
-    }
+                    SemVer.SortVersions versions)
+        })
 
 /// Uses the NuGet v3 service to retrieve all package versions for the given package.
 let FindVersionsForPackage(nugetURL, auth, package) =
-    async {
-        let! raw = findVersionsForPackage(nugetURL, auth, package)
-        match raw with 
-        | Some versions -> return versions
-        | None -> return [||]
-    }
+    findVersionsForPackage(nugetURL, auth, package)
 
 /// [omit]
 let extractPackages(response:string) =
@@ -163,10 +161,12 @@ let private getPackages(auth, nugetURL, packageNamePrefix, maxResults) = async {
     | Some url -> 
         let query = sprintf "%s?q=%s&take=%d" url packageNamePrefix maxResults
         let! response = safeGetFromUrl(auth |> Option.map toBasicAuth,query,acceptJson)
-        match response with
-        | Some text -> return extractPackages text
-        | None -> return [||]
-    | None -> return [||]
+        match SafeWebResult.asResult response with
+        | Result.Ok text -> return  Result.Ok (extractPackages text)
+        | Result.Error err -> return Result.Error err
+    | None -> 
+        if verbose then tracefn "Could not calculate search api from %s" nugetURL
+        return Result.Ok [||]
 }
 
 /// Uses the NuGet v3 autocomplete service to retrieve all packages with the given prefix.
@@ -211,8 +211,10 @@ let getRegistration (source : NugetV3Source) (packageName:PackageName) (version:
         let! rawData = safeGetFromUrl (source.Authentication |> Option.map toBasicAuth, url, acceptJson)
         return
             match rawData with
-            | None -> failwithf "could not get registration data from %s" url
-            | Some x -> JsonConvert.DeserializeObject<Registration>(x)
+            | NotFound -> None //raise <| System.Exception(sprintf "could not get registration data (404) from '%s'" url)
+            | UnknownError err ->
+                raise <| System.Exception(sprintf "could not get registration data from %s" url, err.SourceException)
+            | SuccessResponse x -> Some (JsonConvert.DeserializeObject<Registration>(x))
     }
 
 let getCatalog url auth =
@@ -220,13 +222,19 @@ let getCatalog url auth =
         let! rawData = safeGetFromUrl (auth, url, acceptJson)
         return
             match rawData with
-            | None -> failwithf "could not get catalog data from %s" url
-            | Some x -> JsonConvert.DeserializeObject<Catalog>(x)
+            | NotFound ->
+                raise <| System.Exception(sprintf "could not get catalog data (404) from '%s'" url)
+            | UnknownError err ->
+                raise <| System.Exception(sprintf "could not get catalog data from %s" url, err.SourceException)
+            | SuccessResponse x -> JsonConvert.DeserializeObject<Catalog>(x)
     }
 
-let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NuGetPackageCache> =
+let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
     async {
         let! registrationData = getRegistration source packageName version
+        match registrationData with
+        | None -> return EmptyResult
+        | Some registrationData ->
         let! catalogData = getCatalog registrationData.CatalogEntry (source.Authentication |> Option.map toBasicAuth)
 
         let dependencies = 
@@ -264,8 +272,9 @@ let getPackageDetails (source:NugetV3Source) (packageName:PackageName) (version:
               DownloadUrl = registrationData.PackageContent
               LicenseUrl = catalogData.LicenseUrl
               Version = version.Normalize()
-              CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion }
-            |> NuGet.NuGetPackageCache.withDependencies optimized
+              CacheVersion = NuGetPackageCache.CurrentCacheVersion }
+            |> NuGetPackageCache.withDependencies optimized
+            |> ODataSearchResult.Match
     }
 
 let loadFromCacheOrGetDetails (force:bool)
@@ -277,12 +286,12 @@ let loadFromCacheOrGetDetails (force:bool)
         if not force && File.Exists cacheFileName then
             try 
                 let json = File.ReadAllText(cacheFileName)
-                let cachedObject = JsonConvert.DeserializeObject<NuGet.NuGetPackageCache> json
+                let cachedObject = JsonConvert.DeserializeObject<NuGetPackageCache> json
                 if cachedObject.CacheVersion <> NuGetPackageCache.CurrentCacheVersion then
                     let! details = getPackageDetails source packageName version
                     return true,details
                 else
-                    return false,cachedObject
+                    return false,ODataSearchResult.Match cachedObject
             with _ -> 
                 let! details = getPackageDetails source packageName version
                 return true,details
@@ -292,7 +301,7 @@ let loadFromCacheOrGetDetails (force:bool)
     }
     
 /// Uses the NuGet v3 registration endpoint to retrieve package details .
-let GetPackageDetails (force:bool) (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<NuGet.NuGetPackageCache> =
+let GetPackageDetails (force:bool) (source:NugetV3Source) (packageName:PackageName) (version:SemVerInfo) : Async<ODataSearchResult> =
     getDetailsFromCacheOr
         force
         source.Url

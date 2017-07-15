@@ -31,8 +31,11 @@ type Dependencies(dependenciesFileName: string) =
         emptyDir (Constants.NuGetCacheFolder)
         emptyDir (Constants.GitRepoCacheFolder)
 
-    /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
+    /// Tries to locate the paket.dependencies file in the current folder or a parent folder, throws an exception if unsuccessful.
     static member Locate(): Dependencies = Dependencies.Locate(Directory.GetCurrentDirectory())
+    
+    /// Tries to locate the paket.dependencies file in the current folder or a parent folder.
+    static member TryLocate(): Dependencies option = Dependencies.TryLocate(Directory.GetCurrentDirectory())
 
     /// Returns an instance of the paket.lock file.
     member this.GetLockFile() = 
@@ -42,27 +45,28 @@ type Dependencies(dependenciesFileName: string) =
     /// Returns an instance of the paket.dependencies file.
     member this.GetDependenciesFile() = DependenciesFile.ReadFromFile dependenciesFileName
 
-    /// Tries to locate the paket.dependencies file in the given folder or a parent folder.
+    /// Tries to locate the paket.dependencies file in the given folder or a parent folder, throws an exception if unsuccessful.
     static member Locate(path: string): Dependencies =
-        let rec findInPath(dir:DirectoryInfo,withError) =
-            let path = Path.Combine(dir.FullName,Constants.DependenciesFileName)
-            if File.Exists(path) then
-                path
-            else
-                let parent = dir.Parent
-                match parent with
-                | null ->
-                    if withError then
-                        failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.%sIf you have already run 'paket.init' then ensure that '%s' is located in the top level directory of your repository.%sLike this:%sMySourceDir%s  .paket%s  paket.dependencies" 
-                          Constants.DependenciesFileName Environment.NewLine Constants.DependenciesFileName Environment.NewLine Environment.NewLine Environment.NewLine Environment.NewLine
-                    else
-                        Constants.DependenciesFileName
-                | _ -> findInPath(parent, withError)
+        match Dependencies.TryLocate path with
+        | None ->
+            failwithf "Could not find '%s'. To use Paket with this solution, please run 'paket init' first.%sIf you have already run 'paket.init' then ensure that '%s' is located in the top level directory of your repository.%sLike this:%sMySourceDir%s  .paket%s  paket.dependencies" 
+                Constants.DependenciesFileName Environment.NewLine Constants.DependenciesFileName Environment.NewLine Environment.NewLine Environment.NewLine Environment.NewLine
+        | Some d ->
+            d
 
-        let dependenciesFileName = findInPath(DirectoryInfo path,true)
-        if verbose then
-            verbosefn "found: %s" dependenciesFileName
-        Dependencies(dependenciesFileName)
+    /// Tries to locate the paket.dependencies file in the given folder or a parent folder.
+    static member TryLocate(path: string): Dependencies option =
+        let rec findInPath(dir:DirectoryInfo) =
+            let path = Path.Combine(dir.FullName,Constants.DependenciesFileName)
+            match File.Exists path, dir.Parent with
+            | true, _ -> Some path
+            | false, null -> None
+            | false, parent -> findInPath parent
+
+        findInPath (DirectoryInfo path) 
+        |> Option.map (fun dependenciesFileName -> 
+            if verbose then verbosefn "found: %s" dependenciesFileName
+            Dependencies(dependenciesFileName))
 
     /// Initialize paket.dependencies file in current directory
     static member Init() = Dependencies.Init(Directory.GetCurrentDirectory())
@@ -349,30 +353,20 @@ type Dependencies(dependenciesFileName: string) =
     member this.DownloadLatestBootstrapper() : unit =
         this.DownloadLatestBootstrapper(false)
 
-    /// Downloads the latest paket.bootstrapper into the .paket folder andtry to rename it to paket.exe in order to activate magic mode.
+    /// Downloads the latest paket.bootstrapper into the .paket folder and try to rename it to paket.exe in order to activate magic mode.
     member this.DownloadLatestBootstrapper(fromBootstrapper) : unit =
         RunInLockedAccessMode(
             this.RootPath,
             fun () -> 
-                Releases.downloadLatestBootstrapperAndTargets fromBootstrapper |> this.Process
+                this.Process Releases.downloadLatestBootstrapperAndTargets
                 let bootStrapperFileName = Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.BootstrapperFileName)
                 let paketFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName))
-                let configFileName = FileInfo(Path.Combine(this.RootPath,Constants.PaketFolderName, Constants.PaketFileName + ".config"))
                 try
                     if paketFileName.Exists then
                         paketFileName.Delete()
                     File.Move(bootStrapperFileName,paketFileName.FullName)
-
-                    let config = """<?xml version="1.0" encoding="utf-8" ?>
-<configuration>
-  <appSettings>
-    <add key="Prerelease" value="True"/>
-  </appSettings>
-</configuration>"""
-                    File.WriteAllText(configFileName.FullName, config)
                 with
-                | _ ->()
-                )
+                | _ ->())
 
     /// Pulls new paket.targets and bootstrapper and puts them into .paket folder.
     member this.TurnOnAutoRestore(fromBootstrapper: bool): unit =
@@ -459,7 +453,7 @@ type Dependencies(dependenciesFileName: string) =
                 let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
                 let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
                 let nuspec = Nuspec.Load nuspec.FullName
-                let files = NuGetV2.GetLibFiles(folder.FullName)
+                let files = NuGet.GetLibFiles(folder.FullName)
                 InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, files, [], [], nuspec)
 
     /// Returns all libraries for the given package and framework.
@@ -552,25 +546,45 @@ type Dependencies(dependenciesFileName: string) =
         | [] -> [PackageSources.DefaultNuGetSource]
         | _ -> sources
         |> Seq.distinct
-        |> Seq.choose (fun source -> 
+        |> Seq.map (fun source -> 
             match source with 
             | NuGetV2 s ->
                 let res = NuGetV3.getSearchAPI(s.Authentication,s.Url) |> Async.AwaitTask |> Async.RunSynchronously
                 match res with
-                | Some _ -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
-                | None ->  Some(NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
-            | NuGetV3 s -> Some(NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults))
+                | Some _ ->
+                    NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults)
+                    |> Async.map (FSharp.Core.Result.mapError (fun err -> s.Url, err))
+                | None -> 
+                    NuGetV2.FindPackages(s.Authentication, s.Url, searchTerm, maxResults)
+                    |> Async.map (FSharp.Core.Result.mapError (fun err -> s.Url, err))
+            | NuGetV3 s -> 
+                NuGetV3.FindPackages(s.Authentication, s.Url, searchTerm, maxResults)
+                |> Async.map (FSharp.Core.Result.mapError (fun err -> s.Url, err))
             | LocalNuGet(s,_) -> 
-                Some(async {
+                async {
                     return
                         Fake.Globbing.search s (sprintf "**/*%s*" searchTerm)
                         |> List.distinctBy (fun s -> 
                             let parts = FileInfo(s).Name.Split('.')
                             let nameParts = parts |> Seq.takeWhile (fun x -> x <> "nupkg" && System.Int32.TryParse x |> fst |> not)
                             String.Join(".",nameParts).ToLower())
-                        |> List.map NuGetV2.getPackageNameFromLocalFile
+                        |> List.map NuGetLocal.getPackageNameFromLocalFile
                         |> List.toArray
-                }))
+                        |> FSharp.Core.Result.Ok
+                })
+        // TODO: This is to keep current API surface, in future version we want to properly delegate error cases to higher levels?
+        |> Seq.map (fun r ->
+            async {
+                let! result = r
+                match result with
+                | FSharp.Core.Result.Ok r -> return r
+                | FSharp.Core.Result.Error (url, err) ->
+                    if verbose then
+                        tracefn "Ignoring error when requesting '%s': %O" url err.SourceException
+                    else
+                        tracefn "Ignoring error when requesting '%s': %s" url err.SourceException.Message
+                    return [||]
+            })
    
     static member FindPackagesByName(sources:PackageSource seq,searchTerm,?maxResults) =
         let maxResults = defaultArg maxResults 1000
@@ -608,7 +622,7 @@ type Dependencies(dependenciesFileName: string) =
             |> List.distinct
         
         let versions = 
-            NuGetV2.GetVersions true alternativeProjectRoot root (sources, PackageName name)
+            NuGet.GetVersions true alternativeProjectRoot root (sources, PackageName name)
             |> Async.RunSynchronously
             |> List.map (fun (v,_) -> v.ToString())
             |> List.toArray
@@ -640,9 +654,19 @@ type Dependencies(dependenciesFileName: string) =
         PackageProcess.Pack(workingDir, dependenciesFile, outputPath, buildConfig, buildPlatform, version, specificVersions, releaseNotes, templateFile, excludedTemplates, lockDependencies, minimumFromLockFile, pinProjectReferences, symbols, includeReferencedProjects, projectUrl)
 
     /// Pushes a nupkg file.
-    static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?maxTrials) =
+    static member Push(packageFileName, ?url, ?apiKey, (?endPoint: string), ?paketVersion, ?maxTrials) =
         let urlWithEndpoint = RemoteUpload.GetUrlWithEndpoint url endPoint
-        let envKey = Environment.GetEnvironmentVariable("nugetkey") |> Option.ofObj 
+        let envKey =
+            match Environment.GetEnvironmentVariable("NUGET_KEY") |> Option.ofObj with
+            | Some(key) ->
+                Some(key)
+            | None ->
+                match Environment.GetEnvironmentVariable("nugetkey") |> Option.ofObj with
+                | Some(key) ->
+                    traceWarnfn "The environment variable nugetkey is deprecated. Please use the NUGET_KEY environment variable."
+                    Some(key)
+                | None -> None
+
         let configKey = url |> Option.bind ConfigFile.GetAuthentication |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
         let firstPresentKey = 
             [apiKey; envKey; configKey]
@@ -655,7 +679,12 @@ type Dependencies(dependenciesFileName: string) =
             failwithf "Could not push package %s due to missing credentials for the url %s. Please specify a NuGet API key via the command line, the environment variable \"nugetkey\", or by using 'paket config add-token'." packageFileName urlWithEndpoint
         | Some apiKey -> 
             let maxTrials = defaultArg maxTrials 5
-            RemoteUpload.Push maxTrials urlWithEndpoint apiKey packageFileName
+            RemoteUpload.Push 
+                maxTrials 
+                urlWithEndpoint 
+                apiKey 
+                "4.1.0"  // see https://github.com/NuGet/NuGetGallery/issues/4315 - maybe us (defaultArg paketVersion "4.1.0")
+                packageFileName
 
     /// Lists all paket.template files in the current solution.
     member this.ListTemplateFiles() : TemplateFile list =
@@ -664,9 +693,9 @@ type Dependencies(dependenciesFileName: string) =
         |> Array.choose (fun proj -> proj.FindTemplatesFile())
         |> Array.choose (fun path ->
                          try
-                           Some(TemplateFile.Load(path, lockFile, None, Map.empty))
+                             Some(TemplateFile.Load(path, lockFile, None, Map.empty))
                          with
-                           | _ -> None)
+                         | _ -> None)
         |> Array.toList
 
 
@@ -683,7 +712,7 @@ type Dependencies(dependenciesFileName: string) =
             let doc =
                 try let doc = Xml.XmlDocument() in doc.LoadXml nuspecText
                     doc
-                with exn -> failwithf "Could not parse nuspec file '%s'.%sMessage: %s" nuspecFile Environment.NewLine exn.Message
+                with exn -> raise <| Exception(sprintf "Could not parse nuspec file '%s'." nuspecFile, exn)
 
             if not (File.Exists referencesFile) then
                 failwithf "Specified references-file '%s' does not exist." referencesFile

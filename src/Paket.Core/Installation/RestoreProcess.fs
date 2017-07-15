@@ -19,7 +19,7 @@ let FindPackagesNotExtractedYet(dependenciesFileName) =
 
     lockFile.GetGroupedResolution()
     |> Map.toList
-    |> List.filter (fun ((group,package),resolved) -> NuGetV2.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
+    |> List.filter (fun ((group,package),resolved) -> NuGetCache.IsPackageVersionExtracted(root, group, package, resolved.Version, defaultArg resolved.Settings.IncludeVersionInPath false) |> not)
     |> List.map fst
 
 
@@ -27,7 +27,7 @@ let CopyToCaches force caches fileName =
     caches
     |> Seq.iter (fun cache -> 
         try
-            NuGetV2.CopyToCache(cache,fileName,force)
+            NuGetCache.CopyToCache(cache,fileName,force)
         with
         | exn ->
             if verbose then
@@ -36,9 +36,13 @@ let CopyToCaches force caches fileName =
 /// returns - package, libs files, props files, targets files, analyzers files
 let private extractPackage caches package alternativeProjectRoot root source groupName version includeVersionInPath force =
     let downloadAndExtract force detailed = async {
-        let! fileName,folder = NuGetV2.DownloadPackage(alternativeProjectRoot, root, source, caches, groupName, package.Name, version, includeVersionInPath, force, detailed)
+        let! fileName,folder = 
+            NuGet.DownloadPackage(
+                alternativeProjectRoot, root, source, caches, groupName, 
+                package.Name, version, package.IsCliTool, includeVersionInPath, force, detailed)
+
         CopyToCaches force caches fileName
-        return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles (folder,package.Name) , NuGetV2.GetAnalyzerFiles folder
+        return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
     }
 
     async { 
@@ -69,30 +73,35 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
             match package.Source with
             | NuGetV2 _ | NuGetV3 _ -> 
                 let source = 
-                    let normalizeFeedUrl s = (normalizeFeedUrl s).Replace("https://","http://")
-                    let normalized = package.Source.Url |> normalizeFeedUrl
+                    let normalizeFeedUrl s = 
+                        (normalizeFeedUrl s)
+                          .Replace("https://","http://")
+                          .Replace("/api/v3/index.json","")
+
+                    let normalized = normalizeFeedUrl package.Source.Url
                     let source =
                         sources 
                         |> List.tryPick (fun source -> 
-                                match source with
-                                | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some(source)
-                                | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some(source)
-                                | _ -> None)
+                            match source with
+                            | NuGetV2 s when normalizeFeedUrl s.Url = normalized -> Some source
+                            | NuGetV3 s when normalizeFeedUrl s.Url = normalized -> Some source
+                            | _ -> None)
 
                     match source with
                     | None -> failwithf "The NuGet source %s for package %O was not found in the paket.dependencies file with sources %A" package.Source.Url package.Name sources
                     | Some s -> s 
 
                 return! extractPackage caches package alternativeProjectRoot root source groupName v includeVersionInPath force
+
             | LocalNuGet(path,_) ->
                 let path = Utils.normalizeLocalPath path
                 let di = Utils.getDirectoryInfoForLocalNuGetFeed path alternativeProjectRoot root
-                let nupkg = NuGetV2.findLocalPackage di.FullName package.Name v
+                let nupkg = NuGetLocal.findLocalPackage di.FullName package.Name v
 
                 CopyToCaches force caches nupkg.FullName
 
-                let! folder = NuGetV2.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, includeVersionInPath, force, false)
-                return package, NuGetV2.GetLibFiles folder, NuGetV2.GetTargetsFiles (folder,package.Name) , NuGetV2.GetAnalyzerFiles folder
+                let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, package.IsCliTool, includeVersionInPath, force, false)
+                return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
         }
 
         // manipulate overridenFile after package extraction
@@ -109,10 +118,11 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
 let internal restore (alternativeProjectRoot, root, groupName, sources, caches, force, lockFile : LockFile, packages : Set<PackageName>, overriden : Set<PackageName>) = 
     async { 
         RemoteDownload.DownloadSourceFiles(Path.GetDirectoryName lockFile.FileName, groupName, force, lockFile.Groups.[groupName].RemoteFiles)
-        let! _ = lockFile.Groups.[groupName].Resolution
-                 |> Map.filter (fun name r -> packages.Contains name)
-                 |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
-                 |> Async.Parallel
+        let! _ = 
+            lockFile.Groups.[groupName].Resolution
+            |> Map.filter (fun name r -> packages.Contains name)
+            |> Seq.map (fun kv -> ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, kv.Value, Set.contains kv.Key overriden))
+            |> Async.Parallel
         return ()
     }
 
@@ -129,8 +139,8 @@ let findAllReferencesFiles root =
         | Some fileName -> 
             try
                 Some(ok <| (p, ReferencesFile.FromFile fileName))
-            with _ ->
-                Some(fail <| (ReferencesFileParseError (FileInfo fileName)))
+            with e ->
+                Some(fail <| (ReferencesFileParseError (FileInfo fileName, e)))
         | None ->
             None
             
@@ -142,8 +152,7 @@ let copiedElements = ref false
 
 let extractElement root name =
     let a = Assembly.GetEntryAssembly()
-    let s = a.GetManifestResourceStream(name)
-    let fi = FileInfo a.FullName
+    let s = a.GetManifestResourceStream name
     let targetFile = FileInfo(Path.Combine(root,".paket",name))
     if not targetFile.Directory.Exists then
         targetFile.Directory.Create()
@@ -170,7 +179,7 @@ let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches,
         return (groupName,package.Name), (package,model)
     }
 
-let createAlternativeNuGetConfig alternativeConfigFileName =
+let createAlternativeNuGetConfig (alternativeConfigFileInfo:FileInfo) =
     let config = """<?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <packageSources>
@@ -180,7 +189,56 @@ let createAlternativeNuGetConfig alternativeConfigFileName =
      <clear />
   </disabledPackageSources>
 </configuration>"""
-    File.WriteAllText(alternativeConfigFileName,config)
+    if not alternativeConfigFileInfo.Exists || File.ReadAllText(alternativeConfigFileInfo.FullName) <> config then 
+        File.WriteAllText(alternativeConfigFileInfo.FullName,config)
+
+let createPaketPropsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
+    if Seq.isEmpty cliTools then
+        if fileInfo.Exists then 
+            File.Delete(fileInfo.FullName)
+    else
+        let cliParts =
+            cliTools
+            |> Seq.map (fun cliTool -> sprintf """        <DotNetCliToolReference Include="%O" Version="%O" />""" cliTool.Name cliTool.Version)
+            
+        let content = 
+            sprintf """<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    </PropertyGroup>
+    <ItemGroup>
+%s
+    </ItemGroup>
+</Project>""" 
+             (String.Join(Environment.NewLine,cliParts))
+
+        if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
+            File.WriteAllText(fileInfo.FullName,content)
+            tracefn " - %s created" fileInfo.FullName
+        else
+            if verbose then
+                tracefn " - %s already up-to-date" fileInfo.FullName
+
+let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
+    if Seq.isEmpty cliTools then
+        if fileInfo.Exists then 
+            File.Delete(fileInfo.FullName)
+    else
+        let cliParts =
+            cliTools
+            |> Seq.map (fun package -> 
+                package.Name.ToString() + "," + 
+                package.Version.ToString())
+            
+        let content = String.Join(Environment.NewLine,cliParts)
+
+        if not fileInfo.Exists || File.ReadAllText(fileInfo.FullName) <> content then 
+            File.WriteAllText(fileInfo.FullName,content)
+            tracefn " - %s created" fileInfo.FullName
+        else
+            if verbose then
+                tracefn " - %s already up-to-date" fileInfo.FullName
 
 let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFramework: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
@@ -233,10 +291,10 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             let referencesFile =
                 match projectFile.FindReferencesFile() with
                 | Some fileName -> 
-                        try
-                            ReferencesFile.FromFile fileName
-                        with _ ->
-                            failwith ((ReferencesFileParseError (FileInfo fileName)).ToString())
+                    try
+                        ReferencesFile.FromFile fileName
+                    with e ->
+                        failwith ((ReferencesFileParseError (FileInfo fileName,e)).ToString())
                 | None ->
                     let fileName = 
                         let fi = FileInfo(projectFile.FileName)
@@ -245,18 +303,20 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     ReferencesFile.New fileName
 
             let list = System.Collections.Generic.List<_>()
+            let cliTools = System.Collections.Generic.List<_>()
             let fi = FileInfo projectFile.FileName
             let newFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".references"))            
             let alternativeConfigFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".NuGet.Config"))
-            
+
             if not newFileName.Directory.Exists then
                 newFileName.Directory.Create()
-
-            createAlternativeNuGetConfig alternativeConfigFileName.FullName
-
+            
+            createAlternativeNuGetConfig alternativeConfigFileName
             
             for kv in groups do
-                let hull = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+                let hull,cliToolsInGroup = lockFile.GetOrderedPackageHull(kv.Key,referencesFile)
+                cliTools.AddRange cliToolsInGroup
+
                 let depsGroup =
                     match dependenciesFile.Groups |> Map.tryFind kv.Key with
                     | Some group -> group
@@ -283,24 +343,32 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     if restore then
                         let _,packageName = key
                         let direct = allDirectPackages.Contains packageName
+                        let package = resolved.Force().[key]
                         let line =
                             packageName.ToString() + "," + 
-                            resolved.Force().[key].Version.ToString() + "," + 
+                            package.Version.ToString() + "," + 
                             (if direct then "Direct" else "Transitive") + "," +
                             kv.Key.ToString()
-
+                        
                         list.Add line
                 
             let output = String.Join(Environment.NewLine,list)
             if output = "" then
                 if File.Exists(newFileName.FullName) then
                     File.Delete(newFileName.FullName)
+
             elif not newFileName.Exists || File.ReadAllText(newFileName.FullName) <> output then
                 File.WriteAllText(newFileName.FullName,output)                
                 tracefn " - %s created" newFileName.FullName
             else
                 if verbose then
                     tracefn " - %s already up-to-date" newFileName.FullName
+
+            let paketCLIToolsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.clitools"))
+            createPaketCLIToolsFile cliTools paketCLIToolsFileName
+            
+            let paketPropsFileName = FileInfo(Path.Combine(fi.Directory.FullName,"obj",fi.Name + ".paket.props"))
+            createPaketPropsFile cliTools paketPropsFileName
 
             [referencesFile.FileName]
         | None -> referencesFileNames

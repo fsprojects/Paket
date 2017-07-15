@@ -1,210 +1,288 @@
 # The paket.template files
 
-The `paket.template` files are used to specify rules to create nupkgs by using the [`paket pack` command](paket-pack.html).
+The `paket.template` files are used to specify rules to create `.nupkg`s with
+the [`paket pack` command](paket-pack.html).
 
-The `type` specifier must be the first line of the template file. It has two possible
-values:
+The `type` specifier must be the first line of the template file. It has two
+possible values:
 
-* file - All of the information to build the nupkg is contained within the template file
-* project - Paket will look for a matching project file, and infer dependencies and metadata from the project
+* `file`: All of the information to build the `.nupkg` is contained within the
+  template file
+* `project`: Paket will look for a matching project file, and infer dependencies
+  and metadata from the project
 
-Matching project and template files must be in the same directory. If only one project is in the directory the template file
-can be called `paket.template`, otherwise the name of the template file must be the name of the project file with ".paket.template" added to the end.
+Matching project and template files must be in the same directory. If only one
+project is in the directory the template file can be called `paket.template`,
+otherwise the name of the template file must be the name of the project file
+with `.paket.template` added to the end.
 
 For example:
 
-	Paket.Project.fsproj
-	Paket.Project.fsproj.paket.template
+```text
+Paket.Project.fsproj
+Paket.Project.fsproj.paket.template
+```
 
 are matching files.
-### Sample 1
+
+## Examples
+
+### Example 1
 
 A `paket.template` file using `type project` may look like this:
 
-    type project
-    licenseUrl http://opensource.org/licenses/MIT
+```text
+type project
+licenseUrl http://opensource.org/licenses/MIT
+```
 
-This template file will create a nupkg:
- - Named `Test.Paket.Package.[Version].nupkg`
- - Version, Author and Description from assembly attributes
- - Containing `$(OutDir)\$(ProjectName).*` (all files matching project name in the output directory) directory in the `lib` directory of the package.
- - Referencing all packages referenced by the project.
-   - Package references
-   - Project references, for projects in the sln that has `paket.template` files.
+This template file will be used to create a `.nupkg`
 
-### Sample 2
+* named `Test.Paket.Package.[Version].nupkg`,
+* with `Version`, `Author` and `Description` from assembly attributes,
+* containing `$(OutDir)\$(ProjectName).*` (all files matching project name in
+  the output directory) directory in the `lib` directory of the package.
+* referencing all packages referenced by the project,
+* including package references,
+* including project references for projects in the solution that have a
+  `paket.template` file.
+
+### Example 2
 
 A `paket.template` file using `type file` may look like this:
 
-    type file
-    id Test.Paket.Package
-    version 1.0
-    authors Michael Newton
-    description
-	    description of this test package
-    files
-        src/Test.Paket.Package/bin/Debug ==> lib
+```text
+type file
+id Test.Paket.Package
+version 1.0
+authors Michael Newton
+description
+  description of this test package
+files
+  src/Test.Paket.Package/bin/Debug ==> lib
+```
 
-This template file will create a nupkg called `Test.Paket.Package.[Version].nupkg` with the
-contents of the `src/Test.Paket.Package/bin/Debug` directory in the `lib` directory
-of the package file.
+This template file will create a `.nupkg` called
+`Test.Paket.Package.<version>.nupkg` with the contents of the
+`src/Test.Paket.Package/bin/Debug` directory in the `lib` directory of the
+package file.
 
-### General Metadata
+## General metadata
 
-Metadata fields can be specified in two ways; either on a single line prefixed with the property
-name (case insensitive), or in an indented block following a line containing nothing but the property name.
+Metadata fields can be specified in two ways; either on a single line prefixed
+with the property name (case insensitive), or in an indented block following a
+line containing nothing but the property name.
 
 For example:
 
-	description This is a valid description
+```text
+description This is a valid description
 
-	DESCRIPTION
-	  So is this
-	  description here
+DESCRIPTION
+  So is this
+  description here
 
-	description This would
-	  cause an error
+description This would
+  cause an error
+```
 
-There are 4 compulsory fields required to create a nupkg. These can always be specified in the
-template file, or in a project based template can be omitted and an attempt will be made to infer
-them as below:
+There are 4 compulsory fields required to create a `.nupkg`. These can always be
+specified in the template file, or in a project based template can be omitted
+and an attempt will be made to infer them as below:
 
-* id - the Id of the resulting nupkg (which also determines the output filename). If omitted in a
-  project template, reflection will be used to determine the assembly name.
-* version - the version of the resulting nupkg. If omitted in a project template, reflection will
-  be used to obtain the value of the `AssemblyInformationalVersionAttribute` or if that is missing
-  the `AssemblyVersionAttribute`.
-* authors - a comma separated list of authors for the nuget package. Inferred as the value of the
-  `AssemblyCompanyAttribute` if omitted in a project template.
-* description - this will be displayed as the nupkg description. Inferred from the `AssemblyDescriptionAttribute`
-  if unspecified.
+* `id`: The package ID of the resulting `.nupkg` (which also determines the
+  output filename). If omitted in a project template, reflection will be used to
+  determine the assembly name.
+* `version`: The version of the resulting `.nupkg`. If omitted in a project
+  template, reflection will be used to obtain the value of the
+  `AssemblyInformationalVersionAttribute` or if that is missing the
+  `AssemblyVersionAttribute`.
+* `authors`: A comma separated list of authors for the `.nupkg`. Inferred as the
+  value of the `AssemblyCompanyAttribute` if omitted in a project template.
+* `description`: This will be displayed as the `.nupkg` description. Inferred
+  from the `AssemblyDescriptionAttribute` if unspecified.
 
-The other general metadata properties are all optional, and map directly to the field of the same
-name in the nupkg.
+The other general metadata properties are all optional, and map directly to the
+field of the same name in the `.nupkg`.
 
-* title (Inferred as the value of the `AssemblyTitleAttribute` if omitted in a project template)
-* owners
-* releaseNotes
-* summary
-* language
-* projectUrl
-* iconUrl
-* licenseUrl
-* copyright
-* requireLicenseAcceptance (boolean)
-* tags
-* developmentDependency (boolean)
+* `title`: Inferred as the value of the `AssemblyTitleAttribute` if omitted in a
+  project template.
+* `owners`
+* `releaseNotes`
+* `summary`
+* `language`
+* `projectUrl`
+* `iconUrl`
+* `licenseUrl`
+* `copyright`
+* `requireLicenseAcceptance` (`true` or `false`)
+* `tags`
+* `developmentDependency` (`true` or `false`)
 
-### Dependencies and Files
+### Dependencies and files
 
-The dependencies the package relies on, and the files to package are specified in a slightly different format.
-These two fields will be ignored in project templates if specified, and instead the rules below will be used
-to decide on the files and dependencies added.
+The dependencies the package relies on, and the files to package are specified
+in a slightly different format. These two fields will be ignored in project
+templates if specified, and instead the rules below will be used to decide on
+the files and dependencies added.
 
 #### Files
 
 A files block looks like this:
 
-    files
-	    relative/to/template/file ==> folder/in/nupkg
-	    second/thing/to/pack ==> folder/in/nupkg
-		second/thing/**/file.* ==> folder/in/nupkg
+```text
+files
+  relative/to/template/file ==> directory/in/nupkg
+  second/thing/to/pack ==> directory/in/nupkg
+  second/thing/**/file.* ==> directory/in/nupkg
+```
 
-If the source part refers to a file then it is copied into the target directory. If it
-refers to a directory, the contents of the directory will be copied into the target folder.
-If you omit the target folder, then the source is copied into the `lib` folder of the package.
+If the source part refers to a file then it is copied into the target directory.
+If it refers to a directory, the contents of the directory will be copied into
+the target directory. If you omit the target directory, then the source is copied into
+the `lib` directory of the package.
 
 Excluding certain files looks like this:
 
-    files
-        relative/to/template/file ==> folder/in/nupkg
-        second/thing/**/file.* ==> folder/in/nupkg
-        !second/thing/**/file.zip
-        ../outside/file.* ==> folder/in/nupkg/other
-        !../outside/file.zip
+```text
+files
+  relative/to/template/file ==> directory/in/nupkg
+  second/thing/**/file.* ==> directory/in/nupkg
+  !second/thing/**/file.zip
+  ../outside/file.* ==> directory/in/nupkg/other
+  !../outside/file.zip
+```
 
-The pattern needs to match file-names, excluding directories like `!second` won't have an effect. Please use `!second/*.*` instead.
+The pattern needs to match file names, excluding directories like `!second`
+won't have an effect. Please use `!second/*.*` instead.
 
 In a project template, the files included will be:
 
-* the output assembly of the matching project (in the correct lib directory if a library, or tools if an exe)
-* the output assemblies of any project references which do not have a matching template file
+* The output assembly of the matching project (in the correct `lib` directory
+  for a library, or `tools` for an executable).
+* The output assemblies of any project references which do not have a matching
+  template file.
 
 #### Referenced projects
 
-With the include-referenced-projects switch you can tell Paket to pack referenced projects into the package.
+With the `include-referenced-projects` switch you can tell Paket to pack
+referenced projects into the package.
 
-    include-referenced-projects true
+```text
+include-referenced-projects true
+```
 
 #### References
 
 A references block looks like this:
 
-    references
-	    filename1.dll
-	    filename2.dll
+```text
+references
+  filename1.dll
+  filename2.dll
+```
 
-If you omit the references block then all libraries in the packages will get referenced.
+If you omit the `references` block then all libraries in the packages will be
+references.
 
 #### Framework assembly references
 
 A block with framework assembly references looks like this:
 
-    frameworkAssemblies
-	    System.Xml
-		System.Xml.Linq
+```text
+frameworkAssemblies
+  System.Xml
+  System.Xml.Linq
+```
 
-If you omit the references block then all libraries in the packages will get referenced.
+If you omit the `frameworkAssemblies` block then all libraries in the packages
+will be framework assemblies.
 
 #### Dependencies
 
 A dependency block looks like this:
 
-	dependencies
-	  FSharp.Core >= 4.3.1
-	  Other.Dep ~> 2.5
-	  Any.Version
+```text
+dependencies
+  FSharp.Core >= 4.3.1
+  Other.Dep ~> 2.5
+  Any.Version
+```
 
-The syntax for specifying allowed dependency ranges are identical to in the ranges in [`paket.dependencies` files](dependencies-file.html).
+The syntax for specifying allowed dependency ranges are identical to in the
+ranges in [`paket.dependencies` files](dependencies-file.html).
 
-It's possible to use `CURRENTVERSION` as a placeholder for the current version of the package:
+It's possible to use `CURRENTVERSION` as a placeholder for the current version
+of the package:
 
-	dependencies
-	  FSharp.Core >= 4.3.1
-	  Other.Dep ~> CURRENTVERSION
+```text
+dependencies
+  FSharp.Core >= 4.3.1
+  Other.Dep ~> CURRENTVERSION
+```
 
-The `LOCKEDVERSION` placeholder allows to reference the currently used dependency version from the paket.lock file:
+The `LOCKEDVERSION` placeholder allows to reference the currently used
+dependency version from the [`paket.lock` file](lock-file.html):
 
-	dependencies
-	  FSharp.Core >= 4.3.1
-	  Other.Dep ~> LOCKEDVERSION
+```text
+dependencies
+  FSharp.Core >= 4.3.1
+  Other.Dep ~> LOCKEDVERSION
+```
+
+It's possible to add a line to constrain the target framework:
+
+```text
+dependencies
+  framework: net45
+    FSharp.Core 4.3.1
+    My.OtherThing
+  framework: netstandard11
+    FSharp.Core 4.3.1
+```
+
+Like that the package is only going to be used by a project `>= net45` and for
+`>= netstandard11` it will not use the `My.OtherThing` package.
 
 In a project file, the following dependencies will be added:
 
-* any Paket dependency with the range specified in the [`paket.dependencies` file](dependencies-file.html).
-* any Paket dependency with the range specified in the [`paket.lock` file](lock-file.html) (if `lock-dependencies` parameter is used in [`paket pack`](paket-pack.html)).
-* any project reference with a matching paket.template file with a minimum version requirement of the version currently being packaged.
+* Any Paket dependency with the range specified in the
+  [`paket.dependencies` file](dependencies-file.html).
+* Any Paket dependency with the range specified in the
+  [`paket.lock` file](lock-file.html) (if `lock-dependencies` parameter is used
+  in [`paket pack`](paket-pack.html)).
+* Any project reference with a matching `paket.template` file with a minimum
+  version requirement of the version currently being packaged.
 
-If you need to exclude dependencies from the automatic discovery then you can use the `excludeddependencies` block:
+If you need to exclude dependencies from the automatic discovery then you can
+use the `excludeddependencies` block:
 
-	excludeddependencies
-	  FSharp.Core
-	  Other.Dep
+```text
+excludeddependencies
+  FSharp.Core
+  Other.Dep
+```
 
-Another way to exclude dependencies is to exclude a whole dependency group with the `excludedgroups` block:
+Another way to exclude dependencies is to exclude a whole dependency group with
+the `excludedgroups` block:
 
-	excludedgroups
-	  build
-	  test
+```text
+excludedgroups
+  build
+  test
+```
 
 #### PDB files
 
-With the include-pdbs switch you can tell Paket to pack PDBs into the package.
+With the `include-pdbs` switch you can tell Paket to pack PDBs into the package.
 
-    include-pdbs true
+```text
+include-pdbs true
+```
 
-This only works for paket.template files of type `project`.
+This only works for `paket.template` files of type `project`.
 
-### Comments
+## Comments
 
-A line starting with a # or // is considered a comment and will be ignored by the parser.
+A line starting with a `#` or `//` is considered a comment and will be ignored
+by the parser.

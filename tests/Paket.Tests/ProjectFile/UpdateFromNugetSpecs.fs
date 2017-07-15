@@ -6,8 +6,8 @@ open FsUnit
 open System.Xml
 open System.IO
 
-let convertAndCompare source expectedResult =
-    let projectFile = ProjectFile.LoadFromString("Test.csproj", source)
+let convertAndCompare file source expectedResult =
+    let projectFile = ProjectFile.LoadFromString(file, source)
     ProjectFile.removeNuGetPackageImportStamp projectFile
     let actualResult = Utils.normalizeXml projectFile.Document
     let normalizedExpected =
@@ -36,7 +36,7 @@ let ``should remove NuGetPackageImportStamp and empty PropertyGroup``() =
   </PropertyGroup>
 </Project>"""
     
-    convertAndCompare projectFile expectedResult
+    convertAndCompare "HardCodeString.proj" projectFile expectedResult
 
 [<Test>]
 let ``should remove NuGetPackageImportStamp but not PropertyGroup with items``() =
@@ -56,7 +56,7 @@ let ``should remove NuGetPackageImportStamp but not PropertyGroup with items``()
   </PropertyGroup>
 </Project>"""
     
-    convertAndCompare projectFile expectedResult
+    convertAndCompare "HardCodeString.proj" projectFile expectedResult
 
 let testDataRootPath = Path.Combine(__SOURCE_DIRECTORY__, "TestData")
 let TestData: obj[][] = [|
@@ -70,5 +70,6 @@ let TestData: obj[][] = [|
 [<Test>]
 [<TestCaseSource("TestData")>]
 let ``should not modify projects without NuGetPackageImportStamp`` projectFile =
-    let text = File.ReadAllText (Path.Combine(testDataRootPath, projectFile))
-    convertAndCompare text text
+    let file = Path.Combine(testDataRootPath, projectFile)
+    let text = File.ReadAllText file
+    convertAndCompare file text text

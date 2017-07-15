@@ -91,7 +91,7 @@ let ``can detect framework assemblies for Microsoft.Net.Http``() =
             makeOrList
              [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))
               FrameworkRestriction.Exactly(MonoTouch)
-              FrameworkRestriction.Exactly(MonoAndroid)] }
+              FrameworkRestriction.Exactly(MonoAndroid MonoAndroidVersion.V1)] }
          { AssemblyName = "System.Net.Http.WebRequest"
            FrameworkRestrictions = 
              makeOrList [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4_5))] }]
@@ -228,7 +228,7 @@ let ``can detect framework assemblies for MathNet.Numerics``() =
                 [FrameworkRestriction.Exactly(DotNetFramework(FrameworkVersion.V4))
                  FrameworkRestriction.Exactly(Windows WindowsVersion.V8)
                  FrameworkRestriction.Exactly(Silverlight SilverlightVersion.V5)
-                 FrameworkRestriction.Exactly(MonoAndroid)
+                 FrameworkRestriction.Exactly(MonoAndroid MonoAndroidVersion.V1)
                  FrameworkRestriction.Exactly(MonoTouch)] }]
 
 
@@ -316,3 +316,32 @@ let ``can detect explicit dependencies for EasyNetQ``() =
                 FrameworkRestriction.NoRestriction
                 FrameworkRestriction.NotAtLeast(DotNetFramework(FrameworkVersion.V4_5))]
             ])
+
+[<Test>]
+let ``can detect deps assemblies for Xamarin.Forms``() = 
+    //ensureDir()
+    Nuspec.Load(Path.Combine(__SOURCE_DIRECTORY__,"Xamarin.Forms.nuspec")).Dependencies
+    |> shouldEqual 
+        [PackageName "WPtoolkit",DependenciesFileParser.parseVersionRequirement(">= 4.2013.08.16"), 
+            makeOrList [FrameworkRestriction.AtLeast(WindowsPhone(WindowsPhoneVersion.V8))]
+         PackageName "Xamarin.Android.Support.v4",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.Design",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.AppCompat",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.CardView",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.MediaRouter",DependenciesFileParser.parseVersionRequirement("= 23.3.0"), 
+            makeOrList [FrameworkRestriction.Between(MonoAndroid(MonoAndroidVersion.V1), MonoAndroid(MonoAndroidVersion.V7))]         
+         PackageName "Xamarin.Android.Support.v4",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.Design",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.AppCompat",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.CardView",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+         PackageName "Xamarin.Android.Support.v7.MediaRouter",DependenciesFileParser.parseVersionRequirement(">= 23.3.0"), 
+            makeOrList [FrameworkRestriction.AtLeast(MonoAndroid(MonoAndroidVersion.V7))]
+        ]

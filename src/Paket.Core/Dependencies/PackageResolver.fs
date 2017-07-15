@@ -9,6 +9,9 @@ open System.Collections.Generic
 open System
 open System.Diagnostics
 open Paket.PackageSources
+open System.Threading.Tasks
+open System.Threading
+open FSharp.Polyfill
 
 type DependencySet = Set<PackageName * VersionRequirement * FrameworkRestrictions>
 
@@ -31,6 +34,7 @@ type ResolvedPackage = {
     Dependencies        : DependencySet
     Unlisted            : bool
     IsRuntimeDependency : bool
+    IsCliTool           : bool
     Settings            : InstallSettings
     Source              : PackageSource
 } with
@@ -76,11 +80,12 @@ module DependencySetFilter =
             dependencies
             |> Set.filter (isIncluded restrictions)
 
-    let isPackageCompatible (dependencies:DependencySet) (package:ResolvedPackage) : bool =
+    let isPackageCompatible specialPrereleaseSettings (dependencies:DependencySet) (package:ResolvedPackage) : bool =
+        let prereleaseStatus = specialPrereleaseSettings |> Set.contains package.Name
         dependencies
-        // exists any not matching stuff
+        // exists any non-matching stuff
         |> Seq.exists (fun (name, requirement, restriction) ->
-            if name = package.Name && not (requirement.IsInRange package.Version) then
+            if name = package.Name && not (requirement.IsInRange (package.Version, prereleaseStatus)) then
                 tracefn "   Incompatible dependency: %O %O conflicts with resolved version %O" name requirement package.Version
                 true
             else false
@@ -104,33 +109,35 @@ type ResolverStep = {
     ClosedRequirements : Set<PackageRequirement>
     OpenRequirements : Set<PackageRequirement> }
 
+type ConflictInfo =
+  { ResolveStep    : ResolverStep
+    RequirementSet : PackageRequirement Set
+    Requirement    : PackageRequirement
+    GetPackageVersions : (PackageName -> (SemVerInfo * PackageSource list) seq) }
 
 [<RequireQualifiedAccess>]
 [<DebuggerDisplay "{DebugDisplay()}">]
-type Resolution =
-| Ok of PackageResolution
-| Conflict of resolveStep    : ResolverStep
-            * requirementSet : PackageRequirement Set
-            * requirement    : PackageRequirement
-            * getPackageVersions : (PackageName -> (SemVerInfo * PackageSource list) seq)
-    member private self.DebugDisplay() =
+type ResolutionRaw =
+| OkRaw of PackageResolution
+| ConflictRaw of ConflictInfo
+    member internal self.DebugDisplay() =
         match self with
-        | Ok pkgres ->   
+        | OkRaw pkgres ->   
             pkgres |> Seq.map (fun kvp -> kvp.Key, kvp.Value)
             |> Array.ofSeq |> sprintf "Ok - %A"
-        | Conflict (resolveStep,reqSet,req,_) ->
+        | ConflictRaw { ResolveStep = resolveStep; RequirementSet = reqSet; Requirement = req } ->
             sprintf "%A\n%A\n%A\n" resolveStep reqSet req
 
 
 [<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
-module Resolution =
+module ResolutionRaw =
 
     open System.Text
 
-    let getConflicts (res:Resolution) =
+    let getConflicts (res:ResolutionRaw) =
         match res with
-        | Resolution.Ok _ -> Set.empty
-        | Resolution.Conflict (currentStep,_,lastPackageRequirement,_) ->
+        | ResolutionRaw.OkRaw _ -> Set.empty
+        | ResolutionRaw.ConflictRaw { ResolveStep = currentStep; Requirement = lastPackageRequirement } ->
             currentStep.ClosedRequirements
             |> Set.union currentStep.OpenRequirements
             |> Set.add lastPackageRequirement
@@ -168,52 +175,87 @@ module Resolution =
             |> Seq.fold (fun (errorReport:StringBuilder) conflict ->
                 errorReport.AppendLine (getConflictMessage conflict)) errorReport
 
-    let getErrorText showResolvedPackages = function
-    | Resolution.Ok _ -> ""
-    | Resolution.Conflict (currentStep,_,_,getVersionF) as res ->
-        let errorText =
-            if showResolvedPackages && not currentStep.CurrentResolution.IsEmpty then
-                ( StringBuilder().AppendLine  "  Resolved packages:"
-                , currentStep.CurrentResolution)
-                ||> Map.fold (fun sb _ resolvedPackage ->
-                    sb.AppendLinef "   - %O %O" resolvedPackage.Name resolvedPackage.Version)
-            else StringBuilder()
+    let getErrorText showResolvedPackages (res:ResolutionRaw) =
+        match res with
+        | ResolutionRaw.OkRaw _ -> ""
+        | ResolutionRaw.ConflictRaw { ResolveStep = currentStep; GetPackageVersions = getVersionF } ->
+            let errorText =
+                if showResolvedPackages && not currentStep.CurrentResolution.IsEmpty then
+                    ( StringBuilder().AppendLine  "  Resolved packages:"
+                    , currentStep.CurrentResolution)
+                    ||> Map.fold (fun sb _ resolvedPackage ->
+                        sb.AppendLinef "   - %O %O" resolvedPackage.Name resolvedPackage.Version)
+                else StringBuilder()
 
-        match getConflicts res with
-        | c when c.IsEmpty  ->
-            errorText.AppendLinef
-                "  Could not resolve package %O. Unknown resolution error."
-                    (Seq.head currentStep.OpenRequirements)
-        | cfs when cfs.Count = 1 ->
-            let c = cfs.MinimumElement
-            let errorText = buildConflictReport errorText cfs
-            match getVersionF c.Name |> Seq.toList with
-            | [] -> errorText.AppendLinef  "   - No versions available."
-            | avalaibleVersions ->
-                ( errorText.AppendLinef  "   - Available versions:"
-                , avalaibleVersions )
-                ||> List.fold (fun sb elem -> sb.AppendLinef "     - %O" elem)
-        | conflicts -> buildConflictReport errorText conflicts
-        |> string
+            match getConflicts res with
+            | c when c.IsEmpty  ->
+                errorText.AppendLinef
+                    "  Could not resolve package %O. Unknown resolution error."
+                        (Seq.head currentStep.OpenRequirements)
+            | cfs when cfs.Count = 1 ->
+                let c = cfs.MinimumElement
+                let errorText = buildConflictReport errorText cfs
+                match getVersionF c.Name |> Seq.toList with
+                | [] -> errorText.AppendLinef  "   - No versions available."
+                | avalaibleVersions ->
+                    ( errorText.AppendLinef  "   - Available versions:"
+                    , avalaibleVersions )
+                    ||> List.fold (fun sb elem -> sb.AppendLinef "     - %O" elem)
+            | conflicts -> buildConflictReport errorText conflicts
+            |> string
 
+    let isDone (res:ResolutionRaw) =
+        match res with
+        | ResolutionRaw.OkRaw _ -> true
+        | _ -> false
 
-    let getModelOrFail = function
-    | Resolution.Ok model -> model
-    | Resolution.Conflict _ as res ->
-        failwithf  "There was a version conflict during package resolution.\n\
-                    %s\n  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)." (getErrorText true res)
+type ResolutionRaw with
+    member self.GetConflicts () = ResolutionRaw.getConflicts self
+    member self.GetErrorText showResolvedPackages = ResolutionRaw.getErrorText showResolvedPackages self
+    member self.IsDone = ResolutionRaw.isDone self
 
+[<RequireQualifiedAccess>]
+[<DebuggerDisplay "{DebugDisplay()}">]
+type Resolution =
+    private { Raw : ResolutionRaw; Errors : Exception list }
+    static member ofRaw errors resolution =
+        { Raw = resolution; Errors = errors }
+    member private self.DebugDisplay() = self.Raw.DebugDisplay()
 
-    let isDone = function
-    | Resolution.Ok _ -> true
-    | _ -> false
+[<CompilationRepresentation(CompilationRepresentationFlags.ModuleSuffix)>]
+module Resolution =
+    
+    let getConflicts (res:Resolution) = ResolutionRaw.getConflicts res.Raw
+    let getErrorText showResolvedPackages (res:Resolution) = ResolutionRaw.getErrorText showResolvedPackages res.Raw
+    let isDone (res:Resolution) = ResolutionRaw.isDone res.Raw
+    let addError error (res:Resolution) =
+        { res with Errors = error :: res.Errors }
+    let addErrors errors (res:Resolution) =
+        { res with Errors = errors @ res.Errors }
 
+    let getModelOrFail (res:Resolution) = 
+        match res.Raw with
+        | ResolutionRaw.OkRaw model -> model
+        | ResolutionRaw.ConflictRaw _ ->
+            let msg =
+                sprintf "There was a version conflict during package resolution.\n\
+                         %s\n  Please try to relax some conditions or resolve the conflict manually (see http://fsprojects.github.io/Paket/nuget-dependencies.html#Use-exactly-this-version-constraint)." (getErrorText true res)
+            raise <| AggregateException(msg, res.Errors)
+    let (|Ok|Conflict|) (res:Resolution) =
+        match res.Raw with
+        | ResolutionRaw.OkRaw res -> Ok res
+        | ResolutionRaw.ConflictRaw conf -> Conflict conf
+    let Ok resolution =
+        Resolution.ofRaw [] (ResolutionRaw.OkRaw resolution)
 type Resolution with
 
     member self.GetConflicts () = Resolution.getConflicts self
+    member self.GetErrors () = self.Errors
     member self.GetErrorText showResolvedPackages = Resolution.getErrorText showResolvedPackages self
     member self.GetModelOrFail () = Resolution.getModelOrFail self
     member self.IsDone = Resolution.isDone self
+    member self.IsOk = self.IsDone
+    member self.IsConflict = not self.IsDone
 
 
 let calcOpenRequirements (exploredPackage:ResolvedPackage,globalFrameworkRestrictions,(versionToExplore,_),dependency,resolverStep:ResolverStep) =
@@ -312,6 +354,7 @@ type private PackageConfig = {
     GroupName          : GroupName
     GlobalRestrictions : FrameworkRestrictions
     RootSettings       : IDictionary<PackageName,InstallSettings>
+    CliTools           : Set<PackageName>
     Version            : SemVerInfo
     Sources            : PackageSource list
     UpdateMode         : UpdateMode
@@ -387,19 +430,20 @@ let private explorePackageConfig getPackageDetailsBlock (pkgConfig:PackageConfig
                 | true, s -> s + dependency.Settings
                 | _ -> dependency.Settings
             |> fun x -> x.AdjustWithSpecialCases packageDetails.Name
-        Some
-            {   Name                = packageDetails.Name
-                Version             = version
-                Dependencies        = filteredDependencies
-                Unlisted            = packageDetails.Unlisted
-                Settings            = { settings with FrameworkRestrictions = newRestrictions }
-                Source              = packageDetails.Source
-                IsRuntimeDependency = false
+        Result.Ok
+            { Name                = packageDetails.Name
+              Version             = version
+              Dependencies        = filteredDependencies
+              Unlisted            = packageDetails.Unlisted
+              Settings            = { settings with FrameworkRestrictions = newRestrictions }
+              Source              = packageDetails.Source
+              IsCliTool           = Set.contains packageDetails.Name pkgConfig.CliTools
+              IsRuntimeDependency = false
             }
     with
     | exn ->
         traceWarnfn "    Package not available.%s      Message: %s" Environment.NewLine exn.Message
-        None
+        Result.Error (System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture exn)
 
 
 type StackPack = {
@@ -418,16 +462,16 @@ let private getExploredPackage (pkgConfig:PackageConfig) getPackageDetailsBlock 
         stackpack.ExploredPackages.[key] <- package
         if verbose then
             verbosefn "   Retrieved Explored Package  %O" package
-        stackpack, Some(true, package)
+        stackpack, Result.Ok(true, package)
     | false,_ ->
         match explorePackageConfig getPackageDetailsBlock pkgConfig with
-        | Some explored ->
+        | Result.Ok explored ->
             if verbose then
                 verbosefn "   Found Explored Package  %O" explored
             stackpack.ExploredPackages.Add(key,explored)
-            stackpack, Some(false, explored)
-        | None ->
-            stackpack, None
+            stackpack, Result.Ok(false, explored)
+        | Result.Error err ->
+            stackpack, Result.Error err
 
 
 
@@ -470,10 +514,10 @@ let private getCompatibleVersions
                 let resolverStrategy = getResolverStrategy globalStrategyForDirectDependencies globalStrategyForTransitives allRequirementsOfCurrentPackage currentRequirement
                 getVersionsF currentRequirement.Sources resolverStrategy groupName currentRequirement.Name
 
-        let compatibleVersions = Seq.filter (isInRange id) (availableVersions)
+        let compatibleVersions = Seq.filter (isInRange id) (availableVersions) |> Seq.cache
         let compatibleVersions, globalOverride =
             if currentRequirement.VersionRequirement.Range.IsGlobalOverride then
-                compatibleVersions |> Seq.cache, true
+                compatibleVersions, true
             elif Seq.isEmpty compatibleVersions then
                 let prereleaseStatus (r:PackageRequirement) =
                     if r.Parent.IsRootRequirement() && r.VersionRequirement <> VersionRequirement.AllReleases then
@@ -487,9 +531,9 @@ let private getCompatibleVersions
                 if allPrereleases then
                     Seq.ofList prereleases, globalOverride
                 else
-                    compatibleVersions|> Seq.cache, globalOverride
+                    compatibleVersions, globalOverride
             else
-                compatibleVersions|> Seq.cache, globalOverride
+                compatibleVersions, globalOverride
 
         compatibleVersions, globalOverride, false
 
@@ -553,13 +597,17 @@ let private getCurrentRequirement packageFilter (openRequirements:Set<PackageReq
 
 [<StructuredFormatDisplay "{Display}">]
 type ConflictState = {
-    Status               : Resolution
+    Errors               : Exception list
+    Status               : ResolutionRaw
     LastConflictReported : DateTime
     TryRelaxed           : bool
     Conflicts            : Set<PackageRequirement>
     VersionsToExplore    : seq<SemVerInfo * PackageSource list>
     GlobalOverride       : bool
 } with
+    member x.AddError exn =
+        { x with Errors = exn :: x.Errors }
+
     member private self.Display 
         with get () = 
             let conflicts = self.Conflicts |> Seq.map (printfn "%A\n") |> String.Concat
@@ -642,35 +690,261 @@ type private Stage =
     | Outer of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
     | Inner of currentConflict : (ConflictState * ResolverStep * PackageRequirement) * priorConflictSteps : (ConflictState * ResolverStep * PackageRequirement *  seq<SemVerInfo * PackageSource list> * StepFlags) list
 
+type WorkPriority =
+    | BackgroundWork = 10
+    | MightBeRequired = 5
+    | LikelyRequired = 3
+    | BlockingWork = 1
+
+type RequestWork =
+    private
+        { StartWork : CancellationToken -> Task
+          mutable Priority : WorkPriority }
+
+type WorkHandle<'a> = private { Work : RequestWork; TaskSource : TaskCompletionSource<'a> }
+and ResolverRequestQueue =
+    private { DynamicQueue : ResizeArray<RequestWork>; Lock : obj; WaitingWorker : ResizeArray<TaskCompletionSource<RequestWork option>> }
+    // callback in a lock is bad practice -> private
+    member private x.With callback =
+        lock x.Lock (fun () ->
+            callback x.DynamicQueue x.WaitingWorker
+        )
+    member x.AddWork w =
+        x.With (fun queue workers ->
+            if workers.Count > 0 then
+                let worker = workers.[0]
+                workers.RemoveAt(0)
+                worker.SetResult (Some w)
+            else
+                queue.Add(w)
+        )
+    member x.GetWork (ct:CancellationToken) =
+        let tcs = new TaskCompletionSource<_>()
+        let registration = ct.Register(fun () -> tcs.TrySetResult None |> ignore)
+        tcs.Task.ContinueWith (fun (t:Task) ->
+            registration.Dispose()) |> ignore
+        x.With (fun queue workers ->
+            if queue.Count = 0 then
+                workers.Add(tcs)
+            else
+                let (index, work) = queue |> Seq.mapi (fun i w -> i,w) |> Seq.minBy (fun (_,w) -> w.Priority)
+                queue.RemoveAt index
+                tcs.TrySetResult (Some work) |> ignore
+            tcs.Task
+        )
+
+module ResolverRequestQueue =
+    open System.Threading
+
+    let Create() = { DynamicQueue = new ResizeArray<RequestWork>(); Lock = new obj(); WaitingWorker = new ResizeArray<_>() }
+    let addWork prio (f: CancellationToken -> Task<'a>) (q:ResolverRequestQueue) =
+        let tcs = new TaskCompletionSource<_>()
+        let work =
+            { StartWork = (fun tok ->
+                // When someone is actually starting the work we need to ensure we finish it...
+                let registration = tok.Register(fun () ->
+                    async {
+                        do! Async.Sleep 1000
+                        if not tcs.Task.IsCompleted then
+                            tcs.TrySetException (TimeoutException "Cancellation was requested, but wasn't honered after 1 second. We finish the task forcefully (requests might still run in the background).")
+                                |> ignore
+                    } |> Async.Start)
+                let t =
+                    try
+                        f tok
+                    with e ->
+                        //Task.FromException (e)
+                        let tcs = new TaskCompletionSource<_>()
+                        tcs.SetException e
+                        tcs.Task
+
+                t.ContinueWith(fun (t:Task<'a>) ->
+                    registration.Dispose()
+                    if t.IsCanceled then
+                        tcs.TrySetException(new TaskCanceledException(t))
+                    elif t.IsFaulted then
+                        tcs.TrySetException(t.Exception)
+                    else tcs.TrySetResult (t.Result))
+                    |> ignore
+                // Important to not wait on the ContinueWith result,
+                // because that one will never finish in the cancellation case
+                // tcs.Task should always finish
+                tcs.Task :> Task)
+              Priority = prio }
+        q.AddWork work
+        { Work = work; TaskSource = tcs }
+    let startProcessing (ct:CancellationToken) ({ DynamicQueue = queue } as q) =
+        let linked = new CancellationTokenSource()
+        async {
+            use _reg = ct.Register(fun () ->
+                linked.CancelAfter(1000))
+            while not ct.IsCancellationRequested do
+                let! work = q.GetWork(ct) |> Async.AwaitTask
+                match work with
+                | Some work ->
+                    do! work.StartWork(ct).ContinueWith(fun (_:Task) -> ()) |> Async.AwaitTask
+                | None -> ()
+        }
+        |> fun a -> Async.StartAsTaskProperCancel(a, TaskCreationOptions.None, linked.Token)
+
+type WorkHandle<'a> with
+    member x.TryReprioritize onlyHigher prio =
+        let { Work = work } = x
+        if not onlyHigher || work.Priority > prio then
+            work.Priority <- prio
+    member x.Reprioritize prio =
+        x.TryReprioritize false prio
+    member x.Task =
+        let { TaskSource = task } = x
+        task.Task
+
+type ResolverTaskMemory<'a> =
+    { Work : WorkHandle<'a>; mutable WaitedAlready : bool }
+    member x.Wait (timeout: int)=
+        if x.WaitedAlready then
+            true, x.Work.Task.IsCompleted
+        else
+            x.WaitedAlready <- true
+            false, x.Work.Task.Wait timeout
+module ResolverTaskMemory =
+    let ofWork w = { Work = w; WaitedAlready = false }
+
+let selectVersionsToPreload (verReq:VersionRequirement) versions =
+    seq {
+        match versions |> Seq.tryFind (fun v -> verReq.IsInRange(v, true)) with
+        | Some verToPreload ->
+            yield verToPreload, WorkPriority.LikelyRequired
+        | None -> ()
+        match versions |> Seq.tryFind (verReq.IsInRange) with
+        | Some verToPreload ->
+            yield verToPreload, WorkPriority.LikelyRequired
+        | None -> ()
+        for v in versions |> Seq.filter (fun v -> verReq.IsInRange(v, true)) |> Seq.tryTake 10 do
+            yield v, WorkPriority.MightBeRequired
+        for v in versions |> Seq.filter (verReq.IsInRange) |> Seq.tryTake 10 do
+            yield v, WorkPriority.MightBeRequired
+    }
+    
+let RequestTimeout = 180000
+let WorkerCount = 6
+
 /// Resolves all direct and transitive dependencies
 let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, groupName:GroupName, globalStrategyForDirectDependencies, globalStrategyForTransitives, globalFrameworkRestrictions, (rootDependencies:PackageRequirement Set), updateMode : UpdateMode) =
     tracefn "Resolving packages for group %O:" groupName
-       
-    use d = Profile.startCategory Profile.Category.ResolverAlgorithm
 
-    let startedGetPackageDetailsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
-    let startRequestGetPackageDetails sources groupName packageName semVer =
+    let specialPrereleaseSettings =
+        rootDependencies
+        |> Seq.choose (fun r ->
+            match r.Parent with
+            | PackageRequirementSource.DependenciesFile _ ->
+                match r.VersionRequirement.PreReleases with
+                | PreReleaseStatus.No -> None
+                | _ -> Some r.Name
+            | _ -> None)
+        |> Set.ofSeq
+
+    let cliToolSettings =
+        rootDependencies
+        |> Seq.choose (fun r ->
+            match r.Parent with
+            | PackageRequirementSource.DependenciesFile _ when r.IsCliTool ->
+                Some r.Name
+            | _ -> None)
+        |> Set.ofSeq
+
+    use d = Profile.startCategory Profile.Category.ResolverAlgorithm
+    use cts = new CancellationTokenSource()
+    let workerQueue = ResolverRequestQueue.Create()
+    let workerCount =
+        match Environment.GetEnvironmentVariable("PAKET_RESOLVER_WORKERS") with
+        | a when System.String.IsNullOrWhiteSpace a -> WorkerCount
+        | a ->
+            match System.Int32.TryParse a with
+            | true, v when v > 0 -> v
+            | _ -> traceWarnfn "PAKET_RESOLVER_WORKERS is not set to a number > 0, ignoring the value and defaulting to %d" WorkerCount
+                   WorkerCount
+    let workers =
+        // start maximal 8 requests at the same time.
+        [ 1 .. workerCount ]
+        |> List.map (fun _ -> ResolverRequestQueue.startProcessing cts.Token workerQueue)
+
+    // mainly for failing unit-tests to be faster
+    let taskTimeout =
+        match Environment.GetEnvironmentVariable("PAKET_RESOLVER_TASK_TIMEOUT") with
+        | a when System.String.IsNullOrWhiteSpace a -> RequestTimeout
+        | a ->
+            match System.Int32.TryParse a with
+            | true, v -> v
+            | _ -> traceWarnfn "PAKET_RESOLVER_TASK_TIMEOUT is not set to an interval in milliseconds, ignoring the value and defaulting to %d" RequestTimeout
+                   RequestTimeout
+
+    let getAndReport (sources:PackageSource list) blockReason (mem:ResolverTaskMemory<_>) =
+        try
+            let workHandle = mem.Work
+            if workHandle.Task.IsCompleted then
+                Profile.trackEvent (Profile.Category.ResolverAlgorithmNotBlocked blockReason)
+                workHandle.Task.Result
+            else
+                workHandle.Reprioritize WorkPriority.BlockingWork
+                use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked blockReason)
+                let (waitedAlready, isFinished) = mem.Wait(taskTimeout)
+                // When debugger is attached we just wait forever when calling .Result later ...
+                // apparently the task didn't return, let's throw here
+                if not isFinished && not Debugger.IsAttached then
+                    if waitedAlready then
+                        raise <| new TimeoutException(sprintf "Tried (again) to access an unfinished task, not waiting %d seconds this time..." (taskTimeout / 1000))
+                    else
+                        raise <|
+                            new TimeoutException(
+                                (sprintf "Waited %d seconds for a request to finish.\n" (taskTimeout / 1000)) +
+                                "      Check the following sources, they might be rate limiting and stopped responding:\n" +
+                                "       - " + System.String.Join("\n       - ", sources |> Seq.map (fun s -> s.Url))
+                            )
+                if waitedAlready && isFinished then
+                    // recovered
+                    if verbose then traceVerbose "Recovered on a long running task..."
+                let result = workHandle.Task.Result
+                d.Dispose()
+                result
+        with :? AggregateException as a when a.InnerExceptions.Count = 1 ->
+            let flat = a.Flatten()
+            if flat.InnerExceptions.Count = 1 then
+                System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(flat.InnerExceptions.[0]).Throw()
+            reraise()
+
+    let startedGetPackageDetailsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,ResolverTaskMemory<_>>()
+    let startRequestGetPackageDetails sources groupName packageName (semVer:SemVerInfo) =
         let key = (sources, packageName, semVer)
         startedGetPackageDetailsRequests.GetOrAdd (key, fun _ ->
-        (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
-            |> Async.StartAsTask)
-    let getPackageDetailsBlock sources groupName packageName semVer =
-        use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked Profile.BlockReason.PackageDetails)
-        let result = (startRequestGetPackageDetails sources groupName packageName semVer).GetAwaiter().GetResult()
-        d.Dispose()
-        result
+            workerQueue
+            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun ct ->
+                (getPackageDetailsRaw sources groupName packageName semVer : Async<PackageDetails>)
+                    |> fun a -> Async.StartAsTaskProperCancel(a, cancellationToken = ct))
+            |> ResolverTaskMemory.ofWork)
 
-    
-    let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,System.Threading.Tasks.Task<_>>()
+    let getPackageDetailsBlock sources groupName packageName semVer =
+        let workHandle = startRequestGetPackageDetails sources groupName packageName semVer
+        try
+            getAndReport sources Profile.BlockReason.PackageDetails workHandle
+        with e ->
+            raise <| Exception (sprintf "Unable to retrieve package details for '%O'-%s" packageName semVer.AsString, e)
+
+    let startedGetVersionsRequests = System.Collections.Concurrent.ConcurrentDictionary<_,ResolverTaskMemory<_>>()
     let startRequestGetVersions sources groupName packageName =
         let key = (sources, packageName)
         startedGetVersionsRequests.GetOrAdd (key, fun _ ->
-            getVersionsRaw sources groupName packageName
-            |> Async.StartAsTask)
+            workerQueue
+            |> ResolverRequestQueue.addWork WorkPriority.BackgroundWork (fun ct ->
+                getVersionsRaw sources groupName packageName
+                |> fun a -> Async.StartAsTaskProperCancel(a, cancellationToken = ct))
+            |> ResolverTaskMemory.ofWork)
+
     let getVersionsBlock sources resolverStrategy groupName packageName =
-        use d = Profile.startCategory (Profile.Category.ResolverAlgorithmBlocked Profile.BlockReason.GetVersion)
-        let versions = (startRequestGetVersions sources groupName packageName).GetAwaiter().GetResult() |> Seq.toList
-        d.Dispose()
+        let workHandle = startRequestGetVersions sources groupName packageName
+        let versions =
+            try getAndReport sources Profile.BlockReason.GetVersion workHandle |> Seq.toList
+            with e ->
+                raise <| Exception (sprintf "Unable to retrieve package versions for '%O'" packageName, e)
         let sorted =
             match resolverStrategy with
             | ResolverStrategy.Max -> List.sortDescending versions
@@ -697,7 +971,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         |> Set.ofSeq
 
 
-    if Set.isEmpty rootDependencies then Resolution.Ok Map.empty 
+    if Set.isEmpty rootDependencies then Resolution.ofRaw [] (ResolutionRaw.OkRaw Map.empty)
     else
 
     /// Evaluates whethere the innermost step-looping stage should continue or not
@@ -705,12 +979,12 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
         if flags.ForceBreak then false else
         if conflictState.Status.IsDone then false else
         if Seq.isEmpty conflictState.VersionsToExplore then
-            match conflictState.Status with
-            | Resolution.Ok _ -> ()
-            | _ -> (tracefn "   Failed to satisfy %O" currentRequirement)
+            // TODO: maybe this is the wrong place to report this...
+            //match conflictState.Status with
+            //| Resolution.Ok _ -> ()
+            //| _ -> (tracefn "   Failed to satisfy %O" currentRequirement)
             false else
         flags.FirstTrial || Set.isEmpty conflictState.Conflicts
-        
 
     let rec step (stage:Stage) (stackpack:StackPack) compatibleVersions (flags:StepFlags) =
 
@@ -746,7 +1020,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
             if Set.isEmpty currentStep.OpenRequirements then
                 let currentConflict =
                     { currentConflict with
-                        Status = Resolution.Ok (cleanupNames currentStep.CurrentResolution) }
+                        Status = ResolutionRaw.OkRaw (cleanupNames currentStep.CurrentResolution) }
               
                 match currentConflict, priorConflictSteps with
                 | currentConflict, (lastConflict,lastStep,lastRequirement,lastCompatibleVersions,lastFlags)::priorConflictSteps -> 
@@ -755,7 +1029,7 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                             VersionsToExplore = lastConflict.VersionsToExplore
                     }        
                     match continueConflict.Status with
-                    | Resolution.Conflict (_,conflicts,_,_)
+                    | ResolutionRaw.ConflictRaw { RequirementSet = conflicts }
                         when
                             (Set.isEmpty conflicts |> not)
                             && currentStep.CurrentResolution.Count > 1
@@ -788,10 +1062,19 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                         getVersionsBlock currentRequirement.Sources ResolverStrategy.Max groupName
                     if Seq.isEmpty conflicts then
                         { currentConflict with
-                            Status = Resolution.Conflict (currentStep,Set.empty,currentRequirement,getVersionsF)}
+                            Status = ResolutionRaw.ConflictRaw {
+                                ResolveStep = currentStep
+                                RequirementSet = Set.empty
+                                Requirement = currentRequirement
+                                GetPackageVersions = getVersionsF
+                            }}
                     else
                         { currentConflict with
-                            Status = Resolution.Conflict (currentStep,set conflicts,Seq.head conflicts,getVersionsF)}
+                            Status = ResolutionRaw.ConflictRaw {
+                                ResolveStep = currentStep
+                                RequirementSet = set conflicts
+                                Requirement = Seq.head conflicts
+                                GetPackageVersions = getVersionsF }}
 
                 if not (Seq.isEmpty conflicts) then                
                     fuseConflicts currentConflict priorConflictSteps conflicts
@@ -856,15 +1139,13 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                         }
                 step (Outer((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags 
             else
-                
-
                 let flags = { flags with FirstTrial = false }
                 let (version,sources) & versionToExplore = Seq.head currentConflict.VersionsToExplore
 
                 let currentConflict = 
                     { currentConflict with VersionsToExplore = Seq.tail currentConflict.VersionsToExplore }
 
-                let packageDetails = {
+                let packageConfig = {
                     GroupName          = groupName
                     Dependency         = currentRequirement
                     GlobalRestrictions = globalFrameworkRestrictions
@@ -872,26 +1153,27 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                     Version            = version
                     Sources            = sources
                     UpdateMode         = updateMode
+                    CliTools           = cliToolSettings
                 }
 
-                match getExploredPackage packageDetails getPackageDetailsBlock stackpack with
-                | stackpack, None ->
-                    step (Inner((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
+                match getExploredPackage packageConfig getPackageDetailsBlock stackpack with
+                | stackpack, Result.Error err ->
+                    step (Inner((currentConflict.AddError err.SourceException,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions  flags
 
-                | stackpack, Some(alreadyExplored,exploredPackage) ->
+                | stackpack, Result.Ok(alreadyExplored,exploredPackage) ->
                     let hasUnlisted = exploredPackage.Unlisted || flags.HasUnlisted
                     let flags = { flags with HasUnlisted = hasUnlisted }
 
                     // Start pre-loading infos about dependencies.
                     for (pack,verReq,restr) in exploredPackage.Dependencies do
                         async {
-                            let! versions = startRequestGetVersions currentRequirement.Sources groupName pack |> Async.AwaitTask
+                            let requestVersions = startRequestGetVersions currentRequirement.Sources groupName pack
+                            requestVersions.Work.TryReprioritize true WorkPriority.LikelyRequired
+                            let! versions = (requestVersions).Work.Task |> Async.AwaitTask
                             // Preload the first version in range of this requirement
-                            match versions |> Seq.map fst |> Seq.tryFind (verReq.IsInRange) with
-                            | Some verToPreload ->
-                                let! details = startRequestGetPackageDetails currentRequirement.Sources groupName pack verToPreload |> Async.AwaitTask
-                                ()
-                            | None -> ()
+                            for (verToPreload, prio) in selectVersionsToPreload verReq (versions |> Seq.map fst) do
+                                let w = startRequestGetPackageDetails currentRequirement.Sources groupName pack verToPreload
+                                w.Work.TryReprioritize true prio
                             return ()
                         } |> Async.Start
 
@@ -900,6 +1182,8 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                             tracefn "     %O %O was unlisted" exploredPackage.Name exploredPackage.Version
                         step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags 
                     else
+
+
                         // It might be that this version is already not possible because of our current set.
                         // Example: We took A with version 1.0.0 (in our current resolution), but this version depends on A > 1.0.0
                         let canTakePackage =
@@ -908,7 +1192,8 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                             |> Seq.map snd
                             // Ignore packages which have "OverrideAll", otherwise == will not work anymore.
                             |> Seq.filter (fun resolved -> lockedPackages.Contains resolved.Name |> not)
-                            |> Seq.forall (DependencySetFilter.isPackageCompatible exploredPackage.Dependencies)
+                            |> Seq.forall (DependencySetFilter.isPackageCompatible specialPrereleaseSettings exploredPackage.Dependencies)
+
                         if canTakePackage then
                             let nextStep =
                                 {   Relax              = currentStep.Relax
@@ -923,7 +1208,6 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
                                                 Environment.NewLine currentRequirement Environment.NewLine nextStep.OpenRequirements
                             step (Step((currentConflict,nextStep,currentRequirement), (currentConflict,currentStep,currentRequirement,compatibleVersions,flags)::priorConflictSteps)) stackpack currentConflict.VersionsToExplore flags
                         else
-                            tracefn "   Can't take package %O: incompatible dependencies" exploredPackage
                             step (Inner ((currentConflict,currentStep,currentRequirement), priorConflictSteps)) stackpack compatibleVersions flags
 
     let startingStep = {
@@ -942,11 +1226,12 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
 
     let status =
         let getVersionsF = getVersionsBlock currentRequirement.Sources ResolverStrategy.Max groupName
-        Resolution.Conflict(startingStep,Set.empty,currentRequirement,getVersionsF)
+        ResolutionRaw.ConflictRaw { ResolveStep = startingStep; RequirementSet = Set.empty; Requirement = currentRequirement; GetPackageVersions = getVersionsF }
 
 
     let currentConflict : ConflictState = {
-        Status               = (status : Resolution)
+        Status               = (status : ResolutionRaw)
+        Errors               = []
         LastConflictReported = DateTime.Now
         TryRelaxed           = false
         GlobalOverride       = false
@@ -970,41 +1255,77 @@ let Resolve (getVersionsRaw, getPreferredVersionsRaw, getPackageDetailsRaw, grou
     }
 
     let inline calculate () = step (Step((currentConflict,startingStep,currentRequirement),[])) stackpack Seq.empty flags
-#if DEBUG
-    let mutable results = None
-    let mutable error = None
-    // Increase stack size, because we have no tail-call-elimination
-    let thread = new System.Threading.Thread((fun () ->
-        try
-            results <- Some (calculate())
-        with e ->
-            // Prevent the application from crashing
-            error <- Some (System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e)
-        ), 1024 * 1024 * 100)
-    thread.Name <- sprintf "Paket Resolver Thread (Debug) - %O" (System.Guid.NewGuid())
-    thread.Start()
-    thread.Join()
-    match error with
-    | Some e -> e.Throw()
-    | _ -> ()
-    let stepResult =
-        match results with
-        | Some s -> s
-        | None -> failwithf "Expected to get results from the resolver thread :/."
-#else
-    let stepResult = calculate()
-#endif
-    
-    match stepResult  with
-    | { Status = Resolution.Conflict _ } as conflict ->
-        if conflict.TryRelaxed then
-            stackpack.KnownConflicts.Clear()
-            stackpack.ConflictHistory.Clear()
-            (step (Step((conflict
-                        ,{startingStep with Relax=true}
-                        ,currentRequirement),[])) 
-                  stackpack Seq.empty flags).Status
-        else
-            conflict.Status
-    | x -> x.Status
 
+    // Flag to ensure that we don't hide underlying exceptions in the finally block.
+    let mutable exceptionThrown = false
+    try
+#if DEBUG
+        let mutable results = None
+        let mutable error = None
+        // Increase stack size, because we have no tail-call-elimination
+        let thread = new System.Threading.Thread((fun () ->
+            try
+                results <- Some (calculate())
+            with e ->
+                // Prevent the application from crashing
+                error <- Some (System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture e)
+            ), 1024 * 1024 * 100)
+        thread.Name <- sprintf "Paket Resolver Thread (Debug) - %O" (System.Guid.NewGuid())
+        thread.Start()
+        thread.Join()
+        match error with
+        | Some e -> e.Throw()
+        | _ -> ()
+        let stepResult =
+            match results with
+            | Some s -> s
+            | None -> failwithf "Expected to get results from the resolver thread :/."
+#else
+        let stepResult = calculate()
+#endif
+        let state =
+            match stepResult with
+            | { Status = ResolutionRaw.ConflictRaw _ } as conflict ->
+                if conflict.TryRelaxed then
+                    stackpack.KnownConflicts.Clear()
+                    stackpack.ConflictHistory.Clear()
+                    (step (Step((conflict
+                                ,{startingStep with Relax=true}
+                                ,currentRequirement),[]))
+                          stackpack Seq.empty flags)
+                else
+                    conflict
+            | x -> x
+        let resolution = Resolution.ofRaw state.Errors state.Status
+        if resolution.IsOk && resolution.Errors.Length > 0 then
+            // At least warn that the resolution might not contain the latest stuff, because something failed
+            traceWarnfn "Resolution finished, but some errors were encountered:"
+            AggregateException(resolution.Errors)
+                |> printError
+
+        exceptionThrown <- false
+        resolution
+    finally
+        // some cleanup
+        cts.Cancel()
+        for w in workers do
+            try
+                w.Wait()
+            with
+            | :? ObjectDisposedException ->
+                if verbose then
+                    traceVerbose "Worker-Task was disposed"
+                ()
+            | :? AggregateException as a ->
+                match a.InnerExceptions |> Seq.toArray with
+                | [| :? OperationCanceledException as c |] ->
+                    // Task was cancelled...
+                    if verbose then
+                        traceVerbose "Worker-Task was canceled"
+                    ()
+                | _ ->
+                    if exceptionThrown then
+                        traceErrorfn "Error while waiting for worker to finish: %O" a
+                    else reraise()
+            | e when exceptionThrown ->
+                traceErrorfn "Error while waiting for worker to finish: %O" e

@@ -93,7 +93,7 @@ let ``should generate Xml for System.Security.Cryptography.Algorithms in CSharp 
 
     let project = ProjectFile.TryLoad("./ProjectFile/TestData/EmptyCsharpGuid.csprojtest")
     Assert.IsTrue(project.IsSome)
-    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = project.Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,None,None,true,KnownTargetProfiles.AllProfiles,None)
     let result =
       ctx.ChooseNodes
       |> (fun n -> n.Head.OuterXml)

@@ -126,7 +126,7 @@ let private setToken (token : string) (node : XmlElement) =
 
 /// Check if the provided credentials for a specific source are correct
 let checkCredentials(url, cred) = 
-    let client = Utils.createWebClient(url,cred)
+    let client = Utils.createHttpClient(url,cred)
     try 
         client.DownloadData (Uri url) |> ignore
         true

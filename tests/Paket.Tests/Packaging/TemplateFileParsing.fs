@@ -202,7 +202,9 @@ let ``Optional fields are read`` (fileContent : string) =
     sut.RequireLicenseAcceptance |> shouldEqual false
     sut.DevelopmentDependency |> shouldEqual false
     sut.Language |> shouldEqual (Some "en-gb")
-    sut.Dependencies |> shouldContain (PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]"))
+    sut.DependencyGroups |> shouldContain ({ Framework = None; Dependencies =
+        [PackageName "FSharp.Core",VersionRequirement.Parse("[4.3.1]")
+         PackageName "My.OtherThing",VersionRequirement.AllReleases] })
     sut.ExcludedDependencies |> shouldContain (PackageName "Newtonsoft.Json")
     sut.ExcludedDependencies |> shouldContain (PackageName "Chessie")
     sut.ExcludedGroups |> shouldContain (GroupName "build")
@@ -229,12 +231,71 @@ let ``Detect dependencies correctly`` fileContent =
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
-    match sut.Dependencies with
+    
+    sut.DependencyGroups.Length |> shouldEqual 1
+    match sut.DependencyGroups.Head.Dependencies with
     | [name1,range1;name2,range2] ->
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
         name2 |> shouldEqual (PackageName "My.OtherThing")
         range2.Range |> shouldEqual (Minimum (SemVer.Parse "0"))
+    | _ -> Assert.Fail()
+
+[<Test>]
+let ``Detect dependencies with targetFramework correctly`` () =
+    let fileContent = """type file
+id My.Thing
+authors Bob McBob
+description
+    A longer description
+    on two lines.
+version
+    1.0
+dependencies
+    xunit 2.0.0
+    framework: net461
+    framework: net45
+        FSharp.Core 4.3.1
+        My.OtherThing
+    framework: netstandard11
+        FSharp.Core 4.3.1
+"""
+
+    let sut =
+        TemplateFile.Parse("file1.template", LockFile.Parse("",[||]), None, Map.empty, strToStream fileContent)
+        |> returnOrFail
+        |> function
+           | CompleteInfo (_, opt)
+           | ProjectInfo (_, opt) -> opt
+    
+    sut.DependencyGroups |> List.length |> shouldEqual 4
+    match sut.DependencyGroups with
+    | [ g1; g2; g3; g4 ] ->
+        g1.Framework |> shouldEqual None
+        match g1.Dependencies with
+        | [ name, range ] ->
+            name |> shouldEqual (PackageName "xunit")
+            range.Range |> shouldEqual (Specific (SemVer.Parse "2.0.0"))
+        | _ -> Assert.Fail()
+
+        g2.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_6_1)))
+        g2.Dependencies |> List.length |> shouldEqual 0
+
+        g3.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetFramework(FrameworkVersion.V4_5)))
+        match g3.Dependencies with
+        | [ name1, range1; name2, range2 ] ->
+            name1 |> shouldEqual (PackageName "FSharp.Core")
+            range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
+            name2 |> shouldEqual (PackageName "My.OtherThing")
+            range2.Range |> shouldEqual (Minimum (SemVer.Parse "0"))
+        | _ -> Assert.Fail()
+
+        g4.Framework |> shouldEqual (Some(FrameworkIdentifier.DotNetStandard(DotNetStandardVersion.V1_1)))
+        match g4.Dependencies with
+        | [name, range] ->
+            name |> shouldEqual (PackageName "FSharp.Core")
+            range.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))            
+        | _ -> Assert.Fail()
     | _ -> Assert.Fail()
 
 
@@ -259,7 +320,7 @@ dependencies
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
-    match sut.Dependencies with
+    match sut.DependencyGroups.Head.Dependencies with
     | [name1,range1;name2,range2] ->
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
@@ -295,7 +356,7 @@ dependencies
 
     version |> shouldEqual (Some specificVersion)
 
-    match sut.Dependencies with
+    match sut.DependencyGroups.Head.Dependencies with
     | [name1,range1;name2,range2;name3,range3] ->
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))
@@ -366,7 +427,7 @@ GITHUB
         |> function
            | CompleteInfo (_, opt)
            | ProjectInfo (_, opt) -> opt
-    match sut.Dependencies with
+    match sut.DependencyGroups.Head.Dependencies with
     | [name1,range1;name2,range2] ->
         name1 |> shouldEqual (PackageName "FSharp.Core")
         range1.Range |> shouldEqual (Specific (SemVer.Parse "4.3.1"))

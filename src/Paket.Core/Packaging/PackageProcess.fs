@@ -96,13 +96,13 @@ let private convertToNormal (symbols : bool) templateFile =
         let includePdbs = optional.IncludePdbs
         { templateFile with Contents = ProjectInfo(core, { optional with IncludePdbs = (if symbols then false else includePdbs) }) }
 
-let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) (templateFile:TemplateFile) =
+let private convertToSymbols (projectFile : ProjectFile) (includeReferencedProjects : bool) (projDeps) (templateFile:TemplateFile) =
     let sourceFiles =
         let getTarget compileItem =
             let projectName = Path.GetFileName(compileItem.BaseDir)
             Path.Combine("src", projectName, compileItem.DestinationPath)
 
-        projectFile.GetCompileItems(includeReferencedProjects || templateFile.IncludeReferencedProjects)
+        projectFile.GetCompileItems (includeReferencedProjects || templateFile.IncludeReferencedProjects) projDeps
         |> Seq.map (fun c -> c.SourceFile, getTarget c)
         |> Seq.toList
 
@@ -144,15 +144,20 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                 hashSet.Add template |> ignore
     
         hashSet
-    
+
+    let projDeps = (Dictionary<int,ProjectFile>(),Dictionary<string,int list>())
+
     // load up project files and grab meta data
     let projectTemplates = 
         let getAllProjectsFiles workingDir =
-            ProjectFile.FindAllProjects workingDir
-            |> Array.choose (fun (projectFile:ProjectFile) ->
-                match projectFile.FindTemplatesFile() with
+            ProjectFile.FindAllProjectFiles workingDir
+            |> Array.choose (fun (projectFile:FileInfo) ->
+                match ProjectFile.FindCorrespondingFile(projectFile, Constants.TemplateFile) with
                 | None -> None
-                | Some fileName -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions)))
+                | Some fileName ->
+                    match ProjectFile.tryLoad projectFile.FullName with
+                    | Some projectFile -> Some(projectFile,TemplateFile.Load(fileName,lockFile,version,specificVersions))
+                    | None -> None)
             |> Array.filter (fun (_,templateFile) -> 
                 match templateFile with
                 | CompleteTemplate _ -> false 
@@ -185,7 +190,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
             seq { 
                 yield (templateFile |> convertToNormal symbols)
                 if symbols then 
-                    yield templateFile |> convertToSymbols projectFile includeReferencedProjects }
+                    yield templateFile |> convertToSymbols projectFile includeReferencedProjects projDeps }
 
         let convertRemainingTemplate fileName =
             let templateFile = TemplateFile.Load(fileName,lockFile,version,specificVersions)
@@ -211,7 +216,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                     yield template, p
                 }
             )
-         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version specificVersions)
+         |> Seq.map (fun (t, p) -> findDependencies dependenciesFile buildConfig buildPlatform t p lockDependencies minimumFromLockFile pinProjectReferences projectTemplates includeReferencedProjects version specificVersions projDeps)
          |> Seq.append remaining
          |> Seq.toList
 
@@ -241,7 +246,7 @@ let Pack(workingDir,dependenciesFile : DependenciesFile, packageOutputPath, buil
                 match templateFile with
                 | CompleteTemplate(core, optional) -> 
                     NupkgWriter.Write core optional (Path.GetDirectoryName templateFile.FileName) packageOutputPath
-                    |> NuGetV2.fixDatesInArchive 
+                    |> NuGetCache.fixDatesInArchive 
                     tracefn "Packed: %s" templateFile.FileName
                 | IncompleteTemplate -> 
                     failwithf "There was an attempt to pack incomplete template file %s." templateFile.FileName

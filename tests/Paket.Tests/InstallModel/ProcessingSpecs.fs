@@ -17,6 +17,16 @@ let fromLegacyList (prefix:string) l =
         else failwithf "Expected '%s' to start with '%s'" i prefix)
 
 [<Test>]
+let ``Library.ofFile should not crash on files without extension``() =
+    let frameworkDepFile = {
+        Path = { Name = ""; Platforms= [] }
+        File =  { FullPath = Path.Combine(Path.GetTempPath(), "filewithoutext"); PathWithinPackage = "lib/net40" }
+        Runtime = None
+    }
+    let lib = Library.ofFile frameworkDepFile
+    lib.Name |> shouldEqual "filewithoutext"
+
+[<Test>]
 let ``should create empty model with net40, net45 ...``() = 
     let model = emptymodel.AddReferences ([ @"..\Rx-Main\lib\net40\Rx.dll"; @"..\Rx-Main\lib\net45\Rx.dll" ] |> fromLegacyList @"..\Rx-Main\")
 
@@ -370,7 +380,7 @@ let ``should skip lib install of Microsoft.BCL for monotouch and monoandroid``()
               @"..\Microsoft.Bcl\lib\net45\_._" ] |> fromLegacyList @"..\Microsoft.Bcl\")
             .FilterBlackList()
 
-    model.GetLegacyReferences(SinglePlatform MonoAndroid) |> shouldBeEmpty
+    model.GetLegacyReferences(SinglePlatform (MonoAndroid MonoAndroidVersion.V1)) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform MonoTouch) |> shouldBeEmpty
 
 [<Test>]
@@ -466,9 +476,9 @@ let ``should handle lib install of Microsoft.Net.Http 2.2.28``() =
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\net40\System.Net.Http.WebRequest.dll" 
 
-    model.GetLegacyReferences(SinglePlatform MonoAndroid)
+    model.GetLegacyReferences(SinglePlatform (MonoAndroid MonoAndroidVersion.V1))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Extensions.dll" 
-    model.GetLegacyReferences(SinglePlatform MonoAndroid)
+    model.GetLegacyReferences(SinglePlatform (MonoAndroid MonoAndroidVersion.V1))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Net.Http\lib\monoandroid\System.Net.Http.Primitives.dll" 
 
     model.GetLegacyReferences(SinglePlatform MonoTouch)
@@ -557,7 +567,7 @@ let ``should handle lib install of MicrosoftBcl``() =
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\Microsoft.Bcl\lib\net40\System.Threading.Tasks.dll" 
 
     model.GetLegacyReferences(SinglePlatform (DotNetFramework FrameworkVersion.V4_5)) |> shouldBeEmpty
-    model.GetLegacyReferences(SinglePlatform MonoAndroid) |> shouldBeEmpty
+    model.GetLegacyReferences(SinglePlatform (MonoAndroid MonoAndroidVersion.V1)) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform MonoTouch) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform (Windows WindowsVersion.V8)) |> shouldBeEmpty
     model.GetLegacyReferences(SinglePlatform (WindowsPhone WindowsPhoneVersion.V8)) |> shouldBeEmpty
@@ -874,3 +884,32 @@ let ``should understand xamarinios``() =
 
     model.GetLegacyReferences(SinglePlatform (XamariniOS))
         |> Seq.map (fun f -> f.Path) |> shouldContain @"..\FSharp.Core\lib\portable-net45+monoandroid10+monotouch10+xamarinios10\FSharp.Core.dll"
+
+[<Test>]
+let ``should prefer net40-full over net40-client``() = 
+    let model =
+        emptymodel.AddReferences
+            ([@"..\packages\MyPackage\lib\net40-client\MyPackage.dll"
+              @"..\packages\MyPackage\lib\net40-full\MyPackage.dll"] 
+             |> fromLegacyList @"..\packages\MyPackage\")
+
+    let refs =
+        model.GetLegacyReferences (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
+        |> Seq.map (fun f -> f.PathWithinPackage)
+    refs |> shouldContain @"lib/net40-full/MyPackage.dll"
+    refs |> shouldNotContain @"lib/net40-client/MyPackage.dll"
+    
+[<Test>]
+let ``should prefer net40-full over net40-client (reversed)``() = 
+    // Should not depend on any order.
+    let model =
+        emptymodel.AddReferences
+            ([@"..\packages\MyPackage\lib\net40-full\MyPackage.dll"
+              @"..\packages\MyPackage\lib\net40-client\MyPackage.dll"] 
+             |> fromLegacyList @"..\packages\MyPackage\")
+
+    let refs =
+        model.GetLegacyReferences (SinglePlatform (DotNetFramework FrameworkVersion.V4_5))
+        |> Seq.map (fun f -> f.PathWithinPackage)
+    refs |> shouldContain @"lib/net40-full/MyPackage.dll"
+    refs |> shouldNotContain @"lib/net40-client/MyPackage.dll"

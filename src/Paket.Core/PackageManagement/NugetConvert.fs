@@ -118,6 +118,7 @@ type NugetConfig =
             |> Option.toList
             |> List.collect getKeyValueList
             |> List.map (fun (key,value) -> key, (String.quoted value, getAuth key))
+            |> List.filter (fun (key,_) -> key.Contains "NuGetFallbackFolder" |> not)
             |> Map.ofList
         
         { PackageSources = 
@@ -222,6 +223,7 @@ let createPackageRequirement sources (packageName, versionRange, restrictions) d
        Settings = { InstallSettings.Default with FrameworkRestrictions = restrictions }
        Parent = PackageRequirementSource.DependenciesFile dependenciesFileName
        Sources = sources
+       IsCliTool = false
        Graph = Set.empty }
 
 let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
@@ -235,7 +237,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                              |> Option.map (fun x -> x.Packages) 
                              |> Option.toList 
                              |> List.concat 
-                             |> List.append (ProjectFile.dotNetCorePackages pf))
+                             |> List.append (ProjectFile.dotNetCorePackages pf)
+                             |> List.append (ProjectFile.cliTools pf))
         |> List.groupBy (fun p -> p.Id)
 
     let findDistinctPackages selector =
@@ -254,30 +257,34 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
         "Package %s is referenced multiple times with different target frameworks : %A. Paket may disregard target framework."
 
     let latestVersions = 
-        findDistinctPackages (List.map (fun p -> p.VersionRange, p.TargetFramework) >> List.distinct)
+        findDistinctPackages (List.map (fun p -> p.VersionRange, p.TargetFramework, p.CliTool) >> List.distinct)
         |> List.map (fun (name, versions) ->
-            let latestVersion, _ = versions |> List.maxBy fst
+            let latestVersion, _, _ = versions |> List.maxBy (fun (x,_,_) -> x)
+            let isCLiTool = versions |> List.exists (fun (_,_,x) -> x)
             let restrictions =
                 match versions with
-                | [ version, targetFramework ] -> targetFramework |> Option.toList |> List.map (Requirements.parseRestrictionsLegacy false)
+                | [ version, targetFramework, clitool ] -> 
+                    targetFramework 
+                    |> Option.toList 
+                    |> List.map (Requirements.parseRestrictionsLegacy false)
                 | _ -> []
             let restrictions =
                 if restrictions = [] then FrameworkRestriction.NoRestriction
                 else restrictions |> Seq.fold FrameworkRestriction.combineRestrictionsWithOr FrameworkRestriction.EmptySet
-            name, latestVersion, restrictions)
+            name, latestVersion, restrictions, isCLiTool)
 
     let packages = 
         match nugetEnv.NuGetExe with 
-        | Some _ -> ("NuGet.CommandLine",VersionRange.AtLeast "0",FrameworkRestriction.NoRestriction) :: latestVersions
+        | Some _ -> ("NuGet.CommandLine",VersionRange.AtLeast "0",FrameworkRestriction.NoRestriction, false) :: latestVersions
         | _ -> latestVersions
 
     let read() =
         let addPackages dependenciesFile =
             packages
-            |> List.map (fun (name, vr, restrictions) -> 
-                Constants.MainDependencyGroup, PackageName name, vr, { InstallSettings.Default with FrameworkRestrictions = ExplicitRestriction restrictions})
-            |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,versionRange,installSettings) -> 
-                dependenciesFile.Add(groupName, packageName,versionRange,installSettings)) dependenciesFile
+            |> List.map (fun (name, vr, restrictions, isCliTool) -> 
+                Constants.MainDependencyGroup, PackageName name, vr, { InstallSettings.Default with FrameworkRestrictions = ExplicitRestriction restrictions}, isCliTool)
+            |> List.fold (fun (dependenciesFile:DependenciesFile) (groupName, packageName,versionRange,installSettings,isCliTool) -> 
+                dependenciesFile.Add(groupName, packageName,versionRange,installSettings, isCliTool)) dependenciesFile
         try 
             DependenciesFile.ReadFromFile dependenciesFileName
             |> ok
@@ -291,10 +298,8 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
                 (nugetEnv.NuGetConfig.PackageSources
                  |> Map.toList
                  |> List.map snd)
-            |> List.append 
-                [ Constants.DotnetCoreStream, None 
-                  Constants.CliDepsStream, None ]
             |> List.map (fun (n, auth) -> n, auth |> Option.map (CredsMigrationMode.ToAuthentication mode n))
+            |> List.filter (fun (key,v) -> key.Contains "NuGetFallbackFolder" |> not)
             |> List.map (fun source -> 
                             try source |> PackageSource.Parse |> ok
                             with _ -> source |> fst |> PackageSourceParseError |> fail
@@ -307,9 +312,9 @@ let createDependenciesFileR (rootDirectory : DirectoryInfo) nugetEnv mode =
             let sourceLines = sources |> List.map (fun s -> DependenciesFileSerializer.sourceString(s.ToString()))
             let packageLines =
                 packages 
-                |> List.map (fun (name,vr,restr) -> 
+                |> List.map (fun (name,vr,restr, isCliTool) -> 
                     let vr = createPackageRequirement sources (name, vr, ExplicitRestriction restr) dependenciesFileName
-                    DependenciesFileSerializer.packageString vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
+                    DependenciesFileSerializer.packageString isCliTool vr.Name vr.VersionRequirement vr.ResolverStrategyForTransitives vr.Settings)
 
             let newLines = sourceLines @ [""] @ packageLines |> Seq.toArray
 
@@ -350,26 +355,37 @@ let convertProjects nugetEnv =
         project.RemoveNugetAnalysers(packagesAndIds)
         project.RemoveImportAndTargetEntries(packagesAndIds)
         project.RemoveNuGetPackageImportStamp()
+
         let referencesFileFromPackagesConfig = 
             packagesConfig
             |> Option.map (convertPackagesConfigToReferencesFile project.FileName)
+
         let packageReferences = 
             project.GetPackageReferences()
+
+        let cliReferences = 
+            project.GetCliToolReferences()
+
         let referencesFile = 
             match referencesFileFromPackagesConfig with
             | Some x -> x
             | None -> project.FindOrCreateReferencesFile()
+
         let referencesFile =
-            packageReferences
+            packageReferences @ cliReferences
             |> List.fold 
                 (fun (rf: ReferencesFile) pr -> rf.AddNuGetReference(Constants.MainDependencyGroup, PackageName pr))
                 referencesFile
+
         project.RemovePackageReferenceEntries()
+        project.RemoveCliToolReferenceEntries()
+
         yield project, referencesFile]
 
 let createPaketEnv rootDirectory nugetEnv credsMirationMode = trial {
     let! depFile = createDependenciesFileR rootDirectory nugetEnv credsMirationMode
-    return PaketEnv.create rootDirectory depFile None (convertProjects nugetEnv)
+    let convertedProjects = convertProjects nugetEnv
+    return PaketEnv.create rootDirectory depFile None convertedProjects
 }
 
 let updateSolutions (rootDirectory : DirectoryInfo) = 
@@ -415,6 +431,7 @@ let replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper result =
     |> List.map (fun (_,n) -> n |> Option.map (fun x -> x.File))
     |> List.choose id 
     |> List.iter remove
+
     result.NuGetEnv.NuGetTargets |> Option.iter remove
     result.NuGetEnv.NuGetExe 
     |> Option.iter 
@@ -429,10 +446,13 @@ let replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper result =
     | _ -> ()
 
     result.PaketEnv.DependenciesFile.Save()
-    result.PaketEnv.Projects |> List.iter (fun (project, referencesFile) -> 
-                                                project.Save(true)
-                                                referencesFile.Save())
-    result.SolutionFiles |> Array.iter (fun s -> s.Save())
+    result.PaketEnv.Projects 
+    |> List.iter (fun (project, referencesFile) -> 
+        project.Save(true)
+        referencesFile.Save())
+
+    result.SolutionFiles 
+    |> Array.iter (fun s -> s.Save())
 
     let autoVSPackageRestore = 
         result.NuGetEnv.NuGetConfig.PackageRestoreAutomatic &&
@@ -448,5 +468,5 @@ let replaceNuGetWithPaket initAutoRestore installAfter fromBootstrapper result =
     UpdateProcess.Update(
         result.PaketEnv.DependenciesFile.FileName, 
         { UpdaterOptions.Default with 
-                Common = { InstallerOptions.Default with Force = true; Redirects = true }
-                NoInstall = not installAfter })
+            Common = { InstallerOptions.Default with Force = true; Redirects = true }
+            NoInstall = not installAfter })

@@ -153,9 +153,9 @@ let ``fails on wrong scripttype given`` () =
     )
     let message = failure.ToString()
     printfn "%s" message
-    Assert.IsTrue(message.Contains "Cannot generate include scripts.")
-    Assert.IsTrue(message.Contains "Unrecognized Script Type(s)")
-    Assert.IsTrue(message.Contains "foo, bar")
+
+    // This is handled at the parser level.
+    Assert.IsTrue(message.Contains "parameter 'type' must be followed by <csx|fsx>, but was 'foo'")
 
 
 [<Test; Category("scriptgen")>]

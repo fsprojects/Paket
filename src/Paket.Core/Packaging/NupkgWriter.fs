@@ -8,6 +8,7 @@ open Paket.Xml
 open System.Text
 open System.Text.RegularExpressions
 open System.Xml
+open Paket.Requirements
 
 module internal NupkgWriter =
 
@@ -93,12 +94,34 @@ module internal NupkgWriter =
                 dep.SetAttributeValue(XName.Get "version", version)
             dep
 
-        let buildDependenciesNode excludedDependencies dependencyList =
-            if List.isEmpty dependencyList then () else
-            let d = XElement(ns + "dependencies")
+        let buildGroupNode (framework:FrameworkIdentifier option, add) = 
+            let g = XElement(ns + "group")
+            match framework with
+            | Some f -> g.SetAttributeValue(XName.Get "targetFramework", f.ToString())
+            | _ -> ()
+            add g
+            g
+
+
+        let buildDependencyNodes (excludedDependencies, add, dependencyList)  =
             dependencyList
-            |> List.filter (fun d -> Set.contains (fst d) excludedDependencies |> not)
-            |> List.iter (buildDependencyNode >> d.Add)
+            |> List.filter (fun (a, _) -> Set.contains a excludedDependencies |> not)
+            |> List.map  (fun (a, b) -> a, b)
+            |> List.iter (buildDependencyNode >> add)
+
+        let buildDependencyNodesByGroup excludedDependencies add dependencyGroup  =
+            let node = buildGroupNode(dependencyGroup.Framework, add)
+            buildDependencyNodes(excludedDependencies, node.Add, dependencyGroup.Dependencies)
+
+        let buildDependenciesNode excludedDependencies dependencyGroups =
+            if List.isEmpty dependencyGroups then () else
+            let d = XElement(ns + "dependencies")
+            match dependencyGroups.Length, dependencyGroups.Head.Framework with
+            | (1, None) ->
+                buildDependencyNodes(excludedDependencies, d.Add, dependencyGroups.Head.Dependencies)
+            | _ -> 
+                dependencyGroups 
+                |> List.iter (fun g -> buildDependencyNodesByGroup excludedDependencies d.Add g)
             metadataNode.Add d
 
         let buildReferenceNode (fileName) =
@@ -135,7 +158,7 @@ module internal NupkgWriter =
 
         optional.References |> buildReferencesNode
         optional.FrameworkAssemblyReferences |> buildFrameworkReferencesNode
-        optional.Dependencies |> buildDependenciesNode optional.ExcludedDependencies
+        optional.DependencyGroups |> buildDependenciesNode optional.ExcludedDependencies
         XDocument(declaration, box root)
 
     let corePropsPath = sprintf "package/services/metadata/core-properties/%s.psmdcp" corePropsId
@@ -274,17 +297,19 @@ module internal NupkgWriter =
             |> toUri
 
         let addEntry path writerF =
-            if entries.Contains(path) then () else
+            if entries.Contains path then () else
             entries.Add path |> ignore
             let entry = zipFile.CreateEntry(path)
             use stream = entry.Open()
             writerF stream
 
-        let addEntryFromFile path source =
-            if entries.Contains(path) then () else
-            entries.Add path |> ignore
+        let addEntryFromFile (path:string) source =
+            let fullName = Path.GetFullPath source
+            let target = if isWindows then path.ToLowerInvariant() else path
+            if entries.Contains target then () else
+            entries.Add target |> ignore
 
-            zipFile.CreateEntryFromFile(source,path) |> ignore
+            zipFile.CreateEntryFromFile(fullName,path) |> ignore
 
         let ensureValidTargetName (target:string) =
             let target = ensureValidName target
@@ -373,7 +398,7 @@ module NuspecExtensions =
 
                 let optionalInfo = 
                     { optionalInfo with
-                        Dependencies = packages @ optionalInfo.Dependencies
+                        DependencyGroups = [ OptionalDependencyGroup.For None packages ]
                     }
                 let name = Path.GetFileNameWithoutExtension project.Name
                 // TODO - this might be the point to add in some info from the

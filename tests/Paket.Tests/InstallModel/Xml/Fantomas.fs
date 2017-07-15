@@ -30,7 +30,7 @@ let ``should generate Xml for Fantomas 1.5``() =
               [],
               Nuspec.Explicit ["FantomasLib.dll"])
 
-    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,true,KnownTargetProfiles.AllProfiles,None)
+    let ctx = ProjectFile.TryLoad("./ProjectFile/TestData/Empty.fsprojtest").Value.GenerateXml(model, System.Collections.Generic.HashSet<_>(),Map.empty,Some true,None,true,KnownTargetProfiles.AllProfiles,None)
     ctx.ChooseNodes.Head.OuterXml
     |> normalizeXml
     |> shouldEqual (normalizeXml expected)
@@ -50,7 +50,7 @@ let fullDoc = """<?xml version="1.0" encoding="utf-8"?>
   <ItemGroup>
     <Reference Include="FantomasLib">
       <HintPath>..\..\..\Fantomas\lib\FantomasLib.dll</HintPath>
-      <Private>True</Private>
+      <Private>True</Private>      
       <Paket>True</Paket>
     </Reference>
   </ItemGroup>
@@ -143,7 +143,7 @@ let fullDocWithRefernceConditionAndFrameworkRestriction = """<?xml version="1.0"
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Choose>
-    <When Condition="'$(LEGACY)' == 'True' And (($(TargetFrameworkIdentifier) == 'MonoAndroid') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS'))">
+    <When Condition="'$(LEGACY)' == 'True' And (($(TargetFrameworkIdentifier) == 'MonoAndroid' And $(TargetFrameworkVersion) == 'v1.0') Or ($(TargetFrameworkIdentifier) == 'Xamarin.iOS'))">
       <ItemGroup>
         <Reference Include="FantomasLib">
           <HintPath>..\..\..\Fantomas\lib\portable-net45+win8\FantomasLib.dll</HintPath>
@@ -163,7 +163,7 @@ let ``should generate full Xml with reference condition and framework restrictio
     let model =
         InstallModel.CreateFromLibs(PackageName "Fantomas", SemVer.Parse "1.5.0",
             [ FrameworkRestriction.Exactly (FrameworkIdentifier.XamariniOS)
-              FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid)] |> makeOrList |> getExplicitRestriction,
+              FrameworkRestriction.Exactly (FrameworkIdentifier.MonoAndroid MonoAndroidVersion.V1)] |> makeOrList |> getExplicitRestriction,
             [ @"..\Fantomas\lib\portable-net45+win8\FantomasLib.dll" ] |> fromLegacyList @"..\Fantomas\",
               [],
               [],

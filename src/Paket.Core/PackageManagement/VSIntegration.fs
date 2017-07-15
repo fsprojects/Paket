@@ -19,8 +19,10 @@ let TurnOffAutoRestore environment =
         environment.Projects
         |> List.map fst
         |> List.iter (fun project ->
-            project.RemoveImportForPaketTargets()
-            project.Save(false)
+            let toolsVersion = project.GetToolsVersion()
+            if toolsVersion < 15.0 then 
+                project.RemoveImportForPaketTargets()
+                project.Save(false)
         )
     }
 
@@ -30,8 +32,17 @@ let TurnOnAutoRestore fromBootstrapper environment =
 
     trial {
         do! TurnOffAutoRestore environment
-        do! downloadLatestBootstrapperAndTargets fromBootstrapper environment 
+        do! downloadLatestBootstrapperAndTargets environment 
         let paketTargetsPath = Path.Combine(exeDir, Constants.TargetsFileName)
+
+        let bootStrapperFileName = Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName, Constants.BootstrapperFileName)
+        let paketFileName = FileInfo(Path.Combine(environment.RootDirectory.FullName, Constants.PaketFolderName, Constants.PaketFileName))
+        try
+            if paketFileName.Exists then
+                paketFileName.Delete()
+            File.Move(bootStrapperFileName,paketFileName.FullName)
+        with
+        | _ -> ()
 
         environment.Projects
         |> List.map fst

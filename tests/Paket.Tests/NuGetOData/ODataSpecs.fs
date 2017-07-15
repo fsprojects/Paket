@@ -10,16 +10,20 @@ open Paket.NuGetV3
 open Paket.Requirements
 open Paket.TestHelpers
 open Domain
+open Paket.NuGetCache
 
 let fakeUrl = "http://doesntmatter"
 
-let parse fileName =
+let parseList fileName =
     System.Environment.CurrentDirectory <- Path.GetDirectoryName __SOURCE_DIRECTORY__
-    parseODataDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",File.ReadAllText fileName)
+    parseODataListDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",File.ReadAllText fileName)
+let parseEntry fileName =
+    System.Environment.CurrentDirectory <- Path.GetDirectoryName __SOURCE_DIRECTORY__
+    parseODataEntryDetails("tenp",fakeUrl,PackageName "package",SemVer.Parse "0",File.ReadAllText fileName)
 
 [<Test>]
 let ``can detect explicit dependencies for Fantomas``() = 
-    parse "NuGetOData/Fantomas.xml"
+    parseEntry "NuGetOData/Fantomas.xml"
     |> shouldEqual 
         { PackageName = "Fantomas"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fantomas/1.6.0"
@@ -31,10 +35,15 @@ let ``can detect explicit dependencies for Fantomas``() =
           SourceUrl = fakeUrl }
 
 [<Test>]
+let ``can parse an empty odata result``() =
+    parseList "NuGetOData/EmptyFeedList.xml"
+    |> shouldEqual ODataSearchResult.EmptyResult
+
+[<Test>]
 let ``can detect explicit dependencies for Rx-PlaformServices``() = 
-    parse "NuGetOData/Rx-PlatformServices.xml"
-    |> shouldEqual 
-        { PackageName = "Rx-PlatformServices"
+    parseList "NuGetOData/Rx-PlatformServices.xml"
+    |> shouldEqual
+       ({ PackageName = "Rx-PlatformServices"
           DownloadUrl = "https://www.nuget.org/api/v2/package/Rx-PlatformServices/2.3.0"
           SerializedDependencies = 
                 [PackageName "Rx-Interfaces",DependenciesFileParser.parseVersionRequirement(">= 2.2"), "true"
@@ -44,12 +53,13 @@ let ``can detect explicit dependencies for Rx-PlaformServices``() =
           Version = "2.3.0"
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           SourceUrl = fakeUrl }
+        |> ODataSearchResult.Match)
 
 [<Test>]
 let ``can detect explicit dependencies for EasyNetQ``() = 
-    parse "NuGetOData/EasyNetQ.xml"
+    parseList "NuGetOData/EasyNetQ.xml"
     |> shouldEqual 
-        { PackageName = "EasyNetQ"
+       ({ PackageName = "EasyNetQ"
           DownloadUrl = "https://www.nuget.org/api/v2/package/EasyNetQ/0.40.3.352"
           SerializedDependencies = 
                 [PackageName "RabbitMQ.Client",DependenciesFileParser.parseVersionRequirement(">= 3.4.3"),"true"]
@@ -58,10 +68,11 @@ let ``can detect explicit dependencies for EasyNetQ``() =
           CacheVersion = NuGet.NuGetPackageCache.CurrentCacheVersion
           Version = "0.40.3.352"
           SourceUrl = fakeUrl }
+        |> ODataSearchResult.Match)
 
 [<Test>]
 let ``can detect explicit dependencies for Fleece``() = 
-    parse "NuGetOData/Fleece.xml"
+    parseEntry "NuGetOData/Fleece.xml"
     |> shouldEqual 
         { PackageName = "Fleece"
           DownloadUrl = "http://www.nuget.org/api/v2/package/Fleece/0.4.0"
@@ -78,7 +89,7 @@ let ``can detect explicit dependencies for Fleece``() =
 
 [<Test>]
 let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() = 
-    let item = parse "NuGetOData/ReadOnlyCollectionExtensions.xml"
+    let item = parseEntry "NuGetOData/ReadOnlyCollectionExtensions.xml"
     item
     |> shouldEqual 
         { PackageName = "ReadOnlyCollectionExtensions"
@@ -94,9 +105,9 @@ let ``can detect explicit dependencies for ReadOnlyCollectionExtensions``() =
 
 [<Test>]
 let ``can detect explicit dependencies for Math.Numerics``() = 
-    parse "NuGetOData/Math.Numerics.xml"
+    parseList "NuGetOData/Math.Numerics.xml"
     |> shouldEqual 
-        { PackageName = "MathNet.Numerics"
+       ({ PackageName = "MathNet.Numerics"
           DownloadUrl = "http://www.nuget.org/api/v2/package/MathNet.Numerics/3.3.0"
           Unlisted = false
           Version = "3.3.0"
@@ -105,10 +116,11 @@ let ``can detect explicit dependencies for Math.Numerics``() =
           SerializedDependencies = 
             [PackageName "TaskParallelLibrary",DependenciesFileParser.parseVersionRequirement(">= 1.0.2856"), "&& (>= net35) (< net40)" ]
           SourceUrl = fakeUrl }
+        |> ODataSearchResult.Match)
 
 [<Test>]
 let ``can detect explicit dependencies for Math.Numerics.FSharp``() = 
-    (parse "NuGetOData/Math.Numerics.FSharp.xml")|> NuGet.NuGetPackageCache.getDependencies |> Seq.head
+    (parseList "NuGetOData/Math.Numerics.FSharp.xml") |> ODataSearchResult.get |> NuGet.NuGetPackageCache.getDependencies |> Seq.head
     |> shouldEqual 
         (PackageName "MathNet.Numerics",
          DependenciesFileParser.parseVersionRequirement("3.3.0"),makeOrList [])
@@ -120,7 +132,7 @@ let ``can calculate v3 path``() =
 
 [<Test>]
 let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() = 
-    let odata = parse "NuGetOData/Microsoft.AspNet.WebApi.Client.xml"
+    let odata = parseList "NuGetOData/Microsoft.AspNet.WebApi.Client.xml" |> ODataSearchResult.get
     odata.PackageName |> shouldEqual "Microsoft.AspNet.WebApi.Client"
     odata.DownloadUrl |> shouldEqual"https://www.nuget.org/api/v2/package/Microsoft.AspNet.WebApi.Client/5.2.3"
     let dependencies = odata|> NuGet.NuGetPackageCache.getDependencies |> Array.ofList
@@ -134,7 +146,7 @@ let ``can detect explicit dependencies for Microsoft.AspNet.WebApi.Client``() =
 
 [<Test>]
 let ``can detect explicit dependencies for WindowsAzure.Storage``() = 
-    let odata = parse "NuGetOData/WindowsAzure.Storage.xml"
+    let odata = parseList "NuGetOData/WindowsAzure.Storage.xml" |> ODataSearchResult.get
     odata.PackageName |> shouldEqual "WindowsAzure.Storage"
     odata.DownloadUrl |> shouldEqual"https://www.nuget.org/api/v2/package/WindowsAzure.Storage/4.4.1-preview"
     let dependencies = odata|> NuGet.NuGetPackageCache.getDependencies |> Array.ofList
@@ -156,7 +168,7 @@ let ``can detect explicit dependencies for WindowsAzure.Storage``() =
 
 [<Test>]
 let ``can ignore unknown frameworks``() = 
-    let parsed = parse "NuGetOData/BenchmarkDotNet-UnknownFramework.xml"
+    let parsed = parseList "NuGetOData/BenchmarkDotNet-UnknownFramework.xml" |> ODataSearchResult.get
     parsed
     |> shouldEqual 
         { PackageName = "BenchmarkDotNet"

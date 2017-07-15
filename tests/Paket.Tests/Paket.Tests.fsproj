@@ -93,7 +93,27 @@
     <None Include="Nuspec\ReadOnlyCollectionExtensions.nuspec" />
     <None Include="Nuspec\WindowsAzure.Storage.nuspec" />
     <None Include="Nuspec\EasyNetQ.nuspec" />
+    <None Include="Nuspec\Xamarin.Forms.nuspec" />
     <Compile Include="Nuspec\NuspecSpecs.fs" />
+    <Compile Include="NuGetLocal\NuGetLocalSpecs.fs" />
+    <None Include="NuGetLocal\case1\package.name.0.1.0-alpha2.nupkg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="NuGetLocal\case1\package.name.0.1.2.nupkg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="NuGetLocal\case1\package.name.1.2.0.nupkg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="NuGetLocal\case2\package.name.0.1.0.0-alpha2.nupkg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="NuGetLocal\case2\package.name.1.2.0.0.nupkg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="NuGetLocal\case3\netstedFolder\package.in.nested.folder.1.0.0.nupkg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <Content Include="PackagesConfig\xunit.visualstudio.packages.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -113,6 +133,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="NuGetOData\Fleece.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="NuGetOData\EmptyFeedList.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="NuGetOData\ReadOnlyCollectionExtensions.xml">
@@ -173,7 +196,8 @@
     <Compile Include="Resolver\PropertyTestGenerators.fs" />
     <Compile Include="Resolver\PropertyTests.fs" />
     <Compile Include="Resolver\DependencyGroupsAndRestrictions.fs" />
-    <Compile Include="Resolver\ResolverRestrictionTests.fs" />
+    <Compile Include="Resolver\ResolverErrorSituationTests.fs" />
+    <Compile Include="Resolver\PrereleaseSpecs.fs" />
     <Compile Include="Lockfile\GeneratorSpecs.fs" />
     <Compile Include="Lockfile\GenerateWithOptionsSpecs.fs" />
     <Compile Include="Lockfile\GenerateAuthModeSpecs.fs" />
@@ -184,8 +208,8 @@
     <Compile Include="ReferencesFile\ReferencesFileSpecs.fs" />
     <Compile Include="LocalFile\LocalFileSpecs.fs" />
     <Compile Include="Simplifier\BasicScenarioSpecs.fs" />
-    <None Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFrameworkAndOutputPath.csprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="ProjectFile\TestData\EmptyFsharpGuid.fsprojtest">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -251,6 +275,12 @@
     <None Include="ProjectFile\TestData\Unity.csprojtest">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="ProjectFile\TestData\EmptyCsharpGuid.csprojtest">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="ProjectFile\TestData\MicrosoftNetSdkWithTargetFramework.csprojtest">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <Compile Include="ProjectFile\ConditionSpecs.fs" />
     <Compile Include="ProjectFile\TargetFrameworkSpecs.fs" />
     <Compile Include="ProjectFile\FileBuildActionSpecs.fs" />
@@ -262,6 +292,7 @@
     <Compile Include="ProjectFile\UpdateFromNugetSpecs.fs" />
     <Compile Include="InstallModel\FrameworkIdentifierSpecs.fs" />
     <Compile Include="InstallModel\ProcessingSpecs.fs" />
+    <Compile Include="InstallModel\Xml\ControlzEx.fs" />
     <Compile Include="InstallModel\Xml\Fantomas.fs" />
     <Compile Include="InstallModel\Xml\xunit.runner.fs" />
     <Compile Include="InstallModel\Xml\StyleCop.MSBuild.fs" />
@@ -302,6 +333,7 @@
   <ItemGroup>
     <Reference Include="mscorlib" />
     <Reference Include="System" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Security" />
     <Reference Include="System.Xml" />

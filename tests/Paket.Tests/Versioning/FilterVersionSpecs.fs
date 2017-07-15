@@ -4,6 +4,9 @@ open Paket
 open NUnit.Framework
 open FsUnit
 
+let isInRangeIgnorePreRelease (versionRange:VersionRange) semVer =
+    VersionRequirement(versionRange,PreReleaseStatus.No).IsInRange (SemVer.Parse semVer,true)
+
 let isInRangeNoPreRelease (versionRange:VersionRange) semVer =
     VersionRequirement(versionRange,PreReleaseStatus.No).IsInRange (SemVer.Parse semVer)
 
@@ -12,6 +15,32 @@ let isInRangePreRelease (versionRange:VersionRange) semVer =
 
 let isInRange (version:VersionRequirement) semVer =
     version.IsInRange (SemVer.Parse semVer)
+
+[<Test>]
+let ``compares versions with prerelease even if ignorePreRelease is true``() =
+    // Check that range.IsInRange(version, ignorePreRelease=true) only ignores PreReleaseStatus.No
+    // specified in 'range'. The actual versions should still be compared correctly.
+    // Minimum
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Minimum (SemVer.Parse "2.0")) |> shouldEqual true
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Minimum (SemVer.Parse "2.1")) |> shouldEqual false
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Minimum (SemVer.Parse "2.1-pre1")) |> shouldEqual true
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Minimum (SemVer.Parse "2.1-pre2")) |> shouldEqual false
+    "2.1" |> isInRangeIgnorePreRelease (VersionRange.Minimum (SemVer.Parse "2.1-pre1")) |> shouldEqual true
+    // Maximum
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Maximum (SemVer.Parse "2.1")) |> shouldEqual true
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Maximum (SemVer.Parse "2.0")) |> shouldEqual false
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Maximum (SemVer.Parse "2.1-pre1")) |> shouldEqual true
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Maximum (SemVer.Parse "2.1-pre0")) |> shouldEqual false
+    "2.1" |> isInRangeIgnorePreRelease (VersionRange.Maximum (SemVer.Parse "2.1-pre1")) |> shouldEqual false
+    // Specific
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Specific (SemVer.Parse "2.1-pre1")) |> shouldEqual true
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Specific (SemVer.Parse "2.1")) |> shouldEqual false
+    "2.1" |> isInRangeIgnorePreRelease (VersionRange.Specific (SemVer.Parse "2.1-pre1")) |> shouldEqual false
+    // Range
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.Parse "2.0"), (SemVer.Parse "2.1"), VersionRangeBound.Excluding)) |> shouldEqual true
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Range (VersionRangeBound.Excluding, (SemVer.Parse "2.1"), (SemVer.Parse "2.2"), VersionRangeBound.Excluding)) |> shouldEqual false
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.Parse "2.0"), (SemVer.Parse "2.1"), VersionRangeBound.Including)) |> shouldEqual true
+    "2.1-pre1" |> isInRangeIgnorePreRelease (VersionRange.Range (VersionRangeBound.Including, (SemVer.Parse "2.1"), (SemVer.Parse "2.2"), VersionRangeBound.Including)) |> shouldEqual false
 
 [<Test>]
 let ``can check if in range for Specific``() =

@@ -42,6 +42,9 @@ module LockFileSerializer =
         match options.Settings.CopyLocal with
         | Some x -> yield "COPY-LOCAL: " + x.ToString().ToUpper()
         | None -> ()
+        match options.Settings.SpecificVersion with
+        | Some x -> yield "SPECIFIC-VERSION: " + x.ToString().ToUpper()
+        | None -> ()
         match options.Settings.CopyContentToOutputDirectory with
         | Some CopyToOutputDirectorySettings.Always -> yield "COPY-CONTENT-TO-OUTPUT-DIR: ALWAYS"
         | Some CopyToOutputDirectorySettings.Never -> yield "COPY-CONTENT-TO-OUTPUT-DIR: NEVER"
@@ -107,17 +110,26 @@ module LockFileSerializer =
                             { package.Settings with FrameworkRestrictions = ExplicitRestriction FrameworkRestriction.NoRestriction }
                         else
                             package.Settings
+
+                      let s =
+                        // add "clitool"
+                        match package.IsCliTool, settings.ToString().ToLower()  with
+                        | true, "" -> "clitool: true"
+                        | true, s -> s + ", clitool: true"
+                        | _, s -> s
+
                       let s =
                         // add "isRuntimeDependency"
-                        match package.IsRuntimeDependency, settings.ToString().ToLower() with
+                        match package.IsRuntimeDependency, s with
                         | true, "" -> "isRuntimeDependency: true"
                         | true, s -> s + ", isRuntimeDependency: true"
                         | _, s -> s
 
+
                       if s = "" then 
-                        yield sprintf "    %O %s" package.Name versionStr 
+                          yield sprintf "    %O %s" package.Name versionStr 
                       else
-                        yield sprintf "    %O %s - %s" package.Name versionStr s
+                          yield sprintf "    %O %s - %s" package.Name versionStr s
 
                       for name,v,restrictions in package.Dependencies do
                           let versionStr = 
@@ -233,6 +245,7 @@ module LockFileParser =
     | GenerateLoadScripts of bool option
     | FrameworkRestrictions of FrameworkRestrictions
     | CopyLocal of bool
+    | SpecificVersion of bool
     | CopyContentToOutputDir of CopyToOutputDirectorySettings
     | Redirects of bool option
     | ReferenceCondition of string
@@ -263,6 +276,7 @@ module LockFileParser =
             InstallOption (Redirects setting)
         | _, String.RemovePrefix "IMPORT-TARGETS:" trimmed -> InstallOption(ImportTargets(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "COPY-LOCAL:" trimmed -> InstallOption(CopyLocal(trimmed.Trim() = "TRUE"))
+        | _, String.RemovePrefix "SPECIFIC-VERSION:" trimmed -> InstallOption(SpecificVersion(trimmed.Trim() = "TRUE"))
         | _, String.RemovePrefix "GENERATE-LOAD-SCRIPTS:" trimmed -> 
             let setting =
                 match trimmed.Trim() with
@@ -351,6 +365,7 @@ module LockFileParser =
         | Redirects mode -> { currentGroup.Options with Redirects = mode }
         | ImportTargets mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with ImportTargets = Some mode } } 
         | CopyLocal mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyLocal = Some mode }}
+        | SpecificVersion mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with SpecificVersion = Some mode }}
         | CopyContentToOutputDir mode -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with CopyContentToOutputDirectory = Some mode }}
         | FrameworkRestrictions r -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with FrameworkRestrictions = r }}
         | OmitContent omit -> { currentGroup.Options with Settings = { currentGroup.Options.Settings with OmitContent = Some omit }}
@@ -371,6 +386,15 @@ module LockFileParser =
                     ("framework: " + parts.[1])
                 else
                     parts.[1]
+
+            let isCliTool, optionsString =
+                if optionsString.EndsWith ", clitool: true" then
+                    true,optionsString.Replace(", clitool: true","")
+                elif optionsString.EndsWith "clitool: true" then
+                    true,optionsString.Replace("clitool: true","")
+                else
+                    false,optionsString
+
             let isRuntimeDependency, optionsString =
                 if optionsString.EndsWith ", isRuntimeDependency: true" then
                     true, optionsString.Substring(0, optionsString.Length - ", isRuntimeDependency: true".Length)
@@ -378,7 +402,8 @@ module LockFileParser =
                     assert (optionsString = "isRuntimeDependency: true")
                     true, ""
                 else false, optionsString
-            parts.[0],isRuntimeDependency,InstallSettings.Parse(optionsString)
+
+            parts.[0],isCliTool,isRuntimeDependency,InstallSettings.Parse(optionsString)
 
         ([{ GroupName = Constants.MainDependencyGroup; RepositoryType = None; RemoteUrl = None; Packages = []; SourceFiles = []; Options = InstallOptions.Default; LastWasPackage = false }], lockFileLines)
         ||> Seq.fold(fun state line ->
@@ -413,7 +438,7 @@ module LockFileParser =
                 | NugetPackage details ->
                     match currentGroup.RemoteUrl with
                     | Some remote -> 
-                        let package,isRuntimeDependency,settings = parsePackage details
+                        let package,isCliTool,isRuntimeDependency,settings = parsePackage details
                         let parts' = package.Split ' '
                         let version = 
                             if parts'.Length < 2 then
@@ -429,11 +454,12 @@ module LockFileParser =
                                       Unlisted = false
                                       Settings = settings
                                       Version = SemVer.Parse version
+                                      IsCliTool = isCliTool
                                       // TODO: write stuff into the lockfile and read it here
                                       IsRuntimeDependency = isRuntimeDependency } :: currentGroup.Packages }::otherGroups
                     | None -> failwith "no source has been specified."
                 | NugetDependency (name, v, frameworkSettings) ->
-                    let version,isRuntimeDependency,settings = parsePackage v
+                    let version,_,isRuntimeDependency,settings = parsePackage v
                     assert (not isRuntimeDependency)
                     if currentGroup.LastWasPackage then
                         match currentGroup.Packages with
@@ -452,6 +478,7 @@ module LockFileParser =
                                                     Dependencies = Set.add (PackageName name, DependenciesFileParser.parseVersionRequirement version) currentFile.Dependencies
                                                 } :: rest }  ::otherGroups
                         | [] -> failwithf "cannot set a dependency to %s %s- no remote file has been specified." name v
+
                 | SourceFile(origin, details) ->
                     match origin with
                     | GitHubLink | GistLink ->
@@ -750,7 +777,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             LockFile(lockFileName, groups)
         with
         | exn ->
-            failwithf "Error during parsing of %s.%sMessage: %s" lockFileName Environment.NewLine exn.Message
+            raise <| Exception (sprintf "Error during parsing of '%s'." lockFileName, exn)
 
     member this.GetPackageHull(referencesFile:ReferencesFile) =
         let usedPackages = Dictionary<_,_>()
@@ -781,7 +808,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                         let k = g.Key,d
                         if usedPackages.ContainsKey k |> not then
                             usedPackages.Add(k,package)
-                with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
+                with exn -> raise <| Exception(sprintf "Error while getting all dependencies in '%s'" referencesFile.FileName, exn))
 
         usedPackages
 
@@ -800,18 +827,32 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
         let usedPackageKeys = HashSet<_>()
         let toVisit = ref Set.empty
         let visited = ref Set.empty
+        let cliTools = ref Set.empty
+        let resolution =
+            match this.Groups |> Map.tryFind groupName with
+            | Some group -> group.Resolution
+            | None -> failwithf "Error for %s: Group %O can't be found in paket.lock file." referencesFile.FileName groupName
 
         match referencesFile.Groups |> Map.tryFind groupName with
         | Some g ->
             for p in g.NugetPackages do
                 let k = groupName,p.Name
-                if usedPackageKeys.Contains k then
-                    failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
-                usedPackageKeys.Add k |> ignore
-
-                let deps = this.GetDirectDependenciesOfSafe(groupName,p.Name,referencesFile.FileName) 
+                let package = 
+                    match resolution |> Map.tryFind p.Name with
+                    | Some p -> p
+                    | None -> failwithf "Error for %s: Package %O was not found in group %O of the paket.lock file." referencesFile.FileName p.Name groupName
                 
-                toVisit := Set.add (k,p,deps) !toVisit
+                if package.IsCliTool then
+                    cliTools := Set.add package !cliTools
+                else
+                    if usedPackageKeys.Contains k then
+                        failwithf "Package %O is referenced more than once in %s within group %O." p.Name referencesFile.FileName groupName
+                
+                    usedPackageKeys.Add k |> ignore
+
+                    let deps = this.GetDirectDependenciesOfSafe(groupName,p.Name,referencesFile.FileName) 
+                
+                    toVisit := Set.add (k,p,deps) !toVisit
         | None -> ()
 
         while !toVisit <> Set.empty do
@@ -836,7 +877,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
             visited := 
                 !visited
                 |> Set.remove ((groupName,packageName),p,deps)
-                |> Set.map (fun ((g,p),b,c) -> if g = groupName then (g,p),b,Set.filter ((<>) packageName) c else (g,p),b,c)]
+                |> Set.map (fun ((g,p),b,c) -> if g = groupName then (g,p),b,Set.filter ((<>) packageName) c else (g,p),b,c)],!cliTools
 
 
     member this.GetPackageHull(groupName,referencesFile:ReferencesFile) =
@@ -857,7 +898,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                         let k = groupName,d
                         if usedPackages.ContainsKey k |> not then
                             usedPackages.Add(k,package)
-                with exn -> failwithf "%s - in %s" exn.Message referencesFile.FileName)
+                with exn -> raise <| Exception(sprintf "Error while getting all dependencies in '%s'" referencesFile.FileName, exn))
         | None -> ()
 
         usedPackages
@@ -896,7 +937,7 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
                 let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
                 let nuspec = Nuspec.Load nuspec.FullName
-                let files = NuGetV2.GetLibFiles(folder.FullName)
+                let files = NuGet.GetLibFiles(folder.FullName)
                 InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, FrameworkRestriction.NoRestriction, files, [], [], nuspec)
     
 

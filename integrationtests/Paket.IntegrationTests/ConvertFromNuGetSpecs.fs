@@ -89,3 +89,31 @@ let ``#1922 should remove references to moved analyzers``() =
     StringAssert.Contains(@"<Analyzer Include=""..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\Newtonsoft.Json.dll"">", projectXml)
     StringAssert.Contains(@"<Analyzer Include=""..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll"">", projectXml)
     StringAssert.Contains(@"<Analyzer Include=""..\packages\StyleCop.Analyzers\analyzers\dotnet\cs\StyleCop.Analyzers.dll"">", projectXml)
+
+let testPaketDependenciesFileInSolution scenario expectedFiles =
+    paket "convert-from-nuget" scenario |> ignore
+
+    let expectedLines = 
+        [ yield "Project\\(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\"\\) = \"\\.paket\", \"\\.paket\", \"{[^}]+}\""
+          yield "\s*ProjectSection\\(SolutionItems\\) = preProject"
+          for f in expectedFiles do yield sprintf "\s*%s = %s" f f
+          yield "\s*EndProjectSection"
+          yield "EndProject" ]
+        |> String.concat Environment.NewLine
+
+    let slnFileText = File.ReadAllText(Path.Combine(scenarioTempPath scenario, "sln.sln"))
+    
+    System.Text.RegularExpressions.Regex.IsMatch(slnFileText, expectedLines)
+    |> shouldEqual true
+
+[<Test>]
+let ``#2161 should put paket.dependencies inside the .paket folder when it's already present in the sln file``() =
+    testPaketDependenciesFileInSolution "i002161-convert-existing-paket-folder" ["paket.dependencies"]
+
+[<Test>]
+let ``#2512 should put paket.dependencies inside the .paket folder when it's absent in the sln file``() =
+    testPaketDependenciesFileInSolution "i002512-convert-absent-paket-folder" ["paket.dependencies"]
+
+[<Test>]
+let ``#2512 should put paket.dependencies inside the .paket folder that already has files in it``() =
+    testPaketDependenciesFileInSolution "i002512-convert-paket-folder-with-files" ["paket.dependencies"; "SomeFile"]

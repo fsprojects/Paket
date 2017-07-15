@@ -31,24 +31,26 @@ let getSHA1OfBranch origin owner project (versionRestriction:VersionRestriction)
             let url = sprintf "https://api.github.com/repos/%s/%s/commits/%s" owner project branch
             let! document = lookupDocument(auth authKey url,url)
             match document with
-            | Some document ->
+            | SuccessResponse (document) ->
                 let json = JObject.Parse(document)
                 return json.["sha"].ToString()
-            | None -> 
-                failwithf "Could not find hash for %s" url
-                return ""
+            | NotFound ->
+                return raise <| new Exception(sprintf "Could not find (404) hash for %s" url)
+            | UnknownError err ->
+                return raise <| new Exception(sprintf "Could not find hash for %s" url, err.SourceException)
         | ModuleResolver.Origin.GistLink ->
             let branch = ModuleResolver.getVersionRequirement versionRestriction
             let url = sprintf "https://api.github.com/gists/%s/%s" project branch
             let! document = lookupDocument(auth authKey url,url)
             match document with
-            | Some document ->
+            | SuccessResponse document ->
                 let json = JObject.Parse(document)
                 let latest = json.["history"].First.["version"]
                 return latest.ToString()
-            | None -> 
-                failwithf "Could not find hash for %s" url
-                return ""
+            | NotFound ->
+                return raise <| new Exception(sprintf "Could not find hash for %s" url)
+            | UnknownError err ->
+                return raise <| new Exception(sprintf "Could not find hash for %s" url, err.SourceException)
         | ModuleResolver.Origin.GitLink (LocalGitOrigin path) ->
             let path = path.Replace(@"file:///", "")
             let branch = 
@@ -132,16 +134,24 @@ let downloadDependenciesFile(force,rootPath,groupName,parserF,remoteFile:ModuleR
         if exists then
             return parserF (File.ReadAllText(destination.FullName))
         else
-            let! result = lookupDocument(auth,url)
+            let! text,depsFile = async {
+                // TODO: Fixme, something is wrong on testcase #1341
+                if url <> "file://" then
+                    let! result = lookupDocument(auth,url)
 
-            let text,depsFile =
-                match result with
-                | Some text -> 
-                        try
-                            text,parserF text
-                        with 
-                        | _ -> "",parserF ""
-                | _ -> "",parserF ""
+                    match result with
+                    | SuccessResponse text ->
+                            try
+                                return text,parserF text
+                            with
+                            | _ -> return  "",parserF ""
+                    | NotFound -> return "", parserF ""
+                    | UnknownError e ->
+                        Logging.traceWarnfn "Error while retrieving '%s': %O" url e.SourceException
+                        return  "",parserF ""
+                else
+                    Logging.traceWarnfn "Fixme #1341, proper search for dependencies file when using 'http file:///'"
+                    return "",parserF "" }
 
             Directory.CreateDirectory(destination.FullName |> Path.GetDirectoryName) |> ignore
             File.WriteAllText(destination.FullName, text)

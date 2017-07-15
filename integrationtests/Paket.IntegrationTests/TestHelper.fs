@@ -36,16 +36,10 @@ let prepare scenario =
     let scenarioPath = scenarioTempPath scenario
     CleanDir scenarioPath
     CopyDir scenarioPath originalScenarioPath (fun _ -> true)
-    Directory.GetFiles(scenarioPath, "*.fsprojtemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "fsproj")))
-    Directory.GetFiles(scenarioPath, "*.csprojtemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "csproj")))
-    Directory.GetFiles(scenarioPath, "*.vcxprojtemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "vcxproj")))
-    Directory.GetFiles(scenarioPath, "*.templatetemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "template")))
-    Directory.GetFiles(scenarioPath, "*.jsontemplate", SearchOption.AllDirectories)
-    |> Seq.iter (fun f -> File.Move(f, Path.ChangeExtension(f, "json")))
+
+    for ext in ["fsproj";"csproj";"vcxproj";"template";"json"] do
+        for file in Directory.GetFiles(scenarioPath, (sprintf "*.%stemplate" ext), SearchOption.AllDirectories) do
+            File.Move(file, Path.ChangeExtension(file, ext))
 
 let directPaketInPath command scenarioPath =
     #if INTERACTIVE
@@ -54,22 +48,66 @@ let directPaketInPath command scenarioPath =
           info.FileName <- paketToolPath
           info.WorkingDirectory <- scenarioPath
           info.Arguments <- command) 
-          (System.TimeSpan.FromMinutes 5.)
+          (System.TimeSpan.FromMinutes 7.)
           false
           (printfn "%s")
           (printfn "%s")
     string result
     #else
+    Environment.SetEnvironmentVariable("PAKET_DETAILED_ERRORS", "true")
+    printfn "%s> paket %s" scenarioPath command
+    let perfMessages = ResizeArray()
+    let msgs = ResizeArray()
+    let mutable perfMessagesStarted = false
+    let addAndPrint isError msg =
+        if not isError then
+            if msg = "Performance:" then
+                perfMessagesStarted <- true
+            elif perfMessagesStarted then
+                perfMessages.Add(msg)
+                
+        msgs.Add((isError, msg))
+        
     let result =
-        ExecProcessAndReturnMessages (fun info ->
-          info.FileName <- paketToolPath
-          info.WorkingDirectory <- scenarioPath
-          info.Arguments <- command) (System.TimeSpan.FromMinutes 5.)
-    if result.ExitCode <> 0 then 
-        let errors = String.Join(Environment.NewLine,result.Errors)
-        printfn "%s" <| String.Join(Environment.NewLine,result.Messages)
+        try
+            ExecProcessWithLambdas (fun info ->
+              info.FileName <- paketToolPath
+              info.WorkingDirectory <- scenarioPath
+              info.Arguments <- command)
+              (System.TimeSpan.FromMinutes 7.)
+              true
+              (addAndPrint true)
+              (addAndPrint false)
+        with exn ->
+            if exn.Message.Contains "timed out" then
+                printfn "PROCESS TIMED OUT, OUTPUT WAS: "
+            else
+                printfn "ExecProcessWithLambdas failed. Output was: "
+
+            for isError, msg in msgs do
+                printfn "%s%s" (if isError then "ERR: " else "") msg
+            reraise()
+    // Only throw after the result <> 0 check because the current test might check the argument parsing
+    // this is the only case where no performance is printed
+    let isUsageError = result <> 0 && msgs |> Seq.filter fst |> Seq.map snd |> Seq.exists (fun msg -> msg.Contains "USAGE:")
+    if not isUsageError then
+        if perfMessages.Count = 0 then
+            failwith "No Performance messages recieved in test!"
+        printfn "Performance:"
+        for msg in perfMessages do
+            printfn "%s" msg
+
+    // always print stderr
+    for isError, msg in msgs do
+        if isError then
+            printfn "ERR: %s" msg
+
+    if result <> 0 then 
+        let errors = String.Join(Environment.NewLine,msgs |> Seq.filter fst |> Seq.map snd)
         failwith errors      
-    String.Join(Environment.NewLine,result.Messages)
+
+
+    String.Join(Environment.NewLine,msgs |> Seq.map snd)
     #endif
 
 let directPaket command scenario =

@@ -11,7 +11,7 @@ open Paket.Requirements
 let resolve graph updateMode (cfg : DependenciesFile) =
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
     cfg.Resolve(true,noSha1,VersionsFromGraphAsSeq graph, (fun _ _ _ _ -> []),PackageDetailsFromGraph graph,(fun _ _ -> None),groups,updateMode).[Constants.MainDependencyGroup].ResolvedPackages.GetModelOrFail()
-    
+
 let graph1 = 
   GraphOfNuspecs [
     """<?xml version="1.0" encoding="utf-8" standalone="yes"?>

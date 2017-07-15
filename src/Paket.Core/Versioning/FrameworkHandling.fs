@@ -30,14 +30,14 @@ type DotNetStandardVersion =
         | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
-        | DotNetStandardVersion.V1_0 -> "10"
-        | DotNetStandardVersion.V1_1 -> "11"
-        | DotNetStandardVersion.V1_2 -> "12"
-        | DotNetStandardVersion.V1_3 -> "13"
-        | DotNetStandardVersion.V1_4 -> "14"
-        | DotNetStandardVersion.V1_5 -> "15"
-        | DotNetStandardVersion.V1_6 -> "16"
-        | DotNetStandardVersion.V2_0 -> "20"
+        | DotNetStandardVersion.V1_0 -> "1.0"
+        | DotNetStandardVersion.V1_1 -> "1.1"
+        | DotNetStandardVersion.V1_2 -> "1.2"
+        | DotNetStandardVersion.V1_3 -> "1.3"
+        | DotNetStandardVersion.V1_4 -> "1.4"
+        | DotNetStandardVersion.V1_5 -> "1.5"
+        | DotNetStandardVersion.V1_6 -> "1.6"
+        | DotNetStandardVersion.V2_0 -> "2.0"
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
@@ -150,9 +150,9 @@ type DotNetCoreVersion =
         | V2_0 -> "v2.0"
     member this.ShortString() =
         match this with
-        | DotNetCoreVersion.V1_0 -> "10"
-        | DotNetCoreVersion.V1_1 -> "11"
-        | DotNetCoreVersion.V2_0 -> "20"
+        | DotNetCoreVersion.V1_0 -> "1.0"
+        | DotNetCoreVersion.V1_1 -> "1.1"
+        | DotNetCoreVersion.V2_0 -> "2.0"
 
 [<RequireQualifiedAccess>]
 /// The Framework version.
@@ -276,6 +276,55 @@ type SilverlightVersion =
         | SilverlightVersion.V5 -> "v5.0"
 
 [<RequireQualifiedAccess>]
+type MonoAndroidVersion =
+    | V1
+    | V22
+    | V23
+    | V403
+    | V41
+    | V42
+    | V43
+    | V44
+    | V44W
+    | V5
+    | V51
+    | V6
+    | V7
+    | V71
+    member this.ShortString() =
+        match this with
+        | MonoAndroidVersion.V1    -> ""
+        | MonoAndroidVersion.V22   -> "2.2"
+        | MonoAndroidVersion.V23   -> "2.3"
+        | MonoAndroidVersion.V403  -> "4.0.3"
+        | MonoAndroidVersion.V41   -> "4.1"
+        | MonoAndroidVersion.V42   -> "4.2"
+        | MonoAndroidVersion.V43   -> "4.3"
+        | MonoAndroidVersion.V44   -> "4.4"
+        | MonoAndroidVersion.V44W  -> "4.4W"
+        | MonoAndroidVersion.V5    -> "5.0"
+        | MonoAndroidVersion.V51   -> "5.1"
+        | MonoAndroidVersion.V6    -> "6.0"
+        | MonoAndroidVersion.V7    -> "7.0"
+        | MonoAndroidVersion.V71   -> "7.1"
+    override this.ToString() =
+        match this with
+        | MonoAndroidVersion.V1    -> "v1.0"
+        | MonoAndroidVersion.V22   -> "v2.2"
+        | MonoAndroidVersion.V23   -> "v2.3"
+        | MonoAndroidVersion.V403  -> "v4.0.3"
+        | MonoAndroidVersion.V41   -> "v4.1"
+        | MonoAndroidVersion.V42   -> "v4.2"
+        | MonoAndroidVersion.V43   -> "v4.3"
+        | MonoAndroidVersion.V44   -> "v4.4"
+        | MonoAndroidVersion.V44W  -> "v4.4W"
+        | MonoAndroidVersion.V5    -> "v5.0"
+        | MonoAndroidVersion.V51    -> "v5.1"
+        | MonoAndroidVersion.V6    -> "v6.0"
+        | MonoAndroidVersion.V7    -> "v7.0"
+        | MonoAndroidVersion.V71   -> "v7.1"
+
+[<RequireQualifiedAccess>]
 type WindowsVersion =
     | V8
     | V8_1
@@ -298,6 +347,18 @@ type WindowsVersion =
         | WindowsVersion.V8_1 -> "v8.1"
         | WindowsVersion.V10 -> "v10.0"
 
+[<RequireQualifiedAccess>]
+type TizenVersion =
+    V3 | V4
+    member this.ShortString() =
+        match this with
+        | V3 -> "3.0"
+        | V4 -> "4.0"
+    override this.ToString() =
+        match this with
+        | V3 -> "v3.0"
+        | V4 -> "v4.0"
+
 /// Framework Identifier type.
 // Each time a new version is added NuGetPackageCache.CurrentCacheVersion should be bumped.
 type FrameworkIdentifier = 
@@ -308,7 +369,7 @@ type FrameworkIdentifier =
     | DotNetStandard of DotNetStandardVersion
     | DotNetCore of DotNetCoreVersion
     | DotNetUnity of DotNetUnityVersion
-    | MonoAndroid
+    | MonoAndroid of MonoAndroidVersion
     | MonoTouch
     | MonoMac
     | Native of BuildMode * Platform
@@ -318,6 +379,7 @@ type FrameworkIdentifier =
     | WindowsPhone of WindowsPhoneVersion
     | WindowsPhoneApp of WindowsPhoneAppVersion
     | Silverlight of SilverlightVersion
+    | Tizen of TizenVersion
 
     override x.ToString() = 
         match x with
@@ -327,7 +389,7 @@ type FrameworkIdentifier =
         | DotNetStandard v -> "netstandard" + v.ShortString()
         | DotNetCore v -> "netcore" + v.ShortString()
         | DotNetUnity v -> "net" + v.ShortString()
-        | MonoAndroid -> "monoandroid"
+        | MonoAndroid v -> "monoandroid" + v.ShortString()
         | MonoTouch -> "monotouch"
         | MonoMac -> "monomac"
         | Native(_) -> "native"
@@ -338,6 +400,7 @@ type FrameworkIdentifier =
         | WindowsPhone v -> "wp" + v.ShortString()
         | WindowsPhoneApp v -> "wpa" + v.ShortString()
         | Silverlight v -> "sl" + v.ShortString()
+        | Tizen v -> "tizen" + v.ShortString()
 
 
     member internal x.RawSupportedPlatformsTransitive =
@@ -362,12 +425,26 @@ type FrameworkIdentifier =
     // returns a list of compatible platforms that this platform also supports
     member internal x.RawSupportedPlatforms =
         match x with
-        | MonoAndroid -> [ ]
-        | MonoTouch -> [ ]
-        | MonoMac -> [ ]
+        | MonoAndroid MonoAndroidVersion.V1 -> []
+        | MonoAndroid MonoAndroidVersion.V22 -> [ MonoAndroid MonoAndroidVersion.V1 ]
+        | MonoAndroid MonoAndroidVersion.V23 -> [ MonoAndroid MonoAndroidVersion.V22 ]
+        | MonoAndroid MonoAndroidVersion.V403 -> [ MonoAndroid MonoAndroidVersion.V23 ]
+        | MonoAndroid MonoAndroidVersion.V41 -> [ MonoAndroid MonoAndroidVersion.V403 ]
+        | MonoAndroid MonoAndroidVersion.V42 -> [ MonoAndroid MonoAndroidVersion.V41 ]
+        | MonoAndroid MonoAndroidVersion.V43 -> [ MonoAndroid MonoAndroidVersion.V42 ]
+        | MonoAndroid MonoAndroidVersion.V44 -> [ MonoAndroid MonoAndroidVersion.V43 ]
+        //https://stackoverflow.com/questions/28170345/what-exactly-is-android-4-4w-vs-4-4-and-what-about-5-0-1
+        | MonoAndroid MonoAndroidVersion.V44W -> [ MonoAndroid MonoAndroidVersion.V44 ]
+        | MonoAndroid MonoAndroidVersion.V5 -> [ MonoAndroid MonoAndroidVersion.V44W]
+        | MonoAndroid MonoAndroidVersion.V51 -> [ MonoAndroid MonoAndroidVersion.V5 ]
+        | MonoAndroid MonoAndroidVersion.V6 -> [ MonoAndroid MonoAndroidVersion.V51 ]
+        | MonoAndroid MonoAndroidVersion.V7 -> [ MonoAndroid MonoAndroidVersion.V6; DotNetStandard DotNetStandardVersion.V1_6 ]
+        | MonoAndroid MonoAndroidVersion.V71 -> [ MonoAndroid MonoAndroidVersion.V7 ]
+        | MonoTouch -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | MonoMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | Native(_) -> [ ]
-        | XamariniOS -> [ ]
-        | XamarinMac -> [ ]
+        | XamariniOS -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | XamarinMac -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
         | UAP UAPVersion.V10 -> [ Windows WindowsVersion.V8_1; WindowsPhoneApp WindowsPhoneAppVersion.V8_1; DotNetStandard DotNetStandardVersion.V1_4  ]
         | DotNetFramework FrameworkVersion.V1 -> [ ]
         | DotNetFramework FrameworkVersion.V1_1 -> [ DotNetFramework FrameworkVersion.V1 ]
@@ -416,6 +493,8 @@ type FrameworkIdentifier =
         | WindowsPhone WindowsPhoneVersion.V7_5 -> [ WindowsPhone WindowsPhoneVersion.V7_1 ]
         | WindowsPhone WindowsPhoneVersion.V8 -> [ WindowsPhone WindowsPhoneVersion.V7_5; DotNetStandard DotNetStandardVersion.V1_0 ]
         | WindowsPhone WindowsPhoneVersion.V8_1 -> [ WindowsPhone WindowsPhoneVersion.V8 ]
+        | Tizen TizenVersion.V3 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
+        | Tizen TizenVersion.V4 -> [ DotNetStandard DotNetStandardVersion.V1_6 ]
 
 module FrameworkDetection =
 
@@ -475,7 +554,20 @@ module FrameworkDetection =
                 | "net47" -> Some (DotNetFramework FrameworkVersion.V4_7)
                 | "uap100" -> Some (UAP UAPVersion.V10)
                 | "monotouch" | "monotouch10" | "monotouch1" -> Some MonoTouch
-                | "monoandroid" | "monoandroid10" | "monoandroid1" | "monoandroid22" | "monoandroid23" | "monoandroid44" | "monoandroid403" | "monoandroid43" | "monoandroid41" | "monoandroid50" | "monoandroid60" | "monoandroid70" -> Some MonoAndroid
+                | "monoandroid" | "monoandroid10" | "monoandroid1.0" | "monoandroid1" -> Some (MonoAndroid MonoAndroidVersion.V1)
+                | "monoandroid22" -> Some (MonoAndroid MonoAndroidVersion.V22)
+                | "monoandroid23" -> Some (MonoAndroid MonoAndroidVersion.V23)
+                | "monoandroid403" -> Some (MonoAndroid MonoAndroidVersion.V403)
+                | "monoandroid41" -> Some (MonoAndroid MonoAndroidVersion.V41)
+                | "monoandroid42" -> Some (MonoAndroid MonoAndroidVersion.V42)
+                | "monoandroid43" -> Some (MonoAndroid MonoAndroidVersion.V43)
+                | "monoandroid44" -> Some (MonoAndroid MonoAndroidVersion.V44)
+                | "monoandroid44w" -> Some (MonoAndroid MonoAndroidVersion.V44W)
+                | "monoandroid50" -> Some (MonoAndroid MonoAndroidVersion.V5)
+                | "monoandroid51" -> Some (MonoAndroid MonoAndroidVersion.V51)
+                | "monoandroid60" -> Some (MonoAndroid MonoAndroidVersion.V6)
+                | "monoandroid70" | "monoandroid7.0"-> Some (MonoAndroid MonoAndroidVersion.V7)
+                | "monoandroid71" | "monoandroid7.1"-> Some (MonoAndroid MonoAndroidVersion.V71)
                 | "monomac" | "monomac10" | "monomac1" -> Some MonoMac
                 | "xamarinios" | "xamarinios10" | "xamarinios1" | "xamarin.ios10" -> Some XamariniOS
                 | "xamarinmac" | "xamarinmac20" | "xamarin.mac20" -> Some XamarinMac
@@ -502,7 +594,7 @@ module FrameworkDetection =
                 | "dnx451" -> Some(DNX FrameworkVersion.V4_5_1)
                 | "dnxcore50" | "netplatform50" | "netcore50" | "aspnetcore50" | "aspnet50" | "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
                 | v when v.StartsWith "dotnet" -> Some(DNXCore FrameworkVersion.V5_0)
-                | "netstandard10" -> Some(DotNetStandard DotNetStandardVersion.V1_0)
+                | "netstandard" | "netstandard10" -> Some(DotNetStandard DotNetStandardVersion.V1_0)
                 | "netstandard11" -> Some(DotNetStandard DotNetStandardVersion.V1_1)
                 | "netstandard12" -> Some(DotNetStandard DotNetStandardVersion.V1_2)
                 | "netstandard13" -> Some(DotNetStandard DotNetStandardVersion.V1_3)
@@ -513,7 +605,8 @@ module FrameworkDetection =
                 | "netcore10" -> Some (DotNetCore DotNetCoreVersion.V1_0)
                 | "netcore11" -> Some (DotNetCore DotNetCoreVersion.V1_1)
                 | "netcore20" -> Some (DotNetCore DotNetCoreVersion.V2_0)
-                | v when v.StartsWith "netstandard" -> Some(DotNetStandard DotNetStandardVersion.V1_6)
+                | "tizen3" -> Some (Tizen TizenVersion.V3)
+                | "tizen4" -> Some (Tizen TizenVersion.V4)
                 | _ -> None
             result)
 
@@ -815,6 +908,27 @@ module KnownTargetProfiles =
        SilverlightVersions
        |> List.map (Silverlight >> SinglePlatform)
 
+    let MonoAndroidVersions = [
+        MonoAndroidVersion.V1
+        MonoAndroidVersion.V22
+        MonoAndroidVersion.V23
+        MonoAndroidVersion.V403
+        MonoAndroidVersion.V41
+        MonoAndroidVersion.V42
+        MonoAndroidVersion.V43
+        MonoAndroidVersion.V44
+        MonoAndroidVersion.V44W
+        MonoAndroidVersion.V5
+        MonoAndroidVersion.V51
+        MonoAndroidVersion.V6
+        MonoAndroidVersion.V7
+        MonoAndroidVersion.V71
+    ]
+
+    let MonoAndroidProfiles =
+       MonoAndroidVersions
+       |> List.map (MonoAndroid >> SinglePlatform)
+
     let UAPProfiles =
        [SinglePlatform(UAP UAPVersion.V10)]
 
@@ -884,8 +998,8 @@ module KnownTargetProfiles =
        UAPProfiles @
        SilverlightProfiles @
        WindowsPhoneSilverlightProfiles @
-       [SinglePlatform(MonoAndroid)
-        SinglePlatform(MonoTouch)
+       MonoAndroidProfiles @
+       [SinglePlatform(MonoTouch)
         SinglePlatform(XamariniOS)
         SinglePlatform(XamarinMac)
         SinglePlatform(WindowsPhoneApp WindowsPhoneAppVersion.V8_1)] @
@@ -1029,9 +1143,10 @@ module SupportCalculation =
                     | MonoTouch
                     | DNXCore _
                     | UAP _
-                    | MonoAndroid -> false
+                    | MonoAndroid _ -> false
                     | DotNetCore _
-                    | DotNetStandard _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
+                    | DotNetStandard _
+                    | Tizen _ -> failwithf "Unexpected famework while trying to resolve PCL Profile"
                     | _ -> true)
             if minimal.Length > 0 then
                 let matches = 
@@ -1065,6 +1180,9 @@ module SupportCalculation =
                 |> List.map SinglePlatform
             let profilesSupported =
                 // See https://docs.microsoft.com/en-us/dotnet/articles/standard/library
+                // NOTE: This is explicit in NuGet world (ie users explicitely need to add "imports")
+                // we prefer users to build for netstandard and don't allow netstandard to be used in
+                // portable projects...
                 match tf with
                 | DotNetStandard DotNetStandardVersion.V1_0 ->
                     [ Profile31 
@@ -1081,7 +1199,7 @@ module SupportCalculation =
                       Profile44 
                       Profile151 ]
                 | MonoTouch
-                | MonoAndroid
+                | MonoAndroid _
                 | XamariniOS
                 | XamarinMac ->
                     // http://danrigby.com/2014/05/14/supported-pcl-profiles-xamarin-for-visual-studio-2/

@@ -35,11 +35,11 @@ module DependenciesFileSerializer =
 
     let sourceString source = "source " + source
 
-    let packageString packageName versionRequirement resolverStrategy (settings:InstallSettings) =
+    let packageString isCliTool packageName versionRequirement resolverStrategy (settings:InstallSettings) =
         let version = formatVersionRange resolverStrategy versionRequirement
         let s = settings.ToString()
 
-        sprintf "nuget %O%s%s" packageName (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
+        sprintf "%s %O%s%s" (if isCliTool then "clitool" else "nuget") packageName (if version <> "" then " " + version else "") (if s <> "" then " " + s else s)
 
 open Domain
 open System
@@ -234,6 +234,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                           Parent = PackageRequirementSource.DependenciesFile fileName
                           Graph = Set.empty
                           Sources = group.Sources
+                          IsCliTool = false
                           Settings = group.Options.Settings })
                 |> Seq.toList
 
@@ -281,6 +282,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
                               Graph = Set.empty
                               Sources = group.Sources
+                              IsCliTool = false
                               Settings = group.Options.Settings })
                         |> Seq.toList
 
@@ -295,7 +297,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         |> Seq.map (fun p ->
                             let oldDepsInfo = step1Deps |> Seq.tryFind (fun d -> d.Name = p.Name)
                             { Name = p.Name
-                              VersionRequirement = VersionRequirement (VersionRange.Exactly p.Version.AsString, PreReleaseStatus.All)
+                              VersionRequirement = VersionRequirement (VersionRange.OverrideAll (SemVer.Parse p.Version.AsString), PreReleaseStatus.All)
                               ResolverStrategyForDirectDependencies =
                                 match oldDepsInfo with
                                 | Some d -> d.ResolverStrategyForDirectDependencies
@@ -307,6 +309,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                               Parent = PackageRequirementSource.DependenciesFile "runtimeresolution.dependencies"
                               Graph = Set.empty
                               Sources = group.Sources
+                              IsCliTool = false
                               Settings =
                                 match oldDepsInfo with
                                 | Some d -> d.Settings
@@ -322,7 +325,8 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                         let (runtimeDepsFile:DependenciesFile) = runtimeDepsFile.AddResolverStrategyForDirectDependencies(Constants.MainDependencyGroup, group.Options.ResolverStrategyForDirectDependencies)
                         let runtimeDepsFile =
                             runtimeResolutionDeps
-                            |> Seq.fold (fun (deps:DependenciesFile) dep -> deps.AddAdditionalPackage(Constants.MainDependencyGroup, dep.Name, dep.VersionRequirement, dep.ResolverStrategyForTransitives, dep.Settings)) runtimeDepsFile
+                            |> Seq.fold (fun (deps:DependenciesFile) dep -> 
+                                deps.AddAdditionalPackage(Constants.MainDependencyGroup, dep.Name, dep.VersionRequirement, dep.ResolverStrategyForTransitives, dep.Settings, false)) runtimeDepsFile
 
                         tracefn "Depsfile: \n%O" runtimeDepsFile
 
@@ -353,7 +357,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                             | None -> // pulled because of runtime resolution
                                 { v with IsRuntimeDependency = true })
                         |> Resolution.Ok
-                    | _ -> resolution
+                        |> Resolution.addErrors (runtimeResolution.GetErrors())
+                    | _ ->
+                        runtimeResolution
+                        |> Resolution.addError (exn "Runtime resolution failed while regular resolution was OK, try to use 'PAKET_DEBUG_RUNTIME_DEPS=true'")
+                    |> Resolution.addErrors (resolution.GetErrors())
                 | Resolution.Ok _ -> resolution
                 | Resolution.Conflict _ -> resolution
 
@@ -434,9 +442,9 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             |> Seq.toArray
             |> DependenciesFileParser.parseDependenciesFile fileName false)
 
-    member __.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,?pinDown) =
+    member __.AddAdditionalPackage(groupName, packageName:PackageName,versionRequirement,resolverStrategy,settings,isCliTool,?pinDown) =
         let pinDown = defaultArg pinDown false
-        let packageString = DependenciesFileSerializer.packageString packageName versionRequirement resolverStrategy settings
+        let packageString = DependenciesFileSerializer.packageString isCliTool packageName versionRequirement resolverStrategy settings
 
         // Try to find alphabetical matching position to insert the package
         let isPackageInLastSource =
@@ -452,11 +460,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
         let sourceCount =
             match groups |> Map.tryFind groupName with
             | None -> 0
-            | Some group ->
-                match group.Sources with
-                | [] -> 0
-                | sources -> group.Sources |> Seq.length
-
+            | Some group -> List.length group.Sources
 
         let smaller = 
             match groups |> Map.tryFind groupName with
@@ -544,13 +548,13 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             |> DependenciesFileParser.parseDependenciesFile fileName false)
 
 
-    member this.AddAdditionalPackage(groupName, packageName:PackageName,version:string,settings) =
+    member this.AddAdditionalPackage(groupName, packageName:PackageName,version:string,settings,clitool) =
         let vr = DependenciesFileParser.parseVersionString version
 
-        this.AddAdditionalPackage(groupName, packageName,vr,settings)
+        this.AddAdditionalPackage(groupName, packageName,vr,settings,clitool)
 
-    member this.AddAdditionalPackage(groupName, packageName:PackageName,vr:VersionStrategy,settings) =
-        this.AddAdditionalPackage(groupName, packageName,vr.VersionRequirement,vr.ResolverStrategy,settings)
+    member this.AddAdditionalPackage(groupName, packageName:PackageName,vr:VersionStrategy,settings,clitool:bool) =
+        this.AddAdditionalPackage(groupName, packageName,vr.VersionRequirement,vr.ResolverStrategy,settings,clitool)
 
     member this.AddFixedPackage(groupName, packageName:PackageName,version:string,settings) =
         let vr = DependenciesFileParser.parseVersionString version
@@ -567,7 +571,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                     | _ -> vr.VersionRequirement
                 | None -> vr.ResolverStrategy,vr.VersionRequirement
 
-        this.AddAdditionalPackage(groupName, packageName,versionRequirement,resolverStrategy,settings,true)
+        this.AddAdditionalPackage(groupName, packageName,versionRequirement,resolverStrategy,settings,false,true)
 
     member this.AddFixedPackage(groupName, packageName:PackageName,version:string) =
         this.AddFixedPackage(groupName, packageName,version,InstallSettings.Default)
@@ -596,8 +600,11 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 ) (groups, lines)
 
             DependenciesFile(fileName, filteredGroups, filteredLines)
-
+    
     member this.Add(groupName, packageName,versionRange:VersionRange,installSettings : InstallSettings) =
+        this.Add(groupName, packageName,versionRange,installSettings,false)
+
+    member this.Add(groupName, packageName,versionRange:VersionRange,installSettings : InstallSettings,clitool) =
         let version = 
             match versionRange with
             | vr when vr = VersionRange.AtLeast "0" -> ""
@@ -605,10 +612,15 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
             | VersionRange.Specific v -> string v
             | _ -> ""
 
-        this.Add(groupName, packageName,version,installSettings)
+        this.Add(groupName, packageName,version,installSettings,clitool)
 
-    member this.Add(groupName, packageName,version:string,?installSettings : InstallSettings) =
-        let installSettings = defaultArg installSettings InstallSettings.Default
+    member this.Add(groupName, packageName,version:string) =
+        this.Add(groupName, packageName, version, InstallSettings.Default)
+
+    member this.Add(groupName, packageName,version:string, installSettings : InstallSettings) =
+        this.Add(groupName, packageName, version, installSettings, false)
+
+    member this.Add(groupName, packageName,version:string, installSettings : InstallSettings, cliTool : bool) =
         if this.HasPackage(groupName, packageName) && String.IsNullOrWhiteSpace version then 
             traceWarnfn "%s contains package %O in group %O already. ==> Ignored" fileName packageName groupName
             this
@@ -617,7 +629,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 tracefn "Adding %O to %s into group %O" packageName fileName groupName
             else
                 tracefn "Adding %O %s to %s into group %O" packageName version fileName groupName
-            this.AddAdditionalPackage(groupName, packageName,version,installSettings)
+            this.AddAdditionalPackage(groupName, packageName,version,installSettings,cliTool)
 
     member this.Remove(groupName, packageName) =
         if this.HasPackage(groupName, packageName) then
@@ -645,7 +657,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                                 failwithf "Version %O doesn't match the version requirement %O for package %O that was specified in paket.dependencies" v p.VersionRequirement packageName
                         | _ -> ()
 
-                        DependenciesFileSerializer.packageString packageName vr.VersionRequirement vr.ResolverStrategy p.Settings
+                        DependenciesFileSerializer.packageString false packageName vr.VersionRequirement vr.ResolverStrategy p.Settings
                     else l)
 
             DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName false newLines)
@@ -664,7 +676,7 @@ type DependenciesFile(fileName,groups:Map<GroupName,DependenciesGroup>, textRepr
                 | Some matchedName ->
                     let matchedPackageName = PackageName matchedName
                     let p = this.GetPackage(groupName,matchedPackageName)
-                    DependenciesFileSerializer.packageString matchedPackageName vr.VersionRequirement vr.ResolverStrategy p.Settings
+                    DependenciesFileSerializer.packageString false matchedPackageName vr.VersionRequirement vr.ResolverStrategy p.Settings
                 | None -> l)
 
         DependenciesFile(DependenciesFileParser.parseDependenciesFile this.FileName false newLines)

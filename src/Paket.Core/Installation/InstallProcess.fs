@@ -25,6 +25,7 @@ let updatePackagesConfigFile (model: Map<GroupName*PackageName,SemVerInfo*Instal
         |> Seq.map (fun kv ->
             { NugetPackage.Id = (snd kv.Key).ToString()
               VersionRange = VersionRange.Specific (fst kv.Value)
+              CliTool = false
               TargetFramework = None })
         |> Seq.toList
 
@@ -306,6 +307,7 @@ let installForDotnetSDK root (project:ProjectFile) =
 
 /// Installs all packages from the lock file.
 let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile, lockFile : LockFile, projectsAndReferences : (ProjectFile * ReferencesFile) list, updatedGroups) =
+    tracefn " - Creating model and downloading packages."
     let packagesToInstall =
         if options.OnlyReferenced then
             projectsAndReferences
@@ -322,11 +324,15 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
     let model = CreateModel(options.AlternativeProjectRoot, root, options.Force, dependenciesFile, lockFile, Set.ofSeq packagesToInstall, updatedGroups) |> Map.ofArray
     let lookup = lockFile.GetDependencyLookupTable()
     let projectCache = Dictionary<string, ProjectFile option>();
-
+    
+    let prefix = dependenciesFile.Directory.Length + 1
+    let norm (s:string) = (s.Substring prefix).Replace('\\', '/')
     for project, referenceFile in projectsAndReferences do
+        tracefn " - %s -> %s" (norm referenceFile.FileName) (norm project.FileName)
         let toolsVersion = project.GetToolsVersion()
         if verbose then
             verbosefn "Installing to %s with ToolsVersion %O" project.FileName toolsVersion
+
         let directDependencies, errorMessages =
             referenceFile.Groups
             |> Seq.map (fun kv ->
@@ -437,7 +443,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
 
         // if any errors have been found during the installation process thus far, fail and print all errors collected
         if not (Seq.isEmpty errorMessages) then
-            failwithf  "\nInstallation Errors :\n%s" (String.concat "\n" errorMessages)
+            failwithf "Installation Errors :\n%s" (String.concat "\n" errorMessages)
 
         else // start the installation process
             if toolsVersion >= 15.0 then
@@ -477,7 +483,7 @@ let InstallIntoProjects(options : InstallerOptions, forceTouch, dependenciesFile
                                     if targetFile.Directory.Exists |> not then
                                         targetFile.Directory.Create()
 
-                                    File.Copy(remoteFilePath,targetFile.FullName)
+                                    File.Copy(remoteFilePath,targetFile.FullName,true)
                                     createRelativePath project.FileName targetFile.FullName
                             Link = None
                         }

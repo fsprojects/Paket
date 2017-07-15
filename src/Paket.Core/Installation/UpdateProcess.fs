@@ -11,15 +11,6 @@ open Paket.Logging
 open InstallProcess
 
 let selectiveUpdate force getSha1 getVersionsF getPackageDetailsF getRuntimeGraphFromPackage (lockFile:LockFile) (dependenciesFile:DependenciesFile) updateMode semVerUpdateMode =
-    let getSortedVersionsF sources groupName packageName : Async<seq<SemVerInfo * PackageSources.PackageSource list>> = async {
-        if verbose then
-            verbosefn "  - fetching versions for %O" packageName
-        let! versions = 
-            getVersionsF sources groupName packageName
-        if Seq.isEmpty versions then
-            failwithf "Couldn't retrieve versions for %O." packageName
-        return versions }
-        
     let dependenciesFile =
         let processFile createRequirementF =
             lockFile.GetGroupedResolution()
@@ -189,7 +180,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
     let getSha1 origin owner repo branch auth = RemoteDownload.getSHA1OfBranch origin owner repo branch auth |> Async.RunSynchronously
     let root = Path.GetDirectoryName dependenciesFile.FileName
     let inline getVersionsF sources groupName packageName = async {
-        let! result = NuGetV2.GetVersions force alternativeProjectRoot root (sources, packageName) 
+        let! result = NuGet.GetVersions force alternativeProjectRoot root (sources, packageName) 
         return result |> List.toSeq }
 
     let dependenciesFile = detectProjectFrameworksForDependenciesFile dependenciesFile
@@ -199,7 +190,7 @@ let SelectiveUpdate(dependenciesFile : DependenciesFile, alternativeProjectRoot,
             force 
             getSha1
             getVersionsF
-            (NuGetV2.GetPackageDetails alternativeProjectRoot root force)
+            (NuGet.GetPackageDetails alternativeProjectRoot root force)
             (RuntimeGraph.getRuntimeGraphFromNugetCache root)
             oldLockFile 
             dependenciesFile 
@@ -216,6 +207,7 @@ let SmartInstall(dependenciesFile, updateMode, options : UpdaterOptions) =
     let projectsAndReferences = RestoreProcess.findAllReferencesFiles root |> returnOrFail
 
     if not options.NoInstall then
+        tracefn "Installing into projects:"
         let forceTouch = hasChanged && options.Common.TouchAffectedRefs
         InstallProcess.InstallIntoProjects(options.Common, forceTouch, dependenciesFile, lockFile, projectsAndReferences, updatedGroups)
         GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
