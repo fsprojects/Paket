@@ -61,6 +61,19 @@ module ScriptGeneration =
             else true
         )
 
+    let filterForFSI (scriptType:ScriptType) refls =
+        // For F# we never want to reference mscorlib directly (some nuget package state it as a dependency)
+        // reason is that having it referenced more than once fails in FSI
+        refls |> List.filter ( fun ref ->
+            if scriptType = ScriptType.FSharp then
+                match ref with
+                | Framework info -> info <> "mscorlib"
+                | _ -> true
+            else true
+        )
+
+    let filterReferences scriptType = filterFSharpRefTypes scriptType >> filterForFSI scriptType
+
     /// default implementation of F# include script generator
     let generateScript (scriptType:ScriptType) (input: ScriptGenInput) =
         let packageName = input.PackageName.CompareString
@@ -71,22 +84,14 @@ module ScriptGeneration =
             let scriptRefs =
                 input.DependentScripts |> List.map LoadScript
 
-            let filterForFSI assemblies =
-                // For F# we never want to reference mscorlib directly (some nuget package state it as a dependency)
-                // reason is that having it referenced more than once fails in FSI
-                assemblies |> Seq.filter (function "mscorlib" -> false | _ -> true)
-
             let frameworkRefLines =
-                match scriptType with 
-                | CSharp -> input.FrameworkReferences :> seq<_>
-                | FSharp -> input.FrameworkReferences |> filterForFSI
-                |> Seq.map Framework
-                |> Seq.toList
+                input.FrameworkReferences
+                |> List.map Framework
         
             let dllLines = input.OrderedDllReferences |> List.map Assembly
         
             List.concat [scriptRefs; frameworkRefLines; dllLines]
-            |> filterFSharpRefTypes scriptType
+            |> filterReferences scriptType
         
         match lines with
         | [] -> DoNotGenerate
@@ -222,7 +227,9 @@ module ScriptGeneration =
         let groupScriptContent =
             ctx.Groups |> List.map (fun group ->
                 let scriptFile = getGroupFile  group
-                let pieces = ctx.Cache.GetOrderedReferences group framework |> filterFSharpRefTypes ctx.ScriptType
+                let pieces =
+                    ctx.Cache.GetOrderedReferences group framework
+                    |> filterReferences ctx.ScriptType
                 let scriptContent =
                     {   PartialPath = scriptFile
                         Lang = ctx.ScriptType 

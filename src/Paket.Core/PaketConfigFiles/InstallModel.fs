@@ -695,10 +695,17 @@ module InstallModel =
           ) installModel
 
     let filterUnknownFiles (installModel:InstallModel) =
-        installModel
-        |> mapCompileLibReferences (Set.filter (fun l ->
+        let ofRuntimeLibrary (l:RuntimeLibrary) = l.Library
+        let isAssemblyDll (l:Library) =
             let lib = l.Path
-            (String.endsWithIgnoreCase ".dll" lib || String.endsWithIgnoreCase ".exe" lib || String.endsWithIgnoreCase ".so" lib || String.endsWithIgnoreCase ".dylib" lib )))
+            String.endsWithIgnoreCase ".dll" lib || String.endsWithIgnoreCase ".exe" lib
+        let isNativeDll (l:Library) =
+            let lib = l.Path
+            isAssemblyDll l || String.endsWithIgnoreCase ".so" lib || String.endsWithIgnoreCase ".dylib" lib
+        installModel
+        |> mapCompileLibReferences (Set.filter isAssemblyDll)
+        |> mapCompileRefFiles (Set.filter isAssemblyDll)
+        |> mapRuntimeAssemblyFiles (Set.filter (ofRuntimeLibrary >> isNativeDll))
         |> mapCompileLibReferences (Set.filter (fun lib -> not (lib.Path.EndsWith ".resources.dll")))
         |> mapTargetsFiles (Set.filter (fun t ->
             let targetsFile = t.Path
