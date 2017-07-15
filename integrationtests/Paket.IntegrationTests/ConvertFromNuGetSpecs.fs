@@ -117,3 +117,54 @@ let ``#2512 should put paket.dependencies inside the .paket folder when it's abs
 [<Test>]
 let ``#2512 should put paket.dependencies inside the .paket folder that already has files in it``() =
     testPaketDependenciesFileInSolution "i002512-convert-paket-folder-with-files" ["paket.dependencies"; "SomeFile"]
+
+[<Test>]
+let ``#2528 sdk-2: convert-from-nuget should add explicit FSharp.Core``() =
+    let scenario = "i002528-1"
+    paket "convert-from-nuget" scenario |> ignore
+    let dependenciesFile = File.ReadAllLines(Path.Combine(scenarioTempPath scenario,"paket.dependencies"))
+    dependenciesFile
+    |> shouldContain "nuget FSharp.Core"
+    let referencesFile = File.ReadAllLines(Path.Combine(scenarioTempPath scenario,"paket.references"))
+    referencesFile
+    |> shouldContain "FSharp.Core"
+
+[<Test>]
+let ``#2528 sdk-2: convert-from-nuget should not add FSharp.Core for csharp``() =
+    let scenario = "i002528-2"
+    paket "convert-from-nuget" scenario |> ignore
+    let dependenciesFile = File.ReadAllLines(Path.Combine(scenarioTempPath scenario,"paket.dependencies"))
+    dependenciesFile
+    |> shouldNotContain "nuget FSharp.Core"
+    let referencesFile = File.ReadAllLines(Path.Combine(scenarioTempPath scenario,"paket.references"))
+    referencesFile
+    |> shouldNotContain "FSharp.Core"
+
+[<Test>]
+let ``#2528 sdk-2: install should not warn without FSharp.Core for csharp``() =
+    let scenario = "i002528-3"
+    let messages = paket "install" scenario
+    messages
+    |> shouldNotContainText "does not reference FSharp.Core"
+
+
+[<Test>]
+let ``#2528 sdk-2: install should not warn with FSharp.Core``() =
+    let scenario = "i002528-4"
+    let messages = paket "install" scenario
+    messages
+    |> shouldNotContainText "does not reference FSharp.Core"
+
+[<Test>]
+let ``#2528 sdk-2: install should warn without FSharp.Core: not in dep, not in ref``() =
+    let scenario = "i002528-5"
+    let messages = paket "install" scenario
+    messages
+    |> shouldContainText "does not reference FSharp.Core"
+
+[<Test>]
+let ``#2528 sdk-2: install should warn without FSharp.Core: in dep but not in ref``() =
+    let scenario = "i002528-6"
+    let messages = paket "install" scenario
+    messages
+    |> shouldContainText "does not reference FSharp.Core"
