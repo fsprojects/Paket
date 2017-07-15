@@ -33,12 +33,6 @@
     <StartAction>Project</StartAction>
     <StartArguments>update</StartArguments>
     <StartWorkingDirectory>C:\proj\testing\</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\proj\Paket\integrationtests\scenarios\i001145-excludes\temp</StartWorkingDirectory>
-    <StartArguments>install</StartArguments>
-    <StartWorkingDirectory>C:\proj\Paket\integrationtests\scenarios\i001145-excludes\temp</StartWorkingDirectory>
-    <StartArguments>generate-load-scripts framework net46</StartArguments>
-    <StartWorkingDirectory>C:\proj\Paket\integrationtests\scenarios\loading-scripts\mscorlib\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>
