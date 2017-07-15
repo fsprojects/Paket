@@ -240,7 +240,7 @@ let createPaketCLIToolsFile (cliTools:ResolvedPackage seq) (fileInfo:FileInfo) =
             if verbose then
                 tracefn " - %s already up-to-date" fileInfo.FullName
 
-let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFramework: string option) = 
+let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ignoreChecks,failOnChecks,targetFrameworks: string option) = 
     let lockFileName = DependenciesFile.FindLockfile dependenciesFileName
     let localFileName = DependenciesFile.FindLocalfile dependenciesFileName
     let root = lockFileName.Directory.FullName
@@ -250,8 +250,8 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
     let dependenciesFile = DependenciesFile.ReadFromFile(dependenciesFileName)
 
     let targetFilter = 
-        targetFramework
-        |> Option.bind FrameworkDetection.Extract
+        targetFrameworks
+        |> Option.map (fun s -> s.Split(';') |> Array.map (FrameworkDetection.Extract) |> Array.choose id)
 
     let lockFile,localFile,hasLocalFile =
         let lockFile = LockFile.LoadFrom(lockFileName.FullName)
@@ -332,12 +332,13 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
                     let restore =
                         match targetFilter with
                         | None -> true
-                        | Some target ->
+                        | Some targets ->
                             let resolvedPackage = resolved.Force().[key]
 
                             match resolvedPackage.Settings.FrameworkRestrictions with
                             | Requirements.ExplicitRestriction restrictions ->
-                                Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target)
+                                targets
+                                |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
                             | _ -> true
                             
                     if restore then
@@ -388,13 +389,14 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
             |> Seq.filter (fun p ->
                 match targetFilter with
                 | None -> true
-                | Some target ->
+                | Some targets ->
                     let key = kv.Key,p
                     let resolvedPackage = resolved.Force().[key]
 
                     match resolvedPackage.Settings.FrameworkRestrictions with
                     | Requirements.ExplicitRestriction restrictions ->
-                        Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target)
+                        targets
+                        |> Array.exists (fun target -> Requirements.isTargetMatchingRestrictions(restrictions, SinglePlatform target))
                     | _ -> true)
  
 
@@ -428,5 +430,5 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
         (LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] [])
         |> Seq.iter (fun sd -> sd.Save (DirectoryInfo dependenciesFile.Directory))
     
-    if targetFramework <> None then
+    if targetFrameworks <> None then
         GarbageCollection.CleanUp(root, dependenciesFile, lockFile)
