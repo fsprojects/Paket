@@ -89,11 +89,11 @@
   <PropertyGroup>
     <DefineConstants>$(DefineConstants);DOTNETCORE;NETSTANDARD1_5;NETSTANDARD1_6;USE_HTTP_CLIENT</DefineConstants>
   </PropertyGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
   <ItemGroup Label="dotnet pack instructions">
     <Content Include="$(OutputPath)Paket.Core.pdb">
       <Pack>true</Pack>
       <PackagePath>lib/netstandard1.6</PackagePath>
     </Content>
   </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
