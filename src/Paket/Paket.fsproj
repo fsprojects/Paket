@@ -33,6 +33,8 @@
     <StartAction>Project</StartAction>
     <StartArguments>update</StartArguments>
     <StartWorkingDirectory>C:\proj\testing\</StartWorkingDirectory>
+    <StartArguments>install</StartArguments>
+    <StartWorkingDirectory>C:\proj\Paket\integrationtests\scenarios\i001145-excludes\temp</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

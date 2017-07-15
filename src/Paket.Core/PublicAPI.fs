@@ -451,10 +451,8 @@ type Dependencies(dependenciesFileName: string) =
                 let packageName = resolvedPackage.Name
                 let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.CompareString
                 let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
-                let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
-                let nuspec = Nuspec.Load nuspec.FullName
-                let files = NuGet.GetLibFiles(folder.FullName)
-                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, files, [], [], nuspec)
+                let content = NuGet.GetContent(folder.FullName)
+                InstallModel.CreateFromContent(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
 
     /// Returns all libraries for the given package and framework.
     member this.GetLibraries(groupName,packageName,frameworkIdentifier:TargetProfile) =

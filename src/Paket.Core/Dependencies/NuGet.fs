@@ -16,6 +16,99 @@ open System.Text
 open FSharp.Polyfill
 open Paket.NuGetCache
 
+type NuGetContent =
+    | NuGetDirectory of name:string * contents:NuGetContent list
+    | NuGetFile of name:string
+    member x.Contents =
+        match x with
+        | NuGetDirectory (_, c) -> c
+        | NuGetFile _ -> []
+    member x.Name =
+        match x with
+        | NuGetDirectory(n, _)
+        | NuGetFile n -> n
+
+type NuGetPackageContent =
+    { Content : NuGetContent list
+      Path : string
+      Spec : Nuspec }
+
+let rec ofDirectory targetFolder =
+    let dir = DirectoryInfo(targetFolder)
+    let subDirs =
+        if dir.Exists then
+            dir.GetDirectories()
+            |> Array.map (fun di -> ofDirectory di.FullName)
+            |> Array.toList
+        else []
+    let files =
+        if dir.Exists then
+            dir.GetFiles()
+            |> Array.map (fun fi -> NuGetFile(fi.Name))
+            |> Array.toList
+        else []
+    NuGetDirectory(dir.Name, subDirs @ files)
+
+let rec createEntry (content:string) =
+    let dirName, rest =
+        match content.IndexOf "/" with
+        | -1 -> None, content
+        | i -> Some (content.Substring(0, i)), content.Substring(i+1)
+    match dirName with
+    | Some name -> NuGetDirectory(name, [ createEntry rest ])
+    | None -> NuGetFile(rest)
+
+let rec addContent (content:string) contents =
+    let dirName, rest =
+        match content.IndexOf "/" with
+        | -1 -> None, content
+        | i -> Some (content.Substring(0, i)), content.Substring(i+1)
+    let wasAdded, contents =
+        contents
+        |> List.fold (fun (wasAdded, contents) (c: NuGetContent) ->
+            match wasAdded, dirName, c with
+            | true, _, _ -> true, c :: contents
+            | false, Some dir, NuGetDirectory(name, oldContents) when dir = name ->
+                true, NuGetDirectory(name, addContent rest oldContents) :: contents
+            | false, None, NuGetFile(name) when name = rest ->
+                failwithf "File '%s' is already in the tree" name
+            | _ -> false, c :: contents) (false, [])
+    if wasAdded then
+        contents
+    else
+        createEntry content :: contents
+
+let ofFiles filesList =
+    filesList
+    |> Seq.fold (fun state file -> addContent file state) []
+
+let GetContent dir =
+    let spec =
+        DirectoryInfo(dir).EnumerateFiles("*.nuspec", SearchOption.TopDirectoryOnly)
+        |> Seq.exactlyOne
+        |> fun f -> Nuspec.Load(f.FullName)
+    { Content = (ofDirectory dir).Contents
+      Path = dir
+      Spec = spec }
+
+let tryFindFolder folder (content:NuGetPackageContent) =
+    let rec collectItems prefixFull (prefixInner:string) (content:NuGetContent) =
+        let fullPath = Path.Combine(prefixFull, content.Name)
+        let relPath = sprintf "%s/%s" prefixInner content.Name
+        match content with
+        | NuGetDirectory (_, contents) ->
+            contents
+            |> List.collect (collectItems fullPath relPath)
+        | NuGetFile _ ->
+            [ {UnparsedPackageFile.FullPath = fullPath; UnparsedPackageFile.PathWithinPackage = relPath } ]
+    content.Content
+    |> List.tryPick (fun c ->
+        match c with
+        | NuGetDirectory(n,contents) when n = folder -> Some contents
+        | _ -> None)
+    |> Option.map (fun item ->
+        item
+        |> List.collect (collectItems (Path.Combine(content.Path, folder)) folder))
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async {
@@ -97,6 +190,7 @@ let private getFiles targetFolder subFolderName filesDescriptionForVerbose =
     getFilesMatching targetFolder "*.*" subFolderName filesDescriptionForVerbose
 
 /// Finds all libraries in a nuget package.
+[<Obsolete "Use GetContent instead">]
 let GetLibFiles(targetFolder) =
     let libs = getFiles targetFolder "lib" "libraries"
     let refs = getFiles targetFolder "ref" "libraries"
@@ -104,8 +198,13 @@ let GetLibFiles(targetFolder) =
     refs
     |> Array.append libs
     |> Array.append runtimeLibs
+    |> Array.filter (fun p ->
+        let ext = System.IO.Path.GetExtension p.FullPath
+
+        ".dll".Equals(ext, StringComparison.OrdinalIgnoreCase))
 
 /// Finds all targets files in a nuget package.
+[<Obsolete "Use GetContent instead">]
 let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
     let packageId = pkg.CompareString
     getFiles targetFolder "build" ".targets files"
@@ -114,8 +213,8 @@ let GetTargetsFiles(targetFolder, (pkg : PackageName)) =
         name.Equals(packageId + ".targets", StringComparison.OrdinalIgnoreCase) || name.Equals(packageId + ".props", StringComparison.OrdinalIgnoreCase))
 
 /// Finds all analyzer files in a nuget package.
+[<Obsolete "Use GetContent instead">]
 let GetAnalyzerFiles(targetFolder) = getFilesMatching targetFolder "*.dll" "analyzers" "analyzer dlls"
-
 
 let tryNuGetV3 (auth, nugetV3Url, package:PackageName) =
     NuGetV3.findVersionsForPackage(nugetV3Url, auth, package)
@@ -247,7 +346,7 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
         let newName = PackageName nugetObject.PackageName
         if packageName <> newName then
             failwithf "Package details for %O are not matching requested package %O." newName packageName
-        
+
         return
             { Name = PackageName nugetObject.PackageName
               Source = source
@@ -590,7 +689,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
 
                     if authenticated && verbose then
                         tracefn "Downloading from %O to %s" !downloadUrl targetFileName
-                    
+
                     use trackDownload = Profile.startCategory Profile.Category.NuGetDownload
                     let! license = Async.StartChild(DownloadLicense(root,force,packageName,version,nugetPackage.LicenseUrl,licenseFileName), 5000)
 
@@ -637,7 +736,7 @@ let DownloadPackage(alternativeProjectRoot, root, (source : PackageSource), cach
                         let! bytes = httpResponseStream.AsyncRead(buffer, 0, bufferSize)
                         bytesRead := bytes
                         do! fileStream.AsyncWrite(buffer, 0, !bytesRead)
-                    
+
                     match (httpResponse :?> HttpWebResponse).StatusCode with
                     | HttpStatusCode.OK -> ()
                     | statusCode -> failwithf "HTTP status code was %d - %O" (int statusCode) statusCode

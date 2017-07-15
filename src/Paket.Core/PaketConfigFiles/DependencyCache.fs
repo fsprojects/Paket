@@ -201,8 +201,8 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
                     let nuspec = FileInfo <| Path.Combine (lockFile.RootPath,nuspecShort)
                     let nuspec = Nuspec.Load nuspec.FullName
                     nuspecCache.TryAdd((package.Name,package.Version),nuspec)|>ignore
-                    let files = NuGet.GetLibFiles(folder.FullName)                    
-                    let model = InstallModel.CreateFromLibs(packageName, package.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, files, [], [], nuspec)                    
+                    let content = NuGet.GetContent(folder.FullName)
+                    let model = InstallModel.CreateFromContent(packageName, package.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
                     installModelCache.TryAdd((groupName,package.Name) , model) |> ignore                
                 }) |> Array.ofSeq
             Async.Parallel exprs
