@@ -935,10 +935,8 @@ type LockFile (fileName:string, groups: Map<GroupName,LockFileGroup>) =
                 let packageName = resolvedPackage.Name
                 let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.ToString()
                 let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
-                let nuspec = FileInfo(sprintf "%s/packages%s/%O/%O.nuspec" this.RootPath groupFolder packageName packageName)
-                let nuspec = Nuspec.Load nuspec.FullName
-                let files = NuGet.GetLibFiles(folder.FullName)
-                InstallModel.CreateFromLibs(packageName, resolvedPackage.Version, FrameworkRestriction.NoRestriction, files, [], [], nuspec)
+                let content = NuGet.GetContent(folder.FullName)
+                InstallModel.CreateFromContent(packageName, resolvedPackage.Version, FrameworkRestriction.NoRestriction, content)
     
 
     /// Returns a list of packages inside the lockfile with their group and version number

@@ -42,7 +42,7 @@ let private extractPackage caches package alternativeProjectRoot root source gro
                 package.Name, version, package.IsCliTool, includeVersionInPath, force, detailed)
 
         CopyToCaches force caches fileName
-        return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
+        return package, NuGet.GetContent folder
     }
 
     async { 
@@ -101,7 +101,7 @@ let ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, for
                 CopyToCaches force caches nupkg.FullName
 
                 let! folder = NuGetCache.CopyFromCache(root, groupName, nupkg.FullName, "", package.Name, v, package.IsCliTool, includeVersionInPath, force, false)
-                return package, NuGet.GetLibFiles folder, NuGet.GetTargetsFiles (folder,package.Name) , NuGet.GetAnalyzerFiles folder
+                return package, NuGet.GetContent folder
         }
 
         // manipulate overridenFile after package extraction
@@ -172,10 +172,8 @@ let extractBuildTask root =
 
 let CreateInstallModel(alternativeProjectRoot, root, groupName, sources, caches, force, package) =
     async {
-        let! (package, files, targetsFiles, analyzerFiles) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
-        let nuspec = Nuspec.Load(root,groupName,package.Version,defaultArg package.Settings.IncludeVersionInPath false,package.Name)
-        let targetsFiles = targetsFiles |> Array.toList
-        let model = InstallModel.CreateFromLibs(package.Name, package.Version, package.Settings.FrameworkRestrictions |> Requirements.getExplicitRestriction, files, targetsFiles, analyzerFiles, nuspec)
+        let! (package, content) = ExtractPackage(alternativeProjectRoot, root, groupName, sources, caches, force, package, false)
+        let model = InstallModel.CreateFromContent(package.Name, package.Version, package.Settings.FrameworkRestrictions |> Requirements.getExplicitRestriction, content)
         return (groupName,package.Name), (package,model)
     }
 

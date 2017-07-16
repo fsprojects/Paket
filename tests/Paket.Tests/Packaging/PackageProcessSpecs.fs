@@ -7,24 +7,36 @@ open FsUnit
 open NUnit.Framework
 
 [<Test>]
-let ``Loading assembly metadata works``() = 
-    let workingDir = Path.GetFullPath(".")
-    
-    let trials =
-        [ Path.Combine(workingDir, "Paket.Tests.fsproj")
-          Path.Combine(workingDir, "tests", "Paket.Tests", "Paket.Tests.fsproj")
-          Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj") ]
-    match trials |> Seq.tryFind File.Exists with
-    | None ->
-        failwithf "Paket.Tests.fsproj was not found via '%s'. %A" workingDir trials
-    | Some testFsProjFile ->
+let ``Loading assembly metadata works``() =
+    // When debugging CurrentDirectory is C:\Windows\system32
+    // When running multiple CurrentDirectory is the project directory
+    // When running in CI CurrentDirectory is the bin/Release folder?
+    let assemblyLocation = Assembly.GetExecutingAssembly().Location
+    let workingDir =
+        let curDir = Path.GetFullPath(".")
+        if curDir.ToLowerInvariant().Contains "system32" then
+            Path.GetDirectoryName (assemblyLocation)
+        else curDir
+    System.Environment.CurrentDirectory <- workingDir
+
+    let fileName =
+        if File.Exists(Path.Combine(workingDir, "Paket.Tests.fsproj")) then
+            Path.Combine(workingDir, "Paket.Tests.fsproj")
+            |> normalizePath
+        else
+            Path.Combine(workingDir, "..", "..", "Paket.Tests.fsproj")
+            |> normalizePath
+
+    if File.Exists fileName |> not then
+        failwithf "%s does not exist." fileName
 
     let projFile = 
-        testFsProjFile
+        fileName
         |> ProjectFile.LoadFromFile
 
     let config = 
-        if Assembly.GetExecutingAssembly().Location.Contains "Debug" then "Debug"
+        if workingDir.Contains "Debug" then "Debug"
+        elif assemblyLocation.Contains "Debug" then "Debug"
         else "Release"
     
     let assemblyReader,id,versionFromAssembly,fileName = PackageMetaData.readAssemblyFromProjFile config "" projFile
