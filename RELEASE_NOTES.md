@@ -1,31 +1,14 @@
-#### 5.6.12 - 14.07.2017
+#### 5.7.0-alpha001 - 16.07.2017
+* BUGFIX: Multi-Target support for new MSBuild (needs paket install to update the Paket.Restore.targets)
 * NuGet convert can detect cli tools - https://github.com/fsprojects/Paket/issues/2518
-
-#### 5.6.11 - 14.07.2017
 * BUGFIX: Unescape urls in odata response - https://github.com/fsprojects/Paket/issues/2504
-
-#### 5.6.10 - 12.07.2017
 * BUGFIX: Fix nuspecs only if we use nuspecs
-
-#### 5.6.9 - 12.07.2017
 * BUGFIX: Better tracing while downloading packages and licenses
-
-#### 5.6.7 - 12.07.2017
 * BUGFIX: Carefuly handle cases when the .paket folder is present in .sln file, not present, or is empty - https://github.com/fsprojects/Paket/pull/2513
-
-#### 5.6.6 - 11.07.2017
 * BUGFIX: Better tracing around download link - https://github.com/fsprojects/Paket/issues/2508
-
-#### 5.6.4 - 11.07.2017
 * BUGFIX: Work around Proget perf issue - https://github.com/fsprojects/Paket/issues/2466
-
-#### 5.6.3 - 11.07.2017
 * BUGFIX: Work around sonatype bug - https://github.com/fsprojects/Paket/issues/2320
-
-#### 5.6.2 - 11.07.2017
 * BUGFIX: Work around https://github.com/NuGet/NuGetGallery/issues/4315
-
-#### 5.6.1 - 11.07.2017
 * BUGFIX: Check result of PutAsync - https://github.com/fsprojects/Paket/pull/2502
 * BUGFIX: Fixed push command
 * REVERT "Fixed NugetV2 querying"
