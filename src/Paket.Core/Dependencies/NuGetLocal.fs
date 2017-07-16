@@ -65,17 +65,19 @@ let findLocalPackage directory (packageName:PackageName) (version:SemVerInfo) =
     | None -> failwithf "The package %O %O can't be found in %s.%sPlease check the feed definition in your paket.dependencies file." packageName version directory Environment.NewLine
     | Some x -> FileInfo x
 
-/// Reads package name from a nupkg file
-let getPackageNameFromLocalFile fileName =
+/// Reads nuspec from nupkg
+let getNuSpecFromNupgk fileName =
     use __ = Profile.startCategory Profile.Category.FileIO
     fixArchive fileName
     use zipToCreate = new FileStream(fileName, FileMode.Open, FileAccess.Read)
     use zip = new ZipArchive(zipToCreate, ZipArchiveMode.Read)
     let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
-    let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.Name)).FullName
-    zippedNuspec.ExtractToFile(fileName, true)
-    let nuspec = Nuspec.Load fileName
-    File.Delete(fileName)
+    use stream = zippedNuspec.Open()
+    Nuspec.Load(Path.Combine(fileName, Path.GetFileName zippedNuspec.FullName), stream)
+
+/// Reads package name from a nupkg file
+let getPackageNameFromLocalFile fileName =
+    let nuspec = getNuSpecFromNupgk fileName
     nuspec.OfficialName
 
 /// Reads direct dependencies from a nupkg file
@@ -84,20 +86,8 @@ let getDetailsFromLocalNuGetPackage isCache alternativeProjectRoot root localNuG
         let localNugetPath = Utils.normalizeLocalPath localNuGetPath
         let di = getDirectoryInfoForLocalNuGetFeed localNugetPath alternativeProjectRoot root
         let nupkg = findLocalPackage di.FullName packageName version
-        
-        use _ = Profile.startCategory Profile.Category.FileIO
-        fixArchive nupkg.FullName
-        use zipToCreate = new FileStream(nupkg.FullName, FileMode.Open, FileAccess.Read)
-        use zip = new ZipArchive(zipToCreate,ZipArchiveMode.Read)
 
-        let zippedNuspec = zip.Entries |> Seq.find (fun f -> f.FullName.EndsWith ".nuspec")
-        let fileName = FileInfo(Path.Combine(Path.GetTempPath(), zippedNuspec.Name)).FullName
-
-        zippedNuspec.ExtractToFile(fileName, true)
-
-        let nuspec = Nuspec.Load fileName
-
-        File.Delete(fileName)
+        let nuspec = getNuSpecFromNupgk nupkg.FullName
 
         return
             { PackageName = nuspec.OfficialName
