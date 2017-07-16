@@ -253,18 +253,31 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
 
         let getPackageDetails force =
             // helper to work through the list sequentially
-            let rec trySelectFirst workLeft =
+            let rec trySelectFirst (errors:exn list) workLeft  =
                 async {
                     match workLeft with
                     | (source, work) :: rest ->
-                        let! r = work
-                        match r with
-                        | ODataSearchResult.Match result -> return Some (source, result)
-                        | ODataSearchResult.EmptyResult -> return! trySelectFirst rest
-                    | [] -> return None
+                        try
+                            let! r = work
+                            match r with
+                            | ODataSearchResult.Match result -> return Some (source, result), errors
+                            | ODataSearchResult.EmptyResult -> return! trySelectFirst errors rest
+                        with
+                        | :? System.IO.IOException as exn ->
+                            // Handling IO exception here for less noise in output: https://github.com/fsprojects/Paket/issues/2480
+                            if verbose then
+                                traceWarnfn "I/O error for source '%O': %O" source exn
+                            else
+                                traceWarnfn "I/O error for source '%O': %s" source exn.Message
+                            return! trySelectFirst (exn :> exn :: errors) rest
+                        | e ->
+                            traceWarnfn "Source '%O' exception: %O" source e
+                            //let capture = ExceptionDispatchInfo.Capture e
+                            return! trySelectFirst (e :: errors) rest
+                    | [] -> return None, errors
                 }
             match inCache with
-            | Some (source, ODataSearchResult.Match result) -> async { return Some (source, result) }
+            | Some (source, ODataSearchResult.Match result) -> async { return Some (source, result), [] }
             | _ ->
                 sources
                 |> List.sortBy (fun source ->
@@ -275,11 +288,23 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                     | s when s.NuGetType = KnownNuGetSources.OfficialNuGetGallery -> 1
                     | _ -> 3)
                 |> List.map (fun source -> source, async {
-                    try
-                        match source with
-                        | NuGetV2 nugetSource ->
+                    match source with
+                    | NuGetV2 nugetSource ->
+                        return! tryV2 nugetSource force
+                    | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
+                        match NuGetV3.calculateNuGet2Path nugetSource.Url with
+                        | Some url ->
+                            let nugetSource : NugetSource =
+                                { Url = url
+                                  Authentication = nugetSource.Authentication }
                             return! tryV2 nugetSource force
-                        | NuGetV3 nugetSource when urlSimilarToTfsOrVsts nugetSource.Url  ->
+                        | _ ->
+                            return! tryV3 nugetSource force
+                    | NuGetV3 nugetSource ->
+                        try
+                            return! tryV3 nugetSource force
+                        with
+                        | exn ->
                             match NuGetV3.calculateNuGet2Path nugetSource.Url with
                             | Some url ->
                                 let nugetSource : NugetSource =
@@ -287,49 +312,30 @@ let rec private getPackageDetails alternativeProjectRoot root force (sources:Pac
                                       Authentication = nugetSource.Authentication }
                                 return! tryV2 nugetSource force
                             | _ ->
+                                raise exn
                                 return! tryV3 nugetSource force
-                        | NuGetV3 nugetSource ->
-                            try
-                                return! tryV3 nugetSource force
-                            with
-                            | exn ->
-                                match NuGetV3.calculateNuGet2Path nugetSource.Url with
-                                | Some url ->
-                                    let nugetSource : NugetSource =
-                                        { Url = url
-                                          Authentication = nugetSource.Authentication }
-                                    return! tryV2 nugetSource force
-                                | _ ->
-                                    raise exn
-                                    return! tryV3 nugetSource force
 
-                        | LocalNuGet(path,hasCache) ->
-                            return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
-                    with
-                    | :? System.IO.IOException as exn ->
-                        // Handling IO exception here for less noise in output: https://github.com/fsprojects/Paket/issues/2480
-                        if verbose then
-                            traceWarnfn "I/O error for source '%O': %O" source exn
-                        else
-                            traceWarnfn "I/O error for source '%O': %s" source exn.Message
-                        return EmptyResult
-                    | e ->
-                        traceWarnfn "Source '%O' exception: %O" source e
-                        //let capture = ExceptionDispatchInfo.Capture e
-                        return EmptyResult })
-                |> trySelectFirst
+                    | LocalNuGet(path,hasCache) ->
+                        return! NuGetLocal.getDetailsFromLocalNuGetPackage hasCache.IsSome alternativeProjectRoot root path packageName version
+                })
+                |> trySelectFirst []
 
-        let! maybePackageDetails = getPackageDetails force
+        let! maybePackageDetails, errors = getPackageDetails force
         let! source,nugetObject =
             async {
                 let fallback () =
+                    let inner =
+                        match errors with
+                        | [e] -> e
+                        | [] -> null
+                        | l -> AggregateException(l) :> exn
                     match sources |> List.map (fun (s:PackageSource) -> s.ToString()) with
                     | [source] ->
-                        failwithf "Couldn't get package details for package %O %O on %O." packageName version source
+                        rethrowf exn inner "Couldn't get package details for package %O %O on %O." packageName version source
                     | [] ->
-                        failwithf "Couldn't get package details for package %O %O, because no sources were specified." packageName version
+                        rethrowf exn inner "Couldn't get package details for package %O %O, because no sources were specified." packageName version
                     | sources ->
-                        failwithf "Couldn't get package details for package %O %O on any of %A." packageName version sources
+                        rethrowf exn inner "Couldn't get package details for package %O %O on any of %A." packageName version sources
 
                 match maybePackageDetails with
                 | None -> return fallback()
