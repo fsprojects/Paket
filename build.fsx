@@ -385,8 +385,9 @@ Target "PublishNuGet" (fun _ ->
 // Generate the documentation
 
 Target "GenerateReferenceDocs" (fun _ ->
-    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:REFERENCE"] [] then
-      failwith "generating reference documentation failed"
+    // if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:REFERENCE"] [] then
+    //   failwith "generating reference documentation failed"
+    ()
 )
 
 let generateHelp' commands fail debug =
