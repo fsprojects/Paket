@@ -219,6 +219,8 @@ let getTargetCondition (target:TargetProfile) =
         | MonoTouch -> "$(TargetFrameworkIdentifier) == 'MonoTouch'", ""
         | MonoMac -> "$(TargetFrameworkIdentifier) == 'MonoMac'", ""
         | XamariniOS -> "$(TargetFrameworkIdentifier) == 'Xamarin.iOS'", ""
+        | XamarinTV -> "$(TargetFrameworkIdentifier) == 'Xamarin.tvOS'", ""
+        | XamarinWatch -> "$(TargetFrameworkIdentifier) == 'Xamarin.watchOS'", ""
         | UAP(version) -> "$(TargetFrameworkIdentifier) == '.NETCore'", sprintf "$(TargetFrameworkVersion) == '%O'" version.NetCoreVersion
         | XamarinMac -> "$(TargetFrameworkIdentifier) == 'Xamarin.Mac'", ""
         | Native(NoBuildMode,NoPlatform) -> "true", ""
