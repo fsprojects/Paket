@@ -184,24 +184,27 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
 
     member __.SetupGroup (groupName:GroupName) : bool =
         if loadedGroups.Contains groupName then true else
-        match tryGet groupName  orderedGroupCache with
+        match tryGet groupName orderedGroupCache with
         | None -> false
         | Some resolvedPackageList ->
             let exprs =
                 if resolvedPackageList <> [] then
                     if verbose then
                         verbosefn "[ Loading packages from group - %O ]\n" groupName
-                resolvedPackageList |> List.map (fun package -> async {
+                resolvedPackageList 
+                |> List.map (fun package -> async {
                     let packageName = package.Name
-                    let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.CompareString
-                    let folder = DirectoryInfo(sprintf "%s/packages%s/%O" lockFile.RootPath groupFolder packageName)
-                    let nuspecShort = sprintf "/packages%s/%O/%O.nuspec" groupFolder packageName packageName
+                    let folder = 
+                        getTargetFolder lockFile.RootPath groupName packageName package.Version (defaultArg package.Settings.IncludeVersionInPath false)
+                        |> Path.GetFullPath
+                        
+                    let nuspecShort = Path.Combine(folder, sprintf "%O.nuspec" packageName)
                     if verbose then
                         verbosefn " -- %s" nuspecShort
                     let nuspec = FileInfo <| Path.Combine (lockFile.RootPath,nuspecShort)
                     let nuspec = Nuspec.Load nuspec.FullName
                     nuspecCache.TryAdd((package.Name,package.Version),nuspec)|>ignore
-                    let content = NuGet.GetContent(folder.FullName)
+                    let content = NuGet.GetContent(folder)
                     let model = InstallModel.CreateFromContent(packageName, package.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
                     installModelCache.TryAdd((groupName,package.Name) , model) |> ignore                
                 }) |> Array.ofSeq

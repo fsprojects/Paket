@@ -449,9 +449,11 @@ type Dependencies(dependenciesFileName: string) =
             | None -> failwithf "Package %O is not installed in group %O." packageName groupName
             | Some resolvedPackage ->
                 let packageName = resolvedPackage.Name
-                let groupFolder = if groupName = Constants.MainDependencyGroup then "" else "/" + groupName.CompareString
-                let folder = DirectoryInfo(sprintf "%s/packages%s/%O" this.RootPath groupFolder packageName)
-                let content = NuGet.GetContent(folder.FullName)
+                let folder = 
+                        getTargetFolder this.RootPath groupName packageName resolvedPackage.Version (defaultArg resolvedPackage.Settings.IncludeVersionInPath false)
+                        |> Path.GetFullPath
+
+                let content = NuGet.GetContent folder
                 InstallModel.CreateFromContent(packageName, resolvedPackage.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
 
     /// Returns all libraries for the given package and framework.
