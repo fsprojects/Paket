@@ -77,10 +77,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '279', 279)" onmouseover="showTip(event, '279', 279)">
+          <code onmouseout="hideTip(event, '290', 290)" onmouseover="showTip(event, '290', 290)">
             findLocalPackage (...)
           </code>
-          <div class="tip" id="279">
+          <div class="tip" id="290">
             <strong>Signature:</strong> directory:string -&gt; packageName:PackageName -&gt; version:SemVerInfo -&gt; FileInfo<br />
                       </div>
         </td>
@@ -95,10 +95,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '280', 280)" onmouseover="showTip(event, '280', 280)">
+          <code onmouseout="hideTip(event, '291', 291)" onmouseover="showTip(event, '291', 291)">
             getAllVersionsFromLocalPath (...)
           </code>
-          <div class="tip" id="280">
+          <div class="tip" id="291">
             <strong>Signature:</strong> (isCache:bool * localNugetPath:string * package:PackageName * alternativeProjectRoot:string option * root:string) -&gt; NuGetRequestGetVersions<br />
                       </div>
         </td>
@@ -115,15 +115,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '281', 281)" onmouseover="showTip(event, '281', 281)">
+          <code onmouseout="hideTip(event, '292', 292)" onmouseover="showTip(event, '292', 292)">
             getDetailsFromLocalNuGetPackage (...)
           </code>
-          <div class="tip" id="281">
+          <div class="tip" id="292">
             <strong>Signature:</strong> isCache:bool -&gt; alternativeProjectRoot:string option -&gt; root:string -&gt; localNuGetPath:string -&gt; packageName:PackageName -&gt; version:SemVerInfo -&gt; Async&lt;ODataSearchResult&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGetLocal.fs#L82-82" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGetLocal.fs#L84-84" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -135,15 +135,35 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '282', 282)" onmouseover="showTip(event, '282', 282)">
-            getPackageNameFromLocalFile fileName
+          <code onmouseout="hideTip(event, '293', 293)" onmouseover="showTip(event, '293', 293)">
+            getNuSpecFromNupgk fileName
           </code>
-          <div class="tip" id="282">
-            <strong>Signature:</strong> fileName:string -&gt; string<br />
+          <div class="tip" id="293">
+            <strong>Signature:</strong> fileName:string -&gt; Nuspec<br />
                       </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGetLocal.fs#L69-69" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          <p>Reads nuspec from nupkg</p>
+
+
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '294', 294)" onmouseover="showTip(event, '294', 294)">
+            getPackageNameFromLocalFile fileName
+          </code>
+          <div class="tip" id="294">
+            <strong>Signature:</strong> fileName:string -&gt; string<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Dependencies/NuGetLocal.fs#L79-79" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -155,10 +175,10 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '283', 283)" onmouseover="showTip(event, '283', 283)">
+          <code onmouseout="hideTip(event, '295', 295)" onmouseover="showTip(event, '295', 295)">
             parsePackageInfoFromFileName fileName
           </code>
-          <div class="tip" id="283">
+          <div class="tip" id="295">
             <strong>Signature:</strong> fileName:string -&gt; (PackageName * SemVerInfo) option<br />
                       </div>
         </td>

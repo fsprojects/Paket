@@ -125,12 +125,12 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '204', 204)" onmouseover="showTip(event, '204', 204)">
+          <code onmouseout="hideTip(event, '207', 207)" onmouseover="showTip(event, '207', 207)">
             ( &lt;/&gt; ) p1 p2
           </code>
-          <div class="tip" id="204">
-            <strong>Signature:</strong> p1:^?8680 -&gt; p2:^?8681 -&gt; ^_arg4<br />
-                          <strong>Type parameters:</strong> ^?8680, ^?8681, ^_arg4          </div>
+          <div class="tip" id="207">
+            <strong>Signature:</strong> p1:^?8681 -&gt; p2:^?8682 -&gt; ^_arg4<br />
+                          <strong>Type parameters:</strong> ^?8681, ^?8682, ^_arg4          </div>
         </td>
         <td class="xmldoc">
             <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/ScriptGeneration.fs#L23-23" class="github-link">
@@ -144,15 +144,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '205', 205)" onmouseover="showTip(event, '205', 205)">
+          <code onmouseout="hideTip(event, '208', 208)" onmouseover="showTip(event, '208', 208)">
             constructScriptsFromData (...)
           </code>
-          <div class="tip" id="205">
+          <div class="tip" id="208">
             <strong>Signature:</strong> depCache:DependencyCache -&gt; groups:GroupName list -&gt; providedFrameworks:string list -&gt; providedScriptTypes:string list -&gt; seq&lt;ScriptContent&gt;<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/ScriptGeneration.fs#L236-236" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/ScriptGeneration.fs#L243-243" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -162,10 +162,28 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '206', 206)" onmouseover="showTip(event, '206', 206)">
+          <code onmouseout="hideTip(event, '209', 209)" onmouseover="showTip(event, '209', 209)">
+            filterForFSI scriptType refls
+          </code>
+          <div class="tip" id="209">
+            <strong>Signature:</strong> scriptType:ScriptType -&gt; refls:ReferenceType list -&gt; ReferenceType list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/ScriptGeneration.fs#L64-64" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '210', 210)" onmouseover="showTip(event, '210', 210)">
             filterFSharpRefTypes scriptType refls
           </code>
-          <div class="tip" id="206">
+          <div class="tip" id="210">
             <strong>Signature:</strong> scriptType:ScriptType -&gt; refls:ReferenceType list -&gt; ReferenceType list<br />
                       </div>
         </td>
@@ -180,15 +198,33 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '207', 207)" onmouseover="showTip(event, '207', 207)">
+          <code onmouseout="hideTip(event, '211', 211)" onmouseover="showTip(event, '211', 211)">
+            filterReferences scriptType
+          </code>
+          <div class="tip" id="211">
+            <strong>Signature:</strong> scriptType:ScriptType -&gt; ReferenceType list -&gt; ReferenceType list<br />
+                      </div>
+        </td>
+        <td class="xmldoc">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/ScriptGeneration.fs#L75-75" class="github-link">
+              <img src="../content/img/github.png" class="normal" />
+              <img src="../content/img/github-blue.png" class="hover" />
+            </a>
+          
+        </td>
+      </tr>
+      <tr>
+        <td class="member-name">
+
+          <code onmouseout="hideTip(event, '212', 212)" onmouseover="showTip(event, '212', 212)">
             generateScript scriptType input
           </code>
-          <div class="tip" id="207">
+          <div class="tip" id="212">
             <strong>Signature:</strong> scriptType:ScriptType -&gt; input:ScriptGenInput -&gt; ScriptGenResult<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/ScriptGeneration.fs#L65-65" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/ScriptGeneration.fs#L78-78" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
@@ -200,15 +236,15 @@
       <tr>
         <td class="member-name">
 
-          <code onmouseout="hideTip(event, '208', 208)" onmouseover="showTip(event, '208', 208)">
+          <code onmouseout="hideTip(event, '213', 213)" onmouseover="showTip(event, '213', 213)">
             generateScriptContent arg1
           </code>
-          <div class="tip" id="208">
+          <div class="tip" id="213">
             <strong>Signature:</strong> PaketContext -&gt; (GroupName * ScriptContent list) list<br />
                       </div>
         </td>
         <td class="xmldoc">
-            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/ScriptGeneration.fs#L146-146" class="github-link">
+            <a href="http://github.com/fsprojects/Paket/tree/master/src/Paket.Core/Installation/ScriptGeneration.fs#L151-151" class="github-link">
               <img src="../content/img/github.png" class="normal" />
               <img src="../content/img/github-blue.png" class="hover" />
             </a>
