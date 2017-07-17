@@ -41,12 +41,14 @@ let rec ofDirectory targetFolder =
             |> Array.map (fun di -> ofDirectory di.FullName)
             |> Array.toList
         else []
+
     let files =
         if dir.Exists then
             dir.GetFiles()
             |> Array.map (fun fi -> NuGetFile(fi.Name))
             |> Array.toList
         else []
+
     NuGetDirectory(dir.Name, subDirs @ files)
 
 let rec createEntry (content:string) =
@@ -101,10 +103,11 @@ let tryFindFolder folder (content:NuGetPackageContent) =
             |> List.collect (collectItems fullPath relPath)
         | NuGetFile _ ->
             [ {UnparsedPackageFile.FullPath = fullPath; UnparsedPackageFile.PathWithinPackage = relPath } ]
+
     content.Content
     |> List.tryPick (fun c ->
         match c with
-        | NuGetDirectory(n,contents) when n = folder -> Some contents
+        | NuGetDirectory(n,contents) when String.equalsIgnoreCase n folder -> Some contents
         | _ -> None)
     |> Option.map (fun item ->
         item
@@ -172,8 +175,9 @@ let private getFilesMatching targetFolder searchPattern subFolderName filesDescr
             |> Array.filter (fun fi -> String.equalsIgnoreCase fi.FullName path)
             |> Array.collect (fun dir -> dir.GetFiles(searchPattern, SearchOption.AllDirectories))
             |> Array.map (fun file ->
-                let fullPath = Path.GetFullPath file.FullName;
-                { UnparsedPackageFile.FullPath = fullPath; UnparsedPackageFile.PathWithinPackage = fullPath.Substring(dirFullPath.Length + 1).Replace("\\", "/") })
+                let fullPath = Path.GetFullPath file.FullName
+                { UnparsedPackageFile.FullPath = fullPath
+                  UnparsedPackageFile.PathWithinPackage = fullPath.Substring(dirFullPath.Length + 1).Replace("\\", "/") })
         else
             [||]
 

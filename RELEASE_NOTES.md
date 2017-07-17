@@ -1,3 +1,6 @@
+#### 5.7.1 - 17.07.2017
+* BUGFIX: Detect subfolders like "Lib" - https://github.com/fsprojects/Paket/issues/2533
+
 #### 5.7.0 - 17.07.2017
 * BUGFIX: Multi-Target support for new MSBuild (needs paket install to update the Paket.Restore.targets)
 * NuGet convert can detect cli tools - https://github.com/fsprojects/Paket/issues/2518
