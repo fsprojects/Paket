@@ -1,4 +1,4 @@
-#### 5.7.0-alpha001 - 16.07.2017
+#### 5.7.0 - 17.07.2017
 * BUGFIX: Multi-Target support for new MSBuild (needs paket install to update the Paket.Restore.targets)
 * NuGet convert can detect cli tools - https://github.com/fsprojects/Paket/issues/2518
 * BUGFIX: Unescape urls in odata response - https://github.com/fsprojects/Paket/issues/2504
