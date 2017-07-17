@@ -409,30 +409,32 @@ let generateHelp commands fail =
     generateHelp' commands fail false
 
 Target "GenerateHelp" (fun _ ->
-    DeleteFile "docs/content/release-notes.md"
-    CopyFile "docs/content/" "RELEASE_NOTES.md"
-    Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
+    // DeleteFile "docs/content/release-notes.md"
+    // CopyFile "docs/content/" "RELEASE_NOTES.md"
+    // Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
 
-    DeleteFile "docs/content/license.md"
-    CopyFile "docs/content/" "LICENSE.txt"
-    Rename "docs/content/license.md" "docs/content/LICENSE.txt"
+    // DeleteFile "docs/content/license.md"
+    // CopyFile "docs/content/" "LICENSE.txt"
+    // Rename "docs/content/license.md" "docs/content/LICENSE.txt"
 
-    CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.sigdata"
-    CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.optdata"
+    // CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.sigdata"
+    // CopyFile buildDir "packages/FSharp.Core/lib/net40/FSharp.Core.optdata"
 
-    generateHelp true true
+    // generateHelp true true
+    ()
 )
 
 Target "GenerateHelpDebug" (fun _ ->
-    DeleteFile "docs/content/release-notes.md"
-    CopyFile "docs/content/" "RELEASE_NOTES.md"
-    Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
+    // DeleteFile "docs/content/release-notes.md"
+    // CopyFile "docs/content/" "RELEASE_NOTES.md"
+    // Rename "docs/content/release-notes.md" "docs/content/RELEASE_NOTES.md"
 
-    DeleteFile "docs/content/license.md"
-    CopyFile "docs/content/" "LICENSE.txt"
-    Rename "docs/content/license.md" "docs/content/LICENSE.txt"
+    // DeleteFile "docs/content/license.md"
+    // CopyFile "docs/content/" "LICENSE.txt"
+    // Rename "docs/content/license.md" "docs/content/LICENSE.txt"
 
-    generateHelp' true true true
+    // generateHelp' true true true
+    ()
 )
 
 Target "KeepRunning" (fun _ ->    
@@ -453,19 +455,20 @@ Target "GenerateDocs" DoNothing
 // Release Scripts
 
 Target "ReleaseDocs" (fun _ ->
-    let tempDocsDir = "temp/gh-pages"
-    CleanDir tempDocsDir
-    Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
+    // let tempDocsDir = "temp/gh-pages"
+    // CleanDir tempDocsDir
+    // Repository.cloneSingleBranch "" (gitHome + "/" + gitName + ".git") "gh-pages" tempDocsDir
 
-    Git.CommandHelper.runSimpleGitCommand tempDocsDir "rm . -f -r" |> ignore
-    CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"    
+    // Git.CommandHelper.runSimpleGitCommand tempDocsDir "rm . -f -r" |> ignore
+    // CopyRecursive "docs/output" tempDocsDir true |> tracefn "%A"    
     
-    File.WriteAllText("temp/gh-pages/latest",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" release.NugetVersion)
-    File.WriteAllText("temp/gh-pages/stable",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" stable.NugetVersion)
+    // File.WriteAllText("temp/gh-pages/latest",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" release.NugetVersion)
+    // File.WriteAllText("temp/gh-pages/stable",sprintf "https://github.com/fsprojects/Paket/releases/download/%s/paket.exe" stable.NugetVersion)
 
-    StageAll tempDocsDir
-    Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
-    Branches.push tempDocsDir
+    // StageAll tempDocsDir
+    // Git.Commit.Commit tempDocsDir (sprintf "Update generated documentation for version %s" release.NugetVersion)
+    // Branches.push tempDocsDir
+    ()
 )
 
 #load "paket-files/build/fsharp/FAKE/modules/Octokit/Octokit.fsx"
