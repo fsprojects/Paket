@@ -415,9 +415,6 @@ module InstallModel =
             (trySscanf "build/%A{noSeperator}" p.PathWithinPackage : string option)
             |> Option.map (fun (_) -> { Path = Tfm.Empty; File = p; Runtime = None }))
 
-    // NuGetContent -> UnParsedPackageFile
-
-
     // Build up InstallModel
 
     let private getFileFolders (target:TargetProfile)  folderType choosefn =

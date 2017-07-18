@@ -220,10 +220,12 @@ type Dependencies(dependenciesFileName: string) =
             let rootDir = this.RootDirectory
             Directory.CreateDirectory <| Path.Combine (Constants.PaketFolderName,"load") |> ignore
             let scriptPath = Path.Combine (rootDir.FullName , sd.PartialPath)
-            tracefn "scriptpath - %s" scriptPath
+            if verbose then
+                verbosefn "scriptpath - %s" scriptPath
             let scriptDir = Path.GetDirectoryName scriptPath |> Path.GetFullPath |> DirectoryInfo
             scriptDir.Create()
-            tracefn "created - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
+            if verbose then
+                verbosefn "created - '%s'" <| Path.Combine (rootDir.FullName , sd.PartialPath)
             sd.Save rootDir
         )
 
