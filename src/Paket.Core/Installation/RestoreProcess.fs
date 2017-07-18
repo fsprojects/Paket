@@ -417,16 +417,18 @@ let Restore(dependenciesFileName,projectFile,force,group,referencesFileNames,ign
 
 
     let groupsToGenerate =
-        dependenciesFile.Groups 
+        groups
         |> Seq.map (fun kvp -> kvp.Value)
         |> Seq.filter (fun g -> g.Options.Settings.GenerateLoadScripts = Some true)
         |> Seq.map (fun g -> g.Name)
         |> Seq.toList
 
-    if groupsToGenerate <> [] then
-        let depsCache = DependencyCache(dependenciesFile,lockFile) 
-        (LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] [])
-        |> Seq.iter (fun sd -> sd.Save (DirectoryInfo dependenciesFile.Directory))
+    if not (List.isEmpty groupsToGenerate) then
+        let depsCache = DependencyCache(dependenciesFile,lockFile)
+        let dir = DirectoryInfo dependenciesFile.Directory
+
+        LoadingScripts.ScriptGeneration.constructScriptsFromData depsCache groupsToGenerate [] []
+        |> Seq.iter (fun sd -> sd.Save dir)
     
     if targetFrameworks <> None then
         GarbageCollection.CleanUp(root, dependenciesFile, lockFile)

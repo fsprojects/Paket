@@ -79,7 +79,6 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
         |> ignore
     
     do loadPackages ()
-        
 
     let getDllOrder (dllFiles : AssemblyDefinition list) =
         // this check saves looking at assembly metadata when we know this is not needed
@@ -177,41 +176,44 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
     member __.DependenciesFile = dependencyFile
     
     member __.InstallModels () = 
-        installModelCache |> Seq.map (fun x->x.Value) |>List.ofSeq
+        installModelCache |> Seq.map (fun x -> x.Value) |> List.ofSeq
     
     member __.Nuspecs () = 
-        nuspecCache |> Seq.map (fun x->x.Value) |>List.ofSeq
+        nuspecCache |> Seq.map (fun x -> x.Value) |> List.ofSeq
 
     member __.SetupGroup (groupName:GroupName) : bool =
-        if loadedGroups.Contains groupName then true else
-        match tryGet groupName orderedGroupCache with
-        | None -> false
-        | Some resolvedPackageList ->
-            let exprs =
-                if resolvedPackageList <> [] then
-                    if verbose then
-                        verbosefn "[ Loading packages from group - %O ]\n" groupName
-                resolvedPackageList 
-                |> List.map (fun package -> async {
-                    let packageName = package.Name
-                    let folder = 
-                        getTargetFolder lockFile.RootPath groupName packageName package.Version (defaultArg package.Settings.IncludeVersionInPath false)
-                        |> Path.GetFullPath
-                        
-                    let nuspecShort = Path.Combine(folder, sprintf "%O.nuspec" packageName)
-                    if verbose then
-                        verbosefn " -- %s" nuspecShort
-                    let nuspec = FileInfo <| Path.Combine (lockFile.RootPath,nuspecShort)
-                    let nuspec = Nuspec.Load nuspec.FullName
-                    nuspecCache.TryAdd((package.Name,package.Version),nuspec)|>ignore
-                    let content = NuGet.GetContent(folder)
-                    let model = InstallModel.CreateFromContent(packageName, package.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
-                    installModelCache.TryAdd((groupName,package.Name) , model) |> ignore                
-                }) |> Array.ofSeq
-            Async.Parallel exprs
-            |> Async.RunSynchronously |> ignore
-            loadedGroups.Add groupName |> ignore
-            true
+        if loadedGroups.Contains groupName then 
+            true 
+        else
+            match tryGet groupName orderedGroupCache with
+            | None -> false
+            | Some resolvedPackageList ->
+                let exprs =
+                    if resolvedPackageList <> [] then
+                        if verbose then
+                            verbosefn "[Loading packages from group - %O]" groupName
+
+                    resolvedPackageList 
+                    |> List.map (fun package -> async {
+                        let folder = 
+                            getTargetFolder lockFile.RootPath groupName package.Name package.Version (defaultArg package.Settings.IncludeVersionInPath false)
+                            |> Path.GetFullPath
+                            
+                        let nuspecShort = Path.Combine(folder, sprintf "%O.nuspec" package.Name)
+                        if verbose then
+                            verbosefn " -- %s" nuspecShort
+                        let nuspec = FileInfo(Path.Combine (lockFile.RootPath,nuspecShort))
+                        let nuspec = Nuspec.Load nuspec.FullName
+                        nuspecCache.TryAdd((package.Name,package.Version),nuspec) |>ignore
+                        let content = NuGet.GetContent(folder)
+                        let model = InstallModel.CreateFromContent(package.Name, package.Version, Paket.Requirements.FrameworkRestriction.NoRestriction, content)
+                        installModelCache.TryAdd((groupName,package.Name) , model) |> ignore }) 
+                    |> Array.ofSeq
+
+                Async.Parallel exprs
+                |> Async.RunSynchronously |> ignore
+                loadedGroups.Add groupName |> ignore
+                true
 
     member self.OrderedGroups () =
         orderedGroupCache |> Seq.map (fun x -> 
@@ -224,9 +226,6 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
         tryGet groupName orderedGroupCache |> Option.defaultValue []
         
     member self.ClearLoaded () = loadedGroups.Clear ()
-
-
-
 
 
     new (dependencyFilePath:string) = 

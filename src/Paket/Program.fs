@@ -756,7 +756,7 @@ let main() =
 #else
         Environment.ExitCode <- 1
 #endif
-        traceErrorfn "Paket failed with Message: %A" exn.Message
+        traceErrorfn "Paket failed with"
         if Environment.GetEnvironmentVariable "PAKET_DETAILED_ERRORS" = "true" then
             printErrorExt true true false exn
         else printError exn

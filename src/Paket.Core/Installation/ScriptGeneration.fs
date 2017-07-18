@@ -150,7 +150,7 @@ module ScriptGeneration =
     /// if a package is ordered before its dependencies this function will throw.
     let generateScriptContent (context:PaketContext as ctx) =
         
-        let scriptType, groups, (isDefaultFramework, framework) =  ctx.ScriptType, ctx.Groups, ctx.DefaultFramework
+        let scriptType, groups, (isDefaultFramework, framework) = ctx.ScriptType, ctx.Groups, ctx.DefaultFramework
 
         // -- LOAD SCRIPT FORMATTING POINT --
         let loadScriptsRootFolder = Constants.PaketFolderName </> "load"
@@ -175,11 +175,17 @@ module ScriptGeneration =
         let scriptFile (scriptFolder:string) =
             sprintf "%s.%s"  scriptFolder scriptType.Extension
                     
+        let cachedGroups =
+            if List.isEmpty groups then
+                ctx.Cache.OrderedGroups() 
+                |> Seq.map (fun kvp -> kvp.Key,kvp.Value)
+            else
+                groups
+                |> Seq.map (fun g -> g,ctx.Cache.OrderedGroups g)
 
         let scriptContent =
-            ctx.Cache.OrderedGroups() |> Seq.choose (fun kvp ->
-                let groupName,packages = kvp.Key,kvp.Value
-                if List.isEmpty groups || List.exists ((=) groupName) groups then
+            cachedGroups
+            |> Seq.map (fun (groupName,packages) ->
                     // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
                     ((Map.empty,[]),packages)
                     ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,string>*_) (package: PackageResolver.ResolvedPackage) ->
@@ -219,14 +225,14 @@ module ScriptGeneration =
                                     Lang = scriptType
                                     Input = pieces 
                                 } 
-                            (knownScripts, rendered::scriptFiles)
-                    ) |> fun (_,sfs) -> Some (groupName, sfs )
-                else None
+                            (knownScripts, rendered::scriptFiles)) 
+                    |> fun (_,sfs) -> groupName, sfs
             ) |> List.ofSeq
 
         // generate scripts to load all packages within a group
         let groupScriptContent =
-            ctx.Groups |> List.map (fun group ->
+            ctx.Groups 
+            |> List.map (fun group ->
                 let scriptFile = getGroupFile group
                 let pieces =
                     ctx.Cache.GetOrderedReferences group framework
@@ -255,9 +261,9 @@ module ScriptGeneration =
                 groups
         
         if verbose then
-            verbosefn "Generating Load Scripts" 
-            verbosefn "Using Paket dependency file\n - %s" dependenciesFile.FileName
-            verbosefn "Using LockFile \n - %s" lockFile.FileName
+            verbosefn "Generating load scripts for the following groups: %A" (groups |> List.map (fun g -> g.Name.ToString()))
+            verbosefn " - using Paket dependency file: %s" dependenciesFile.FileName
+            verbosefn " - using Packe fock file: %s" lockFile.FileName
 
         let tupleMap f v = (v, f v)
         let failOnMismatch toParse parsed fn message =
