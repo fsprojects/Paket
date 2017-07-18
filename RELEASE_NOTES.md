@@ -1,3 +1,6 @@
+#### 5.78.1 - 18.07.2017
+* USABILITY: Check that we printed an error
+
 #### 5.78.0 - 18.07.2017
 * Support Xamarin.tvOS and Xamarin.watchOS - https://github.com/fsprojects/Paket/pull/2535
 * BUGFIX: Version in path and load scripts should work together - https://github.com/fsprojects/Paket/issues/2534

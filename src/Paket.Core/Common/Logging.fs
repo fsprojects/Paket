@@ -112,6 +112,7 @@ type private ExnType =
 /// [omit]
 let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:exn) =
     let defaultMessage = AggregateException().Message
+    let mutable printed = false
     let rec printErrorHelper exnType useArrow indent (exn:exn) =
         let handleError () =
             let s = if useArrow then "->" else "- "
@@ -123,12 +124,14 @@ let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:ex
                     ""
                 else sprintf "%s: " t.Name
             traceErrorfn "%s%s %s%s" indentString s typeString (String.Join(sprintf "%s%s   " Environment.NewLine indentString , splitMsg))
+            printed <- true
             let printStack =
                 match String.IsNullOrWhiteSpace exn.StackTrace, exnType with
                 | false, ExnType.First when printFirstStack -> true
                 | false, ExnType.Aggregated when printAggregatedStacks -> true
                 | false, ExnType.Inner when printInnerStacks -> true
                 | _ -> false
+
             if printStack then
                 traceErrorfn "%s   StackTrace:" indentString
                 let split = exn.StackTrace.Split([|"\r\n"; "\n"|], StringSplitOptions.None)
@@ -153,6 +156,8 @@ let printErrorExt printFirstStack printAggregatedStacks printInnerStacks (exn:ex
                 printErrorHelper ExnType.Inner true indent exn.InnerException
 
     printErrorHelper ExnType.First true 0 exn
+    if not printed then
+        traceErrorfn "Exception: %A" exn    
 
 /// [omit]
 let printError (exn:exn) =
