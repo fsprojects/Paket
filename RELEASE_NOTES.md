@@ -1,3 +1,6 @@
+#### 5.79.2 - 18.07.2017
+* BUGFIX: Multi-Target support for new MSBuild - https://github.com/fsprojects/Paket/issues/2496#issuecomment-316057881
+
 #### 5.79.1 - 18.07.2017
 * USABILITY: Check that we printed an error
 * USABILITY: Do not spam script generation messages (these are no under -v)
