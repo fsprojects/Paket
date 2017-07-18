@@ -27,6 +27,7 @@ let processWithValidation silent validateF commandF (result : ParseResults<'T>) 
         traceError "Command was:"
         traceError ("  " + String.Join(" ",Environment.GetCommandLineArgs()))
         result.Parser.PrintUsage() |> traceError
+
 #if NETCOREAPP1_0
         // Environment.ExitCode not supported in netcoreapp1.0
 #else
@@ -755,7 +756,7 @@ let main() =
 #else
         Environment.ExitCode <- 1
 #endif
-        traceErrorfn "Paket failed with:"
+        traceErrorfn "Paket failed with Message: %A" exn.Message
         if Environment.GetEnvironmentVariable "PAKET_DETAILED_ERRORS" = "true" then
             printErrorExt true true false exn
         else printError exn
