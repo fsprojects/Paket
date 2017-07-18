@@ -25,9 +25,11 @@ github fsprojects/FSharp.TypeProviders.StarterPack src/AssemblyReader.fs
 group Build
   content: none
   source https://nuget.org/api/v2
+  source https://ci.appveyor.com/nuget/fsharp-formatting
   
-  nuget FAKE prerelease
-  nuget FSharp.Formatting
+  nuget FAKE
+  nuget FSharp.Formatting prerelease
+  nuget Microsoft.AspNet.Razor
   nuget ILRepack
   
   github fsharp/FAKE modules/Octokit/Octokit.fsx

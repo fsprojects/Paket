@@ -131,7 +131,7 @@
               NuspecFile="$(NuspecFileAbsolutePath)"
               NuspecBasePath="$(NuspecBasePath)"
               NuspecProperties="$(NuspecProperties)"/>
-                  
+
     <PackTask Condition="! $(UseNewPack)"
               PackItem="$(PackProjectInputFile)"
               PackageFiles="@(_PackageFiles)"
