@@ -211,13 +211,12 @@ let private handleODataEntry nugetURL packageName version entry =
 
 
 // parse search results.
-let parseODataListDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) : ODataSearchResult =
-    let doc = getXmlDoc url raw
-
+let parseODataListDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,doc) : ODataSearchResult =
     let feedNode =
         match doc |> getNode "feed" with
         | Some node -> node
-        | None -> failwithf "Could not find 'entry' node for package %O %O" packageName version
+        | None ->
+            failwithf "Could not find 'entry' node for package %O %O" packageName version
     match feedNode |> getNodes "entry" with
     | [] ->
         // When no entry node is found our search did not yield anything.
@@ -228,12 +227,18 @@ let parseODataListDetails (url,nugetURL,packageName:PackageName,version:SemVerIn
         handleODataEntry nugetURL packageName version entry
         |> ODataSearchResult.Match
 
-let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,raw) =
-    let doc = getXmlDoc url raw
+let parseODataEntryDetails (url,nugetURL,packageName:PackageName,version:SemVerInfo,doc) =
     match doc |> getNode "entry" with
     | Some entry ->
         handleODataEntry nugetURL packageName version entry
-    | None -> failwithf "Could not find 'entry' node for package %O %O" packageName version
+    | None ->
+        // allow feed node, see https://github.com/fsprojects/Paket/issues/2539
+        // TODO: traceWarnfn "Consider updating your NuGet server, see https://github.com/fsprojects/Paket/issues/2539"
+        match parseODataListDetails (url,nugetURL,packageName,version,doc) with
+        | EmptyResult ->
+            failwithf "Could not find 'entry' node for package %O %O" packageName version
+        | ODataSearchResult.Match entry -> entry
+
 
 let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (version:SemVerInfo) =
     async {
@@ -246,7 +251,8 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                     tracefn "Response from %s:" url
                     tracefn ""
                     tracefn "%s" raw
-                return parseODataListDetails(url,nugetURL,packageName,version,raw)
+                let doc = getXmlDoc url raw
+                return parseODataListDetails(url,nugetURL,packageName,version,doc)
             }
 
         let fallback () =
@@ -258,7 +264,8 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                         tracefn "Response from %s:" url
                         tracefn ""
                         tracefn "%s" raw
-                    match parseODataListDetails(url,nugetURL,packageName,version,raw) with
+                    let doc = getXmlDoc url raw
+                    match parseODataListDetails(url,nugetURL,packageName,version,doc) with
                     | EmptyResult ->
                         if verbose then tracefn "No results, trying again with NormalizedVersion as Version instead of Version."
                         return! fallback2()
@@ -274,7 +281,8 @@ let getDetailsFromNuGetViaODataFast auth nugetURL (packageName:PackageName) (ver
                 tracefn "Response from %s:" firstUrl
                 tracefn ""
                 tracefn "%s" raw
-            match parseODataListDetails(firstUrl,nugetURL,packageName,version,raw) with
+            let doc = getXmlDoc firstUrl raw
+            match parseODataListDetails(firstUrl,nugetURL,packageName,version,doc) with
             | EmptyResult ->
                 if verbose then tracefn "No results, trying again with Version instead of NormalizedVersion."
                 return! fallback()
@@ -324,7 +332,8 @@ let getDetailsFromNuGetViaOData auth nugetURL (packageName:PackageName) (version
                 tracefn "%s" (match raw with Some s -> s | _ -> "NOTFOUND 404")
             match raw with
             | Some raw ->
-                return parseODataEntryDetails(url,nugetURL,packageName,version,raw) |> ODataSearchResult.Match
+                let doc = getXmlDoc url raw
+                return parseODataEntryDetails(url,nugetURL,packageName,version,doc) |> ODataSearchResult.Match
             | None -> return ODataSearchResult.EmptyResult }
 
     async {
