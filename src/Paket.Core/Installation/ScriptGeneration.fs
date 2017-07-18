@@ -249,8 +249,10 @@ module ScriptGeneration =
         let lockFile = depCache.LockFile
 
         let groups = 
-            if groups = [] then dependenciesFile.Groups |> Seq.map (fun kvp -> kvp.Key) |> Seq.toList 
-            else groups
+            if List.isEmpty groups then 
+                dependenciesFile.Groups |> Seq.map (fun kvp -> kvp.Key) |> Seq.toList 
+            else 
+                groups
         
         if verbose then
             verbosefn "Generating Load Scripts" 
@@ -273,7 +275,8 @@ module ScriptGeneration =
         let frameworksToGenerate =
             // specified frameworks are never considered default
             let targetFrameworkList = 
-                providedFrameworks |> List.choose FrameworkDetection.Extract 
+                providedFrameworks 
+                |> List.choose FrameworkDetection.Extract 
                 |> List.map (fun f -> f, false)
 
             failOnMismatch providedFrameworks targetFrameworkList FrameworkDetection.Extract "Unrecognized Framework(s)"
@@ -283,7 +286,8 @@ module ScriptGeneration =
             elif not (Seq.isEmpty frameworksForDependencyGroups.Value) then 
                 // if paket.dependencies evaluate to single framework, consider it as default
                 let isDefaultFramework = Seq.length frameworksForDependencyGroups.Value = 1
-                frameworksForDependencyGroups.Value |> Seq.map (fun f -> f, isDefaultFramework)
+                frameworksForDependencyGroups.Value 
+                |> Seq.map (fun f -> f, isDefaultFramework)
             else // environment framework is default
                 Seq.singleton (environmentFramework.Value, true)
             |> Seq.distinct
@@ -292,7 +296,7 @@ module ScriptGeneration =
         let scriptTypesToGenerate =
             let parsedScriptTypes = providedScriptTypes |> List.choose ScriptType.TryCreate
 
-            failOnMismatch providedScriptTypes parsedScriptTypes ScriptType.TryCreate "Unrecognized Script Type(s)"
+            failOnMismatch providedScriptTypes parsedScriptTypes ScriptType.TryCreate "Unrecognized script type(s)"
 
             match parsedScriptTypes with
             | [] -> [CSharp; FSharp]
@@ -318,7 +322,7 @@ module ScriptGeneration =
             ls |> List.forall (snd >> List.forall (snd>> List.isEmpty))
             
         // Report that no script generation was possible for the provided frameworks and groups
-        if scriptData = [] || allGroupsEmpty scriptData then 
+        if List.isEmpty scriptData || allGroupsEmpty scriptData then 
             let frameworkMsg =  
                 sprintf "for %s %s" 
                     (if frameworks.Length = 1 then "framework" else "frameworks") 
@@ -326,24 +330,25 @@ module ScriptGeneration =
             let groupMsg = 
                 sprintf "in %s %A" 
                     (groups.Length |> function 0|1 -> "group" | _ -> "groups") 
-                    (if groups = [] then 
+                    (if List.isEmpty groups then 
                         Constants.MainDependencyGroup.Name 
                      else 
                         String.concat " " (groups|>List.map string))
             tracefn "Could not generate any scripts %s %s" frameworkMsg groupMsg
         else // report the scripts that were generated for each framework by each group
-            for framework, grouped in scriptData do
-                tracefn "Generating load scripts for framework - %O" framework
-                for group,scriptContent in grouped do 
-                    if scriptContent = [] then 
-                        tracefn "Could not generate any scripts for group '%O'" group
-                    else
-                        tracefn "[ Group - %O ]" group  
-                        scriptContent |> Seq.iter (fun sc -> tracefn " - %O" sc.PartialPath)
+            if verbose then
+                for framework, grouped in scriptData do
+                    tracefn "Generating load scripts for framework - %O" framework
+                    for group,scriptContent in grouped do 
+                        if List.isEmpty scriptContent then 
+                            tracefn "Could not generate any scripts for group '%O'" group
+                        else
+                            tracefn "[ Group - %O ]" group  
+                            scriptContent |> Seq.iter (fun sc -> tracefn " - %O" sc.PartialPath)
         let generated =
-            scriptData |> Seq.collect (fun (_fw,groupedContent) -> 
-                groupedContent |> Seq.collect snd
-            )
+            scriptData 
+            |> Seq.collect (fun (_fw,groupedContent) -> 
+                groupedContent |> Seq.collect snd)
         generated
     
 
