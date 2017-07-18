@@ -1,7 +1,6 @@
-#### 5.7.2 - 17.07.2017
+#### 5.78.0 - 18.07.2017
+* Support Xamarin.tvOS and Xamarin.watchOS - https://github.com/fsprojects/Paket/pull/2535
 * BUGFIX: Version in path and load scripts should work together - https://github.com/fsprojects/Paket/issues/2534
-
-#### 5.7.1 - 17.07.2017
 * BUGFIX: Detect subfolders like "Lib" - https://github.com/fsprojects/Paket/issues/2533
 
 #### 5.7.0 - 17.07.2017
