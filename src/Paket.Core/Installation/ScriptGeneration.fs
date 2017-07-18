@@ -179,7 +179,7 @@ module ScriptGeneration =
         let scriptContent =
             ctx.Cache.OrderedGroups() |> Seq.choose (fun kvp ->
                 let groupName,packages = kvp.Key,kvp.Value
-                if groups = [] || List.exists ((=) groupName) groups then
+                if List.isEmpty groups || List.exists ((=) groupName) groups then
                     // fold over a map constructing load scripts to ensure shared packages don't have their scripts duplicated
                     ((Map.empty,[]),packages)
                     ||> Seq.fold (fun ((knownIncludeScripts,scriptFiles): Map<_,string>*_) (package: PackageResolver.ResolvedPackage) ->
@@ -223,18 +223,20 @@ module ScriptGeneration =
                     ) |> fun (_,sfs) -> Some (groupName, sfs )
                 else None
             ) |> List.ofSeq
+
         // generate scripts to load all packages within a group
         let groupScriptContent =
             ctx.Groups |> List.map (fun group ->
-                let scriptFile = getGroupFile  group
+                let scriptFile = getGroupFile group
                 let pieces =
                     ctx.Cache.GetOrderedReferences group framework
                     |> filterReferences ctx.ScriptType
-                let scriptContent =
-                    {   PartialPath = scriptFile
-                        Lang = ctx.ScriptType 
-                        Input = pieces 
-                    } : ScriptContent
+
+                let scriptContent : ScriptContent =
+                    { PartialPath = scriptFile
+                      Lang = ctx.ScriptType 
+                      Input = pieces } 
+
                 group,[scriptContent]
             ) 
         List.append scriptContent groupScriptContent
