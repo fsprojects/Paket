@@ -198,7 +198,10 @@ type DependencyCache (dependencyFile:DependenciesFile, lockFile:LockFile) =
                         let folder = 
                             getTargetFolder lockFile.RootPath groupName package.Name package.Version (defaultArg package.Settings.IncludeVersionInPath false)
                             |> Path.GetFullPath
-                            
+
+                        if Directory.Exists folder |> not then
+                            return failwithf "Folder %s doesn't exist. Did you restore groups %O?" folder groupName
+
                         let nuspecShort = Path.Combine(folder, sprintf "%O.nuspec" package.Name)
                         if verbose then
                             verbosefn " -- %s" nuspecShort

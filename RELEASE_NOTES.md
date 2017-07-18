@@ -1,4 +1,4 @@
-#### 5.79.0 - 18.07.2017
+#### 5.79.1 - 18.07.2017
 * USABILITY: Check that we printed an error
 * USABILITY: Do not spam script generation messages (these are no under -v)
 * BUGFIX: Version in path and load scripts should work together
