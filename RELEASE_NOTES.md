@@ -1,3 +1,6 @@
+#### 5.79.3 - 19.07.2017
+* BUGFIX: Allow feed element in getbyid response - https://github.com/fsprojects/Paket/pull/2541
+
 #### 5.79.2 - 18.07.2017
 * BUGFIX: Multi-Target support for new MSBuild - https://github.com/fsprojects/Paket/issues/2496#issuecomment-316057881
 
