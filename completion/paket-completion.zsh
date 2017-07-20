@@ -1379,11 +1379,11 @@ _paket_executable() {
 
   local location
   for location in $locations; do
-    [[ -f "$location" ]] && printf '%s %s' "$mono" "$location" && return
+    [[ -f "$location" ]] && printf '%s "%s"' "$mono" "$location" && return
   done
 
   if (($+commands[paket])); then
-    printf '%s' "$commands[paket]" && return
+    printf '"%s"' "$commands[paket]" && return
   fi
 
   return 1
