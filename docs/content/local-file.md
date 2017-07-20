@@ -148,7 +148,8 @@ Example `paket.local` file with version override
 >Notes
 >
 >* `version` is currently supported only for [Source override](#Source-override).
->* The syntax allows only a specific version, **not** inequality expressions like >= .
+>* The syntax allows only a specific version, **not** [version constraints](nuget-dependencies.html#Version-constraints) like >= .
+
 
 
 ### Groups
