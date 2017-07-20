@@ -1,16 +1,10 @@
-#### 5.79.4 - 20.07.2017
+#### 5.80.0 - 20.07.2017
 * BUGFIX: zsh completion: support paths with spaces - https://github.com/fsprojects/Paket/pull/2546
-
-#### 5.79.3 - 19.07.2017
 * BUGFIX: Allow feed element in getbyid response - https://github.com/fsprojects/Paket/pull/2541
-
-#### 5.79.2 - 18.07.2017
 * BUGFIX: Multi-Target support for new MSBuild - https://github.com/fsprojects/Paket/issues/2496#issuecomment-316057881
-
-#### 5.79.1 - 18.07.2017
+* BUGFIX: Version in path and load scripts should work together
 * USABILITY: Check that we printed an error
 * USABILITY: Do not spam script generation messages (these are no under -v)
-* BUGFIX: Version in path and load scripts should work together
 
 #### 5.78.0 - 18.07.2017
 * Support Xamarin.tvOS and Xamarin.watchOS - https://github.com/fsprojects/Paket/pull/2535
