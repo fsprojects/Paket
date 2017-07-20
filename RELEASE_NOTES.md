@@ -1,3 +1,6 @@
+#### 5.79.4 - 20.07.2017
+* BUGFIX: zsh completion: support paths with spaces - https://github.com/fsprojects/Paket/pull/2546
+
 #### 5.79.3 - 19.07.2017
 * BUGFIX: Allow feed element in getbyid response - https://github.com/fsprojects/Paket/pull/2541
 
