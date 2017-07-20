@@ -13,7 +13,7 @@ services:
     ports:
     - "8889:8081"
   simple:
-    image: sunside/simple-nuget-server
+    image: sunside/simple-nuget-server:0.5
     networks:
     - default
     ports:
