@@ -1,4 +1,5 @@
 #### 5.80.0 - 20.07.2017
+* BUGFIX: Fixed find-packages - https://github.com/fsprojects/Paket/issues/2545
 * BUGFIX: zsh completion: support paths with spaces - https://github.com/fsprojects/Paket/pull/2546
 * BUGFIX: Allow feed element in getbyid response - https://github.com/fsprojects/Paket/pull/2541
 * BUGFIX: Multi-Target support for new MSBuild - https://github.com/fsprojects/Paket/issues/2496#issuecomment-316057881
