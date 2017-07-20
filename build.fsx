@@ -390,6 +390,11 @@ Target "GenerateReferenceDocs" (fun _ ->
 )
 
 let generateHelp' commands fail debug =
+    // remove FSharp.Compiler.Service.MSBuild.v12.dll
+    // otherwise FCS thinks  it should use msbuild, which leads to insanity
+    !! "packages/**/FSharp.Compiler.Service.MSBuild.*.dll"
+    |> DeleteFiles
+
     let args =
         [ if not debug then yield "--define:RELEASE"
           if commands then yield "--define:COMMANDS"

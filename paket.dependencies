@@ -29,6 +29,7 @@ group Build
   
   nuget FAKE
   nuget FSharp.Formatting prerelease
+  nuget System.ValueTuple
   nuget Microsoft.AspNet.Razor
   nuget ILRepack
   
