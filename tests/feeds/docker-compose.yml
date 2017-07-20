@@ -1,0 +1,22 @@
+version: "3"
+services:
+  klondike:
+    image: aitraders/klondike:2.1.1-mono-4.6.1.3
+    networks:
+    - default
+    ports:
+    - "8888:8080"
+  sonatype:
+    image: sonatype/nexus:2.14.4-03
+    networks:
+    - default
+    ports:
+    - "8889:8081"
+  simple:
+    image: sunside/simple-nuget-server
+    networks:
+    - default
+    ports:
+    - "5000:80"
+networks:
+  default:
