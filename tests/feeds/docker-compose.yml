@@ -6,6 +6,8 @@ services:
     - default
     ports:
     - "8888:8080"
+    volumes:
+    - ./config/klondike/Settings.config:/app/Settings.config
   sonatype:
     image: sonatype/nexus3:3.4.0
     networks:
