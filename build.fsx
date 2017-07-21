@@ -389,6 +389,56 @@ Target "GenerateReferenceDocs" (fun _ ->
       failwith "generating reference documentation failed"
 )
 
+
+let fakePath = "packages" @@ "build" @@ "FAKE" @@ "tools" @@ "FAKE.exe"
+let fakeStartInfo fsiargs script workingDirectory args environmentVars =
+    (fun (info: System.Diagnostics.ProcessStartInfo) ->
+        info.FileName <- fakePath
+        info.Arguments <- sprintf "%s --fsiargs %s -d:FAKE \"%s\"" args fsiargs script
+        info.WorkingDirectory <- workingDirectory
+        let setVar k v =
+            info.EnvironmentVariables.[k] <- v
+        for (k, v) in environmentVars do
+            setVar k v
+        setVar "MSBuild" msBuildExe
+        setVar "GIT" Git.CommandHelper.gitPath
+        setVar "FSI" fsiPath)
+
+
+/// Run the given startinfo by printing the output (live)
+let executeWithOutput configStartInfo =
+    let exitCode =
+        ExecProcessWithLambdas
+            configStartInfo
+            TimeSpan.MaxValue false ignore ignore
+    System.Threading.Thread.Sleep 1000
+    exitCode
+
+/// Run the given startinfo by redirecting the output (live)
+let executeWithRedirect errorF messageF configStartInfo =
+    let exitCode =
+        ExecProcessWithLambdas
+            configStartInfo
+            TimeSpan.MaxValue true errorF messageF
+    System.Threading.Thread.Sleep 1000
+    exitCode
+
+/// Helper to fail when the exitcode is <> 0
+let executeHelper executer fail traceMsg failMessage configStartInfo =
+    trace traceMsg
+    let exit = executer configStartInfo
+    if exit <> 0 then
+        if fail then
+            failwith failMessage
+        else
+            traceImportant failMessage
+    else
+        traceImportant "Succeeded"
+    ()
+
+let execute = executeHelper executeWithOutput
+
+
 let generateHelp' commands fail debug =
     // remove FSharp.Compiler.Service.MSBuild.v12.dll
     // otherwise FCS thinks  it should use msbuild, which leads to insanity
@@ -399,14 +449,12 @@ let generateHelp' commands fail debug =
         [ if not debug then yield "--define:RELEASE"
           if commands then yield "--define:COMMANDS"
           yield "--define:HELP"]
-
-    if executeFSIWithArgs "docs/tools" "generate.fsx" args [] then
-        traceImportant "Help generated"
-    else
-        if fail then
-            failwith "generating help documentation failed"
-        else
-            traceImportant "generating help documentation failed"
+    let argLine = System.String.Join(" ", args)
+    execute
+      fail
+      (sprintf "Building documentation (%A), this could take some time, please wait..." commands)
+      "generating reference documentation failed"
+      (fakeStartInfo argLine "generate.fsx" "docs/tools" "" [])
 
     CleanDir "docs/output/commands"
 
