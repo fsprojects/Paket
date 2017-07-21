@@ -7,13 +7,15 @@ services:
     ports:
     - "8888:8080"
   sonatype:
-    image: sonatype/nexus:2.14.4-03
+    image: sonatype/nexus3:3.4.0
     networks:
     - default
     ports:
     - "8889:8081"
   simple:
     image: sunside/simple-nuget-server:0.5
+    environment:
+      NUGET_API_KEY: test
     networks:
     - default
     ports:
