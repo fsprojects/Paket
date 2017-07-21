@@ -30,6 +30,12 @@ namespace Paket.Bootstrapper
         {
             builder.EnsureCapacity(builder.Length + arg.Length);
 
+            if (arg == "")
+            {
+                builder.Append(@"""""");
+                return;
+            }
+
             var needQuote = false;
             var containsQuoteOrBackslash = false;
             foreach(var c in arg)
