@@ -60,9 +60,14 @@
 <h1><a name="The-paket-local-file" class="anchor" href="#The-paket-local-file">The paket.local file</a></h1>
 <p>The <code>paket.local</code> file is used for testing changes before releasing new version
 of a dependent project.</p>
-<p><strong>Note:</strong> You <em>should not commit</em> <code>paket.local</code>. This file should always be
-added to <code>.gitignore</code>, because it specifies file paths that are only accessible
-on your machine.</p>
+<blockquote>
+<p>Notes:</p>
+<ul>
+<li>You <strong>should not commit</strong> <code>paket.local</code>. This file should always be added to <code>.gitignore</code>, because it specifies file paths that are only accessible on your machine.</li>
+<li><code>paket.local</code> affects only the paket <strong>restore</strong> command, not the install or update command.</li>
+<li>By default <code>paket.local</code> will only substitute packages with an <strong>identical</strong> version to the <code>paket.lock</code> file.  See <a href="#Nupkg-version">Nupkg version</a> for alternatives.</li>
+</ul>
+</blockquote>
 <h2><a name="Example-use-case" class="anchor" href="#Example-use-case">Example use case</a></h2>
 <p>In this tutorial you will learn how <code>paket.local</code> can help you to speed up your
 development process.</p>
@@ -185,6 +190,23 @@ should be used for this override. One use case might be when the package version
 is determined by your build server, and <code>.nupkg</code>s created locally have zero
 version. This is currently supported only for <a href="#Source-override">source
 override</a>.</p>
+<p>Another use case is testing an upgraded pre-release package with an incremented
+version, against a consuming project.  In this case you want paket in the consuming
+project to fetch a higher version than the paket.local file indicates.</p>
+<p>Example <code>paket.local</code> file with version override</p>
+<table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
+<span class="l">2: </span>
+</pre></td>
+<td class="snippet"><pre class="fssnip highlighted"><code lang="paket">    <span class="c">// Argu is searched in specific version, grab a specific version</span>
+    <span class="k">nuget</span> Argu -<span class="o">&gt;</span> <span class="k">source</span> C:\github\Argu\bin version <span class="n">1.0.0</span>
+</code></pre></td></tr></table>
+<blockquote>
+<p>Notes</p>
+<ul>
+<li><code>version</code> is currently supported only for <a href="#Source-override">Source override</a>.</li>
+<li>The syntax allows only a specific version, <strong>not</strong> <a href="nuget-dependencies.html#Version-constraints">version constraints</a> like &gt;= .</li>
+</ul>
+</blockquote>
 <h3><a name="Groups" class="anchor" href="#Groups">Groups</a></h3>
 <table class="pre"><tr><td class="lines"><pre class="fssnip"><span class="l">1: </span>
 <span class="l">2: </span>

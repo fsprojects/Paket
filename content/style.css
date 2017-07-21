@@ -12,14 +12,31 @@ span.pf { color:#E0C57F; }
 span.e { color:#EA8675; }
 
 /* identifiers --- and styles for more specific identifier types */
-span.i { color:#d1d1d1; }
-/* type or module */
-span.t { color:#43AEC6; }
+span.id { color:#d1d1d1; }
+/* module */
+span.m { color:#43AEC6; }
+/* reference type */
+span.rt { color:#43AEC6; }
+/* value type */
+span.vt { color:#43AEC6; }
+/* interface */
+span.if{ color:#43AEC6; }
+/* type argument */
+span.ta { color:#43AEC6; }
+/* disposable */
+span.d { color:#43AEC6; }
+/* property */
+span.prop { color:#43AEC6; }
+/* punctuation */
+span.p { color:#43AEC6; }
 /* function */
 span.f { color:#e1e1e1; }
-/* DU case or active pattern */
-span.p { color:#4ec9b0; }
-
+/* active pattern */
+span.pat { color:#4ec9b0; }
+/* union case */
+span.u { color:#4ec9b0; }
+/* enumeration */
+span.e { color:#4ec9b0; }
 /* keywords */
 span.k { color:#FAB11D; }
 /* comment */

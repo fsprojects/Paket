@@ -128,9 +128,9 @@ specified <code>&lt;credential key&gt;</code>.</p>
 <span class="l">2: </span>
 <span class="l">3: </span>
 </pre></td>
-<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="i">AppDataFolder</span> <span class="o">=</span> <span class="i">Environment</span><span class="o">.</span><span class="i">GetFolderPath</span>(<span class="i">Environment</span><span class="o">.</span><span class="i">SpecialFolder</span><span class="o">.</span><span class="i">ApplicationData</span>)
-<span class="k">let</span> <span class="i">PaketConfigFolder</span> <span class="o">=</span> <span class="i">Path</span><span class="o">.</span><span class="i">Combine</span>(<span class="i">AppDataFolder</span>, <span class="s">&quot;Paket&quot;</span>)
-<span class="k">let</span> <span class="i">PaketConfigFile</span> <span class="o">=</span> <span class="i">Path</span><span class="o">.</span><span class="i">Combine</span>(<span class="i">PaketConfigFolder</span>, <span class="s">&quot;paket.config&quot;</span>)
+<td class="snippet"><pre class="fssnip highlighted"><code lang="fsharp"><span class="k">let</span> <span class="id">AppDataFolder</span> <span class="o">=</span> <span class="id">Environment</span><span class="pn">.</span><span class="id">GetFolderPath</span><span class="pn">(</span><span class="id">Environment</span><span class="pn">.</span><span class="id">SpecialFolder</span><span class="pn">.</span><span class="id">ApplicationData</span><span class="pn">)</span>
+<span class="k">let</span> <span class="id">PaketConfigFolder</span> <span class="o">=</span> <span class="id">Path</span><span class="pn">.</span><span class="id">Combine</span><span class="pn">(</span><span class="id">AppDataFolder</span><span class="pn">,</span> <span class="s">&quot;Paket&quot;</span><span class="pn">)</span>
+<span class="k">let</span> <span class="id">PaketConfigFile</span> <span class="o">=</span> <span class="id">Path</span><span class="pn">.</span><span class="id">Combine</span><span class="pn">(</span><span class="id">PaketConfigFolder</span><span class="pn">,</span> <span class="s">&quot;paket.config&quot;</span><span class="pn">)</span>
 </code></pre></td>
 </tr>
 </table>
