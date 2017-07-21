@@ -34,7 +34,10 @@ module Library =
             let ext = fi.Extension
             if String.IsNullOrEmpty ext then fi.Name
             else fi.Name.Replace(ext, "")
-        { Name = name; Path = f.File.FullPath; PathWithinPackage = f.File.PathWithinPackage }
+
+        { Name = name
+          Path = f.File.FullPath
+          PathWithinPackage = f.File.PathWithinPackage }
 
 type RuntimeLibrary = {
     Library : Library
@@ -431,16 +434,20 @@ module InstallModel =
         folderType
         |> Seq.map (fun folder -> choosefn folder.FolderContents)
         |> Seq.concat
+
     /// This is for library references, which at the same time can be used for references (old world - pre dotnetcore)
     let getLegacyReferences (target : TargetProfile) (installModel:InstallModel) =
         getFileFolders target (installModel.CompileLibFolders) (fun f -> f.Libraries |> Set.toSeq)
         |> Seq.cache
+
     let getLegacyFrameworkReferences (target : TargetProfile) (installModel:InstallModel) =
         getFileFolders target (installModel.CompileLibFolders) (fun f -> f.FrameworkReferences |> Set.toSeq)
         |> Seq.cache
+
     let getAllLegacyFrameworkReferences (installModel:InstallModel) =
         getAllFiles installModel.CompileLibFolders (fun f -> f.FrameworkReferences |> Set.toSeq)
         |> Seq.cache
+
     let getAllLegacyReferences (installModel:InstallModel) =
         getAllFiles installModel.CompileLibFolders (fun f -> f.Libraries |> Set.toSeq)
         |> Seq.cache
@@ -469,6 +476,7 @@ module InstallModel =
         lib
         |> Seq.map (fun l -> l.FolderContents)
         |> Seq.forall Set.isEmpty
+
     let removeIfCompletelyEmpty (this:InstallModel) =
         let foldersEmpty =
             isEmpty this.CompileRefFolders && isEmpty this.TargetsFileFolders && isEmpty this.RuntimeAssemblyFolders &&
@@ -508,9 +516,13 @@ module InstallModel =
             match references with
             | NuspecReferences.All -> true
             | NuspecReferences.Explicit list -> List.exists file.File.FullPath.EndsWith list
-        if not install then this else
-        { this with
-            CompileLibFolders = addFileToFolder path (Library.ofFile file) this.CompileLibFolders ReferenceOrLibraryFolder.addLibrary }
+
+        if not install then 
+            this 
+        else
+            let folders = addFileToFolder path (Library.ofFile file) this.CompileLibFolders ReferenceOrLibraryFolder.addLibrary
+            { this with
+                CompileLibFolders = folders }
 
     let private addPackageRefFile references (path:FrameworkFolder<Library Set>) (file:FrameworkDependentFile) (this:InstallModel) : InstallModel =
         let install =

@@ -1,3 +1,6 @@
+#### 5.81.1 - 21.07.2017
+* BUGFIX: Fixed generate-load-scripts case sensitivity - https://github.com/fsprojects/Paket/issues/2547
+
 #### 5.81.0 - 21.07.2017
 * BUGFIX: Pass along empty arguments in bootstrapper - https://github.com/fsprojects/Paket/issues/2551
 

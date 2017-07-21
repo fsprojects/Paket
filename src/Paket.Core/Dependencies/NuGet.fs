@@ -106,16 +106,18 @@ let tryFindFolder folder (content:NuGetPackageContent) =
             contents
             |> List.collect (collectItems fullPath relPath)
         | NuGetFile _ ->
-            [ {UnparsedPackageFile.FullPath = fullPath; UnparsedPackageFile.PathWithinPackage = relPath } ]
+            [ {UnparsedPackageFile.FullPath = fullPath
+               UnparsedPackageFile.PathWithinPackage = relPath } ]
 
     content.Content
     |> List.tryPick (fun c ->
         match c with
-        | NuGetDirectory(n,contents) when String.equalsIgnoreCase n folder -> Some contents
+        | NuGetDirectory(name,contents) when String.equalsIgnoreCase name folder ->
+            Some(name,contents)
         | _ -> None)
-    |> Option.map (fun item ->
+    |> Option.map (fun (name,item) ->
         item
-        |> List.collect (collectItems (Path.Combine(content.Path, folder)) folder))
+        |> List.collect (collectItems (Path.Combine(content.Path, name)) name))
 
 let DownloadLicense(root,force,packageName:PackageName,version:SemVerInfo,licenseUrl,targetFileName) =
     async {
