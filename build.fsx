@@ -384,11 +384,6 @@ Target "PublishNuGet" (fun _ ->
 // --------------------------------------------------------------------------------------
 // Generate the documentation
 
-Target "GenerateReferenceDocs" (fun _ ->
-    if not <| executeFSIWithArgs "docs/tools" "generate.fsx" ["--define:RELEASE"; "--define:REFERENCE"] [] then
-      failwith "generating reference documentation failed"
-)
-
 
 let fakePath = "packages" @@ "build" @@ "FAKE" @@ "tools" @@ "FAKE.exe"
 let fakeStartInfo fsiargs script workingDirectory args environmentVars =
@@ -438,6 +433,18 @@ let executeHelper executer fail traceMsg failMessage configStartInfo =
 
 let execute = executeHelper executeWithOutput
 
+Target "GenerateReferenceDocs" (fun _ ->
+    let args = ["--define:RELEASE"; "--define:REFERENCE"]
+    let argLine = System.String.Join(" ", args)
+    execute
+      true
+      (sprintf "Building reference documentation, this could take some time, please wait...")
+      "generating reference documentation failed"
+      (fakeStartInfo argLine "generate.fsx" "docs/tools" "" [])
+)
+
+
+
 
 let generateHelp' commands fail debug =
     // remove FSharp.Compiler.Service.MSBuild.v12.dll
@@ -453,7 +460,7 @@ let generateHelp' commands fail debug =
     execute
       fail
       (sprintf "Building documentation (%A), this could take some time, please wait..." commands)
-      "generating reference documentation failed"
+      "generating documentation failed"
       (fakeStartInfo argLine "generate.fsx" "docs/tools" "" [])
 
     CleanDir "docs/output/commands"
