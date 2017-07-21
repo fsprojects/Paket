@@ -1,3 +1,6 @@
+#### 5.81.0 - 21.07.2017
+* BUGFIX: Pass along empty arguments in bootstrapper - https://github.com/fsprojects/Paket/issues/2551
+
 #### 5.80.0 - 20.07.2017
 * BUGFIX: Fixed find-packages - https://github.com/fsprojects/Paket/issues/2545
 * BUGFIX: zsh completion: support paths with spaces - https://github.com/fsprojects/Paket/pull/2546
