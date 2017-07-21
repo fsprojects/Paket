@@ -13,7 +13,7 @@ SIMPLE_KEY=test
 
 NEXUS_URL=http://localhost:8889
 NEXUS_ENDPOINT=repository/nuget-hosted/
-NEXUS_KEY=2bf39ea5-c940-39d5-aca2-83c1379e6a36
+NEXUS_KEY=$(curl -s -X POST $NEXUS_URL/service/siesta/rest/v1/script/test/run -H 'Content-Type: text/plain' -u admin:admin123 | jq .result | tr -d '"' )
 
 paket push url $KLONDIKE_URL endpoint $KLONDIKE_ENDPOINT apikey $KLONDIKE_KEY file "$PACKAGE"
 paket push url $SIMPLE_URL endpoint $SIMPLE_ENDPOINT apikey $SIMPLE_KEY file "$PACKAGE"

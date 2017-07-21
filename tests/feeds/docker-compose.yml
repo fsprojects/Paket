@@ -9,11 +9,14 @@ services:
     volumes:
     - ./config/klondike/Settings.config:/app/Settings.config
   sonatype:
-    image: sonatype/nexus3:3.4.0
+    image: clearent/nexus:3.4.0-02
     networks:
     - default
     ports:
     - "8889:8081"
+    volumes:
+    - ./config/sonatype:/nexus-data
+    command: "bin/nexus run & sleep 20; curl -X POST -u admin:admin123 http://localhost:8081/service/siesta/rest/v1/script -d @script/nugetApiKey.json"
   simple:
     image: sunside/simple-nuget-server:0.5
     environment:
