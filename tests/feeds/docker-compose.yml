@@ -18,5 +18,11 @@ services:
     - default
     ports:
     - "5000:80"
+  artifactory:
+    image: docker.bintray.io/jfrog/artifactory-oss:5.4.5
+    networks:
+    - default
+    ports:
+    - "8890:8081"
 networks:
   default:
