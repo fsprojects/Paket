@@ -1372,34 +1372,34 @@ let ``should read config with caches``() =
     (main.Sources |> List.item 1).Url |> shouldEqual "./dependencies"
     (main.Sources |> List.item 2).Url |> shouldEqual "//hive/dependencies"
 
-[<Test>]
-let ``async cache should work``() =
-    let x = ref 0
-    let someSlowFunc mykey = async { 
-        Console.WriteLine "Simulated downloading..."
-        do! Async.Sleep 400
-        Console.WriteLine "Simulated downloading Done."
-        x := !x + 1 // Side effect!
-        return "" }
-    let memFunc = memoizeAsync <| someSlowFunc
-    async {
-        do! memFunc "a" |> Async.Ignore
-        do! memFunc "a" |> Async.Ignore
-        do! memFunc "a" |> Async.Ignore
-        do! [|1 .. 30|] |> Seq.map(fun _ -> (memFunc "a")) 
-            |> Async.Parallel |> Async.Ignore
-        for i = 1 to 30 do
-            Async.Start( memFunc "a" |> Async.Ignore )
-            Async.Start( memFunc "a" |> Async.Ignore )
-        do! Async.Sleep 500
-        do! memFunc "a" |> Async.Ignore
-        do! memFunc "a" |> Async.Ignore
-        for i = 1 to 30 do
-            Async.Start( memFunc "a" |> Async.Ignore )
-        do! [|1 .. 30|] |> Seq.map(fun _ -> (memFunc "a")) 
-            |> Async.Parallel |> Async.Ignore
-    } |> Async.RunSynchronously
-    !x |> shouldEqual 1
+// [<Test>]
+// let ``async cache should work``() =
+//     let x = ref 0
+//     let someSlowFunc mykey = async { 
+//         Console.WriteLine "Simulated downloading..."
+//         do! Async.Sleep 400
+//         Console.WriteLine "Simulated downloading Done."
+//         x := !x + 1 // Side effect!
+//         return "" }
+//     let memFunc = memoizeAsync <| someSlowFunc
+//     async {
+//         do! memFunc "a" |> Async.Ignore
+//         do! memFunc "a" |> Async.Ignore
+//         do! memFunc "a" |> Async.Ignore
+//         do! [|1 .. 30|] |> Seq.map(fun _ -> (memFunc "a")) 
+//             |> Async.Parallel |> Async.Ignore
+//         for i = 1 to 30 do
+//             Async.Start( memFunc "a" |> Async.Ignore )
+//             Async.Start( memFunc "a" |> Async.Ignore )
+//         do! Async.Sleep 500
+//         do! memFunc "a" |> Async.Ignore
+//         do! memFunc "a" |> Async.Ignore
+//         for i = 1 to 30 do
+//             Async.Start( memFunc "a" |> Async.Ignore )
+//         do! [|1 .. 30|] |> Seq.map(fun _ -> (memFunc "a")) 
+//             |> Async.Parallel |> Async.Ignore
+//     } |> Async.RunSynchronously
+//     !x |> shouldEqual 1
 
 let autodetectconfig = """
 framework: auto-detect
