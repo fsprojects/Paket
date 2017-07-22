@@ -68,7 +68,7 @@ let graph1 =
   ]
 
 [<Test>]
-let ``should fallback to timeoutexception when task never canceles``() =
+let ``should fallback to timeoutexception when task never cancels``() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let config = """
 source http://www.nuget.org/api/v2
@@ -78,7 +78,7 @@ nuget Chessie"""
     let cfg = DependenciesFile.FromSource(config)
     let groups = [Constants.MainDependencyGroup, None ] |> Map.ofSeq
     try
-        // NOTE: This test is hard/improssible to debug, because of the Debugger.IsAttached checks in the resolver code!
+        // NOTE: This test is hard/impossible to debug, because of the Debugger.IsAttached checks in the resolver code!
         System.Environment.SetEnvironmentVariable("PAKET_RESOLVER_TASK_TIMEOUT", "500")
         try
             let groupResults =
