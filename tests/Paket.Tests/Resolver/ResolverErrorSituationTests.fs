@@ -68,6 +68,7 @@ let graph1 =
   ]
 
 [<Test>]
+[<Timeout 5000>]
 let ``should fallback to timeoutexception when task never cancels``() =
     use consoleTrace = Logging.event.Publish |> Observable.subscribe Logging.traceToConsole
     let config = """
@@ -258,6 +259,7 @@ let ``task priorization works``() =
     cts.Cancel()
 
 [<Test>]
+[<Timeout 5000>]
 let ``cancellation fsharp.core``() =
 
     let StartCatchCancellation cancellationToken (work) =
@@ -306,11 +308,13 @@ let ``cancellation fsharp.core``() =
             |> ignore
     } |> Async.Start
 
-    t.Wait(1000)
-        |> shouldEqual true
-    ()
+    try
+        let res = t.Wait(1000)
+        Assert.Fail (sprintf "Excepted TimeoutException wrapped in an AggregateException, but got %A" res)
+    with :? AggregateException as agg -> ()
 
 [<Test>]
+[<Timeout 5000>]
 let ``cancellation WorkerQueue``() =
     use cts = new CancellationTokenSource()
     let workerQueue = ResolverRequestQueue.Create()
