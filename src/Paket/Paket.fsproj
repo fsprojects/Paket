@@ -31,8 +31,8 @@
     <StartAction>Project</StartAction>
     <StartProgram>paket.exe</StartProgram>
     <StartAction>Project</StartAction>
-    <StartArguments>restore -v --group Release</StartArguments>
-    <StartWorkingDirectory>D:\temp\isaac</StartWorkingDirectory>
+    <StartArguments>-v push file nuget/legacy/FAKE.5.0.0-alpha012.nupkg</StartArguments>
+    <StartWorkingDirectory>C:\proj\FAKE\</StartWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <Optimize>true</Optimize>

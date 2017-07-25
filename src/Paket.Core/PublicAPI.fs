@@ -669,8 +669,11 @@ type Dependencies(dependenciesFileName: string) =
                     Some(key)
                 | None -> None
 
-        let configKey = url |> Option.bind ConfigFile.GetAuthentication |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
-        let firstPresentKey = 
+        let configKey =
+            let url = defaultArg url "https://nuget.org"
+            ConfigFile.GetAuthentication url |> Option.bind (fun a -> match a with Token t -> Some t | _ -> None )
+
+        let firstPresentKey =
             [apiKey; envKey; configKey]
             |> List.choose id
             |> List.where (String.IsNullOrEmpty >> not)
