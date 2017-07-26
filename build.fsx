@@ -222,6 +222,16 @@ Target "DotnetPackage" (fun _ ->
                 AdditionalArgs = [(sprintf "-o %s" currentDirectory </> tempDir </> "dotnetcore"); (sprintf "/p:Version=%s" release.NugetVersion)]
             })
     )
+
+    // Publish portable as well (see https://docs.microsoft.com/en-us/dotnet/articles/core/app-types)
+    //let netcoreFsproj = "src/Paket.preview3/Paket.fsproj"
+    //let outDir = nugetDir @@ "Fake.netcore" @@ "portable"
+    //DotNetCli.Publish (fun c ->
+    //    { c with
+    //        Project = netcoreFsproj
+    //        Framework = Some "netcoreapp1.0"
+    //        OutputPath = Some outDir
+    //    })
 )
 
 
