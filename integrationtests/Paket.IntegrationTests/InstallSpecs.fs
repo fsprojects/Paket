@@ -326,6 +326,8 @@ let ``#1505 should install conditionals``() =
     install "i001505-conditionals" |> ignore
     let newFile = Path.Combine(scenarioTempPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj")
     let oldFile = Path.Combine(originalScenarioPath "i001505-conditionals","MyClassLibrary","MyClassLibrary","MyClassLibrary.csproj.expected")
+    if updateBaselines then
+        File.Copy (newFile, oldFile, overwrite=true)
     let s1 = File.ReadAllText oldFile |> normalizeLineEndings
     let s2 = File.ReadAllText newFile |> normalizeLineEndings
     s2 |> shouldEqual s1
